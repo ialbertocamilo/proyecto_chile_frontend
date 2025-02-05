@@ -1,28 +1,49 @@
-import type * as React from "react"
-import { Navbar } from "./Navbar"
-import { TopBar } from "./TopBar"
-import { Footer } from "./Footer"
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
+"use client";
 
-interface DashboardLayoutProps {
-  children: React.ReactNode
-}
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import { useState } from 'react';
+import Navbar from './layout/Navbar';
+import TopBar from './layout/TopBar';
+import ProjectList from './forms/ProjectList';
+import ProjectWorkflow from './forms/ProjectWorkflow';
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
-  return (
-    <SidebarProvider>
-      <div className="flex flex-col lg:flex-row h-screen overflow-hidden">
-        <Navbar />
-        <SidebarInset className="flex-1 flex flex-col">
-          <TopBar />
-          <main className="flex-1 overflow-y-auto p-6">
-            <SidebarTrigger className="mb-4 md:hidden" />
-            {children}
-          </main>
-          <Footer />
-        </SidebarInset>
+const Dashboard = () => {
+  const [activeView, setActiveView] = useState('projects'); // manejar las vistas
+
+  // renderizar la vista activa
+  const renderContent = () => {
+    if (activeView === 'projectWorkflow') {
+      return <ProjectWorkflow setActiveView={function (view: string): void {
+        throw new Error('Function not implemented.');
+      } } />;
+    }
+    if (activeView === 'projects') {
+      return <ProjectList setActiveView={setActiveView} />;
+    }
+    return (
+      <div className="text-center mt-5">
+        <h1 className="fw-bold text-primary">¡Bienvenido!</h1>
+        <p>Gestiona tus proyectos de manera eficiente.</p>
+        <i className="bi bi-bar-chart-fill text-primary" style={{ fontSize: '50px' }}></i>
       </div>
-    </SidebarProvider>
-  )
-}
+    );
+  };
 
+  return (
+    <div className="d-flex">
+      {/* Barra lateral */}
+      <Navbar setActiveView={setActiveView} />
+
+      {/* Contenedor principal */}
+      <div className="d-flex flex-column flex-grow-1">
+        <TopBar />
+        <div className="content p-4" style={{ marginTop: '60px' }}>
+          {renderContent()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;

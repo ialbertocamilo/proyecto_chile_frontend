@@ -1,7 +1,22 @@
-import { DashboardLayout } from "@/components/DashboardLayout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import DashboardLayout from "../components/DashboardLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Simula una verificación de autenticación
+    const isAuthenticated = false; // Aquí debes usar la lógica real de autenticación
+
+    if (!isAuthenticated) {
+      router.push("/login"); // Redirige al login si no está autenticado
+    }
+  }, [router]);
+
   return (
     <DashboardLayout>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -43,6 +58,5 @@ export default function DashboardPage() {
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }
-

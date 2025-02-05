@@ -4,22 +4,42 @@ import { useRouter } from "next/router";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setMessage(`Si el correo ${email} está registrado, recibirás un enlace para restablecer tu contraseña.`);
-    setEmail("");
+    try {
+      const response = await fetch("http://deuman-backend.svgdev.tech/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Error en el proceso de recuperación de contraseña");
+      }
+
+      // guardar el email en localStorage
+      localStorage.setItem("reset_email", email);
+
+      // redirigire a reset-password
+      router.push("/resetpassword");
+      
+    } catch (error: any) {
+      setError(error.message);
+    }
   };
 
   return (
-    <div className="forgot-password-container d-flex justify-content-center align-items-center" style={{ height: "100vh", backgroundColor: "#eef7fc" }}>
-      <div className="card p-5 shadow" style={{ width: "100%", maxWidth: "420px", borderRadius: "15px" }}>
-        <div className="text-center mb-4">
-          <img src="/assets/images/proyecto-deuman-logo.png" alt="Proyecto CEELA" className="img-fluid" style={{ maxWidth: "150px" }} />
-        </div>
+    <div className="forgot-password-container d-flex justify-content-center align-items-center" 
+         style={{ height: "100vh", background: "url('/assets/images/background.jpg') no-repeat center center/cover" }}>
+      <div className="card p-5 shadow-lg" style={{ width: "100%", maxWidth: "420px", borderRadius: "15px", backgroundColor: "rgba(255, 255, 255, 0.9)" }}>
         <h4 className="text-start text-primary fw-bold">Recuperar contraseña</h4>
         <p className="text-start text-muted mb-4">Ingresa tu correo electrónico para recuperar tu contraseña</p>
         <form onSubmit={handleSubmit}>
@@ -36,9 +56,9 @@ const ForgotPassword = () => {
           </div>
           <button type="submit" className="btn btn-primary w-100">Enviar enlace de recuperación</button>
         </form>
-        {message && <p className="text-success text-center mt-3">{message}</p>}
+        {error && <p className="text-danger text-center mt-3">{error}</p>}
         <div className="text-center mt-3">
-          <p className="text-muted">¿Recordaste tu contraseña? <a href="/login" className="text-decoration-none text-primary">Ingresar</a></p>
+          <a href="/login" className="btn btn-outline-secondary">Regresar</a>
         </div>
       </div>
     </div>

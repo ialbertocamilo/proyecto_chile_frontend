@@ -43,9 +43,9 @@ const ComponentsDemo = () => {
 
   return (
     <div className="d-flex">
-      <Navbar setActiveView={() => {}} />
+      <Navbar setActiveView={() => {}} setSidebarWidth={() => {}} />
       <div className="d-flex flex-column flex-grow-1">
-        <TopBar />
+        <TopBar sidebarWidth="250px" />
         <div className="container mt-4">
           <h2 className="fw-bold text-primary text-center mb-4">Demostración de Componentes</h2>
 

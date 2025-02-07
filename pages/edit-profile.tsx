@@ -24,8 +24,8 @@ const EditProfile = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  // Cargar datos prellenados desde localStorage (se supone que al iniciar sesión se guarda el perfil)
   useEffect(() => {
     const storedProfile = localStorage.getItem("userProfile");
     if (storedProfile) {
@@ -46,18 +46,15 @@ const EditProfile = () => {
     }
   }, []);
 
-  // Manejar cambios en los inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  // Enviar el formulario para actualizar el perfil
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     const { name, lastname, number_phone, country, ubigeo } = profile;
 
-    // Validar que ningún campo esté vacío
     if (
       !name.trim() ||
       !lastname.trim() ||
@@ -95,14 +92,15 @@ const EditProfile = () => {
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error actualizando perfil:", errorData);
-        throw new Error(errorData.detail || errorData.message || "No se pudo actualizar el perfil");
+        throw new Error(
+          errorData.detail || errorData.message || "No se pudo actualizar el perfil"
+        );
       }
 
       const resData = await response.json();
 
-      // Actualizamos el localStorage con los datos actualizados
       localStorage.setItem("userProfile", JSON.stringify(payload));
-      
+
       await Swal.fire({
         title: "Perfil actualizado",
         text: resData.message || "Tu perfil se actualizó correctamente.",
@@ -126,22 +124,50 @@ const EditProfile = () => {
 
   return (
     <div className="d-flex">
-      <Navbar setActiveView={() => {}} />
-      <div className="d-flex flex-column flex-grow-1">
-        <TopBar />
-        <div className="container mt-4">
-          <h2 className="fw-bold text-primary text-center mb-4">Editar Perfil</h2>
-          <div className="mb-4">
-            <Button
-              text="Regresar"
-              onClick={() => router.push("/dashboard")}
-              className="btn-secondary"
-            />
+      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <div
+        className="d-flex flex-column flex-grow-1"
+        style={{
+          marginLeft: sidebarWidth,
+          width: "100%",
+        }}
+      >
+        <TopBar sidebarWidth={sidebarWidth} />
+        <div className="container p-4" style={{ marginTop: "60px" }}>
+          {/* Encabezado y botones */}
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="fw-bold" style={{ color: "#6dbdc9", margin: 0 }}>
+              Editar Perfil
+            </h2>
+            <div className="d-flex" style={{ gap: "1rem" }}>
+              <Button
+                text="← Regresar"
+                onClick={() => router.push("/dashboard")}
+                className="btn-secondary"
+              />
+              <button
+                type="submit"
+                form="editProfileForm"
+                className="btn"
+                disabled={loading}
+                style={{
+                  backgroundColor: "#3ca7b7",
+                  border: "none",
+                  borderRadius: "0.5rem",
+                  padding: "12px",
+                  fontSize: "1rem",
+                  transition: "background 0.3s ease",
+                  color: "#fff",
+                }}
+              >
+                {loading ? "Actualizando..." : "Actualizar Perfil"}
+              </button>
+            </div>
           </div>
           {loading ? (
             <p className="text-primary">Cargando...</p>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form id="editProfileForm" onSubmit={handleSubmit}>
               {error && <p className="text-danger">{error}</p>}
               <div className="mb-3">
                 <label>Nombre</label>
@@ -192,11 +218,6 @@ const EditProfile = () => {
                   value={profile.ubigeo}
                   onChange={handleChange}
                 />
-              </div>
-              <div className="text-end">
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                  {loading ? "Actualizando..." : "Actualizar Perfil"}
-                </button>
               </div>
             </form>
           )}

@@ -56,15 +56,54 @@ const ResetPassword = () => {
     }
   };
 
+  const inputStyle = {
+    border: "2px solid #e0e0e0",
+    borderRadius: "0.5rem",
+    padding: "0.5rem",
+    margin: 0,
+  };
+
+  const spacingStyle = { marginBottom: "0.5rem" };
+
+  const labelStyle = { marginBottom: "0.25rem", fontWeight: "bold", color: "#000" };
+
+  const regresarButtonStyle = {
+    border: "none",
+    backgroundColor: "transparent",
+    color: "#3ca7b7",
+    fontSize: "1rem",
+    cursor: "pointer",
+    textDecoration: "none" as const,
+  };
+
   return (
-    <div className="reset-password-container d-flex justify-content-center align-items-center" 
-         style={{ height: "100vh", background: "url('/assets/images/background.jpg') no-repeat center center/cover" }}>
-      <div className="card p-5 shadow-lg" style={{ width: "100%", maxWidth: "420px", borderRadius: "15px", backgroundColor: "rgba(255, 255, 255, 0.9)" }}>
-        <h4 className="text-start text-primary fw-bold">Restablecer contraseña</h4>
-        <p className="text-start text-muted mb-4">Ingresa tu correo, el código de verificación y tu nueva contraseña</p>
+    <div
+      className="reset-password-container d-flex justify-content-center align-items-center"
+      style={{
+        height: "100vh",
+        background: "url('/assets/images/background.jpg') no-repeat center center/cover",
+      }}
+    >
+      <div
+        className="card p-4 shadow-lg"
+        style={{
+          width: "100%",
+          maxWidth: "420px",
+          borderRadius: "15px",
+          backgroundColor: "#fff",
+        }}
+      >
+        <h4 className="text-start fw-bold" style={{ color: "#6dbdc9", marginBottom: "0.5rem" }}>
+          Restablecer contraseña
+        </h4>
+        <p className="text-start" style={{ color: "#d3d3d3", marginBottom: "1rem" }}>
+          Ingresa tu correo, el código de verificación y tu nueva contraseña
+        </p>
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label fw-bold">Correo electrónico</label>
+          <div style={spacingStyle}>
+            <label className="form-label fw-bold" style={labelStyle}>
+              Correo electrónico
+            </label>
             <input
               type="email"
               className="form-control"
@@ -74,10 +113,13 @@ const ResetPassword = () => {
               onChange={handleChange}
               required
               readOnly
+              style={inputStyle}
             />
           </div>
-          <div className="mb-3">
-            <label className="form-label fw-bold">Código de verificación</label>
+          <div style={spacingStyle}>
+            <label className="form-label fw-bold" style={labelStyle}>
+              Código de verificación
+            </label>
             <input
               type="text"
               className="form-control"
@@ -86,10 +128,13 @@ const ResetPassword = () => {
               value={formData.code}
               onChange={handleChange}
               required
+              style={inputStyle}
             />
           </div>
-          <div className="mb-3">
-            <label className="form-label fw-bold">Nueva contraseña</label>
+          <div style={spacingStyle}>
+            <label className="form-label fw-bold" style={labelStyle}>
+              Nueva contraseña
+            </label>
             <input
               type="password"
               className="form-control"
@@ -98,10 +143,13 @@ const ResetPassword = () => {
               value={formData.new_password}
               onChange={handleChange}
               required
+              style={inputStyle}
             />
           </div>
-          <div className="mb-3">
-            <label className="form-label fw-bold">Confirmar nueva contraseña</label>
+          <div style={spacingStyle}>
+            <label className="form-label fw-bold" style={labelStyle}>
+              Confirmar nueva contraseña
+            </label>
             <input
               type="password"
               className="form-control"
@@ -110,15 +158,45 @@ const ResetPassword = () => {
               value={formData.confirm_new_password}
               onChange={handleChange}
               required
+              style={inputStyle}
             />
           </div>
-          <button type="submit" className="btn btn-primary w-100">Restablecer contraseña</button>
+          <button
+            type="submit"
+            className="btn btn-primary w-100"
+            style={{
+              borderRadius: "0.5rem",
+              backgroundColor: "#3ca7b7",
+              border: "none",
+              padding: "12px",
+              fontSize: "1rem",
+              transition: "background 0.3s ease",
+              color: "#fff",
+            }}
+          >
+            Restablecer contraseña
+          </button>
         </form>
         {error && <p className="text-danger text-center mt-3">{error}</p>}
         <div className="text-center mt-3">
-          <a href="/login" className="btn btn-outline-secondary">Regresar</a>
+          <a href="/login" style={regresarButtonStyle}>
+            ← Regresar
+          </a>
         </div>
       </div>
+      <style jsx>{`
+        .reset-password-container {
+          height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background: url('/assets/images/background.jpg') no-repeat center center/cover;
+          position: relative;
+        }
+        a:hover {
+          color: #359aa9;
+        }
+      `}</style>
     </div>
   );
 };

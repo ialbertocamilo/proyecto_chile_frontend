@@ -1,6 +1,6 @@
 import "../public/assets/css/globals.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -8,6 +8,7 @@ import { useState } from "react";
 const Login = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [remember, setRemember] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -36,17 +37,16 @@ const Login = () => {
         throw new Error(data.message || "Credenciales incorrectas.");
       }
 
-      // guardar los datos en localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("email", email);
-      localStorage.setItem("user_name", data.name || "Usuario"); 
+      localStorage.setItem("user_name", data.name || "Usuario");
 
       console.log("Token guardado:", data.token);
       console.log("Email guardado para 2FA:", email);
       console.log("Nombre del usuario guardado:", data.name);
 
       setTimeout(() => {
-        router.push("/twofactorauth"); 
+        router.push("/twofactorauth");
       }, 200);
     } catch (err: any) {
       console.error("Error al iniciar sesión:", err.message);
@@ -59,53 +59,122 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h5 className="text-primary fw-bold text-center">Ingresa a tu cuenta</h5>
-        <p className="text-muted text-center">Ingresa tu Email y contraseña para acceder</p>
-        {error && <p className="text-danger text-center fw-bold">{error}</p>}
+        <h5 className="fw-bold" style={{ color: "#5cb5c3", textAlign: "left" }}>
+          Ingresa a tu cuenta
+        </h5>
+        <p style={{ textAlign: "left", color: "#d3d3d3" }}>
+          Ingresa tu Email y contraseña para acceder
+        </p>
+        {error && (
+          <p className="text-danger text-center fw-bold">{error}</p>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label fw-semibold">Dirección de Email</label>
-            <input 
-              type="email" 
-              className="form-control rounded-pill" 
+            <label
+              className="form-label fw-semibold"
+              style={{ textAlign: "left", display: "block" }}
+            >
+              Dirección de Email
+            </label>
+            <input
+              type="email"
+              className="form-control"
               placeholder="Example@gmail.com"
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              required 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{
+                border: "2px solid #d3d3d3",
+                borderRadius: "0.5rem",
+              }}
             />
           </div>
-          <div className="mb-3 position-relative">
-            <label className="form-label fw-semibold">Contraseña</label>
-            <div className="d-flex align-items-center">
-              <input 
-                type={showPassword ? "text" : "password"} 
-                className="form-control rounded-pill"
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                required 
+          <div className="mb-3">
+            <label
+              className="form-label fw-semibold"
+              style={{ textAlign: "left", display: "block" }}
+            >
+              Contraseña
+            </label>
+            <div style={{ position: "relative" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-control"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{
+                  border: "2px solid #d3d3d3",
+                  borderRadius: "0.5rem",
+                  paddingRight: "4rem",
+                }}
               />
-              <span 
-                className="ms-2 text-primary fw-bold" 
-                style={{ cursor: "pointer" }}
+              <span
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  color: "#5cb5c3",
+                  fontSize: "0.9rem",
+                  fontWeight: "bold",
+                }}
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? "Ocultar" : "Mostrar"}
               </span>
             </div>
           </div>
-          <button type="submit" className="btn btn-primary w-100 rounded-pill fw-bold" disabled={loading}>
+
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex align-items-center">
+              <input
+                type="checkbox"
+                id="remember"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                style={{ marginRight: "0.5rem" }}
+              />
+              <label
+                htmlFor="remember"
+                style={{ cursor: "pointer", color: "#d3d3d3" }}
+              >
+                Recuérdame
+              </label>
+            </div>
+            <a
+              href="/forgot-password"
+              className="text-decoration-none"
+              style={{ color: "#5cb5c3" }}
+            >
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+
+          <button
+            type="submit"
+            className="btn w-100 fw-bold"
+            disabled={loading}
+            style={{
+              borderRadius: "0.5rem",
+            }}
+          >
             {loading ? "Ingresando..." : "Ingresar"}
           </button>
         </form>
 
-        <div className="text-center mt-3">
-          <a href="/forgot-password" className="text-decoration-none text-primary">¿Olvidaste tu contraseña?</a>
-        </div>
         <div className="text-center mt-4">
-          <p className="text-muted">
-            ¿Aún no tienes cuenta? 
-            <a href="/register" className="text-decoration-none text-primary"> Crear una cuenta</a>
+          <p style={{ color: "#d3d3d3" }} className="text-muted">
+            ¿Aún no tienes cuenta?{" "}
+            <a
+              href="/register"
+              className="text-decoration-none"
+              style={{ color: "#5cb5c3" }}
+            >
+              Crear una cuenta
+            </a>
           </p>
         </div>
       </div>
@@ -116,7 +185,8 @@ const Login = () => {
           display: flex;
           justify-content: center;
           align-items: center;
-          background: url('/assets/images/background.jpg') no-repeat center center/cover;
+          background: url('/assets/images/background.jpg')
+            no-repeat center center/cover;
           position: relative;
         }
 
@@ -127,15 +197,18 @@ const Login = () => {
           box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
           width: 100%;
           max-width: 400px;
-          text-align: center;
+          text-align: left;
           position: relative;
           z-index: 2;
+        }
+
+        .mb-3 {
+          margin-bottom: 1.5rem; /* Aumenta el espacio vertical entre elementos */
         }
 
         .form-control {
           font-size: 1rem;
           padding: 10px;
-          border: 2px solid #74b9ff;
           transition: all 0.3s ease;
         }
 
@@ -144,16 +217,17 @@ const Login = () => {
           box-shadow: 0 0 10px rgba(9, 132, 227, 0.2);
         }
 
-        .btn-primary {
-          background-color: #74b9ff;
+        button.btn {
+          background-color: #3ca7b7;
           border: none;
           padding: 12px;
           font-size: 1rem;
           transition: background 0.3s ease;
+          color: #fff;
         }
 
-        .btn-primary:hover {
-          background-color: #0984e3;
+        button.btn:hover {
+          background-color: #359aa9;
         }
       `}</style>
     </div>

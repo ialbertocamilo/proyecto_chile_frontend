@@ -8,12 +8,8 @@ import Swal from "sweetalert2";
 interface ProjectWorkflowProps {
   setActiveView: (view: string) => void;
 }
-
 const ProjectWorkflow = ({ setActiveView }: ProjectWorkflowProps) => {
-  // paso actual
   const [step, setStep] = useState(1);
-
-  // estructura requerida 
   const [formData, setFormData] = useState({
     country: "",
     divisions: {
@@ -24,7 +20,7 @@ const ProjectWorkflow = ({ setActiveView }: ProjectWorkflowProps) => {
     name_project: "",
     owner_name: "",
     owner_lastname: "",
-    constants_ids: [] as number[], // si no se usa se mantiene vacio
+    constants_ids: [] as number[], 
     building_type: "",
     main_use_type: "",
     number_levels: 0,
@@ -79,7 +75,6 @@ const ProjectWorkflow = ({ setActiveView }: ProjectWorkflowProps) => {
     } catch (err: any) {
       console.error("Error al registrar el proyecto:", err.response?.data || err.message);
 
-      // manejo del error para evitar 
       const detail = err.response?.data?.detail;
       if (Array.isArray(detail)) {
         const messages = detail.map((item: any) => item.msg).join(", ");
@@ -268,7 +263,6 @@ const ProjectWorkflow = ({ setActiveView }: ProjectWorkflowProps) => {
                 </div>
               </div>
 
-              {/* building_type, main_use_type */}
               <div className="row mb-3">
                 <div className="col-md-6">
                   <label className="form-label">Tipo de edificación</label>
@@ -294,7 +288,6 @@ const ProjectWorkflow = ({ setActiveView }: ProjectWorkflowProps) => {
                 </div>
               </div>
 
-              {/* number_levels, number_homes_per_level, built_surface */}
               <div className="row mb-3">
                 <div className="col-md-4">
                   <label className="form-label">Número de niveles</label>
@@ -372,7 +365,6 @@ const ProjectWorkflow = ({ setActiveView }: ProjectWorkflowProps) => {
                   <button
                     className="btn btn-info w-100"
                     onClick={() => {
-                      // Ejemplo: asignar lat/long fijas de prueba
                       setFormData({
                         ...formData,
                         latitude: -12.0464,
@@ -437,7 +429,7 @@ const ProjectWorkflow = ({ setActiveView }: ProjectWorkflowProps) => {
             </>
           )}
 
-          {/* Paso 4: Detalles Constructivos (ejemplo con pestañas) */}
+          {/* Paso 4: Detalles Constructivos*/}
           {step === 4 && (
             <>
               <h4 className="fw-bold mb-3">Detalles Constructivos</h4>
@@ -683,7 +675,6 @@ const ProjectWorkflow = ({ setActiveView }: ProjectWorkflowProps) => {
         </div>
       </div>
 
-      {/* Estilos extra */}
       <style jsx>{`
         .sidebar {
           background-color: #fff;

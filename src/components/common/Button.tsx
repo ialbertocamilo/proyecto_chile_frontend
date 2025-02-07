@@ -6,7 +6,7 @@ interface ButtonProps {
   type?: 'button' | 'submit' | 'reset';
   className?: string;
   disabled?: boolean;
-  icon?: string;  // Clase de ícono opcional (Bootstrap o FontAwesome)
+  icon?: string;  
 }
 
 const Button: React.FC<ButtonProps> = ({ text, onClick, type = 'button', className = '', disabled = false, icon }) => {

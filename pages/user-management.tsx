@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
+import Swal from "sweetalert2";
 
 type User = {
   id: number;
@@ -21,14 +22,9 @@ const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
+  
+  const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  // Se vuelve a cargar la lista cada vez que cambie la página o la búsqueda
-  useEffect(() => {
-    fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, searchQuery]);
-
-  // Función para obtener los usuarios desde el backend usando paginación y búsqueda
   const fetchUsers = async () => {
     console.log("Fetching users from backend...");
     const token = localStorage.getItem("token");
@@ -36,16 +32,13 @@ const UserManagement = () => {
       console.error("No se encontró un token en localStorage.");
       return;
     }
-
     try {
-      // Construimos los parámetros de consulta
       const params = new URLSearchParams();
       params.append("limit", "5");
       params.append("num_pag", String(currentPage));
       if (searchQuery.trim() !== "") {
         params.append("search", searchQuery);
       }
-
       const response = await fetch(
         `http://deuman-backend.svgdev.tech/users/?${params.toString()}`,
         {
@@ -56,78 +49,74 @@ const UserManagement = () => {
           },
         }
       );
-
       console.log("Response status:", response.status);
       if (!response.ok) {
         throw new Error("Error al obtener los usuarios");
       }
-
       const data = await response.json();
       console.log("Usuarios recibidos:", data);
-
-      // Se asume que la respuesta tiene la forma:
-      // { total_results, total_pages, current_page, per_page, users: [ ... ] }
-      if (Array.isArray(data.users)) {
-        setUsers(data.users);
-      } else {
-        setUsers([]);
-      }
+      setUsers(Array.isArray(data.users) ? data.users : []);
       setTotalPages(data.total_pages || 1);
     } catch (error: any) {
       console.error("❌ Error en fetchUsers:", error.message);
     }
   };
 
-  // Actualiza el estado de búsqueda y reinicia la paginación a la página 1
+  useEffect(() => {
+    fetchUsers();
+  }, [currentPage, searchQuery]);
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     setCurrentPage(1);
   };
 
-  // Elimina un usuario
-  const handleDeleteUser = async (id: number) => {
-    if (!window.confirm("¿Seguro que quieres eliminar este usuario?")) return;
-    console.log(`🗑 Eliminando usuario con ID: ${id}`);
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("❌ No se encontró un token en localStorage.");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `http://deuman-backend.svgdev.tech/user/${id}/delete`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+  const handleDeleteUser = async (id: number, name: string, lastname: string) => {
+    Swal.fire({
+      title: "Confirmar eliminación",
+      text: `¿Estás seguro de eliminar el usuario (ID: ${id}) ${name} ${lastname}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          Swal.fire("Error", "No se encontró token", "error");
+          return;
         }
-      );
-
-      console.log("🔄 Response status:", response.status);
-      if (!response.ok) {
-        throw new Error("Error al eliminar usuario");
+        try {
+          const response = await fetch(
+            `http://deuman-backend.svgdev.tech/user/${id}/delete`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (!response.ok) {
+            throw new Error("Error al eliminar usuario");
+          }
+          Swal.fire("Eliminado", `El usuario (ID: ${id}) ${name} ${lastname} ha sido eliminado.`, "success");
+          fetchUsers();
+        } catch (error: any) {
+          Swal.fire("Error", error.message || "Error al eliminar usuario", "error");
+        }
       }
-
-      console.log(`✅ Usuario con ID: ${id} eliminado correctamente`);
-      // Vuelve a obtener la lista actualizada de usuarios
-      fetchUsers();
-    } catch (error: any) {
-      console.error("❌ Error en handleDeleteUser:", error.message);
-    }
+    });
   };
 
-  // Redirige a la página de edición del usuario
   const handleEditUser = (user: User) => {
     console.log("Editando usuario:", user);
     router.push(`/user-edit?id=${user.id}`);
   };
 
-  // Funciones para avanzar o retroceder en la paginación
   const goToPreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage((prev) => prev - 1);
@@ -142,15 +131,19 @@ const UserManagement = () => {
 
   return (
     <div className="d-flex">
-      <Navbar setActiveView={() => {}} />
-      <div className="d-flex flex-column flex-grow-1">
-        <TopBar />
-        <div className="container mt-4">
-          <h2 className="fw-bold text-primary text-center mb-4">
-            Gestión de Usuarios
+      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <div
+        className="d-flex flex-column flex-grow-1"
+        style={{
+          marginLeft: sidebarWidth, 
+          width: "100%",
+        }}
+      >
+        <TopBar sidebarWidth={sidebarWidth} />
+        <div className="container p-4" style={{ marginTop: "60px" }}>
+          <h2 className="fw-bold mb-4" style={{ color: "#000" }}>
+            Administración de Usuarios
           </h2>
-
-          {/* Buscador */}
           <div className="mb-3">
             <input
               type="text"
@@ -160,17 +153,16 @@ const UserManagement = () => {
               onChange={handleSearch}
             />
           </div>
-
-          <div className="mb-4 text-center">
-            <Button
-              text="Agregar Usuario"
+          <div className="mb-4 text-end">
+            <button
               onClick={() => router.push("/user-create")}
-              className="btn-success"
-            />
+              className="custom-btn"
+            >
+              Agregar Usuario
+            </button>
           </div>
-
           <div className="table-responsive">
-            <table className="table table-bordered">
+            <table className="custom-table">
               <thead>
                 <tr>
                   <th>ID</th>
@@ -195,18 +187,24 @@ const UserManagement = () => {
                       <td>{u.country}</td>
                       <td>{u.ubigeo}</td>
                       <td className="text-center">
-                        <button
-                          className="btn btn-sm btn-outline-secondary me-2"
-                          onClick={() => handleEditUser(u)}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDeleteUser(u.id)}
-                        >
-                          Eliminar
-                        </button>
+                        <div className="action-btn-group">
+                          <button
+                            onClick={() => handleEditUser(u)}
+                            className="custom-btn action-btn"
+                            style={{
+                              backgroundColor: "#3ca7b7",
+                              border: "2px solid #3ca7b7",
+                            }}
+                          >
+                            <i className="bi bi-pencil" style={{ color: "#fff" }}></i>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(u.id, u.name, u.lastname)}
+                            className="custom-btn-delete action-btn"
+                          >
+                            <i className="bi bi-trash" style={{ color: "#fff" }}></i>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -220,11 +218,9 @@ const UserManagement = () => {
               </tbody>
             </table>
           </div>
-
-          {/* Controles de paginación */}
           <div className="d-flex justify-content-center align-items-center mt-4">
             <button
-              className="btn btn-outline-primary me-2"
+              className="custom-btn-outline me-2"
               onClick={goToPreviousPage}
               disabled={currentPage === 1}
             >
@@ -234,7 +230,7 @@ const UserManagement = () => {
               Página {currentPage} de {totalPages}
             </span>
             <button
-              className="btn btn-outline-primary ms-2"
+              className="custom-btn-outline ms-2"
               onClick={goToNextPage}
               disabled={currentPage === totalPages}
             >
@@ -243,6 +239,86 @@ const UserManagement = () => {
           </div>
         </div>
       </div>
+      <style jsx>{`
+        .custom-btn {
+          background-color: #3ca7b7 !important;
+          border: 2px solid #3ca7b7 !important;
+          border-radius: 0.5rem !important;
+          padding: 12px !important;
+          font-size: 1rem !important;
+          transition: background 0.3s ease !important;
+          color: #fff !important;
+          cursor: pointer;
+        }
+        .custom-btn:hover {
+          background-color: #359aa9 !important;
+          border-color: #359aa9 !important;
+        }
+        .custom-btn-outline {
+          background-color: transparent !important;
+          border: 2px solid #3ca7b7 !important;
+          border-radius: 0.5rem !important;
+          padding: 12px !important;
+          font-size: 1rem !important;
+          transition: background 0.3s ease !important;
+          color: #3ca7b7 !important;
+          cursor: pointer;
+        }
+        .custom-btn-outline:hover {
+          background-color: #3ca7b7 !important;
+          color: #fff !important;
+        }
+        .custom-btn-delete {
+          background-color: #dc3545 !important;
+          border: 2px solid #dc3545 !important;
+          border-radius: 0.5rem !important;
+          width: 40px !important;
+          height: 40px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          font-size: 1rem !important;
+          transition: background 0.3s ease !important;
+          color: #fff !important;
+          cursor: pointer;
+        }
+        .custom-btn-delete:hover {
+          background-color: #c82333 !important;
+          border-color: #c82333 !important;
+        }
+        .action-btn-group {
+          display: flex;
+          gap: 0.5rem;
+        }
+        .action-btn {
+          width: 40px !important;
+          height: 40px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+        }
+        .custom-table {
+          width: 100%;
+          border: 1px solid #ddd;
+          border-collapse: separate;
+          border-spacing: 0;
+          background-color: #fff !important;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .custom-table th,
+        .custom-table td {
+          border: none;
+          padding: 8px;
+        }
+        .custom-table th {
+          color: #3ca7b7;
+          font-weight: bold;
+          border-bottom: 1px solid #ddd;
+          background-color: #fff !important;
+        }
+      `}</style>
     </div>
   );
 };

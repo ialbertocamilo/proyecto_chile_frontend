@@ -1,77 +1,83 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
+import Swal from "sweetalert2";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
 
-const ConstantCreate = () => {
+interface ConstantData {
+  atributs: Record<string, unknown>;
+  name: string;
+  type: string;
+}
+
+const ConstantsCreate = () => {
   const router = useRouter();
-
-  const [constantData, setConstantData] = useState({
-    material: "",
-    property: {
-      density: "",
-      conductivity: "",
-      specific_heat: "",
-    },
+  const [constantData, setConstantData] = useState<ConstantData>({
+    atributs: {},
+    name: "string",
+    type: "string",
   });
-
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Manejo de cambios en los inputs
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [sidebarWidth, setSidebarWidth] = useState("300px");
+
+  const handleAtributsChange = (key: string, value: string) => {
     setConstantData({
       ...constantData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  // Manejo de cambios en el objeto `property`
-  const handlePropertyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setConstantData({
-      ...constantData,
-      property: {
-        ...constantData.property,
-        [e.target.name]: e.target.value,
+      atributs: {
+        ...constantData.atributs,
+        [key]: value,
       },
     });
   };
 
-  // Enviar datos al backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("No estás autenticado. Inicia sesión.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await fetch("http://deuman-backend.svgdev.tech/constants/create", {
-        method: "POST",
-        mode: "cors", // 🔥 Solución para CORS
-        credentials: "include", // 🔥 Solución adicional para CORS
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(constantData),
-      });
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No estás autenticado. Por favor, inicia sesión.");
+      }
+
+      const response = await fetch(
+        "http://deuman-backend.svgdev.tech/constants/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(constantData),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || "Error al crear la constante");
+        throw new Error(
+          errorData.detail ||
+            errorData.message ||
+            "Error al crear la constante"
+        );
       }
 
-      alert("✅ Constante creada correctamente");
-      router.push("/constants-management");
-    } catch (err: any) {
-      setError(err.message || "Error desconocido");
+      const data = await response.json();
+      console.log("Constant creada:", data);
+      Swal.fire({
+        title: "¡Constant creada!",
+        text: "La constante se creó correctamente.",
+        icon: "success",
+        confirmButtonText: "Aceptar",
+      });
+    } catch (error: any) {
+      console.error("Error creando constant:", error);
+      Swal.fire({
+        title: "Error",
+        text: error.message || "Error al crear la constante",
+        icon: "error",
+        confirmButtonText: "Aceptar",
+      });
     } finally {
       setLoading(false);
     }
@@ -79,81 +85,133 @@ const ConstantCreate = () => {
 
   return (
     <div className="d-flex">
-      <Navbar setActiveView={() => {}} />
-      <div className="d-flex flex-column flex-grow-1">
-        <TopBar />
-        <div className="container mt-4">
-          <h2 className="fw-bold text-primary text-center mb-4">Crear Nueva Constante</h2>
-
-          <div className="mb-4">
+      
+      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <div
+        className="d-flex flex-column flex-grow-1"
+        style={{
+          marginLeft: sidebarWidth, 
+          width: "100%",
+        }}
+      >
+        
+        <TopBar sidebarWidth={sidebarWidth} />
+        
+        <div className="container p-4" style={{ marginTop: "60px" }}>
+          {/* Boton de Regresar */}
+          <div className="mb-4 text-center">
             <Button
-              text="Volver a Gestión de Constantes"
+              text="← Regresar"
               onClick={() => router.push("/constants-management")}
               className="btn-secondary"
             />
           </div>
-
-          {error && <p className="text-danger fw-bold">{error}</p>}
-          {loading ? <p className="text-primary">Cargando...</p> : (
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label>Material</label>
-                <input
-                  type="text"
-                  name="material"
-                  className="form-control"
-                  value={constantData.material}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <h5>Propiedades del Material</h5>
-              <div className="mb-3">
-                <label>Densidad</label>
-                <input
-                  type="number"
-                  name="density"
-                  className="form-control"
-                  value={constantData.property.density}
-                  onChange={handlePropertyChange}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label>Conductividad</label>
-                <input
-                  type="number"
-                  name="conductivity"
-                  className="form-control"
-                  value={constantData.property.conductivity}
-                  onChange={handlePropertyChange}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label>Calor Específico</label>
-                <input
-                  type="number"
-                  name="specific_heat"
-                  className="form-control"
-                  value={constantData.property.specific_heat}
-                  onChange={handlePropertyChange}
-                  required
-                />
-              </div>
-
-              <div className="text-end">
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                  {loading ? "Creando..." : "Crear Constante"}
-                </button>
-              </div>
-            </form>
-          )}
+          <h2 className="fw-bold text-primary text-center mb-4">
+            Crear Constant
+          </h2>
+          <form onSubmit={handleSubmit}>
+            {/* Campo para 'name' */}
+            <div className="mb-3">
+              <label htmlFor="constantName" className="form-label">
+                Nombre
+              </label>
+              <input
+                type="text"
+                id="constantName"
+                name="name"
+                className="form-control"
+                value={constantData.name}
+                onChange={(e) =>
+                  setConstantData({ ...constantData, name: e.target.value })
+                }
+                required
+              />
+            </div>
+            {/* Campo para 'type' */}
+            <div className="mb-3">
+              <label htmlFor="constantType" className="form-label">
+                Tipo
+              </label>
+              <input
+                type="text"
+                id="constantType"
+                name="type"
+                className="form-control"
+                value={constantData.type}
+                onChange={(e) =>
+                  setConstantData({ ...constantData, type: e.target.value })
+                }
+                required
+              />
+            </div>
+            {/* Mostrar campos adicionales si el type es "details_materials" */}
+            {constantData.type === "details_materials" && (
+              <>
+                <div className="mb-3">
+                  <label htmlFor="conductividad" className="form-label">
+                    Conductividad
+                  </label>
+                  <input
+                    type="text"
+                    id="conductividad"
+                    name="conductividad"
+                    className="form-control"
+                    value={
+                      (constantData.atributs as any).conductividad || ""
+                    }
+                    onChange={(e) =>
+                      handleAtributsChange("conductividad", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="calor_especifico" className="form-label">
+                    Calor específico
+                  </label>
+                  <input
+                    type="text"
+                    id="calor_especifico"
+                    name="calor_especifico"
+                    className="form-control"
+                    value={
+                      (constantData.atributs as any).calor_especifico || ""
+                    }
+                    onChange={(e) =>
+                      handleAtributsChange("calor_especifico", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="densidad" className="form-label">
+                    Densidad
+                  </label>
+                  <input
+                    type="text"
+                    id="densidad"
+                    name="densidad"
+                    className="form-control"
+                    value={(constantData.atributs as any).densidad || ""}
+                    onChange={(e) =>
+                      handleAtributsChange("densidad", e.target.value)
+                    }
+                  />
+                </div>
+              </>
+            )}
+            <div className="text-end">
+              <Button
+                text={loading ? "Creando..." : "Crear Constant"}
+                onClick={() => {}}
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading}
+              />
+            </div>
+          </form>
         </div>
       </div>
     </div>
   );
 };
 
-export default ConstantCreate;
+export default ConstantsCreate;

@@ -6,11 +6,13 @@ interface ProjectListProps {
   setActiveView: (view: string) => void;
 }
 
-// Arrays de opciones para los select
+const modalWidth = "90%";   
+const modalHeight = "auto"; 
+
 const countryOptions = ["Perú", "Chile", "Argentina", "Brasil"];
-const departmentOptions = ["Lima", "Arequipa", "Cusco"]; // Ejemplo para Perú
-const provinceOptions = ["Provincia 1", "Provincia 2", "Provincia 3"]; // Ejemplo
-const districtOptions = ["Distrito 1", "Distrito 2", "Distrito 3"]; // Ejemplo
+const departmentOptions = ["Lima", "Arequipa", "Cusco"]; 
+const provinceOptions = ["Provincia 1", "Provincia 2", "Provincia 3"]; 
+const districtOptions = ["Distrito 1", "Distrito 2", "Distrito 3"]; 
 
 const ProjectList = ({ setActiveView }: ProjectListProps) => {
   const [projects, setProjects] = useState<any[]>([]);
@@ -18,21 +20,16 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-
-  // Estados para la paginación
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const limit = 5; // cantidad de elementos por página
-
-  // Estados para el modal de edición
+  const limit = 5; 
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editProjectData, setEditProjectData] = useState<any>({}); // datos del proyecto en edición
+  const [editProjectData, setEditProjectData] = useState<any>({});
 
   useEffect(() => {
     fetchProjects(currentPage);
   }, [currentPage]);
 
-  // Función para cargar proyectos con paginación
   const fetchProjects = async (page: number) => {
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -45,17 +42,13 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
     try {
       console.log("📡 Obteniendo proyectos, página:", page);
       const response = await axios.get("http://deuman-backend.svgdev.tech/projects", {
-        params: {
-          limit,
-          num_pag: page,
-        },
+        params: { limit, num_pag: page },
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
       console.log("✅ Proyectos recibidos:", response.data);
-      // Se asume que el backend retorna { total_results, total_pages, current_page, per_page, projects: [...] }
       setProjects(response.data.projects);
       setFilteredProjects(response.data.projects);
       setTotalPages(response.data.total_pages);
@@ -72,7 +65,6 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
     }
   };
 
-  // Filtro de búsqueda
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.toLowerCase();
     setSearch(query);
@@ -82,16 +74,14 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
     setFilteredProjects(filtered);
   };
 
-  // Cambiar página
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     setCurrentPage(newPage);
   };
 
-  // Abrir modal de edición y cargar los datos actuales del proyecto
   const handleOpenEditModal = (project: any) => {
     const dataToEdit = {
-      id: project.id, // Aseguramos que el ID se coloque correctamente
+      id: project.id,
       country: project.country || "",
       divisions: {
         district: project.divisions?.district || "",
@@ -115,43 +105,29 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
     setError(null);
   };
 
-  // Manejar cambios en el formulario del modal para campos simples
   const handleEditChange = (field: string, value: any) => {
-    setEditProjectData({
-      ...editProjectData,
-      [field]: value,
-    });
+    setEditProjectData({ ...editProjectData, [field]: value });
   };
 
-  // Para campos anidados en divisions
   const handleEditDivisionChange = (subfield: string, value: any) => {
     setEditProjectData({
       ...editProjectData,
-      divisions: {
-        ...editProjectData.divisions,
-        [subfield]: value,
-      },
+      divisions: { ...editProjectData.divisions, [subfield]: value },
     });
   };
 
-  // Guardar cambios (PUT) usando el nuevo endpoint para la edición
   const handleEditSubmit = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       setError("No estás autenticado. Inicia sesión nuevamente.");
       return;
     }
-
     if (!editProjectData.id) {
       setError("El ID del proyecto no está definido.");
       return;
     }
-
     try {
-      console.log("Actualizando proyecto con id:", editProjectData.id);
       const url = `http://deuman-backend.svgdev.tech/my-projects/${editProjectData.id}/update`;
-      console.log("Endpoint URL:", url);
-
       const updatedData = {
         country: editProjectData.country,
         divisions: editProjectData.divisions,
@@ -167,8 +143,6 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
         longitude: Number(editProjectData.longitude),
       };
 
-      console.log("Payload to update:", updatedData);
-
       await axios.put(url, updatedData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -182,7 +156,6 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
         confirmButtonText: "Aceptar",
       }).then(() => {
         setShowEditModal(false);
-        // Se vuelve a cargar la página actual
         fetchProjects(currentPage);
       });
     } catch (err: any) {
@@ -197,11 +170,10 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
     }
   };
 
-  // Eliminar proyecto
-  const handleDelete = async (projectId: number) => {
+  const handleDelete = async (projectId: number, projectName: string) => {
     const result = await Swal.fire({
       title: "¿Estás seguro de eliminar este proyecto?",
-      text: "Esta acción no se puede deshacer.",
+      text: `ID: ${projectId} - Nombre: ${projectName}\nEsta acción no se puede deshacer.`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
@@ -209,7 +181,6 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
       confirmButtonText: "Sí, eliminar",
       cancelButtonText: "Cancelar",
     });
-
     if (!result.isConfirmed) return;
 
     const token = localStorage.getItem("token");
@@ -243,36 +214,206 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
     }
   };
 
-  // Cerrar modal sin cambios
   const handleCloseModal = () => {
     setShowEditModal(false);
   };
 
+  const getStatusStyle = (status: string | undefined) => {
+    const s = status?.toLowerCase();
+    if (s === "finalizado") {
+      return { backgroundColor: "#ffe8e8", color: "#e45f5f" };
+    }
+    if (s === "registrado") {
+      return { backgroundColor: "#e8ffed", color: "#a9dfb4" };
+    }
+    if (s === "en proceso") {
+      return { backgroundColor: "#fff9e8", color: "#edc68c" };
+    }
+    return {};
+  };
+
   return (
     <div>
+      <style jsx>{`
+        .custom-project-btn {
+          background-color: #3ca7b7;
+          border: 1px solid #3ca7b7;
+          color: #fff;
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+          transition: background-color 0.3s ease;
+        }
+        .custom-project-btn:hover {
+          background-color: #329ca1;
+        }
+        .custom-table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0 12px;
+        }
+        .custom-table th,
+        .custom-table td {
+          padding: 8px;
+          text-align: center;
+          vertical-align: middle;
+          border: none;
+        }
+        .custom-table th {
+          color: #a0a0a0;
+          font-weight: bold;
+          background-color: #fff;
+        }
+        .custom-table tbody tr {
+          background-color: #fff;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          border-radius: 16px;
+          overflow: hidden;
+        }
+        .custom-table tbody tr td:first-child {
+          border-top-left-radius: 16px;
+          border-bottom-left-radius: 16px;
+        }
+        .custom-table tbody tr td:last-child {
+          border-top-right-radius: 16px;
+          border-bottom-right-radius: 16px;
+        }
+        .custom-btn {
+          background-color: #3ca7b7 !important;
+          border: 2px solid #3ca7b7 !important;
+          border-radius: 0.5rem !important;
+          padding: 12px !important;
+          font-size: 1rem !important;
+          transition: background 0.3s ease !important;
+          color: #fff !important;
+          cursor: pointer;
+        }
+        .custom-btn:hover {
+          background-color: #359aa9 !important;
+          border-color: #359aa9 !important;
+        }
+        .custom-btn-delete {
+          background-color: #dc3545 !important;
+          border: 2px solid #dc3545 !important;
+          border-radius: 0.5rem !important;
+          width: 40px !important;
+          height: 40px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          font-size: 1rem !important;
+          transition: background 0.3s ease !important;
+          color: #fff !important;
+          cursor: pointer;
+        }
+        .custom-btn-delete:hover {
+          background-color: #c82333 !important;
+          border-color: #c82333 !important;
+        }
+        .action-btn-group {
+          display: flex;
+          gap: 0.5rem;
+        }
+        .action-btn {
+          width: 40px !important;
+          height: 40px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+        }
+        .status-badge {
+          display: inline-block;
+          font-size: 1.1rem;
+          font-weight: bold;
+          padding: 8px 16px;
+          border-radius: 0.5rem;
+        }
+        .modal-btn-cancel {
+          background-color: #dc3545;
+          border: 2px solid #dc3545;
+          color: #fff;
+          padding: 10px 20px;
+          border-radius: 0.5rem;
+          font-size: 1rem;
+          transition: background-color 0.3s ease;
+          margin-right: 10px;
+        }
+        .modal-btn-cancel:hover {
+          background-color: #c82333;
+          border-color: #c82333;
+        }
+        .modal-btn-save {
+          background-color: #3ca7b7;
+          border: 2px solid #3ca7b7;
+          color: #fff;
+          padding: 10px 20px;
+          border-radius: 0.5rem;
+          font-size: 1rem;
+          transition: background-color 0.3s ease;
+        }
+        .modal-btn-save:hover {
+          background-color: #329ca1;
+          border-color: #329ca1;
+        }
+        /* Estilos para la sección de "Cargando..." */
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          height: 80vh;
+        }
+        .loading-spinner {
+          border: 8px solid #f3f3f3;
+          border-top: 8px solid #3ca7b7;
+          border-radius: 50%;
+          width: 60px;
+          height: 60px;
+          animation: spin 1s linear infinite;
+          margin-bottom: 15px;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+          font-size: 1.5rem;
+          color: #3ca7b7;
+          font-weight: bold;
+        }
+      `}</style>
+
       <h4 className="fw-bold">Listado de proyectos</h4>
       {error && <p className="text-danger fw-bold">{error}</p>}
       {loading ? (
-        <p className="text-primary fw-bold">🔄 Cargando proyectos...</p>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div className="loading-text">Cargando...</div>
+        </div>
       ) : (
         <>
-          {/* Barra de búsqueda */}
-          <div className="mb-3">
+          <div className="input-group mb-3">
             <input
               type="text"
               className="form-control"
-              placeholder="Buscar proyecto..."
+              placeholder="🔍︎"
               value={search}
               onChange={handleSearch}
             />
+            <button
+              className="btn custom-project-btn"
+              onClick={() => setActiveView("projectWorkflow")}
+            >
+              + Proyecto Nuevo
+            </button>
           </div>
-          {/* Tabla de proyectos */}
+
           <div className="table-responsive">
-            <table className="table table-bordered align-middle">
+            <table className="custom-table">
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Estado</th>
+                  <th>Estado del Proyecto</th>
                   <th>Nombre del proyecto</th>
                   <th>Propietario</th>
                   <th>Diseñador</th>
@@ -289,9 +430,8 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                       <td>{project.id || "N/D"}</td>
                       <td>
                         <span
-                          className={`badge bg-${
-                            project.status?.toLowerCase() === "rechazado" ? "danger" : "success"
-                          }`}
+                          className="badge status-badge"
+                          style={getStatusStyle(project.status)}
                         >
                           {project.status || "No disponible"}
                         </span>
@@ -303,18 +443,20 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                       <td>{project.address || "N/D"}</td>
                       <td>{project.divisions?.department || "No disponible"}</td>
                       <td className="text-center">
-                        <button
-                          className="btn btn-sm btn-outline-secondary me-2"
-                          onClick={() => handleOpenEditModal(project)}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDelete(project.id)}
-                        >
-                          Eliminar
-                        </button>
+                        <div className="action-btn-group">
+                          <button
+                            className="custom-btn action-btn me-2"
+                            onClick={() => handleOpenEditModal(project)}
+                          >
+                            <i className="bi bi-pencil" style={{ color: "#fff" }}></i>
+                          </button>
+                          <button
+                            className="custom-btn-delete action-btn"
+                            onClick={() => handleDelete(project.id, project.name_project)}
+                          >
+                            <i className="bi bi-trash" style={{ color: "#fff" }}></i>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -328,7 +470,6 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
               </tbody>
             </table>
           </div>
-          {/* Controles de paginación */}
           <div className="d-flex justify-content-center align-items-center mt-3">
             <button
               className="btn btn-outline-secondary me-2"
@@ -351,27 +492,29 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
         </>
       )}
 
-      {/* Botón para nuevo proyecto */}
-      <button className="btn btn-primary mt-3" onClick={() => setActiveView("projectWorkflow")}>
-        + Proyecto Nuevo
-      </button>
-
-      {/* Modal flotante para editar */}
       {showEditModal && (
         <>
-          {/* Fondo del modal */}
           <div className="modal-backdrop fade show"></div>
-          {/* Modal */}
-          <div className="modal fade show" style={{ display: "block" }} tabIndex={-1} role="dialog">
-            <div className="modal-dialog modal-lg" role="document">
-              <div className="modal-content">
+          <div
+            className="modal fade show"
+            style={{
+              display: "block",
+              marginTop: "40px",
+              marginLeft: "20px",
+              width: modalWidth,
+              height: modalHeight,
+            }}
+            tabIndex={-1}
+            role="dialog"
+          >
+            <div className="modal-dialog modal-lg" role="document" style={{ width: "100%" }}>
+              <div className="modal-content" style={{ height: "100%" }}>
                 <div className="modal-header">
                   <h5 className="modal-title">Editar Proyecto #{editProjectData.id}</h5>
                   <button type="button" className="btn-close" onClick={handleCloseModal}></button>
                 </div>
                 <div className="modal-body">
-                  {/* Select para País y División */}
-                  <div className="row g-2 mb-3">
+                  <div className="row g-3">
                     <div className="col-md-4">
                       <label className="form-label">País</label>
                       <select
@@ -417,8 +560,6 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         ))}
                       </select>
                     </div>
-                  </div>
-                  <div className="row g-2 mb-3">
                     <div className="col-md-4">
                       <label className="form-label">Distrito</label>
                       <select
@@ -434,10 +575,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         ))}
                       </select>
                     </div>
-                  </div>
-                  {/* Resto de los campos */}
-                  <div className="row g-2 mb-3">
-                    <div className="col-md-6">
+                    <div className="col-md-4">
                       <label className="form-label">Nombre del Proyecto</label>
                       <input
                         type="text"
@@ -446,7 +584,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         onChange={(e) => handleEditChange("name_project", e.target.value)}
                       />
                     </div>
-                    <div className="col-md-6">
+                    <div className="col-md-4">
                       <label className="form-label">Propietario</label>
                       <input
                         type="text"
@@ -455,9 +593,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         onChange={(e) => handleEditChange("owner_name", e.target.value)}
                       />
                     </div>
-                  </div>
-                  <div className="row g-2 mb-3">
-                    <div className="col-md-6">
+                    <div className="col-md-4">
                       <label className="form-label">Apellido Propietario</label>
                       <input
                         type="text"
@@ -466,7 +602,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         onChange={(e) => handleEditChange("owner_lastname", e.target.value)}
                       />
                     </div>
-                    <div className="col-md-6">
+                    <div className="col-md-4">
                       <label className="form-label">Tipo de Edificación</label>
                       <input
                         type="text"
@@ -475,8 +611,6 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         onChange={(e) => handleEditChange("building_type", e.target.value)}
                       />
                     </div>
-                  </div>
-                  <div className="row g-2 mb-3">
                     <div className="col-md-4">
                       <label className="form-label">Uso Principal</label>
                       <input
@@ -504,9 +638,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         onChange={(e) => handleEditChange("number_homes_per_level", e.target.value)}
                       />
                     </div>
-                  </div>
-                  <div className="row g-2 mb-3">
-                    <div className="col-md-6">
+                    <div className="col-md-4">
                       <label className="form-label">Superficie (m2)</label>
                       <input
                         type="number"
@@ -515,7 +647,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         onChange={(e) => handleEditChange("built_surface", e.target.value)}
                       />
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-4">
                       <label className="form-label">Latitude</label>
                       <input
                         type="number"
@@ -524,7 +656,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         onChange={(e) => handleEditChange("latitude", e.target.value)}
                       />
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-4">
                       <label className="form-label">Longitude</label>
                       <input
                         type="number"
@@ -536,10 +668,10 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={handleCloseModal}>
+                  <button className="modal-btn-cancel" onClick={handleCloseModal}>
                     Cancelar
                   </button>
-                  <button className="btn btn-primary" onClick={handleEditSubmit}>
+                  <button className="modal-btn-save" onClick={handleEditSubmit}>
                     Guardar Cambios
                   </button>
                 </div>

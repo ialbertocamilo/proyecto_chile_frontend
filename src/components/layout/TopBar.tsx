@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
-const TopBar = () => {
+interface TopBarProps {
+  sidebarWidth: string;
+}
+
+const TopBar = ({ sidebarWidth }: TopBarProps) => {
   const [user, setUser] = useState({ name: "Usuario", email: "" });
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -15,19 +19,20 @@ const TopBar = () => {
       if (storedProfile) {
         try {
           const parsedProfile = JSON.parse(storedProfile);
-          // Se usa el valor real del email; si no existe, se intenta obtener de la clave "email"
-          const emailFromProfile = parsedProfile.email ? parsedProfile.email : localStorage.getItem("email") || "";
-          const nameFromProfile = parsedProfile.name ? parsedProfile.name : localStorage.getItem("user_name") || "Usuario";
+          const emailFromProfile = parsedProfile.email
+            ? parsedProfile.email
+            : localStorage.getItem("email") || "";
+          const nameFromProfile = parsedProfile.name
+            ? parsedProfile.name
+            : localStorage.getItem("user_name") || "Usuario";
           setUser({ name: nameFromProfile, email: emailFromProfile });
         } catch (err) {
           console.error("Error al parsear el perfil desde localStorage:", err);
-          // Si falla el parseo, se recurre a obtener los valores individuales sin valor de ejemplo para email
           const storedName = localStorage.getItem("user_name") || "Usuario";
           const storedEmail = localStorage.getItem("email") || "";
           setUser({ name: storedName, email: storedEmail });
         }
       } else {
-        // Si no existe el objeto completo, se obtienen las claves individuales
         const storedName = localStorage.getItem("user_name") || "Usuario";
         const storedEmail = localStorage.getItem("email") || "";
         setUser({ name: storedName, email: storedEmail });
@@ -41,68 +46,81 @@ const TopBar = () => {
   };
 
   if (!isMounted) {
-    return null; // Evita renderizar hasta que el componente esté listo
+    return null; 
   }
 
   return (
-    <nav className="navbar navbar-light bg-light shadow-sm px-4">
-      <div className="container-fluid d-flex justify-content-between align-items-center">
-        <div className="d-flex align-items-center">
-          <button className="btn btn-outline-secondary me-3">
-            <i className="bi bi-list"></i>
+    <nav
+      className="navbar navbar-light bg-light shadow-sm px-4"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: sidebarWidth, 
+        right: 0,
+        zIndex: 1100,
+      }}
+    >
+      <div className="container-fluid d-flex justify-content-end align-items-center">
+        <div className="dropdown">
+          <button
+            className="btn d-flex align-items-center"
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            {/* Icono de perfil*/}
+            <img
+              src="/assets/images/user_icon.png"
+              alt="User"
+              className="rounded-circle"
+              style={{ width: "40px", height: "40px", marginRight: "8px" }}
+            />
+            {/* Información del usuario */}
+            <div className="d-flex flex-column align-items-start">
+              <span
+                className="fw-bold"
+                style={{ fontSize: "14px", color: "#3ca7b7" }}
+              >
+                {user.email}
+              </span>
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#6c757d",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {user.name}{" "}
+                <i
+                  className="bi bi-caret-down-fill ms-1"
+                  style={{ fontSize: "10px" }}
+                ></i>
+              </span>
+            </div>
           </button>
-          <input
-            type="text"
-            className="form-control me-2"
-            placeholder="Buscar..."
-            style={{ width: "250px" }}
-          />
-        </div>
-
-        <div className="d-flex align-items-center">
-          <button className="btn btn-outline-secondary me-2">
-            <i className="bi bi-gear"></i>
-          </button>
-          <button className="btn btn-outline-secondary me-2">
-            <i className="bi bi-bell"></i>
-          </button>
-          <button className="btn btn-outline-secondary me-2">
-            <i className="bi bi-envelope"></i>
-          </button>
-
-          <div className="dropdown">
-            <button className="btn d-flex align-items-center" onClick={() => setMenuOpen(!menuOpen)}>
-              <div className="text-end me-2">
-                <span className="d-block fw-bold text-primary" style={{ fontSize: "14px" }}>
-                  {user.email}
-                </span>
-                <span className="text-muted" style={{ fontSize: "12px" }}>
-                  {user.name}
-                </span>
-              </div>
-              <img
-                src="/assets/images/user_icon.png"
-                alt="User"
-                className="rounded-circle"
-                style={{ width: "40px", height: "40px" }}
-              />
-            </button>
-
-            {menuOpen && (
-              <div className="dropdown-menu dropdown-menu-end show mt-2 shadow-sm" style={{ right: 0 }}>
-                <a className="dropdown-item" href="/edit-profile">
-                  <i className="bi bi-person me-2"></i> Perfil
-                </a>
-                <a className="dropdown-item" href="/settings">
-                  <i className="bi bi-gear me-2"></i> Configuración
-                </a>
-                <div className="dropdown-divider"></div>
-                <button className="dropdown-item text-danger" onClick={handleLogout}>
-                  <i className="bi bi-box-arrow-right me-2"></i> Cerrar sesión
-                </button>
-              </div>
-            )}
-          </div>
+          {menuOpen && (
+            <div
+              className="dropdown-menu dropdown-menu-end show mt-2 shadow-sm"
+              style={{ right: 0 }}
+            >
+              <a className="dropdown-item" href="/edit-profile">
+                <i className="bi bi-person me-2"></i> Perfil
+              </a>
+              <a className="dropdown-item" href="/settings">
+                <i className="bi bi-gear me-2"></i> Configuración
+              </a>
+              <div className="dropdown-divider"></div>
+              <button className="dropdown-item text-danger" onClick={handleLogout}>
+                <i className="bi bi-box-arrow-right me-2"></i> Cerrar sesión
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

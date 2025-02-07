@@ -1,5 +1,4 @@
 import React from 'react';
-//(Etiqueta de estado)
 interface BadgeProps {
   text: string;
   type?: 'success' | 'danger' | 'warning' | 'info';

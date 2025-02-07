@@ -25,6 +25,8 @@ const UserEdit = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [sidebarWidth, setSidebarWidth] = useState("300px");
+
   useEffect(() => {
     if (!router.isReady) return;
     if (id) {
@@ -42,7 +44,6 @@ const UserEdit = () => {
         throw new Error("No estás autenticado. Inicia sesión.");
       }
 
-      // todos los usuarios usando un límite amplio
       const response = await fetch(
         `http://deuman-backend.svgdev.tech/users/?limit=1000&num_pag=1`,
         {
@@ -71,14 +72,12 @@ const UserEdit = () => {
           ? data
           : [];
 
-      // Buscamos el usuario cuyo id coincida 
       const foundUser = usersArray.find((u) => u.id.toString() === id);
       if (!foundUser) {
         throw new Error("No se encontró información del usuario.");
       }
       setUser(foundUser);
 
-      // Inicializamos los campos editables
       setRoleId(foundUser.role_id || 0);
       setActive(foundUser.active ?? true);
       setIsDeleted(foundUser.is_deleted ?? false);
@@ -109,7 +108,6 @@ const UserEdit = () => {
 
       console.log("Payload to update:", payload);
 
-      //  PUT al endpoint de actualización utilizando el id del usuario
       const response = await fetch(`http://deuman-backend.svgdev.tech/user/${id}/update`, {
         method: "PUT",
         headers: {
@@ -154,18 +152,49 @@ const UserEdit = () => {
 
   return (
     <div className="d-flex">
-      <Navbar setActiveView={() => {}} />
-      <div className="d-flex flex-column flex-grow-1">
-        <TopBar />
-        <div className="container mt-4">
-          <h2 className="fw-bold text-primary text-center mb-4">Editar Usuario</h2>
-
+      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <div
+        className="d-flex flex-column flex-grow-1"
+        style={{
+          marginLeft: sidebarWidth,
+          width: "100%",
+        }}
+      >
+        <TopBar sidebarWidth={sidebarWidth} />
+        <div className="container p-4" style={{ marginTop: "60px" }}>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="fw-bold" style={{ color: "#6dbdc9", margin: 0 }}>
+              Editar Usuario
+            </h2>
+            <div className="d-flex" style={{ gap: "1rem" }}>
+              <Button
+                text="← Cancelar"
+                onClick={() => router.push("/user-management")}
+                className="btn-secondary"
+              />
+              <button
+                type="submit"
+                form="userEditForm"
+                className="btn"
+                disabled={loading}
+                style={{
+                  backgroundColor: "#3ca7b7",
+                  border: "none",
+                  borderRadius: "0.5rem",
+                  padding: "12px",
+                  fontSize: "1rem",
+                  transition: "background 0.3s ease",
+                  color: "#fff",
+                }}
+              >
+                {loading ? "Actualizando..." : "Actualizar Usuario"}
+              </button>
+            </div>
+          </div>
           {loading && <p>Cargando...</p>}
           {error && <p className="text-danger">{error}</p>}
-
           {user ? (
-            <form onSubmit={handleSubmit}>
-              {/* Mostrar nombre y email en modo solo lectura */}
+            <form id="userEditForm" onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label>Nombre</label>
                 <input type="text" className="form-control" value={user.name} readOnly />
@@ -174,8 +203,6 @@ const UserEdit = () => {
                 <label>Email</label>
                 <input type="email" className="form-control" value={user.email} readOnly />
               </div>
-
-              {/* Campo editable: Role ID */}
               <div className="mb-3">
                 <label>Role ID (solo se permite 1 o 2)</label>
                 <input
@@ -192,9 +219,7 @@ const UserEdit = () => {
                   max={2}
                   min={1}
                 />
-                <small className="text-muted">
-                  Solo se permiten los valores 1 y 2.
-                </small>
+                <small className="text-muted">Solo se permiten los valores 1 y 2.</small>
               </div>
               <div className="mb-3 form-check">
                 <input
@@ -219,17 +244,6 @@ const UserEdit = () => {
                 <label className="form-check-label" htmlFor="deletedCheck">
                   Eliminado
                 </label>
-              </div>
-
-              <div className="d-flex justify-content-between">
-                <Button
-                  text="Cancelar"
-                  onClick={() => router.push("/user-management")}
-                  className="btn-secondary"
-                />
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                  {loading ? "Actualizando..." : "Actualizar Usuario"}
-                </button>
               </div>
             </form>
           ) : (

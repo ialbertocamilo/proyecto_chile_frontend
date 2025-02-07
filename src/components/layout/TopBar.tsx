@@ -40,14 +40,15 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
     }
   }, []);
 
+  // Evitamos renderizar hasta que el componente esté montado
+  if (!isMounted) {
+    return null;
+  }
+
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
   };
-
-  if (!isMounted) {
-    return null; 
-  }
 
   return (
     <nav
@@ -55,7 +56,7 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
       style={{
         position: "fixed",
         top: 0,
-        left: sidebarWidth, 
+        left: sidebarWidth,
         right: 0,
         zIndex: 1100,
       }}
@@ -73,7 +74,7 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               alignItems: "center",
             }}
           >
-            {/* Icono de perfil*/}
+            {/* Icono de perfil */}
             <img
               src="/assets/images/user_icon.png"
               alt="User"
@@ -116,7 +117,10 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
                 <i className="bi bi-gear me-2"></i> Configuración
               </a>
               <div className="dropdown-divider"></div>
-              <button className="dropdown-item text-danger" onClick={handleLogout}>
+              <button
+                className="dropdown-item text-danger"
+                onClick={handleLogout}
+              >
                 <i className="bi bi-box-arrow-right me-2"></i> Cerrar sesión
               </button>
             </div>

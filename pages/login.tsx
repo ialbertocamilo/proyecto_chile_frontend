@@ -1,7 +1,7 @@
 import "../public/assets/css/globals.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -21,17 +21,17 @@ const Login = () => {
 
     const requestBody = { email, password };
 
-    console.log("📤 Enviando datos al backend:", requestBody);
+    console.log("Enviando datos al backend:", requestBody);
 
     try {
-      const response = await fetch("http://deuman-backend.svgdev.tech/login", {
+      const response = await fetch(`${constantUrlApiEndpoint}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
-      console.log("✅ Respuesta del backend:", data);
+      console.log("Respuesta del backend:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "Credenciales incorrectas.");

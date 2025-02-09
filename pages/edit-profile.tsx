@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
-
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 interface ProfileData {
   name: string;
   lastname: string;
@@ -80,7 +80,7 @@ const EditProfile = () => {
       const payload = { ...profile };
       console.log("Enviando actualización del perfil:", payload);
 
-      const response = await fetch("http://deuman-backend.svgdev.tech/user/me/update", {
+      const response = await fetch(`${constantUrlApiEndpoint}/user/me/update`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

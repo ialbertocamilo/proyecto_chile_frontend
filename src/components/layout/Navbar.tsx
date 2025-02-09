@@ -60,7 +60,7 @@ const Navbar = ({ setActiveView, setSidebarWidth }: NavbarProps) => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <img
           src="/assets/images/proyecto-deuman-logo.png"
-          alt="Proyecto DEUMAN"
+          alt="Proyecto Ceela"
           className="logo"
           style={{ width: "50px", borderRadius: "50%", cursor: "pointer" }}
           onClick={() => handleClickAndExpand(null, "dashboard")}

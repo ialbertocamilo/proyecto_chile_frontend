@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { constantUrlApiEndpoint } from "../../utils/constant-url-endpoint";
 
 interface ProjectListProps {
   setActiveView: (view: string) => void;
@@ -8,7 +9,6 @@ interface ProjectListProps {
 
 const modalWidth = "90%";   
 const modalHeight = "auto"; 
-
 const countryOptions = ["Perú", "Chile", "Argentina", "Brasil"];
 const departmentOptions = ["Lima", "Arequipa", "Cusco"]; 
 const provinceOptions = ["Provincia 1", "Provincia 2", "Provincia 3"]; 
@@ -34,21 +34,21 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
     setLoading(true);
     const token = localStorage.getItem("token");
     if (!token) {
-      console.error("🔴 No se encontró un token en localStorage.");
+      console.error("No se encontró un token en localStorage.");
       setError("No estás autenticado. Inicia sesión nuevamente.");
       setLoading(false);
       return;
     }
     try {
       console.log("📡 Obteniendo proyectos, página:", page);
-      const response = await axios.get("http://deuman-backend.svgdev.tech/projects", {
+      const response = await axios.get(`${constantUrlApiEndpoint}/projects`, {
         params: { limit, num_pag: page },
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-      console.log("✅ Proyectos recibidos:", response.data);
+      console.log("Proyectos recibidos:", response.data);
       setProjects(response.data.projects);
       setFilteredProjects(response.data.projects);
       setTotalPages(response.data.total_pages);
@@ -127,7 +127,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
       return;
     }
     try {
-      const url = `http://deuman-backend.svgdev.tech/my-projects/${editProjectData.id}/update`;
+      const url = `${constantUrlApiEndpoint}/my-projects/${editProjectData.id}/update`;
       const updatedData = {
         country: editProjectData.country,
         divisions: editProjectData.divisions,
@@ -189,7 +189,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
       return;
     }
     try {
-      const url = `http://deuman-backend.svgdev.tech/project/${projectId}/delete`;
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/delete`;
       await axios.delete(url, {
         headers: {
           Authorization: `Bearer ${token}`,

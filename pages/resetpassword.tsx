@@ -1,6 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 const ResetPassword = () => {
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ const ResetPassword = () => {
     }
 
     try {
-      const response = await fetch("http://deuman-backend.svgdev.tech/reset-password", {
+      const response = await fetch(`${constantUrlApiEndpoint}/password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

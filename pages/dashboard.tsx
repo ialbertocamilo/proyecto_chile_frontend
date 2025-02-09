@@ -9,7 +9,7 @@ import ProjectWorkflow from "../src/components/forms/ProjectWorkflow";
 const Dashboard = () => {
   const [activeView, setActiveView] = useState<string>("projects");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [sidebarWidth, setSidebarWidth] = useState("300px"); // Valor por defecto (expandido)
+  const [sidebarWidth, setSidebarWidth] = useState("300px"); 
   const router = useRouter();
 
   useEffect(() => {
@@ -24,10 +24,10 @@ const Dashboard = () => {
       console.log("🔍 Token:", token);
 
       if (storedAuth === "true" && token) {
-        console.log("✅ Usuario autenticado. Mostrando Dashboard.");
+        console.log("Usuario autenticado. Mostrando Dashboard.");
         setIsAuthenticated(true);
       } else {
-        console.log("❌ No autenticado. Redirigiendo a /login...");
+        console.log("No autenticado. Redirigiendo a /login...");
         setIsAuthenticated(false);
         router.replace("/login");
       }

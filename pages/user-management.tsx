@@ -4,6 +4,7 @@ import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
 import Swal from "sweetalert2";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 type User = {
   id: number;
@@ -40,7 +41,7 @@ const UserManagement = () => {
         params.append("search", searchQuery);
       }
       const response = await fetch(
-        `http://deuman-backend.svgdev.tech/users/?${params.toString()}`,
+        `${constantUrlApiEndpoint}/users/?${params.toString()}`,
         {
           method: "GET",
           headers: {
@@ -91,7 +92,7 @@ const UserManagement = () => {
         }
         try {
           const response = await fetch(
-            `http://deuman-backend.svgdev.tech/user/${id}/delete`,
+            `${constantUrlApiEndpoint}/user/${id}/delete`,
             {
               method: "DELETE",
               headers: {

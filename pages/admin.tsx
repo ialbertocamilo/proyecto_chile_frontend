@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 const AdminDashboard = () => {
     const router = useRouter();
     const [userData, setUserData] = useState<any>(null);
@@ -22,7 +22,7 @@ const AdminDashboard = () => {
 
     const fetchUserData = async () => {
         try {
-            const response = await axios.get('http://deuman-backend.svgdev.tech/admin/user-data', {
+            const response = await axios.get(`${constantUrlApiEndpoint}/admin/user-data`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 }

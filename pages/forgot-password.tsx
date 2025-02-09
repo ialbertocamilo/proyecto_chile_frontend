@@ -1,7 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState } from "react";
 import { useRouter } from "next/router";
-
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -11,7 +11,7 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://deuman-backend.svgdev.tech/forgot-password", {
+      const response = await fetch(`${constantUrlApiEndpoint}/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
-
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 type Constant = {
   id: number;
   name: string;
@@ -43,7 +43,7 @@ const ConstantsManagement = () => {
       }
 
       const response = await fetch(
-        `http://deuman-backend.svgdev.tech/constants/?${params.toString()}`,
+        `${constantUrlApiEndpoint}/constants/?${params.toString()}`,
         {
           method: "GET",
           headers: {
@@ -62,7 +62,7 @@ const ConstantsManagement = () => {
       setConstants(data.constants || []);
       setTotalPages(data.total_pages || 1);
     } catch (error: any) {
-      console.error("❌ Error en fetchConstants:", error.message);
+      console.error("Error en fetchConstants:", error.message);
     }
   };
 
@@ -95,7 +95,7 @@ const ConstantsManagement = () => {
     }
     try {
       const response = await fetch(
-        `http://deuman-backend.svgdev.tech/constant/${id}/delete`,
+        `${constantUrlApiEndpoint}/constant/${id}/delete`,
         {
           method: "DELETE",
           headers: {

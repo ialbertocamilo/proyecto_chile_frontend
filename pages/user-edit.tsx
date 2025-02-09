@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
-
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 type User = {
   id: number;
   name: string;
@@ -21,7 +21,6 @@ const UserEdit = () => {
   const [user, setUser] = useState<User | null>(null);
   const [roleId, setRoleId] = useState<number>(0);
   const [active, setActive] = useState<boolean>(true);
-  const [isDeleted, setIsDeleted] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,7 +44,7 @@ const UserEdit = () => {
       }
 
       const response = await fetch(
-        `http://deuman-backend.svgdev.tech/users/?limit=1000&num_pag=1`,
+        `${constantUrlApiEndpoint}/users/?limit=1000&num_pag=1`,
         {
           method: "GET",
           headers: {
@@ -80,7 +79,7 @@ const UserEdit = () => {
 
       setRoleId(foundUser.role_id || 0);
       setActive(foundUser.active ?? true);
-      setIsDeleted(foundUser.is_deleted ?? false);
+      // Se elimina isDeleted
     } catch (err: any) {
       console.error("Fetch user error:", err);
       setError(err.message || "Error desconocido");
@@ -103,12 +102,12 @@ const UserEdit = () => {
       const payload = {
         role_id: roleId,
         active: active,
-        is_deleted: isDeleted,
+        // Se elimina is_deleted del payload
       };
 
       console.log("Payload to update:", payload);
 
-      const response = await fetch(`http://deuman-backend.svgdev.tech/user/${id}/update`, {
+      const response = await fetch(`${constantUrlApiEndpoint}/user/${id}/update`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -150,6 +149,49 @@ const UserEdit = () => {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!user) return;
+    Swal.fire({
+      title: "Confirmar eliminación",
+      text: `¿Estás seguro de eliminar el usuario ${user.name}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          Swal.fire("Error", "No se encontró token", "error");
+          return;
+        }
+        try {
+          const response = await fetch(
+            `${constantUrlApiEndpoint}/user/${user.id}/delete`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (!response.ok) {
+            throw new Error("Error al eliminar usuario");
+          }
+          Swal.fire("Eliminado", `El usuario ${user.name} ha sido eliminado.`, "success")
+            .then(() => {
+              router.push("/user-management");
+            });
+        } catch (error: any) {
+          Swal.fire("Error", error.message || "Error al eliminar usuario", "error");
+        }
+      }
+    });
+  };
+
   return (
     <div className="d-flex">
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
@@ -168,10 +210,27 @@ const UserEdit = () => {
             </h2>
             <div className="d-flex" style={{ gap: "1rem" }}>
               <Button
-                text="← Cancelar"
+                text="Regresar"
                 onClick={() => router.push("/user-management")}
                 className="btn-secondary"
               />
+              <button
+                type="button"
+                onClick={handleDeleteUser}
+                className="btn"
+                disabled={loading}
+                style={{
+                  backgroundColor: "#dc3545",
+                  border: "none",
+                  borderRadius: "0.5rem",
+                  padding: "12px",
+                  fontSize: "1rem",
+                  transition: "background 0.3s ease",
+                  color: "#fff",
+                }}
+              >
+                Eliminar
+              </button>
               <button
                 type="submit"
                 form="userEditForm"
@@ -204,22 +263,19 @@ const UserEdit = () => {
                 <input type="email" className="form-control" value={user.email} readOnly />
               </div>
               <div className="mb-3">
-                <label>Role ID (solo se permite 1 o 2)</label>
-                <input
-                  type="number"
+                <label>Role ID</label>
+                <select
                   className="form-control"
                   value={roleId}
-                  onChange={(e) => {
-                    let value = Number(e.target.value);
-                    if (value > 2) value = 2;
-                    if (value < 1) value = 1;
-                    setRoleId(value);
-                  }}
+                  onChange={(e) => setRoleId(Number(e.target.value))}
                   required
-                  max={2}
-                  min={1}
-                />
-                <small className="text-muted">Solo se permiten los valores 1 y 2.</small>
+                >
+                  <option value={1}>Administrador</option>
+                  <option value={2}>Usuario</option>
+                </select>
+                <small className="text-muted">
+                  Selecciona "Administrador" o "Usuario".
+                </small>
               </div>
               <div className="mb-3 form-check">
                 <input
@@ -231,18 +287,6 @@ const UserEdit = () => {
                 />
                 <label className="form-check-label" htmlFor="activeCheck">
                   Activo
-                </label>
-              </div>
-              <div className="mb-3 form-check">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="deletedCheck"
-                  checked={isDeleted}
-                  onChange={(e) => setIsDeleted(e.target.checked)}
-                />
-                <label className="form-check-label" htmlFor="deletedCheck">
-                  Eliminado
                 </label>
               </div>
             </form>

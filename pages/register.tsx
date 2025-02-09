@@ -1,4 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useState } from "react";
 import { useRouter } from "next/router";
 
@@ -59,10 +60,10 @@ const Register = () => {
       confirm_password: formData.confirm_password,
     };
 
-    console.log("📤 Enviando datos al backend:", requestBody);
+    console.log("Enviando datos al backend:", requestBody);
 
     try {
-      const response = await fetch("http://deuman-backend.svgdev.tech/register", {
+      const response = await fetch(`${constantUrlApiEndpoint}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),

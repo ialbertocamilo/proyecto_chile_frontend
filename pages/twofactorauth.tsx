@@ -1,7 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 const TwoFactorAuth = () => {
   const [otp, setOtp] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ const TwoFactorAuth = () => {
     console.log("Enviando código al backend:", JSON.stringify(requestBody, null, 2));
 
     try {
-      const response = await fetch("http://deuman-backend.svgdev.tech/2fa-verify", {
+      const response = await fetch(`${constantUrlApiEndpoint}/2fa-verify`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

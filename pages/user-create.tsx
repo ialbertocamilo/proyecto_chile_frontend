@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 interface UserFormData {
   name: string;
@@ -91,13 +92,11 @@ const UserCreate = () => {
       if (!token) {
         throw new Error("No estás autenticado. Inicia sesión nuevamente.");
       }
-
-      const url = "http://deuman-backend.svgdev.tech/register";
       const bodyToSend = { ...userData };
 
       console.log("Enviando datos al backend:", bodyToSend);
 
-      const resp = await fetch(url, {
+      const resp = await fetch(`${constantUrlApiEndpoint}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

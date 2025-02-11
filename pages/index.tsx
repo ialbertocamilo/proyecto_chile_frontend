@@ -1,4 +1,3 @@
-// pages/index.tsx
 import { GetServerSideProps } from "next";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -11,6 +10,5 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 export default function Home() {
-  // Esta página nunca se renderiza, ya que el usuario será redirigido.
   return null;
 }

@@ -2,17 +2,18 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { constantUrlApiEndpoint } from "../../utils/constant-url-endpoint";
+import "../../public/assets/css/globals.css";
+
+const modalWidth = "90%";
+const modalHeight = "auto";
+const countryOptions = ["Perú", "Chile", "Argentina", "Brasil"];
+const departmentOptions = ["Lima", "Arequipa", "Cusco"];
+const provinceOptions = ["Provincia 1", "Provincia 2", "Provincia 3"];
+const districtOptions = ["Distrito 1", "Distrito 2", "Distrito 3"];
 
 interface ProjectListProps {
   setActiveView: (view: string) => void;
 }
-
-const modalWidth = "90%";   
-const modalHeight = "auto"; 
-const countryOptions = ["Perú", "Chile", "Argentina", "Brasil"];
-const departmentOptions = ["Lima", "Arequipa", "Cusco"]; 
-const provinceOptions = ["Provincia 1", "Provincia 2", "Provincia 3"]; 
-const districtOptions = ["Distrito 1", "Distrito 2", "Distrito 3"]; 
 
 const ProjectList = ({ setActiveView }: ProjectListProps) => {
   const [projects, setProjects] = useState<any[]>([]);
@@ -22,7 +23,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const limit = 5; 
+  const limit = 5;
   const [showEditModal, setShowEditModal] = useState(false);
   const [editProjectData, setEditProjectData] = useState<any>({});
 
@@ -99,7 +100,6 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
       latitude: project.latitude || 0,
       longitude: project.longitude || 0,
     };
-
     setEditProjectData(dataToEdit);
     setShowEditModal(true);
     setError(null);
@@ -233,7 +233,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
   };
 
   return (
-    <div>
+    <div style={{ fontFamily: "var(--font-family-base)" }}>
       <style jsx>{`
         .custom-project-btn {
           background-color: #3ca7b7;
@@ -278,18 +278,19 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
           border-bottom-right-radius: 16px;
         }
         .custom-btn {
-          background-color: #3ca7b7 !important;
-          border: 2px solid #3ca7b7 !important;
+          background-color: var(--primary-color) !important;
+          border: 2px solid var(--primary-color) !important;
           border-radius: 0.5rem !important;
           padding: 12px !important;
           font-size: 1rem !important;
           transition: background 0.3s ease !important;
           color: #fff !important;
           cursor: pointer;
+          font-family: var(--font-family-base) !important;
         }
         .custom-btn:hover {
-          background-color: #359aa9 !important;
-          border-color: #359aa9 !important;
+          background-color: var(--secondary-color) !important;
+          border-color: var(--secondary-color) !important;
         }
         .custom-btn-delete {
           background-color: #dc3545 !important;
@@ -304,6 +305,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
           transition: background 0.3s ease !important;
           color: #fff !important;
           cursor: pointer;
+          font-family: var(--font-family-base) !important;
         }
         .custom-btn-delete:hover {
           background-color: #c82333 !important;
@@ -327,6 +329,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
           font-weight: bold;
           padding: 8px 16px;
           border-radius: 0.5rem;
+          font-family: var(--font-family-base);
         }
         .modal-btn-cancel {
           background-color: #dc3545;
@@ -337,6 +340,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
           font-size: 1rem;
           transition: background-color 0.3s ease;
           margin-right: 10px;
+          font-family: var(--font-family-base);
         }
         .modal-btn-cancel:hover {
           background-color: #c82333;
@@ -350,22 +354,23 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
           border-radius: 0.5rem;
           font-size: 1rem;
           transition: background-color 0.3s ease;
+          font-family: var(--font-family-base);
         }
         .modal-btn-save:hover {
           background-color: #329ca1;
           border-color: #329ca1;
         }
-        /* Estilos para la sección de "Cargando..." */
         .loading-container {
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
           height: 80vh;
+          font-family: var(--font-family-base);
         }
         .loading-spinner {
           border: 8px solid #f3f3f3;
-          border-top: 8px solid #3ca7b7;
+          border-top: 8px solid var(--primary-color);
           border-radius: 50%;
           width: 60px;
           height: 60px;
@@ -378,13 +383,14 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
         }
         .loading-text {
           font-size: 1.5rem;
-          color: #3ca7b7;
+          color: var(--primary-color);
           font-weight: bold;
+          font-family: var(--font-family-base);
         }
       `}</style>
 
-      <h4 className="fw-bold">Listado de proyectos</h4>
-      {error && <p className="text-danger fw-bold">{error}</p>}
+      <h4 className="fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>Listado de proyectos</h4>
+      {error && <p className="text-danger fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>{error}</p>}
       {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
@@ -399,17 +405,25 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
               placeholder="🔍︎"
               value={search}
               onChange={handleSearch}
+              style={{
+                fontFamily: "var(--font-family-base)",
+                fontSize: "var(--font-size-base)",
+              }}
             />
             <button
               className="btn custom-project-btn"
               onClick={() => setActiveView("projectWorkflow")}
+              style={{
+                fontFamily: "var(--font-family-base)",
+                fontSize: "var(--font-size-base)",
+              }}
             >
               + Proyecto Nuevo
             </button>
           </div>
 
           <div className="table-responsive">
-            <table className="custom-table">
+            <table className="custom-table" style={{ fontFamily: "var(--font-family-base)" }}>
               <thead>
                 <tr>
                   <th>ID</th>
@@ -447,12 +461,20 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                           <button
                             className="custom-btn action-btn me-2"
                             onClick={() => handleOpenEditModal(project)}
+                            style={{
+                              backgroundColor: "var(--primary-color)",
+                              border: `2px solid var(--primary-color)`,
+                              fontFamily: "var(--font-family-base)",
+                            }}
                           >
                             <i className="bi bi-pencil" style={{ color: "#fff" }}></i>
                           </button>
                           <button
                             className="custom-btn-delete action-btn"
-                            onClick={() => handleDelete(project.id, project.name_project)}
+                            onClick={() =>
+                              handleDelete(project.id, project.name_project)
+                            }
+                            style={{ fontFamily: "var(--font-family-base)" }}
                           >
                             <i className="bi bi-trash" style={{ color: "#fff" }}></i>
                           </button>
@@ -470,21 +492,37 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
               </tbody>
             </table>
           </div>
-          <div className="d-flex justify-content-center align-items-center mt-3">
+          <div
+            className="d-flex justify-content-center align-items-center mt-3"
+            style={{ fontFamily: "var(--font-family-base)" }}
+          >
             <button
               className="btn btn-outline-secondary me-2"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
+              style={{
+                fontFamily: "var(--font-family-base)",
+                fontSize: "var(--font-size-base)",
+              }}
             >
               Anterior
             </button>
-            <span>
+            <span
+              style={{
+                fontFamily: "var(--font-family-base)",
+                fontSize: "var(--font-size-base)",
+              }}
+            >
               Página {currentPage} de {totalPages}
             </span>
             <button
               className="btn btn-outline-secondary ms-2"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
+              style={{
+                fontFamily: "var(--font-family-base)",
+                fontSize: "var(--font-size-base)",
+              }}
             >
               Siguiente
             </button>
@@ -503,24 +541,26 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
               marginLeft: "20px",
               width: modalWidth,
               height: modalHeight,
+              fontFamily: "var(--font-family-base)",
             }}
             tabIndex={-1}
             role="dialog"
           >
             <div className="modal-dialog modal-lg" role="document" style={{ width: "100%" }}>
-              <div className="modal-content" style={{ height: "100%" }}>
+              <div className="modal-content" style={{ height: "100%", fontFamily: "var(--font-family-base)" }}>
                 <div className="modal-header">
                   <h5 className="modal-title">Editar Proyecto #{editProjectData.id}</h5>
                   <button type="button" className="btn-close" onClick={handleCloseModal}></button>
                 </div>
                 <div className="modal-body">
-                  <div className="row g-3">
+                  <div className="row g-3" style={{ fontFamily: "var(--font-family-base)" }}>
                     <div className="col-md-4">
                       <label className="form-label">País</label>
                       <select
                         className="form-select"
                         value={editProjectData.country}
                         onChange={(e) => handleEditChange("country", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       >
                         <option value="">Seleccione un país</option>
                         {countryOptions.map((country) => (
@@ -536,6 +576,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-select"
                         value={editProjectData.divisions?.department}
                         onChange={(e) => handleEditDivisionChange("department", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       >
                         <option value="">Seleccione un departamento</option>
                         {departmentOptions.map((dep) => (
@@ -551,6 +592,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-select"
                         value={editProjectData.divisions?.province}
                         onChange={(e) => handleEditDivisionChange("province", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       >
                         <option value="">Seleccione una provincia</option>
                         {provinceOptions.map((prov) => (
@@ -566,6 +608,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-select"
                         value={editProjectData.divisions?.district}
                         onChange={(e) => handleEditDivisionChange("district", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       >
                         <option value="">Seleccione un distrito</option>
                         {districtOptions.map((dist) => (
@@ -582,6 +625,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-control"
                         value={editProjectData.name_project}
                         onChange={(e) => handleEditChange("name_project", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       />
                     </div>
                     <div className="col-md-4">
@@ -591,6 +635,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-control"
                         value={editProjectData.owner_name}
                         onChange={(e) => handleEditChange("owner_name", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       />
                     </div>
                     <div className="col-md-4">
@@ -600,6 +645,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-control"
                         value={editProjectData.owner_lastname}
                         onChange={(e) => handleEditChange("owner_lastname", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       />
                     </div>
                     <div className="col-md-4">
@@ -609,6 +655,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-control"
                         value={editProjectData.building_type}
                         onChange={(e) => handleEditChange("building_type", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       />
                     </div>
                     <div className="col-md-4">
@@ -618,6 +665,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-control"
                         value={editProjectData.main_use_type}
                         onChange={(e) => handleEditChange("main_use_type", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       />
                     </div>
                     <div className="col-md-4">
@@ -627,6 +675,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-control"
                         value={editProjectData.number_levels}
                         onChange={(e) => handleEditChange("number_levels", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       />
                     </div>
                     <div className="col-md-4">
@@ -636,6 +685,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-control"
                         value={editProjectData.number_homes_per_level}
                         onChange={(e) => handleEditChange("number_homes_per_level", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       />
                     </div>
                     <div className="col-md-4">
@@ -645,6 +695,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-control"
                         value={editProjectData.built_surface}
                         onChange={(e) => handleEditChange("built_surface", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       />
                     </div>
                     <div className="col-md-4">
@@ -654,6 +705,7 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-control"
                         value={editProjectData.latitude}
                         onChange={(e) => handleEditChange("latitude", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       />
                     </div>
                     <div className="col-md-4">
@@ -663,11 +715,12 @@ const ProjectList = ({ setActiveView }: ProjectListProps) => {
                         className="form-control"
                         value={editProjectData.longitude}
                         onChange={(e) => handleEditChange("longitude", e.target.value)}
+                        style={{ fontFamily: "var(--font-family-base)" }}
                       />
                     </div>
                   </div>
                 </div>
-                <div className="modal-footer">
+                <div className="modal-footer" style={{ fontFamily: "var(--font-family-base)" }}>
                   <button className="modal-btn-cancel" onClick={handleCloseModal}>
                     Cancelar
                   </button>

@@ -40,7 +40,6 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
     }
   }, []);
 
-  // Evitamos renderizar hasta que el componente esté montado
   if (!isMounted) {
     return null;
   }
@@ -59,10 +58,14 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
         left: sidebarWidth,
         right: 0,
         zIndex: 1100,
+        fontFamily: "var(--font-family-base)",
       }}
     >
-      <div className="container-fluid d-flex justify-content-end align-items-center">
-        <div className="dropdown">
+      <div
+        className="container-fluid d-flex justify-content-end align-items-center"
+        style={{ fontFamily: "var(--font-family-base)" }}
+      >
+        <div className="dropdown" style={{ fontFamily: "var(--font-family-base)" }}>
           <button
             className="btn d-flex align-items-center"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -72,6 +75,7 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               padding: 0,
               display: "flex",
               alignItems: "center",
+              fontFamily: "var(--font-family-base)",
             }}
           >
             {/* Icono de perfil */}
@@ -82,10 +86,17 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               style={{ width: "40px", height: "40px", marginRight: "8px" }}
             />
             {/* Información del usuario */}
-            <div className="d-flex flex-column align-items-start">
+            <div
+              className="d-flex flex-column align-items-start"
+              style={{ fontFamily: "var(--font-family-base)" }}
+            >
               <span
                 className="fw-bold"
-                style={{ fontSize: "14px", color: "#3ca7b7" }}
+                style={{
+                  fontSize: "14px",
+                  color: "#3ca7b7",
+                  fontFamily: "var(--font-family-base)",
+                }}
               >
                 {user.email}
               </span>
@@ -95,12 +106,13 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
                   color: "#6c757d",
                   display: "flex",
                   alignItems: "center",
+                  fontFamily: "var(--font-family-base)",
                 }}
               >
                 {user.name}{" "}
                 <i
                   className="bi bi-caret-down-fill ms-1"
-                  style={{ fontSize: "10px" }}
+                  style={{ fontSize: "10px", fontFamily: "var(--font-family-base)" }}
                 ></i>
               </span>
             </div>
@@ -108,18 +120,19 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
           {menuOpen && (
             <div
               className="dropdown-menu dropdown-menu-end show mt-2 shadow-sm"
-              style={{ right: 0 }}
+              style={{ right: 0, fontFamily: "var(--font-family-base)" }}
             >
-              <a className="dropdown-item" href="/edit-profile">
+              <a className="dropdown-item" href="/edit-profile" style={{ fontFamily: "var(--font-family-base)" }}>
                 <i className="bi bi-person me-2"></i> Perfil
               </a>
-              <a className="dropdown-item" href="/settings">
+              <a className="dropdown-item" href="/settings" style={{ fontFamily: "var(--font-family-base)" }}>
                 <i className="bi bi-gear me-2"></i> Configuración
               </a>
               <div className="dropdown-divider"></div>
               <button
                 className="dropdown-item text-danger"
                 onClick={handleLogout}
+                style={{ fontFamily: "var(--font-family-base)" }}
               >
                 <i className="bi bi-box-arrow-right me-2"></i> Cerrar sesión
               </button>

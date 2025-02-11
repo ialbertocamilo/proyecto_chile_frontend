@@ -4,6 +4,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import CustomButton from "../src/components/common/CustomButton";
 
 const Login = () => {
   const [email, setEmail] = useState<string>("");
@@ -59,10 +60,24 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h5 className="fw-bold" style={{ color: "#5cb5c3", textAlign: "left" }}>
+        <h5
+          className="fw-bold"
+          style={{
+            color: "var(--primary-color)",
+            textAlign: "left",
+            fontFamily: "var(--font-family-base)",
+          }}
+        >
           Ingresa a tu cuenta
         </h5>
-        <p style={{ textAlign: "left", color: "#d3d3d3" }}>
+        <p
+          style={{
+            textAlign: "left",
+            color: "var(--muted-text)",
+            fontFamily: "var(--font-family-base)",
+            fontSize: "var(--font-size-base)",
+          }}
+        >
           Ingresa tu Email y contraseña para acceder
         </p>
         {error && (
@@ -73,7 +88,11 @@ const Login = () => {
           <div className="mb-3">
             <label
               className="form-label fw-semibold"
-              style={{ textAlign: "left", display: "block" }}
+              style={{
+                textAlign: "left",
+                display: "block",
+                fontFamily: "var(--font-family-base)",
+              }}
             >
               Dirección de Email
             </label>
@@ -85,15 +104,21 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               style={{
-                border: "2px solid #d3d3d3",
+                border: "2px solid var(--muted-text)",
                 borderRadius: "0.5rem",
+                fontFamily: "var(--font-family-base)",
+                fontSize: "var(--font-size-base)",
               }}
             />
           </div>
           <div className="mb-3">
             <label
               className="form-label fw-semibold"
-              style={{ textAlign: "left", display: "block" }}
+              style={{
+                textAlign: "left",
+                display: "block",
+                fontFamily: "var(--font-family-base)",
+              }}
             >
               Contraseña
             </label>
@@ -105,9 +130,11 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 style={{
-                  border: "2px solid #d3d3d3",
+                  border: "2px solid var(--muted-text)",
                   borderRadius: "0.5rem",
                   paddingRight: "4rem",
+                  fontFamily: "var(--font-family-base)",
+                  fontSize: "var(--font-size-base)",
                 }}
               />
               <span
@@ -117,9 +144,10 @@ const Login = () => {
                   top: "50%",
                   transform: "translateY(-50%)",
                   cursor: "pointer",
-                  color: "#5cb5c3",
+                  color: "var(--primary-color)",
                   fontSize: "0.9rem",
                   fontWeight: "bold",
+                  fontFamily: "var(--font-family-base)",
                 }}
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -139,7 +167,11 @@ const Login = () => {
               />
               <label
                 htmlFor="remember"
-                style={{ cursor: "pointer", color: "#d3d3d3" }}
+                style={{
+                  cursor: "pointer",
+                  color: "var(--muted-text)",
+                  fontFamily: "var(--font-family-base)",
+                }}
               >
                 Recuérdame
               </label>
@@ -147,31 +179,40 @@ const Login = () => {
             <a
               href="/forgot-password"
               className="text-decoration-none"
-              style={{ color: "#5cb5c3" }}
+              style={{
+                color: "var(--primary-color)",
+                fontFamily: "var(--font-family-base)",
+              }}
             >
               ¿Olvidaste tu contraseña?
             </a>
           </div>
 
-          <button
+          <CustomButton
             type="submit"
-            className="btn w-100 fw-bold"
+            variant="save"
             disabled={loading}
             style={{
               borderRadius: "0.5rem",
+              fontFamily: "var(--font-family-base)",
+              fontSize: "var(--font-size-base)",
+              width: "100%"
             }}
           >
             {loading ? "Ingresando..." : "Ingresar"}
-          </button>
+          </CustomButton>
         </form>
 
         <div className="text-center mt-4">
-          <p style={{ color: "#d3d3d3" }} className="text-muted">
+          <p style={{ color: "var(--muted-text)" }} className="text-muted">
             ¿Aún no tienes cuenta?{" "}
             <a
               href="/register"
               className="text-decoration-none"
-              style={{ color: "#5cb5c3" }}
+              style={{
+                color: "var(--primary-color)",
+                fontFamily: "var(--font-family-base)",
+              }}
             >
               Crear una cuenta
             </a>
@@ -191,7 +232,7 @@ const Login = () => {
         }
 
         .login-card {
-          background: white;
+          background: #fff;
           padding: 2rem;
           border-radius: 15px;
           box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
@@ -203,31 +244,16 @@ const Login = () => {
         }
 
         .mb-3 {
-          margin-bottom: 1.5rem; /* Aumenta el espacio vertical entre elementos */
+          margin-bottom: 1.5rem;
         }
 
         .form-control {
-          font-size: 1rem;
-          padding: 10px;
           transition: all 0.3s ease;
         }
 
         .form-control:focus {
-          border-color: #0984e3;
+          border-color: var(--secondary-color);
           box-shadow: 0 0 10px rgba(9, 132, 227, 0.2);
-        }
-
-        button.btn {
-          background-color: #3ca7b7;
-          border: none;
-          padding: 12px;
-          font-size: 1rem;
-          transition: background 0.3s ease;
-          color: #fff;
-        }
-
-        button.btn:hover {
-          background-color: #359aa9;
         }
       `}</style>
     </div>

@@ -2,6 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import "../public/assets/css/globals.css";
 
 const ResetPassword = () => {
   const [formData, setFormData] = useState({
@@ -58,23 +59,31 @@ const ResetPassword = () => {
   };
 
   const inputStyle = {
-    border: "2px solid #e0e0e0",
+    border: "2px solid var(--muted-text)",
     borderRadius: "0.5rem",
     padding: "0.5rem",
     margin: 0,
+    fontFamily: "var(--font-family-base)",
+    fontSize: "var(--font-size-base)",
   };
 
   const spacingStyle = { marginBottom: "0.5rem" };
 
-  const labelStyle = { marginBottom: "0.25rem", fontWeight: "bold", color: "#000" };
+  const labelStyle = {
+    marginBottom: "0.25rem",
+    fontWeight: "bold",
+    color: "var(--text-color)",
+    fontFamily: "var(--font-family-base)",
+  };
 
   const regresarButtonStyle = {
     border: "none",
     backgroundColor: "transparent",
-    color: "#3ca7b7",
-    fontSize: "1rem",
+    color: "var(--primary-color)",
+    fontSize: "var(--font-size-base)",
     cursor: "pointer",
     textDecoration: "none" as const,
+    fontFamily: "var(--font-family-base)",
   };
 
   return (
@@ -83,6 +92,7 @@ const ResetPassword = () => {
       style={{
         height: "100vh",
         background: "url('/assets/images/background.jpg') no-repeat center center/cover",
+        fontFamily: "var(--font-family-base)",
       }}
     >
       <div
@@ -94,10 +104,24 @@ const ResetPassword = () => {
           backgroundColor: "#fff",
         }}
       >
-        <h4 className="text-start fw-bold" style={{ color: "#6dbdc9", marginBottom: "0.5rem" }}>
+        <h4
+          className="text-start fw-bold"
+          style={{
+            color: "var(--primary-color)",
+            marginBottom: "0.5rem",
+            fontFamily: "var(--font-family-base)",
+          }}
+        >
           Restablecer contraseña
         </h4>
-        <p className="text-start" style={{ color: "#d3d3d3", marginBottom: "1rem" }}>
+        <p
+          className="text-start"
+          style={{
+            color: "var(--muted-text)",
+            marginBottom: "1rem",
+            fontFamily: "var(--font-family-base)",
+          }}
+        >
           Ingresa tu correo, el código de verificación y tu nueva contraseña
         </p>
         <form onSubmit={handleSubmit}>
@@ -167,18 +191,23 @@ const ResetPassword = () => {
             className="btn btn-primary w-100"
             style={{
               borderRadius: "0.5rem",
-              backgroundColor: "#3ca7b7",
+              backgroundColor: "var(--primary-color)",
               border: "none",
               padding: "12px",
-              fontSize: "1rem",
+              fontSize: "var(--font-size-base)",
               transition: "background 0.3s ease",
               color: "#fff",
+              fontFamily: "var(--font-family-base)",
             }}
           >
             Restablecer contraseña
           </button>
         </form>
-        {error && <p className="text-danger text-center mt-3">{error}</p>}
+        {error && (
+          <p className="text-danger text-center mt-3" style={{ fontFamily: "var(--font-family-base)" }}>
+            {error}
+          </p>
+        )}
         <div className="text-center mt-3">
           <a href="/login" style={regresarButtonStyle}>
             ← Regresar
@@ -195,7 +224,7 @@ const ResetPassword = () => {
           position: relative;
         }
         a:hover {
-          color: #359aa9;
+          color: var(--secondary-color);
         }
       `}</style>
     </div>

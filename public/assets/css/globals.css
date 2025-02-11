@@ -1,20 +1,21 @@
-@font-face {
-    font-family: 'FontAwesome';
-    src: url('/assets/fonts/font-awesome/fontawesome-webfont.woff2') format('woff2'),
-         url('/assets/fonts/font-awesome/fontawesome-webfont.woff') format('woff'),
-         url('/assets/fonts/font-awesome/fontawesome-webfont.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
+@import url('https://fonts.googleapis.com/css2?family=Encode+Sans:wght@400;700&display=swap');
+
+:root {
+  --font-family-base: 'Encode Sans', sans-serif;
+  --font-size-base: 16px;
+  --font-size-heading: 2em;
+  --primary-color: #3ca7b7;      /* Color principal, usado en titulos y botones */
+  --secondary-color: #bbc4cb;    /* Color secundario, por ejemplo para hover en botones */
+  --text-color: #333;            /* Color de texto general */
+  --muted-text: #d3d3d3;         /* Color para textos menos destacados */
 }
 
-@font-face {
-    font-family: 'IcoFont';
-    src: url('/assets/fonts/ico/icofont.woff') format('woff'),
-         url('/assets/fonts/ico/icofont.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-body {
-    font-family: 'IcoFont', 'FontAwesome', sans-serif;
-}
+  /* Estilos base */
+  body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+  }
+  

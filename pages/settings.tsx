@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/router";
 import Swal from "sweetalert2";
 import Navbar from "../src/components/layout/Navbar";
@@ -7,66 +7,93 @@ import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 
-interface ProfileData {
-  name: string;
-  lastname: string;
-  number_phone: string;
-  country: string;
-  ubigeo: string;
+interface CustomizationData {
+  primary_color: string;
+  secondary_color: string;
+  background_color: string;
+  logo?: File | null;
 }
 
-const EditProfile = () => {
+const SettingsPage = () => {
   const router = useRouter();
-  const [profile, setProfile] = useState<ProfileData>({
-    name: "",
-    lastname: "",
-    number_phone: "",
-    country: "",
-    ubigeo: "",
+  const [customization, setCustomization] = useState<CustomizationData>({
+    primary_color: "",
+    secondary_color: "",
+    background_color: "",
+    logo: null,
   });
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
+  // Obtener la configuracion actual 
   useEffect(() => {
-    const storedProfile = localStorage.getItem("userProfile");
-    if (storedProfile) {
+    const fetchCustomization = async () => {
+      setFetching(true);
       try {
-        const parsedProfile: ProfileData = JSON.parse(storedProfile);
-        setProfile({
-          name: parsedProfile.name || "",
-          lastname: parsedProfile.lastname || "",
-          number_phone: parsedProfile.number_phone || "",
-          country: parsedProfile.country || "",
-          ubigeo: parsedProfile.ubigeo || "",
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No estás autenticado. Inicia sesión.");
+        }
+        const response = await fetch(
+          `${constantUrlApiEndpoint}/customization`,
+          {
+            method: "GET",
+            headers: {
+              "accept": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.detail || errorData.message || "Error al obtener configuración"
+          );
+        }
+        const data = await response.json();
+        setCustomization({
+          primary_color: data.primary_color || "",
+          secondary_color: data.secondary_color || "",
+          background_color: data.background_color || "",
+          logo: null,
         });
-      } catch (err) {
-        console.error("Error al parsear el perfil desde localStorage", err);
+      } catch (err: any) {
+        console.error("Error fetching customization:", err);
+        setError(err.message || "Error al obtener la configuración");
+      } finally {
+        setFetching(false);
       }
-    } else {
-      console.warn("No se encontró información del perfil en localStorage.");
-    }
+    };
+
+    fetchCustomization();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setCustomization({
+      ...customization,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setCustomization({
+        ...customization,
+        logo: e.target.files[0],
+      });
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    const { name, lastname, number_phone, country, ubigeo } = profile;
-
-    if (
-      !name.trim() ||
-      !lastname.trim() ||
-      !number_phone.trim() ||
-      !country.trim() ||
-      !ubigeo.trim()
-    ) {
+    const { primary_color, secondary_color, background_color } = customization;
+    if (!primary_color.trim() || !secondary_color.trim() || !background_color.trim()) {
       Swal.fire({
         title: "Campos incompletos",
-        text: "Por favor, complete todos los campos.",
+        text: "Por favor, completa los campos obligatorios.",
         icon: "warning",
         confirmButtonText: "Aceptar",
       });
@@ -79,47 +106,54 @@ const EditProfile = () => {
       if (!token) {
         throw new Error("No estás autenticado. Inicia sesión.");
       }
-      const payload = { ...profile };
-      console.log("Enviando actualización del perfil:", payload);
 
-      const response = await fetch(`${constantUrlApiEndpoint}/user/me/update`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const formData = new FormData();
+      formData.append("primary_color", primary_color);
+      formData.append("secondary_color", secondary_color);
+      formData.append("background_color", background_color);
+      if (customization.logo) {
+        formData.append("logo", customization.logo, customization.logo.name);
+      }
+
+      const response = await fetch(
+        `${constantUrlApiEndpoint}/customizer`,
+        {
+          method: "PUT",
+          headers: {
+            "accept": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error actualizando perfil:", errorData);
+        console.error("Error actualizando configuración:", errorData);
         throw new Error(
           errorData.detail ||
             errorData.message ||
-            "No se pudo actualizar el perfil"
+            "No se pudo actualizar la configuración"
         );
       }
 
       const resData = await response.json();
-      localStorage.setItem("userProfile", JSON.stringify(payload));
-
       await Swal.fire({
-        title: "Perfil actualizado",
-        text: resData.message || "Tu perfil se actualizó correctamente.",
+        title: "Configuración actualizada",
+        text: resData.message || "La configuración se actualizó correctamente.",
         icon: "success",
         confirmButtonText: "Aceptar",
       });
       router.push("/dashboard");
     } catch (err: any) {
-      console.error("Error actualizando perfil:", err);
+      console.error("Error actualizando configuración:", err);
       Swal.fire({
         title: "Error",
-        text: err.message || "Error al actualizar el perfil",
+        text: err.message || "Error al actualizar la configuración",
         icon: "error",
         confirmButtonText: "Aceptar",
       });
-      setError(err.message || "Error al actualizar el perfil");
+      setError(err.message || "Error al actualizar la configuración");
     } finally {
       setLoading(false);
     }
@@ -147,7 +181,7 @@ const EditProfile = () => {
                 fontFamily: "var(--font-family-base)",
               }}
             >
-              Perfil
+              Configuración de Personalización
             </h2>
             <div className="d-flex" style={{ gap: "1rem" }}>
               <CustomButton
@@ -159,23 +193,23 @@ const EditProfile = () => {
               <CustomButton
                 variant="save"
                 type="submit"
-                form="editProfileForm"
-                disabled={loading}
+                form="settingsForm"
+                disabled={loading || fetching}
               >
-                {loading ? "Actualizando..." : "Actualizar Perfil"}
+                {loading ? "Guardando..." : "Guardar Configuración"}
               </CustomButton>
             </div>
           </div>
-          {loading ? (
+          {fetching ? (
             <p
               className="text-primary"
               style={{ fontFamily: "var(--font-family-base)" }}
             >
-              Cargando...
+              Cargando configuración...
             </p>
           ) : (
             <form
-              id="editProfileForm"
+              id="settingsForm"
               onSubmit={handleSubmit}
               style={{ fontFamily: "var(--font-family-base)" }}
             >
@@ -189,66 +223,53 @@ const EditProfile = () => {
               )}
               <div className="mb-3">
                 <label style={{ fontFamily: "var(--font-family-base)" }}>
-                  Nombre
+                  Color Primario *
                 </label>
                 <input
                   type="text"
-                  name="name"
+                  name="primary_color"
                   className="form-control"
-                  value={profile.name}
+                  value={customization.primary_color}
                   onChange={handleChange}
                   style={{ fontFamily: "var(--font-family-base)" }}
                 />
               </div>
               <div className="mb-3">
                 <label style={{ fontFamily: "var(--font-family-base)" }}>
-                  Apellidos
+                  Color Secundario *
                 </label>
                 <input
                   type="text"
-                  name="lastname"
+                  name="secondary_color"
                   className="form-control"
-                  value={profile.lastname}
+                  value={customization.secondary_color}
                   onChange={handleChange}
                   style={{ fontFamily: "var(--font-family-base)" }}
                 />
               </div>
               <div className="mb-3">
                 <label style={{ fontFamily: "var(--font-family-base)" }}>
-                  Teléfono
+                  Color de Fondo *
                 </label>
                 <input
                   type="text"
-                  name="number_phone"
+                  name="background_color"
                   className="form-control"
-                  value={profile.number_phone}
+                  value={customization.background_color}
                   onChange={handleChange}
                   style={{ fontFamily: "var(--font-family-base)" }}
                 />
               </div>
               <div className="mb-3">
                 <label style={{ fontFamily: "var(--font-family-base)" }}>
-                  País
+                  Logo
                 </label>
                 <input
-                  type="text"
-                  name="country"
+                  type="file"
+                  name="logo"
+                  accept="image/png, image/jpeg"
                   className="form-control"
-                  value={profile.country}
-                  onChange={handleChange}
-                  style={{ fontFamily: "var(--font-family-base)" }}
-                />
-              </div>
-              <div className="mb-3">
-                <label style={{ fontFamily: "var(--font-family-base)" }}>
-                  Ubigeo
-                </label>
-                <input
-                  type="text"
-                  name="ubigeo"
-                  className="form-control"
-                  value={profile.ubigeo}
-                  onChange={handleChange}
+                  onChange={handleFileChange}
                   style={{ fontFamily: "var(--font-family-base)" }}
                 />
               </div>
@@ -256,9 +277,8 @@ const EditProfile = () => {
           )}
         </div>
       </div>
-      
     </div>
   );
 };
 
-export default EditProfile;
+export default SettingsPage;

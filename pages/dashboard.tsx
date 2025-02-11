@@ -3,13 +3,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
-import ProjectList from "../src/components/forms/ProjectList";
-import ProjectWorkflow from "../src/components/forms/ProjectWorkflow";
+import "../public/assets/css/globals.css";
 
 const Dashboard = () => {
-  const [activeView, setActiveView] = useState<string>("projects");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [sidebarWidth, setSidebarWidth] = useState("300px"); 
+  const [sidebarWidth, setSidebarWidth] = useState("300px");
   const router = useRouter();
 
   useEffect(() => {
@@ -38,32 +36,15 @@ const Dashboard = () => {
 
   if (isAuthenticated === null) {
     return (
-      <div className="text-center mt-5">
-        <h2 className="fw-bold text-primary">Cargando...</h2>
+      <div className="text-center mt-5" style={{ fontFamily: "var(--font-family-base)" }}>
+        <h2 className="fw-bold" style={{ color: "var(--primary-color)" }}>Cargando...</h2>
       </div>
     );
   }
 
-  const renderContent = () => {
-    switch (activeView) {
-      case "projectWorkflow":
-        return <ProjectWorkflow setActiveView={setActiveView} />;
-      case "projects":
-        return <ProjectList setActiveView={setActiveView} />;
-      default:
-        return (
-          <div className="text-center mt-5">
-            <h1 className="fw-bold text-primary">¡Bienvenido!</h1>
-            <p>Gestiona tus proyectos de manera eficiente.</p>
-            <i className="bi bi-bar-chart-fill text-primary" style={{ fontSize: "50px" }}></i>
-          </div>
-        );
-    }
-  };
-
   return (
-    <div className="d-flex">
-      <Navbar setActiveView={setActiveView} setSidebarWidth={setSidebarWidth} />
+    <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
+      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
       <div
         className="d-flex flex-column flex-grow-1"
         style={{
@@ -72,8 +53,17 @@ const Dashboard = () => {
         }}
       >
         <TopBar sidebarWidth={sidebarWidth} />
-        <div className="content p-4" style={{ marginTop: "60px" }}>
-          {renderContent()}
+        <div className="container p-4" style={{ marginTop: "60px" }}>
+          <div className="text-center mt-5">
+            <h1 className="fw-bold" style={{ color: "var(--primary-color)" }}>
+              ¡Bienvenido!
+            </h1>
+            <p>Gestiona tus proyectos de manera eficiente.</p>
+            <i
+              className="bi bi-bar-chart-fill"
+              style={{ fontSize: "50px", color: "var(--primary-color)" }}
+            ></i>
+          </div>
         </div>
       </div>
     </div>

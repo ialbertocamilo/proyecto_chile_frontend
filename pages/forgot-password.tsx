@@ -1,7 +1,10 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import "../public/assets/css/globals.css";
+import CustomButton from "../src/components/common/CustomButton";
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +29,6 @@ const ForgotPassword = () => {
       }
 
       localStorage.setItem("reset_email", email);
-
       router.push("/resetpassword");
       
     } catch (error: any) {
@@ -37,14 +39,30 @@ const ForgotPassword = () => {
   return (
     <div 
       className="forgot-password-container d-flex justify-content-center align-items-center"
+      style={{
+        height: "100vh",
+        background: "url('/assets/images/background.jpg') no-repeat center center/cover",
+        fontFamily: "var(--font-family-base)",
+      }}
     >
-      <div className="card p-5 shadow-lg forgot-password-card">
-        <h4 className="text-start fw-bold" style={{ color: "#5cb5c3" }}>
+      <div className="card p-5 shadow-lg forgot-password-card"
+        style={{
+          width: "100%",
+          maxWidth: "420px",
+          borderRadius: "15px",
+          backgroundColor: "rgba(255, 255, 255, 0.9)",
+          textAlign: "left",
+        }}
+      >
+        <h4 
+          className="text-start fw-bold" 
+          style={{ color: "var(--primary-color)", fontFamily: "var(--font-family-base)" }}
+        >
           Recuperar contraseña
         </h4>
         <p 
           className="text-start" 
-          style={{ color: "#d3d3d3", marginBottom: "1.5rem" }}
+          style={{ color: "var(--muted-text)", marginBottom: "1.5rem", fontFamily: "var(--font-family-base)" }}
         >
           Ingresa tu correo electrónico para recuperar tu contraseña
         </p>
@@ -52,7 +70,7 @@ const ForgotPassword = () => {
           <div className="mb-3">
             <label 
               className="form-label fw-bold" 
-              style={{ textAlign: "left", display: "block", marginBottom: "0.5rem", color: "#000" }}
+              style={{ textAlign: "left", display: "block", marginBottom: "0.5rem", color: "#000", fontFamily: "var(--font-family-base)" }}
             >
               Correo electrónico
             </label>
@@ -64,28 +82,41 @@ const ForgotPassword = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               style={{
-                border: "2px solid #d3d3d3",
+                border: "2px solid var(--muted-text)",
                 borderRadius: "0.5rem",
+                fontFamily: "var(--font-family-base)",
+                fontSize: "var(--font-size-base)",
               }}
             />
           </div>
-          <button 
-            type="submit" 
-            className="btn w-100 fw-bold" 
-            style={{ borderRadius: "0.5rem", marginBottom: "1.5rem" }}
+          <CustomButton
+            type="submit"
+            variant="save"
+            style={{
+              borderRadius: "0.5rem",
+              marginBottom: "1.5rem",
+              fontFamily: "var(--font-family-base)",
+              fontSize: "var(--font-size-base)",
+              width: "100%",
+            }}
           >
             Enviar enlace de recuperación
-          </button>
+          </CustomButton>
         </form>
-        {error && <p className="text-danger text-center mt-3">{error}</p>}
+        {error && <p className="text-danger text-center mt-3" style={{ fontFamily: "var(--font-family-base)" }}>{error}</p>}
         <div className="text-center mt-3">
-          <a 
-            href="/login" 
-            className="btn btn-outline-secondary" 
-            style={{ borderRadius: "0.5rem" }}
+          <CustomButton
+            type="button"
+            variant="backIcon"
+            onClick={() => router.push("/login")}
+            style={{
+              borderRadius: "0.5rem",
+              fontFamily: "var(--font-family-base)",
+              fontSize: "var(--font-size-base)",
+            }}
           >
             Regresar
-          </a>
+          </CustomButton>
         </div>
       </div>
 
@@ -94,36 +125,6 @@ const ForgotPassword = () => {
           height: 100vh;
           background: url('/assets/images/background.jpg') no-repeat center center/cover;
           position: relative;
-        }
-        .forgot-password-card {
-          width: 100%;
-          max-width: 420px;
-          border-radius: 15px;
-          background-color: rgba(255, 255, 255, 0.9);
-          text-align: left;
-        }
-        .mb-3 {
-          margin-bottom: 1.5rem;
-        }
-        .form-control {
-          font-size: 1rem;
-          padding: 10px;
-          transition: all 0.3s ease;
-        }
-        .form-control:focus {
-          border-color: #0984e3;
-          box-shadow: 0 0 10px rgba(9, 132, 227, 0.2);
-        }
-        button.btn {
-          background-color: #3ca7b7;
-          border: none;
-          padding: 12px;
-          font-size: 1rem;
-          transition: background 0.3s ease;
-          color: #fff;
-        }
-        button.btn:hover {
-          background-color: #359aa9;
         }
       `}</style>
     </div>

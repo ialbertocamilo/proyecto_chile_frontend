@@ -1,7 +1,9 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useState } from "react";
 import { useRouter } from "next/router";
+import "../public/assets/css/globals.css";
+import CustomButton from "../src/components/common/CustomButton";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -86,36 +88,38 @@ const Register = () => {
   };
 
   const inputStyle = {
-    border: "2px solid #e0e0e0",
+    border: "2px solid var(--muted-text)",
     borderRadius: "0.5rem",
     margin: 0,
     padding: "0.5rem",
+    fontFamily: "var(--font-family-base)",
   };
 
   const leftSpacingStyle = { marginBottom: "0.1rem" };
-
   const rightSpacingStyle = { marginBottom: "0.5rem" };
-
-  const labelStyle = { marginBottom: "0.1rem" };
-
+  const labelStyle = {
+    marginBottom: "0.1rem",
+    fontFamily: "var(--font-family-base)",
+  };
   const toggleStyle = {
     position: "absolute" as const,
     right: "10px",
     top: "50%",
     transform: "translateY(-50%)",
     cursor: "pointer",
-    color: "#5cb5c3",
+    color: "var(--primary-color)",
     fontWeight: "bold" as const,
     fontSize: "0.9rem",
+    fontFamily: "var(--font-family-base)",
   };
-
   const borderedContainerStyle = {
-    border: "2px solid #e0e0e0",
+    border: "2px solid var(--muted-text)",
     borderRadius: "0.5rem",
     padding: "0.75rem",
     display: "flex",
     flexDirection: "column" as const,
     gap: "0.1rem",
+    fontFamily: "var(--font-family-base)",
   };
 
   return (
@@ -124,6 +128,7 @@ const Register = () => {
       style={{
         height: "100vh",
         background: "url('/assets/images/background.jpg') no-repeat center center/cover",
+        fontFamily: "var(--font-family-base)",
       }}
     >
       <div
@@ -137,16 +142,25 @@ const Register = () => {
           overflowY: "auto",
         }}
       >
-        <h4 className="text-start fw-bold mb-3" style={{ color: "#6dbdc9" }}>
+        <h4
+          className="text-start fw-bold mb-3"
+          style={{ color: "#6dbdc9", fontFamily: "var(--font-family-base)" }}
+        >
           Crear perfil nuevo
         </h4>
         {error && (
-          <div className="alert alert-danger" style={{ marginBottom: "1rem" }}>
+          <div
+            className="alert alert-danger"
+            style={{ marginBottom: "1rem", fontFamily: "var(--font-family-base)" }}
+          >
             {error}
           </div>
         )}
         {successMessage && (
-          <div className="alert alert-success" style={{ marginBottom: "1rem" }}>
+          <div
+            className="alert alert-success"
+            style={{ marginBottom: "1rem", fontFamily: "var(--font-family-base)" }}
+          >
             {successMessage}
           </div>
         )}
@@ -154,13 +168,14 @@ const Register = () => {
           <div className="row align-items-stretch">
             <div className="col-md-5 border-end pe-3" style={{ display: "flex" }}>
               <div style={borderedContainerStyle} className="w-100">
-                
                 <div>
                   <label className="form-label fw-bold" style={{ color: "#000", ...labelStyle }}>
                     Mi perfil
                   </label>
-                  <div className="d-flex align-items-center" style={{ gap: "0.1rem", marginBottom: "0.1rem" }}>
-                    
+                  <div
+                    className="d-flex align-items-center"
+                    style={{ gap: "0.1rem", marginBottom: "0.1rem" }}
+                  >
                     <div
                       style={{
                         width: "70px",
@@ -171,7 +186,8 @@ const Register = () => {
                         justifyContent: "center",
                         alignItems: "center",
                         fontSize: "2.5rem",
-                        color: "#5cb5c3",
+                        color: "var(--primary-color)",
+                        fontFamily: "var(--font-family-base)",
                       }}
                     >
                       <i className="bi bi-person-fill"></i>
@@ -180,7 +196,13 @@ const Register = () => {
                       <div style={{ fontWeight: "bold", color: "#000", ...labelStyle }}>
                         {formData.name || "Nombre"} {formData.lastname || "Apellido"}
                       </div>
-                      <div style={{ fontSize: "0.85rem", color: "#000" }}>
+                      <div
+                        style={{
+                          fontSize: "0.85rem",
+                          color: "#000",
+                          fontFamily: "var(--font-family-base)",
+                        }}
+                      >
                         Ingeniero Civil
                       </div>
                     </div>
@@ -248,7 +270,10 @@ const Register = () => {
                 <div className="row">
                   <div className="col-md-6">
                     <div style={rightSpacingStyle}>
-                      <label className="form-label fw-bold" style={{ color: "#000", marginBottom: "0.25rem" }}>
+                      <label
+                        className="form-label fw-bold"
+                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                      >
                         Nombres
                       </label>
                       <input
@@ -262,7 +287,10 @@ const Register = () => {
                       />
                     </div>
                     <div style={rightSpacingStyle}>
-                      <label className="form-label fw-bold" style={{ color: "#000", marginBottom: "0.25rem" }}>
+                      <label
+                        className="form-label fw-bold"
+                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                      >
                         Apellidos
                       </label>
                       <input
@@ -276,7 +304,10 @@ const Register = () => {
                       />
                     </div>
                     <div style={rightSpacingStyle}>
-                      <label className="form-label fw-bold" style={{ color: "#000", marginBottom: "0.25rem" }}>
+                      <label
+                        className="form-label fw-bold"
+                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                      >
                         Fecha de Nacimiento
                       </label>
                       <input
@@ -292,7 +323,10 @@ const Register = () => {
                   </div>
                   <div className="col-md-6">
                     <div style={rightSpacingStyle}>
-                      <label className="form-label fw-bold" style={{ color: "#000", marginBottom: "0.25rem" }}>
+                      <label
+                        className="form-label fw-bold"
+                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                      >
                         Teléfono
                       </label>
                       <input
@@ -306,7 +340,10 @@ const Register = () => {
                       />
                     </div>
                     <div style={rightSpacingStyle}>
-                      <label className="form-label fw-bold" style={{ color: "#000", marginBottom: "0.25rem" }}>
+                      <label
+                        className="form-label fw-bold"
+                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                      >
                         País
                       </label>
                       <input
@@ -320,7 +357,10 @@ const Register = () => {
                       />
                     </div>
                     <div style={rightSpacingStyle}>
-                      <label className="form-label fw-bold" style={{ color: "#000", marginBottom: "0.25rem" }}>
+                      <label
+                        className="form-label fw-bold"
+                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                      >
                         Ubigeo
                       </label>
                       <input
@@ -335,12 +375,27 @@ const Register = () => {
                     </div>
                   </div>
                 </div>
-                <div className="d-flex justify-content-end" style={{ marginTop: "0.5rem" }}>
-                  <button
+                <div className="d-flex justify-content-between" style={{ marginTop: "0.5rem" }}>
+                  <CustomButton
+                    type="button"
+                    variant="backIcon"
+                    onClick={() => router.push("/login")}
+                    style={{
+                      borderRadius: "0.5rem",
+                      fontFamily: "var(--font-family-base)",
+                    }}
+                  >
+                    Regresar
+                  </CustomButton>
+                  <CustomButton
                     type="submit"
-                    className="btn btn-primary py-2 fw-bold"
+                    variant="save"
                     disabled={loading}
-                    style={{ borderRadius: "0.5rem", minWidth: "auto" }}
+                    style={{
+                      borderRadius: "0.5rem",
+                      minWidth: "auto",
+                      fontFamily: "var(--font-family-base)",
+                    }}
                   >
                     {loading ? (
                       "Registrando..."
@@ -350,7 +405,7 @@ const Register = () => {
                         Crear y guardar datos
                       </>
                     )}
-                  </button>
+                  </CustomButton>
                 </div>
               </div>
             </div>
@@ -365,20 +420,6 @@ const Register = () => {
           align-items: center;
           background: url('/assets/images/background.jpg') no-repeat center center/cover;
           position: relative;
-        }
-        .card {
-          /* Estilos inline definidos para width, maxWidth, borderRadius y backgroundColor */
-        }
-        button.btn {
-          background-color: #3ca7b7;
-          border: none;
-          padding: 12px;
-          font-size: 1rem;
-          transition: background 0.3s ease;
-          color: #fff;
-        }
-        button.btn:hover {
-          background-color: #359aa9;
         }
       `}</style>
     </div>

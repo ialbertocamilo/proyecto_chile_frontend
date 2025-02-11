@@ -1,7 +1,11 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import "../public/assets/css/globals.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
+import CustomButton from "../src/components/common/CustomButton";
+
 const TwoFactorAuth = () => {
   const [otp, setOtp] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -91,32 +95,27 @@ const TwoFactorAuth = () => {
     letterSpacing: "8px",
     width: "100%",
     padding: "15px",
-    border: "2px solid #e0e0e0",
+    border: "2px solid var(--muted-text)",
     borderRadius: "10px",
     marginBottom: "1rem",
+    fontFamily: "var(--font-family-base)",
   };
 
-  const submitButtonStyle = {
-    backgroundColor: "#3ca7b7",
-    border: "none",
-    borderRadius: "0.5rem",
-    padding: "12px",
-    fontSize: "1.1rem",
-    transition: "background 0.3s ease",
-    color: "#fff",
+  const submitButtonOverride = {
     width: "100%",
   };
 
   const regresarButtonStyle = {
     border: "none",
     backgroundColor: "transparent",
-    color: "#3ca7b7",
+    color: "var(--primary-color)",
     fontSize: "1rem",
     display: "inline-flex",
     alignItems: "center",
     gap: "0.5rem",
     cursor: "pointer",
     textDecoration: "none" as const,
+    fontFamily: "var(--font-family-base)",
   };
 
   return (
@@ -125,6 +124,7 @@ const TwoFactorAuth = () => {
       style={{
         height: "100vh",
         background: "url('/assets/images/background.jpg') no-repeat center center/cover",
+        fontFamily: "var(--font-family-base)",
       }}
     >
       <div
@@ -138,14 +138,24 @@ const TwoFactorAuth = () => {
       >
         <h5 
           className="fw-bold text-center" 
-          style={{ color: "#6dbdc9", marginBottom: "0.5rem" }}
+          style={{ 
+            color: "var(--primary-color)", 
+            marginBottom: "0.5rem", 
+            fontFamily: "var(--font-family-base)" 
+          }}
         >
           Autenticación de Dos Pasos
         </h5>
-        <p className="text-muted text-center" style={{ marginBottom: "1rem" }}>
+        <p 
+          className="text-muted text-center" 
+          style={{ 
+            marginBottom: "1rem", 
+            fontFamily: "var(--font-family-base)" 
+          }}
+        >
           Ingresa el código de 6 dígitos enviado a tu email.
         </p>
-        {error && <p className="text-danger text-center fw-bold">{error}</p>}
+        {error && <p className="text-danger text-center fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>{error}</p>}
         <form onSubmit={handleSubmit} className="form-auth">
           <input
             type="text"
@@ -158,14 +168,24 @@ const TwoFactorAuth = () => {
             pattern="[0-9]{6}"
             inputMode="numeric"
           />
-          <button type="submit" style={submitButtonStyle} disabled={loading}>
+          <CustomButton
+            type="submit"
+            variant="save"
+            disabled={loading}
+            style={submitButtonOverride}
+          >
             {loading ? "Verificando..." : "Confirmar Código"}
-          </button>
+          </CustomButton>
         </form>
         <div style={{ textAlign: "center", marginTop: "1rem" }}>
-          <a href="/login" style={regresarButtonStyle}>
-            ← Regresar
-          </a>
+          <CustomButton
+            type="button"
+            variant="backIcon"
+            onClick={() => router.push("/login")}
+            style={regresarButtonStyle}
+          >
+            Regresar
+          </CustomButton>
         </div>
       </div>
       <style jsx>{`
@@ -177,7 +197,7 @@ const TwoFactorAuth = () => {
           background: url('/assets/images/background.jpg') no-repeat center center/cover;
         }
         a:hover {
-          color: #359aa9;
+          color: var(--secondary-color);
         }
       `}</style>
     </div>

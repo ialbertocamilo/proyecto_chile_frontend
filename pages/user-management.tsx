@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
-import Button from "../src/components/common/Button";
+import CustomButton from "../src/components/common/CustomButton";
+import "../public/assets/css/globals.css";
 import Swal from "sweetalert2";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+
 
 type User = {
   id: number;
@@ -23,7 +25,6 @@ const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
-  
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
   const fetchUsers = async () => {
@@ -59,7 +60,7 @@ const UserManagement = () => {
       setUsers(Array.isArray(data.users) ? data.users : []);
       setTotalPages(data.total_pages || 1);
     } catch (error: any) {
-      console.error("❌ Error en fetchUsers:", error.message);
+      console.error("Error en fetchUsers:", error.message);
     }
   };
 
@@ -104,7 +105,11 @@ const UserManagement = () => {
           if (!response.ok) {
             throw new Error("Error al eliminar usuario");
           }
-          Swal.fire("Eliminado", `El usuario (ID: ${id}) ${name} ${lastname} ha sido eliminado.`, "success");
+          Swal.fire(
+            "Eliminado",
+            `El usuario (ID: ${id}) ${name} ${lastname} ha sido eliminado.`,
+            "success"
+          );
           fetchUsers();
         } catch (error: any) {
           Swal.fire("Error", error.message || "Error al eliminar usuario", "error");
@@ -131,36 +136,44 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="d-flex">
+    <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
       <div
         className="d-flex flex-column flex-grow-1"
         style={{
-          marginLeft: sidebarWidth, 
+          marginLeft: sidebarWidth,
           width: "100%",
         }}
       >
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "60px" }}>
-          <h2 className="fw-bold mb-4" style={{ color: "#000" }}>
-            Administración de Usuarios
+          <h2 className="fw-bold mb-4" style={{ color: "var(--text-color)" }}>
+            Listado de Usuarios
           </h2>
-          <div className="mb-3">
+          <div className="input-group mb-3">
             <input
               type="text"
               placeholder="Buscar usuario..."
               className="form-control"
               value={searchQuery}
               onChange={handleSearch}
+              style={{
+                fontFamily: "var(--font-family-base)",
+                fontSize: "var(--font-size-base)",
+              }}
             />
-          </div>
-          <div className="mb-4 text-end">
-            <button
+            <CustomButton
+              type="button"
+              variant="save"
               onClick={() => router.push("/user-create")}
-              className="custom-btn"
+              style={{
+                fontFamily: "var(--font-family-base)",
+                fontSize: "var(--font-size-base)",
+                marginLeft: "1rem", 
+              }}
             >
               Agregar Usuario
-            </button>
+            </CustomButton>
           </div>
           <div className="table-responsive">
             <table className="custom-table">
@@ -189,22 +202,32 @@ const UserManagement = () => {
                       <td>{u.ubigeo}</td>
                       <td className="text-center">
                         <div className="action-btn-group">
-                          <button
+                          <CustomButton
+                            variant="editIcon"
                             onClick={() => handleEditUser(u)}
-                            className="custom-btn action-btn"
+                            className="action-btn"
                             style={{
-                              backgroundColor: "#3ca7b7",
-                              border: "2px solid #3ca7b7",
+                              backgroundColor: "var(--primary-color)",
+                              border: `2px solid var(--primary-color)`,
+                              fontFamily: "var(--font-family-base)",
+                              padding: "0.5rem",
+                              width: "40px",
+                              height: "40px",
                             }}
-                          >
-                            <i className="bi bi-pencil" style={{ color: "#fff" }}></i>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteUser(u.id, u.name, u.lastname)}
-                            className="custom-btn-delete action-btn"
-                          >
-                            <i className="bi bi-trash" style={{ color: "#fff" }}></i>
-                          </button>
+                          />
+                          <CustomButton
+                            variant="deleteIcon"
+                            onClick={() =>
+                              handleDeleteUser(u.id, u.name, u.lastname)
+                            }
+                            className="action-btn"
+                            style={{
+                              fontFamily: "var(--font-family-base)",
+                              padding: "0.5rem",
+                              width: "40px",
+                              height: "40px",
+                            }}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -220,83 +243,40 @@ const UserManagement = () => {
             </table>
           </div>
           <div className="d-flex justify-content-center align-items-center mt-4">
-            <button
-              className="custom-btn-outline me-2"
+            <CustomButton
+              type="button"
+              variant="backIcon"
               onClick={goToPreviousPage}
               disabled={currentPage === 1}
+              style={{ fontFamily: "var(--font-family-base)" }}
+            />
+            <span
+              style={{
+                fontFamily: "var(--font-family-base)",
+                margin: "0 1.5rem",
+              }}
             >
-              Anterior
-            </button>
-            <span>
               Página {currentPage} de {totalPages}
             </span>
-            <button
-              className="custom-btn-outline ms-2"
+            <CustomButton
+              type="button"
+              variant="forwardIcon"
               onClick={goToNextPage}
               disabled={currentPage === totalPages}
-            >
-              Siguiente
-            </button>
+              style={{ fontFamily: "var(--font-family-base)" }}
+            />
           </div>
         </div>
       </div>
       <style jsx>{`
-        .custom-btn {
-          background-color: #3ca7b7 !important;
-          border: 2px solid #3ca7b7 !important;
-          border-radius: 0.5rem !important;
-          padding: 12px !important;
-          font-size: 1rem !important;
-          transition: background 0.3s ease !important;
-          color: #fff !important;
-          cursor: pointer;
-        }
-        .custom-btn:hover {
-          background-color: #359aa9 !important;
-          border-color: #359aa9 !important;
-        }
-        .custom-btn-outline {
-          background-color: transparent !important;
-          border: 2px solid #3ca7b7 !important;
-          border-radius: 0.5rem !important;
-          padding: 12px !important;
-          font-size: 1rem !important;
-          transition: background 0.3s ease !important;
-          color: #3ca7b7 !important;
-          cursor: pointer;
-        }
-        .custom-btn-outline:hover {
-          background-color: #3ca7b7 !important;
-          color: #fff !important;
-        }
-        .custom-btn-delete {
-          background-color: #dc3545 !important;
-          border: 2px solid #dc3545 !important;
-          border-radius: 0.5rem !important;
-          width: 40px !important;
-          height: 40px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          font-size: 1rem !important;
-          transition: background 0.3s ease !important;
-          color: #fff !important;
-          cursor: pointer;
-        }
-        .custom-btn-delete:hover {
-          background-color: #c82333 !important;
-          border-color: #c82333 !important;
-        }
         .action-btn-group {
           display: flex;
           gap: 0.5rem;
         }
         .action-btn {
-          width: 40px !important;
-          height: 40px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           padding: 0 !important;
         }
         .custom-table {
@@ -307,6 +287,7 @@ const UserManagement = () => {
           background-color: #fff !important;
           border-radius: 8px;
           overflow: hidden;
+          font-family: var(--font-family-base);
         }
         .custom-table th,
         .custom-table td {
@@ -314,10 +295,11 @@ const UserManagement = () => {
           padding: 8px;
         }
         .custom-table th {
-          color: #3ca7b7;
+          color: var(--primary-color);
           font-weight: bold;
           border-bottom: 1px solid #ddd;
           background-color: #fff !important;
+          font-family: var(--font-family-base);
         }
       `}</style>
     </div>

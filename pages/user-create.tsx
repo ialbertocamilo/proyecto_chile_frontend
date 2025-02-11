@@ -5,6 +5,7 @@ import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import "../public/assets/css/globals.css";
 
 interface UserFormData {
   name: string;
@@ -33,7 +34,6 @@ const UserCreate = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,13 +155,21 @@ const UserCreate = () => {
         style={{
           marginLeft: sidebarWidth,
           width: "100%",
+          fontFamily: "var(--font-family-base)",
         }}
       >
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "60px" }}>
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="fw-bold" style={{ color: "#6dbdc9", margin: 0 }}>
-              Crear Usuario
+            <h2
+              className="fw-bold"
+              style={{
+                color: "var(--primary-color)",
+                margin: 0,
+                fontFamily: "var(--font-family-base)",
+              }}
+            >
+              Registro de Usuario
             </h2>
             <div className="d-flex gap-2">
               <Button
@@ -174,115 +182,130 @@ const UserCreate = () => {
                 form="userCreateForm"
                 className="btn custom-create-btn"
                 disabled={loading}
+                style={{ fontFamily: "var(--font-family-base)" }}
               >
                 {loading ? "Creando..." : "Crear"}
               </button>
             </div>
           </div>
-          {error && <p className="text-danger fw-bold">{error}</p>}
+          {error && (
+            <p className="text-danger fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>
+              {error}
+            </p>
+          )}
           {loading ? (
-            <p className="text-primary">Cargando...</p>
+            <p className="text-primary" style={{ fontFamily: "var(--font-family-base)" }}>
+              Cargando...
+            </p>
           ) : (
             <form id="userCreateForm" onSubmit={handleSubmit}>
-              <div className="border rounded p-3 mb-3">
+              <div className="border rounded p-3 mb-3" style={{ fontFamily: "var(--font-family-base)" }}>
                 <div className="row">
                   <div className="col-md-6">
-                    <label>Nombre</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Nombre</label>
                     <input
                       type="text"
                       name="name"
                       className="form-control"
                       value={userData.name}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label>Apellidos</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Apellidos</label>
                     <input
                       type="text"
                       name="lastname"
                       className="form-control"
                       value={userData.lastname}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                 </div>
                 <div className="row mt-3">
                   <div className="col-md-6">
-                    <label>Email</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Email</label>
                     <input
                       type="email"
                       name="email"
                       className="form-control"
                       value={userData.email}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label>Teléfono</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Teléfono</label>
                     <input
                       type="text"
                       name="number_phone"
                       className="form-control"
                       value={userData.number_phone}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                 </div>
                 <div className="row mt-3">
                   <div className="col-md-6">
-                    <label>Fecha de Nacimiento</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Fecha de Nacimiento</label>
                     <input
                       type="date"
                       name="birthdate"
                       className="form-control"
                       value={userData.birthdate}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
-                    
                   </div>
                   <div className="col-md-6">
-                    <label>País</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>País</label>
                     <input
                       type="text"
                       name="country"
                       className="form-control"
                       value={userData.country}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                 </div>
                 <div className="row mt-3">
                   <div className="col-md-6">
-                    <label>Contraseña</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Contraseña</label>
                     <input
                       type="password"
                       name="password"
                       className="form-control"
                       value={userData.password}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label>Ubigeo</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Ubigeo</label>
                     <input
                       type="text"
                       name="ubigeo"
                       className="form-control"
                       value={userData.ubigeo}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                 </div>
                 <div className="row mt-3">
                   <div className="col-md-6">
-                    <label>Confirmar Contraseña</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Confirmar Contraseña</label>
                     <input
                       type="password"
                       name="confirm_password"
                       className="form-control"
                       value={userData.confirm_password}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                 </div>
@@ -293,7 +316,7 @@ const UserCreate = () => {
       </div>
       <style jsx>{`
         .custom-create-btn {
-          background-color: #3ca7b7 !important;
+          background-color: var(--primary-color) !important;
           border: none !important;
           border-radius: 0.5rem !important;
           padding: 12px !important;
@@ -301,9 +324,10 @@ const UserCreate = () => {
           transition: background 0.3s ease !important;
           color: #fff !important;
           cursor: pointer;
+          font-family: var(--font-family-base) !important;
         }
         .custom-create-btn:hover {
-          background-color: #359aa9 !important;
+          background-color: var(--secondary-color) !important;
         }
       `}</style>
     </div>

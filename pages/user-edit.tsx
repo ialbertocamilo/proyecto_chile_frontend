@@ -3,8 +3,10 @@ import { useRouter } from "next/router";
 import Swal from "sweetalert2"; 
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
-import Button from "../src/components/common/Button";
+import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import "../public/assets/css/globals.css";
+
 type User = {
   id: number;
   name: string;
@@ -76,10 +78,8 @@ const UserEdit = () => {
         throw new Error("No se encontró información del usuario.");
       }
       setUser(foundUser);
-
       setRoleId(foundUser.role_id || 0);
       setActive(foundUser.active ?? true);
-      // Se elimina isDeleted
     } catch (err: any) {
       console.error("Fetch user error:", err);
       setError(err.message || "Error desconocido");
@@ -102,7 +102,6 @@ const UserEdit = () => {
       const payload = {
         role_id: roleId,
         active: active,
-        // Se elimina is_deleted del payload
       };
 
       console.log("Payload to update:", payload);
@@ -181,10 +180,13 @@ const UserEdit = () => {
           if (!response.ok) {
             throw new Error("Error al eliminar usuario");
           }
-          Swal.fire("Eliminado", `El usuario ${user.name} ha sido eliminado.`, "success")
-            .then(() => {
-              router.push("/user-management");
-            });
+          Swal.fire(
+            "Eliminado",
+            `El usuario ${user.name} ha sido eliminado.`,
+            "success"
+          ).then(() => {
+            router.push("/user-management");
+          });
         } catch (error: any) {
           Swal.fire("Error", error.message || "Error al eliminar usuario", "error");
         }
@@ -193,7 +195,7 @@ const UserEdit = () => {
   };
 
   return (
-    <div className="d-flex">
+    <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
       <div
         className="d-flex flex-column flex-grow-1"
@@ -205,75 +207,81 @@ const UserEdit = () => {
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "60px" }}>
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="fw-bold" style={{ color: "#6dbdc9", margin: 0 }}>
+            <h2
+              className="fw-bold"
+              style={{
+                color: "var(--primary-color)",
+                margin: 0,
+                fontFamily: "var(--font-family-base)",
+              }}
+            >
               Editar Usuario
             </h2>
             <div className="d-flex" style={{ gap: "1rem" }}>
-              <Button
-                text="Regresar"
+              <CustomButton
+                variant="backIcon"
                 onClick={() => router.push("/user-management")}
-                className="btn-secondary"
-              />
-              <button
-                type="button"
+              >
+                Regresar
+              </CustomButton>
+              <CustomButton
+                variant="deleteIcon"
                 onClick={handleDeleteUser}
-                className="btn"
                 disabled={loading}
-                style={{
-                  backgroundColor: "#dc3545",
-                  border: "none",
-                  borderRadius: "0.5rem",
-                  padding: "12px",
-                  fontSize: "1rem",
-                  transition: "background 0.3s ease",
-                  color: "#fff",
-                }}
               >
                 Eliminar
-              </button>
-              <button
+              </CustomButton>
+              <CustomButton
+                variant="save"
                 type="submit"
                 form="userEditForm"
-                className="btn"
                 disabled={loading}
-                style={{
-                  backgroundColor: "#3ca7b7",
-                  border: "none",
-                  borderRadius: "0.5rem",
-                  padding: "12px",
-                  fontSize: "1rem",
-                  transition: "background 0.3s ease",
-                  color: "#fff",
-                }}
               >
                 {loading ? "Actualizando..." : "Actualizar Usuario"}
-              </button>
+              </CustomButton>
             </div>
           </div>
-          {loading && <p>Cargando...</p>}
-          {error && <p className="text-danger">{error}</p>}
+          {loading && <p style={{ fontFamily: "var(--font-family-base)" }}>Cargando...</p>}
+          {error && (
+            <p className="text-danger" style={{ fontFamily: "var(--font-family-base)" }}>
+              {error}
+            </p>
+          )}
           {user ? (
-            <form id="userEditForm" onSubmit={handleSubmit}>
+            <form id="userEditForm" onSubmit={handleSubmit} style={{ fontFamily: "var(--font-family-base)" }}>
               <div className="mb-3">
-                <label>Nombre</label>
-                <input type="text" className="form-control" value={user.name} readOnly />
+                <label style={{ fontFamily: "var(--font-family-base)" }}>Nombre</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={user.name}
+                  readOnly
+                  style={{ fontFamily: "var(--font-family-base)" }}
+                />
               </div>
               <div className="mb-3">
-                <label>Email</label>
-                <input type="email" className="form-control" value={user.email} readOnly />
+                <label style={{ fontFamily: "var(--font-family-base)" }}>Email</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  value={user.email}
+                  readOnly
+                  style={{ fontFamily: "var(--font-family-base)" }}
+                />
               </div>
               <div className="mb-3">
-                <label>Role ID</label>
+                <label style={{ fontFamily: "var(--font-family-base)" }}>Role ID</label>
                 <select
                   className="form-control"
                   value={roleId}
                   onChange={(e) => setRoleId(Number(e.target.value))}
                   required
+                  style={{ fontFamily: "var(--font-family-base)" }}
                 >
                   <option value={1}>Administrador</option>
                   <option value={2}>Usuario</option>
                 </select>
-                <small className="text-muted">
+                <small className="text-muted" style={{ fontFamily: "var(--font-family-base)" }}>
                   Selecciona "Administrador" o "Usuario".
                 </small>
               </div>
@@ -285,16 +293,71 @@ const UserEdit = () => {
                   checked={active}
                   onChange={(e) => setActive(e.target.checked)}
                 />
-                <label className="form-check-label" htmlFor="activeCheck">
+                <label className="form-check-label" htmlFor="activeCheck" style={{ fontFamily: "var(--font-family-base)" }}>
                   Activo
                 </label>
               </div>
             </form>
           ) : (
-            !loading && <p>No se encontró información del usuario.</p>
+            !loading && <p style={{ fontFamily: "var(--font-family-base)" }}>No se encontró información del usuario.</p>
           )}
         </div>
       </div>
+      <style jsx>{`
+        .custom-btn {
+          background-color: var(--primary-color) !important;
+          border: 2px solid var(--primary-color) !important;
+          border-radius: 0.5rem !important;
+          padding: 12px !important;
+          font-size: 1rem !important;
+          transition: background 0.3s ease !important;
+          color: #fff !important;
+          cursor: pointer;
+          font-family: var(--font-family-base) !important;
+        }
+        .custom-btn:hover {
+          background-color: var(--secondary-color) !important;
+          border-color: var(--secondary-color) !important;
+        }
+        .btn-secondary {
+          font-family: var(--font-family-base);
+          font-size: var(--font-size-base);
+        }
+        .custom-table {
+          width: 100%;
+          border: 1px solid #ddd;
+          border-collapse: separate;
+          border-spacing: 0;
+          background-color: #fff !important;
+          border-radius: 8px;
+          overflow: hidden;
+          font-family: var(--font-family-base);
+        }
+        .custom-table th,
+        .custom-table td {
+          border: none;
+          padding: 8px;
+        }
+        .custom-table th {
+          color: var(--primary-color);
+          font-weight: bold;
+          border-bottom: 1px solid #ddd;
+          background-color: #fff !important;
+          font-family: var(--font-family-base);
+        }
+        .action-btn-group {
+          display: flex;
+          gap: 0.5rem;
+        }
+        .action-btn {
+          width: 40px !important;
+          height: 40px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+        }
+      `}</style>
     </div>
   );
 };

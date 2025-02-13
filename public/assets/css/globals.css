@@ -1,21 +1,31 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Encode+Sans:wght@400;700&display=swap');
 
 :root {
   --font-family-base: 'Encode Sans', sans-serif;
   --font-size-base: 16px;
   --font-size-heading: 2em;
-  --primary-color: #3ca7b7;      /* Color principal, usado en titulos y botones */
+  --primary-color: #3ca7b7;      /* Color principal, usado en títulos y botones */
   --secondary-color: #bbc4cb;    /* Color secundario, por ejemplo para hover en botones */
-  --text-color: #333;            /* Color de texto general */
-  --muted-text: #d3d3d3;         /* Color para textos menos destacados */
+  --background-color: #FFF;  /* Color de fondo */
+  --text-color: #333;
+  --muted-text: #d3d3d3;
+
+  /* Variables para botones */
+  --btn-save-bg: #3ca7b7;
+  --btn-save-hover-bg: #359ea7;
+  --btn-back-bg: #6b7280;
+  --btn-back-hover-bg: #4b5563;
+  --btn-delete-bg: #ef4444;
+  --btn-delete-hover-bg: #dc2626;
 }
 
-  /* Estilos base */
-  body {
-    font-family: var(--font-family-base);
-    font-size: var(--font-size-base);
-    color: var(--text-color);
-    margin: 0;
-    padding: 0;
-  }
-  
+/* Estilos base */
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  color: var(--text-color);
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import Swal from "sweetalert2"; 
-import axios from "axios"; 
+import Swal from "sweetalert2";
+import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
@@ -20,7 +20,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
   const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
 
-  // Datos del formulario en pasos 1 y 2
+  // Datos del formulario (pasos 1 y 2)
   const [formData, setFormData] = useState({
     name_project: "",
     owner_name: "",
@@ -40,32 +40,19 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   const [locationSearch, setLocationSearch] = useState("");
   const [foundLocations, setFoundLocations] = useState("");
 
-  // Paginación para lista de materiales
   const [materialsList, setMaterialsList] = useState<any[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 5; // 5 materiales por pagina
 
-  // Materiales seleccionados
-  const [selectedMaterials, setSelectedMaterials] = useState<
-    { id: number; name: string }[]
-  >([]);
-
-  // Estados para el modal de "Agregar nuevo material"
+  const [selectedMaterials, setSelectedMaterials] = useState<any[]>([]);
   const [showAddMaterialModal, setShowAddMaterialModal] = useState(false);
-  const [newMaterialName, setNewMaterialName] = useState("");
-  const [newMaterialDensity, setNewMaterialDensity] = useState<number>(0);
-  const [newMaterialConductivity, setNewMaterialConductivity] = useState<number>(0);
-  const [newMaterialSpecificHeat, setNewMaterialSpecificHeat] = useState<number>(0);
 
-  // Estado para los detalles constructivos (Paso 4)
   const [details, setDetails] = useState<any[]>([]);
-  // Pestaña activa para detalles
   const [tabDetailSection, setTabDetailSection] = useState("Techumbre");
 
-  // Estado para elementos (Paso 5)
   const [elementsList, setElementsList] = useState<any[]>([]);
+  const [selectedElements, setSelectedElements] = useState<any[]>([]);
+  const [showAddElementModal, setShowAddElementModal] = useState(false);
+  const [modalElementType, setModalElementType] = useState<string>("ventanas");
 
-  // Datos de ejemplo para otros pasos 
   const detallesData = [
     { ubicacion: "Techo", nombre: "Techo Base", capas: "Hormigón Armado", espesor: 10.0 },
     { ubicacion: "Techo", nombre: "Techo Base", capas: "P.E 10kg/m3", espesor: 4.6 },
@@ -82,7 +69,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     { nombreAbrev: "Piso Base", valorU: 2.0, aislBajoPiso: "-", refAislVert: "-", dCm: "-", refAislHoriz: "-" },
   ];
   const ventanasData = [
-    { nombre: "V Base", uVidrio: 5.7, fsVidrio: 0.87, tipoCierre: "Corredera", tipoMarco: "Fierro", uMarco: 5.7, fm: "75%" },
+    { nombre: "V Base", uVidrio: 5.7, fs_vidrio: 0.87, tipoCierre: "Corredera", tipoMarco: "Fierro", uMarco: 5.7, fm: "75%" },
   ];
   const puertasData = [
     { nombre: "P Base", uPuerta: 2.63, vidrio: "V Base", porcVidrio: "0%", uMarco: 1.25, fm: "8.8%" },
@@ -112,16 +99,58 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     },
   ]);
 
-  const handleInputChange = (field: string, value: any) => {
+  const [showCreateDoorModal, setShowCreateDoorModal] = useState(false);
+  const [showCreateWindowModal, setShowCreateWindowModal] = useState(false);
+
+  const [doorData, setDoorData] = useState({
+    name_element: "",
+    ventana_id: 0,
+    name_ventana: "",
+    u_puerta_opaca: 0,
+    porcentaje_vidrio: 0,
+    u_marco: 0,
+    fm: 0,
+  });
+
+  const [windowData, setWindowData] = useState({
+    name_element: "",
+    u_vidrio: 0,
+    fs_vidrio: 0,
+    frame_type: "",
+    clousure_type: "",
+    u_marco: 0,
+    fm: 0,
+  });
+
+  const handleFormInputChange = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  // para guardar datos en el Paso 7
-  const handleSave = () => {
-    Swal.fire("Datos guardados", "Los datos se han guardado correctamente (placeholder).", "success");
+  const handleSaveData = () => {
+    if (!createdProjectId) {
+      Swal.fire("Error", "Proyecto no encontrado", "error");
+      return;
+    }
+    Swal.fire(
+      "Datos guardados",
+      `Se han guardado los datos en el proyecto ${createdProjectId} - ${formData.name_project}`,
+      "success"
+    );
+    setStep(4);
   };
 
-  // Endpoint: crear proyecto (Paso 2)
+  const handleSaveProject = () => {
+    if (!createdProjectId) {
+      Swal.fire("Error", "Proyecto no encontrado", "error");
+      return;
+    }
+    Swal.fire(
+      "Datos guardados",
+      `Se han guardado los datos en el proyecto ${createdProjectId} - ${formData.name_project}`,
+      "success"
+    );
+  };
+
   const handleCreateProject = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -148,114 +177,52 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         longitude: formData.longitude,
       };
       const url = `${constantUrlApiEndpoint}/projects/create`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
+      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const response = await axios.post(url, requestBody, { headers });
       console.log("Proyecto creado:", response.data);
       const { project_id, message } = response.data;
       setCreatedProjectId(project_id);
       setProjectCreated(true);
       Swal.fire("Proyecto creado", `ID: ${project_id} / Mensaje: ${message}`, "success");
-      setStep(3); // Avanzar a Paso 3
+      setStep(3);
     } catch (error: any) {
       console.error("Error al crear proyecto:", error.response?.data || error.message);
       Swal.fire("Error al crear proyecto", error.response?.data?.detail || error.message, "error");
     }
   };
 
-  // Funcion para agregar un material a la lista de seleccionados
   const handleAddMaterial = (material: any) => {
     if (selectedMaterials.some((m) => m.id === material.id)) {
       Swal.fire("Material ya seleccionado", "Este material ya fue agregado", "info");
       return;
     }
-    setSelectedMaterials([...selectedMaterials, { id: material.id, name: material.atributs?.name }]);
+    setSelectedMaterials([...selectedMaterials, material]);
     Swal.fire("Material agregado", `${material.atributs?.name} ha sido seleccionado.`, "success");
   };
 
-  // Funcion para eliminar un material de la lista de seleccionados
   const handleRemoveMaterial = (materialId: number) => {
     setSelectedMaterials(selectedMaterials.filter((m) => m.id !== materialId));
     Swal.fire("Material removido", "El material ha sido eliminado de la selección", "info");
   };
 
-  // Funcion para guardar los materiales seleccionados en el proyecto
-  const handleSaveMaterials = async () => {
-    if (!createdProjectId) {
-      Swal.fire("Proyecto no encontrado", "No se ha creado el proyecto.", "error");
-      return;
-    }
-    if (selectedMaterials.length === 0) {
-      Swal.fire("Sin materiales", "Selecciona al menos un material.", "warning");
-      return;
-    }
+  const fetchMaterialsList = async (page: number) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/projects/${createdProjectId}/constants/select`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-      const body = selectedMaterials.map((m) => m.id);
-      const response = await axios.post(url, body, { headers });
-      Swal.fire("Materiales guardados", response.data.message, "success");
-      setStep(4);
+      const url = `${constantUrlApiEndpoint}/admin/constants/?page=${page}&per_page=100`;
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(url, { headers });
+      const data = response.data;
+      setMaterialsList(data.constants || []);
     } catch (error: any) {
-      console.error("Error al guardar materiales:", error.response?.data || error.message);
-      Swal.fire("Error", error.response?.data?.detail || error.message, "error");
+      console.error("Error al obtener lista de materiales:", error);
+      Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
     }
   };
 
-  // Función para enviar el nuevo material 
-  const handleNewMaterialSubmit = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
-        return;
-      }
-      const url = `${constantUrlApiEndpoint}/user/constants/create`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-      const body = {
-        atributs: {
-          name: newMaterialName,
-          density: newMaterialDensity,
-          conductivity: newMaterialConductivity,
-          specific_heat: newMaterialSpecificHeat,
-        },
-        name: "materials",
-        type: "definition materials",
-      };
-      const response = await axios.post(url, body, { headers });
-      const nuevoMaterial = response.data;
-      Swal.fire("Material agregado", `${nuevoMaterial.atributs.name} fue creado correctamente.`, "success");
-      // Actualizar la lista principal
-      setMaterialsList((prev) => [nuevoMaterial, ...prev]);
-      // Agregar a la lista de seleccionados
-      setSelectedMaterials((prev) => [...prev, { id: nuevoMaterial.id, name: nuevoMaterial.atributs.name }]);
-      // refrescamos la lista principal 
-      fetchMaterialsList(currentPage);
-      setNewMaterialName("");
-      setNewMaterialDensity(0);
-      setNewMaterialConductivity(0);
-      setNewMaterialSpecificHeat(0);
-      setShowAddMaterialModal(false);
-    } catch (error: any) {
-      console.error("Error al crear material:", error.response?.data || error.message);
-      Swal.fire("Error", error.response?.data?.detail || error.message, "error");
-    }
-  };
-
-  // Función para obtener los detalles constructivos (Paso 4)
   const fetchDetails = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -263,11 +230,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
         return;
       }
-      // section=admin segun lo solicitado
       const url = `${constantUrlApiEndpoint}/user/details/?section=admin`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
+      const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setDetails(response.data || []);
     } catch (error: any) {
@@ -276,7 +240,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     }
   };
 
-  // Funcion para filtrar detalles segun la pestaña seleccionada
   const getFilteredDetails = (tab: string) => {
     let section = "";
     switch (tab) {
@@ -295,35 +258,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     return details.filter((d) => d.scantilon_location.toLowerCase() === section);
   };
 
-  // Funcion para obtener la lista de materiales
-  const fetchMaterialsList = async (page: number) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
-        return;
-      }
-      const url = `${constantUrlApiEndpoint}/admin/constants/?page=${page}&per_page=${perPage}`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
-      const response = await axios.get(url, { headers });
-      const data = response.data;
-      setMaterialsList(data.constants || []);
-    } catch (error: any) {
-      if (error.response && error.response.status === 404) {
-        Swal.fire("No hay más materiales", "Regresando a la página anterior.", "info");
-        if (currentPage > 1) {
-          setCurrentPage((prev) => prev - 1);
-        }
-      } else {
-        console.error("Error al obtener lista de materiales:", error);
-        Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
-      }
-    }
-  };
-
-  // Funcion para obtener los elementos (Paso 5) 
   const fetchElements = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -332,10 +266,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         return;
       }
       const url = `${constantUrlApiEndpoint}/admin/elements/`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      };
+      const headers = { Authorization: `Bearer ${token}`, Accept: "application/json" };
       const response = await axios.get(url, { headers });
       setElementsList(response.data || []);
     } catch (error: any) {
@@ -344,7 +275,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     }
   };
 
-  // Funcion seleccionar ventana o puerta y registrarlas en el proyecto
   const handleSelectWindow = async (id: number) => {
     if (!createdProjectId) {
       Swal.fire("Proyecto no encontrado", "No se ha creado el proyecto.", "error");
@@ -357,10 +287,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         return;
       }
       const url = `${constantUrlApiEndpoint}/projects/${createdProjectId}/elements/windows/select`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
+      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const body = [id];
       const response = await axios.post(url, body, { headers });
       Swal.fire("Ventana agregada", response.data.message, "success");
@@ -382,10 +309,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         return;
       }
       const url = `${constantUrlApiEndpoint}/projects/${createdProjectId}/elements/doors/select`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
+      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const body = [id];
       const response = await axios.post(url, body, { headers });
       Swal.fire("Puerta agregada", response.data.message, "success");
@@ -395,33 +319,93 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     }
   };
 
-  // Funcion para agregar un nuevo detalle 
   const handleAddDetail = () => {
     Swal.fire("Agregar detalle", "Funcionalidad pendiente para agregar un nuevo detalle.", "info");
   };
 
-  // useEffect para cargar la lista de materiales cuando estemos en el paso 3
-  useEffect(() => {
-    if (step === 3) {
-      fetchMaterialsList(currentPage);
+  const handleAddElement = (element: any) => {
+    if (selectedElements.some((el) => el.id === element.id)) {
+      Swal.fire("Elemento ya seleccionado", "Este elemento ya fue agregado", "info");
+      return;
     }
-  }, [step, currentPage]);
+    setSelectedElements([...selectedElements, element]);
+    Swal.fire("Elemento agregado", `${element.name_element} ha sido agregado.`, "success");
+  };
 
-  // useEffect para cargar los detalles cuando estemos en el paso 4
+  const handleRemoveElement = (elementId: number) => {
+    setSelectedElements(selectedElements.filter((el) => el.id !== elementId));
+    Swal.fire("Elemento removido", "El elemento ha sido eliminado de la selección", "info");
+  };
+
+  const handleCreateDoorElement = () => {
+    const newDoor = {
+      id: new Date().getTime(),
+      type: "door",
+      name_element: doorData.name_element,
+      u_marco: doorData.u_marco,
+      fm: doorData.fm,
+      atributs: {
+        u_puerta_opaca: doorData.u_puerta_opaca,
+        porcentaje_vidrio: doorData.porcentaje_vidrio,
+        name_ventana: doorData.name_ventana,
+      },
+    };
+    handleAddElement(newDoor);
+    Swal.fire("Puerta creada", `La puerta ${doorData.name_element} ha sido creada.`, "success");
+    setShowCreateDoorModal(false);
+    setDoorData({
+      name_element: "",
+      ventana_id: 0,
+      name_ventana: "",
+      u_puerta_opaca: 0,
+      porcentaje_vidrio: 0,
+      u_marco: 0,
+      fm: 0,
+    });
+  };
+
+  const handleCreateWindowElement = () => {
+    const newWindow = {
+      id: new Date().getTime(),
+      type: "window",
+      name_element: windowData.name_element,
+      u_marco: windowData.u_marco,
+      fm: windowData.fm,
+      atributs: {
+        u_vidrio: windowData.u_vidrio,
+        fs_vidrio: windowData.fs_vidrio,
+        frame_type: windowData.frame_type,
+        clousure_type: windowData.clousure_type,
+      },
+    };
+    handleAddElement(newWindow);
+    Swal.fire("Ventana creada", `La ventana ${windowData.name_element} ha sido creada.`, "success");
+    setShowCreateWindowModal(false);
+    setWindowData({
+      name_element: "",
+      u_vidrio: 0,
+      fs_vidrio: 0,
+      frame_type: "",
+      clousure_type: "",
+      u_marco: 0,
+      fm: 0,
+    });
+  };
+
   useEffect(() => {
-    if (step === 4) {
-      fetchDetails();
-    }
+    if (step === 3) fetchMaterialsList(1);
   }, [step]);
 
-  // useEffect para cargar los elementos cuando estemos en el paso 5
   useEffect(() => {
-    if (step === 5) {
-      fetchElements();
-    }
+    if (step === 4) fetchDetails();
   }, [step]);
 
-  // Encabezado principal
+  useEffect(() => {
+    if (step === 5) fetchElements();
+  }, [step]);
+
+  const availableWindows = elementsList.filter((el) => el.type === "window");
+
   const renderMainHeader = () => {
     if (step <= 2) {
       return (
@@ -433,12 +417,12 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       return (
         <div className="mb-3">
           <h2 className="fw-bold">Detalles del proyecto</h2>
-          <div className="d-flex align-items-center gap-2 mt-2">
-            <span style={{ fontWeight: "bold" }}>Proyecto:</span>
-            <CustomButton variant="save" style={{ padding: "0.5rem 1rem" }}>
+          <div className="d-flex align-items-center gap-4 mt-4">
+            <span style={{ fontWeight: "normal" }}>Proyecto:</span>
+            <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
               {`Edificación Nº ${createdProjectId ?? "xxxxx"}`}
             </CustomButton>
-            <CustomButton variant="save" style={{ padding: "0.5rem 1rem" }}>
+            <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
               {formData.department || "Departamento"}
             </CustomButton>
           </div>
@@ -447,9 +431,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     }
   };
 
-  // Estilos para la sidebar
   const internalSidebarWidth = 380;
-  const sidebarItemHeight = 80;
+  const sidebarItemHeight = 100;
   const sidebarItemBorderSize = 1;
   const leftPadding = 50;
 
@@ -491,18 +474,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     );
   };
 
-  // Logica de paginacion
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
-  const handleNextPage = () => {
-    if (materialsList.length === perPage) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
-
   return (
     <>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
@@ -511,20 +482,18 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       <div
         className="container"
         style={{
-          maxWidth: "1400px",
-          marginTop: "80px",
-          marginLeft: `calc(${sidebarWidth} + 130px)`,
-          marginRight: "30px",
-          transition: "margin-left 0.3s ease",
+          maxWidth: "1700px",
+          marginTop: "90px",
+          marginLeft: `calc(${sidebarWidth} + 70px)`,
+          marginRight: "50px",
+          transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
         }}
       >
         {renderMainHeader()}
-
         <div className="card shadow w-100" style={{ overflow: "hidden" }}>
           <div className="card-body p-0">
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
-              {/* Sidebar interno */}
               <div
                 style={{
                   width: `${internalSidebarWidth}px`,
@@ -543,10 +512,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                   <SidebarItem stepNumber={7} iconClass="bi bi-check2-square" title="Recinto" />
                 </ul>
               </div>
-
-              {/* Contenido principal */}
               <div style={{ flex: 1, padding: "20px" }}>
-                {/* PASO 1 */}
                 {step === 1 && (
                   <>
                     <div className="row mb-3">
@@ -556,7 +522,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.name_project}
-                          onChange={(e) => handleInputChange("name_project", e.target.value)}
+                          onChange={(e) => handleFormInputChange("name_project", e.target.value)}
                         />
                       </div>
                       <div className="col-12 col-md-6">
@@ -565,7 +531,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.owner_name}
-                          onChange={(e) => handleInputChange("owner_name", e.target.value)}
+                          onChange={(e) => handleFormInputChange("owner_name", e.target.value)}
                         />
                       </div>
                     </div>
@@ -576,7 +542,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.owner_lastname}
-                          onChange={(e) => handleInputChange("owner_lastname", e.target.value)}
+                          onChange={(e) => handleFormInputChange("owner_lastname", e.target.value)}
                         />
                       </div>
                       <div className="col-12 col-md-6">
@@ -585,7 +551,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.country}
-                          onChange={(e) => handleInputChange("country", e.target.value)}
+                          onChange={(e) => handleFormInputChange("country", e.target.value)}
                         />
                       </div>
                     </div>
@@ -596,7 +562,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.department}
-                          onChange={(e) => handleInputChange("department", e.target.value)}
+                          onChange={(e) => handleFormInputChange("department", e.target.value)}
                         />
                       </div>
                       <div className="col-12 col-md-6">
@@ -605,7 +571,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.province}
-                          onChange={(e) => handleInputChange("province", e.target.value)}
+                          onChange={(e) => handleFormInputChange("province", e.target.value)}
                         />
                       </div>
                     </div>
@@ -616,7 +582,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.district}
-                          onChange={(e) => handleInputChange("district", e.target.value)}
+                          onChange={(e) => handleFormInputChange("district", e.target.value)}
                         />
                       </div>
                       <div className="col-12 col-md-6">
@@ -625,7 +591,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.building_type}
-                          onChange={(e) => handleInputChange("building_type", e.target.value)}
+                          onChange={(e) => handleFormInputChange("building_type", e.target.value)}
                         />
                       </div>
                     </div>
@@ -636,7 +602,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.main_use_type}
-                          onChange={(e) => handleInputChange("main_use_type", e.target.value)}
+                          onChange={(e) => handleFormInputChange("main_use_type", e.target.value)}
                         />
                       </div>
                       <div className="col-12 col-md-6">
@@ -646,7 +612,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           className="form-control"
                           value={formData.number_levels}
                           onChange={(e) =>
-                            handleInputChange("number_levels", parseInt(e.target.value) || 0)
+                            handleFormInputChange("number_levels", parseInt(e.target.value) || 0)
                           }
                         />
                       </div>
@@ -659,7 +625,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           className="form-control"
                           value={formData.number_homes_per_level}
                           onChange={(e) =>
-                            handleInputChange("number_homes_per_level", parseInt(e.target.value) || 0)
+                            handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)
                           }
                         />
                       </div>
@@ -670,7 +636,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           className="form-control"
                           value={formData.built_surface}
                           onChange={(e) =>
-                            handleInputChange("built_surface", parseFloat(e.target.value) || 0)
+                            handleFormInputChange("built_surface", parseFloat(e.target.value) || 0)
                           }
                         />
                       </div>
@@ -683,7 +649,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                   </>
                 )}
 
-                {/* PASO 2 */}
                 {step === 2 && (
                   <>
                     <h5 className="fw-bold mb-3">Ubicación del proyecto</h5>
@@ -712,8 +677,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           variant="save"
                           style={{ width: "100%" }}
                           onClick={() => {
-                            handleInputChange("latitude", 150);
-                            handleInputChange("longitude", 250);
+                            handleFormInputChange("latitude", 150);
+                            handleFormInputChange("longitude", 250);
                             Swal.fire("Ubicación asignada", "Ubicación de prueba (lat=150, lon=250)", "success");
                           }}
                         >
@@ -722,9 +687,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="back" onClick={() => setStep(1)}>
-                        Anterior
-                      </CustomButton>
+                      <CustomButton variant="backIcon" onClick={() => setStep(1)} />
                       <CustomButton variant="save" onClick={handleCreateProject}>
                         Guardar proyecto
                       </CustomButton>
@@ -732,7 +695,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                   </>
                 )}
 
-                {/* PASO 3: Lista de materiales */}
                 {step === 3 && (
                   <>
                     <div className="d-flex justify-content-end mb-3">
@@ -740,76 +702,47 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                         <i className="bi bi-plus"></i> Nuevo
                       </CustomButton>
                     </div>
-                    <table className="table table-bordered">
-                      <thead>
-                        <tr>
-                          <th style={{ color: "var(--primary-color)" }}>Nombre Material</th>
-                          <th style={{ color: "var(--primary-color)" }}>Conductividad (W/mK)</th>
-                          <th style={{ color: "var(--primary-color)" }}>Calor específico (J/kgK)</th>
-                          <th style={{ color: "var(--primary-color)" }}>Densidad (kg/m3)</th>
-                          <th style={{ color: "var(--primary-color)" }}>Acción</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {materialsList.map((mat, idx) => {
-                          const atributos = mat.atributs || {};
-                          return (
-                            <tr key={idx}>
-                              <td>{atributos.name}</td>
-                              <td>{atributos.conductivity}</td>
-                              <td>{atributos["specific heat"]}</td>
-                              <td>{atributos.density}</td>
-                              <td>
-                                <CustomButton variant="addIcon" onClick={() => handleAddMaterial(mat)} />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-
-                    <div className="d-flex justify-content-end align-items-center mt-3 gap-3">
-                      <span>Página: {currentPage}</span>
-                      <CustomButton variant="backIcon" onClick={handlePrevPage} disabled={currentPage === 1} margin="0.5rem" />
-                      <CustomButton variant="forwardIcon" onClick={handleNextPage} disabled={materialsList.length < perPage} margin="0.5rem" />
-                    </div>
-
-                    <h6 className="mt-4">Materiales Seleccionados</h6>
+                    <h6 className="mb-3">Materiales Agregados</h6>
                     {selectedMaterials.length > 0 ? (
-                      <table className="table table-bordered" style={{ width: "35%" }}>
+                      <table className="table table-bordered table-striped">
                         <thead>
                           <tr>
                             <th style={{ color: "var(--primary-color)" }}>Nombre Material</th>
+                            <th style={{ color: "var(--primary-color)" }}>Conductividad (W/m2K)</th>
+                            <th style={{ color: "var(--primary-color)" }}>Calor específico (J/kgK)</th>
+                            <th style={{ color: "var(--primary-color)" }}>Densidad (kg/m3)</th>
                             <th style={{ color: "var(--primary-color)" }}>Acción</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {selectedMaterials.map((mat) => (
-                            <tr key={mat.id}>
-                              <td>{mat.name}</td>
-                              <td>
-                                <CustomButton variant="deleteIcon" onClick={() => handleRemoveMaterial(mat.id)} />
-                              </td>
-                            </tr>
-                          ))}
+                          {selectedMaterials.map((mat, idx) => {
+                            const atributos = mat.atributs || {};
+                            return (
+                              <tr key={idx}>
+                                <td>{atributos.name}</td>
+                                <td>{atributos.conductivity}</td>
+                                <td>{atributos["specific heat"]}</td>
+                                <td>{atributos.density}</td>
+                                <td>
+                                  <CustomButton variant="deleteIcon" onClick={() => handleRemoveMaterial(mat.id)} />
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     ) : (
-                      <p>No se ha seleccionado ningún material.</p>
+                      <p>No se ha agregado ningún material.</p>
                     )}
-
                     <div className="mt-4 text-end">
-                      <CustomButton variant="back" onClick={() => setStep(2)}>
-                        Anterior
-                      </CustomButton>
-                      <CustomButton variant="save" onClick={handleSaveMaterials}>
+                      <CustomButton variant="backIcon" onClick={() => setStep(2)} />
+                      <CustomButton variant="save" onClick={handleSaveData}>
                         Grabar datos
                       </CustomButton>
                     </div>
                   </>
                 )}
 
-                {/* PASO 4: Detalles constructivos */}
                 {step === 4 && (
                   <>
                     <div className="d-flex justify-content-end mb-3">
@@ -828,6 +761,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                               color: tabDetailSection === tab ? "var(--primary-color)" : "var(--secondary-color)",
                               border: "none",
                               cursor: "pointer",
+                              borderBottom: tabDetailSection === tab ? "3px solid var(--primary-color)" : "none",
                             }}
                             onClick={() => setTabDetailSection(tab)}
                           >
@@ -840,10 +774,10 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                       {((tabDetailSection === "Detalles" ? details : getFilteredDetails(tabDetailSection)).length > 0) ? (
                         <>
                           {tabDetailSection === "Detalles" ? (
-                            <table className="table table-bordered">
+                            <table className="table table-bordered table-striped">
                               <thead>
                                 <tr>
-                                  <th style={{ color: "var(--primary-color)" }}>Ubicacion Detalle</th>
+                                  <th style={{ color: "var(--primary-color)" }}>Ubicación Detalle</th>
                                   <th style={{ color: "var(--primary-color)" }}>Nombre Detalle</th>
                                   <th style={{ color: "var(--primary-color)" }}>Capas de interior a exterior</th>
                                   <th style={{ color: "var(--primary-color)" }}>Espesor capa (cm)</th>
@@ -861,7 +795,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                               </tbody>
                             </table>
                           ) : tabDetailSection === "Muros" ? (
-                            <table className="table table-bordered">
+                            <table className="table table-bordered table-striped">
                               <thead>
                                 <tr>
                                   <th style={{ color: "var(--primary-color)" }}>Nombre Abreviado</th>
@@ -882,7 +816,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                               </tbody>
                             </table>
                           ) : tabDetailSection === "Techumbre" ? (
-                            <table className="table table-bordered">
+                            <table className="table table-bordered table-striped">
                               <thead>
                                 <tr>
                                   <th style={{ color: "var(--primary-color)" }}>Nombre Abreviado</th>
@@ -903,7 +837,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                               </tbody>
                             </table>
                           ) : tabDetailSection === "Pisos" ? (
-                            <table className="table table-bordered">
+                            <table className="table table-bordered table-striped">
                               <thead>
                                 <tr>
                                   <th style={{ color: "var(--primary-color)" }}>Nombre Abreviado</th>
@@ -932,9 +866,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                       )}
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="back" onClick={() => setStep(3)}>
-                        Anterior
-                      </CustomButton>
+                      <CustomButton variant="backIcon" onClick={() => setStep(3)} />
                       <CustomButton variant="save" onClick={() => setStep(5)}>
                         Grabar datos
                       </CustomButton>
@@ -942,11 +874,10 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                   </>
                 )}
 
-                {/* PASO 5: Elementos operables */}
                 {step === 5 && (
                   <>
                     <div className="d-flex justify-content-end mb-3">
-                      <CustomButton variant="save" onClick={handleAddDetail}>
+                      <CustomButton variant="save" onClick={() => setShowAddElementModal(true)}>
                         <i className="bi bi-plus"></i> Nuevo
                       </CustomButton>
                     </div>
@@ -961,18 +892,25 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                               color: tabElementosOperables === tab.toLowerCase() ? "var(--primary-color)" : "var(--secondary-color)",
                               border: "none",
                               cursor: "pointer",
+                              borderBottom: tabElementosOperables === tab.toLowerCase() ? "3px solid var(--primary-color)" : "none",
                             }}
-                            onClick={() => setTabElementosOperables(tab.toLowerCase())}
+                            onClick={() => {
+                              setTabElementosOperables(tab.toLowerCase());
+                              setModalElementType(tab.toLowerCase());
+                            }}
                           >
                             {tab}
                           </button>
                         </li>
                       ))}
                     </ul>
-                    {tabElementosOperables === "ventanas" ? (
-                      elementsList.filter((el) => el.type === "window").length > 0 ? (
-                        <table className="table table-bordered">
-                          <thead>
+                    <h6 className="mb-3">Elementos Agregados</h6>
+                    {selectedElements
+                      .filter((el) => el.type === (tabElementosOperables === "ventanas" ? "window" : "door"))
+                      .length > 0 ? (
+                      <table className="table table-bordered table-striped">
+                        <thead>
+                          {tabElementosOperables === "ventanas" ? (
                             <tr>
                               <th style={{ color: "var(--primary-color)" }}>Nombre Elemento</th>
                               <th style={{ color: "var(--primary-color)" }}>U Vidrio [W/m2K]</th>
@@ -983,73 +921,64 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                               <th style={{ color: "var(--primary-color)" }}>FM [%]</th>
                               <th style={{ color: "var(--primary-color)" }}>Acción</th>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {elementsList
-                              .filter((el) => el.type === "window")
-                              .map((el: any) => (
-                                <tr key={el.id}>
-                                  <td>{el.name_element}</td>
-                                  <td>{el.atributs?.u_vidrio}</td>
-                                  <td>{el.atributs?.fs_vidrio}</td>
-                                  <td>{el.atributs?.clousure_type}</td>
-                                  <td>{el.atributs?.frame_type}</td>
-                                  <td>{el.u_marco}</td>
-                                  <td>{(el.fm * 100).toFixed(0)}%</td>
-                                  <td>
-                                    <CustomButton variant="addIcon" onClick={() => handleSelectWindow(el.id)} />
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <p>No hay elementos para ventanas.</p>
-                      )
-                    ) : (
-                      elementsList.filter((el) => el.type === "door").length > 0 ? (
-                        <table className="table table-bordered">
-                          <thead>
+                          ) : (
                             <tr>
                               <th style={{ color: "var(--primary-color)" }}>Nombre Elemento</th>
-                              <th style={{ color: "var(--primary-color)" }}>U puerta opaca [W/m2K]</th>
-                              <th style={{ color: "var(--primary-color)" }}>Vidrio []</th>
-                              <th style={{ color: "var(--primary-color)" }}>% vidrio [%]</th>
+                              <th style={{ color: "var(--primary-color)" }}>U Puerta opaca [W/m2K]</th>
+                              <th style={{ color: "var(--primary-color)" }}>Nombre Ventana</th>
+                              <th style={{ color: "var(--primary-color)" }}>% Vidrio</th>
                               <th style={{ color: "var(--primary-color)" }}>U Marco [W/m2K]</th>
                               <th style={{ color: "var(--primary-color)" }}>FM [%]</th>
                               <th style={{ color: "var(--primary-color)" }}>Acción</th>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {elementsList
-                              .filter((el) => el.type === "door")
-                              .map((el: any) => (
-                                <tr key={el.id}>
-                                  <td>{el.name_element}</td>
-                                  <td>{el.atributs?.u_puerta_opaca}</td>
-                                  <td>{el.atributs?.name_ventana}</td>
-                                  <td>
-                                    {el.atributs?.porcentaje_vidrio !== undefined
-                                      ? (el.atributs.porcentaje_vidrio * 100).toFixed(0) + "%"
-                                      : "0%"}
-                                  </td>
-                                  <td>{el.u_marco}</td>
-                                  <td>{(el.fm * 100).toFixed(0)}%</td>
-                                  <td>
-                                    <CustomButton variant="addIcon" onClick={() => handleSelectDoor(el.id)} />
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <p>No hay elementos para puertas.</p>
-                      )
+                          )}
+                        </thead>
+                        <tbody>
+                          {selectedElements
+                            .filter((el) => el.type === (tabElementosOperables === "ventanas" ? "window" : "door"))
+                            .map((el, idx) => {
+                              if (tabElementosOperables === "ventanas") {
+                                return (
+                                  <tr key={idx}>
+                                    <td>{el.name_element}</td>
+                                    <td>{el.atributs?.u_vidrio}</td>
+                                    <td>{el.atributs?.fs_vidrio}</td>
+                                    <td>{el.atributs?.clousure_type}</td>
+                                    <td>{el.atributs?.frame_type}</td>
+                                    <td>{el.u_marco}</td>
+                                    <td>{(el.fm * 100).toFixed(0)}%</td>
+                                    <td>
+                                      <CustomButton variant="deleteIcon" onClick={() => handleRemoveElement(el.id)} />
+                                    </td>
+                                  </tr>
+                                );
+                              } else {
+                                return (
+                                  <tr key={idx}>
+                                    <td>{el.name_element}</td>
+                                    <td>{el.atributs?.u_puerta_opaca}</td>
+                                    <td>{el.atributs?.name_ventana}</td>
+                                    <td>
+                                      {el.atributs?.porcentaje_vidrio !== undefined
+                                        ? (el.atributs.porcentaje_vidrio * 100).toFixed(0) + "%"
+                                        : "0%"}
+                                    </td>
+                                    <td>{el.u_marco}</td>
+                                    <td>{(el.fm * 100).toFixed(0)}%</td>
+                                    <td>
+                                      <CustomButton variant="deleteIcon" onClick={() => handleRemoveElement(el.id)} />
+                                    </td>
+                                  </tr>
+                                );
+                              }
+                            })}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p>No se ha agregado ningún elemento.</p>
                     )}
                     <div className="mt-4 text-end">
-                      <CustomButton variant="back" onClick={() => setStep(4)}>
-                        Anterior
-                      </CustomButton>
+                      <CustomButton variant="backIcon" onClick={() => setStep(4)} />
                       <CustomButton variant="save" onClick={() => setStep(6)}>
                         Grabar datos
                       </CustomButton>
@@ -1057,38 +986,39 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                   </>
                 )}
 
-                {/* PASO 6 */}
                 {step === 6 && (
                   <>
                     <h5 className="fw-bold mb-3">Tipología de recinto</h5>
-                    <ul className="nav nav-tabs">
-                      <li className="nav-item">
-                        <button className={`nav-link ${tabTipologiaRecinto === "ventilacion" ? "active" : ""}`} onClick={() => setTabTipologiaRecinto("ventilacion")}>
-                          Ventilación y caudales
-                        </button>
-                      </li>
-                      <li className="nav-item">
-                        <button className={`nav-link ${tabTipologiaRecinto === "iluminacion" ? "active" : ""}`} onClick={() => setTabTipologiaRecinto("iluminacion")}>
-                          Iluminacion
-                        </button>
-                      </li>
-                      <li className="nav-item">
-                        <button className={`nav-link ${tabTipologiaRecinto === "cargas" ? "active" : ""}`} onClick={() => setTabTipologiaRecinto("cargas")}>
-                          Cargas internas
-                        </button>
-                      </li>
-                      <li className="nav-item">
-                        <button className={`nav-link ${tabTipologiaRecinto === "horario" ? "active" : ""}`} onClick={() => setTabTipologiaRecinto("horario")}>
-                          Horario y Clima
-                        </button>
-                      </li>
+                    <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
+                      {[
+                        { key: "ventilacion", label: "Ventilación y caudales" },
+                        { key: "iluminacion", label: "Iluminación" },
+                        { key: "cargas", label: "Cargas internas" },
+                        { key: "horario", label: "Horario y Clima" },
+                      ].map((tab) => (
+                        <li key={tab.key} style={{ flex: 1 }}>
+                          <button
+                            style={{
+                              width: "100%",
+                              padding: "10px",
+                              backgroundColor: "#fff",
+                              color: tabTipologiaRecinto === tab.key ? "var(--primary-color)" : "var(--secondary-color)",
+                              border: "none",
+                              cursor: "pointer",
+                              borderBottom: tabTipologiaRecinto === tab.key ? "3px solid var(--primary-color)" : "none",
+                            }}
+                            onClick={() => setTabTipologiaRecinto(tab.key)}
+                          >
+                            {tab.label}
+                          </button>
+                        </li>
+                      ))}
                     </ul>
                     <div className="tab-content border border-top-0 p-3">
+                      {/* Contenido  para cada pestaña */}
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="back" onClick={() => setStep(5)}>
-                        Anterior
-                      </CustomButton>
+                      <CustomButton variant="backIcon" onClick={() => setStep(5)} />
                       <CustomButton variant="save" onClick={() => setStep(7)}>
                         Grabar datos
                       </CustomButton>
@@ -1096,7 +1026,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                   </>
                 )}
 
-                {/* PASO 7 */}
                 {step === 7 && (
                   <>
                     <h5 className="fw-bold mb-3">Recinto</h5>
@@ -1106,7 +1035,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                         <i className="bi bi-plus"></i> Nuevo
                       </CustomButton>
                     </div>
-                    <table className="table table-bordered">
+                    <table className="table table-bordered table-striped">
                       <thead>
                         <tr>
                           <th>ID</th>
@@ -1133,10 +1062,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                       </tbody>
                     </table>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="back" onClick={() => setStep(6)}>
-                        Anterior
-                      </CustomButton>
-                      <CustomButton variant="save" onClick={handleSave}>
+                      <CustomButton variant="backIcon" onClick={() => setStep(6)} />
+                      <CustomButton variant="save" onClick={handleSaveProject}>
                         Grabar datos
                       </CustomButton>
                     </div>
@@ -1148,74 +1075,338 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal para agregar nuevo material */}
+      {/* Modal para materiales (Paso 3) */}
       {showAddMaterialModal && (
         <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
+          className="modal-overlay"
+          onClick={() => setShowAddMaterialModal(false)}
         >
-          <div
-            style={{
-              background: "#fff",
-              padding: "20px",
-              borderRadius: "8px",
-              width: "400px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
-            }}
-          >
-            <h4>Agregar Nuevo Material</h4>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowAddMaterialModal(false)}>
+              &times;
+            </button>
+            <h4 className="mb-3">Lista de Materiales</h4>
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th style={{ color: "var(--primary-color)" }}>Nombre Material</th>
+                  <th style={{ color: "var(--primary-color)" }}>Conductividad (W/m2K)</th>
+                  <th style={{ color: "var(--primary-color)" }}>Calor específico (J/kgK)</th>
+                  <th style={{ color: "var(--primary-color)" }}>Densidad (kg/m3)</th>
+                  <th style={{ color: "var(--primary-color)" }}>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {materialsList.map((mat, idx) => {
+                  const atributos = mat.atributs || {};
+                  return (
+                    <tr key={idx}>
+                      <td>{atributos.name}</td>
+                      <td>{atributos.conductivity}</td>
+                      <td>{atributos["specific heat"]}</td>
+                      <td>{atributos.density}</td>
+                      <td>
+                        <CustomButton
+                          variant="addIcon"
+                          onClick={() => {
+                            handleAddMaterial(mat);
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para seleccion de elementos (Paso 5) */}
+      {showAddElementModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowAddElementModal(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowAddElementModal(false)}>
+              &times;
+            </button>
+            <h4 className="mb-3">
+              Lista de {modalElementType === "ventanas" ? "Ventanas" : "Puertas"}
+            </h4>
+            <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
+              {["Ventanas", "Puertas"].map((tab) => (
+                <li key={tab} style={{ flex: 1 }}>
+                  <button
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      backgroundColor: "#fff",
+                      color: modalElementType === tab.toLowerCase() ? "var(--primary-color)" : "var(--secondary-color)",
+                      border: "none",
+                      cursor: "pointer",
+                      borderBottom: modalElementType === tab.toLowerCase() ? "3px solid var(--primary-color)" : "none",
+                    }}
+                    onClick={() => setModalElementType(tab.toLowerCase())}
+                  >
+                    {tab}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <table className="table table-bordered table-striped">
+              <thead>
+                {modalElementType === "ventanas" ? (
+                  <tr>
+                    <th style={{ color: "var(--primary-color)" }}>Nombre Elemento</th>
+                    <th style={{ color: "var(--primary-color)" }}>U Vidrio [W/m2K]</th>
+                    <th style={{ color: "var(--primary-color)" }}>FS Vidrio []</th>
+                    <th style={{ color: "var(--primary-color)" }}>Tipo Cierre</th>
+                    <th style={{ color: "var(--primary-color)" }}>Tipo Marco</th>
+                    <th style={{ color: "var(--primary-color)" }}>U Marco [W/m2K]</th>
+                    <th style={{ color: "var(--primary-color)" }}>FM [%]</th>
+                    <th style={{ color: "var(--primary-color)" }}>Acción</th>
+                  </tr>
+                ) : (
+                  <tr>
+                    <th style={{ color: "var(--primary-color)" }}>Nombre Elemento</th>
+                    <th style={{ color: "var(--primary-color)" }}>U Puerta opaca [W/m2K]</th>
+                    <th style={{ color: "var(--primary-color)" }}>Nombre Ventana</th>
+                    <th style={{ color: "var(--primary-color)" }}>% Vidrio</th>
+                    <th style={{ color: "var(--primary-color)" }}>U Marco [W/m2K]</th>
+                    <th style={{ color: "var(--primary-color)" }}>FM [%]</th>
+                    <th style={{ color: "var(--primary-color)" }}>Acción</th>
+                  </tr>
+                )}
+              </thead>
+              <tbody>
+                {elementsList
+                  .filter((el) => el.type === (modalElementType === "ventanas" ? "window" : "door"))
+                  .map((el: any, idx) => (
+                    <tr key={idx}>
+                      {modalElementType === "ventanas" ? (
+                        <>
+                          <td>{el.name_element}</td>
+                          <td>{el.atributs?.u_vidrio}</td>
+                          <td>{el.atributs?.fs_vidrio}</td>
+                          <td>{el.atributs?.clousure_type}</td>
+                          <td>{el.atributs?.frame_type}</td>
+                          <td>{el.u_marco}</td>
+                          <td>{(el.fm * 100).toFixed(0)}%</td>
+                          <td>
+                            <CustomButton variant="addIcon" onClick={() => handleAddElement(el)} />
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{el.name_element}</td>
+                          <td>{el.atributs?.u_puerta_opaca}</td>
+                          <td>{el.atributs?.name_ventana}</td>
+                          <td>
+                            {el.atributs?.porcentaje_vidrio !== undefined
+                              ? (el.atributs.porcentaje_vidrio * 100).toFixed(0) + "%"
+                              : "0%"}
+                          </td>
+                          <td>{el.u_marco}</td>
+                          <td>{(el.fm * 100).toFixed(0)}%</td>
+                          <td>
+                            <CustomButton variant="addIcon" onClick={() => handleAddElement(el)} />
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para crear puerta */}
+      {showCreateDoorModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowCreateDoorModal(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowCreateDoorModal(false)}>
+              &times;
+            </button>
+            <h4>Crear Puerta</h4>
             <div className="mb-3">
-              <label className="form-label">Nombre</label>
+              <label className="form-label">Nombre de la puerta</label>
               <input
                 type="text"
                 className="form-control"
-                value={newMaterialName}
-                onChange={(e) => setNewMaterialName(e.target.value)}
+                value={doorData.name_element}
+                onChange={(e) => setDoorData({ ...doorData, name_element: e.target.value })}
               />
             </div>
             <div className="mb-3">
-              <label className="form-label">Densidad</label>
+              <label className="form-label">U puerta opaca</label>
               <input
                 type="number"
                 className="form-control"
-                value={newMaterialDensity}
-                onChange={(e) => setNewMaterialDensity(parseFloat(e.target.value) || 0)}
+                value={doorData.u_puerta_opaca}
+                onChange={(e) =>
+                  setDoorData({ ...doorData, u_puerta_opaca: parseFloat(e.target.value) || 0 })
+                }
               />
             </div>
             <div className="mb-3">
-              <label className="form-label">Conductividad (W/mK)</label>
+              <label className="form-label">Porcentaje de vidrio</label>
               <input
                 type="number"
                 className="form-control"
-                value={newMaterialConductivity}
-                onChange={(e) => setNewMaterialConductivity(parseFloat(e.target.value) || 0)}
+                value={doorData.porcentaje_vidrio}
+                onChange={(e) =>
+                  setDoorData({ ...doorData, porcentaje_vidrio: parseFloat(e.target.value) || 0 })
+                }
               />
             </div>
             <div className="mb-3">
-              <label className="form-label">Calor específico (J/kgK)</label>
+              <label className="form-label">U marco</label>
               <input
                 type="number"
                 className="form-control"
-                value={newMaterialSpecificHeat}
-                onChange={(e) => setNewMaterialSpecificHeat(parseFloat(e.target.value) || 0)}
+                value={doorData.u_marco}
+                onChange={(e) =>
+                  setDoorData({ ...doorData, u_marco: parseFloat(e.target.value) || 0 })
+                }
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">FM</label>
+              <input
+                type="number"
+                className="form-control"
+                value={doorData.fm}
+                onChange={(e) =>
+                  setDoorData({ ...doorData, fm: parseFloat(e.target.value) || 0 })
+                }
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Ventanas disponibles</label>
+              <select
+                className="form-control"
+                onChange={(e) => {
+                  const selectedId = parseInt(e.target.value);
+                  const win = availableWindows.find((w: any) => w.id === selectedId);
+                  if (win) {
+                    setDoorData({
+                      ...doorData,
+                      ventana_id: win.id,
+                      name_ventana: win.atributs?.name || "",
+                    });
+                  }
+                }}
+              >
+                <option value="0">Seleccione una ventana</option>
+                {availableWindows.map((win: any) => (
+                  <option key={win.id} value={win.id}>
+                    {win.atributs?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="d-flex justify-content-end gap-2">
+              <CustomButton variant="backIcon" onClick={() => setShowCreateDoorModal(false)} />
+              <CustomButton variant="save" onClick={handleCreateDoorElement}>
+                <i className="bi bi-plus"></i>
+              </CustomButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para crear ventana */}
+      {showCreateWindowModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowCreateWindowModal(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowCreateWindowModal(false)}>
+              &times;
+            </button>
+            <h4>Crear Ventana</h4>
+            <div className="mb-3">
+              <label className="form-label">Nombre de la ventana</label>
+              <input
+                type="text"
+                className="form-control"
+                value={windowData.name_element}
+                onChange={(e) => setWindowData({ ...windowData, name_element: e.target.value })}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">U vidrio</label>
+              <input
+                type="number"
+                className="form-control"
+                value={windowData.u_vidrio}
+                onChange={(e) =>
+                  setWindowData({ ...windowData, u_vidrio: parseFloat(e.target.value) || 0 })
+                }
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">FS vidrio</label>
+              <input
+                type="number"
+                className="form-control"
+                value={windowData.fs_vidrio}
+                onChange={(e) =>
+                  setWindowData({ ...windowData, fs_vidrio: parseFloat(e.target.value) || 0 })
+                }
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Tipo de marco</label>
+              <input
+                type="text"
+                className="form-control"
+                value={windowData.frame_type}
+                onChange={(e) => setWindowData({ ...windowData, frame_type: e.target.value })}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Tipo de cierre</label>
+              <input
+                type="text"
+                className="form-control"
+                value={windowData.clousure_type}
+                onChange={(e) => setWindowData({ ...windowData, clousure_type: e.target.value })}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">U marco</label>
+              <input
+                type="number"
+                className="form-control"
+                value={windowData.u_marco}
+                onChange={(e) =>
+                  setWindowData({ ...windowData, u_marco: parseFloat(e.target.value) || 0 })
+                }
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">FM</label>
+              <input
+                type="number"
+                className="form-control"
+                value={windowData.fm}
+                onChange={(e) =>
+                  setWindowData({ ...windowData, fm: parseFloat(e.target.value) || 0 })
+                }
               />
             </div>
             <div className="d-flex justify-content-end gap-2">
-              <CustomButton variant="back" onClick={() => setShowAddMaterialModal(false)}>
-                Cancelar
-              </CustomButton>
-              <CustomButton variant="save" onClick={handleNewMaterialSubmit}>
-                Agregar Material
+              <CustomButton variant="backIcon" onClick={() => setShowCreateWindowModal(false)} />
+              <CustomButton variant="save" onClick={handleCreateWindowElement}>
+                <i className="bi bi-plus"></i>
               </CustomButton>
             </div>
           </div>
@@ -1225,6 +1416,52 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       <style jsx>{`
         .card {
           border: 1px solid #ccc;
+        }
+        /* Estilos para los modales */
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+        .modal-content {
+          position: relative;
+          background: #fff;
+          padding: 20px;
+          border-radius: 8px;
+          width: 80%;
+          max-height: 80vh;
+          overflow-y: auto;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .modal-close {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: transparent;
+          border: none;
+          font-size: 1.5rem;
+          cursor: pointer;
+          color: #333;
+        }
+        /* Centrado en tablas */
+        .table th,
+        .table td {
+          text-align: center;
+          vertical-align: middle;
+        }
+        /* Filas alternadas */
+        .table-striped tbody tr:nth-child(odd) {
+          background-color: #ffffff;
+        }
+        .table-striped tbody tr:nth-child(even) {
+          background-color: #f2f2f2;
         }
       `}</style>
     </>

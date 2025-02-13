@@ -1,4 +1,3 @@
-// src/components/common/CustomButton.tsx
 import React, { ButtonHTMLAttributes, FC } from 'react';
 
 interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -147,67 +146,67 @@ const CustomButton: FC<CustomButtonProps> = ({
         .btn:hover {
           transform: translateY(-2px);
         }
-        /* Variantes de color */
+        /* Variantes de color usando CSS variables */
         .btn-save {
-          background-color: #3ca7b7;
+          background-color: var(--btn-save-bg);
           color: #ffffff;
         }
         .btn-save:hover {
-          background-color: #359ea7;
+          background-color: var(--btn-save-hover-bg);
         }
         .btn-back {
-          background-color: #6b7280;
+          background-color: var(--btn-back-bg);
           color: #ffffff;
         }
         .btn-back:hover {
-          background-color: #4b5563;
+          background-color: var(--btn-back-hover-bg);
         }
         .btn-delete {
-          background-color: #ef4444;
+          background-color: var(--btn-delete-bg);
           color: #ffffff;
         }
         .btn-delete:hover {
-          background-color: #dc2626;
+          background-color: var(--btn-delete-hover-bg);
         }
         .btn-editIcon {
-          background-color: #3ca7b7;
+          background-color: var(--btn-save-bg);
           color: #ffffff;
           padding: 0.5rem 1rem;
         }
         .btn-editIcon:hover {
-          background-color: #359ea7;
+          background-color: var(--btn-save-hover-bg);
         }
         .btn-deleteIcon {
-          background-color: #ef4444;
+          background-color: var(--btn-delete-bg);
           color: #ffffff;
           padding: 0.5rem 1rem;
         }
         .btn-deleteIcon:hover {
-          background-color: #dc2626;
+          background-color: var(--btn-delete-hover-bg);
         }
         .btn-backIcon {
-          background-color: #3ca7b7;
+          background-color: var(--btn-save-bg);
           color: #ffffff;
           padding: 0.5rem 1rem;
         }
         .btn-backIcon:hover {
-          background-color: #359ea7;
+          background-color: var(--btn-save-hover-bg);
         }
         .btn-forwardIcon {
-          background-color: #3ca7b7;
+          background-color: var(--btn-save-bg);
           color: #ffffff;
           padding: 0.5rem 1rem;
         }
         .btn-forwardIcon:hover {
-          background-color: #359ea7;
+          background-color: var(--btn-save-hover-bg);
         }
         .btn-addIcon {
-          background-color: #3ca7b7;
+          background-color: var(--btn-save-bg);
           color: #ffffff;
           padding: 0.5rem 1rem;
         }
         .btn-addIcon:hover {
-          background-color: #359ea7;
+          background-color: var(--btn-save-hover-bg);
         }
         .disabled {
           opacity: 0.6;
@@ -222,12 +221,11 @@ const CustomButton: FC<CustomButtonProps> = ({
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 20px; /* ancho fijo para mostrar solo el ícono */
+          width: 20px;
         }
         .icon {
           display: block;
         }
-        /* La etiqueta se oculta inicialmente con max-width y opacity */
         .btn-label {
           display: inline-block;
           max-width: 0;
@@ -237,9 +235,8 @@ const CustomButton: FC<CustomButtonProps> = ({
           white-space: nowrap;
           transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
         }
-        /* Al hacer hover sobre el botón, se expande la etiqueta */
         .btn:hover .btn-label {
-          max-width: 100px; /* Ajusta según el ancho requerido */
+          max-width: 100px;
           opacity: 1;
           margin-left: 0.5rem;
         }

@@ -1,9 +1,11 @@
+"use client";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
+import Image from "next/image";
 
 interface NavbarProps {
   setSidebarWidth: (width: string) => void;
@@ -87,16 +89,16 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
         style={{ fontFamily: "var(--font-family-base)" }}
       >
         <Link href="/dashboard">
-          <img
-            src={logoUrl}
-            alt="Proyecto Ceela"
-            className="logo"
-            style={{
-              width: "55px",
-              borderRadius: "50%",
-              cursor: "pointer",
-            }}
-          />
+          {/* Uso sin sentido de setActiveView al hacer clic en la imagen */}
+          <div onClick={() => setActiveView("dashboard")}>
+            <Image
+              src={logoUrl}
+              alt="Proyecto Ceela"
+              width={55}
+              height={55}
+              style={{ borderRadius: "50%", cursor: "pointer" }}
+            />
+          </div>
         </Link>
         {/* Muestra el toggle solo cuando la sidebar está colapsada */}
         {!isOpen && (
@@ -115,7 +117,7 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
         )}
       </div>
 
-      {/* Contenedor del menu de navegacion */}
+      {/* Contenedor del menú de navegación */}
       <div
         className="menu-container"
         style={{

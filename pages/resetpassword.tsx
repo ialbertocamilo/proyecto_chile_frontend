@@ -1,8 +1,9 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
+import Link from "next/link";
 
 const ResetPassword = () => {
   const [formData, setFormData] = useState({
@@ -53,8 +54,9 @@ const ResetPassword = () => {
       setTimeout(() => {
         router.push("/login");
       }, 2000);
-    } catch (error: any) {
-      setError(error.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      setError(message);
     }
   };
 
@@ -209,11 +211,12 @@ const ResetPassword = () => {
           </p>
         )}
         <div className="text-center mt-3">
-          <a href="/login" style={regresarButtonStyle}>
-            ← Regresar
-          </a>
+          <Link href="/login" passHref>
+            <a style={regresarButtonStyle}>← Regresar</a>
+          </Link>
         </div>
       </div>
+
       <style jsx>{`
         .reset-password-container {
           height: 100vh;

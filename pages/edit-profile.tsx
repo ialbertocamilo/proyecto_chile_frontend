@@ -111,15 +111,16 @@ const EditProfile = () => {
         confirmButtonText: "Aceptar",
       });
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error actualizando perfil:", err);
+      const message = err instanceof Error ? err.message : "Error al actualizar el perfil";
       Swal.fire({
         title: "Error",
-        text: err.message || "Error al actualizar el perfil",
+        text: message,
         icon: "error",
         confirmButtonText: "Aceptar",
       });
-      setError(err.message || "Error al actualizar el perfil");
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -256,7 +257,6 @@ const EditProfile = () => {
           )}
         </div>
       </div>
-      
     </div>
   );
 };

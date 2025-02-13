@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { useRouter } from "next/router";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
@@ -7,8 +7,7 @@ import "../public/assets/css/globals.css";
 import Swal from "sweetalert2";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
-
-type User = {
+interface User {
   id: number;
   name: string;
   lastname: string;
@@ -17,7 +16,7 @@ type User = {
   birthdate: string;
   country: string;
   ubigeo: string;
-};
+}
 
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -27,7 +26,7 @@ const UserManagement = () => {
   const router = useRouter();
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     console.log("Fetching users from backend...");
     const token = localStorage.getItem("token");
     if (!token) {
@@ -59,16 +58,17 @@ const UserManagement = () => {
       console.log("Usuarios recibidos:", data);
       setUsers(Array.isArray(data.users) ? data.users : []);
       setTotalPages(data.total_pages || 1);
-    } catch (error: any) {
-      console.error("Error en fetchUsers:", error.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      console.error("Error en fetchUsers:", message);
     }
-  };
+  }, [currentPage, searchQuery]);
 
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, fetchUsers]);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     setCurrentPage(1);
@@ -111,8 +111,9 @@ const UserManagement = () => {
             "success"
           );
           fetchUsers();
-        } catch (error: any) {
-          Swal.fire("Error", error.message || "Error al eliminar usuario", "error");
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : "Error desconocido";
+          Swal.fire("Error", message, "error");
         }
       }
     });
@@ -169,7 +170,7 @@ const UserManagement = () => {
               style={{
                 fontFamily: "var(--font-family-base)",
                 fontSize: "var(--font-size-base)",
-                marginLeft: "1rem", 
+                marginLeft: "1rem",
               }}
             >
               Agregar Usuario
@@ -191,7 +192,7 @@ const UserManagement = () => {
               </thead>
               <tbody>
                 {users.length > 0 ? (
-                  users.map((u) => (
+                  users.map((u: User) => (
                     <tr key={u.id}>
                       <td>{u.id}</td>
                       <td>{u.name}</td>

@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useState, useEffect, useCallback } from "react";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
@@ -11,20 +10,20 @@ type MaterialAtributs = {
   name: string;
   density: number;
   conductivity: number;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 type Material = {
   id: number;
-  name: string;          
-  type: string;          
-  create_status: string; 
+  name: string;
+  type: string;
+  create_status: string;
   is_deleted: boolean;
   atributs: MaterialAtributs;
 };
 
 const ConstantsManagement = () => {
-  const router = useRouter();
+  // Se elimina router ya que no se utiliza.
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
   // -- Para la tabla y la paginación --
@@ -47,9 +46,8 @@ const ConstantsManagement = () => {
   const [editConductivity, setEditConductivity] = useState<number>(0);
   const [editSpecificHeat, setEditSpecificHeat] = useState<number>(0);
 
- 
   // 1) LISTAR 
-  const fetchMaterials = async () => {
+  const fetchMaterials = useCallback(async () => {
     console.log("Fetching materials from backend...");
     const token = localStorage.getItem("token");
     if (!token) {
@@ -60,7 +58,7 @@ const ConstantsManagement = () => {
       const params = new URLSearchParams();
       params.append("page", String(currentPage));
       params.append("per_page", "5");
-      params.append("name", "materials"); 
+      params.append("name", "materials");
 
       const url = `${constantUrlApiEndpoint}/admin/constants/?${params.toString()}`;
       console.log("URL de materiales:", url);
@@ -89,14 +87,16 @@ const ConstantsManagement = () => {
         setCurrentPage(1);
         setTotalPages(1);
       }
-    } catch (error: any) {
-      console.error("Error en fetchMaterials:", error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "";
+      console.error("Error en fetchMaterials:", message);
+      Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
     }
-  };
+  }, [currentPage]);
 
   useEffect(() => {
     fetchMaterials();
-  }, [currentPage]);
+  }, [fetchMaterials]);
 
   // 2) CREAR
   const handleCreateMaterial = async () => {
@@ -118,7 +118,7 @@ const ConstantsManagement = () => {
       };
 
       const response = await fetch(
-        `${constantUrlApiEndpoint}/admin/constants/create`,  //
+        `${constantUrlApiEndpoint}/admin/constants/create`,
         {
           method: "POST",
           headers: {
@@ -141,18 +141,23 @@ const ConstantsManagement = () => {
       setCreateConductivity(1.63);
       setCreateSpecificHeat(920);
       fetchMaterials();
-    } catch (error: any) {
-      Swal.fire("Error", error.message || "Error al crear material", "error");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Error al crear material";
+      Swal.fire("Error", message, "error");
     }
   };
 
   // 3) EDITAR 
   const openEditModal = (material: Material) => {
     setEditMaterialId(material.id);
-    setEditName(material.atributs.name || "");
-    setEditDensity(material.atributs.density || 0);
-    setEditConductivity(material.atributs.conductivity || 0);
-    const spHeat = material.atributs["specific_heat"] ?? material.atributs["specific heat"] ?? 0;
+    setEditName(material.atributs.name);
+    setEditDensity(material.atributs.density);
+    setEditConductivity(material.atributs.conductivity);
+    const spHeat = Number(
+      material.atributs["specific_heat"] ??
+      material.atributs["specific heat"] ??
+      0
+    );
     setEditSpecificHeat(spHeat);
     setIsEditModalOpen(true);
   };
@@ -194,8 +199,9 @@ const ConstantsManagement = () => {
       setIsEditModalOpen(false);
       setEditMaterialId(null);
       fetchMaterials();
-    } catch (error: any) {
-      Swal.fire("Error", error.message || "Error al editar material", "error");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Error al editar material";
+      Swal.fire("Error", message, "error");
     }
   };
 
@@ -238,8 +244,9 @@ const ConstantsManagement = () => {
             "success"
           );
           fetchMaterials();
-        } catch (error: any) {
-          Swal.fire("Error", error.message || "Error al eliminar material", "error");
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : "Error al eliminar material";
+          Swal.fire("Error", message, "error");
         }
       }
     });
@@ -304,8 +311,11 @@ const ConstantsManagement = () => {
               <tbody>
                 {materials.length > 0 ? (
                   materials.map((m) => {
-                    const heatValue =
-                      m.atributs["specific_heat"] ?? m.atributs["specific heat"] ?? 0;
+                    const heatValue = Number(
+                      m.atributs["specific_heat"] ??
+                      m.atributs["specific heat"] ??
+                      0
+                    );
                     return (
                       <tr key={m.id}>
                         <td>{m.id}</td>
@@ -315,7 +325,7 @@ const ConstantsManagement = () => {
                         <td>{heatValue}</td>
                         <td className="text-center">
                           <div className="action-btn-group">
-                            {/* Boton EDITAR abre modal */}
+                            {/* Botón EDITAR abre modal */}
                             <CustomButton
                               variant="editIcon"
                               onClick={() => openEditModal(m)}
@@ -329,7 +339,7 @@ const ConstantsManagement = () => {
                                 height: "40px",
                               }}
                             />
-                            {/* Boton ELIMINAR */}
+                            {/* Botón ELIMINAR */}
                             <CustomButton
                               variant="deleteIcon"
                               onClick={() => handleDeleteMaterial(m)}
@@ -357,7 +367,7 @@ const ConstantsManagement = () => {
             </table>
           </div>
 
-          {/* Controles de paginacion */}
+          {/* Controles de paginación */}
           <div className="d-flex justify-content-center align-items-center mt-4">
             <CustomButton
               type="button"
@@ -409,7 +419,6 @@ const ConstantsManagement = () => {
               background: "#fff",
               padding: "1.5rem",
               borderRadius: "8px",
-              // ancho 
               width: "500px",
               position: "relative",
             }}
@@ -501,7 +510,7 @@ const ConstantsManagement = () => {
               background: "#fff",
               padding: "1.5rem",
               borderRadius: "8px",
-              width: "500px", // ancho 
+              width: "500px",
               position: "relative",
             }}
             onClick={(e) => e.stopPropagation()}

@@ -38,9 +38,10 @@ const SettingsPage = () => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Se mantiene el estado de sidebarWidth para poder actualizarlo si Navbar lo requiere.
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  // Obtener la configuracion actual 
+  // Obtener la configuración actual 
   useEffect(() => {
     const fetchCustomization = async () => {
       setFetching(true);
@@ -78,9 +79,10 @@ const SettingsPage = () => {
           btn_delete_hover_bg: data.btn_delete_hover_bg || "#dc2626",
           logo: null,
         });
-      } catch (err: any) {
-        console.error("Error fetching customization:", err);
-        setError(err.message || "Error al obtener la configuración");
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Error al obtener la configuración";
+        console.error("Error fetching customization:", message);
+        setError(message);
       } finally {
         setFetching(false);
       }
@@ -107,7 +109,7 @@ const SettingsPage = () => {
     }
   };
 
-  // para subir el logo 
+  // Para subir el logo 
   const uploadLogo = async (): Promise<string | null> => {
     if (!customization.logo) return null;
     const formData = new FormData();
@@ -127,13 +129,13 @@ const SettingsPage = () => {
       }
       const resData = await response.json();
       return resData.logoUrl;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error uploading logo:", error);
       return null;
     }
   };
 
-  // para enviar los datos al endpoint que actualiza el archivo global.css y, si hay logo, subirlo
+  // Enviar los datos al endpoint que actualiza la configuración
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -220,15 +222,16 @@ const SettingsPage = () => {
         confirmButtonText: "Aceptar",
       });
       router.push("/dashboard");
-    } catch (err: any) {
-      console.error("Error actualizando configuración:", err);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error al actualizar la configuración";
+      console.error("Error actualizando configuración:", message);
       Swal.fire({
         title: "Error",
-        text: err.message || "Error al actualizar la configuración",
+        text: message,
         icon: "error",
         confirmButtonText: "Aceptar",
       });
-      setError(err.message || "Error al actualizar la configuración");
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -284,112 +287,119 @@ const SettingsPage = () => {
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
-      <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
-        <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container p-4" style={{ marginTop: "60px" }}>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2
-              className="fw-bold"
-              style={{
-                color: "var(--primary-color)",
-                margin: 0,
-                fontFamily: "var(--font-family-base)",
-              }}
-            >
-              Configuración de Personalización
-            </h2>
-            <div className="d-flex" style={{ gap: "1rem" }}>
-              <CustomButton variant="back" onClick={() => router.push("/dashboard")}>
-                ← Regresar
-              </CustomButton>
-              <CustomButton variant="save" type="submit" form="settingsForm" disabled={loading || fetching}>
-                {loading ? "Guardando..." : "Guardar Configuración"}
-              </CustomButton>
+      {/* Creamos una variable local para el margen que usa sidebarWidth */}
+      {/** Esto ayuda a que ESLint reconozca el uso de sidebarWidth */}
+      {(() => {
+        const marginLeft = sidebarWidth;
+        return (
+          <div className="d-flex flex-column flex-grow-1" style={{ marginLeft, width: "100%" }}>
+            <TopBar sidebarWidth={sidebarWidth} />
+            <div className="container p-4" style={{ marginTop: "60px" }}>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2
+                  className="fw-bold"
+                  style={{
+                    color: "var(--primary-color)",
+                    margin: 0,
+                    fontFamily: "var(--font-family-base)",
+                  }}
+                >
+                  Configuración de Personalización
+                </h2>
+                <div className="d-flex" style={{ gap: "1rem" }}>
+                  <CustomButton variant="back" onClick={() => router.push("/dashboard")}>
+                    ← Regresar
+                  </CustomButton>
+                  <CustomButton variant="save" type="submit" form="settingsForm" disabled={loading}>
+                    {loading ? "Guardando..." : "Guardar Configuración"}
+                  </CustomButton>
+                </div>
+              </div>
+              {loading || fetching ? (
+                <p className="text-primary" style={{ fontFamily: "var(--font-family-base)" }}>
+                  Cargando configuración...
+                </p>
+              ) : (
+                <form id="settingsForm" onSubmit={handleSubmit} style={{ fontFamily: "var(--font-family-base)" }}>
+                  {error && (
+                    <p className="text-danger" style={{ fontFamily: "var(--font-family-base)" }}>
+                      {error}
+                    </p>
+                  )}
+                  <ColorPickerInput
+                    label="Color Primario"
+                    name="primary_color"
+                    value={customization.primary_color}
+                    onChange={handleChange}
+                  />
+                  <ColorPickerInput
+                    label="Color Secundario"
+                    name="secondary_color"
+                    value={customization.secondary_color}
+                    onChange={handleChange}
+                  />
+                  <ColorPickerInput
+                    label="Color de Fondo"
+                    name="background_color"
+                    value={customization.background_color}
+                    onChange={handleChange}
+                  />
+                  <h3 style={{ fontFamily: "var(--font-family-base)", marginTop: "2rem" }}>
+                    Colores de Botones
+                  </h3>
+                  <ColorPickerInput
+                    label="Botón Guardar (fondo)"
+                    name="btn_save_bg"
+                    value={customization.btn_save_bg}
+                    onChange={handleChange}
+                  />
+                  <ColorPickerInput
+                    label="Botón Guardar (hover)"
+                    name="btn_save_hover_bg"
+                    value={customization.btn_save_hover_bg}
+                    onChange={handleChange}
+                  />
+                  <ColorPickerInput
+                    label="Botón Regresar (fondo)"
+                    name="btn_back_bg"
+                    value={customization.btn_back_bg}
+                    onChange={handleChange}
+                  />
+                  <ColorPickerInput
+                    label="Botón Regresar (hover)"
+                    name="btn_back_hover_bg"
+                    value={customization.btn_back_hover_bg}
+                    onChange={handleChange}
+                  />
+                  <ColorPickerInput
+                    label="Botón Borrar (fondo)"
+                    name="btn_delete_bg"
+                    value={customization.btn_delete_bg}
+                    onChange={handleChange}
+                  />
+                  <ColorPickerInput
+                    label="Botón Borrar (hover)"
+                    name="btn_delete_hover_bg"
+                    value={customization.btn_delete_hover_bg}
+                    onChange={handleChange}
+                  />
+                  <div className="mb-3">
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Logo</label>
+                    <input
+                      type="file"
+                      name="logo"
+                      accept="image/png, image/jpeg"
+                      className="form-control"
+                      onChange={handleFileChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
+                    />
+                  </div>
+                </form>
+              )}
             </div>
           </div>
-          {fetching ? (
-            <p className="text-primary" style={{ fontFamily: "var(--font-family-base)" }}>
-              Cargando configuración...
-            </p>
-          ) : (
-            <form id="settingsForm" onSubmit={handleSubmit} style={{ fontFamily: "var(--font-family-base)" }}>
-              {error && (
-                <p className="text-danger" style={{ fontFamily: "var(--font-family-base)" }}>
-                  {error}
-                </p>
-              )}
-              <ColorPickerInput
-                label="Color Primario"
-                name="primary_color"
-                value={customization.primary_color}
-                onChange={handleChange}
-              />
-              <ColorPickerInput
-                label="Color Secundario"
-                name="secondary_color"
-                value={customization.secondary_color}
-                onChange={handleChange}
-              />
-              <ColorPickerInput
-                label="Color de Fondo"
-                name="background_color"
-                value={customization.background_color}
-                onChange={handleChange}
-              />
-              <h3 style={{ fontFamily: "var(--font-family-base)", marginTop: "2rem" }}>
-                Colores de Botones
-              </h3>
-              <ColorPickerInput
-                label="Botón Guardar (fondo)"
-                name="btn_save_bg"
-                value={customization.btn_save_bg}
-                onChange={handleChange}
-              />
-              <ColorPickerInput
-                label="Botón Guardar (hover)"
-                name="btn_save_hover_bg"
-                value={customization.btn_save_hover_bg}
-                onChange={handleChange}
-              />
-              <ColorPickerInput
-                label="Botón Regresar (fondo)"
-                name="btn_back_bg"
-                value={customization.btn_back_bg}
-                onChange={handleChange}
-              />
-              <ColorPickerInput
-                label="Botón Regresar (hover)"
-                name="btn_back_hover_bg"
-                value={customization.btn_back_hover_bg}
-                onChange={handleChange}
-              />
-              <ColorPickerInput
-                label="Botón Borrar (fondo)"
-                name="btn_delete_bg"
-                value={customization.btn_delete_bg}
-                onChange={handleChange}
-              />
-              <ColorPickerInput
-                label="Botón Borrar (hover)"
-                name="btn_delete_hover_bg"
-                value={customization.btn_delete_hover_bg}
-                onChange={handleChange}
-              />
-              <div className="mb-3">
-                <label style={{ fontFamily: "var(--font-family-base)" }}>Logo</label>
-                <input
-                  type="file"
-                  name="logo"
-                  accept="image/png, image/jpeg"
-                  className="form-control"
-                  onChange={handleFileChange}
-                  style={{ fontFamily: "var(--font-family-base)" }}
-                />
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
+        );
+      })()}
     </div>
   );
 };

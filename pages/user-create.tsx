@@ -120,13 +120,13 @@ const UserCreate = () => {
         confirmButtonText: "Aceptar",
       });
       router.push("/user-management");
-    } catch (err: any) {
-      console.error("Error en handleSubmit:", err);
-      setError(err.message || "Error al crear usuario");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error al crear usuario";
+      console.error("Error en handleSubmit:", message);
+      setError(message);
       if (
-        err.message &&
-        (err.message.toLowerCase().includes("correo") ||
-          err.message.toLowerCase().includes("email"))
+        message.toLowerCase().includes("correo") ||
+        message.toLowerCase().includes("email")
       ) {
         Swal.fire({
           title: "Correo ya registrado",
@@ -137,7 +137,7 @@ const UserCreate = () => {
       } else {
         Swal.fire({
           title: "Error",
-          text: err.message || "Error al crear usuario",
+          text: message,
           icon: "error",
           confirmButtonText: "Aceptar",
         });

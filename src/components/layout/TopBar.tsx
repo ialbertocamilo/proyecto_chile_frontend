@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import Image from "next/image";
+import Link from "next/link";
 
 interface TopBarProps {
   sidebarWidth: string;
@@ -78,12 +80,14 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               fontFamily: "var(--font-family-base)",
             }}
           >
-            {/* Icono de perfil */}
-            <img
+            {/* Icono de perfil usando next/image */}
+            <Image
               src="/assets/images/user_icon.png"
               alt="User"
+              width={40}
+              height={40}
               className="rounded-circle"
-              style={{ width: "40px", height: "40px", marginRight: "8px" }}
+              style={{ marginRight: "8px" }}
             />
             {/* Información del usuario */}
             <div
@@ -122,12 +126,12 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               className="dropdown-menu dropdown-menu-end show mt-2 shadow-sm"
               style={{ right: 0, fontFamily: "var(--font-family-base)" }}
             >
-              <a className="dropdown-item" href="/edit-profile" style={{ fontFamily: "var(--font-family-base)" }}>
+              <Link href="/edit-profile" className="dropdown-item" style={{ fontFamily: "var(--font-family-base)" }}>
                 <i className="bi bi-person me-2"></i> Perfil
-              </a>
-              <a className="dropdown-item" href="/settings" style={{ fontFamily: "var(--font-family-base)" }}>
+              </Link>
+              <Link href="/settings" className="dropdown-item" style={{ fontFamily: "var(--font-family-base)" }}>
                 <i className="bi bi-gear me-2"></i> Configuración
-              </a>
+              </Link>
               <div className="dropdown-divider"></div>
               <button
                 className="dropdown-item text-danger"

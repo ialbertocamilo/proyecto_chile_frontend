@@ -31,8 +31,9 @@ const ForgotPassword = () => {
       localStorage.setItem("reset_email", email);
       router.push("/resetpassword");
       
-    } catch (error: any) {
-      setError(error.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      setError(message);
     }
   };
 

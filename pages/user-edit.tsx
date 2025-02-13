@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import Swal from "sweetalert2"; 
 import Navbar from "../src/components/layout/Navbar";
@@ -28,14 +28,7 @@ const UserEdit = () => {
 
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  useEffect(() => {
-    if (!router.isReady) return;
-    if (id) {
-      fetchUser();
-    }
-  }, [router.isReady, id]);
-
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -80,13 +73,21 @@ const UserEdit = () => {
       setUser(foundUser);
       setRoleId(foundUser.role_id || 0);
       setActive(foundUser.active ?? true);
-    } catch (err: any) {
-      console.error("Fetch user error:", err);
-      setError(err.message || "Error desconocido");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      console.error("Fetch user error:", message);
+      setError(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (id) {
+      fetchUser();
+    }
+  }, [router.isReady, id, fetchUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,12 +135,13 @@ const UserEdit = () => {
       }).then(() => {
         router.push("/user-management");
       });
-    } catch (err: any) {
-      setError(err.message || "Error desconocido");
-      console.error("Handle submit error:", err);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      setError(message);
+      console.error("Handle submit error:", message);
       Swal.fire({
         title: "Error",
-        text: err.message || "Error desconocido",
+        text: message,
         icon: "error",
         confirmButtonText: "Aceptar",
       });
@@ -187,8 +189,9 @@ const UserEdit = () => {
           ).then(() => {
             router.push("/user-management");
           });
-        } catch (error: any) {
-          Swal.fire("Error", error.message || "Error al eliminar usuario", "error");
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : "Error desconocido";
+          Swal.fire("Error", message, "error");
         }
       }
     });
@@ -274,7 +277,9 @@ const UserEdit = () => {
                 <select
                   className="form-control"
                   value={roleId}
-                  onChange={(e) => setRoleId(Number(e.target.value))}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setRoleId(Number(e.target.value))
+                  }
                   required
                   style={{ fontFamily: "var(--font-family-base)" }}
                 >
@@ -282,7 +287,7 @@ const UserEdit = () => {
                   <option value={2}>Usuario</option>
                 </select>
                 <small className="text-muted" style={{ fontFamily: "var(--font-family-base)" }}>
-                  Selecciona "Administrador" o "Usuario".
+                  Selecciona &quot;Administrador&quot; o &quot;Usuario&quot;.
                 </small>
               </div>
               <div className="mb-3 form-check">
@@ -291,7 +296,7 @@ const UserEdit = () => {
                   className="form-check-input"
                   id="activeCheck"
                   checked={active}
-                  onChange={(e) => setActive(e.target.checked)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setActive(e.target.checked)}
                 />
                 <label className="form-check-label" htmlFor="activeCheck" style={{ fontFamily: "var(--font-family-base)" }}>
                   Activo
@@ -322,40 +327,6 @@ const UserEdit = () => {
         .btn-secondary {
           font-family: var(--font-family-base);
           font-size: var(--font-size-base);
-        }
-        .custom-table {
-          width: 100%;
-          border: 1px solid #ddd;
-          border-collapse: separate;
-          border-spacing: 0;
-          background-color: #fff !important;
-          border-radius: 8px;
-          overflow: hidden;
-          font-family: var(--font-family-base);
-        }
-        .custom-table th,
-        .custom-table td {
-          border: none;
-          padding: 8px;
-        }
-        .custom-table th {
-          color: var(--primary-color);
-          font-weight: bold;
-          border-bottom: 1px solid #ddd;
-          background-color: #fff !important;
-          font-family: var(--font-family-base);
-        }
-        .action-btn-group {
-          display: flex;
-          gap: 0.5rem;
-        }
-        .action-btn {
-          width: 40px !important;
-          height: 40px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
         }
       `}</style>
     </div>

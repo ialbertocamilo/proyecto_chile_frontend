@@ -2,49 +2,72 @@ import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Swal from "sweetalert2";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import CustomButton from "../src/components/common/CustomButton";
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 
+// Interfaces para tipar la información
+
+interface MaterialAttributes {
+  name?: string;
+  conductivity?: number;
+  "specific heat"?: number;
+  density?: number;
+}
+
+interface Material {
+  id: number;
+  atributs?: MaterialAttributes;
+}
+
+interface Detail {
+  id_detail: number;
+  scantilon_location: string;
+  name_detail?: string;
+  capas?: string;
+  material?: string;
+  layer_thickness?: number;
+}
+
+interface ElementAttributesDoor {
+  u_puerta_opaca: number;
+  porcentaje_vidrio: number;
+  name_ventana: string;
+}
+
+interface ElementAttributesWindow {
+  u_vidrio: number;
+  fs_vidrio: number;
+  frame_type: string;
+  clousure_type: string;
+}
+
+type ElementAttributes = ElementAttributesDoor | ElementAttributesWindow;
+
+interface Element {
+  id: number;
+  type: "door" | "window";
+  name_element: string;
+  u_marco: number;
+  fm: number;
+  atributs: ElementAttributes;
+}
+
 const AdministrationPage: React.FC = () => {
   const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [step, setStep] = useState<number>(3);
 
-  const [materialsList, setMaterialsList] = useState<any[]>([]);
-  const [selectedMaterials, setSelectedMaterials] = useState<any[]>([]);
-
-  const [details, setDetails] = useState<any[]>([]);
+  const [materialsList, setMaterialsList] = useState<Material[]>([]);
+  // Se eliminaron los estados de selectedMaterials y setSelectedMaterials
+  const [details, setDetails] = useState<Detail[]>([]);
   const [tabDetailSection, setTabDetailSection] = useState("Techumbre");
 
-  const [elementsList, setElementsList] = useState<any[]>([]);
-  const [selectedElements, setSelectedElements] = useState<any[]>([]);
+  const [elementsList, setElementsList] = useState<Element[]>([]);
+  // Se eliminaron los estados de selectedElements y setSelectedElements
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
-  const [modalElementType, setModalElementType] = useState<string>("ventanas");
-
-  const [showCreateDoorModal, setShowCreateDoorModal] = useState(false);
-  const [doorData, setDoorData] = useState({
-    name_element: "",
-    ventana_id: 0,
-    name_ventana: "",
-    u_puerta_opaca: 0,
-    porcentaje_vidrio: 0,
-    u_marco: 0,
-    fm: 0,
-  });
-
-  const [showCreateWindowModal, setShowCreateWindowModal] = useState(false);
-  const [windowData, setWindowData] = useState({
-    name_element: "",
-    u_vidrio: 0,
-    fs_vidrio: 0,
-    frame_type: "",
-    clousure_type: "",
-    u_marco: 0,
-    fm: 0,
-  });
 
   // Datos hardcodeados para Muros
   const murosDetails = [
@@ -333,7 +356,7 @@ const AdministrationPage: React.FC = () => {
   ];
 
   // Función para obtener la lista de materiales (Paso 3)
-  const fetchMaterialsList = async (page: number) => {
+  const fetchMaterialsList = async (page: number): Promise<void> => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -342,16 +365,16 @@ const AdministrationPage: React.FC = () => {
       }
       const url = `${constantUrlApiEndpoint}/admin/constants/?page=${page}&per_page=100`;
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(url, { headers });
+      const response: AxiosResponse<{ constants: Material[] }> = await axios.get(url, { headers });
       setMaterialsList(response.data.constants || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error al obtener lista de materiales:", error);
       Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
     }
   };
 
   // Función para obtener detalles constructivos (Paso 4)
-  const fetchDetails = async () => {
+  const fetchDetails = async (): Promise<void> => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -360,15 +383,15 @@ const AdministrationPage: React.FC = () => {
       }
       const url = `${constantUrlApiEndpoint}/user/details/?section=admin`;
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(url, { headers });
+      const response: AxiosResponse<Detail[]> = await axios.get(url, { headers });
       setDetails(response.data || []);
-    } catch (error: any) {
-      console.error("Error al obtener detalles:", error.response?.data || error.message);
+    } catch (error: unknown) {
+      console.error("Error al obtener detalles:", error);
       Swal.fire("Error", "Error al obtener detalles. Ver consola.", "error");
     }
   };
 
-  const getFilteredDetails = (tab: string) => {
+  const getFilteredDetails = (tab: string): Detail[] => {
     let section = "";
     switch (tab) {
       case "Muros":
@@ -387,7 +410,7 @@ const AdministrationPage: React.FC = () => {
   };
 
   // Función para obtener elementos operables (Paso 5)
-  const fetchElements = async () => {
+  const fetchElements = async (): Promise<void> => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -396,101 +419,16 @@ const AdministrationPage: React.FC = () => {
       }
       const url = `${constantUrlApiEndpoint}/admin/elements/`;
       const headers = { Authorization: `Bearer ${token}`, Accept: "application/json" };
-      const response = await axios.get(url, { headers });
+      const response: AxiosResponse<Element[]> = await axios.get(url, { headers });
       setElementsList(response.data || []);
-    } catch (error: any) {
-      console.error("Error al obtener elementos:", error.response?.data || error.message);
-      Swal.fire("Error", error.response?.data?.detail || error.message, "error");
+    } catch (error: unknown) {
+      console.error("Error al obtener elementos:", error);
+      Swal.fire("Error", "Error al obtener elementos. Ver consola.", "error");
     }
-  };
-
-  // Funciones del Paso 3: Materiales
-  const handleAddMaterial = (material: any) => {
-    if (selectedMaterials.some((m) => m.id === material.id)) {
-      Swal.fire("Material ya seleccionado", "Este material ya fue agregado", "info");
-      return;
-    }
-    setSelectedMaterials([...selectedMaterials, material]);
-    Swal.fire("Material agregado", `${material.atributs?.name} ha sido seleccionado.`, "success");
-  };
-
-  const handleRemoveMaterial = (materialId: number) => {
-    setSelectedMaterials(selectedMaterials.filter((m) => m.id !== materialId));
-    Swal.fire("Material removido", "El material ha sido eliminado de la selección", "info");
-  };
-
-  // Funciones del Paso 5: Elementos operables
-  const handleAddElement = (element: any) => {
-    if (selectedElements.some((el) => el.id === element.id)) {
-      Swal.fire("Elemento ya seleccionado", "Este elemento ya fue agregado", "info");
-      return;
-    }
-    setSelectedElements([...selectedElements, element]);
-    Swal.fire("Elemento agregado", `${element.name_element} ha sido agregado.`, "success");
-  };
-
-  const handleRemoveElement = (elementId: number) => {
-    setSelectedElements(selectedElements.filter((el) => el.id !== elementId));
-    Swal.fire("Elemento removido", "El elemento ha sido eliminado de la selección", "info");
-  };
-
-  const handleCreateDoorElement = () => {
-    const newDoor = {
-      id: new Date().getTime(),
-      type: "door",
-      name_element: doorData.name_element,
-      u_marco: doorData.u_marco,
-      fm: doorData.fm,
-      atributs: {
-        u_puerta_opaca: doorData.u_puerta_opaca,
-        porcentaje_vidrio: doorData.porcentaje_vidrio,
-        name_ventana: doorData.name_ventana,
-      },
-    };
-    handleAddElement(newDoor);
-    Swal.fire("Puerta creada", `La puerta ${doorData.name_element} ha sido creada.`, "success");
-    setShowCreateDoorModal(false);
-    setDoorData({
-      name_element: "",
-      ventana_id: 0,
-      name_ventana: "",
-      u_puerta_opaca: 0,
-      porcentaje_vidrio: 0,
-      u_marco: 0,
-      fm: 0,
-    });
-  };
-
-  const handleCreateWindowElement = () => {
-    const newWindow = {
-      id: new Date().getTime(),
-      type: "window",
-      name_element: windowData.name_element,
-      u_marco: windowData.u_marco,
-      fm: windowData.fm,
-      atributs: {
-        u_vidrio: windowData.u_vidrio,
-        fs_vidrio: windowData.fs_vidrio,
-        frame_type: windowData.frame_type,
-        clousure_type: windowData.clousure_type,
-      },
-    };
-    handleAddElement(newWindow);
-    Swal.fire("Ventana creada", `La ventana ${windowData.name_element} ha sido creada.`, "success");
-    setShowCreateWindowModal(false);
-    setWindowData({
-      name_element: "",
-      u_vidrio: 0,
-      fs_vidrio: 0,
-      frame_type: "",
-      clousure_type: "",
-      u_marco: 0,
-      fm: 0,
-    });
   };
 
   // Función final de guardado (Paso 6)
-  const handleFinalSave = () => {
+  const handleFinalSave = (): void => {
     Swal.fire("Datos guardados", "La información de administración ha sido guardada", "success");
   };
 
@@ -505,9 +443,6 @@ const AdministrationPage: React.FC = () => {
   useEffect(() => {
     if (step === 5) fetchElements();
   }, [step]);
-
-  // Para la creación de puerta: filtrar ventanas disponibles
-  const availableWindows = elementsList.filter((el) => el.type === "window");
 
   // Componente del sidebar
   const internalSidebarWidth = 380;
@@ -603,7 +538,7 @@ const AdministrationPage: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {materialsList.map((mat, idx) => {
+                          {materialsList.map((mat: Material, idx) => {
                             const atributos = mat.atributs || {};
                             return (
                               <tr key={idx}>
@@ -678,7 +613,7 @@ const AdministrationPage: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {details.map((det: any) => (
+                                {details.map((det: Detail) => (
                                   <tr key={det.id_detail}>
                                     <td>{det.scantilon_location}</td>
                                     <td>{det.name_detail}</td>
@@ -699,7 +634,7 @@ const AdministrationPage: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {murosDetails.map((det: any) => (
+                                {murosDetails.map((det) => (
                                   <tr key={det.id_detail}>
                                     <td>{det.nombreAbrev}</td>
                                     <td>{det.valorU}</td>
@@ -720,7 +655,7 @@ const AdministrationPage: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {techumbreDetails.map((det: any) => (
+                                {techumbreDetails.map((det) => (
                                   <tr key={det.id_detail}>
                                     <td>{det.nombreAbrev}</td>
                                     <td>{det.valorU}</td>
@@ -742,7 +677,7 @@ const AdministrationPage: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {pisosDetails.map((det: any) => (
+                                {pisosDetails.map((det) => (
                                   <tr key={det.id_detail}>
                                     <td>{det.nombreAbrev}</td>
                                     <td>{det.valorU}</td>
@@ -847,7 +782,9 @@ const AdministrationPage: React.FC = () => {
                                 ))}
                               </tbody>
                             </table>
-                          ) : null}
+                          ) : (
+                            <p>No hay datos para esta pestaña.</p>
+                          )}
                         </>
                       ) : (
                         <table className="table table-bordered table-striped">
@@ -885,7 +822,6 @@ const AdministrationPage: React.FC = () => {
                             }}
                             onClick={() => {
                               setTabElementosOperables(tab.toLowerCase());
-                              setModalElementType(tab.toLowerCase());
                             }}
                           >
                             {tab}
@@ -920,15 +856,15 @@ const AdministrationPage: React.FC = () => {
                         <tbody>
                           {elementsList
                             .filter((el) => el.type === (tabElementosOperables === "ventanas" ? "window" : "door"))
-                            .map((el: any, idx) => {
+                            .map((el: Element, idx) => {
                               if (tabElementosOperables === "ventanas") {
                                 return (
                                   <tr key={idx}>
                                     <td>{el.name_element}</td>
-                                    <td>{el.atributs?.u_vidrio}</td>
-                                    <td>{el.atributs?.fs_vidrio}</td>
-                                    <td>{el.atributs?.clousure_type}</td>
-                                    <td>{el.atributs?.frame_type}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).u_vidrio}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).fs_vidrio}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).clousure_type}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).frame_type}</td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
                                   </tr>
@@ -937,11 +873,11 @@ const AdministrationPage: React.FC = () => {
                                 return (
                                   <tr key={idx}>
                                     <td>{el.name_element}</td>
-                                    <td>{el.atributs?.u_puerta_opaca}</td>
-                                    <td>{el.atributs?.name_ventana}</td>
+                                    <td>{(el.atributs as ElementAttributesDoor).u_puerta_opaca}</td>
+                                    <td>{(el.atributs as ElementAttributesDoor).name_ventana}</td>
                                     <td>
-                                      {el.atributs?.porcentaje_vidrio !== undefined
-                                        ? (el.atributs.porcentaje_vidrio * 100).toFixed(0) + "%"
+                                      {(el.atributs as ElementAttributesDoor).porcentaje_vidrio !== undefined
+                                        ? ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"
                                         : "0%"}
                                     </td>
                                     <td>{el.u_marco}</td>
@@ -1086,8 +1022,6 @@ const AdministrationPage: React.FC = () => {
                             ))}
                           </tbody>
                         </table>
-                      ) : tabDetailSection === "horario" ? (
-                        <p>No hay datos para esta pestaña.</p>
                       ) : (
                         <p>No hay datos para esta pestaña.</p>
                       )}

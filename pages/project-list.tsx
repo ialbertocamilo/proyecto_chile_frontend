@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
-import Swal from "sweetalert2";
+import Swal, { SweetAlertResult } from "sweetalert2";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
@@ -15,28 +15,85 @@ const departmentOptions = ["Lima", "Arequipa", "Cusco"];
 const provinceOptions = ["Provincia 1", "Provincia 2", "Provincia 3"];
 const districtOptions = ["Distrito 1", "Distrito 2", "Distrito 3"];
 
+interface Divisions {
+  department?: string;
+  province?: string;
+  district?: string;
+}
+
+export interface Project {
+  id: number;
+  status?: string;
+  name_project?: string;
+  owner_name?: string;
+  designer_name?: string;
+  director_name?: string;
+  address?: string;
+  country?: string;
+  divisions?: Divisions;
+  owner_lastname?: string;
+  building_type?: string;
+  main_use_type?: string;
+  number_levels?: number;
+  number_homes_per_level?: number;
+  built_surface?: number;
+  latitude?: number;
+  longitude?: number;
+}
+
+interface FetchProjectsResponse {
+  projects: Project[];
+  total_pages: number;
+  current_page: number;
+}
+
+interface ErrorResponse {
+  detail?: string;
+}
+
+// Definimos un objeto inicial para el proyecto a editar (cumpliendo con la interfaz)
+const initialProject: Project = {
+  id: 0,
+  status: "",
+  name_project: "",
+  owner_name: "",
+  designer_name: "",
+  director_name: "",
+  address: "",
+  country: "",
+  divisions: { department: "", province: "", district: "" },
+  owner_lastname: "",
+  building_type: "",
+  main_use_type: "",
+  number_levels: 0,
+  number_homes_per_level: 0,
+  built_surface: 0,
+  latitude: 0,
+  longitude: 0,
+};
+
 const ProjectListPage = () => {
   const router = useRouter();
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const [sidebarWidth, setSidebarWidth] = useState<string>("300px");
 
-  const [projects, setProjects] = useState<any[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [search, setSearch] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const limit = 5;
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editProjectData, setEditProjectData] = useState<any>({});
+  const limit: number = 5;
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [editProjectData, setEditProjectData] = useState<Project>(initialProject);
 
   useEffect(() => {
     fetchProjects(currentPage);
   }, [currentPage]);
 
-  const fetchProjects = async (page: number) => {
+  const fetchProjects = async (page: number): Promise<void> => {
     setLoading(true);
-    const token = localStorage.getItem("token");
+    const token: string | null = localStorage.getItem("token");
     if (!token) {
       console.error("No se encontró un token en localStorage.");
       setError("No estás autenticado. Inicia sesión nuevamente.");
@@ -45,22 +102,26 @@ const ProjectListPage = () => {
     }
     try {
       console.log("📡 Obteniendo proyectos, página:", page);
-      const response = await axios.get(`${constantUrlApiEndpoint}/projects`, {
-        params: { limit, num_pag: page },
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.get<FetchProjectsResponse>(
+        `${constantUrlApiEndpoint}/projects`,
+        {
+          params: { limit, num_pag: page },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       console.log("Proyectos recibidos:", response.data);
       setProjects(response.data.projects);
       setFilteredProjects(response.data.projects);
       setTotalPages(response.data.total_pages);
       setCurrentPage(response.data.current_page);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error al obtener los proyectos:", err);
-      if (err.response) {
-        setError(err.response.data.detail || "Error al obtener los proyectos.");
+      if (axios.isAxiosError(err) && err.response) {
+        const errorResponse = err.response.data as ErrorResponse;
+        setError(errorResponse.detail || "Error al obtener los proyectos.");
       } else {
         setError("Error de conexión con el servidor.");
       }
@@ -69,22 +130,32 @@ const ProjectListPage = () => {
     }
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value.toLowerCase();
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const query: string = e.target.value.toLowerCase();
     setSearch(query);
-    const filtered = projects.filter((project) =>
-      Object.values(project).join(" ").toLowerCase().includes(query)
-    );
+    const filtered = projects.filter((project: Project) => {
+      // Obtenemos los valores con un tipado explícito
+      const values: Array<string | number | boolean | null | undefined> = Object.values(project);
+      const combined: string = values
+        .map((val: string | number | boolean | null | undefined): string => {
+          if (val === undefined || val === null) return "";
+          if (typeof val === "object") return JSON.stringify(val);
+          return String(val);
+        })
+        .join(" ")
+        .toLowerCase();
+      return combined.includes(query);
+    });
     setFilteredProjects(filtered);
   };
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = (newPage: number): void => {
     if (newPage < 1 || newPage > totalPages) return;
     setCurrentPage(newPage);
   };
 
-  const handleOpenEditModal = (project: any) => {
-    const dataToEdit = {
+  const handleOpenEditModal = (project: Project): void => {
+    const dataToEdit: Project = {
       id: project.id,
       country: project.country || "",
       divisions: {
@@ -102,25 +173,35 @@ const ProjectListPage = () => {
       built_surface: project.built_surface || 0,
       latitude: project.latitude || 0,
       longitude: project.longitude || 0,
+      designer_name: project.designer_name,
+      director_name: project.director_name,
+      address: project.address,
+      status: project.status,
     };
     setEditProjectData(dataToEdit);
     setShowEditModal(true);
     setError(null);
   };
 
-  const handleEditChange = (field: string, value: any) => {
+  const handleEditChange = (
+    field: keyof Project,
+    value: Project[keyof Project]
+  ): void => {
     setEditProjectData({ ...editProjectData, [field]: value });
   };
 
-  const handleEditDivisionChange = (subfield: string, value: any) => {
+  const handleEditDivisionChange = (
+    subfield: keyof Divisions,
+    value: string
+  ): void => {
     setEditProjectData({
       ...editProjectData,
       divisions: { ...editProjectData.divisions, [subfield]: value },
     });
   };
 
-  const handleEditSubmit = async () => {
-    const token = localStorage.getItem("token");
+  const handleEditSubmit = async (): Promise<void> => {
+    const token: string | null = localStorage.getItem("token");
     if (!token) {
       setError("No estás autenticado. Inicia sesión nuevamente.");
       return;
@@ -146,7 +227,7 @@ const ProjectListPage = () => {
         longitude: Number(editProjectData.longitude),
       };
 
-      await axios.put(url, updatedData, {
+      await axios.put<void>(url, updatedData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -157,11 +238,11 @@ const ProjectListPage = () => {
         title: "¡Proyecto editado correctamente!",
         icon: "success",
         confirmButtonText: "Aceptar",
-      }).then(() => {
+      }).then((): void => {
         setShowEditModal(false);
         fetchProjects(currentPage);
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error al editar el proyecto:", err);
       setError("Ocurrió un error al editar el proyecto.");
       Swal.fire({
@@ -173,8 +254,11 @@ const ProjectListPage = () => {
     }
   };
 
-  const handleDelete = async (projectId: number, projectName: string) => {
-    const result = await Swal.fire({
+  const handleDelete = async (
+    projectId: number,
+    projectName: string
+  ): Promise<void> => {
+    const result: SweetAlertResult = await Swal.fire({
       title: "¿Estás seguro de eliminar este proyecto?",
       text: `ID: ${projectId} - Nombre: ${projectName}\nEsta acción no se puede deshacer.`,
       icon: "warning",
@@ -186,14 +270,14 @@ const ProjectListPage = () => {
     });
     if (!result.isConfirmed) return;
 
-    const token = localStorage.getItem("token");
+    const token: string | null = localStorage.getItem("token");
     if (!token) {
       setError("No estás autenticado. Inicia sesión nuevamente.");
       return;
     }
     try {
       const url = `${constantUrlApiEndpoint}/project/${projectId}/delete`;
-      await axios.delete(url, {
+      await axios.delete<void>(url, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -205,7 +289,7 @@ const ProjectListPage = () => {
         confirmButtonText: "Aceptar",
       });
       fetchProjects(currentPage);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error al eliminar proyecto:", err);
       setError("No se pudo eliminar el proyecto.");
       Swal.fire({
@@ -217,11 +301,11 @@ const ProjectListPage = () => {
     }
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = (): void => {
     setShowEditModal(false);
   };
 
-  const getStatusStyle = (status: string | undefined) => {
+  const getStatusStyle = (status: string | undefined): React.CSSProperties => {
     const s = status?.toLowerCase();
     if (s === "finalizado") {
       return { backgroundColor: "#ffe8e8", color: "#e45f5f" };
@@ -238,7 +322,10 @@ const ProjectListPage = () => {
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
-      <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
+      <div
+        className="d-flex flex-column flex-grow-1"
+        style={{ marginLeft: sidebarWidth, width: "100%" }}
+      >
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "60px" }}>
           <h4 className="fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>
@@ -298,7 +385,7 @@ const ProjectListPage = () => {
                   </thead>
                   <tbody>
                     {filteredProjects.length > 0 ? (
-                      filteredProjects.map((project) => (
+                      filteredProjects.map((project: Project) => (
                         <tr key={project.id}>
                           <td>{project.id || "N/D"}</td>
                           <td>
@@ -306,7 +393,7 @@ const ProjectListPage = () => {
                               className="badge status-badge"
                               style={{
                                 ...getStatusStyle(project.status),
-                                fontSize: "0.8rem", 
+                                fontSize: "0.8rem",
                               }}
                             >
                               {project.status ? project.status.toUpperCase() : "NO DISPONIBLE"}
@@ -334,7 +421,9 @@ const ProjectListPage = () => {
                               />
                               <CustomButton
                                 variant="deleteIcon"
-                                onClick={() => handleDelete(project.id, project.name_project)}
+                                onClick={() =>
+                                  handleDelete(project.id, project.name_project || "N/D")
+                                }
                                 style={{
                                   fontFamily: "var(--font-family-base)",
                                   padding: "0.5rem",
@@ -356,13 +445,22 @@ const ProjectListPage = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="d-flex justify-content-center align-items-center mt-3" style={{ fontFamily: "var(--font-family-base)" }}>
+              <div
+                className="d-flex justify-content-center align-items-center mt-3"
+                style={{ fontFamily: "var(--font-family-base)" }}
+              >
                 <CustomButton
                   variant="backIcon"
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                 />
-                <span style={{ fontFamily: "var(--font-family-base)", fontSize: "var(--font-size-base)", margin: "0 1.5rem" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-family-base)",
+                    fontSize: "var(--font-size-base)",
+                    margin: "0 1.5rem",
+                  }}
+                >
                   Página {currentPage} de {totalPages}
                 </span>
                 <CustomButton
@@ -391,7 +489,10 @@ const ProjectListPage = () => {
                 role="dialog"
               >
                 <div className="modal-dialog modal-lg" role="document" style={{ width: "100%" }}>
-                  <div className="modal-content" style={{ height: "100%", fontFamily: "var(--font-family-base)" }}>
+                  <div
+                    className="modal-content"
+                    style={{ height: "100%", fontFamily: "var(--font-family-base)" }}
+                  >
                     <div className="modal-header">
                       <h5 className="modal-title">Editar Proyecto #{editProjectData.id}</h5>
                       <button type="button" className="btn-close" onClick={handleCloseModal}></button>
@@ -419,7 +520,9 @@ const ProjectListPage = () => {
                           <select
                             className="form-select"
                             value={editProjectData.divisions?.department}
-                            onChange={(e) => handleEditDivisionChange("department", e.target.value)}
+                            onChange={(e) =>
+                              handleEditDivisionChange("department", e.target.value)
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           >
                             <option value="">Seleccione un departamento</option>
@@ -435,7 +538,9 @@ const ProjectListPage = () => {
                           <select
                             className="form-select"
                             value={editProjectData.divisions?.province}
-                            onChange={(e) => handleEditDivisionChange("province", e.target.value)}
+                            onChange={(e) =>
+                              handleEditDivisionChange("province", e.target.value)
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           >
                             <option value="">Seleccione una provincia</option>
@@ -451,7 +556,9 @@ const ProjectListPage = () => {
                           <select
                             className="form-select"
                             value={editProjectData.divisions?.district}
-                            onChange={(e) => handleEditDivisionChange("district", e.target.value)}
+                            onChange={(e) =>
+                              handleEditDivisionChange("district", e.target.value)
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           >
                             <option value="">Seleccione un distrito</option>
@@ -468,7 +575,9 @@ const ProjectListPage = () => {
                             type="text"
                             className="form-control"
                             value={editProjectData.name_project}
-                            onChange={(e) => handleEditChange("name_project", e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange("name_project", e.target.value)
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           />
                         </div>
@@ -478,7 +587,9 @@ const ProjectListPage = () => {
                             type="text"
                             className="form-control"
                             value={editProjectData.owner_name}
-                            onChange={(e) => handleEditChange("owner_name", e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange("owner_name", e.target.value)
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           />
                         </div>
@@ -488,7 +599,9 @@ const ProjectListPage = () => {
                             type="text"
                             className="form-control"
                             value={editProjectData.owner_lastname}
-                            onChange={(e) => handleEditChange("owner_lastname", e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange("owner_lastname", e.target.value)
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           />
                         </div>
@@ -498,7 +611,9 @@ const ProjectListPage = () => {
                             type="text"
                             className="form-control"
                             value={editProjectData.building_type}
-                            onChange={(e) => handleEditChange("building_type", e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange("building_type", e.target.value)
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           />
                         </div>
@@ -508,7 +623,9 @@ const ProjectListPage = () => {
                             type="text"
                             className="form-control"
                             value={editProjectData.main_use_type}
-                            onChange={(e) => handleEditChange("main_use_type", e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange("main_use_type", e.target.value)
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           />
                         </div>
@@ -518,7 +635,9 @@ const ProjectListPage = () => {
                             type="number"
                             className="form-control"
                             value={editProjectData.number_levels}
-                            onChange={(e) => handleEditChange("number_levels", e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange("number_levels", Number(e.target.value))
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           />
                         </div>
@@ -528,7 +647,9 @@ const ProjectListPage = () => {
                             type="number"
                             className="form-control"
                             value={editProjectData.number_homes_per_level}
-                            onChange={(e) => handleEditChange("number_homes_per_level", e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange("number_homes_per_level", Number(e.target.value))
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           />
                         </div>
@@ -538,7 +659,9 @@ const ProjectListPage = () => {
                             type="number"
                             className="form-control"
                             value={editProjectData.built_surface}
-                            onChange={(e) => handleEditChange("built_surface", e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange("built_surface", Number(e.target.value))
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           />
                         </div>
@@ -548,7 +671,9 @@ const ProjectListPage = () => {
                             type="number"
                             className="form-control"
                             value={editProjectData.latitude}
-                            onChange={(e) => handleEditChange("latitude", e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange("latitude", Number(e.target.value))
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           />
                         </div>
@@ -558,7 +683,9 @@ const ProjectListPage = () => {
                             type="number"
                             className="form-control"
                             value={editProjectData.longitude}
-                            onChange={(e) => handleEditChange("longitude", e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange("longitude", Number(e.target.value))
+                            }
                             style={{ fontFamily: "var(--font-family-base)" }}
                           />
                         </div>
@@ -650,8 +777,12 @@ const ProjectListPage = () => {
               margin-bottom: 15px;
             }
             @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
+              0% {
+                transform: rotate(0deg);
+              }
+              100% {
+                transform: rotate(360deg);
+              }
             }
             .loading-text {
               font-size: 1.5rem;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import Image from "next/image";
 import Swal from "sweetalert2";
 import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
@@ -9,11 +10,110 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 
+// Se eliminó cualquier importación o asignación de "router" sin uso.
+
+// Interfaces para tipar los datos
+
+interface MaterialAtributs {
+  name: string;
+  conductivity: number;
+  "specific heat": number;
+  density: number;
+}
+
+interface Material {
+  id: number;
+  atributs: MaterialAtributs;
+}
+
+interface WindowAttributes {
+  u_vidrio: number;
+  fs_vidrio: number;
+  frame_type: string;
+  clousure_type: string;
+}
+
+interface DoorAttributes {
+  u_puerta_opaca: number;
+  porcentaje_vidrio: number;
+  name_ventana: string;
+}
+
+interface ElementBase {
+  id: number;
+  type: "window" | "door";
+  name_element: string;
+  u_marco: number;
+  fm: number;
+  atributs: WindowAttributes | DoorAttributes;
+}
+
+interface Detail {
+  id_detail: number;
+  scantilon_location?: string;
+  name_detail?: string;
+  capas?: string;
+  layer_thickness?: number;
+  nombreAbrev?: string;
+  valorU?: number;
+  colorExt?: string;
+  colorInt?: string;
+  aislBajoPiso?: string;
+  refAislVert?: string;
+  refAislHoriz?: string;
+}
+
+interface Recinto {
+  id: number;
+  estado: string;
+  nombre: string;
+  perfilOcup: string;
+  sensorCO2: string;
+  alturaProm: number;
+  area: number;
+}
+
+interface FormData {
+  name_project: string;
+  owner_name: string;
+  owner_lastname: string;
+  country: string;
+  department: string;
+  province: string;
+  district: string;
+  building_type: string;
+  main_use_type: string;
+  number_levels: number;
+  number_homes_per_level: number;
+  built_surface: number;
+  latitude: number;
+  longitude: number;
+}
+
+interface DoorData {
+  name_element: string;
+  ventana_id: number;
+  name_ventana: string;
+  u_puerta_opaca: number;
+  porcentaje_vidrio: number;
+  u_marco: number;
+  fm: number;
+}
+
+interface WindowData {
+  name_element: string;
+  u_vidrio: number;
+  fs_vidrio: number;
+  frame_type: string;
+  clousure_type: string;
+  u_marco: number;
+  fm: number;
+}
+
 const ProjectCompleteWorkflowPage: React.FC = () => {
   // Estados generales
   const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [step, setStep] = useState<number>(1);
-  const [projectCreated, setProjectCreated] = useState<boolean>(false);
   const [createdProjectId, setCreatedProjectId] = useState<number | null>(null);
 
   // Sub-tabs para otros pasos
@@ -21,7 +121,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
 
   // Datos del formulario (pasos 1 y 2)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name_project: "",
     owner_name: "",
     owner_lastname: "",
@@ -40,54 +140,20 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   const [locationSearch, setLocationSearch] = useState("");
   const [foundLocations, setFoundLocations] = useState("");
 
-  const [materialsList, setMaterialsList] = useState<any[]>([]);
-
-  const [selectedMaterials, setSelectedMaterials] = useState<any[]>([]);
+  const [materialsList, setMaterialsList] = useState<Material[]>([]);
+  const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([]);
   const [showAddMaterialModal, setShowAddMaterialModal] = useState(false);
 
-  const [details, setDetails] = useState<any[]>([]);
+  const [details, setDetails] = useState<Detail[]>([]);
   const [tabDetailSection, setTabDetailSection] = useState("Techumbre");
 
-  const [elementsList, setElementsList] = useState<any[]>([]);
-  const [selectedElements, setSelectedElements] = useState<any[]>([]);
+  const [elementsList, setElementsList] = useState<ElementBase[]>([]);
+  const [selectedElements, setSelectedElements] = useState<ElementBase[]>([]);
   const [showAddElementModal, setShowAddElementModal] = useState(false);
   const [modalElementType, setModalElementType] = useState<string>("ventanas");
 
-  const detallesData = [
-    { ubicacion: "Techo", nombre: "Techo Base", capas: "Hormigón Armado", espesor: 10.0 },
-    { ubicacion: "Techo", nombre: "Techo Base", capas: "P.E 10kg/m3", espesor: 4.6 },
-  ];
-  const murosData = [
-    { nombreAbrev: "Muro Base", valorU: 2.9, colorExt: "Intermedio", colorInt: "Intermedio" },
-    { nombreAbrev: "Muro Ejemplo", valorU: 0.61, colorExt: "Intermedio", colorInt: "Intermedio" },
-  ];
-  const techumbreData = [
-    { nombreAbrev: "Techo Base", valorU: 0.8, colorExt: "Intermedio", colorInt: "Intermedio" },
-    { nombreAbrev: "Techo Ejemplo", valorU: 0.38, colorExt: "Intermedio", colorInt: "Intermedio" },
-  ];
-  const pisosData = [
-    { nombreAbrev: "Piso Base", valorU: 2.0, aislBajoPiso: "-", refAislVert: "-", dCm: "-", refAislHoriz: "-" },
-  ];
-  const ventanasData = [
-    { nombre: "V Base", uVidrio: 5.7, fs_vidrio: 0.87, tipoCierre: "Corredera", tipoMarco: "Fierro", uMarco: 5.7, fm: "75%" },
-  ];
-  const puertasData = [
-    { nombre: "P Base", uPuerta: 2.63, vidrio: "V Base", porcVidrio: "0%", uMarco: 1.25, fm: "8.8%" },
-  ];
-  const tipologiaRecintoData = [
-    { codigo: "ES", nombre: "Espera" },
-    { codigo: "AU", nombre: "Auditorio" },
-  ];
-  const ventilacionData = [
-    { rPers: 8.8, ida: "IDA2", ocupacion: "Sedentario", ventNoct: "-" },
-  ];
-  const iluminacionData = [
-    { potenciaBase: 12.0, estrategia: "Sin estrategia", propuesta: 12.0 },
-  ];
-  const cargasInternasData = [
-    { usuarios: 4.0, calorLatente: 164.0, calorSensible: 12.0, equipos: "-" },
-  ];
-  const [recintos, setRecintos] = useState([
+  // Como no se actualiza, se declara recintos como constante en lugar de useState
+  const recintos: Recinto[] = [
     {
       id: 1,
       estado: "Activo",
@@ -97,12 +163,12 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       alturaProm: 2.5,
       area: 50,
     },
-  ]);
+  ];
 
   const [showCreateDoorModal, setShowCreateDoorModal] = useState(false);
   const [showCreateWindowModal, setShowCreateWindowModal] = useState(false);
 
-  const [doorData, setDoorData] = useState({
+  const [doorData, setDoorData] = useState<DoorData>({
     name_element: "",
     ventana_id: 0,
     name_ventana: "",
@@ -112,7 +178,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     fm: 0,
   });
 
-  const [windowData, setWindowData] = useState({
+  const [windowData, setWindowData] = useState<WindowData>({
     name_element: "",
     u_vidrio: 0,
     fs_vidrio: 0,
@@ -122,7 +188,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     fm: 0,
   });
 
-  const handleFormInputChange = (field: string, value: any) => {
+  // Función para actualizar el formulario sin usar "any"
+  const handleFormInputChange = (field: keyof FormData, value: string | number) => {
     setFormData({ ...formData, [field]: value });
   };
 
@@ -179,30 +246,17 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       const url = `${constantUrlApiEndpoint}/projects/create`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const response = await axios.post(url, requestBody, { headers });
-      console.log("Proyecto creado:", response.data);
       const { project_id, message } = response.data;
       setCreatedProjectId(project_id);
-      setProjectCreated(true);
       Swal.fire("Proyecto creado", `ID: ${project_id} / Mensaje: ${message}`, "success");
       setStep(3);
-    } catch (error: any) {
-      console.error("Error al crear proyecto:", error.response?.data || error.message);
-      Swal.fire("Error al crear proyecto", error.response?.data?.detail || error.message, "error");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        Swal.fire("Error al crear proyecto", error.response?.data?.detail || error.message, "error");
+      } else {
+        Swal.fire("Error al crear proyecto", "Error desconocido", "error");
+      }
     }
-  };
-
-  const handleAddMaterial = (material: any) => {
-    if (selectedMaterials.some((m) => m.id === material.id)) {
-      Swal.fire("Material ya seleccionado", "Este material ya fue agregado", "info");
-      return;
-    }
-    setSelectedMaterials([...selectedMaterials, material]);
-    Swal.fire("Material agregado", `${material.atributs?.name} ha sido seleccionado.`, "success");
-  };
-
-  const handleRemoveMaterial = (materialId: number) => {
-    setSelectedMaterials(selectedMaterials.filter((m) => m.id !== materialId));
-    Swal.fire("Material removido", "El material ha sido eliminado de la selección", "info");
   };
 
   const fetchMaterialsList = async (page: number) => {
@@ -217,7 +271,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       const response = await axios.get(url, { headers });
       const data = response.data;
       setMaterialsList(data.constants || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error al obtener lista de materiales:", error);
       Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
     }
@@ -234,9 +288,14 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setDetails(response.data || []);
-    } catch (error: any) {
-      console.error("Error al obtener detalles:", error.response?.data || error.message);
-      Swal.fire("Error", "Error al obtener detalles. Ver consola.", "error");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error al obtener detalles:", error.response?.data || error.message);
+        Swal.fire("Error", "Error al obtener detalles. Ver consola.", "error");
+      } else {
+        console.error("Error al obtener detalles:", error);
+        Swal.fire("Error", "Error desconocido", "error");
+      }
     }
   };
 
@@ -255,7 +314,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       default:
         return details;
     }
-    return details.filter((d) => d.scantilon_location.toLowerCase() === section);
+    return details.filter((d) => d.scantilon_location?.toLowerCase() === section);
   };
 
   const fetchElements = async () => {
@@ -269,61 +328,24 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}`, Accept: "application/json" };
       const response = await axios.get(url, { headers });
       setElementsList(response.data || []);
-    } catch (error: any) {
-      console.error("Error al obtener elementos:", error.response?.data || error.message);
-      Swal.fire("Error", error.response?.data?.detail || error.message, "error");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error al obtener elementos:", error.response?.data || error.message);
+        Swal.fire("Error", error.response?.data?.detail || error.message, "error");
+      } else {
+        console.error("Error al obtener elementos:", error);
+        Swal.fire("Error", "Error desconocido", "error");
+      }
     }
   };
 
-  const handleSelectWindow = async (id: number) => {
-    if (!createdProjectId) {
-      Swal.fire("Proyecto no encontrado", "No se ha creado el proyecto.", "error");
-      return;
-    }
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
-        return;
-      }
-      const url = `${constantUrlApiEndpoint}/projects/${createdProjectId}/elements/windows/select`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-      const body = [id];
-      const response = await axios.post(url, body, { headers });
-      Swal.fire("Ventana agregada", response.data.message, "success");
-    } catch (error: any) {
-      console.error("Error al seleccionar ventana:", error.response?.data || error.message);
-      Swal.fire("Error", error.response?.data?.detail || error.message, "error");
-    }
-  };
-
-  const handleSelectDoor = async (id: number) => {
-    if (!createdProjectId) {
-      Swal.fire("Proyecto no encontrado", "No se ha creado el proyecto.", "error");
-      return;
-    }
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
-        return;
-      }
-      const url = `${constantUrlApiEndpoint}/projects/${createdProjectId}/elements/doors/select`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-      const body = [id];
-      const response = await axios.post(url, body, { headers });
-      Swal.fire("Puerta agregada", response.data.message, "success");
-    } catch (error: any) {
-      console.error("Error al seleccionar puerta:", error.response?.data || error.message);
-      Swal.fire("Error", error.response?.data?.detail || error.message, "error");
-    }
-  };
+  // Se eliminaron las funciones handleSelectWindow y handleSelectDoor, pues no se usan.
 
   const handleAddDetail = () => {
     Swal.fire("Agregar detalle", "Funcionalidad pendiente para agregar un nuevo detalle.", "info");
   };
 
-  const handleAddElement = (element: any) => {
+  const handleAddElement = (element: ElementBase) => {
     if (selectedElements.some((el) => el.id === element.id)) {
       Swal.fire("Elemento ya seleccionado", "Este elemento ya fue agregado", "info");
       return;
@@ -332,13 +354,10 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     Swal.fire("Elemento agregado", `${element.name_element} ha sido agregado.`, "success");
   };
 
-  const handleRemoveElement = (elementId: number) => {
-    setSelectedElements(selectedElements.filter((el) => el.id !== elementId));
-    Swal.fire("Elemento removido", "El elemento ha sido eliminado de la selección", "info");
-  };
+  // Se eliminó la función handleRemoveElement; en su lugar se utiliza una función inline en el onClick.
 
   const handleCreateDoorElement = () => {
-    const newDoor = {
+    const newDoor: ElementBase = {
       id: new Date().getTime(),
       type: "door",
       name_element: doorData.name_element,
@@ -365,7 +384,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   };
 
   const handleCreateWindowElement = () => {
-    const newWindow = {
+    const newWindow: ElementBase = {
       id: new Date().getTime(),
       type: "window",
       name_element: windowData.name_element,
@@ -404,6 +423,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     if (step === 5) fetchElements();
   }, [step]);
 
+  // Se filtran las ventanas disponibles de la lista de elementos
   const availableWindows = elementsList.filter((el) => el.type === "window");
 
   const renderMainHeader = () => {
@@ -663,7 +683,13 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                         />
                       </div>
                       <div className="col-12 col-md-8 mb-3">
-                        <img src="/assets/images/maps.jpg" className="img-fluid" alt="Mapa" />
+                        <Image
+                          src="/assets/images/maps.jpg"
+                          alt="Mapa"
+                          width={600}
+                          height={400}
+                          className="img-fluid"
+                        />
                       </div>
                       <div className="col-12 col-md-4">
                         <label className="form-label">Datos de ubicaciones encontradas</label>
@@ -716,7 +742,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                         </thead>
                         <tbody>
                           {selectedMaterials.map((mat, idx) => {
-                            const atributos = mat.atributs || {};
+                            const atributos = mat.atributs;
                             return (
                               <tr key={idx}>
                                 <td>{atributos.name}</td>
@@ -724,7 +750,12 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                 <td>{atributos["specific heat"]}</td>
                                 <td>{atributos.density}</td>
                                 <td>
-                                  <CustomButton variant="deleteIcon" onClick={() => handleRemoveMaterial(mat.id)} />
+                                  <CustomButton
+                                    variant="deleteIcon"
+                                    onClick={() =>
+                                      setSelectedMaterials(selectedMaterials.filter((m) => m.id !== mat.id))
+                                    }
+                                  />
                                 </td>
                               </tr>
                             );
@@ -784,11 +815,11 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {details.map((det: any) => (
+                                {details.map((det) => (
                                   <tr key={det.id_detail}>
                                     <td>{det.scantilon_location}</td>
                                     <td>{det.name_detail}</td>
-                                    <td>{det.capas || det.material}</td>
+                                    <td>{det.capas || "-"}</td>
                                     <td>{det.layer_thickness}</td>
                                   </tr>
                                 ))}
@@ -805,7 +836,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {getFilteredDetails(tabDetailSection).map((det: any) => (
+                                {getFilteredDetails(tabDetailSection).map((det) => (
                                   <tr key={det.id_detail}>
                                     <td>{det.nombreAbrev}</td>
                                     <td>{det.valorU}</td>
@@ -826,7 +857,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {getFilteredDetails(tabDetailSection).map((det: any) => (
+                                {getFilteredDetails(tabDetailSection).map((det) => (
                                   <tr key={det.id_detail}>
                                     <td>{det.nombreAbrev}</td>
                                     <td>{det.valorU}</td>
@@ -848,7 +879,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {getFilteredDetails(tabDetailSection).map((det: any) => (
+                                {getFilteredDetails(tabDetailSection).map((det) => (
                                   <tr key={det.id_detail}>
                                     <td>{det.nombreAbrev}</td>
                                     <td>{det.valorU}</td>
@@ -941,14 +972,21 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                 return (
                                   <tr key={idx}>
                                     <td>{el.name_element}</td>
-                                    <td>{el.atributs?.u_vidrio}</td>
-                                    <td>{el.atributs?.fs_vidrio}</td>
-                                    <td>{el.atributs?.clousure_type}</td>
-                                    <td>{el.atributs?.frame_type}</td>
+                                    <td>{(el.atributs as WindowAttributes).u_vidrio}</td>
+                                    <td>{(el.atributs as WindowAttributes).fs_vidrio}</td>
+                                    <td>{(el.atributs as WindowAttributes).clousure_type}</td>
+                                    <td>{(el.atributs as WindowAttributes).frame_type}</td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
                                     <td>
-                                      <CustomButton variant="deleteIcon" onClick={() => handleRemoveElement(el.id)} />
+                                      <CustomButton
+                                        variant="deleteIcon"
+                                        onClick={() =>
+                                          setSelectedElements(
+                                            selectedElements.filter((item) => item.id !== el.id)
+                                          )
+                                        }
+                                      />
                                     </td>
                                   </tr>
                                 );
@@ -956,17 +994,24 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                 return (
                                   <tr key={idx}>
                                     <td>{el.name_element}</td>
-                                    <td>{el.atributs?.u_puerta_opaca}</td>
-                                    <td>{el.atributs?.name_ventana}</td>
+                                    <td>{(el.atributs as DoorAttributes).u_puerta_opaca}</td>
+                                    <td>{(el.atributs as DoorAttributes).name_ventana}</td>
                                     <td>
-                                      {el.atributs?.porcentaje_vidrio !== undefined
-                                        ? (el.atributs.porcentaje_vidrio * 100).toFixed(0) + "%"
+                                      {(el.atributs as DoorAttributes).porcentaje_vidrio !== undefined
+                                        ? (((el.atributs as DoorAttributes).porcentaje_vidrio) * 100).toFixed(0) + "%"
                                         : "0%"}
                                     </td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
                                     <td>
-                                      <CustomButton variant="deleteIcon" onClick={() => handleRemoveElement(el.id)} />
+                                      <CustomButton
+                                        variant="deleteIcon"
+                                        onClick={() =>
+                                          setSelectedElements(
+                                            selectedElements.filter((item) => item.id !== el.id)
+                                          )
+                                        }
+                                      />
                                     </td>
                                   </tr>
                                 );
@@ -1015,7 +1060,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                       ))}
                     </ul>
                     <div className="tab-content border border-top-0 p-3">
-                      {/* Contenido  para cada pestaña */}
+                      {/* Contenido para cada pestaña */}
                     </div>
                     <div className="mt-4 text-end">
                       <CustomButton variant="backIcon" onClick={() => setStep(5)} />
@@ -1077,10 +1122,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
 
       {/* Modal para materiales (Paso 3) */}
       {showAddMaterialModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowAddMaterialModal(false)}
-        >
+        <div className="modal-overlay" onClick={() => setShowAddMaterialModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowAddMaterialModal(false)}>
               &times;
@@ -1098,7 +1140,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
               </thead>
               <tbody>
                 {materialsList.map((mat, idx) => {
-                  const atributos = mat.atributs || {};
+                  const atributos = mat.atributs;
                   return (
                     <tr key={idx}>
                       <td>{atributos.name}</td>
@@ -1108,9 +1150,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                       <td>
                         <CustomButton
                           variant="addIcon"
-                          onClick={() => {
-                            handleAddMaterial(mat);
-                          }}
+                          onClick={() => setSelectedMaterials([...selectedMaterials, mat])}
                         />
                       </td>
                     </tr>
@@ -1122,12 +1162,9 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal para seleccion de elementos (Paso 5) */}
+      {/* Modal para selección de elementos (Paso 5) */}
       {showAddElementModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowAddElementModal(false)}
-        >
+        <div className="modal-overlay" onClick={() => setShowAddElementModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowAddElementModal(false)}>
               &times;
@@ -1183,35 +1220,45 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
               <tbody>
                 {elementsList
                   .filter((el) => el.type === (modalElementType === "ventanas" ? "window" : "door"))
-                  .map((el: any, idx) => (
+                  .map((el: ElementBase, idx: number) => (
                     <tr key={idx}>
                       {modalElementType === "ventanas" ? (
                         <>
                           <td>{el.name_element}</td>
-                          <td>{el.atributs?.u_vidrio}</td>
-                          <td>{el.atributs?.fs_vidrio}</td>
-                          <td>{el.atributs?.clousure_type}</td>
-                          <td>{el.atributs?.frame_type}</td>
+                          <td>{(el.atributs as WindowAttributes).u_vidrio}</td>
+                          <td>{(el.atributs as WindowAttributes).fs_vidrio}</td>
+                          <td>{(el.atributs as WindowAttributes).clousure_type}</td>
+                          <td>{(el.atributs as WindowAttributes).frame_type}</td>
                           <td>{el.u_marco}</td>
                           <td>{(el.fm * 100).toFixed(0)}%</td>
                           <td>
-                            <CustomButton variant="addIcon" onClick={() => handleAddElement(el)} />
+                            <CustomButton
+                              variant="addIcon"
+                              onClick={() =>
+                                handleAddElement(el)
+                              }
+                            />
                           </td>
                         </>
                       ) : (
                         <>
                           <td>{el.name_element}</td>
-                          <td>{el.atributs?.u_puerta_opaca}</td>
-                          <td>{el.atributs?.name_ventana}</td>
+                          <td>{(el.atributs as DoorAttributes).u_puerta_opaca}</td>
+                          <td>{(el.atributs as DoorAttributes).name_ventana}</td>
                           <td>
-                            {el.atributs?.porcentaje_vidrio !== undefined
-                              ? (el.atributs.porcentaje_vidrio * 100).toFixed(0) + "%"
+                            {(el.atributs as DoorAttributes).porcentaje_vidrio !== undefined
+                              ? (((el.atributs as DoorAttributes).porcentaje_vidrio) * 100).toFixed(0) + "%"
                               : "0%"}
                           </td>
                           <td>{el.u_marco}</td>
                           <td>{(el.fm * 100).toFixed(0)}%</td>
                           <td>
-                            <CustomButton variant="addIcon" onClick={() => handleAddElement(el)} />
+                            <CustomButton
+                              variant="addIcon"
+                              onClick={() =>
+                                handleAddElement(el)
+                              }
+                            />
                           </td>
                         </>
                       )}
@@ -1225,10 +1272,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
 
       {/* Modal para crear puerta */}
       {showCreateDoorModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowCreateDoorModal(false)}
-        >
+        <div className="modal-overlay" onClick={() => setShowCreateDoorModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowCreateDoorModal(false)}>
               &times;
@@ -1293,20 +1337,20 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                 className="form-control"
                 onChange={(e) => {
                   const selectedId = parseInt(e.target.value);
-                  const win = availableWindows.find((w: any) => w.id === selectedId);
+                  const win = availableWindows.find((w) => w.id === selectedId);
                   if (win) {
                     setDoorData({
                       ...doorData,
                       ventana_id: win.id,
-                      name_ventana: win.atributs?.name || "",
+                      name_ventana: (win.atributs as WindowAttributes).frame_type || "",
                     });
                   }
                 }}
               >
                 <option value="0">Seleccione una ventana</option>
-                {availableWindows.map((win: any) => (
+                {availableWindows.map((win) => (
                   <option key={win.id} value={win.id}>
-                    {win.atributs?.name}
+                    {(win.atributs as WindowAttributes).frame_type || "Ventana"}
                   </option>
                 ))}
               </select>
@@ -1323,10 +1367,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
 
       {/* Modal para crear ventana */}
       {showCreateWindowModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowCreateWindowModal(false)}
-        >
+        <div className="modal-overlay" onClick={() => setShowCreateWindowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowCreateWindowModal(false)}>
               &times;
@@ -1424,7 +1465,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
           left: 0;
           width: 100%;
           height: 100%;
-          background: rgba(0,0,0,0.5);
+          background: rgba(0, 0, 0, 0.5);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1438,7 +1479,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
           width: 80%;
           max-height: 80vh;
           overflow-y: auto;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
         .modal-close {
           position: absolute;

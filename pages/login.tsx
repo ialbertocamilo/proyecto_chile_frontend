@@ -5,6 +5,7 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import CustomButton from "../src/components/common/CustomButton";
+import Link from "next/link";
 
 const Login = () => {
   const [email, setEmail] = useState<string>("");
@@ -49,17 +50,34 @@ const Login = () => {
       setTimeout(() => {
         router.push("/twofactorauth");
       }, 200);
-    } catch (err: any) {
-      console.error("Error al iniciar sesión:", err.message);
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      console.error("Error al iniciar sesión:", message);
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
+    <div
+      className="login-container"
+      style={{
+        height: "100vh",
+        background: "url('/assets/images/background.jpg') no-repeat center center/cover",
+        fontFamily: "var(--font-family-base)",
+      }}
+    >
+      <div
+        className="card p-5 shadow-lg forgot-password-card"
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          borderRadius: "15px",
+          backgroundColor: "rgba(255, 255, 255, 0.9)",
+          textAlign: "left",
+        }}
+      >
         <h5
           className="fw-bold"
           style={{
@@ -80,9 +98,7 @@ const Login = () => {
         >
           Ingresa tu Email y contraseña para acceder
         </p>
-        {error && (
-          <p className="text-danger text-center fw-bold">{error}</p>
-        )}
+        {error && <p className="text-danger text-center fw-bold">{error}</p>}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
@@ -176,7 +192,7 @@ const Login = () => {
                 Recuérdame
               </label>
             </div>
-            <a
+            <Link
               href="/forgot-password"
               className="text-decoration-none"
               style={{
@@ -185,7 +201,7 @@ const Login = () => {
               }}
             >
               ¿Olvidaste tu contraseña?
-            </a>
+            </Link>
           </div>
 
           <CustomButton
@@ -196,7 +212,7 @@ const Login = () => {
               borderRadius: "0.5rem",
               fontFamily: "var(--font-family-base)",
               fontSize: "var(--font-size-base)",
-              width: "100%"
+              width: "100%",
             }}
           >
             {loading ? "Ingresando..." : "Ingresar"}
@@ -206,7 +222,7 @@ const Login = () => {
         <div className="text-center mt-4">
           <p style={{ color: "var(--muted-text)" }} className="text-muted">
             ¿Aún no tienes cuenta?{" "}
-            <a
+            <Link
               href="/register"
               className="text-decoration-none"
               style={{
@@ -215,7 +231,7 @@ const Login = () => {
               }}
             >
               Crear una cuenta
-            </a>
+            </Link>
           </p>
         </div>
       </div>
@@ -229,31 +245,6 @@ const Login = () => {
           background: url('/assets/images/background.jpg')
             no-repeat center center/cover;
           position: relative;
-        }
-
-        .login-card {
-          background: #fff;
-          padding: 2rem;
-          border-radius: 15px;
-          box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-          width: 100%;
-          max-width: 400px;
-          text-align: left;
-          position: relative;
-          z-index: 2;
-        }
-
-        .mb-3 {
-          margin-bottom: 1.5rem;
-        }
-
-        .form-control {
-          transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-          border-color: var(--secondary-color);
-          box-shadow: 0 0 10px rgba(9, 132, 227, 0.2);
         }
       `}</style>
     </div>

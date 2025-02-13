@@ -8,10 +8,42 @@ import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 
+const modalWidth = "90%";
+const modalHeight = "auto";
+
+interface Divisions {
+  department?: string;
+  province?: string;
+  district?: string;
+}
+
+export interface Project {
+  id: number;
+  status?: string;
+  name_project?: string;
+  owner_name?: string;
+  designer_name?: string;
+  director_name?: string;
+  address?: string;
+  country?: string;
+  divisions?: Divisions;
+  owner_lastname?: string;
+  building_type?: string;
+  main_use_type?: string;
+  number_levels?: number;
+  number_homes_per_level?: number;
+  built_surface?: number;
+  latitude?: number;
+  longitude?: number;
+  [key: string]: unknown;
+}
+
 const ProjectListStatusEditPage = () => {
   const router = useRouter();
   const [sidebarWidth, setSidebarWidth] = useState("300px");
-  const [projects, setProjects] = useState<any[]>([]);
+
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -29,7 +61,7 @@ const ProjectListStatusEditPage = () => {
     fetchProjects(currentPage);
   }, [currentPage]);
 
-  const fetchProjects = async (page: number) => {
+  const fetchProjects = async (page: number): Promise<void> => {
     setLoading(true);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -48,9 +80,14 @@ const ProjectListStatusEditPage = () => {
       setProjects(response.data.projects);
       setTotalPages(response.data.total_pages);
       setCurrentPage(response.data.current_page);
-    } catch (err: any) {
+      setFilteredProjects(response.data.projects);
+    } catch (err: unknown) {
       console.error("Error al obtener los proyectos:", err);
-      setError(err.response?.data?.detail || "Error al obtener los proyectos.");
+      if (axios.isAxiosError(err) && err.response) {
+        setError((err.response.data as { detail?: string }).detail || "Error al obtener los proyectos.");
+      } else {
+        setError("Error de conexión con el servidor.");
+      }
     } finally {
       setLoading(false);
     }
@@ -59,18 +96,18 @@ const ProjectListStatusEditPage = () => {
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.toLowerCase();
     setSearch(query);
+    const filtered = projects.filter((project: Project) =>
+      Object.values(project).join(" ").toLowerCase().includes(query)
+    );
+    setFilteredProjects(filtered);
   };
-
-  const filteredProjects = projects.filter((project) =>
-    Object.values(project).join(" ").toLowerCase().includes(search)
-  );
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     setCurrentPage(newPage);
   };
 
-  const openStatusModal = (project: any) => {
+  const openStatusModal = (project: Project) => {
     setEditStatusProjectId(project.id);
     setCurrentStatus(project.status || "registrado");
     setShowStatusModal(true);
@@ -107,7 +144,7 @@ const ProjectListStatusEditPage = () => {
         closeStatusModal();
         fetchProjects(currentPage);
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error al actualizar el estado del proyecto:", err);
       setError("Ocurrió un error al actualizar el estado del proyecto.");
       Swal.fire({
@@ -151,8 +188,7 @@ const ProjectListStatusEditPage = () => {
               Estado de Proyectos
             </h2>
             <div className="d-flex" style={{ gap: "1rem" }}>
-              <CustomButton variant="backIcon" onClick={() => router.push("/dashboard")}>
-              </CustomButton>
+              <CustomButton variant="backIcon" onClick={() => router.push("/dashboard")} />
             </div>
           </div>
           {error && <p className="text-danger fw-bold">{error}</p>}
@@ -185,7 +221,7 @@ const ProjectListStatusEditPage = () => {
                 </thead>
                 <tbody>
                   {filteredProjects.length > 0 ? (
-                    filteredProjects.map((project) => (
+                    filteredProjects.map((project: Project) => (
                       <tr key={project.id}>
                         <td>{project.id || "N/D"}</td>
                         <td>
@@ -242,8 +278,8 @@ const ProjectListStatusEditPage = () => {
                 display: "block",
                 marginTop: "40px",
                 marginLeft: "20px",
-                width: "90%",
-                height: "auto",
+                width: modalWidth,
+                height: modalHeight,
                 fontFamily: "var(--font-family-base)",
               }}
               tabIndex={-1}

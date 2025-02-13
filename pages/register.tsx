@@ -79,9 +79,10 @@ const Register = () => {
       setTimeout(() => {
         router.push("/login");
       }, 500);
-    } catch (err: any) {
-      console.error("Error al registrar:", err.message);
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      console.error("Error al registrar:", message);
+      setError(message);
     } finally {
       setLoading(false);
     }

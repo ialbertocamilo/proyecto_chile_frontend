@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CustomButton from "../src/components/common/CustomButton";
 import Link from "next/link";
 
@@ -14,7 +14,15 @@ const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const router = useRouter();
+  const { push } = useRouter();
+
+  // Verifica si el usuario está logeado y redirige a /dashboard
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      push("/dashboard");
+    }
+  }, [push]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +56,7 @@ const Login = () => {
       console.log("Nombre del usuario guardado:", data.name);
 
       setTimeout(() => {
-        router.push("/twofactorauth");
+        push("/twofactorauth");
       }, 200);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";

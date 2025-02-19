@@ -26,10 +26,11 @@ const ConstantsManagement = () => {
   // Se elimina router ya que no se utiliza.
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  // -- Para la tabla y la paginación --
+  // -- Para la tabla (se muestran todos los materiales sin paginación) --
   const [materials, setMaterials] = useState<Material[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+
+  // -- Estado para búsqueda --
+  const [searchQuery, setSearchQuery] = useState("");
 
   // -- Modal CREAR --
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -46,21 +47,20 @@ const ConstantsManagement = () => {
   const [editConductivity, setEditConductivity] = useState<number>(0);
   const [editSpecificHeat, setEditSpecificHeat] = useState<number>(0);
 
-  // 1) LISTAR 
+  // 1) LISTAR TODOS LOS MATERIALES
   const fetchMaterials = useCallback(async () => {
-    console.log("Fetching materials from backend...");
+    console.log("Fetching all materials from backend...");
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No se encontró un token en localStorage.");
       return;
     }
     try {
+      // Se omiten parámetros de paginación para traer todos los materiales
       const params = new URLSearchParams();
-      params.append("page", String(currentPage));
-      params.append("per_page", "5");
       params.append("name", "materials");
 
-      const url = `${constantUrlApiEndpoint}/admin/constants/?${params.toString()}`;
+      const url = `${constantUrlApiEndpoint}/constants/?page=1&per_page=500`;
       console.log("URL de materiales:", url);
 
       const response = await fetch(url, {
@@ -80,19 +80,15 @@ const ConstantsManagement = () => {
 
       if (data && Array.isArray(data.constants)) {
         setMaterials(data.constants);
-        setCurrentPage(data.page || 1);
-        setTotalPages(data.total_pages || 1);
       } else {
         setMaterials([]);
-        setCurrentPage(1);
-        setTotalPages(1);
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "";
       console.error("Error en fetchMaterials:", message);
       Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
     }
-  }, [currentPage]);
+  }, []);
 
   useEffect(() => {
     fetchMaterials();
@@ -118,7 +114,7 @@ const ConstantsManagement = () => {
       };
 
       const response = await fetch(
-        `${constantUrlApiEndpoint}/admin/constants/create`,
+        `${constantUrlApiEndpoint}/constants/create`,
         {
           method: "POST",
           headers: {
@@ -181,7 +177,7 @@ const ConstantsManagement = () => {
         type: "definition materials",
       };
 
-      const url = `${constantUrlApiEndpoint}/admin/constant/${editMaterialId}/update`;
+      const url = `${constantUrlApiEndpoint}/constant/${editMaterialId}/update`;
       const response = await fetch(url, {
         method: "PUT",
         headers: {
@@ -225,7 +221,7 @@ const ConstantsManagement = () => {
             return;
           }
           const resp = await fetch(
-            `${constantUrlApiEndpoint}/admin/constants/${material.id}`,
+            `${constantUrlApiEndpoint}/constants/${material.id}`,
             {
               method: "DELETE",
               headers: {
@@ -252,17 +248,23 @@ const ConstantsManagement = () => {
     });
   };
 
-  // 5) Paginación
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
+  // Filtrado de materiales basado en la búsqueda
+  const filteredMaterials = materials.filter((material) => {
+    const query = searchQuery.toLowerCase();
+    const { id, atributs } = material;
+    const name = atributs.name?.toLowerCase() || "";
+    const density = atributs.density?.toString() || "";
+    const conductivity = atributs.conductivity?.toString() || "";
+    const specificHeat =
+      (atributs.specific_heat || atributs["specific heat"])?.toString() || "";
+    return (
+      id.toString().includes(query) ||
+      name.includes(query) ||
+      density.includes(query) ||
+      conductivity.includes(query) ||
+      specificHeat.includes(query)
+    );
+  });
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
@@ -281,7 +283,21 @@ const ConstantsManagement = () => {
             Listado de Materiales
           </h2>
 
-          <div className="d-flex justify-content-end mb-3">
+          {/* Fila superior con buscador y botón de crear */}
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                padding: "0.5rem",
+                fontSize: "var(--font-size-base)",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                width: "300px"
+              }}
+            />
             <CustomButton
               type="button"
               variant="save"
@@ -295,8 +311,8 @@ const ConstantsManagement = () => {
             </CustomButton>
           </div>
 
-          {/* Tabla */}
-          <div className="table-responsive">
+          {/* Tabla con scroll interno */}
+          <div className="table-responsive" style={{ maxHeight: "600px", overflowY: "auto" }}>
             <table className="custom-table">
               <thead>
                 <tr>
@@ -309,8 +325,8 @@ const ConstantsManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {materials.length > 0 ? (
-                  materials.map((m) => {
+                {filteredMaterials.length > 0 ? (
+                  filteredMaterials.map((m) => {
                     const heatValue = Number(
                       m.atributs["specific_heat"] ??
                       m.atributs["specific heat"] ??
@@ -325,7 +341,6 @@ const ConstantsManagement = () => {
                         <td>{heatValue}</td>
                         <td className="text-center">
                           <div className="action-btn-group">
-                            {/* Botón EDITAR abre modal */}
                             <CustomButton
                               variant="editIcon"
                               onClick={() => openEditModal(m)}
@@ -339,7 +354,6 @@ const ConstantsManagement = () => {
                                 height: "40px",
                               }}
                             />
-                            {/* Botón ELIMINAR */}
                             <CustomButton
                               variant="deleteIcon"
                               onClick={() => handleDeleteMaterial(m)}
@@ -365,32 +379,6 @@ const ConstantsManagement = () => {
                 )}
               </tbody>
             </table>
-          </div>
-
-          {/* Controles de paginación */}
-          <div className="d-flex justify-content-center align-items-center mt-4">
-            <CustomButton
-              type="button"
-              variant="backIcon"
-              onClick={goToPreviousPage}
-              disabled={currentPage === 1}
-              style={{ fontFamily: "var(--font-family-base)" }}
-            />
-            <span
-              style={{
-                fontFamily: "var(--font-family-base)",
-                margin: "0 1.5rem",
-              }}
-            >
-              Página {currentPage} de {totalPages}
-            </span>
-            <CustomButton
-              type="button"
-              variant="forwardIcon"
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages}
-              style={{ fontFamily: "var(--font-family-base)" }}
-            />
           </div>
         </div>
       </div>

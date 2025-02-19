@@ -7,7 +7,6 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 interface UserData {
   name: string;
   email: string;
-  // Puedes agregar otros campos según la respuesta del API
 }
 
 const AdminDashboard = () => {
@@ -33,7 +32,7 @@ const AdminDashboard = () => {
         });
         setUserData(response.data);
       } catch (error) {
-        console.error('❌ Error obteniendo datos del usuario:', error);
+        console.error('Error obteniendo datos del usuario:', error);
       } finally {
         setLoading(false);
       }

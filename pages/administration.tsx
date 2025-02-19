@@ -14,7 +14,7 @@ import TopBar from "../src/components/layout/TopBar";
 interface MaterialAttributes {
   name?: string;
   conductivity?: number;
-  "specific heat"?: number;
+  "specific_heat"?: number;
   density?: number;
 }
 
@@ -363,7 +363,7 @@ const AdministrationPage: React.FC = () => {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/admin/constants/?page=${page}&per_page=100`;
+      const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=100`;
       const headers = { Authorization: `Bearer ${token}` };
       const response: AxiosResponse<{ constants: Material[] }> = await axios.get(url, { headers });
       setMaterialsList(response.data.constants || []);
@@ -381,7 +381,7 @@ const AdministrationPage: React.FC = () => {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/user/details/?section=admin`;
+      const url = `${constantUrlApiEndpoint}/details`;
       const headers = { Authorization: `Bearer ${token}` };
       const response: AxiosResponse<Detail[]> = await axios.get(url, { headers });
       setDetails(response.data || []);
@@ -417,7 +417,7 @@ const AdministrationPage: React.FC = () => {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/admin/elements/`;
+      const url = `${constantUrlApiEndpoint}/elements/`;
       const headers = { Authorization: `Bearer ${token}`, Accept: "application/json" };
       const response: AxiosResponse<Element[]> = await axios.get(url, { headers });
       setElementsList(response.data || []);
@@ -544,7 +544,7 @@ const AdministrationPage: React.FC = () => {
                               <tr key={idx}>
                                 <td>{atributos.name}</td>
                                 <td>{atributos.conductivity}</td>
-                                <td>{atributos["specific heat"]}</td>
+                                <td>{atributos["specific_heat"]}</td>
                                 <td>{atributos.density}</td>
                               </tr>
                             );

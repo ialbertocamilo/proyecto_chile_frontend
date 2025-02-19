@@ -10,14 +10,10 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 
-// Se eliminó cualquier importación o asignación de "router" sin uso.
-
-// Interfaces para tipar los datos
-
 interface MaterialAtributs {
   name: string;
   conductivity: number;
-  "specific heat": number;
+  specific_heat: number;
   density: number;
 }
 
@@ -39,7 +35,7 @@ interface DoorAttributes {
   name_ventana: string;
 }
 
-interface ElementBase {
+export interface ElementBase {
   id: number;
   type: "window" | "door";
   name_element: string;
@@ -48,19 +44,13 @@ interface ElementBase {
   atributs: WindowAttributes | DoorAttributes;
 }
 
-interface Detail {
+export interface Detail {
   id_detail: number;
-  scantilon_location?: string;
-  name_detail?: string;
-  capas?: string;
-  layer_thickness?: number;
-  nombreAbrev?: string;
-  valorU?: number;
-  colorExt?: string;
-  colorInt?: string;
-  aislBajoPiso?: string;
-  refAislVert?: string;
-  refAislHoriz?: string;
+  scantilon_location: string;
+  name_detail: string;
+  id_material: number;
+  material: string;
+  layer_thickness: number;
 }
 
 interface Recinto {
@@ -104,23 +94,53 @@ interface WindowData {
   name_element: string;
   u_vidrio: number;
   fs_vidrio: number;
-  frame_type: string;
   clousure_type: string;
+  frame_type: string;
   u_marco: number;
   fm: number;
 }
 
+interface NewDetailForm {
+  scantilon_location: string;
+  name_detail: string;
+  material_id: number;
+  layer_thickness: number;
+}
+
+// Interfaz para datos de pestañas (muros, techumbre y pisos)
+interface TabElement {
+  name_detail: string;
+  value_u?: number;
+  info?: {
+    surface_color?: {
+      exterior?: { name: string };
+      interior?: { name: string };
+    };
+    ref_aisl_bajo_piso?: {
+      lambda?: number;
+      e_aisl?: number;
+    };
+    ref_aisl_vertical?: {
+      lambda?: number;
+      e_aisl?: number;
+      d?: number;
+    };
+    ref_aisl_horizontal?: {
+      lambda?: number;
+      e_aisl?: number;
+      d?: number;
+    };
+  };
+}
+
 const ProjectCompleteWorkflowPage: React.FC = () => {
-  // Estados generales
   const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [step, setStep] = useState<number>(1);
   const [createdProjectId, setCreatedProjectId] = useState<number | null>(null);
 
-  // Sub-tabs para otros pasos
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
   const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
 
-  // Datos del formulario (pasos 1 y 2)
   const [formData, setFormData] = useState<FormData>({
     name_project: "",
     owner_name: "",
@@ -145,14 +165,52 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   const [showAddMaterialModal, setShowAddMaterialModal] = useState(false);
 
   const [details, setDetails] = useState<Detail[]>([]);
-  const [tabDetailSection, setTabDetailSection] = useState("Techumbre");
+  const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
+  const [showSelectDetailModal, setShowSelectDetailModal] = useState(false);
+  const [showCreateDetailModal, setShowCreateDetailModal] = useState(false);
+  const [newDetailForm, setNewDetailForm] = useState<NewDetailForm>({
+    scantilon_location: "",
+    name_detail: "",
+    material_id: 0,
+    layer_thickness: 10,
+  });
+
+  const [showTabsInStep4, setShowTabsInStep4] = useState(false);
+  const [tabStep4, setTabStep4] = useState<"detalles" | "muros" | "techumbre" | "pisos">("detalles");
+
+  const [detailsTabList, setDetailsTabList] = useState<Detail[]>([]);
+  const [murosTabList, setMurosTabList] = useState<TabElement[]>([]);
+  const [techumbreTabList, setTechumbreTabList] = useState<TabElement[]>([]);
+  const [pisosTabList, setPisosTabList] = useState<TabElement[]>([]);
 
   const [elementsList, setElementsList] = useState<ElementBase[]>([]);
   const [selectedElements, setSelectedElements] = useState<ElementBase[]>([]);
   const [showAddElementModal, setShowAddElementModal] = useState(false);
   const [modalElementType, setModalElementType] = useState<string>("ventanas");
 
-  // Como no se actualiza, se declara recintos como constante en lugar de useState
+  const [showCreateWindowModal, setShowCreateWindowModal] = useState(false);
+  const [showCreateDoorModal, setShowCreateDoorModal] = useState(false);
+
+  const [windowData, setWindowData] = useState<WindowData>({
+    name_element: "",
+    u_vidrio: 0,
+    fs_vidrio: 0,
+    clousure_type: "Corredera",
+    frame_type: "",
+    u_marco: 0,
+    fm: 0,
+  });
+  const [doorData, setDoorData] = useState<DoorData>({
+    name_element: "",
+    ventana_id: 0,
+    name_ventana: "",
+    u_puerta_opaca: 0,
+    porcentaje_vidrio: 0,
+    u_marco: 0,
+    fm: 0,
+  });
+  const [allWindowsForDoor, setAllWindowsForDoor] = useState<ElementBase[]>([]);
+
   const recintos: Recinto[] = [
     {
       id: 1,
@@ -165,57 +223,64 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     },
   ];
 
-  const [showCreateDoorModal, setShowCreateDoorModal] = useState(false);
-  const [showCreateWindowModal, setShowCreateWindowModal] = useState(false);
+  const fetchElements = async (type: "window" | "door") => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        return;
+      }
+      const url = `${constantUrlApiEndpoint}/elements/?type=${type}`;
+      const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
+      const response = await axios.get(url, { headers });
+      setElementsList(response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        Swal.fire(
+          `Error al obtener ${type === "window" ? "ventanas" : "puertas"}`,
+          error.response?.data?.detail || error.message,
+          "error"
+        );
+      } else {
+        Swal.fire("Error", "Error desconocido", "error");
+      }
+    }
+  };
 
-  const [doorData, setDoorData] = useState<DoorData>({
-    name_element: "",
-    ventana_id: 0,
-    name_ventana: "",
-    u_puerta_opaca: 0,
-    porcentaje_vidrio: 0,
-    u_marco: 0,
-    fm: 0,
-  });
+  const fetchAllWindowsForDoor = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        return;
+      }
+      const url = `${constantUrlApiEndpoint}/elements/?type=window`;
+      const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
+      const response = await axios.get(url, { headers });
+      setAllWindowsForDoor(response.data);
+    } catch (error) {
+      console.error("Error al obtener ventanas para puerta:", error);
+    }
+  };
 
-  const [windowData, setWindowData] = useState<WindowData>({
-    name_element: "",
-    u_vidrio: 0,
-    fs_vidrio: 0,
-    frame_type: "",
-    clousure_type: "",
-    u_marco: 0,
-    fm: 0,
-  });
+  useEffect(() => {
+    if (showAddElementModal) {
+      void (modalElementType === "ventanas" ? fetchElements("window") : fetchElements("door"));
+    }
+  }, [showAddElementModal, modalElementType]);
 
-  // Función para actualizar el formulario sin usar "any"
+  useEffect(() => {
+    if (showCreateDoorModal) {
+      void fetchAllWindowsForDoor();
+    }
+  }, [showCreateDoorModal]);
+
   const handleFormInputChange = (field: keyof FormData, value: string | number) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleSaveData = () => {
-    if (!createdProjectId) {
-      Swal.fire("Error", "Proyecto no encontrado", "error");
-      return;
-    }
-    Swal.fire(
-      "Datos guardados",
-      `Se han guardado los datos en el proyecto ${createdProjectId} - ${formData.name_project}`,
-      "success"
-    );
-    setStep(4);
-  };
-
-  const handleSaveProject = () => {
-    if (!createdProjectId) {
-      Swal.fire("Error", "Proyecto no encontrado", "error");
-      return;
-    }
-    Swal.fire(
-      "Datos guardados",
-      `Se han guardado los datos en el proyecto ${createdProjectId} - ${formData.name_project}`,
-      "success"
-    );
+  const handleNewDetailFormChange = (field: keyof NewDetailForm, value: string | number) => {
+    setNewDetailForm({ ...newDetailForm, [field]: value });
   };
 
   const handleCreateProject = async () => {
@@ -248,8 +313,9 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       const response = await axios.post(url, requestBody, { headers });
       const { project_id, message } = response.data;
       setCreatedProjectId(project_id);
-      Swal.fire("Proyecto creado", `ID: ${project_id} / Mensaje: ${message}`, "success");
-      setStep(3);
+      Swal.fire("Proyecto creado", `ID: ${project_id} / Mensaje: ${message}`, "success").then(() => {
+        setStep(3);
+      });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         Swal.fire("Error al crear proyecto", error.response?.data?.detail || error.message, "error");
@@ -266,28 +332,54 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/admin/constants/?page=${page}&per_page=100`;
+      const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=100`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
-      const data = response.data;
-      setMaterialsList(data.constants || []);
+      setMaterialsList(response.data.constants || []);
     } catch (error: unknown) {
-      console.error("Error al obtener lista de materiales:", error);
+      console.error("Error al obtener materiales:", error);
       Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
     }
   };
 
-  const fetchDetails = async () => {
+  const handleSaveMaterials = async () => {
+    if (!createdProjectId) {
+      Swal.fire("Error", "Proyecto no encontrado", "error");
+      return;
+    }
+    const materialIds = selectedMaterials.map((mat) => mat.id);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/user/details/?section=admin`;
+      const url = `${constantUrlApiEndpoint}/projects/${createdProjectId}/constants/select`;
+      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      await axios.post(url, materialIds, { headers });
+      Swal.fire("Materiales guardados", "Materiales agregados correctamente", "success").then(() => {
+        setStep(4);
+      });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        Swal.fire("Error al guardar materiales", error.response?.data?.detail || error.message, "error");
+      } else {
+        Swal.fire("Error al guardar materiales", "Error desconocido", "error");
+      }
+    }
+  };
+
+  const fetchFetchedDetails = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        return;
+      }
+      const url = `${constantUrlApiEndpoint}/details/`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
-      setDetails(response.data || []);
+      setFetchedDetails(response.data || []);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error("Error al obtener detalles:", error.response?.data || error.message);
@@ -299,172 +391,290 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     }
   };
 
-  const getFilteredDetails = (tab: string) => {
-    let section = "";
-    switch (tab) {
-      case "Muros":
-        section = "muro";
-        break;
-      case "Techumbre":
-        section = "techo";
-        break;
-      case "Pisos":
-        section = "piso";
-        break;
-      default:
-        return details;
+  const handleAddDetailFromModal = (det: Detail) => {
+    if (details.some((d) => d.id_detail === det.id_detail)) {
+      Swal.fire("Detalle duplicado", "Este detalle ya fue seleccionado", "info");
+      return;
     }
-    return details.filter((d) => d.scantilon_location?.toLowerCase() === section);
+    setDetails([...details, det]);
+    Swal.fire("Detalle agregado", `El detalle "${det.name_detail}" ha sido agregado.`, "success");
   };
 
-  const fetchElements = async () => {
+  const handleCreateNewDetail = async () => {
+    if (!newDetailForm.scantilon_location || !newDetailForm.name_detail || !newDetailForm.material_id) {
+      Swal.fire("Error", "Todos los campos son obligatorios", "error");
+      return;
+    }
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/admin/elements/`;
-      const headers = { Authorization: `Bearer ${token}`, Accept: "application/json" };
-      const response = await axios.get(url, { headers });
-      setElementsList(response.data || []);
+      const url = `${constantUrlApiEndpoint}/details/create`;
+      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const response = await axios.post(url, newDetailForm, { headers });
+      const returnedDetail = response.data.detail as Detail;
+      const materialObj = materialsList.find((mat) => mat.id === newDetailForm.material_id);
+      if (materialObj) {
+        returnedDetail.material = materialObj.atributs.name;
+      }
+      Swal.fire("Detalle creado", response.data.success, "success");
+      fetchFetchedDetails();
+      setShowCreateDetailModal(false);
+      setNewDetailForm({ scantilon_location: "", name_detail: "", material_id: 0, layer_thickness: 10 });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error("Error al obtener elementos:", error.response?.data || error.message);
-        Swal.fire("Error", error.response?.data?.detail || error.message, "error");
+        Swal.fire("Error al crear detalle", error.response?.data?.detail || error.message, "error");
       } else {
-        console.error("Error al obtener elementos:", error);
-        Swal.fire("Error", "Error desconocido", "error");
+        Swal.fire("Error al crear detalle", "Error desconocido", "error");
       }
     }
   };
 
-  // Se eliminaron las funciones handleSelectWindow y handleSelectDoor, pues no se usan.
+  const getMaterialNameById = (matId: number): string => {
+    const mat = materialsList.find((m) => m.id === matId);
+    return mat ? mat.atributs.name : "Desconocido";
+  };
 
-  const handleAddDetail = () => {
-    Swal.fire("Agregar detalle", "Funcionalidad pendiente para agregar un nuevo detalle.", "info");
+  const fetchStep4TabsData = async () => {
+    if (!createdProjectId) return;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+      {
+        const url = `${constantUrlApiEndpoint}/projects/${createdProjectId}/details`;
+        const res = await axios.get(url, { headers });
+        setDetailsTabList(res.data || []);
+      }
+      {
+        const url = `${constantUrlApiEndpoint}/project/${createdProjectId}/details/Muro`;
+        const res = await axios.get(url, { headers });
+        setMurosTabList(res.data || []);
+      }
+      {
+        const url = `${constantUrlApiEndpoint}/project/${createdProjectId}/details/Techo`;
+        const res = await axios.get(url, { headers });
+        setTechumbreTabList(res.data || []);
+      }
+      {
+        const url = `${constantUrlApiEndpoint}/project/${createdProjectId}/details/Piso`;
+        const res = await axios.get(url, { headers });
+        setPisosTabList(res.data || []);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error al obtener datos de pestañas step4:", error.response?.data || error.message);
+      } else {
+        console.error("Error desconocido al obtener datos de pestañas step4:", error);
+      }
+    }
+  };
+
+  const handleSaveDetails = async () => {
+    if (!createdProjectId) {
+      Swal.fire("Error", "Proyecto no encontrado", "error");
+      return;
+    }
+    const detailIds = details.map((det) => det.id_detail);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        return;
+      }
+      const url = `${constantUrlApiEndpoint}/projects/${createdProjectId}/details/select`;
+      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      await axios.post(url, detailIds, { headers });
+      Swal.fire("Detalles guardados", "Detalles agregados correctamente", "success").then(() => {
+        setShowTabsInStep4(true);
+        fetchStep4TabsData();
+      });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        Swal.fire(
+          "Error al guardar detalles",
+          error.response?.data?.message || error.response?.data?.detail || error.message,
+          "error"
+        );
+      } else {
+        Swal.fire("Error al guardar detalles", "Error desconocido", "error");
+      }
+    }
+  };
+
+  const handleSaveElements = async () => {
+    if (!createdProjectId) {
+      Swal.fire("Error", "Proyecto no encontrado", "error");
+      return;
+    }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+      return;
+    }
+    const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+    const windowIds = selectedElements.filter((el) => el.type === "window").map((el) => el.id);
+    const doorIds = selectedElements.filter((el) => el.type === "door").map((el) => el.id);
+    try {
+      if (windowIds.length > 0) {
+        const urlWindows = `${constantUrlApiEndpoint}/projects/${createdProjectId}/elements/windows/select`;
+        await axios.post(urlWindows, windowIds, { headers });
+      }
+      if (doorIds.length > 0) {
+        const urlDoors = `${constantUrlApiEndpoint}/projects/${createdProjectId}/elements/doors/select`;
+        await axios.post(urlDoors, doorIds, { headers });
+      }
+      Swal.fire("Elementos guardados", "Elementos agregados correctamente", "success").then(() => {
+        setStep(6);
+      });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        Swal.fire("Error", error.response?.data?.detail || error.message, "error");
+      }
+    }
   };
 
   const handleAddElement = (element: ElementBase) => {
     if (selectedElements.some((el) => el.id === element.id)) {
-      Swal.fire("Elemento ya seleccionado", "Este elemento ya fue agregado", "info");
+      Swal.fire("Elemento duplicado", "Este elemento ya fue agregado", "info");
       return;
     }
     setSelectedElements([...selectedElements, element]);
     Swal.fire("Elemento agregado", `${element.name_element} ha sido agregado.`, "success");
   };
 
-  // Se eliminó la función handleRemoveElement; en su lugar se utiliza una función inline en el onClick.
-
-  const handleCreateDoorElement = () => {
-    const newDoor: ElementBase = {
-      id: new Date().getTime(),
-      type: "door",
-      name_element: doorData.name_element,
-      u_marco: doorData.u_marco,
-      fm: doorData.fm,
-      atributs: {
-        u_puerta_opaca: doorData.u_puerta_opaca,
-        porcentaje_vidrio: doorData.porcentaje_vidrio,
-        name_ventana: doorData.name_ventana,
-      },
-    };
-    handleAddElement(newDoor);
-    Swal.fire("Puerta creada", `La puerta ${doorData.name_element} ha sido creada.`, "success");
-    setShowCreateDoorModal(false);
-    setDoorData({
-      name_element: "",
-      ventana_id: 0,
-      name_ventana: "",
-      u_puerta_opaca: 0,
-      porcentaje_vidrio: 0,
-      u_marco: 0,
-      fm: 0,
-    });
-  };
-
-  const handleCreateWindowElement = () => {
-    const newWindow: ElementBase = {
-      id: new Date().getTime(),
-      type: "window",
+  const handleCreateWindowElement = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+      return;
+    }
+    const body = {
       name_element: windowData.name_element,
-      u_marco: windowData.u_marco,
-      fm: windowData.fm,
+      type: "window",
       atributs: {
         u_vidrio: windowData.u_vidrio,
         fs_vidrio: windowData.fs_vidrio,
         frame_type: windowData.frame_type,
         clousure_type: windowData.clousure_type,
       },
+      u_marco: windowData.u_marco,
+      fm: windowData.fm,
     };
-    handleAddElement(newWindow);
-    Swal.fire("Ventana creada", `La ventana ${windowData.name_element} ha sido creada.`, "success");
-    setShowCreateWindowModal(false);
-    setWindowData({
-      name_element: "",
-      u_vidrio: 0,
-      fs_vidrio: 0,
-      frame_type: "",
-      clousure_type: "",
-      u_marco: 0,
-      fm: 0,
-    });
-  };
-
-  useEffect(() => {
-    if (step === 3) fetchMaterialsList(1);
-  }, [step]);
-
-  useEffect(() => {
-    if (step === 4) fetchDetails();
-  }, [step]);
-
-  useEffect(() => {
-    if (step === 5) fetchElements();
-  }, [step]);
-
-  // Se filtran las ventanas disponibles de la lista de elementos
-  const availableWindows = elementsList.filter((el) => el.type === "window");
-
-  const renderMainHeader = () => {
-    if (step <= 2) {
-      return (
-        <div className="mb-3">
-          <h1 className="fw-bold">Proyecto nuevo</h1>
-        </div>
-      );
-    } else {
-      return (
-        <div className="mb-3">
-          <h2 className="fw-bold">Detalles del proyecto</h2>
-          <div className="d-flex align-items-center gap-4 mt-4">
-            <span style={{ fontWeight: "normal" }}>Proyecto:</span>
-            <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
-              {`Edificación Nº ${createdProjectId ?? "xxxxx"}`}
-            </CustomButton>
-            <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
-              {formData.department || "Departamento"}
-            </CustomButton>
-          </div>
-        </div>
-      );
+    try {
+      const response = await axios.post("http://ceela-backend.svgdev.tech/elements/create", body, {
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setElementsList([...elementsList, response.data.element]);
+      Swal.fire("Ventana creada", `La ventana "${windowData.name_element}" ha sido creada.`, "success");
+      setShowCreateWindowModal(false);
+      setWindowData({
+        name_element: "",
+        u_vidrio: 0,
+        fs_vidrio: 0,
+        frame_type: "",
+        clousure_type: "Corredera",
+        u_marco: 0,
+        fm: 0,
+      });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        Swal.fire("Error", error.response?.data?.detail || error.message, "error");
+      }
     }
   };
+
+  const handleCreateDoorElement = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+      return;
+    }
+    const body = {
+      name_element: doorData.name_element,
+      type: "door",
+      atributs: {
+        ventana_id: doorData.ventana_id,
+        name_ventana: doorData.name_ventana,
+        u_puerta_opaca: doorData.u_puerta_opaca,
+        porcentaje_vidrio: doorData.porcentaje_vidrio,
+      },
+      u_marco: doorData.u_marco,
+      fm: doorData.fm,
+    };
+    try {
+      const response = await axios.post("http://ceela-backend.svgdev.tech/elements/create", body, {
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setElementsList([...elementsList, response.data.element]);
+      Swal.fire("Puerta creada", `La puerta "${doorData.name_element}" ha sido creada.`, "success");
+      setShowCreateDoorModal(false);
+      setDoorData({
+        name_element: "",
+        ventana_id: 0,
+        name_ventana: "",
+        u_puerta_opaca: 0,
+        porcentaje_vidrio: 0,
+        u_marco: 0,
+        fm: 0,
+      });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        Swal.fire("Error", error.response?.data?.detail || error.message, "error");
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (step === 3) void fetchMaterialsList(1);
+  }, [step]);
+
+  useEffect(() => {
+    if (step === 4) {
+      setDetails([]);
+      setShowTabsInStep4(false);
+      void fetchFetchedDetails();
+    }
+  }, [step]);
+
+  const renderMainHeader = () =>
+    step <= 2 ? (
+      <div className="mb-3">
+        <h1 className="fw-bold">Proyecto nuevo</h1>
+      </div>
+    ) : (
+      <div className="mb-3">
+        <h2 className="fw-bold">Detalles del proyecto</h2>
+        <div className="d-flex align-items-center gap-4 mt-4">
+          <span style={{ fontWeight: "normal" }}>Proyecto:</span>
+          <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
+            {`Edificación Nº ${createdProjectId ?? "xxxxx"}`}
+          </CustomButton>
+          <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
+            {formData.department || "Departamento"}
+          </CustomButton>
+        </div>
+      </div>
+    );
 
   const internalSidebarWidth = 380;
   const sidebarItemHeight = 100;
   const sidebarItemBorderSize = 1;
   const leftPadding = 50;
-
-  const SidebarItem = ({
-    stepNumber,
-    iconClass,
-    title,
-  }: {
-    stepNumber: number;
-    iconClass: string;
-    title: string;
-  }) => {
+  const SidebarItem = ({ stepNumber, iconClass, title }: { stepNumber: number; iconClass: string; title: string }) => {
     const isSelected = step === stepNumber;
     const activeColor = "#3ca7b7";
     const inactiveColor = "#ccc";
@@ -494,11 +704,163 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     );
   };
 
+  const renderStep4Tabs = () => {
+    if (!showTabsInStep4) return null;
+    return (
+      <div className="mt-4">
+        <ul className="nav" style={{ display: "flex", padding: 0, listStyle: "none" }}>
+          {[
+            { key: "detalles", label: "Detalles" },
+            { key: "muros", label: "Muros" },
+            { key: "techumbre", label: "Techumbre" },
+            { key: "pisos", label: "Pisos" },
+          ].map((item) => (
+            <li key={item.key} style={{ flex: 1 }}>
+              <button
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                  color: tabStep4 === item.key ? "var(--primary-color)" : "var(--secondary-color)",
+                  border: "none",
+                  cursor: "pointer",
+                  borderBottom: tabStep4 === item.key ? "3px solid var(--primary-color)" : "none",
+                }}
+                onClick={() => setTabStep4(item.key as typeof tabStep4)}
+              >
+                {item.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="border border-top-0 p-3" style={{ minHeight: "250px" }}>
+          {tabStep4 === "detalles" && (
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Ubicación detalle</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre detalle</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Capas de interior a exterior</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Espesor capa (cm)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detailsTabList.map((item, idx) => (
+                  <tr key={idx}>
+                    <td>{item.scantilon_location}</td>
+                    <td>{item.name_detail}</td>
+                    <td>{getMaterialNameById(item.id_material)}</td>
+                    <td>{item.layer_thickness}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {tabStep4 === "muros" && (
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Abreviado</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Valor U [W/m2K]</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Color Exterior</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Color Interior</th>
+                </tr>
+              </thead>
+              <tbody>
+                {murosTabList.map((item, idx) => {
+                  const exteriorColor = item.info?.surface_color?.exterior?.name || "Desconocido";
+                  const interiorColor = item.info?.surface_color?.interior?.name || "Desconocido";
+                  return (
+                    <tr key={idx}>
+                      <td>{item.name_detail}</td>
+                      <td>{item.value_u?.toFixed(3) ?? "--"}</td>
+                      <td>{exteriorColor}</td>
+                      <td>{interiorColor}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+          {tabStep4 === "techumbre" && (
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Abreviado</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Valor U [W/m2K]</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Color Exterior</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Color Interior</th>
+                </tr>
+              </thead>
+              <tbody>
+                {techumbreTabList.map((item, idx) => {
+                  const exteriorColor = item.info?.surface_color?.exterior?.name || "Desconocido";
+                  const interiorColor = item.info?.surface_color?.interior?.name || "Desconocido";
+                  return (
+                    <tr key={idx}>
+                      <td>{item.name_detail}</td>
+                      <td>{item.value_u?.toFixed(3) ?? "--"}</td>
+                      <td>{exteriorColor}</td>
+                      <td>{interiorColor}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+          {tabStep4 === "pisos" && (
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} rowSpan={2}>Nombre Abreviado</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} rowSpan={2}>Valor U [W/m²K]</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} colSpan={2}>Aislamiento bajo piso</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} colSpan={3}>Ref Aisl Vert.</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} colSpan={3}>Ref Aisl Horiz.</th>
+                </tr>
+                <tr>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>I [W/mK]</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>e Aisl [cm]</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>I [W/mK]</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>e Aisl [cm]</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>D [cm]</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>I [W/mK]</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>e Aislación [cm]</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>D [cm]</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pisosTabList.map((item, idx) => {
+                  const bajoPiso = item.info?.ref_aisl_bajo_piso || {};
+                  const vert = item.info?.ref_aisl_vertical || {};
+                  const horiz = item.info?.ref_aisl_horizontal || {};
+                  return (
+                    <tr key={idx}>
+                      <td>{item.name_detail}</td>
+                      <td>{item.value_u?.toFixed(3) ?? "--"}</td>
+                      <td>{bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}</td>
+                      <td>{bajoPiso.e_aisl ? bajoPiso.e_aisl : "N/A"}</td>
+                      <td>{vert.lambda ? vert.lambda.toFixed(3) : "N/A"}</td>
+                      <td>{vert.e_aisl ? vert.e_aisl : "N/A"}</td>
+                      <td>{vert.d ? vert.d : "N/A"}</td>
+                      <td>{horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}</td>
+                      <td>{horiz.e_aisl ? horiz.e_aisl : "N/A"}</td>
+                      <td>{horiz.d ? horiz.d : "N/A"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
       <TopBar sidebarWidth={sidebarWidth} />
-
       <div
         className="container"
         style={{
@@ -538,127 +900,61 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Nombre del proyecto</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.name_project}
-                          onChange={(e) => handleFormInputChange("name_project", e.target.value)}
-                        />
+                        <input type="text" className="form-control" value={formData.name_project} onChange={(e) => handleFormInputChange("name_project", e.target.value)} />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Nombre del propietario</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.owner_name}
-                          onChange={(e) => handleFormInputChange("owner_name", e.target.value)}
-                        />
+                        <input type="text" className="form-control" value={formData.owner_name} onChange={(e) => handleFormInputChange("owner_name", e.target.value)} />
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Apellido del propietario</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.owner_lastname}
-                          onChange={(e) => handleFormInputChange("owner_lastname", e.target.value)}
-                        />
+                        <input type="text" className="form-control" value={formData.owner_lastname} onChange={(e) => handleFormInputChange("owner_lastname", e.target.value)} />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">País</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.country}
-                          onChange={(e) => handleFormInputChange("country", e.target.value)}
-                        />
+                        <input type="text" className="form-control" value={formData.country} onChange={(e) => handleFormInputChange("country", e.target.value)} />
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Departamento</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.department}
-                          onChange={(e) => handleFormInputChange("department", e.target.value)}
-                        />
+                        <input type="text" className="form-control" value={formData.department} onChange={(e) => handleFormInputChange("department", e.target.value)} />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Provincia</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.province}
-                          onChange={(e) => handleFormInputChange("province", e.target.value)}
-                        />
+                        <input type="text" className="form-control" value={formData.province} onChange={(e) => handleFormInputChange("province", e.target.value)} />
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Distrito</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.district}
-                          onChange={(e) => handleFormInputChange("district", e.target.value)}
-                        />
+                        <input type="text" className="form-control" value={formData.district} onChange={(e) => handleFormInputChange("district", e.target.value)} />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Tipo de edificación</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.building_type}
-                          onChange={(e) => handleFormInputChange("building_type", e.target.value)}
-                        />
+                        <input type="text" className="form-control" value={formData.building_type} onChange={(e) => handleFormInputChange("building_type", e.target.value)} />
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Tipo de uso principal</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.main_use_type}
-                          onChange={(e) => handleFormInputChange("main_use_type", e.target.value)}
-                        />
+                        <input type="text" className="form-control" value={formData.main_use_type} onChange={(e) => handleFormInputChange("main_use_type", e.target.value)} />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Número de niveles</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          value={formData.number_levels}
-                          onChange={(e) =>
-                            handleFormInputChange("number_levels", parseInt(e.target.value) || 0)
-                          }
-                        />
+                        <input type="number" className="form-control" value={formData.number_levels} onChange={(e) => handleFormInputChange("number_levels", parseInt(e.target.value) || 0)} />
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Número de viviendas / oficinas x nivel</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          value={formData.number_homes_per_level}
-                          onChange={(e) =>
-                            handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)
-                          }
-                        />
+                        <input type="number" className="form-control" value={formData.number_homes_per_level} onChange={(e) => handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)} />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Superficie construida (m²)</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          value={formData.built_surface}
-                          onChange={(e) =>
-                            handleFormInputChange("built_surface", parseFloat(e.target.value) || 0)
-                          }
-                        />
+                        <input type="number" className="form-control" value={formData.built_surface} onChange={(e) => handleFormInputChange("built_surface", parseFloat(e.target.value) || 0)} />
                       </div>
                     </div>
                     <div className="text-end">
@@ -668,46 +964,24 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     </div>
                   </>
                 )}
-
                 {step === 2 && (
                   <>
                     <h5 className="fw-bold mb-3">Ubicación del proyecto</h5>
                     <div className="row">
                       <div className="col-12 mb-3">
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Buscar ubicación"
-                          value={locationSearch}
-                          onChange={(e) => setLocationSearch(e.target.value)}
-                        />
+                        <input type="text" className="form-control" placeholder="Buscar ubicación" value={locationSearch} onChange={(e) => setLocationSearch(e.target.value)} />
                       </div>
                       <div className="col-12 col-md-8 mb-3">
-                        <Image
-                          src="/assets/images/maps.jpg"
-                          alt="Mapa"
-                          width={600}
-                          height={400}
-                          className="img-fluid"
-                        />
+                        <Image src="/assets/images/maps.jpg" alt="Mapa" width={600} height={400} className="img-fluid" />
                       </div>
                       <div className="col-12 col-md-4">
                         <label className="form-label">Datos de ubicaciones encontradas</label>
-                        <textarea
-                          className="form-control mb-2"
-                          rows={5}
-                          value={foundLocations}
-                          onChange={(e) => setFoundLocations(e.target.value)}
-                        ></textarea>
-                        <CustomButton
-                          variant="save"
-                          style={{ width: "100%" }}
-                          onClick={() => {
-                            handleFormInputChange("latitude", 150);
-                            handleFormInputChange("longitude", 250);
-                            Swal.fire("Ubicación asignada", "Ubicación de prueba (lat=150, lon=250)", "success");
-                          }}
-                        >
+                        <textarea className="form-control mb-2" rows={5} value={foundLocations} onChange={(e) => setFoundLocations(e.target.value)}></textarea>
+                        <CustomButton variant="save" style={{ width: "100%" }} onClick={() => {
+                          handleFormInputChange("latitude", 150);
+                          handleFormInputChange("longitude", 250);
+                          Swal.fire("Ubicación asignada", "Ubicación de prueba (lat=150, lon=250)", "success");
+                        }}>
                           Ubicación actual
                         </CustomButton>
                       </div>
@@ -720,7 +994,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     </div>
                   </>
                 )}
-
                 {step === 3 && (
                   <>
                     <div className="d-flex justify-content-end mb-3">
@@ -733,29 +1006,26 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                       <table className="table table-bordered table-striped">
                         <thead>
                           <tr>
-                            <th style={{ color: "var(--primary-color)" }}>Nombre Material</th>
-                            <th style={{ color: "var(--primary-color)" }}>Conductividad (W/m2K)</th>
-                            <th style={{ color: "var(--primary-color)" }}>Calor específico (J/kgK)</th>
-                            <th style={{ color: "var(--primary-color)" }}>Densidad (kg/m3)</th>
-                            <th style={{ color: "var(--primary-color)" }}>Acción</th>
+                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Material</th>
+                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Conductividad (W/m2K)</th>
+                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Calor específico (J/kgK)</th>
+                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Densidad (kg/m3)</th>
+                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
                           </tr>
                         </thead>
                         <tbody>
                           {selectedMaterials.map((mat, idx) => {
-                            const atributos = mat.atributs;
+                            const { name, conductivity, specific_heat, density } = mat.atributs;
                             return (
                               <tr key={idx}>
-                                <td>{atributos.name}</td>
-                                <td>{atributos.conductivity}</td>
-                                <td>{atributos["specific heat"]}</td>
-                                <td>{atributos.density}</td>
+                                <td>{name}</td>
+                                <td>{conductivity}</td>
+                                <td>{specific_heat}</td>
+                                <td>{density}</td>
                                 <td>
-                                  <CustomButton
-                                    variant="deleteIcon"
-                                    onClick={() =>
-                                      setSelectedMaterials(selectedMaterials.filter((m) => m.id !== mat.id))
-                                    }
-                                  />
+                                  <CustomButton variant="deleteIcon" onClick={() =>
+                                    setSelectedMaterials(selectedMaterials.filter((m) => m.id !== mat.id))
+                                  } />
                                 </td>
                               </tr>
                             );
@@ -767,51 +1037,31 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     )}
                     <div className="mt-4 text-end">
                       <CustomButton variant="backIcon" onClick={() => setStep(2)} />
-                      <CustomButton variant="save" onClick={handleSaveData}>
+                      <CustomButton variant="save" onClick={handleSaveMaterials}>
                         Grabar datos
                       </CustomButton>
                     </div>
                   </>
                 )}
-
                 {step === 4 && (
                   <>
-                    <div className="d-flex justify-content-end mb-3">
-                      <CustomButton variant="save" onClick={handleAddDetail}>
-                        <i className="bi bi-plus"></i> Nuevo
-                      </CustomButton>
-                    </div>
-                    <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
-                      {["Detalles", "Muros", "Techumbre", "Pisos"].map((tab) => (
-                        <li key={tab} style={{ flex: 1 }}>
-                          <button
-                            style={{
-                              width: "100%",
-                              padding: "10px",
-                              backgroundColor: "#fff",
-                              color: tabDetailSection === tab ? "var(--primary-color)" : "var(--secondary-color)",
-                              border: "none",
-                              cursor: "pointer",
-                              borderBottom: tabDetailSection === tab ? "3px solid var(--primary-color)" : "none",
-                            }}
-                            onClick={() => setTabDetailSection(tab)}
-                          >
-                            {tab}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="border p-3">
-                      {((tabDetailSection === "Detalles" ? details : getFilteredDetails(tabDetailSection)).length > 0) ? (
-                        <>
-                          {tabDetailSection === "Detalles" ? (
+                    {!showTabsInStep4 && (
+                      <>
+                        <div className="mb-3" style={{ display: "flex", justifyContent: "flex-end" }}>
+                          <CustomButton variant="save" onClick={() => setShowSelectDetailModal(true)}>
+                            <i className="bi bi-plus"></i> Seleccionar Detalle
+                          </CustomButton>
+                        </div>
+                        <div className="mb-3">
+                          {details.length > 0 ? (
                             <table className="table table-bordered table-striped">
                               <thead>
                                 <tr>
-                                  <th style={{ color: "var(--primary-color)" }}>Ubicación Detalle</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Nombre Detalle</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Capas de interior a exterior</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Espesor capa (cm)</th>
+                                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Ubicación Detalle</th>
+                                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Detalle</th>
+                                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Capas de interior a exterior</th>
+                                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Espesor capa (cm)</th>
+                                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -819,92 +1069,35 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                   <tr key={det.id_detail}>
                                     <td>{det.scantilon_location}</td>
                                     <td>{det.name_detail}</td>
-                                    <td>{det.capas || "-"}</td>
+                                    <td>{det.material}</td>
                                     <td>{det.layer_thickness}</td>
+                                    <td>
+                                      <CustomButton variant="deleteIcon" onClick={() =>
+                                        setDetails(details.filter((d) => d.id_detail !== det.id_detail))
+                                      } />
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
                             </table>
-                          ) : tabDetailSection === "Muros" ? (
-                            <table className="table table-bordered table-striped">
-                              <thead>
-                                <tr>
-                                  <th style={{ color: "var(--primary-color)" }}>Nombre Abreviado</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Valor U [W/m2K]</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Color Exterior</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Color Interior</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {getFilteredDetails(tabDetailSection).map((det) => (
-                                  <tr key={det.id_detail}>
-                                    <td>{det.nombreAbrev}</td>
-                                    <td>{det.valorU}</td>
-                                    <td>{det.colorExt}</td>
-                                    <td>{det.colorInt}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          ) : tabDetailSection === "Techumbre" ? (
-                            <table className="table table-bordered table-striped">
-                              <thead>
-                                <tr>
-                                  <th style={{ color: "var(--primary-color)" }}>Nombre Abreviado</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Valor U [W/m2K]</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Color Exterior</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Color Interior</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {getFilteredDetails(tabDetailSection).map((det) => (
-                                  <tr key={det.id_detail}>
-                                    <td>{det.nombreAbrev}</td>
-                                    <td>{det.valorU}</td>
-                                    <td>{det.colorExt}</td>
-                                    <td>{det.colorInt}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          ) : tabDetailSection === "Pisos" ? (
-                            <table className="table table-bordered table-striped">
-                              <thead>
-                                <tr>
-                                  <th style={{ color: "var(--primary-color)" }}>Nombre Abreviado</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Valor U [W/m2K]</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Aislamiento bajo piso</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Ref Aisl Vert.</th>
-                                  <th style={{ color: "var(--primary-color)" }}>Ref Aisl Horiz.</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {getFilteredDetails(tabDetailSection).map((det) => (
-                                  <tr key={det.id_detail}>
-                                    <td>{det.nombreAbrev}</td>
-                                    <td>{det.valorU}</td>
-                                    <td>{det.aislBajoPiso}</td>
-                                    <td>{det.refAislVert}</td>
-                                    <td>{det.refAislHoriz}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          ) : null}
-                        </>
-                      ) : (
-                        <p>No hay detalles para {tabDetailSection}.</p>
-                      )}
-                    </div>
-                    <div className="mt-4 text-end">
+                          ) : (
+                            <p>No se han seleccionado detalles.</p>
+                          )}
+                        </div>
+                      </>
+                    )}
+                    <div className="mt-4 d-flex justify-content-end gap-2">
                       <CustomButton variant="backIcon" onClick={() => setStep(3)} />
-                      <CustomButton variant="save" onClick={() => setStep(5)}>
+                      <CustomButton variant="save" onClick={handleSaveDetails}>
                         Grabar datos
                       </CustomButton>
+                      <CustomButton variant="save" onClick={() => setStep(5)}>
+                        Continuar
+                      </CustomButton>
                     </div>
+                    {renderStep4Tabs()}
                   </>
                 )}
-
                 {step === 5 && (
                   <>
                     <div className="d-flex justify-content-end mb-3">
@@ -936,87 +1129,71 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                       ))}
                     </ul>
                     <h6 className="mb-3">Elementos Agregados</h6>
-                    {selectedElements
-                      .filter((el) => el.type === (tabElementosOperables === "ventanas" ? "window" : "door"))
-                      .length > 0 ? (
+                    {selectedElements.length > 0 ? (
                       <table className="table table-bordered table-striped">
                         <thead>
                           {tabElementosOperables === "ventanas" ? (
                             <tr>
-                              <th style={{ color: "var(--primary-color)" }}>Nombre Elemento</th>
-                              <th style={{ color: "var(--primary-color)" }}>U Vidrio [W/m2K]</th>
-                              <th style={{ color: "var(--primary-color)" }}>FS Vidrio []</th>
-                              <th style={{ color: "var(--primary-color)" }}>Tipo Cierre</th>
-                              <th style={{ color: "var(--primary-color)" }}>Tipo Marco</th>
-                              <th style={{ color: "var(--primary-color)" }}>U Marco [W/m2K]</th>
-                              <th style={{ color: "var(--primary-color)" }}>FM [%]</th>
-                              <th style={{ color: "var(--primary-color)" }}>Acción</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Elemento</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Vidrio [W/m2K]</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FS Vidrio []</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Tipo Cierre</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Tipo Marco</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Marco [W/m2K]</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FM [%]</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
                             </tr>
                           ) : (
                             <tr>
-                              <th style={{ color: "var(--primary-color)" }}>Nombre Elemento</th>
-                              <th style={{ color: "var(--primary-color)" }}>U Puerta opaca [W/m2K]</th>
-                              <th style={{ color: "var(--primary-color)" }}>Nombre Ventana</th>
-                              <th style={{ color: "var(--primary-color)" }}>% Vidrio</th>
-                              <th style={{ color: "var(--primary-color)" }}>U Marco [W/m2K]</th>
-                              <th style={{ color: "var(--primary-color)" }}>FM [%]</th>
-                              <th style={{ color: "var(--primary-color)" }}>Acción</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Elemento</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Puerta opaca [W/m2K]</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Ventana</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>% Vidrio</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Marco [W/m2K]</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FM [%]</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
                             </tr>
                           )}
                         </thead>
                         <tbody>
                           {selectedElements
                             .filter((el) => el.type === (tabElementosOperables === "ventanas" ? "window" : "door"))
-                            .map((el, idx) => {
-                              if (tabElementosOperables === "ventanas") {
-                                return (
-                                  <tr key={idx}>
-                                    <td>{el.name_element}</td>
-                                    <td>{(el.atributs as WindowAttributes).u_vidrio}</td>
-                                    <td>{(el.atributs as WindowAttributes).fs_vidrio}</td>
-                                    <td>{(el.atributs as WindowAttributes).clousure_type}</td>
-                                    <td>{(el.atributs as WindowAttributes).frame_type}</td>
-                                    <td>{el.u_marco}</td>
-                                    <td>{(el.fm * 100).toFixed(0)}%</td>
-                                    <td>
-                                      <CustomButton
-                                        variant="deleteIcon"
-                                        onClick={() =>
-                                          setSelectedElements(
-                                            selectedElements.filter((item) => item.id !== el.id)
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                  </tr>
-                                );
-                              } else {
-                                return (
-                                  <tr key={idx}>
-                                    <td>{el.name_element}</td>
-                                    <td>{(el.atributs as DoorAttributes).u_puerta_opaca}</td>
-                                    <td>{(el.atributs as DoorAttributes).name_ventana}</td>
-                                    <td>
-                                      {(el.atributs as DoorAttributes).porcentaje_vidrio !== undefined
-                                        ? (((el.atributs as DoorAttributes).porcentaje_vidrio) * 100).toFixed(0) + "%"
-                                        : "0%"}
-                                    </td>
-                                    <td>{el.u_marco}</td>
-                                    <td>{(el.fm * 100).toFixed(0)}%</td>
-                                    <td>
-                                      <CustomButton
-                                        variant="deleteIcon"
-                                        onClick={() =>
-                                          setSelectedElements(
-                                            selectedElements.filter((item) => item.id !== el.id)
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                  </tr>
-                                );
-                              }
-                            })}
+                            .map((el, idx) =>
+                              tabElementosOperables === "ventanas" ? (
+                                <tr key={idx}>
+                                  <td>{el.name_element}</td>
+                                  <td>{(el.atributs as WindowAttributes).u_vidrio}</td>
+                                  <td>{(el.atributs as WindowAttributes).fs_vidrio}</td>
+                                  <td>{(el.atributs as WindowAttributes).clousure_type}</td>
+                                  <td>{(el.atributs as WindowAttributes).frame_type}</td>
+                                  <td>{el.u_marco}</td>
+                                  <td>{(el.fm * 100).toFixed(0)}%</td>
+                                  <td>
+                                    <CustomButton variant="deleteIcon" onClick={() =>
+                                      setSelectedElements(selectedElements.filter((item) => item.id !== el.id))
+                                    } />
+                                  </td>
+                                </tr>
+                              ) : (
+                                <tr key={idx}>
+                                  <td>{el.name_element}</td>
+                                  <td>{(el.atributs as DoorAttributes).u_puerta_opaca}</td>
+                                  <td>{(el.atributs as DoorAttributes).name_ventana}</td>
+                                  <td>
+                                    {(el.atributs as DoorAttributes).porcentaje_vidrio !== undefined
+                                      ? (((el.atributs as DoorAttributes).porcentaje_vidrio) * 100).toFixed(0) + "%"
+                                      : "0%"}
+                                  </td>
+                                  <td>{el.u_marco}</td>
+                                  <td>{(el.fm * 100).toFixed(0)}%</td>
+                                  <td>
+                                    <CustomButton variant="deleteIcon" onClick={() =>
+                                      setSelectedElements(selectedElements.filter((item) => item.id !== el.id))
+                                    } />
+                                  </td>
+                                </tr>
+                              )
+                            )}
                         </tbody>
                       </table>
                     ) : (
@@ -1024,13 +1201,12 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     )}
                     <div className="mt-4 text-end">
                       <CustomButton variant="backIcon" onClick={() => setStep(4)} />
-                      <CustomButton variant="save" onClick={() => setStep(6)}>
+                      <CustomButton variant="save" onClick={handleSaveElements}>
                         Grabar datos
                       </CustomButton>
                     </div>
                   </>
                 )}
-
                 {step === 6 && (
                   <>
                     <h5 className="fw-bold mb-3">Tipología de recinto</h5>
@@ -1064,13 +1240,12 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     </div>
                     <div className="mt-4 text-end">
                       <CustomButton variant="backIcon" onClick={() => setStep(5)} />
-                      <CustomButton variant="save" onClick={() => setStep(7)}>
+                      <CustomButton variant="save" onClick={handleCreateProject}>
                         Grabar datos
                       </CustomButton>
                     </div>
                   </>
                 )}
-
                 {step === 7 && (
                   <>
                     <h5 className="fw-bold mb-3">Recinto</h5>
@@ -1108,7 +1283,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     </table>
                     <div className="mt-4 text-end">
                       <CustomButton variant="backIcon" onClick={() => setStep(6)} />
-                      <CustomButton variant="save" onClick={handleSaveProject}>
+                      <CustomButton variant="save" onClick={handleCreateProject}>
                         Grabar datos
                       </CustomButton>
                     </div>
@@ -1124,34 +1299,29 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       {showAddMaterialModal && (
         <div className="modal-overlay" onClick={() => setShowAddMaterialModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowAddMaterialModal(false)}>
-              &times;
-            </button>
+            <button className="modal-close" onClick={() => setShowAddMaterialModal(false)}>&times;</button>
             <h4 className="mb-3">Lista de Materiales</h4>
             <table className="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th style={{ color: "var(--primary-color)" }}>Nombre Material</th>
-                  <th style={{ color: "var(--primary-color)" }}>Conductividad (W/m2K)</th>
-                  <th style={{ color: "var(--primary-color)" }}>Calor específico (J/kgK)</th>
-                  <th style={{ color: "var(--primary-color)" }}>Densidad (kg/m3)</th>
-                  <th style={{ color: "var(--primary-color)" }}>Acción</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Material</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Conductividad (W/m2K)</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Calor específico (J/kgK)</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Densidad (kg/m3)</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
                 </tr>
               </thead>
               <tbody>
                 {materialsList.map((mat, idx) => {
-                  const atributos = mat.atributs;
+                  const { name, conductivity, specific_heat, density } = mat.atributs;
                   return (
                     <tr key={idx}>
-                      <td>{atributos.name}</td>
-                      <td>{atributos.conductivity}</td>
-                      <td>{atributos["specific heat"]}</td>
-                      <td>{atributos.density}</td>
+                      <td>{name}</td>
+                      <td>{conductivity}</td>
+                      <td>{specific_heat}</td>
+                      <td>{density}</td>
                       <td>
-                        <CustomButton
-                          variant="addIcon"
-                          onClick={() => setSelectedMaterials([...selectedMaterials, mat])}
-                        />
+                        <CustomButton variant="addIcon" onClick={() => setSelectedMaterials([...selectedMaterials, mat])} />
                       </td>
                     </tr>
                   );
@@ -1162,16 +1332,112 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal para selección de elementos (Paso 5) */}
+      {/* Modal para seleccionar detalle (Paso 4) */}
+      {showSelectDetailModal && (
+        <div className="modal-overlay" onClick={() => setShowSelectDetailModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h4>Seleccionar Detalle Constructivo</h4>
+              <CustomButton variant="save" onClick={() => setShowCreateDetailModal(true)}>
+                Agregar
+              </CustomButton>
+            </div>
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Ubicación Detalle</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Detalle</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Capas de interior a exterior</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Espesor capa (cm)</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fetchedDetails.map((det) => (
+                  <tr key={det.id_detail}>
+                    <td>{det.scantilon_location}</td>
+                    <td>{det.name_detail}</td>
+                    <td>{det.material}</td>
+                    <td>{det.layer_thickness}</td>
+                    <td>
+                      <CustomButton variant="addIcon" onClick={() => handleAddDetailFromModal(det)} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="text-end">
+              <CustomButton variant="backIcon" onClick={() => setShowSelectDetailModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para crear nuevo detalle (Paso 4) */}
+      {showCreateDetailModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateDetailModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h4 className="mb-3">Crear Nuevo Detalle</h4>
+            <div className="mb-3">
+              <label className="form-label">Ubicación Detalle</label>
+              <select className="form-control" value={newDetailForm.scantilon_location} onChange={(e) => handleNewDetailFormChange("scantilon_location", e.target.value)}>
+                <option value="">Seleccione</option>
+                <option value="Muro">Muro</option>
+                <option value="Techo">Techo</option>
+                <option value="Piso">Piso</option>
+              </select>
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Nombre Detalle</label>
+              <input type="text" className="form-control" value={newDetailForm.name_detail} onChange={(e) => handleNewDetailFormChange("name_detail", e.target.value)} />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Material</label>
+              <select className="form-control" value={newDetailForm.material_id} onChange={(e) => handleNewDetailFormChange("material_id", parseInt(e.target.value))}>
+                <option value={0}>Seleccione un material</option>
+                {materialsList.map((mat) => (
+                  <option key={mat.id} value={mat.id}>
+                    {mat.atributs.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Espesor capa (cm)</label>
+              <input type="number" className="form-control" value={newDetailForm.layer_thickness} onChange={(e) => handleNewDetailFormChange("layer_thickness", parseFloat(e.target.value) || 0)} />
+            </div>
+            <div className="d-flex justify-content-end gap-2">
+              <CustomButton variant="backIcon" onClick={() => setShowCreateDetailModal(false)} />
+              <CustomButton variant="save" onClick={handleCreateNewDetail}>
+                <i className="bi bi-plus"></i> Crear Detalle
+              </CustomButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para elementos operables (Paso 5) */}
       {showAddElementModal && (
         <div className="modal-overlay" onClick={() => setShowAddElementModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowAddElementModal(false)}>
-              &times;
-            </button>
-            <h4 className="mb-3">
-              Lista de {modalElementType === "ventanas" ? "Ventanas" : "Puertas"}
-            </h4>
+            <button className="modal-close" onClick={() => setShowAddElementModal(false)}>&times;</button>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h4 className="mb-3">
+                Lista de {modalElementType === "ventanas" ? "Ventanas" : "Puertas"}
+              </h4>
+              <div>
+                {modalElementType === "ventanas" && (
+                  <CustomButton variant="save" onClick={() => setShowCreateWindowModal(true)}>
+                    Crear Ventana
+                  </CustomButton>
+                )}
+                {modalElementType === "puertas" && (
+                  <CustomButton variant="save" onClick={() => setShowCreateDoorModal(true)}>
+                    Crear Puerta
+                  </CustomButton>
+                )}
+              </div>
+            </div>
             <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
               {["Ventanas", "Puertas"].map((tab) => (
                 <li key={tab} style={{ flex: 1 }}>
@@ -1196,31 +1462,31 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
               <thead>
                 {modalElementType === "ventanas" ? (
                   <tr>
-                    <th style={{ color: "var(--primary-color)" }}>Nombre Elemento</th>
-                    <th style={{ color: "var(--primary-color)" }}>U Vidrio [W/m2K]</th>
-                    <th style={{ color: "var(--primary-color)" }}>FS Vidrio []</th>
-                    <th style={{ color: "var(--primary-color)" }}>Tipo Cierre</th>
-                    <th style={{ color: "var(--primary-color)" }}>Tipo Marco</th>
-                    <th style={{ color: "var(--primary-color)" }}>U Marco [W/m2K]</th>
-                    <th style={{ color: "var(--primary-color)" }}>FM [%]</th>
-                    <th style={{ color: "var(--primary-color)" }}>Acción</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Elemento</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Vidrio [W/m2K]</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FS Vidrio []</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Tipo Cierre</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Tipo Marco</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Marco [W/m2K]</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FM [%]</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
                   </tr>
                 ) : (
                   <tr>
-                    <th style={{ color: "var(--primary-color)" }}>Nombre Elemento</th>
-                    <th style={{ color: "var(--primary-color)" }}>U Puerta opaca [W/m2K]</th>
-                    <th style={{ color: "var(--primary-color)" }}>Nombre Ventana</th>
-                    <th style={{ color: "var(--primary-color)" }}>% Vidrio</th>
-                    <th style={{ color: "var(--primary-color)" }}>U Marco [W/m2K]</th>
-                    <th style={{ color: "var(--primary-color)" }}>FM [%]</th>
-                    <th style={{ color: "var(--primary-color)" }}>Acción</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Elemento</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Puerta opaca [W/m2K]</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Ventana</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>% Vidrio</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Marco [W/m2K]</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FM [%]</th>
+                    <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
                   </tr>
                 )}
               </thead>
               <tbody>
                 {elementsList
                   .filter((el) => el.type === (modalElementType === "ventanas" ? "window" : "door"))
-                  .map((el: ElementBase, idx: number) => (
+                  .map((el, idx) => (
                     <tr key={idx}>
                       {modalElementType === "ventanas" ? (
                         <>
@@ -1232,12 +1498,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           <td>{el.u_marco}</td>
                           <td>{(el.fm * 100).toFixed(0)}%</td>
                           <td>
-                            <CustomButton
-                              variant="addIcon"
-                              onClick={() =>
-                                handleAddElement(el)
-                              }
-                            />
+                            <CustomButton variant="addIcon" onClick={() => handleAddElement(el)} />
                           </td>
                         </>
                       ) : (
@@ -1253,12 +1514,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           <td>{el.u_marco}</td>
                           <td>{(el.fm * 100).toFixed(0)}%</td>
                           <td>
-                            <CustomButton
-                              variant="addIcon"
-                              onClick={() =>
-                                handleAddElement(el)
-                              }
-                            />
+                            <CustomButton variant="addIcon" onClick={() => handleAddElement(el)} />
                           </td>
                         </>
                       )}
@@ -1270,186 +1526,97 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal para crear puerta */}
-      {showCreateDoorModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateDoorModal(false)}>
+      {/* Submodal para crear ventana */}
+      {showCreateWindowModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateWindowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowCreateDoorModal(false)}>
-              &times;
-            </button>
-            <h4>Crear Puerta</h4>
-            <div className="mb-3">
-              <label className="form-label">Nombre de la puerta</label>
-              <input
-                type="text"
-                className="form-control"
-                value={doorData.name_element}
-                onChange={(e) => setDoorData({ ...doorData, name_element: e.target.value })}
-              />
+            <button className="modal-close" onClick={() => setShowCreateWindowModal(false)}>&times;</button>
+            <h4 className="mb-3">Crear Ventana</h4>
+            <div className="form-group mb-3">
+              <label>Nombre Elemento</label>
+              <input type="text" className="form-control" value={windowData.name_element} onChange={(e) => setWindowData({ ...windowData, name_element: e.target.value })} />
             </div>
-            <div className="mb-3">
-              <label className="form-label">U puerta opaca</label>
-              <input
-                type="number"
-                className="form-control"
-                value={doorData.u_puerta_opaca}
-                onChange={(e) =>
-                  setDoorData({ ...doorData, u_puerta_opaca: parseFloat(e.target.value) || 0 })
-                }
-              />
+            <div className="form-group mb-3">
+              <label>U Vidrio [W/m2K]</label>
+              <input type="number" className="form-control" value={windowData.u_vidrio} onChange={(e) => setWindowData({ ...windowData, u_vidrio: parseFloat(e.target.value) })} />
             </div>
-            <div className="mb-3">
-              <label className="form-label">Porcentaje de vidrio</label>
-              <input
-                type="number"
-                className="form-control"
-                value={doorData.porcentaje_vidrio}
-                onChange={(e) =>
-                  setDoorData({ ...doorData, porcentaje_vidrio: parseFloat(e.target.value) || 0 })
-                }
-              />
+            <div className="form-group mb-3">
+              <label>FS Vidrio []</label>
+              <input type="number" className="form-control" value={windowData.fs_vidrio} onChange={(e) => setWindowData({ ...windowData, fs_vidrio: parseFloat(e.target.value) })} />
             </div>
-            <div className="mb-3">
-              <label className="form-label">U marco</label>
-              <input
-                type="number"
-                className="form-control"
-                value={doorData.u_marco}
-                onChange={(e) =>
-                  setDoorData({ ...doorData, u_marco: parseFloat(e.target.value) || 0 })
-                }
-              />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">FM</label>
-              <input
-                type="number"
-                className="form-control"
-                value={doorData.fm}
-                onChange={(e) =>
-                  setDoorData({ ...doorData, fm: parseFloat(e.target.value) || 0 })
-                }
-              />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Ventanas disponibles</label>
-              <select
-                className="form-control"
-                onChange={(e) => {
-                  const selectedId = parseInt(e.target.value);
-                  const win = availableWindows.find((w) => w.id === selectedId);
-                  if (win) {
-                    setDoorData({
-                      ...doorData,
-                      ventana_id: win.id,
-                      name_ventana: (win.atributs as WindowAttributes).frame_type || "",
-                    });
-                  }
-                }}
-              >
-                <option value="0">Seleccione una ventana</option>
-                {availableWindows.map((win) => (
-                  <option key={win.id} value={win.id}>
-                    {(win.atributs as WindowAttributes).frame_type || "Ventana"}
-                  </option>
-                ))}
+            <div className="form-group mb-3">
+              <label>Tipo Cierre</label>
+              <select className="form-control" value={windowData.clousure_type} onChange={(e) => setWindowData({ ...windowData, clousure_type: e.target.value })}>
+                <option value="Corredera">Corredera</option>
+                <option value="Abatir">Abatir</option>
               </select>
             </div>
-            <div className="d-flex justify-content-end gap-2">
-              <CustomButton variant="backIcon" onClick={() => setShowCreateDoorModal(false)} />
-              <CustomButton variant="save" onClick={handleCreateDoorElement}>
-                <i className="bi bi-plus"></i>
-              </CustomButton>
+            <div className="form-group mb-3">
+              <label>Tipo Marco</label>
+              <input type="text" className="form-control" value={windowData.frame_type} onChange={(e) => setWindowData({ ...windowData, frame_type: e.target.value })} />
             </div>
+            <div className="form-group mb-3">
+              <label>U Marco [W/m2K]</label>
+              <input type="number" className="form-control" value={windowData.u_marco} onChange={(e) => setWindowData({ ...windowData, u_marco: parseFloat(e.target.value) })} />
+            </div>
+            <div className="form-group mb-3">
+              <label>FM [%]</label>
+              <input type="number" className="form-control" value={windowData.fm} onChange={(e) => setWindowData({ ...windowData, fm: parseFloat(e.target.value) })} />
+            </div>
+            <CustomButton variant="save" onClick={handleCreateWindowElement}>
+              Crear Ventana
+            </CustomButton>
           </div>
         </div>
       )}
 
-      {/* Modal para crear ventana */}
-      {showCreateWindowModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateWindowModal(false)}>
+      {/* Submodal para crear puerta */}
+      {showCreateDoorModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateDoorModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowCreateWindowModal(false)}>
-              &times;
-            </button>
-            <h4>Crear Ventana</h4>
-            <div className="mb-3">
-              <label className="form-label">Nombre de la ventana</label>
-              <input
-                type="text"
-                className="form-control"
-                value={windowData.name_element}
-                onChange={(e) => setWindowData({ ...windowData, name_element: e.target.value })}
-              />
+            <button className="modal-close" onClick={() => setShowCreateDoorModal(false)}>&times;</button>
+            <h4 className="mb-3">Crear Puerta</h4>
+            <div className="form-group mb-3">
+              <label>Nombre Elemento</label>
+              <input type="text" className="form-control" value={doorData.name_element} onChange={(e) => setDoorData({ ...doorData, name_element: e.target.value })} />
             </div>
-            <div className="mb-3">
-              <label className="form-label">U vidrio</label>
-              <input
-                type="number"
-                className="form-control"
-                value={windowData.u_vidrio}
-                onChange={(e) =>
-                  setWindowData({ ...windowData, u_vidrio: parseFloat(e.target.value) || 0 })
-                }
-              />
+            <div className="form-group mb-3">
+              <label>U Puerta opaca [W/m2K]</label>
+              <input type="number" className="form-control" value={doorData.u_puerta_opaca} onChange={(e) => setDoorData({ ...doorData, u_puerta_opaca: parseFloat(e.target.value) })} />
             </div>
-            <div className="mb-3">
-              <label className="form-label">FS vidrio</label>
-              <input
-                type="number"
-                className="form-control"
-                value={windowData.fs_vidrio}
-                onChange={(e) =>
-                  setWindowData({ ...windowData, fs_vidrio: parseFloat(e.target.value) || 0 })
-                }
-              />
+            <div className="form-group mb-3">
+              <label>Nombre Ventana</label>
+              <select className="form-control" value={doorData.ventana_id || ""} onChange={(e) => {
+                const winId = parseInt(e.target.value);
+                setDoorData({
+                  ...doorData,
+                  ventana_id: winId,
+                  name_ventana: allWindowsForDoor.find((win) => win.id === winId)?.name_element || "",
+                });
+              }}>
+                <option value="">Seleccione una ventana</option>
+                {allWindowsForDoor.map((win) => (
+                  <option key={win.id} value={win.id}>
+                    {win.name_element}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="mb-3">
-              <label className="form-label">Tipo de marco</label>
-              <input
-                type="text"
-                className="form-control"
-                value={windowData.frame_type}
-                onChange={(e) => setWindowData({ ...windowData, frame_type: e.target.value })}
-              />
+            <div className="form-group mb-3">
+              <label>% Vidrio</label>
+              <input type="number" step="0.01" className="form-control" value={doorData.porcentaje_vidrio} onChange={(e) => setDoorData({ ...doorData, porcentaje_vidrio: parseFloat(e.target.value) })} />
             </div>
-            <div className="mb-3">
-              <label className="form-label">Tipo de cierre</label>
-              <input
-                type="text"
-                className="form-control"
-                value={windowData.clousure_type}
-                onChange={(e) => setWindowData({ ...windowData, clousure_type: e.target.value })}
-              />
+            <div className="form-group mb-3">
+              <label>U Marco [W/m2K]</label>
+              <input type="number" className="form-control" value={doorData.u_marco} onChange={(e) => setDoorData({ ...doorData, u_marco: parseFloat(e.target.value) })} />
             </div>
-            <div className="mb-3">
-              <label className="form-label">U marco</label>
-              <input
-                type="number"
-                className="form-control"
-                value={windowData.u_marco}
-                onChange={(e) =>
-                  setWindowData({ ...windowData, u_marco: parseFloat(e.target.value) || 0 })
-                }
-              />
+            <div className="form-group mb-3">
+              <label>FM [%]</label>
+              <input type="number" className="form-control" value={doorData.fm} onChange={(e) => setDoorData({ ...doorData, fm: parseFloat(e.target.value) })} />
             </div>
-            <div className="mb-3">
-              <label className="form-label">FM</label>
-              <input
-                type="number"
-                className="form-control"
-                value={windowData.fm}
-                onChange={(e) =>
-                  setWindowData({ ...windowData, fm: parseFloat(e.target.value) || 0 })
-                }
-              />
-            </div>
-            <div className="d-flex justify-content-end gap-2">
-              <CustomButton variant="backIcon" onClick={() => setShowCreateWindowModal(false)} />
-              <CustomButton variant="save" onClick={handleCreateWindowElement}>
-                <i className="bi bi-plus"></i>
-              </CustomButton>
-            </div>
+            <CustomButton variant="save" onClick={handleCreateDoorElement}>
+              Crear Puerta
+            </CustomButton>
           </div>
         </div>
       )}
@@ -1458,7 +1625,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         .card {
           border: 1px solid #ccc;
         }
-        /* Estilos para los modales */
         .modal-overlay {
           position: fixed;
           top: 0;
@@ -1491,13 +1657,15 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
           cursor: pointer;
           color: #333;
         }
-        /* Centrado en tablas */
         .table th,
         .table td {
           text-align: center;
           vertical-align: middle;
         }
-        /* Filas alternadas */
+        .table thead th {
+          background-color: #fff;
+          color: var(--primary-color);
+        }
         .table-striped tbody tr:nth-child(odd) {
           background-color: #ffffff;
         }

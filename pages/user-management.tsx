@@ -21,8 +21,6 @@ interface User {
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
@@ -35,21 +33,20 @@ const UserManagement = () => {
     }
     try {
       const params = new URLSearchParams();
-      params.append("limit", "5");
-      params.append("num_pag", String(currentPage));
+      // Se establece un límite alto para obtener todos los usuarios
+      params.append("limit", "500");
       if (searchQuery.trim() !== "") {
         params.append("search", searchQuery);
       }
-      const response = await fetch(
-        `${constantUrlApiEndpoint}/users/?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const url = `${constantUrlApiEndpoint}/users/?${params.toString()}`;
+      console.log("URL de usuarios:", url);
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log("Response status:", response.status);
       if (!response.ok) {
         throw new Error("Error al obtener los usuarios");
@@ -57,21 +54,19 @@ const UserManagement = () => {
       const data = await response.json();
       console.log("Usuarios recibidos:", data);
       setUsers(Array.isArray(data.users) ? data.users : []);
-      setTotalPages(data.total_pages || 1);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
       console.error("Error en fetchUsers:", message);
     }
-  }, [currentPage, searchQuery]);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, searchQuery, fetchUsers]);
+  }, [searchQuery, fetchUsers]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    setCurrentPage(1);
   };
 
   const handleDeleteUser = async (id: number, name: string, lastname: string) => {
@@ -124,18 +119,6 @@ const UserManagement = () => {
     router.push(`/user-edit?id=${user.id}`);
   };
 
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
-
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
@@ -176,7 +159,8 @@ const UserManagement = () => {
               Agregar Usuario
             </CustomButton>
           </div>
-          <div className="table-responsive">
+          {/* Tabla con scroll interno */}
+          <div className="table-responsive" style={{ maxHeight: "600px", overflowY: "auto" }}>
             <table className="custom-table">
               <thead>
                 <tr>
@@ -242,30 +226,6 @@ const UserManagement = () => {
                 )}
               </tbody>
             </table>
-          </div>
-          <div className="d-flex justify-content-center align-items-center mt-4">
-            <CustomButton
-              type="button"
-              variant="backIcon"
-              onClick={goToPreviousPage}
-              disabled={currentPage === 1}
-              style={{ fontFamily: "var(--font-family-base)" }}
-            />
-            <span
-              style={{
-                fontFamily: "var(--font-family-base)",
-                margin: "0 1.5rem",
-              }}
-            >
-              Página {currentPage} de {totalPages}
-            </span>
-            <CustomButton
-              type="button"
-              variant="forwardIcon"
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages}
-              style={{ fontFamily: "var(--font-family-base)" }}
-            />
           </div>
         </div>
       </div>

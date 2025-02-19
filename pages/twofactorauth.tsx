@@ -14,6 +14,9 @@ const TwoFactorAuth = () => {
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
 
+
+   
+
   useEffect(() => {
     const storedEmail = localStorage.getItem("email");
     if (!storedEmail) {
@@ -71,6 +74,14 @@ const TwoFactorAuth = () => {
       if (data.user) {
         localStorage.setItem("userProfile", JSON.stringify(data.user));
         console.log("Perfil de usuario guardado correctamente:", data.user);
+
+        // Guardar role_id en local storage
+        if (data.user.role_id) {
+          localStorage.setItem("role_id", data.user.role_id.toString());
+          console.log("role_id almacenado correctamente:", data.user.role_id);
+        } else {
+          console.warn("No se encontró role_id en la respuesta del backend.");
+        }
       } else {
         console.warn("No se recibió información de perfil del usuario.");
       }

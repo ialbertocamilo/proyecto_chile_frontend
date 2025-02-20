@@ -221,7 +221,7 @@ const ConstantsManagement = () => {
             return;
           }
           const resp = await fetch(
-            `${constantUrlApiEndpoint}/constants/${material.id}`,
+            `${constantUrlApiEndpoint}/constant/${material.id}/delete`,
             {
               method: "DELETE",
               headers: {

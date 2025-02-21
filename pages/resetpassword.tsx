@@ -37,7 +37,7 @@ const ResetPassword = () => {
     }
 
     try {
-      const response = await fetch(`${constantUrlApiEndpoint}/password`, {
+      const response = await fetch(`${constantUrlApiEndpoint}/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -211,9 +211,7 @@ const ResetPassword = () => {
           </p>
         )}
         <div className="text-center mt-3">
-          <Link href="/login" passHref>
-            <a style={regresarButtonStyle}>← Regresar</a>
-          </Link>
+          <Link href="/login" style={regresarButtonStyle}>← Regresar</Link>
         </div>
       </div>
 

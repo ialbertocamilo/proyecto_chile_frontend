@@ -1,14 +1,26 @@
+// ./pages/project-workflow.tsx
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import Image from "next/image";
 import Swal from "sweetalert2";
 import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
+
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
+import dynamic from "next/dynamic";
+
+// Importa el CSS de leaflet (no causa problemas en SSR)
+import "leaflet/dist/leaflet.css";
+
+// Importa el componente de mapa de forma dinámica sin SSR
+const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), { ssr: false });
+
+// =================================================
+// Interfaces
+// =================================================
 
 interface MaterialAtributs {
   name: string;
@@ -107,7 +119,6 @@ interface NewDetailForm {
   layer_thickness: number;
 }
 
-// Interfaz para datos de pestañas (muros, techumbre y pisos)
 interface TabElement {
   name_detail: string;
   value_u?: number;
@@ -132,6 +143,10 @@ interface TabElement {
     };
   };
 }
+
+// =================================================
+// Página Principal
+// =================================================
 
 const ProjectCompleteWorkflowPage: React.FC = () => {
   const [sidebarWidth, setSidebarWidth] = useState("300px");
@@ -158,7 +173,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     longitude: 0,
   });
   const [locationSearch, setLocationSearch] = useState("");
-  const [foundLocations, setFoundLocations] = useState("");
 
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
   const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([]);
@@ -178,7 +192,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   const [showTabsInStep4, setShowTabsInStep4] = useState(false);
   const [tabStep4, setTabStep4] = useState<"detalles" | "muros" | "techumbre" | "pisos">("detalles");
 
-  const [detailsTabList, setDetailsTabList] = useState<Detail[]>([]);
+  const [detailsTabList, setDetailsTabList] = useState<NewDetailForm[]>([]);
   const [murosTabList, setMurosTabList] = useState<TabElement[]>([]);
   const [techumbreTabList, setTechumbreTabList] = useState<TabElement[]>([]);
   const [pisosTabList, setPisosTabList] = useState<TabElement[]>([]);
@@ -195,8 +209,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     name_element: "",
     u_vidrio: 0,
     fs_vidrio: 0,
-    clousure_type: "Corredera",
     frame_type: "",
+    clousure_type: "Corredera",
     u_marco: 0,
     fm: 0,
   });
@@ -222,6 +236,10 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       area: 50,
     },
   ];
+
+  // =================================================
+  // Funciones y llamadas a endpoints
+  // =================================================
 
   const fetchElements = async (type: "window" | "door") => {
     try {
@@ -276,11 +294,11 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   }, [showCreateDoorModal]);
 
   const handleFormInputChange = (field: keyof FormData, value: string | number) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleNewDetailFormChange = (field: keyof NewDetailForm, value: string | number) => {
-    setNewDetailForm({ ...newDetailForm, [field]: value });
+    setNewDetailForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCreateProject = async () => {
@@ -325,17 +343,34 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     }
   };
 
-  const fetchMaterialsList = async (page: number) => {
+  /**
+   * FETCH DE MATERIALES (TODAS LAS PÁGINAS)
+   */
+  const fetchMaterialsList = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=100`;
-      const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(url, { headers });
-      setMaterialsList(response.data.constants || []);
+      let allMaterials: Material[] = [];
+      let page = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=100`;
+        const headers = { Authorization: `Bearer ${token}` };
+        const response = await axios.get(url, { headers });
+        const currentData = response.data.constants || [];
+
+        allMaterials = [...allMaterials, ...currentData];
+        if (currentData.length < 100) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+      }
+      setMaterialsList(allMaterials);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
       Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
@@ -396,7 +431,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       Swal.fire("Detalle duplicado", "Este detalle ya fue seleccionado", "info");
       return;
     }
-    setDetails([...details, det]);
+    setDetails((prev) => [...prev, det]);
     Swal.fire("Detalle agregado", `El detalle "${det.name_detail}" ha sido agregado.`, "success");
   };
 
@@ -432,9 +467,22 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     }
   };
 
-  const getMaterialNameById = (matId: number): string => {
+  /**
+   * Función que busca en la lista "materialsList" un material por su id y retorna su nombre.
+   * Se ha actualizado para evitar pasar undefined y registrar el id en caso de error.
+   */
+  const getMaterialNameById = (matId: number | undefined): string => {
+    // Si no se recibió un número, se registra y se retorna "Desconocido"
+    if (matId == null) {
+      console.log("Se esperaba un número, pero se recibió:", matId);
+      return "Desconocido";
+    }
     const mat = materialsList.find((m) => m.id === matId);
-    return mat ? mat.atributs.name : "Desconocido";
+    if (!mat) {
+      console.log(`No se encontró material para el id ${matId}`);
+      return "Desconocido";
+    }
+    return mat.atributs.name;
   };
 
   const fetchStep4TabsData = async () => {
@@ -475,6 +523,12 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     }
   };
 
+  /**
+   * IMPORTANTE:
+   * Aquí ajustamos la lógica para que primero recargue materiales
+   * y luego obtenga los detalles del proyecto. Así `getMaterialNameById`
+   * no devuelva "Desconocido".
+   */
   const handleSaveDetails = async () => {
     if (!createdProjectId) {
       Swal.fire("Error", "Proyecto no encontrado", "error");
@@ -490,9 +544,15 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       const url = `${constantUrlApiEndpoint}/projects/${createdProjectId}/details/select`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       await axios.post(url, detailIds, { headers });
-      Swal.fire("Detalles guardados", "Detalles agregados correctamente", "success").then(() => {
+
+      // --- Ajuste aquí ---
+      Swal.fire("Detalles guardados", "Detalles agregados correctamente", "success").then(async () => {
+        // 1) Cargamos todos los materiales
+        await fetchMaterialsList();
+        // 2) Luego traemos la data de las pestañas
+        await fetchStep4TabsData();
+        // 3) Finalmente mostramos las pestañas
         setShowTabsInStep4(true);
-        fetchStep4TabsData();
       });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -544,7 +604,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       Swal.fire("Elemento duplicado", "Este elemento ya fue agregado", "info");
       return;
     }
-    setSelectedElements([...selectedElements, element]);
+    setSelectedElements((prev) => [...prev, element]);
     Swal.fire("Elemento agregado", `${element.name_element} ha sido agregado.`, "success");
   };
 
@@ -574,7 +634,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setElementsList([...elementsList, response.data.element]);
+      setElementsList((prev) => [...prev, response.data.element]);
       Swal.fire("Ventana creada", `La ventana "${windowData.name_element}" ha sido creada.`, "success");
       setShowCreateWindowModal(false);
       setWindowData({
@@ -619,7 +679,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setElementsList([...elementsList, response.data.element]);
+      setElementsList((prev) => [...prev, response.data.element]);
       Swal.fire("Puerta creada", `La puerta "${doorData.name_element}" ha sido creada.`, "success");
       setShowCreateDoorModal(false);
       setDoorData({
@@ -638,17 +698,25 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     }
   };
 
+  // Efectos para cargar materiales y detalles según el step
   useEffect(() => {
-    if (step === 3) void fetchMaterialsList(1);
+    if (step === 3) {
+      void fetchMaterialsList();
+    }
   }, [step]);
 
   useEffect(() => {
     if (step === 4) {
+      void fetchMaterialsList();
       setDetails([]);
       setShowTabsInStep4(false);
       void fetchFetchedDetails();
     }
   }, [step]);
+
+  // =================================================
+  // Renderizado principal
+  // =================================================
 
   const renderMainHeader = () =>
     step <= 2 ? (
@@ -674,7 +742,16 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   const sidebarItemHeight = 100;
   const sidebarItemBorderSize = 1;
   const leftPadding = 50;
-  const SidebarItem = ({ stepNumber, iconClass, title }: { stepNumber: number; iconClass: string; title: string }) => {
+
+  const SidebarItem = ({
+    stepNumber,
+    iconClass,
+    title,
+  }: {
+    stepNumber: number;
+    iconClass: string;
+    title: string;
+  }) => {
     const isSelected = step === stepNumber;
     const activeColor = "#3ca7b7";
     const inactiveColor = "#ccc";
@@ -749,7 +826,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                   <tr key={idx}>
                     <td>{item.scantilon_location}</td>
                     <td>{item.name_detail}</td>
-                    <td>{getMaterialNameById(item.id_material)}</td>
+                    {/* Se utiliza getMaterialNameById, utilizando 0 si id_material es undefined */}
+                    <td>{getMaterialNameById(item.material_id ?? 0)}</td>
                     <td>{item.layer_thickness}</td>
                   </tr>
                 ))}
@@ -812,11 +890,21 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
             <table className="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} rowSpan={2}>Nombre Abreviado</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} rowSpan={2}>Valor U [W/m²K]</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} colSpan={2}>Aislamiento bajo piso</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} colSpan={3}>Ref Aisl Vert.</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} colSpan={3}>Ref Aisl Horiz.</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} rowSpan={2}>
+                    Nombre Abreviado
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} rowSpan={2}>
+                    Valor U [W/m²K]
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} colSpan={2}>
+                    Aislamiento bajo piso
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} colSpan={3}>
+                    Ref Aisl Vert.
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }} colSpan={3}>
+                    Ref Aisl Horiz.
+                  </th>
                 </tr>
                 <tr>
                   <th style={{ color: "var(--primary-color)", textAlign: "center" }}>I [W/mK]</th>
@@ -856,6 +944,10 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       </div>
     );
   };
+
+  // =================================================
+  // Renderizado final
+  // =================================================
 
   return (
     <>
@@ -897,64 +989,125 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
               <div style={{ flex: 1, padding: "20px" }}>
                 {step === 1 && (
                   <>
+                    {/* Paso 1 */}
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Nombre del proyecto</label>
-                        <input type="text" className="form-control" value={formData.name_project} onChange={(e) => handleFormInputChange("name_project", e.target.value)} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.name_project}
+                          onChange={(e) => handleFormInputChange("name_project", e.target.value)}
+                        />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Nombre del propietario</label>
-                        <input type="text" className="form-control" value={formData.owner_name} onChange={(e) => handleFormInputChange("owner_name", e.target.value)} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.owner_name}
+                          onChange={(e) => handleFormInputChange("owner_name", e.target.value)}
+                        />
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Apellido del propietario</label>
-                        <input type="text" className="form-control" value={formData.owner_lastname} onChange={(e) => handleFormInputChange("owner_lastname", e.target.value)} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.owner_lastname}
+                          onChange={(e) => handleFormInputChange("owner_lastname", e.target.value)}
+                        />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">País</label>
-                        <input type="text" className="form-control" value={formData.country} onChange={(e) => handleFormInputChange("country", e.target.value)} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.country}
+                          onChange={(e) => handleFormInputChange("country", e.target.value)}
+                        />
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Departamento</label>
-                        <input type="text" className="form-control" value={formData.department} onChange={(e) => handleFormInputChange("department", e.target.value)} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.department}
+                          onChange={(e) => handleFormInputChange("department", e.target.value)}
+                        />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Provincia</label>
-                        <input type="text" className="form-control" value={formData.province} onChange={(e) => handleFormInputChange("province", e.target.value)} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.province}
+                          onChange={(e) => handleFormInputChange("province", e.target.value)}
+                        />
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Distrito</label>
-                        <input type="text" className="form-control" value={formData.district} onChange={(e) => handleFormInputChange("district", e.target.value)} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.district}
+                          onChange={(e) => handleFormInputChange("district", e.target.value)}
+                        />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Tipo de edificación</label>
-                        <input type="text" className="form-control" value={formData.building_type} onChange={(e) => handleFormInputChange("building_type", e.target.value)} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.building_type}
+                          onChange={(e) => handleFormInputChange("building_type", e.target.value)}
+                        />
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Tipo de uso principal</label>
-                        <input type="text" className="form-control" value={formData.main_use_type} onChange={(e) => handleFormInputChange("main_use_type", e.target.value)} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.main_use_type}
+                          onChange={(e) => handleFormInputChange("main_use_type", e.target.value)}
+                        />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Número de niveles</label>
-                        <input type="number" className="form-control" value={formData.number_levels} onChange={(e) => handleFormInputChange("number_levels", parseInt(e.target.value) || 0)} />
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={formData.number_levels}
+                          onChange={(e) => handleFormInputChange("number_levels", parseInt(e.target.value) || 0)}
+                        />
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Número de viviendas / oficinas x nivel</label>
-                        <input type="number" className="form-control" value={formData.number_homes_per_level} onChange={(e) => handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)} />
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={formData.number_homes_per_level}
+                          onChange={(e) => handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)}
+                        />
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Superficie construida (m²)</label>
-                        <input type="number" className="form-control" value={formData.built_surface} onChange={(e) => handleFormInputChange("built_surface", parseFloat(e.target.value) || 0)} />
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={formData.built_surface}
+                          onChange={(e) => handleFormInputChange("built_surface", parseFloat(e.target.value) || 0)}
+                        />
                       </div>
                     </div>
                     <div className="text-end">
@@ -964,25 +1117,45 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     </div>
                   </>
                 )}
+
+                {/* Paso 2 */}
                 {step === 2 && (
                   <>
                     <h5 className="fw-bold mb-3">Ubicación del proyecto</h5>
                     <div className="row">
                       <div className="col-12 mb-3">
-                        <input type="text" className="form-control" placeholder="Buscar ubicación" value={locationSearch} onChange={(e) => setLocationSearch(e.target.value)} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Buscar ubicación"
+                          value={locationSearch}
+                          onChange={(e) => setLocationSearch(e.target.value)}
+                        />
                       </div>
                       <div className="col-12 col-md-8 mb-3">
-                        <Image src="/assets/images/maps.jpg" alt="Mapa" width={600} height={400} className="img-fluid" />
+                        <NoSSRInteractiveMap
+                          onLocationSelect={(latlng) => {
+                            handleFormInputChange("latitude", latlng.lat);
+                            handleFormInputChange("longitude", latlng.lng);
+                          }}
+                        />
                       </div>
                       <div className="col-12 col-md-4">
-                        <label className="form-label">Datos de ubicaciones encontradas</label>
-                        <textarea className="form-control mb-2" rows={5} value={foundLocations} onChange={(e) => setFoundLocations(e.target.value)}></textarea>
-                        <CustomButton variant="save" style={{ width: "100%" }} onClick={() => {
-                          handleFormInputChange("latitude", 150);
-                          handleFormInputChange("longitude", 250);
-                          Swal.fire("Ubicación asignada", "Ubicación de prueba (lat=150, lon=250)", "success");
-                        }}>
-                          Ubicación actual
+                        <label className="form-label">Coordenadas seleccionadas</label>
+                        <textarea
+                          className="form-control mb-2"
+                          rows={5}
+                          value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
+                          readOnly
+                        />
+                        <CustomButton
+                          variant="save"
+                          style={{ width: "100%" }}
+                          onClick={() => {
+                            Swal.fire("Ubicación asignada", `Lat: ${formData.latitude}, Lon: ${formData.longitude}`, "success");
+                          }}
+                        >
+                          Confirmar Ubicación
                         </CustomButton>
                       </div>
                     </div>
@@ -994,6 +1167,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     </div>
                   </>
                 )}
+
+                {/* Paso 3: Materiales */}
                 {step === 3 && (
                   <>
                     <div className="d-flex justify-content-end mb-3">
@@ -1023,9 +1198,10 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                 <td>{specific_heat}</td>
                                 <td>{density}</td>
                                 <td>
-                                  <CustomButton variant="deleteIcon" onClick={() =>
-                                    setSelectedMaterials(selectedMaterials.filter((m) => m.id !== mat.id))
-                                  } />
+                                  <CustomButton
+                                    variant="deleteIcon"
+                                    onClick={() => setSelectedMaterials((prev) => prev.filter((m) => m.id !== mat.id))}
+                                  />
                                 </td>
                               </tr>
                             );
@@ -1043,6 +1219,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     </div>
                   </>
                 )}
+
+                {/* Paso 4: Detalles */}
                 {step === 4 && (
                   <>
                     {!showTabsInStep4 && (
@@ -1072,9 +1250,10 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                     <td>{det.material}</td>
                                     <td>{det.layer_thickness}</td>
                                     <td>
-                                      <CustomButton variant="deleteIcon" onClick={() =>
-                                        setDetails(details.filter((d) => d.id_detail !== det.id_detail))
-                                      } />
+                                      <CustomButton
+                                        variant="deleteIcon"
+                                        onClick={() => setDetails((prev) => prev.filter((d) => d.id_detail !== det.id_detail))}
+                                      />
                                     </td>
                                   </tr>
                                 ))}
@@ -1098,6 +1277,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     {renderStep4Tabs()}
                   </>
                 )}
+
+                {/* Paso 5: Elementos operables */}
                 {step === 5 && (
                   <>
                     <div className="d-flex justify-content-end mb-3">
@@ -1116,7 +1297,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                               color: tabElementosOperables === tab.toLowerCase() ? "var(--primary-color)" : "var(--secondary-color)",
                               border: "none",
                               cursor: "pointer",
-                              borderBottom: tabElementosOperables === tab.toLowerCase() ? "3px solid var(--primary-color)" : "none",
+                              borderBottom:
+                                tabElementosOperables === tab.toLowerCase() ? "3px solid var(--primary-color)" : "none",
                             }}
                             onClick={() => {
                               setTabElementosOperables(tab.toLowerCase());
@@ -1169,9 +1351,10 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                   <td>{el.u_marco}</td>
                                   <td>{(el.fm * 100).toFixed(0)}%</td>
                                   <td>
-                                    <CustomButton variant="deleteIcon" onClick={() =>
-                                      setSelectedElements(selectedElements.filter((item) => item.id !== el.id))
-                                    } />
+                                    <CustomButton
+                                      variant="deleteIcon"
+                                      onClick={() => setSelectedElements((prev) => prev.filter((item) => item.id !== el.id))}
+                                    />
                                   </td>
                                 </tr>
                               ) : (
@@ -1181,15 +1364,16 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                                   <td>{(el.atributs as DoorAttributes).name_ventana}</td>
                                   <td>
                                     {(el.atributs as DoorAttributes).porcentaje_vidrio !== undefined
-                                      ? (((el.atributs as DoorAttributes).porcentaje_vidrio) * 100).toFixed(0) + "%"
+                                      ? ((el.atributs as DoorAttributes).porcentaje_vidrio * 100).toFixed(0) + "%"
                                       : "0%"}
                                   </td>
                                   <td>{el.u_marco}</td>
                                   <td>{(el.fm * 100).toFixed(0)}%</td>
                                   <td>
-                                    <CustomButton variant="deleteIcon" onClick={() =>
-                                      setSelectedElements(selectedElements.filter((item) => item.id !== el.id))
-                                    } />
+                                    <CustomButton
+                                      variant="deleteIcon"
+                                      onClick={() => setSelectedElements((prev) => prev.filter((item) => item.id !== el.id))}
+                                    />
                                   </td>
                                 </tr>
                               )
@@ -1207,6 +1391,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     </div>
                   </>
                 )}
+
+                {/* Paso 6: Tipología de recinto */}
                 {step === 6 && (
                   <>
                     <h5 className="fw-bold mb-3">Tipología de recinto</h5>
@@ -1236,7 +1422,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                       ))}
                     </ul>
                     <div className="tab-content border border-top-0 p-3">
-                      {/* Contenido para cada pestaña */}
+                      {/* Contenido de cada pestaña de Tipología */}
                     </div>
                     <div className="mt-4 text-end">
                       <CustomButton variant="backIcon" onClick={() => setStep(5)} />
@@ -1246,6 +1432,8 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                     </div>
                   </>
                 )}
+
+                {/* Paso 7: Recinto */}
                 {step === 7 && (
                   <>
                     <h5 className="fw-bold mb-3">Recinto</h5>
@@ -1299,7 +1487,9 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       {showAddMaterialModal && (
         <div className="modal-overlay" onClick={() => setShowAddMaterialModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowAddMaterialModal(false)}>&times;</button>
+            <button className="modal-close" onClick={() => setShowAddMaterialModal(false)}>
+              &times;
+            </button>
             <h4 className="mb-3">Lista de Materiales</h4>
             <table className="table table-bordered table-striped">
               <thead>
@@ -1321,7 +1511,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                       <td>{specific_heat}</td>
                       <td>{density}</td>
                       <td>
-                        <CustomButton variant="addIcon" onClick={() => setSelectedMaterials([...selectedMaterials, mat])} />
+                        <CustomButton variant="addIcon" onClick={() => setSelectedMaterials((prev) => [...prev, mat])} />
                       </td>
                     </tr>
                   );
@@ -1380,7 +1570,11 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
             <h4 className="mb-3">Crear Nuevo Detalle</h4>
             <div className="mb-3">
               <label className="form-label">Ubicación Detalle</label>
-              <select className="form-control" value={newDetailForm.scantilon_location} onChange={(e) => handleNewDetailFormChange("scantilon_location", e.target.value)}>
+              <select
+                className="form-control"
+                value={newDetailForm.scantilon_location}
+                onChange={(e) => handleNewDetailFormChange("scantilon_location", e.target.value)}
+              >
                 <option value="">Seleccione</option>
                 <option value="Muro">Muro</option>
                 <option value="Techo">Techo</option>
@@ -1389,11 +1583,20 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Nombre Detalle</label>
-              <input type="text" className="form-control" value={newDetailForm.name_detail} onChange={(e) => handleNewDetailFormChange("name_detail", e.target.value)} />
+              <input
+                type="text"
+                className="form-control"
+                value={newDetailForm.name_detail}
+                onChange={(e) => handleNewDetailFormChange("name_detail", e.target.value)}
+              />
             </div>
             <div className="mb-3">
               <label className="form-label">Material</label>
-              <select className="form-control" value={newDetailForm.material_id} onChange={(e) => handleNewDetailFormChange("material_id", parseInt(e.target.value))}>
+              <select
+                className="form-control"
+                value={newDetailForm.material_id}
+                onChange={(e) => handleNewDetailFormChange("material_id", parseInt(e.target.value))}
+              >
                 <option value={0}>Seleccione un material</option>
                 {materialsList.map((mat) => (
                   <option key={mat.id} value={mat.id}>
@@ -1404,7 +1607,12 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Espesor capa (cm)</label>
-              <input type="number" className="form-control" value={newDetailForm.layer_thickness} onChange={(e) => handleNewDetailFormChange("layer_thickness", parseFloat(e.target.value) || 0)} />
+              <input
+                type="number"
+                className="form-control"
+                value={newDetailForm.layer_thickness}
+                onChange={(e) => handleNewDetailFormChange("layer_thickness", parseFloat(e.target.value) || 0)}
+              />
             </div>
             <div className="d-flex justify-content-end gap-2">
               <CustomButton variant="backIcon" onClick={() => setShowCreateDetailModal(false)} />
@@ -1420,7 +1628,9 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       {showAddElementModal && (
         <div className="modal-overlay" onClick={() => setShowAddElementModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowAddElementModal(false)}>&times;</button>
+            <button className="modal-close" onClick={() => setShowAddElementModal(false)}>
+              &times;
+            </button>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h4 className="mb-3">
                 Lista de {modalElementType === "ventanas" ? "Ventanas" : "Puertas"}
@@ -1508,7 +1718,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                           <td>{(el.atributs as DoorAttributes).name_ventana}</td>
                           <td>
                             {(el.atributs as DoorAttributes).porcentaje_vidrio !== undefined
-                              ? (((el.atributs as DoorAttributes).porcentaje_vidrio) * 100).toFixed(0) + "%"
+                              ? ((el.atributs as DoorAttributes).porcentaje_vidrio * 100).toFixed(0) + "%"
                               : "0%"}
                           </td>
                           <td>{el.u_marco}</td>
@@ -1530,38 +1740,74 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       {showCreateWindowModal && (
         <div className="modal-overlay" onClick={() => setShowCreateWindowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowCreateWindowModal(false)}>&times;</button>
+            <button className="modal-close" onClick={() => setShowCreateWindowModal(false)}>
+              &times;
+            </button>
             <h4 className="mb-3">Crear Ventana</h4>
             <div className="form-group mb-3">
               <label>Nombre Elemento</label>
-              <input type="text" className="form-control" value={windowData.name_element} onChange={(e) => setWindowData({ ...windowData, name_element: e.target.value })} />
+              <input
+                type="text"
+                className="form-control"
+                value={windowData.name_element}
+                onChange={(e) => setWindowData((prev) => ({ ...prev, name_element: e.target.value }))}
+              />
             </div>
             <div className="form-group mb-3">
               <label>U Vidrio [W/m2K]</label>
-              <input type="number" className="form-control" value={windowData.u_vidrio} onChange={(e) => setWindowData({ ...windowData, u_vidrio: parseFloat(e.target.value) })} />
+              <input
+                type="number"
+                className="form-control"
+                value={windowData.u_vidrio}
+                onChange={(e) => setWindowData((prev) => ({ ...prev, u_vidrio: parseFloat(e.target.value) }))}
+              />
             </div>
             <div className="form-group mb-3">
               <label>FS Vidrio []</label>
-              <input type="number" className="form-control" value={windowData.fs_vidrio} onChange={(e) => setWindowData({ ...windowData, fs_vidrio: parseFloat(e.target.value) })} />
+              <input
+                type="number"
+                className="form-control"
+                value={windowData.fs_vidrio}
+                onChange={(e) => setWindowData((prev) => ({ ...prev, fs_vidrio: parseFloat(e.target.value) }))}
+              />
             </div>
             <div className="form-group mb-3">
               <label>Tipo Cierre</label>
-              <select className="form-control" value={windowData.clousure_type} onChange={(e) => setWindowData({ ...windowData, clousure_type: e.target.value })}>
+              <select
+                className="form-control"
+                value={windowData.clousure_type}
+                onChange={(e) => setWindowData((prev) => ({ ...prev, clousure_type: e.target.value }))}
+              >
                 <option value="Corredera">Corredera</option>
                 <option value="Abatir">Abatir</option>
               </select>
             </div>
             <div className="form-group mb-3">
               <label>Tipo Marco</label>
-              <input type="text" className="form-control" value={windowData.frame_type} onChange={(e) => setWindowData({ ...windowData, frame_type: e.target.value })} />
+              <input
+                type="text"
+                className="form-control"
+                value={windowData.frame_type}
+                onChange={(e) => setWindowData((prev) => ({ ...prev, frame_type: e.target.value }))}
+              />
             </div>
             <div className="form-group mb-3">
               <label>U Marco [W/m2K]</label>
-              <input type="number" className="form-control" value={windowData.u_marco} onChange={(e) => setWindowData({ ...windowData, u_marco: parseFloat(e.target.value) })} />
+              <input
+                type="number"
+                className="form-control"
+                value={windowData.u_marco}
+                onChange={(e) => setWindowData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
+              />
             </div>
             <div className="form-group mb-3">
               <label>FM [%]</label>
-              <input type="number" className="form-control" value={windowData.fm} onChange={(e) => setWindowData({ ...windowData, fm: parseFloat(e.target.value) })} />
+              <input
+                type="number"
+                className="form-control"
+                value={windowData.fm}
+                onChange={(e) => setWindowData((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))}
+              />
             </div>
             <CustomButton variant="save" onClick={handleCreateWindowElement}>
               Crear Ventana
@@ -1574,26 +1820,42 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       {showCreateDoorModal && (
         <div className="modal-overlay" onClick={() => setShowCreateDoorModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowCreateDoorModal(false)}>&times;</button>
+            <button className="modal-close" onClick={() => setShowCreateDoorModal(false)}>
+              &times;
+            </button>
             <h4 className="mb-3">Crear Puerta</h4>
             <div className="form-group mb-3">
               <label>Nombre Elemento</label>
-              <input type="text" className="form-control" value={doorData.name_element} onChange={(e) => setDoorData({ ...doorData, name_element: e.target.value })} />
+              <input
+                type="text"
+                className="form-control"
+                value={doorData.name_element}
+                onChange={(e) => setDoorData((prev) => ({ ...prev, name_element: e.target.value }))}
+              />
             </div>
             <div className="form-group mb-3">
               <label>U Puerta opaca [W/m2K]</label>
-              <input type="number" className="form-control" value={doorData.u_puerta_opaca} onChange={(e) => setDoorData({ ...doorData, u_puerta_opaca: parseFloat(e.target.value) })} />
+              <input
+                type="number"
+                className="form-control"
+                value={doorData.u_puerta_opaca}
+                onChange={(e) => setDoorData((prev) => ({ ...prev, u_puerta_opaca: parseFloat(e.target.value) }))}
+              />
             </div>
             <div className="form-group mb-3">
               <label>Nombre Ventana</label>
-              <select className="form-control" value={doorData.ventana_id || ""} onChange={(e) => {
-                const winId = parseInt(e.target.value);
-                setDoorData({
-                  ...doorData,
-                  ventana_id: winId,
-                  name_ventana: allWindowsForDoor.find((win) => win.id === winId)?.name_element || "",
-                });
-              }}>
+              <select
+                className="form-control"
+                value={doorData.ventana_id || ""}
+                onChange={(e) => {
+                  const winId = parseInt(e.target.value);
+                  setDoorData((prev) => ({
+                    ...prev,
+                    ventana_id: winId,
+                    name_ventana: allWindowsForDoor.find((win) => win.id === winId)?.name_element || "",
+                  }));
+                }}
+              >
                 <option value="">Seleccione una ventana</option>
                 {allWindowsForDoor.map((win) => (
                   <option key={win.id} value={win.id}>
@@ -1604,15 +1866,31 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>% Vidrio</label>
-              <input type="number" step="0.01" className="form-control" value={doorData.porcentaje_vidrio} onChange={(e) => setDoorData({ ...doorData, porcentaje_vidrio: parseFloat(e.target.value) })} />
+              <input
+                type="number"
+                step="0.01"
+                className="form-control"
+                value={doorData.porcentaje_vidrio}
+                onChange={(e) => setDoorData((prev) => ({ ...prev, porcentaje_vidrio: parseFloat(e.target.value) }))}
+              />
             </div>
             <div className="form-group mb-3">
               <label>U Marco [W/m2K]</label>
-              <input type="number" className="form-control" value={doorData.u_marco} onChange={(e) => setDoorData({ ...doorData, u_marco: parseFloat(e.target.value) })} />
+              <input
+                type="number"
+                className="form-control"
+                value={doorData.u_marco}
+                onChange={(e) => setDoorData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
+              />
             </div>
             <div className="form-group mb-3">
               <label>FM [%]</label>
-              <input type="number" className="form-control" value={doorData.fm} onChange={(e) => setDoorData({ ...doorData, fm: parseFloat(e.target.value) })} />
+              <input
+                type="number"
+                className="form-control"
+                value={doorData.fm}
+                onChange={(e) => setDoorData((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))}
+              />
             </div>
             <CustomButton variant="save" onClick={handleCreateDoorElement}>
               Crear Puerta

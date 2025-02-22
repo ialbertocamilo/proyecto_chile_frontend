@@ -16,6 +16,7 @@ interface User {
   birthdate: string;
   country: string;
   ubigeo: string;
+  role_id: number; // Se actualiza el campo a role_id
 }
 
 const UserManagement = () => {
@@ -119,6 +120,11 @@ const UserManagement = () => {
     router.push(`/user-edit?id=${user.id}`);
   };
 
+  // Función para traducir el valor numérico del rol a texto usando role_id
+  const getRoleText = (role_id: number) => {
+    return role_id === 1 ? "Administrador" : role_id === 2 ? "Operador" : "Desconocido";
+  };
+
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
@@ -171,6 +177,7 @@ const UserManagement = () => {
                   <th>Teléfono</th>
                   <th>País</th>
                   <th>Ubigeo</th>
+                  <th>Rol</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -185,6 +192,7 @@ const UserManagement = () => {
                       <td>{u.number_phone}</td>
                       <td>{u.country}</td>
                       <td>{u.ubigeo}</td>
+                      <td>{getRoleText(u.role_id)}</td>
                       <td className="text-center">
                         <div className="action-btn-group">
                           <CustomButton
@@ -219,7 +227,7 @@ const UserManagement = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="text-center text-muted">
+                    <td colSpan={9} className="text-center text-muted">
                       No hay usuarios o no coinciden con la búsqueda.
                     </td>
                   </tr>

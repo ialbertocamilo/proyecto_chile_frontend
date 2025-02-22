@@ -5,22 +5,15 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import Swal from "sweetalert2";
 import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
-
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import dynamic from "next/dynamic";
-
-// Importa el CSS de leaflet (no causa problemas en SSR)
 import "leaflet/dist/leaflet.css";
 
-// Importa el componente de mapa de forma dinámica sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), { ssr: false });
 
-// =================================================
-// Interfaces
-// =================================================
 
 interface MaterialAtributs {
   name: string;
@@ -627,7 +620,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       fm: windowData.fm,
     };
     try {
-      const response = await axios.post("http://ceela-backend.svgdev.tech/elements/create", body, {
+      const response = await axios.post(`${constantUrlApiEndpoint}/elements/create`, body, {
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -672,7 +665,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       fm: doorData.fm,
     };
     try {
-      const response = await axios.post("http://ceela-backend.svgdev.tech/elements/create", body, {
+      const response = await axios.post(`${constantUrlApiEndpoint}/elements/create`, body, {
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -1395,7 +1388,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                 {/* Paso 6: Tipología de recinto */}
                 {step === 6 && (
                   <>
-                    <h5 className="fw-bold mb-3">Tipología de recinto</h5>
                     <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
                       {[
                         { key: "ventilacion", label: "Ventilación y caudales" },

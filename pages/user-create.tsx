@@ -4,8 +4,8 @@ import Swal from "sweetalert2";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 interface UserFormData {
   name: string;
@@ -17,6 +17,7 @@ interface UserFormData {
   ubigeo: string;
   password: string;
   confirm_password: string;
+  role_id: string; // Se usa string para el select y luego se convertirá a número
 }
 
 const UserCreate = () => {
@@ -31,12 +32,13 @@ const UserCreate = () => {
     ubigeo: "",
     password: "",
     confirm_password: "",
+    role_id: "2", // Valor por defecto: Operador
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
@@ -54,6 +56,7 @@ const UserCreate = () => {
       ubigeo,
       password,
       confirm_password,
+      role_id,
     } = userData;
 
     if (
@@ -65,7 +68,8 @@ const UserCreate = () => {
       !country.trim() ||
       !ubigeo.trim() ||
       !password.trim() ||
-      !confirm_password.trim()
+      !confirm_password.trim() ||
+      !role_id.trim()
     ) {
       Swal.fire({
         title: "Campos incompletos",
@@ -92,11 +96,15 @@ const UserCreate = () => {
       if (!token) {
         throw new Error("No estás autenticado. Inicia sesión nuevamente.");
       }
-      const bodyToSend = { ...userData };
+      // Convertir role_id a número antes de enviarlo
+      const bodyToSend = { 
+        ...userData,
+        role_id: Number(role_id)
+      };
 
       console.log("Enviando datos al backend:", bodyToSend);
 
-      const resp = await fetch(`${constantUrlApiEndpoint}/register`, {
+      const resp = await fetch(`${constantUrlApiEndpoint}/register-admin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -307,6 +315,19 @@ const UserCreate = () => {
                       onChange={handleChange}
                       style={{ fontFamily: "var(--font-family-base)" }}
                     />
+                  </div>
+                  <div className="col-md-6">
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Rol</label>
+                    <select
+                      name="role_id"
+                      className="form-control"
+                      value={userData.role_id}
+                      onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
+                    >
+                      <option value="1">Administrador</option>
+                      <option value="2">Operador</option>
+                    </select>
                   </div>
                 </div>
               </div>

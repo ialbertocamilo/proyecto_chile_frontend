@@ -41,17 +41,11 @@ export interface Project {
   longitude?: number;
 }
 
-interface FetchProjectsResponse {
-  projects: Project[];
-  total_pages: number;
-  current_page: number;
-}
-
 interface ErrorResponse {
   detail?: string;
 }
 
-// Definimos un objeto inicial para el proyecto a editar (cumpliendo con la interfaz)
+// Objeto inicial para el proyecto a editar
 const initialProject: Project = {
   id: 0,
   status: "",
@@ -81,17 +75,14 @@ const ProjectListPage = () => {
   const [search, setSearch] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const limit: number = 5;
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [editProjectData, setEditProjectData] = useState<Project>(initialProject);
 
   useEffect(() => {
-    fetchProjects(currentPage);
-  }, [currentPage]);
+    fetchProjects();
+  }, []);
 
-  const fetchProjects = async (page: number): Promise<void> => {
+  const fetchProjects = async (): Promise<void> => {
     setLoading(true);
     const token: string | null = localStorage.getItem("token");
     if (!token) {
@@ -101,11 +92,12 @@ const ProjectListPage = () => {
       return;
     }
     try {
-      console.log("📡 Obteniendo proyectos, página:", page);
-      const response = await axios.get<FetchProjectsResponse>(
+      console.log("📡 Obteniendo proyectos...");
+      // Forzamos un limit muy grande y num_pag=1 para obtener todos los proyectos
+      const response = await axios.get<{ projects: Project[] }>(
         `${constantUrlApiEndpoint}/projects`,
         {
-          params: { limit, num_pag: page },
+          params: { limit: 999999, num_pag: 1 },
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -115,8 +107,6 @@ const ProjectListPage = () => {
       console.log("Proyectos recibidos:", response.data);
       setProjects(response.data.projects);
       setFilteredProjects(response.data.projects);
-      setTotalPages(response.data.total_pages);
-      setCurrentPage(response.data.current_page);
     } catch (err: unknown) {
       console.error("Error al obtener los proyectos:", err);
       if (axios.isAxiosError(err) && err.response) {
@@ -134,7 +124,6 @@ const ProjectListPage = () => {
     const query: string = e.target.value.toLowerCase();
     setSearch(query);
     const filtered = projects.filter((project: Project) => {
-      // Obtenemos los valores con un tipado explícito
       const values: Array<string | number | boolean | null | undefined> = Object.values(project);
       const combined: string = values
         .map((val: string | number | boolean | null | undefined): string => {
@@ -147,11 +136,6 @@ const ProjectListPage = () => {
       return combined.includes(query);
     });
     setFilteredProjects(filtered);
-  };
-
-  const handlePageChange = (newPage: number): void => {
-    if (newPage < 1 || newPage > totalPages) return;
-    setCurrentPage(newPage);
   };
 
   const handleOpenEditModal = (project: Project): void => {
@@ -240,7 +224,7 @@ const ProjectListPage = () => {
         confirmButtonText: "Aceptar",
       }).then((): void => {
         setShowEditModal(false);
-        fetchProjects(currentPage);
+        fetchProjects(); // Volvemos a cargar la lista completa
       });
     } catch (err: unknown) {
       console.error("Error al editar el proyecto:", err);
@@ -288,7 +272,7 @@ const ProjectListPage = () => {
         icon: "success",
         confirmButtonText: "Aceptar",
       });
-      fetchProjects(currentPage);
+      fetchProjects(); // Volvemos a cargar la lista completa tras eliminar
     } catch (err: unknown) {
       console.error("Error al eliminar proyecto:", err);
       setError("No se pudo eliminar el proyecto.");
@@ -322,10 +306,7 @@ const ProjectListPage = () => {
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
-      <div
-        className="d-flex flex-column flex-grow-1"
-        style={{ marginLeft: sidebarWidth, width: "100%" }}
-      >
+      <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "60px" }}>
           <h4 className="fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>
@@ -368,7 +349,7 @@ const ProjectListPage = () => {
                 </CustomButton>
               </div>
 
-              <div className="table-responsive">
+              <div className="table-responsive scrollable-table">
                 <table className="custom-table" style={{ fontFamily: "var(--font-family-base)" }}>
                   <thead>
                     <tr>
@@ -445,30 +426,6 @@ const ProjectListPage = () => {
                   </tbody>
                 </table>
               </div>
-              <div
-                className="d-flex justify-content-center align-items-center mt-3"
-                style={{ fontFamily: "var(--font-family-base)" }}
-              >
-                <CustomButton
-                  variant="backIcon"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                />
-                <span
-                  style={{
-                    fontFamily: "var(--font-family-base)",
-                    fontSize: "var(--font-size-base)",
-                    margin: "0 1.5rem",
-                  }}
-                >
-                  Página {currentPage} de {totalPages}
-                </span>
-                <CustomButton
-                  variant="forwardIcon"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                />
-              </div>
             </>
           )}
 
@@ -489,10 +446,7 @@ const ProjectListPage = () => {
                 role="dialog"
               >
                 <div className="modal-dialog modal-lg" role="document" style={{ width: "100%" }}>
-                  <div
-                    className="modal-content"
-                    style={{ height: "100%", fontFamily: "var(--font-family-base)" }}
-                  >
+                  <div className="modal-content" style={{ height: "100%", fontFamily: "var(--font-family-base)" }}>
                     <div className="modal-header">
                       <h5 className="modal-title">Editar Proyecto #{editProjectData.id}</h5>
                       <button type="button" className="btn-close" onClick={handleCloseModal}></button>
@@ -728,10 +682,11 @@ const ProjectListPage = () => {
               vertical-align: middle;
               border: none;
             }
-            .custom-table th {
-              color: #a0a0a0;
-              font-weight: bold;
+            .custom-table thead th {
               background-color: #fff;
+              position: sticky;
+              top: 0;
+              z-index: 1;
             }
             .custom-table tbody tr {
               background-color: #fff;
@@ -789,6 +744,11 @@ const ProjectListPage = () => {
               color: var(--primary-color);
               font-weight: bold;
               font-family: var(--font-family-base);
+            }
+            /* Hacemos que la tabla sea scrolleable manteniendo los headers fijos */
+            .scrollable-table {
+              max-height: 600px;
+              overflow-y: auto;
             }
           `}</style>
         </div>

@@ -1,6 +1,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Swal from "sweetalert2";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import Link from "next/link";
@@ -12,9 +13,12 @@ const ResetPassword = () => {
     new_password: "",
     confirm_new_password: "",
   });
-
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  // Estados para mostrar/ocultar contraseñas
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("reset_email");
@@ -46,14 +50,22 @@ const ResetPassword = () => {
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.message || "Error al restablecer la contraseña");
       }
-      
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
+
+      // Mostrar alerta de éxito con SweetAlert2 y redireccionar
+      await Swal.fire({
+        icon: "success",
+        title: "Contraseña cambiada exitosamente",
+        showConfirmButton: false,
+        timer: 2000,
+        customClass: {
+          popup: "rounded-swal"
+        }
+      });
+      router.push("/login");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
       setError(message);
@@ -162,31 +174,51 @@ const ResetPassword = () => {
             <label className="form-label fw-bold" style={labelStyle}>
               Nueva contraseña
             </label>
-            <input
-              type="password"
-              className="form-control"
-              name="new_password"
-              placeholder="••••••••"
-              value={formData.new_password}
-              onChange={handleChange}
-              required
-              style={inputStyle}
-            />
+            <div className="input-group">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                className="form-control"
+                name="new_password"
+                placeholder="••••••••"
+                value={formData.new_password}
+                onChange={handleChange}
+                required
+                style={inputStyle}
+              />
+              <button
+                type="button"
+                className="btn"
+                style={{ border: "none", background: "transparent" }}
+                onClick={() => setShowNewPassword(!showNewPassword)}
+              >
+                {showNewPassword ? "Ocultar" : "Mostrar"}
+              </button>
+            </div>
           </div>
           <div style={spacingStyle}>
             <label className="form-label fw-bold" style={labelStyle}>
               Confirmar nueva contraseña
             </label>
-            <input
-              type="password"
-              className="form-control"
-              name="confirm_new_password"
-              placeholder="••••••••"
-              value={formData.confirm_new_password}
-              onChange={handleChange}
-              required
-              style={inputStyle}
-            />
+            <div className="input-group">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                className="form-control"
+                name="confirm_new_password"
+                placeholder="••••••••"
+                value={formData.confirm_new_password}
+                onChange={handleChange}
+                required
+                style={inputStyle}
+              />
+              <button
+                type="button"
+                className="btn"
+                style={{ border: "none", background: "transparent" }}
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? "Ocultar" : "Mostrar"}
+              </button>
+            </div>
           </div>
           <button
             type="submit"
@@ -211,7 +243,9 @@ const ResetPassword = () => {
           </p>
         )}
         <div className="text-center mt-3">
-          <Link href="/login" style={regresarButtonStyle}>← Regresar</Link>
+          <Link href="/login" style={regresarButtonStyle}>
+            ← Regresar
+          </Link>
         </div>
       </div>
 
@@ -226,6 +260,12 @@ const ResetPassword = () => {
         }
         a:hover {
           color: var(--secondary-color);
+        }
+      `}</style>
+      {/* Estilos globales para SweetAlert2 */}
+      <style jsx global>{`
+        .swal2-popup.rounded-swal {
+          border-radius: 1rem !important;
         }
       `}</style>
     </div>

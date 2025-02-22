@@ -47,9 +47,6 @@ const ProjectListStatusEditPage = () => {
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const limit = 5;
 
   // Estados para el modal de edición de status
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -58,10 +55,11 @@ const ProjectListStatusEditPage = () => {
   const statusOptions = ["registrado", "finalizado", "en proceso"];
 
   useEffect(() => {
-    fetchProjects(currentPage);
-  }, [currentPage]);
+    fetchProjects();
+  }, []);
 
-  const fetchProjects = async (page: number): Promise<void> => {
+  // Forzamos un limit muy grande y num_pag=1 para obtener todos los proyectos
+  const fetchProjects = async (): Promise<void> => {
     setLoading(true);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -71,20 +69,21 @@ const ProjectListStatusEditPage = () => {
     }
     try {
       const response = await axios.get(`${constantUrlApiEndpoint}/projects`, {
-        params: { limit, num_pag: page },
+        params: { limit: 999999, num_pag: 1 },
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
       setProjects(response.data.projects);
-      setTotalPages(response.data.total_pages);
-      setCurrentPage(response.data.current_page);
       setFilteredProjects(response.data.projects);
     } catch (err: unknown) {
       console.error("Error al obtener los proyectos:", err);
       if (axios.isAxiosError(err) && err.response) {
-        setError((err.response.data as { detail?: string }).detail || "Error al obtener los proyectos.");
+        setError(
+          (err.response.data as { detail?: string }).detail ||
+            "Error al obtener los proyectos."
+        );
       } else {
         setError("Error de conexión con el servidor.");
       }
@@ -100,11 +99,6 @@ const ProjectListStatusEditPage = () => {
       Object.values(project).join(" ").toLowerCase().includes(query)
     );
     setFilteredProjects(filtered);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || newPage > totalPages) return;
-    setCurrentPage(newPage);
   };
 
   const openStatusModal = (project: Project) => {
@@ -142,7 +136,7 @@ const ProjectListStatusEditPage = () => {
         confirmButtonText: "Aceptar",
       }).then(() => {
         closeStatusModal();
-        fetchProjects(currentPage);
+        fetchProjects(); // Vuelve a cargar todos los proyectos
       });
     } catch (err: unknown) {
       console.error("Error al actualizar el estado del proyecto:", err);
@@ -208,7 +202,7 @@ const ProjectListStatusEditPage = () => {
               <div className="loading-text">Cargando...</div>
             </div>
           ) : (
-            <div className="table-responsive">
+            <div className="table-responsive scrollable-table">
               <table className="custom-table" style={{ fontFamily: "var(--font-family-base)" }}>
                 <thead>
                   <tr>
@@ -260,13 +254,6 @@ const ProjectListStatusEditPage = () => {
               </table>
             </div>
           )}
-          <div className="d-flex justify-content-center align-items-center mt-3">
-            <CustomButton variant="backIcon" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-            <span style={{ margin: "0 1.5rem" }}>
-              Página {currentPage} de {totalPages}
-            </span>
-            <CustomButton variant="forwardIcon" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-          </div>
         </div>
 
         {showStatusModal && (
@@ -337,10 +324,11 @@ const ProjectListStatusEditPage = () => {
             vertical-align: middle;
             border: none;
           }
-          .custom-table th {
-            color: #a0a0a0;
-            font-weight: bold;
+          .custom-table thead th {
             background-color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 1;
           }
           .custom-table tbody tr {
             background-color: #fff;
@@ -391,6 +379,11 @@ const ProjectListStatusEditPage = () => {
             font-size: 1.5rem;
             color: var(--primary-color);
             font-weight: bold;
+          }
+          /* Hacemos que la tabla sea scrolleable manteniendo los headers fijos */
+          .scrollable-table {
+            max-height: 600px;
+            overflow-y: auto;
           }
         `}</style>
       </div>

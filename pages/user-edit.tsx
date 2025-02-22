@@ -284,7 +284,7 @@ const UserEdit = () => {
                   style={{ fontFamily: "var(--font-family-base)" }}
                 >
                   <option value={1}>Administrador</option>
-                  <option value={2}>Usuario</option>
+                  <option value={2}>Operador</option>
                 </select>
                 <small className="text-muted" style={{ fontFamily: "var(--font-family-base)" }}>
                   Selecciona &quot;Administrador&quot; o &quot;Usuario&quot;.

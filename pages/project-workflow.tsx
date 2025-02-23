@@ -14,7 +14,6 @@ import "leaflet/dist/leaflet.css";
 import useAuth from "../src/hooks/useAuth"; // Importa el hook de autenticación
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), { ssr: false });
 
-
 interface MaterialAtributs {
   name: string;
   conductivity: number;
@@ -217,6 +216,15 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   });
   const [allWindowsForDoor, setAllWindowsForDoor] = useState<ElementBase[]>([]);
 
+  // NUEVAS VARIABLES PARA CREAR MATERIAL
+  const [showNewMaterialRow, setShowNewMaterialRow] = useState(false);
+  const [newMaterialData, setNewMaterialData] = useState({
+    name: "",
+    conductivity: 0,
+    specific_heat: 0,
+    density: 0,
+  });
+
   const recintos: Recinto[] = [
     {
       id: 1,
@@ -396,6 +404,54 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     }
   };
 
+  // Función para manejar cambios en el input del nuevo material
+  const handleNewMaterialDataChange = (field: keyof typeof newMaterialData, value: string | number) => {
+    setNewMaterialData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Función para crear un nuevo material
+  const handleCreateMaterial = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        return;
+      }
+      // Se arma el request respetando que el campo "specific heat" lleva espacio.
+      const requestBody = {
+        atributs: {
+          name: newMaterialData.name,
+          density: newMaterialData.density,
+          conductivity: newMaterialData.conductivity,
+          "specific heat": newMaterialData.specific_heat,
+        },
+        name: "string",
+        type: "string"
+      };
+      const url = `${constantUrlApiEndpoint}/constants/create`;
+      const headers = { 
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+        accept: "application/json"
+      };
+      const response = await axios.post(url, requestBody, { headers });
+      if (response.status === 200) {
+        Swal.fire("Material creado", "Se ha creado el material correctamente", "success");
+        // Refrescamos la lista de materiales
+        await fetchMaterialsList();
+        // Ocultamos el modo de creación y limpiamos los inputs
+        setShowNewMaterialRow(false);
+        setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        Swal.fire("Error al crear material", error.response?.data?.detail || error.message, "error");
+      } else {
+        Swal.fire("Error al crear material", "Error desconocido", "error");
+      }
+    }
+  };
+
   const fetchFetchedDetails = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -464,7 +520,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
    * Se ha actualizado para evitar pasar undefined y registrar el id en caso de error.
    */
   const getMaterialNameById = (matId: number | undefined): string => {
-    // Si no se recibió un número, se registra y se retorna "Desconocido"
     if (matId == null) {
       console.log("Se esperaba un número, pero se recibió:", matId);
       return "Desconocido";
@@ -518,8 +573,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   /**
    * IMPORTANTE:
    * Aquí ajustamos la lógica para que primero recargue materiales
-   * y luego obtenga los detalles del proyecto. Así `getMaterialNameById`
-   * no devuelva "Desconocido".
+   * y luego obtenga los detalles del proyecto.
    */
   const handleSaveDetails = async () => {
     if (!createdProjectId) {
@@ -537,13 +591,9 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       await axios.post(url, detailIds, { headers });
 
-      // --- Ajuste aquí ---
       Swal.fire("Detalles guardados", "Detalles agregados correctamente", "success").then(async () => {
-        // 1) Cargamos todos los materiales
         await fetchMaterialsList();
-        // 2) Luego traemos la data de las pestañas
         await fetchStep4TabsData();
-        // 3) Finalmente mostramos las pestañas
         setShowTabsInStep4(true);
       });
     } catch (error: unknown) {
@@ -818,7 +868,6 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                   <tr key={idx}>
                     <td>{item.scantilon_location}</td>
                     <td>{item.name_detail}</td>
-                    {/* Se utiliza getMaterialNameById, utilizando 0 si id_material es undefined */}
                     <td>{getMaterialNameById(item.material_id ?? 0)}</td>
                     <td>{item.layer_thickness}</td>
                   </tr>
@@ -938,7 +987,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
   };
 
   // =================================================
-  // Renderizado final a
+  // Renderizado final
   // =================================================
 
   return (
@@ -1289,8 +1338,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                               color: tabElementosOperables === tab.toLowerCase() ? "var(--primary-color)" : "var(--secondary-color)",
                               border: "none",
                               cursor: "pointer",
-                              borderBottom:
-                                tabElementosOperables === tab.toLowerCase() ? "3px solid var(--primary-color)" : "none",
+                              borderBottom: tabElementosOperables === tab.toLowerCase() ? "3px solid var(--primary-color)" : "none",
                             }}
                             onClick={() => {
                               setTabElementosOperables(tab.toLowerCase());
@@ -1478,10 +1526,12 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
       {showAddMaterialModal && (
         <div className="modal-overlay" onClick={() => setShowAddMaterialModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowAddMaterialModal(false)}>
-              &times;
-            </button>
-            <h4 className="mb-3">Lista de Materiales</h4>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h4 className="mb-3">Lista de Materiales</h4>
+              <CustomButton variant="save" onClick={() => setShowNewMaterialRow((prev) => !prev)}>
+                {showNewMaterialRow ? "Cancelar" : "Crear Material"}
+              </CustomButton>
+            </div>
             <table className="table table-bordered table-striped">
               <thead>
                 <tr>
@@ -1493,6 +1543,51 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
+                {showNewMaterialRow && (
+                  <tr>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Nombre"
+                        value={newMaterialData.name}
+                        onChange={(e) => handleNewMaterialDataChange("name", e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="Conductividad"
+                        value={newMaterialData.conductivity}
+                        onChange={(e) => handleNewMaterialDataChange("conductivity", parseFloat(e.target.value))}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="Calor específico"
+                        value={newMaterialData.specific_heat}
+                        onChange={(e) => handleNewMaterialDataChange("specific_heat", parseFloat(e.target.value))}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="Densidad"
+                        value={newMaterialData.density}
+                        onChange={(e) => handleNewMaterialDataChange("density", parseFloat(e.target.value))}
+                      />
+                    </td>
+                    <td>
+                      <CustomButton variant="save" onClick={handleCreateMaterial}>
+                        <i className="bi bi-plus"></i>
+                      </CustomButton>
+                    </td>
+                  </tr>
+                )}
                 {materialsList.map((mat, idx) => {
                   const { name, conductivity, specific_heat, density } = mat.atributs;
                   return (

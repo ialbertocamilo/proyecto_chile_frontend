@@ -8,6 +8,7 @@ import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
+import useAuth from "../src/hooks/useAuth";
 
 // Interfaces para tipar la información
 interface MaterialAttributes {
@@ -30,14 +31,15 @@ interface Detail {
   id_detail: number;
   scantilon_location: string;
   name_detail?: string;
-  capas?: string;
-  material?: string;
+  // Aquí se usará "capas" para almacenar el id del material seleccionado
+  capas?: number;
   layer_thickness?: number;
 }
 
 interface ElementAttributesDoor {
   u_puerta_opaca: number;
   porcentaje_vidrio: number;
+  ventana_id: number;
   name_ventana: string;
 }
 
@@ -59,78 +61,19 @@ interface Element {
   atributs: ElementAttributes;
 }
 
-const handleFinalSave = (): void => {
-  Swal.fire("Datos guardados", "La información de administración ha sido guardada", "success");
-};
-
 const AdministrationPage: React.FC = () => {
+  // Validar la sesión
+  useAuth();
+  console.log("[AdministrationPage] Página cargada y sesión validada.");
+
   const [sidebarWidth, setSidebarWidth] = useState("300px");
-  // Steps: 3=Materiales, 4=Detalles, 5=Elementos, 6=Tipología de recinto
+  // Steps: 3=Materiales, 4=Detalles, 5=Elementos operables
   const [step, setStep] = useState<number>(3);
 
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
   const [details, setDetails] = useState<Detail[]>([]);
-  const [tabDetailSection, setTabDetailSection] = useState("Techumbre");
-
   const [elementsList, setElementsList] = useState<Element[]>([]);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
-
-  // Datos hardcodeados para ejemplos:
-  const murosDetails = [
-    { id_detail: 1, nombreAbrev: "Muro Base", valorU: 2.90, colorExt: "Intermedio", colorInt: "Intermedio" },
-    { id_detail: 2, nombreAbrev: "Muro ejemplo", valorU: 0.61, colorExt: "Intermedio", colorInt: "Intermedio" },
-  ];
-
-  const techumbreDetails = [
-    { id_detail: 1, nombreAbrev: "Techo Base", valorU: 0.80, colorExt: "Intermedio", colorInt: "Intermedio" },
-    { id_detail: 2, nombreAbrev: "Techo ejemplo", valorU: 0.38, colorExt: "Intermedio", colorInt: "Intermedio" },
-  ];
-
-  const pisosDetails = [
-    { id_detail: 1, nombreAbrev: "Piso Base", valorU: 2.00, aislacion: "—" },
-    { id_detail: 2, nombreAbrev: "Piso ejemplo", valorU: 3.31, aislacion: "—" },
-  ];
-
-  const tipologiaVentilacion = [
-    { codigo: "ES", tipologia: "Espera", caudalMin: 8.80, ida: "IDA2", ocupacion: "Sedentario", caudalImpVentNoct: "-" },
-    { codigo: "AU", tipologia: "Auditorio", caudalMin: 5.28, ida: "IDA3", ocupacion: "Sedentario", caudalImpVentNoct: "-" },
-    { codigo: "BA", tipologia: "Baño", caudalMin: 8.80, ida: "IDA2", ocupacion: "Sedentario", caudalImpVentNoct: "-" },
-    { codigo: "BO", tipologia: "Bodega", caudalMin: 8.80, ida: "IDA2", ocupacion: "Sedentario", caudalImpVentNoct: "-" },
-    { codigo: "KI", tipologia: "Cafetería", caudalMin: 8.80, ida: "IDA2", ocupacion: "Sedentario", caudalImpVentNoct: "-" },
-    { codigo: "CO", tipologia: "Comedores", caudalMin: 8.80, ida: "IDA2", ocupacion: "Sedentario", caudalImpVentNoct: "-" },
-    { codigo: "PA", tipologia: "Pasillos", caudalMin: 8.80, ida: "IDA2", ocupacion: "Sedentario", caudalImpVentNoct: "-" },
-    { codigo: "OF", tipologia: "Oficina", caudalMin: 8.80, ida: "IDA2", ocupacion: "Sedentario", caudalImpVentNoct: "-" },
-  ];
-
-  const iluminacionData = [
-    { codigo: "ES", tipologia: "Espera", potenciaBase: 12.0, estrategia: "Sin estrategia", potenciaPropuesta: 12.0 },
-    { codigo: "AU", tipologia: "Auditorio", potenciaBase: 15.0, estrategia: "Sin estrategia", potenciaPropuesta: 15.0 },
-    { codigo: "BA", tipologia: "Baño", potenciaBase: 10.0, estrategia: "Sin estrategia", potenciaPropuesta: 10.0 },
-    { codigo: "BO", tipologia: "Bodega", potenciaBase: 10.0, estrategia: "Sin estrategia", potenciaPropuesta: 10.0 },
-    { codigo: "KI", tipologia: "Cafetería", potenciaBase: 15.0, estrategia: "Sin estrategia", potenciaPropuesta: 15.0 },
-    { codigo: "CO", tipologia: "Comedores", potenciaBase: 10.0, estrategia: "Sin estrategia", potenciaPropuesta: 10.0 },
-    { codigo: "PA", tipologia: "Pasillos", potenciaBase: 11.0, estrategia: "Sin estrategia", potenciaPropuesta: 11.0 },
-  ];
-
-  const cargasData = [
-    { codigo: "ES", tipologia: "Espera", usuarios: 4.0, calorLatente: 164.0, calorSensible: 12.0, equipos: "-", funcionamiento: "5×2" },
-    { codigo: "AU", tipologia: "Auditorio", usuarios: 0.5, calorLatente: 82.0, calorSensible: 15.0, equipos: "-", funcionamiento: "5×2" },
-    { codigo: "BA", tipologia: "Baño", usuarios: "-", calorLatente: "-", calorSensible: 10.0, equipos: "-", funcionamiento: "5×2" },
-    { codigo: "BO", tipologia: "Bodega", usuarios: "-", calorLatente: "-", calorSensible: 10.0, equipos: 1.5, funcionamiento: "7×0" },
-    { codigo: "KI", tipologia: "Cafetería", usuarios: 10.0, calorLatente: 147.6, calorSensible: 15.0, equipos: 50.0, funcionamiento: "5×2" },
-    { codigo: "CO", tipologia: "Comedores", usuarios: 0.9, calorLatente: 131.2, calorSensible: 10.0, equipos: "-", funcionamiento: "5×2" },
-    { codigo: "PA", tipologia: "Pasillos", usuarios: 4.0, calorLatente: "-", calorSensible: 11.0, equipos: "-", funcionamiento: "5×2" },
-  ];
-
-  const horarioData = [
-    { codigo: "ES", tipologia: "Espera", climatizado: "Sí", hrsDesfase: "-" },
-    { codigo: "AU", tipologia: "Auditorio", climatizado: "Sí", hrsDesfase: "-" },
-    { codigo: "BA", tipologia: "Baño", climatizado: "No", hrsDesfase: "-" },
-    { codigo: "BO", tipologia: "Bodega", climatizado: "No", hrsDesfase: "-" },
-    { codigo: "KI", tipologia: "Cafetería", climatizado: "Sí", hrsDesfase: "-" },
-    { codigo: "CO", tipologia: "Comedores", climatizado: "Sí", hrsDesfase: "-" },
-    { codigo: "PA", tipologia: "Pasillos", climatizado: "No", hrsDesfase: "-" },
-  ];
 
   // ----------------------------
   // Funciones para obtener datos (GET)
@@ -145,9 +88,10 @@ const AdministrationPage: React.FC = () => {
       const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=100`;
       const headers = { Authorization: `Bearer ${token}` };
       const response: AxiosResponse<{ constants: Material[] }> = await axios.get(url, { headers });
+      console.log("[fetchMaterialsList] Materiales recibidos:", response.data);
       setMaterialsList(response.data.constants || []);
     } catch (error: unknown) {
-      console.error("Error al obtener lista de materiales:", error);
+      console.error("[fetchMaterialsList] Error al obtener lista de materiales:", error);
       Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
     }
   };
@@ -162,9 +106,10 @@ const AdministrationPage: React.FC = () => {
       const url = `${constantUrlApiEndpoint}/details`;
       const headers = { Authorization: `Bearer ${token}` };
       const response: AxiosResponse<Detail[]> = await axios.get(url, { headers });
+      console.log("[fetchDetails] Detalles recibidos:", response.data);
       setDetails(response.data || []);
     } catch (error: unknown) {
-      console.error("Error al obtener detalles:", error);
+      console.error("[fetchDetails] Error al obtener detalles:", error);
       Swal.fire("Error", "Error al obtener detalles. Ver consola.", "error");
     }
   };
@@ -179,17 +124,18 @@ const AdministrationPage: React.FC = () => {
       const url = `${constantUrlApiEndpoint}/elements/`;
       const headers = { Authorization: `Bearer ${token}`, Accept: "application/json" };
       const response: AxiosResponse<Element[]> = await axios.get(url, { headers });
+      console.log("[fetchElements] Elementos recibidos:", response.data);
       setElementsList(response.data || []);
     } catch (error: unknown) {
-      console.error("Error al obtener elementos:", error);
+      console.error("[fetchElements] Error al obtener elementos:", error);
       Swal.fire("Error", "Error al obtener elementos. Ver consola.", "error");
     }
   };
 
   // ----------------------------
-  // Estados y funciones para creación de nuevos ítems:
+  // Estados y funciones para creación de nuevos ítems
   // ----------------------------
-  // Para Materiales (Step 3)
+  // Materiales (Step 3)
   const [showCreateMaterialModal, setShowCreateMaterialModal] = useState(false);
   const [newMaterial, setNewMaterial] = useState<MaterialAttributes>({
     name: "",
@@ -199,12 +145,10 @@ const AdministrationPage: React.FC = () => {
   });
 
   const handleCreateMaterial = async () => {
-    // Validación básica: asegúrate de que los campos tengan valor
     if (!newMaterial.name || !newMaterial.conductivity || !newMaterial.specific_heat || !newMaterial.density) {
       Swal.fire("Campos incompletos", "Debes completar todos los campos", "warning");
       return;
     }
-    
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -214,7 +158,6 @@ const AdministrationPage: React.FC = () => {
       const url = `${constantUrlApiEndpoint}/constants/create`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 
-      // Construimos el payload según el ejemplo solicitado
       const payload = {
         atributs: {
           name: newMaterial.name,
@@ -222,32 +165,33 @@ const AdministrationPage: React.FC = () => {
           conductivity: newMaterial.conductivity,
           specific_heat: newMaterial.specific_heat,
         },
-        name: "materials", // siempre materials
-        type: "definition materials" // siempre definition materials
+        name: "materials",
+        type: "definition materials",
       };
 
-      console.log("Payload a enviar:", JSON.stringify(payload, null, 2));
-
+      console.log("[handleCreateMaterial] Payload a enviar:", JSON.stringify(payload, null, 2));
       const response = await axios.post(url, payload, { headers });
-      console.log("Respuesta del servidor:", JSON.stringify(response.data, null, 2));
-
+      console.log("[handleCreateMaterial] Respuesta del servidor:", JSON.stringify(response.data, null, 2));
       Swal.fire("Material creado", "El material fue creado correctamente", "success");
       setShowCreateMaterialModal(false);
       setNewMaterial({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
-      // Recargamos la lista de materiales
       await fetchMaterialsList(1);
-    } catch (error: any) {
-      console.error("Error al crear material:", error.response || error);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("[handleCreateMaterial] Error al crear material:", error.response || error);
+      } else {
+        console.error("[handleCreateMaterial] Error al crear material:", error);
+      }
       Swal.fire("Error", "No se pudo crear el material", "error");
     }
   };
 
-  // Para Detalles (Step 4)
+  // Detalles (Step 4)
   const [showCreateDetailModal, setShowCreateDetailModal] = useState(false);
   const [newDetail, setNewDetail] = useState({
     scantilon_location: "",
     name_detail: "",
-    capas: "",
+    capas: 0,
     layer_thickness: 0,
   });
 
@@ -263,16 +207,15 @@ const AdministrationPage: React.FC = () => {
       await axios.post(url, newDetail, { headers });
       Swal.fire("Detalle creado", "El detalle fue creado correctamente", "success");
       setShowCreateDetailModal(false);
-      setNewDetail({ scantilon_location: "", name_detail: "", capas: "", layer_thickness: 0 });
-      // Actualizamos la lista de detalles:
+      setNewDetail({ scantilon_location: "", name_detail: "", capas: 0, layer_thickness: 0 });
       await fetchDetails();
     } catch (error: unknown) {
-      console.error("Error al crear detalle:", error);
+      console.error("[handleCreateDetail] Error al crear detalle:", error);
       Swal.fire("Error", "No se pudo crear el detalle", "error");
     }
   };
 
-  // Para Elementos operables (Step 5)
+  // Elementos operables (Step 5)
   const [showCreateElementModal, setShowCreateElementModal] = useState(false);
   const [newWindow, setNewWindow] = useState({
     name_element: "",
@@ -289,7 +232,7 @@ const AdministrationPage: React.FC = () => {
     fm: 0,
     u_puerta_opaca: 0,
     porcentaje_vidrio: 0,
-    name_ventana: "",
+    ventana_id: 0,
   });
 
   const handleCreateElement = async () => {
@@ -322,9 +265,11 @@ const AdministrationPage: React.FC = () => {
           u_marco: newDoor.u_marco,
           fm: newDoor.fm,
           atributs: {
+            ventana_id: newDoor.ventana_id,
+            name_ventana:
+              windowsList.find((win) => win.id === newDoor.ventana_id)?.name_element || "",
             u_puerta_opaca: newDoor.u_puerta_opaca,
             porcentaje_vidrio: newDoor.porcentaje_vidrio,
-            name_ventana: newDoor.name_ventana,
           },
         };
       }
@@ -332,17 +277,16 @@ const AdministrationPage: React.FC = () => {
       Swal.fire("Elemento creado", "El elemento fue creado correctamente", "success");
       setShowCreateElementModal(false);
       setNewWindow({ name_element: "", u_marco: 0, fm: 0, u_vidrio: 0, fs_vidrio: 0, frame_type: "", clousure_type: "" });
-      setNewDoor({ name_element: "", u_marco: 0, fm: 0, u_puerta_opaca: 0, porcentaje_vidrio: 0, name_ventana: "" });
-      // Actualizamos la lista de elementos:
+      setNewDoor({ name_element: "", u_marco: 0, fm: 0, u_puerta_opaca: 0, porcentaje_vidrio: 0, ventana_id: 0 });
       await fetchElements();
     } catch (error: unknown) {
-      console.error("Error al crear elemento:", error);
+      console.error("[handleCreateElement] Error al crear elemento:", error);
       Swal.fire("Error", "No se pudo crear el elemento", "error");
     }
   };
 
   // ----------------------------
-  // Efectos para cargar datos según step:
+  // Efectos para cargar datos según step
   // ----------------------------
   useEffect(() => {
     if (step === 3) fetchMaterialsList(1);
@@ -402,6 +346,9 @@ const AdministrationPage: React.FC = () => {
     );
   };
 
+  // Se filtra la lista de elementos para obtener solo ventanas (para el select en Crear Puerta)
+  const windowsList = elementsList.filter((el) => el.type === "window");
+
   // ----------------------------
   // Renderizado principal
   // ----------------------------
@@ -423,7 +370,8 @@ const AdministrationPage: React.FC = () => {
         <div className="mb-3">
           <h1 className="fw-bold">Administrador de Parámetros</h1>
         </div>
-        <div className="card shadow w-100" style={{ overflow: "hidden" }}>
+        {/* Se asigna un minHeight fijo para que el contenedor mantenga el mismo tamaño entre steps */}
+        <div className="card shadow w-100" style={{ overflow: "hidden", minHeight: "600px" }}>
           <div className="card-body p-0">
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
               <div
@@ -438,7 +386,6 @@ const AdministrationPage: React.FC = () => {
                   <SidebarItem stepNumber={3} iconClass="bi bi-file-text" title="Materiales" />
                   <SidebarItem stepNumber={4} iconClass="bi bi-tools" title="Detalles constructivos" />
                   <SidebarItem stepNumber={5} iconClass="bi bi-house" title="Elementos operables" />
-                  <SidebarItem stepNumber={6} iconClass="bi bi-bar-chart" title="Tipología de recinto" />
                 </ul>
               </div>
               <div style={{ flex: 1, padding: "20px" }}>
@@ -481,115 +428,29 @@ const AdministrationPage: React.FC = () => {
                 {/* Step 4: Detalles constructivos */}
                 {step === 4 && (
                   <>
-                    <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
-                      {["Detalles", "Muros", "Techumbre", "Pisos"].map((tab) => (
-                        <li key={tab} style={{ flex: 1 }}>
-                          <button
-                            style={{
-                              width: "100%",
-                              padding: "10px",
-                              backgroundColor: "#fff",
-                              color: tabDetailSection === tab ? "var(--primary-color)" : "var(--secondary-color)",
-                              border: "none",
-                              cursor: "pointer",
-                              borderBottom: tabDetailSection === tab ? "3px solid var(--primary-color)" : "none",
-                            }}
-                            onClick={() => setTabDetailSection(tab)}
-                          >
-                            {tab}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
                     <div className="border p-3 table-container" style={{ maxHeight: "500px", overflowY: "auto" }}>
-                      {tabDetailSection === "Detalles" ? (
-                        <table className="table table-bordered table-striped">
-                          <thead>
-                            <tr>
-                              <th>Ubicación Detalle</th>
-                              <th>Nombre Detalle</th>
-                              <th>Capas / Material</th>
-                              <th>Espesor capa (cm)</th>
+                      <table className="table table-bordered table-striped">
+                        <thead>
+                          <tr>
+                            <th>Ubicación Detalle</th>
+                            <th>Nombre Detalle</th>
+                            <th>Capas / Material</th>
+                            <th>Espesor capa (cm)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {details.map((det: Detail) => (
+                            <tr key={det.id_detail}>
+                              <td>{det.scantilon_location}</td>
+                              <td>{det.name_detail}</td>
+                              <td>{det.capas}</td>
+                              <td>{det.layer_thickness}</td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {details.map((det: Detail) => (
-                              <tr key={det.id_detail}>
-                                <td>{det.scantilon_location}</td>
-                                <td>{det.name_detail}</td>
-                                <td>{det.capas || det.material}</td>
-                                <td>{det.layer_thickness}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : tabDetailSection === "Muros" ? (
-                        <table className="table table-bordered table-striped">
-                          <thead>
-                            <tr>
-                              <th>Nombre Abreviado</th>
-                              <th>Valor U [W/m2K]</th>
-                              <th>Color Exterior</th>
-                              <th>Color Interior</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {murosDetails.map((det) => (
-                              <tr key={det.id_detail}>
-                                <td>{det.nombreAbrev}</td>
-                                <td>{det.valorU}</td>
-                                <td>{det.colorExt}</td>
-                                <td>{det.colorInt}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : tabDetailSection === "Techumbre" ? (
-                        <table className="table table-bordered table-striped">
-                          <thead>
-                            <tr>
-                              <th>Nombre Abreviado</th>
-                              <th>Valor U [W/m2K]</th>
-                              <th>Color Exterior</th>
-                              <th>Color Interior</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {techumbreDetails.map((det) => (
-                              <tr key={det.id_detail}>
-                                <td>{det.nombreAbrev}</td>
-                                <td>{det.valorU}</td>
-                                <td>{det.colorExt}</td>
-                                <td>{det.colorInt}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : tabDetailSection === "Pisos" ? (
-                        <table className="table table-bordered table-striped">
-                          <thead>
-                            <tr>
-                              <th>Nombre Abreviado</th>
-                              <th>Valor U [W/m2K]</th>
-                              <th>Aislación / Aisl [cm]</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {pisosDetails.map((det) => (
-                              <tr key={det.id_detail}>
-                                <td>{det.nombreAbrev}</td>
-                                <td>{det.valorU}</td>
-                                <td>{det.aislacion}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <p>No hay datos para esta pestaña.</p>
-                      )}
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="backIcon" onClick={() => setStep(5)} />
                       <CustomButton variant="save" onClick={() => setShowCreateDetailModal(true)}>
                         Grabar datos
                       </CustomButton>
@@ -681,146 +542,7 @@ const AdministrationPage: React.FC = () => {
                       </table>
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="backIcon" onClick={() => setStep(4)} />
                       <CustomButton variant="save" onClick={() => setShowCreateElementModal(true)}>
-                        Grabar datos
-                      </CustomButton>
-                    </div>
-                  </>
-                )}
-
-                {/* Step 6: Tipología de recinto */}
-                {step === 6 && (
-                  <>
-                    <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
-                      {[
-                        { key: "ventilacion", label: "Ventilación y caudales" },
-                        { key: "iluminacion", label: "Iluminación" },
-                        { key: "cargas", label: "Cargas internas" },
-                        { key: "horario", label: "Horario y Clima" },
-                      ].map((tab) => (
-                        <li key={tab.key} style={{ flex: 1 }}>
-                          <button
-                            style={{
-                              width: "100%",
-                              padding: "10px",
-                              backgroundColor: "#fff",
-                              color: tabDetailSection === tab.key ? "var(--primary-color)" : "var(--secondary-color)",
-                              border: "none",
-                              cursor: "pointer",
-                              borderBottom: tabDetailSection === tab.key ? "3px solid var(--primary-color)" : "none",
-                            }}
-                            onClick={() => setTabDetailSection(tab.key)}
-                          >
-                            {tab.label}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="tab-content border border-top-0 p-3 table-container" style={{ maxHeight: "500px", overflowY: "auto" }}>
-                      {tabDetailSection === "ventilacion" ? (
-                        <table className="table table-bordered table-striped">
-                          <thead>
-                            <tr>
-                              <th>Código de Recinto</th>
-                              <th>Tipología de Recinto</th>
-                              <th>Caudal Min Salubridad R-pers [L/s]</th>
-                              <th>IDA</th>
-                              <th>Ocupación</th>
-                              <th>Caudal Imp Vent Noct [1/h]</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {tipologiaVentilacion.map((rec, idx) => (
-                              <tr key={idx}>
-                                <td>{rec.codigo}</td>
-                                <td>{rec.tipologia}</td>
-                                <td>{rec.caudalMin}</td>
-                                <td>{rec.ida}</td>
-                                <td>{rec.ocupacion}</td>
-                                <td>{rec.caudalImpVentNoct}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : tabDetailSection === "iluminacion" ? (
-                        <table className="table table-bordered table-striped">
-                          <thead>
-                            <tr>
-                              <th>Código de Recinto</th>
-                              <th>Tipología de Recinto</th>
-                              <th>Potencia Base [W/m2]</th>
-                              <th>Estrategia</th>
-                              <th>Potencia Propuesta [W/m2]</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {iluminacionData.map((rec, idx) => (
-                              <tr key={idx}>
-                                <td>{rec.codigo}</td>
-                                <td>{rec.tipologia}</td>
-                                <td>{rec.potenciaBase}</td>
-                                <td>{rec.estrategia}</td>
-                                <td>{rec.potenciaPropuesta}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : tabDetailSection === "cargas" ? (
-                        <table className="table table-bordered table-striped">
-                          <thead>
-                            <tr>
-                              <th>Código de Recinto</th>
-                              <th>Tipología de Recinto</th>
-                              <th>Usuarios [m2/pers]</th>
-                              <th>Calor Latente [W/pers]</th>
-                              <th>Calor Sensible [W/pers]</th>
-                              <th>Equipos [W/m2]</th>
-                              <th>Funcionamiento Semanal</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {cargasData.map((rec, idx) => (
-                              <tr key={idx}>
-                                <td>{rec.codigo}</td>
-                                <td>{rec.tipologia}</td>
-                                <td>{rec.usuarios}</td>
-                                <td>{rec.calorLatente}</td>
-                                <td>{rec.calorSensible}</td>
-                                <td>{rec.equipos}</td>
-                                <td>{rec.funcionamiento}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : tabDetailSection === "horario" ? (
-                        <table className="table table-bordered table-striped">
-                          <thead>
-                            <tr>
-                              <th>Código de Recinto</th>
-                              <th>Tipología de Recinto</th>
-                              <th>Climatizado Si/No</th>
-                              <th>Hrs Desfase Clima (Inv)</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {horarioData.map((rec, idx) => (
-                              <tr key={idx}>
-                                <td>{rec.codigo}</td>
-                                <td>{rec.tipologia}</td>
-                                <td>{rec.climatizado}</td>
-                                <td>{rec.hrsDesfase}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <p>No hay datos para esta pestaña.</p>
-                      )}
-                    </div>
-                    <div className="mt-4 text-end">
-                      <CustomButton variant="backIcon" onClick={() => setStep(5)} />
-                      <CustomButton variant="save" onClick={handleFinalSave}>
                         Grabar datos
                       </CustomButton>
                     </div>
@@ -855,7 +577,9 @@ const AdministrationPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={newMaterial.conductivity || 0}
-                onChange={(e) => setNewMaterial((prev) => ({ ...prev, conductivity: parseFloat(e.target.value) }))}
+                onChange={(e) =>
+                  setNewMaterial((prev) => ({ ...prev, conductivity: parseFloat(e.target.value) }))
+                }
               />
             </div>
             <div className="mb-3">
@@ -864,7 +588,9 @@ const AdministrationPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={newMaterial.specific_heat || 0}
-                onChange={(e) => setNewMaterial((prev) => ({ ...prev, specific_heat: parseFloat(e.target.value) }))}
+                onChange={(e) =>
+                  setNewMaterial((prev) => ({ ...prev, specific_heat: parseFloat(e.target.value) }))
+                }
               />
             </div>
             <div className="mb-3">
@@ -873,11 +599,12 @@ const AdministrationPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={newMaterial.density || 0}
-                onChange={(e) => setNewMaterial((prev) => ({ ...prev, density: parseFloat(e.target.value) }))}
+                onChange={(e) =>
+                  setNewMaterial((prev) => ({ ...prev, density: parseFloat(e.target.value) }))
+                }
               />
             </div>
             <div className="d-flex justify-content-end gap-2">
-              <CustomButton variant="backIcon" onClick={() => setShowCreateMaterialModal(false)} />
               <CustomButton variant="save" onClick={handleCreateMaterial}>
                 Guardar Material
               </CustomButton>
@@ -886,7 +613,7 @@ const AdministrationPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal para crear Detalle (Step 4) */}
+      {/* Modal para crear Detalle Constructivo (Step 4) */}
       {showCreateDetailModal && (
         <div className="modal-overlay" onClick={() => setShowCreateDetailModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -896,12 +623,18 @@ const AdministrationPage: React.FC = () => {
             <h4 className="mb-3">Crear Detalle Constructivo</h4>
             <div className="mb-3">
               <label className="form-label">Ubicación Detalle</label>
-              <input
-                type="text"
+              <select
                 className="form-control"
                 value={newDetail.scantilon_location}
-                onChange={(e) => setNewDetail((prev) => ({ ...prev, scantilon_location: e.target.value }))}
-              />
+                onChange={(e) =>
+                  setNewDetail((prev) => ({ ...prev, scantilon_location: e.target.value }))
+                }
+              >
+                <option value="">Seleccione una opción</option>
+                <option value="Techo">Techo</option>
+                <option value="Muro">Muro</option>
+                <option value="Piso">Piso</option>
+              </select>
             </div>
             <div className="mb-3">
               <label className="form-label">Nombre Detalle</label>
@@ -914,12 +647,20 @@ const AdministrationPage: React.FC = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Capas / Material</label>
-              <input
-                type="text"
+              <select
                 className="form-control"
                 value={newDetail.capas}
-                onChange={(e) => setNewDetail((prev) => ({ ...prev, capas: e.target.value }))}
-              />
+                onChange={(e) =>
+                  setNewDetail((prev) => ({ ...prev, capas: parseInt(e.target.value) }))
+                }
+              >
+                <option value={0}>Seleccione un material</option>
+                {materialsList.map((mat) => (
+                  <option key={mat.id} value={mat.id}>
+                    {mat.atributs?.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="mb-3">
               <label className="form-label">Espesor capa (cm)</label>
@@ -931,7 +672,6 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="d-flex justify-content-end gap-2">
-              <CustomButton variant="backIcon" onClick={() => setShowCreateDetailModal(false)} />
               <CustomButton variant="save" onClick={handleCreateDetail}>
                 Guardar Detalle
               </CustomButton>
@@ -956,7 +696,9 @@ const AdministrationPage: React.FC = () => {
                     type="text"
                     className="form-control"
                     value={newWindow.name_element}
-                    onChange={(e) => setNewWindow((prev) => ({ ...prev, name_element: e.target.value }))}
+                    onChange={(e) =>
+                      setNewWindow((prev) => ({ ...prev, name_element: e.target.value }))
+                    }
                   />
                 </div>
                 <div className="mb-3">
@@ -965,7 +707,9 @@ const AdministrationPage: React.FC = () => {
                     type="number"
                     className="form-control"
                     value={newWindow.u_vidrio}
-                    onChange={(e) => setNewWindow((prev) => ({ ...prev, u_vidrio: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setNewWindow((prev) => ({ ...prev, u_vidrio: parseFloat(e.target.value) }))
+                    }
                   />
                 </div>
                 <div className="mb-3">
@@ -974,26 +718,46 @@ const AdministrationPage: React.FC = () => {
                     type="number"
                     className="form-control"
                     value={newWindow.fs_vidrio}
-                    onChange={(e) => setNewWindow((prev) => ({ ...prev, fs_vidrio: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setNewWindow((prev) => ({ ...prev, fs_vidrio: parseFloat(e.target.value) }))
+                    }
                   />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Tipo Cierre</label>
-                  <input
-                    type="text"
+                  <select
                     className="form-control"
                     value={newWindow.clousure_type}
-                    onChange={(e) => setNewWindow((prev) => ({ ...prev, clousure_type: e.target.value }))}
-                  />
+                    onChange={(e) =>
+                      setNewWindow((prev) => ({ ...prev, clousure_type: e.target.value }))
+                    }
+                  >
+                    <option value="">Seleccione una opción</option>
+                    <option value="Abatir">Abatir</option>
+                    <option value="Corredera">Corredera</option>
+                    <option value="Guillotina">Guillotina</option>
+                    <option value="Proyectante">Proyectante</option>
+                    <option value="Fija">Fija</option>
+                  </select>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Tipo Marco</label>
-                  <input
-                    type="text"
+                  <select
                     className="form-control"
                     value={newWindow.frame_type}
-                    onChange={(e) => setNewWindow((prev) => ({ ...prev, frame_type: e.target.value }))}
-                  />
+                    onChange={(e) =>
+                      setNewWindow((prev) => ({ ...prev, frame_type: e.target.value }))
+                    }
+                  >
+                    <option value="">Seleccione una opción</option>
+                    <option value="Madera Sin RPT">Madera Sin RPT</option>
+                    <option value="PVC Sin RPT">PVC Sin RPT</option>
+                    <option value="Metalico Sin RPT">Metalico Sin RPT</option>
+                    <option value="Madera Con RPT">Madera Con RPT</option>
+                    <option value="PVC Con RPT">PVC Con RPT</option>
+                    <option value="Metalico Con RPT">Metalico Con RPT</option>
+                    <option value="Fierro">Fierro</option>
+                  </select>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">U Marco [W/m2K]</label>
@@ -1001,7 +765,9 @@ const AdministrationPage: React.FC = () => {
                     type="number"
                     className="form-control"
                     value={newWindow.u_marco}
-                    onChange={(e) => setNewWindow((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setNewWindow((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))
+                    }
                   />
                 </div>
                 <div className="mb-3">
@@ -1010,7 +776,9 @@ const AdministrationPage: React.FC = () => {
                     type="number"
                     className="form-control"
                     value={newWindow.fm}
-                    onChange={(e) => setNewWindow((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setNewWindow((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))
+                    }
                   />
                 </div>
               </>
@@ -1023,7 +791,9 @@ const AdministrationPage: React.FC = () => {
                     type="text"
                     className="form-control"
                     value={newDoor.name_element}
-                    onChange={(e) => setNewDoor((prev) => ({ ...prev, name_element: e.target.value }))}
+                    onChange={(e) =>
+                      setNewDoor((prev) => ({ ...prev, name_element: e.target.value }))
+                    }
                   />
                 </div>
                 <div className="mb-3">
@@ -1032,17 +802,27 @@ const AdministrationPage: React.FC = () => {
                     type="number"
                     className="form-control"
                     value={newDoor.u_puerta_opaca}
-                    onChange={(e) => setNewDoor((prev) => ({ ...prev, u_puerta_opaca: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setNewDoor((prev) => ({ ...prev, u_puerta_opaca: parseFloat(e.target.value) }))
+                    }
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Nombre Ventana</label>
-                  <input
-                    type="text"
+                  <label className="form-label">Seleccione Ventana</label>
+                  <select
                     className="form-control"
-                    value={newDoor.name_ventana}
-                    onChange={(e) => setNewDoor((prev) => ({ ...prev, name_ventana: e.target.value }))}
-                  />
+                    value={newDoor.ventana_id}
+                    onChange={(e) =>
+                      setNewDoor((prev) => ({ ...prev, ventana_id: parseInt(e.target.value) }))
+                    }
+                  >
+                    <option value={0}>Seleccione una ventana</option>
+                    {windowsList.map((win) => (
+                      <option key={win.id} value={win.id}>
+                        {win.name_element}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">% Vidrio</label>
@@ -1050,7 +830,9 @@ const AdministrationPage: React.FC = () => {
                     type="number"
                     className="form-control"
                     value={newDoor.porcentaje_vidrio}
-                    onChange={(e) => setNewDoor((prev) => ({ ...prev, porcentaje_vidrio: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setNewDoor((prev) => ({ ...prev, porcentaje_vidrio: parseFloat(e.target.value) }))
+                    }
                   />
                 </div>
                 <div className="mb-3">
@@ -1059,7 +841,9 @@ const AdministrationPage: React.FC = () => {
                     type="number"
                     className="form-control"
                     value={newDoor.u_marco}
-                    onChange={(e) => setNewDoor((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setNewDoor((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))
+                    }
                   />
                 </div>
                 <div className="mb-3">
@@ -1068,13 +852,14 @@ const AdministrationPage: React.FC = () => {
                     type="number"
                     className="form-control"
                     value={newDoor.fm}
-                    onChange={(e) => setNewDoor((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setNewDoor((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))
+                    }
                   />
                 </div>
               </>
             )}
             <div className="d-flex justify-content-end gap-2">
-              <CustomButton variant="backIcon" onClick={() => setShowCreateElementModal(false)} />
               <CustomButton variant="save" onClick={handleCreateElement}>
                 Guardar Elemento
               </CustomButton>
@@ -1124,11 +909,12 @@ const AdministrationPage: React.FC = () => {
           text-align: center;
           vertical-align: middle;
         }
-        /* Encabezados fijos */
+        /* Encabezados fijos: fondo blanco y texto en el color primario */
         .table thead th {
           position: sticky;
           top: 0;
           background-color: #fff;
+          color: var(--primary-color);
           z-index: 2;
         }
         .table-striped tbody tr:nth-child(odd) {

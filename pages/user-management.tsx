@@ -6,6 +6,7 @@ import CustomButton from "../src/components/common/CustomButton";
 import "../public/assets/css/globals.css";
 import Swal from "sweetalert2";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import useAuth from "../src/hooks/useAuth";
 
 interface User {
   id: number;
@@ -16,31 +17,34 @@ interface User {
   birthdate: string;
   country: string;
   ubigeo: string;
-  role_id: number; // Se actualiza el campo a role_id
+  role_id: number;
 }
 
 const UserManagement = () => {
+  // Validación de sesión
+  useAuth();
+  console.log("[UserManagement] Página cargada y sesión validada.");
+
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
   const fetchUsers = useCallback(async () => {
-    console.log("Fetching users from backend...");
+    console.log("[fetchUsers] Fetching users from backend...");
     const token = localStorage.getItem("token");
     if (!token) {
-      console.error("No se encontró un token en localStorage.");
+      console.error("[fetchUsers] No se encontró un token en localStorage.");
       return;
     }
     try {
       const params = new URLSearchParams();
-      // Se establece un límite alto para obtener todos los usuarios
       params.append("limit", "500");
       if (searchQuery.trim() !== "") {
         params.append("search", searchQuery);
       }
       const url = `${constantUrlApiEndpoint}/users/?${params.toString()}`;
-      console.log("URL de usuarios:", url);
+      console.log("[fetchUsers] URL de usuarios:", url);
       const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -48,16 +52,16 @@ const UserManagement = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("Response status:", response.status);
+      console.log("[fetchUsers] Response status:", response.status);
       if (!response.ok) {
         throw new Error("Error al obtener los usuarios");
       }
       const data = await response.json();
-      console.log("Usuarios recibidos:", data);
+      console.log("[fetchUsers] Usuarios recibidos:", data);
       setUsers(Array.isArray(data.users) ? data.users : []);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
-      console.error("Error en fetchUsers:", message);
+      console.error("[fetchUsers] Error en fetchUsers:", message);
     }
   }, [searchQuery]);
 
@@ -67,6 +71,7 @@ const UserManagement = () => {
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
+    console.log("[handleSearch] Buscando:", query);
     setSearchQuery(query);
   };
 
@@ -88,6 +93,7 @@ const UserManagement = () => {
           return;
         }
         try {
+          console.log("[handleDeleteUser] Eliminando usuario con ID:", id);
           const response = await fetch(
             `${constantUrlApiEndpoint}/user/${id}/delete`,
             {
@@ -108,7 +114,8 @@ const UserManagement = () => {
           );
           fetchUsers();
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : "Error desconocido";
+          const message =
+            err instanceof Error ? err.message : "Error desconocido";
           Swal.fire("Error", message, "error");
         }
       }
@@ -116,13 +123,49 @@ const UserManagement = () => {
   };
 
   const handleEditUser = (user: User) => {
-    console.log("Editando usuario:", user);
+    console.log("[handleEditUser] Editando usuario:", user);
     router.push(`/user-edit?id=${user.id}`);
   };
 
-  // Función para traducir el valor numérico del rol a texto usando role_id
+  // Función para traducir el valor numérico del rol a texto
   const getRoleText = (role_id: number) => {
     return role_id === 1 ? "Administrador" : role_id === 2 ? "Operador" : "Desconocido";
+  };
+
+  // Función para manejar el cambio de rol desde el desplegable
+  const handleRoleChange = async (e: ChangeEvent<HTMLSelectElement>, userId: number) => {
+    const newRoleId = parseInt(e.target.value);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire("Error", "No se encontró token", "error");
+      return;
+    }
+    try {
+      console.log("[handleRoleChange] Actualizando rol del usuario con ID:", userId, "a", newRoleId);
+      const response = await fetch(`${constantUrlApiEndpoint}/user/${userId}/update`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          role_id: newRoleId,
+          active: true,
+          is_deleted: false,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error("Error al actualizar el rol del usuario");
+      }
+      const data = await response.json();
+      console.log("[handleRoleChange] Respuesta:", data);
+      Swal.fire("Actualizado", `Usuario actualizado al rol de ${getRoleText(newRoleId)}`, "success");
+      // Actualizamos la lista de usuarios
+      fetchUsers();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      Swal.fire("Error", message, "error");
+    }
   };
 
   return (
@@ -192,7 +235,21 @@ const UserManagement = () => {
                       <td>{u.number_phone}</td>
                       <td>{u.country}</td>
                       <td>{u.ubigeo}</td>
-                      <td>{getRoleText(u.role_id)}</td>
+                      <td>
+                        <select
+                          value={u.role_id}
+                          onChange={(e) => handleRoleChange(e, u.id)}
+                          style={{
+                            padding: "0.3rem",
+                            border: "none",
+                            outline: "none",
+                            background: "transparent",
+                          }}
+                        >
+                          <option value="1">Administrador</option>
+                          <option value="2">Operador</option>
+                        </select>
+                      </td>
                       <td className="text-center">
                         <div className="action-btn-group">
                           <CustomButton

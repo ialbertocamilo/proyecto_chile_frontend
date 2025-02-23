@@ -6,6 +6,7 @@ import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import useAuth from "../src/hooks/useAuth";
 
 interface UserFormData {
   name: string;
@@ -21,6 +22,10 @@ interface UserFormData {
 }
 
 const UserCreate = () => {
+  // Validar sesión
+  useAuth();
+  console.log("[UserCreate] Página cargada y sesión validada.");
+
   const router = useRouter();
   const [userData, setUserData] = useState<UserFormData>({
     name: "",
@@ -38,7 +43,10 @@ const UserCreate = () => {
   const [error, setError] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    console.log(`[handleChange] ${e.target.name} cambiado a:`, e.target.value);
     setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
@@ -102,7 +110,7 @@ const UserCreate = () => {
         role_id: Number(role_id)
       };
 
-      console.log("Enviando datos al backend:", bodyToSend);
+      console.log("[handleSubmit] Enviando datos al backend:", bodyToSend);
 
       const resp = await fetch(`${constantUrlApiEndpoint}/register-admin`, {
         method: "POST",
@@ -115,7 +123,7 @@ const UserCreate = () => {
 
       if (!resp.ok) {
         const errorData = await resp.json();
-        console.error("Servidor devolvió un error:", errorData);
+        console.error("[handleSubmit] Servidor devolvió un error:", errorData);
         throw new Error(
           errorData.detail || errorData.message || "No se pudo crear el usuario"
         );
@@ -130,7 +138,7 @@ const UserCreate = () => {
       router.push("/user-management");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error al crear usuario";
-      console.error("Error en handleSubmit:", message);
+      console.error("[handleSubmit] Error:", message);
       setError(message);
       if (
         message.toLowerCase().includes("correo") ||

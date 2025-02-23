@@ -11,7 +11,7 @@ import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
-
+import useAuth from "../src/hooks/useAuth"; // Importa el hook de autenticación
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), { ssr: false });
 
 
@@ -142,13 +142,14 @@ interface TabElement {
 // =================================================
 
 const ProjectCompleteWorkflowPage: React.FC = () => {
+
+  useAuth();
+  console.log("[ProjectCompleteWorkflowPage] Página cargada y sesión validada.");
   const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [step, setStep] = useState<number>(1);
   const [createdProjectId, setCreatedProjectId] = useState<number | null>(null);
-
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
   const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
-
   const [formData, setFormData] = useState<FormData>({
     name_project: "",
     owner_name: "",
@@ -166,11 +167,9 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
     longitude: 0,
   });
   const [locationSearch, setLocationSearch] = useState("");
-
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
   const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([]);
   const [showAddMaterialModal, setShowAddMaterialModal] = useState(false);
-
   const [details, setDetails] = useState<Detail[]>([]);
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [showSelectDetailModal, setShowSelectDetailModal] = useState(false);

@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
-import Swal from "sweetalert2"; 
+import Swal from "sweetalert2";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
+import useAuth from "../src/hooks/useAuth";
 
 type User = {
   id: number;
@@ -17,21 +18,25 @@ type User = {
 };
 
 const UserEdit = () => {
+  // Validación de sesión
+  useAuth();
+  console.log("[UserEdit] Página cargada y sesión validada.");
+
   const router = useRouter();
-  const { id } = router.query; 
+  const { id } = router.query;
 
   const [user, setUser] = useState<User | null>(null);
   const [roleId, setRoleId] = useState<number>(0);
   const [active, setActive] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
   const fetchUser = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+      console.log("[fetchUser] Obteniendo datos del usuario...");
 
       const token = localStorage.getItem("token");
       if (!token) {
@@ -49,16 +54,16 @@ const UserEdit = () => {
         }
       );
 
-      console.log("Response status (GET users):", response.status);
+      console.log("[fetchUser] Response status (GET users):", response.status);
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Response error text (GET users):", errorText);
+        console.error("[fetchUser] Response error text:", errorText);
         throw new Error("Error al obtener los usuarios");
       }
 
       const data = await response.json();
-      console.log("Respuesta completa:", data);
-      
+      console.log("[fetchUser] Respuesta completa:", data);
+
       const usersArray: User[] =
         data.users && Array.isArray(data.users)
           ? data.users
@@ -70,12 +75,13 @@ const UserEdit = () => {
       if (!foundUser) {
         throw new Error("No se encontró información del usuario.");
       }
+      console.log("[fetchUser] Usuario encontrado:", foundUser);
       setUser(foundUser);
       setRoleId(foundUser.role_id || 0);
       setActive(foundUser.active ?? true);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
-      console.error("Fetch user error:", message);
+      console.error("[fetchUser] Fetch user error:", message);
       setError(message);
     } finally {
       setLoading(false);
@@ -105,7 +111,7 @@ const UserEdit = () => {
         active: active,
       };
 
-      console.log("Payload to update:", payload);
+      console.log("[handleSubmit] Payload to update:", payload);
 
       const response = await fetch(`${constantUrlApiEndpoint}/user/${id}/update`, {
         method: "PUT",
@@ -116,10 +122,10 @@ const UserEdit = () => {
         body: JSON.stringify(payload),
       });
 
-      console.log("Response status (PUT update):", response.status);
+      console.log("[handleSubmit] Response status (PUT update):", response.status);
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Update error response:", errorData);
+        console.error("[handleSubmit] Update error response:", errorData);
         const errorMsg =
           typeof errorData.detail === "string"
             ? errorData.detail
@@ -138,7 +144,7 @@ const UserEdit = () => {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
       setError(message);
-      console.error("Handle submit error:", message);
+      console.error("[handleSubmit] Handle submit error:", message);
       Swal.fire({
         title: "Error",
         text: message,
@@ -244,7 +250,9 @@ const UserEdit = () => {
               </CustomButton>
             </div>
           </div>
-          {loading && <p style={{ fontFamily: "var(--font-family-base)" }}>Cargando...</p>}
+          {loading && (
+            <p style={{ fontFamily: "var(--font-family-base)" }}>Cargando...</p>
+          )}
           {error && (
             <p className="text-danger" style={{ fontFamily: "var(--font-family-base)" }}>
               {error}
@@ -304,7 +312,11 @@ const UserEdit = () => {
               </div>
             </form>
           ) : (
-            !loading && <p style={{ fontFamily: "var(--font-family-base)" }}>No se encontró información del usuario.</p>
+            !loading && (
+              <p style={{ fontFamily: "var(--font-family-base)" }}>
+                No se encontró información del usuario.
+              </p>
+            )
           )}
         </div>
       </div>

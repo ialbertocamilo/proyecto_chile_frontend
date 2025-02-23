@@ -7,6 +7,7 @@ import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
+import useAuth from "../src/hooks/useAuth";
 
 const modalWidth = "90%";
 const modalHeight = "auto";
@@ -67,6 +68,10 @@ const initialProject: Project = {
 };
 
 const ProjectListPage = () => {
+  // Validación de sesión mediante useAuth
+  useAuth();
+  console.log("[ProjectListPage] Página cargada y sesión validada.");
+
   const router = useRouter();
   const [sidebarWidth, setSidebarWidth] = useState<string>("300px");
 
@@ -86,13 +91,13 @@ const ProjectListPage = () => {
     setLoading(true);
     const token: string | null = localStorage.getItem("token");
     if (!token) {
-      console.error("No se encontró un token en localStorage.");
+      console.error("[fetchProjects] No se encontró un token en localStorage.");
       setError("No estás autenticado. Inicia sesión nuevamente.");
       setLoading(false);
       return;
     }
     try {
-      console.log("📡 Obteniendo proyectos...");
+      console.log("[fetchProjects] 📡 Obteniendo proyectos...");
       // Forzamos un limit muy grande y num_pag=1 para obtener todos los proyectos
       const response = await axios.get<{ projects: Project[] }>(
         `${constantUrlApiEndpoint}/projects`,
@@ -104,11 +109,11 @@ const ProjectListPage = () => {
           },
         }
       );
-      console.log("Proyectos recibidos:", response.data);
+      console.log("[fetchProjects] Proyectos recibidos:", response.data);
       setProjects(response.data.projects);
       setFilteredProjects(response.data.projects);
     } catch (err: unknown) {
-      console.error("Error al obtener los proyectos:", err);
+      console.error("[fetchProjects] Error al obtener los proyectos:", err);
       if (axios.isAxiosError(err) && err.response) {
         const errorResponse = err.response.data as ErrorResponse;
         setError(errorResponse.detail || "Error al obtener los proyectos.");
@@ -139,6 +144,7 @@ const ProjectListPage = () => {
   };
 
   const handleOpenEditModal = (project: Project): void => {
+    console.log("[handleOpenEditModal] Abriendo modal para editar proyecto:", project.id);
     const dataToEdit: Project = {
       id: project.id,
       country: project.country || "",
@@ -211,6 +217,7 @@ const ProjectListPage = () => {
         longitude: Number(editProjectData.longitude),
       };
 
+      console.log("[handleEditSubmit] Enviando actualización para el proyecto:", updatedData);
       await axios.put<void>(url, updatedData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -227,7 +234,7 @@ const ProjectListPage = () => {
         fetchProjects(); // Volvemos a cargar la lista completa
       });
     } catch (err: unknown) {
-      console.error("Error al editar el proyecto:", err);
+      console.error("[handleEditSubmit] Error al editar el proyecto:", err);
       setError("Ocurrió un error al editar el proyecto.");
       Swal.fire({
         title: "Error",
@@ -274,7 +281,7 @@ const ProjectListPage = () => {
       });
       fetchProjects(); // Volvemos a cargar la lista completa tras eliminar
     } catch (err: unknown) {
-      console.error("Error al eliminar proyecto:", err);
+      console.error("[handleDelete] Error al eliminar proyecto:", err);
       setError("No se pudo eliminar el proyecto.");
       Swal.fire({
         title: "Error",

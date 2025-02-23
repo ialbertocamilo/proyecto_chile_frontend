@@ -14,6 +14,7 @@ const Register = () => {
     birthdate: "",
     country: "",
     ubigeo: "",
+    proffesion: "",
     password: "",
     confirm_password: "",
     acceptTerms: false,
@@ -28,13 +29,18 @@ const Register = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
+
+    // Validación de campos obligatorios
     if (
       !formData.name ||
       !formData.lastname ||
@@ -45,10 +51,17 @@ const Register = () => {
       setError("Todos los campos obligatorios deben estar completos.");
       return;
     }
+    // Validación de la longitud de la contraseña
+    if (formData.password.length < 8 || formData.password.length > 20) {
+      setError("La contraseña debe tener mínimo 8 caracteres y máximo 20.");
+      return;
+    }
+    // Validación de coincidencia de contraseñas
     if (formData.password !== formData.confirm_password) {
       setError("Las contraseñas no coinciden.");
       return;
     }
+
     setLoading(true);
     const requestBody = {
       name: formData.name,
@@ -58,11 +71,10 @@ const Register = () => {
       birthdate: formData.birthdate,
       country: formData.country,
       ubigeo: formData.ubigeo,
+      proffesion: formData.proffesion,
       password: formData.password,
       confirm_password: formData.confirm_password,
     };
-
-    console.log("Enviando datos al backend:", requestBody);
 
     try {
       const response = await fetch(`${constantUrlApiEndpoint}/register`, {
@@ -71,7 +83,7 @@ const Register = () => {
         body: JSON.stringify(requestBody),
       });
       const data = await response.json();
-      console.log("Respuesta del backend:", data);
+
       if (!response.ok) {
         throw new Error(data.message || "Error al registrar usuario.");
       }
@@ -79,27 +91,26 @@ const Register = () => {
       setTimeout(() => {
         router.push("/login");
       }, 500);
-    } catch (err: unknown) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : "Error desconocido";
-      console.error("Error al registrar:", message);
       setError(message);
     } finally {
       setLoading(false);
     }
   };
 
+  // Estilos
+  const leftSpacingStyle = { marginBottom: "0.5rem" };
+  const rightSpacingStyle = { marginBottom: "0.5rem" };
+  const labelStyle = {
+    marginBottom: "0.1rem",
+    fontFamily: "var(--font-family-base)",
+  };
   const inputStyle = {
     border: "2px solid var(--muted-text)",
     borderRadius: "0.5rem",
     margin: 0,
     padding: "0.5rem",
-    fontFamily: "var(--font-family-base)",
-  };
-
-  const leftSpacingStyle = { marginBottom: "0.1rem" };
-  const rightSpacingStyle = { marginBottom: "0.5rem" };
-  const labelStyle = {
-    marginBottom: "0.1rem",
     fontFamily: "var(--font-family-base)",
   };
   const toggleStyle = {
@@ -167,6 +178,7 @@ const Register = () => {
         )}
         <form onSubmit={handleSubmit}>
           <div className="row align-items-stretch">
+            {/* Sección Mi perfil (lado izquierdo) */}
             <div className="col-md-5 border-end pe-3" style={{ display: "flex" }}>
               <div style={borderedContainerStyle} className="w-100">
                 <div>
@@ -175,7 +187,11 @@ const Register = () => {
                   </label>
                   <div
                     className="d-flex align-items-center"
-                    style={{ gap: "0.1rem", marginBottom: "0.1rem" }}
+                    style={{
+                      gap: "1rem",
+                      marginBottom: "0.1rem",
+                      textAlign: "left",
+                    }}
                   >
                     <div
                       style={{
@@ -193,8 +209,15 @@ const Register = () => {
                     >
                       <i className="bi bi-person-fill"></i>
                     </div>
-                    <div>
-                      <div style={{ fontWeight: "bold", color: "#000", ...labelStyle }}>
+                    <div style={{ textAlign: "left" }}>
+                      <div
+                        style={{
+                          fontWeight: "bold",
+                          color: "#000",
+                          ...labelStyle,
+                          marginBottom: "0.2rem",
+                        }}
+                      >
                         {formData.name || "Nombre"} {formData.lastname || "Apellido"}
                       </div>
                       <div
@@ -204,7 +227,7 @@ const Register = () => {
                           fontFamily: "var(--font-family-base)",
                         }}
                       >
-                        Ingeniero Civil
+                        {formData.proffesion || "Profesión"}
                       </div>
                     </div>
                   </div>
@@ -228,6 +251,7 @@ const Register = () => {
                   <label className="form-label fw-bold" style={{ color: "#000", ...labelStyle }}>
                     Crear contraseña
                   </label>
+                  {/* Contenedor con position relative, el texto explicativo va fuera */}
                   <div style={{ position: "relative" }}>
                     <input
                       type={showPassword ? "text" : "password"}
@@ -243,6 +267,16 @@ const Register = () => {
                       {showPassword ? "Ocultar" : "Mostrar"}
                     </span>
                   </div>
+                  <small
+                    style={{
+                      display: "block",
+                      fontSize: "0.8rem",
+                      marginTop: "0.25rem",
+                      color: "#6dbdc9",
+                    }}
+                  >
+                    La contraseña debe tener mínimo 8 y máximo 20 caracteres.
+                  </small>
                 </div>
                 <div style={leftSpacingStyle}>
                   <label className="form-label fw-bold" style={{ color: "#000", ...labelStyle }}>
@@ -259,13 +293,17 @@ const Register = () => {
                       required
                       style={{ ...inputStyle, paddingRight: "4rem" }}
                     />
-                    <span style={toggleStyle} onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    <span
+                      style={toggleStyle}
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
                       {showConfirmPassword ? "Ocultar" : "Mostrar"}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
+            {/* Sección formulario (lado derecho) */}
             <div className="col-md-7 d-flex flex-column">
               <div style={borderedContainerStyle} className="w-100 flex-grow-1">
                 <div className="row">
@@ -273,7 +311,11 @@ const Register = () => {
                     <div style={rightSpacingStyle}>
                       <label
                         className="form-label fw-bold"
-                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                        style={{
+                          color: "#000",
+                          marginBottom: "0.25rem",
+                          fontFamily: "var(--font-family-base)",
+                        }}
                       >
                         Nombres
                       </label>
@@ -290,7 +332,11 @@ const Register = () => {
                     <div style={rightSpacingStyle}>
                       <label
                         className="form-label fw-bold"
-                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                        style={{
+                          color: "#000",
+                          marginBottom: "0.25rem",
+                          fontFamily: "var(--font-family-base)",
+                        }}
                       >
                         Apellidos
                       </label>
@@ -307,7 +353,11 @@ const Register = () => {
                     <div style={rightSpacingStyle}>
                       <label
                         className="form-label fw-bold"
-                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                        style={{
+                          color: "#000",
+                          marginBottom: "0.25rem",
+                          fontFamily: "var(--font-family-base)",
+                        }}
                       >
                         Fecha de Nacimiento
                       </label>
@@ -326,7 +376,11 @@ const Register = () => {
                     <div style={rightSpacingStyle}>
                       <label
                         className="form-label fw-bold"
-                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                        style={{
+                          color: "#000",
+                          marginBottom: "0.25rem",
+                          fontFamily: "var(--font-family-base)",
+                        }}
                       >
                         Teléfono
                       </label>
@@ -343,7 +397,11 @@ const Register = () => {
                     <div style={rightSpacingStyle}>
                       <label
                         className="form-label fw-bold"
-                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                        style={{
+                          color: "#000",
+                          marginBottom: "0.25rem",
+                          fontFamily: "var(--font-family-base)",
+                        }}
                       >
                         País
                       </label>
@@ -360,7 +418,11 @@ const Register = () => {
                     <div style={rightSpacingStyle}>
                       <label
                         className="form-label fw-bold"
-                        style={{ color: "#000", marginBottom: "0.25rem", fontFamily: "var(--font-family-base)" }}
+                        style={{
+                          color: "#000",
+                          marginBottom: "0.25rem",
+                          fontFamily: "var(--font-family-base)",
+                        }}
                       >
                         Ubigeo
                       </label>
@@ -370,6 +432,29 @@ const Register = () => {
                         name="ubigeo"
                         value={formData.ubigeo}
                         onChange={handleChange}
+                        required
+                        style={inputStyle}
+                      />
+                    </div>
+                    {/* Campo de Profesión */}
+                    <div style={rightSpacingStyle}>
+                      <label
+                        className="form-label fw-bold"
+                        style={{
+                          color: "#000",
+                          marginBottom: "0.25rem",
+                          fontFamily: "var(--font-family-base)",
+                        }}
+                      >
+                        Profesión
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="proffesion"
+                        value={formData.proffesion}
+                        onChange={handleChange}
+                        placeholder="Ej. Ingeniero Civil"
                         required
                         style={inputStyle}
                       />

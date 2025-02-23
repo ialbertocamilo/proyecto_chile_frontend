@@ -7,6 +7,7 @@ import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
+import useAuth from "../src/hooks/useAuth";
 
 const modalWidth = "90%";
 const modalHeight = "auto";
@@ -39,6 +40,10 @@ export interface Project {
 }
 
 const ProjectListStatusEditPage = () => {
+  // Validación de sesión mediante useAuth
+  useAuth();
+  console.log("[ProjectListStatusEditPage] Página cargada y sesión validada.");
+
   const router = useRouter();
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
@@ -63,11 +68,13 @@ const ProjectListStatusEditPage = () => {
     setLoading(true);
     const token = localStorage.getItem("token");
     if (!token) {
+      console.error("[fetchProjects] No estás autenticado. Inicia sesión nuevamente.");
       setError("No estás autenticado. Inicia sesión nuevamente.");
       setLoading(false);
       return;
     }
     try {
+      console.log("[fetchProjects] Obteniendo proyectos...");
       const response = await axios.get(`${constantUrlApiEndpoint}/projects`, {
         params: { limit: 999999, num_pag: 1 },
         headers: {
@@ -75,10 +82,11 @@ const ProjectListStatusEditPage = () => {
           "Content-Type": "application/json",
         },
       });
+      console.log("[fetchProjects] Proyectos recibidos:", response.data);
       setProjects(response.data.projects);
       setFilteredProjects(response.data.projects);
     } catch (err: unknown) {
-      console.error("Error al obtener los proyectos:", err);
+      console.error("[fetchProjects] Error al obtener los proyectos:", err);
       if (axios.isAxiosError(err) && err.response) {
         setError(
           (err.response.data as { detail?: string }).detail ||
@@ -102,6 +110,7 @@ const ProjectListStatusEditPage = () => {
   };
 
   const openStatusModal = (project: Project) => {
+    console.log("[openStatusModal] Abriendo modal para proyecto:", project.id);
     setEditStatusProjectId(project.id);
     setCurrentStatus(project.status || "registrado");
     setShowStatusModal(true);
@@ -109,6 +118,7 @@ const ProjectListStatusEditPage = () => {
   };
 
   const closeStatusModal = () => {
+    console.log("[closeStatusModal] Cerrando modal de edición de estado.");
     setShowStatusModal(false);
     setEditStatusProjectId(null);
     setCurrentStatus("");
@@ -124,6 +134,7 @@ const ProjectListStatusEditPage = () => {
     try {
       const url = `${constantUrlApiEndpoint}/project/${editStatusProjectId}/status`;
       const data = { status: currentStatus };
+      console.log("[handleStatusUpdate] Actualizando estado para el proyecto:", editStatusProjectId, "con data:", data);
       await axios.put(url, data, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -139,7 +150,7 @@ const ProjectListStatusEditPage = () => {
         fetchProjects(); // Vuelve a cargar todos los proyectos
       });
     } catch (err: unknown) {
-      console.error("Error al actualizar el estado del proyecto:", err);
+      console.error("[handleStatusUpdate] Error al actualizar el estado del proyecto:", err);
       setError("Ocurrió un error al actualizar el estado del proyecto.");
       Swal.fire({
         title: "Error",
@@ -150,7 +161,7 @@ const ProjectListStatusEditPage = () => {
     }
   };
 
-  const getStatusStyle = (status: string | undefined) => {
+  const getStatusStyle = (status: string | undefined): React.CSSProperties => {
     const s = status?.toLowerCase();
     if (s === "finalizado") {
       return { backgroundColor: "#ffe8e8", color: "#e45f5f" };
@@ -275,7 +286,9 @@ const ProjectListStatusEditPage = () => {
               <div className="modal-dialog modal-lg" role="document" style={{ width: "100%" }}>
                 <div className="modal-content" style={{ fontFamily: "var(--font-family-base)" }}>
                   <div className="modal-header">
-                    <h5 className="modal-title">Editar Estado del Proyecto #{editStatusProjectId}</h5>
+                    <h5 className="modal-title">
+                      Editar Estado del Proyecto #{editStatusProjectId}
+                    </h5>
                     <button type="button" className="btn-close" onClick={closeStatusModal}></button>
                   </div>
                   <div className="modal-body">

@@ -5,6 +5,7 @@ import CustomButton from "../src/components/common/CustomButton";
 import Swal from "sweetalert2";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
+import useAuth from "../src/hooks/useAuth";
 
 type MaterialAtributs = {
   name: string;
@@ -23,6 +24,10 @@ type Material = {
 };
 
 const ConstantsManagement = () => {
+  // Validamos la sesión usando el hook personalizado
+  useAuth();
+  console.log("[ConstantsManagement] Sesión validada y página cargada.");
+
   // Se elimina router ya que no se utiliza.
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
@@ -49,10 +54,10 @@ const ConstantsManagement = () => {
 
   // 1) LISTAR TODOS LOS MATERIALES
   const fetchMaterials = useCallback(async () => {
-    console.log("Fetching all materials from backend...");
+    console.log("[fetchMaterials] Obteniendo todos los materiales desde el backend...");
     const token = localStorage.getItem("token");
     if (!token) {
-      console.error("No se encontró un token en localStorage.");
+      console.error("[fetchMaterials] No se encontró un token en localStorage.");
       return;
     }
     try {
@@ -61,7 +66,7 @@ const ConstantsManagement = () => {
       params.append("name", "materials");
 
       const url = `${constantUrlApiEndpoint}/constants/?page=1&per_page=500`;
-      console.log("URL de materiales:", url);
+      console.log("[fetchMaterials] URL de materiales:", url);
 
       const response = await fetch(url, {
         method: "GET",
@@ -76,7 +81,7 @@ const ConstantsManagement = () => {
       }
 
       const data = await response.json();
-      console.log("Materiales recibidos:", data);
+      console.log("[fetchMaterials] Materiales recibidos:", data);
 
       if (data && Array.isArray(data.constants)) {
         setMaterials(data.constants);
@@ -85,7 +90,7 @@ const ConstantsManagement = () => {
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "";
-      console.error("Error en fetchMaterials:", message);
+      console.error("[fetchMaterials] Error:", message);
       Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
     }
   }, []);
@@ -96,6 +101,7 @@ const ConstantsManagement = () => {
 
   // 2) CREAR
   const handleCreateMaterial = async () => {
+    console.log("[handleCreateMaterial] Creando material...");
     const token = localStorage.getItem("token");
     if (!token) {
       Swal.fire("Error", "No se encontró token", "error");
@@ -129,9 +135,11 @@ const ConstantsManagement = () => {
         throw new Error("Error al crear el material");
       }
 
+      console.log("[handleCreateMaterial] Material creado correctamente.");
       Swal.fire("Éxito", "Material creado correctamente", "success");
       setIsCreateModalOpen(false);
 
+      // Reiniciamos los valores por defecto
       setCreateName("Hormigón Armado");
       setCreateDensity(2400);
       setCreateConductivity(1.63);
@@ -139,12 +147,14 @@ const ConstantsManagement = () => {
       fetchMaterials();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Error al crear material";
+      console.error("[handleCreateMaterial] Error:", message);
       Swal.fire("Error", message, "error");
     }
   };
 
   // 3) EDITAR 
   const openEditModal = (material: Material) => {
+    console.log("[openEditModal] Abriendo modal para editar material:", material.id);
     setEditMaterialId(material.id);
     setEditName(material.atributs.name);
     setEditDensity(material.atributs.density);
@@ -159,6 +169,7 @@ const ConstantsManagement = () => {
   };
 
   const handleUpdateMaterial = async () => {
+    console.log("[handleUpdateMaterial] Actualizando material:", editMaterialId);
     if (!editMaterialId) return;
     const token = localStorage.getItem("token");
     if (!token) {
@@ -191,18 +202,21 @@ const ConstantsManagement = () => {
         throw new Error("Error al editar el material");
       }
 
+      console.log("[handleUpdateMaterial] Material actualizado correctamente.");
       Swal.fire("Éxito", "Material editado correctamente", "success");
       setIsEditModalOpen(false);
       setEditMaterialId(null);
       fetchMaterials();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Error al editar material";
+      console.error("[handleUpdateMaterial] Error:", message);
       Swal.fire("Error", message, "error");
     }
   };
 
   // 4) ELIMINAR
   const handleDeleteMaterial = (material: Material) => {
+    console.log("[handleDeleteMaterial] Solicitando eliminación del material:", material.id);
     Swal.fire({
       title: "Confirmar eliminación",
       text: `¿Estás seguro de eliminar el material (ID: ${material.id}) ${material.atributs.name}?`,
@@ -234,6 +248,7 @@ const ConstantsManagement = () => {
             throw new Error("Error al eliminar el material");
           }
 
+          console.log("[handleDeleteMaterial] Material eliminado correctamente:", material.id);
           Swal.fire(
             "Eliminado",
             `El material (ID: ${material.id}) ha sido eliminado.`,
@@ -242,6 +257,7 @@ const ConstantsManagement = () => {
           fetchMaterials();
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : "Error al eliminar material";
+          console.error("[handleDeleteMaterial] Error:", message);
           Swal.fire("Error", message, "error");
         }
       }
@@ -295,7 +311,7 @@ const ConstantsManagement = () => {
                 fontSize: "var(--font-size-base)",
                 border: "1px solid #ccc",
                 borderRadius: "4px",
-                width: "300px"
+                width: "300px",
               }}
             />
             <CustomButton

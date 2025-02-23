@@ -6,6 +6,7 @@ import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
+import useAuth from "../src/hooks/useAuth";
 
 interface ProfileData {
   name: string;
@@ -16,6 +17,10 @@ interface ProfileData {
 }
 
 const EditProfile = () => {
+  // Validación de sesión
+  useAuth();
+  console.log("[EditProfile] Página cargada y sesión validada.");
+
   const router = useRouter();
   const [profile, setProfile] = useState<ProfileData>({
     name: "",
@@ -40,11 +45,12 @@ const EditProfile = () => {
           country: parsedProfile.country || "",
           ubigeo: parsedProfile.ubigeo || "",
         });
+        console.log("[EditProfile] Perfil cargado desde localStorage:", parsedProfile);
       } catch (err) {
-        console.error("Error al parsear el perfil desde localStorage", err);
+        console.error("[EditProfile] Error al parsear el perfil desde localStorage", err);
       }
     } else {
-      console.warn("No se encontró información del perfil en localStorage.");
+      console.warn("[EditProfile] No se encontró información del perfil en localStorage.");
     }
   }, []);
 
@@ -80,7 +86,7 @@ const EditProfile = () => {
         throw new Error("No estás autenticado. Inicia sesión.");
       }
       const payload = { ...profile };
-      console.log("Enviando actualización del perfil:", payload);
+      console.log("[EditProfile] Enviando actualización del perfil:", payload);
 
       const response = await fetch(`${constantUrlApiEndpoint}/user/me/update`, {
         method: "PUT",
@@ -93,7 +99,7 @@ const EditProfile = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error actualizando perfil:", errorData);
+        console.error("[EditProfile] Error actualizando perfil:", errorData);
         throw new Error(
           errorData.detail ||
             errorData.message ||
@@ -103,6 +109,7 @@ const EditProfile = () => {
 
       const resData = await response.json();
       localStorage.setItem("userProfile", JSON.stringify(payload));
+      console.log("[EditProfile] Perfil actualizado correctamente:", resData);
 
       await Swal.fire({
         title: "Perfil actualizado",
@@ -112,7 +119,7 @@ const EditProfile = () => {
       });
       router.push("/dashboard");
     } catch (err: unknown) {
-      console.error("Error actualizando perfil:", err);
+      console.error("[EditProfile] Error actualizando perfil:", err);
       const message = err instanceof Error ? err.message : "Error al actualizar el perfil";
       Swal.fire({
         title: "Error",

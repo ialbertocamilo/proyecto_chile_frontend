@@ -6,6 +6,7 @@ import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
+import useAuth from "../src/hooks/useAuth";
 
 interface CustomizationData {
   primary_color: string;
@@ -22,6 +23,10 @@ interface CustomizationData {
 }
 
 const SettingsPage = () => {
+  // Validamos la sesión con useAuth
+  useAuth();
+  console.log("[SettingsPage] Página cargada y sesión validada.");
+
   const router = useRouter();
   const [customization, setCustomization] = useState<CustomizationData>({
     primary_color: "#3ca7b7",
@@ -38,14 +43,15 @@ const SettingsPage = () => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Se mantiene el estado de sidebarWidth para poder actualizarlo si Navbar lo requiere.
+  // Estado para sidebarWidth
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  // Obtener la configuración actual 
+  // Obtener la configuración actual
   useEffect(() => {
     const fetchCustomization = async () => {
       setFetching(true);
       try {
+        console.log("[fetchCustomization] Obteniendo configuración...");
         const token = localStorage.getItem("token");
         if (!token) {
           throw new Error("No estás autenticado. Inicia sesión.");
@@ -63,10 +69,13 @@ const SettingsPage = () => {
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            errorData.detail || errorData.message || "Error al obtener configuración"
+            errorData.detail ||
+              errorData.message ||
+              "Error al obtener configuración"
           );
         }
         const data = await response.json();
+        console.log("[fetchCustomization] Configuración recibida:", data);
         setCustomization({
           primary_color: data.primary_color || "#3ca7b7",
           secondary_color: data.secondary_color || "#bbc4cb",
@@ -80,8 +89,9 @@ const SettingsPage = () => {
           logo: null,
         });
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Error al obtener la configuración";
-        console.error("Error fetching customization:", message);
+        const message =
+          err instanceof Error ? err.message : "Error al obtener la configuración";
+        console.error("[fetchCustomization] Error:", message);
         setError(message);
       } finally {
         setFetching(false);
@@ -91,17 +101,19 @@ const SettingsPage = () => {
     fetchCustomization();
   }, []);
 
-  // Actualiza el estado al cambiar el valor 
+  // Actualiza el estado al cambiar el valor
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    console.log(`[handleChange] ${e.target.name} cambiado a:`, e.target.value);
     setCustomization({
       ...customization,
       [e.target.name]: e.target.value,
     });
   };
 
-  // Manejador para el input de archivo 
+  // Manejador para el input de archivo
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
+      console.log("[handleFileChange] Logo seleccionado:", e.target.files[0]);
       setCustomization({
         ...customization,
         logo: e.target.files[0],
@@ -109,13 +121,14 @@ const SettingsPage = () => {
     }
   };
 
-  // Para subir el logo 
+  // Para subir el logo
   const uploadLogo = async (): Promise<string | null> => {
     if (!customization.logo) return null;
     const formData = new FormData();
     formData.append("logo", customization.logo);
     try {
       const token = localStorage.getItem("token");
+      console.log("[uploadLogo] Subiendo logo...");
       const response = await fetch(`/api/upload-logo`, {
         method: "POST",
         headers: {
@@ -128,9 +141,10 @@ const SettingsPage = () => {
         throw new Error(errorData.message || "Error al subir logo");
       }
       const resData = await response.json();
+      console.log("[uploadLogo] Logo subido. URL:", resData.logoUrl);
       return resData.logoUrl;
     } catch (error: unknown) {
-      console.error("Error uploading logo:", error);
+      console.error("[uploadLogo] Error:", error);
       return null;
     }
   };
@@ -184,6 +198,7 @@ const SettingsPage = () => {
         }
       }
 
+      console.log("[handleSubmit] Enviando configuración actualizada:", customization);
       const response = await fetch(`/api/update-styles`, {
         method: "PUT",
         headers: {
@@ -206,7 +221,7 @@ const SettingsPage = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error actualizando CSS:", errorData);
+        console.error("[handleSubmit] Error actualizando CSS:", errorData);
         throw new Error(
           errorData.detail ||
             errorData.message ||
@@ -215,6 +230,7 @@ const SettingsPage = () => {
       }
 
       const resData = await response.json();
+      console.log("[handleSubmit] Configuración actualizada:", resData);
       await Swal.fire({
         title: "Configuración actualizada",
         text: resData.message || "La configuración se actualizó correctamente.",
@@ -223,8 +239,9 @@ const SettingsPage = () => {
       });
       router.push("/dashboard");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Error al actualizar la configuración";
-      console.error("Error actualizando configuración:", message);
+      const message =
+        err instanceof Error ? err.message : "Error al actualizar la configuración";
+      console.error("[handleSubmit] Error:", message);
       Swal.fire({
         title: "Error",
         text: message,
@@ -237,6 +254,7 @@ const SettingsPage = () => {
     }
   };
 
+  // Componente para mostrar un selector de color y un input de texto
   const ColorPickerInput = ({
     label,
     name,
@@ -287,119 +305,113 @@ const SettingsPage = () => {
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
-      {/* Creamos una variable local para el margen que usa sidebarWidth */}
-      {/** Esto ayuda a que ESLint reconozca el uso de sidebarWidth */}
-      {(() => {
-        const marginLeft = sidebarWidth;
-        return (
-          <div className="d-flex flex-column flex-grow-1" style={{ marginLeft, width: "100%" }}>
-            <TopBar sidebarWidth={sidebarWidth} />
-            <div className="container p-4" style={{ marginTop: "60px" }}>
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2
-                  className="fw-bold"
-                  style={{
-                    color: "var(--primary-color)",
-                    margin: 0,
-                    fontFamily: "var(--font-family-base)",
-                  }}
-                >
-                  Configuración de Personalización
-                </h2>
-                <div className="d-flex" style={{ gap: "1rem" }}>
-                  <CustomButton variant="back" onClick={() => router.push("/dashboard")}>
-                    ← Regresar
-                  </CustomButton>
-                  <CustomButton variant="save" type="submit" form="settingsForm" disabled={loading}>
-                    {loading ? "Guardando..." : "Guardar Configuración"}
-                  </CustomButton>
-                </div>
-              </div>
-              {loading || fetching ? (
-                <p className="text-primary" style={{ fontFamily: "var(--font-family-base)" }}>
-                  Cargando configuración...
-                </p>
-              ) : (
-                <form id="settingsForm" onSubmit={handleSubmit} style={{ fontFamily: "var(--font-family-base)" }}>
-                  {error && (
-                    <p className="text-danger" style={{ fontFamily: "var(--font-family-base)" }}>
-                      {error}
-                    </p>
-                  )}
-                  <ColorPickerInput
-                    label="Color Primario"
-                    name="primary_color"
-                    value={customization.primary_color}
-                    onChange={handleChange}
-                  />
-                  <ColorPickerInput
-                    label="Color Secundario"
-                    name="secondary_color"
-                    value={customization.secondary_color}
-                    onChange={handleChange}
-                  />
-                  <ColorPickerInput
-                    label="Color de Fondo"
-                    name="background_color"
-                    value={customization.background_color}
-                    onChange={handleChange}
-                  />
-                  <h3 style={{ fontFamily: "var(--font-family-base)", marginTop: "2rem" }}>
-                    Colores de Botones
-                  </h3>
-                  <ColorPickerInput
-                    label="Botón Guardar (fondo)"
-                    name="btn_save_bg"
-                    value={customization.btn_save_bg}
-                    onChange={handleChange}
-                  />
-                  <ColorPickerInput
-                    label="Botón Guardar (hover)"
-                    name="btn_save_hover_bg"
-                    value={customization.btn_save_hover_bg}
-                    onChange={handleChange}
-                  />
-                  <ColorPickerInput
-                    label="Botón Regresar (fondo)"
-                    name="btn_back_bg"
-                    value={customization.btn_back_bg}
-                    onChange={handleChange}
-                  />
-                  <ColorPickerInput
-                    label="Botón Regresar (hover)"
-                    name="btn_back_hover_bg"
-                    value={customization.btn_back_hover_bg}
-                    onChange={handleChange}
-                  />
-                  <ColorPickerInput
-                    label="Botón Borrar (fondo)"
-                    name="btn_delete_bg"
-                    value={customization.btn_delete_bg}
-                    onChange={handleChange}
-                  />
-                  <ColorPickerInput
-                    label="Botón Borrar (hover)"
-                    name="btn_delete_hover_bg"
-                    value={customization.btn_delete_hover_bg}
-                    onChange={handleChange}
-                  />
-                  <div className="mb-3">
-                    <label style={{ fontFamily: "var(--font-family-base)" }}>Logo</label>
-                    <input
-                      type="file"
-                      name="logo"
-                      accept="image/png, image/jpeg"
-                      className="form-control"
-                      onChange={handleFileChange}
-                      style={{ fontFamily: "var(--font-family-base)" }}
-                    />
-                  </div>
-                </form>
-              )}
+      {/* Se usa sidebarWidth para el margen */}
+      <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
+        <TopBar sidebarWidth={sidebarWidth} />
+        <div className="container p-4" style={{ marginTop: "60px" }}>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2
+              className="fw-bold"
+              style={{
+                color: "var(--primary-color)",
+                margin: 0,
+                fontFamily: "var(--font-family-base)",
+              }}
+            >
+              Configuración de Personalización
+            </h2>
+            <div className="d-flex" style={{ gap: "1rem" }}>
+              <CustomButton variant="back" onClick={() => router.push("/dashboard")}>
+                ← Regresar
+              </CustomButton>
+              <CustomButton variant="save" type="submit" form="settingsForm" disabled={loading}>
+                {loading ? "Guardando..." : "Guardar Configuración"}
+              </CustomButton>
             </div>
           </div>
-        );
-      })()}
+          {loading || fetching ? (
+            <p className="text-primary" style={{ fontFamily: "var(--font-family-base)" }}>
+              Cargando configuración...
+            </p>
+          ) : (
+            <form id="settingsForm" onSubmit={handleSubmit} style={{ fontFamily: "var(--font-family-base)" }}>
+              {error && (
+                <p className="text-danger" style={{ fontFamily: "var(--font-family-base)" }}>
+                  {error}
+                </p>
+              )}
+              <ColorPickerInput
+                label="Color Primario"
+                name="primary_color"
+                value={customization.primary_color}
+                onChange={handleChange}
+              />
+              <ColorPickerInput
+                label="Color Secundario"
+                name="secondary_color"
+                value={customization.secondary_color}
+                onChange={handleChange}
+              />
+              <ColorPickerInput
+                label="Color de Fondo"
+                name="background_color"
+                value={customization.background_color}
+                onChange={handleChange}
+              />
+              <h3 style={{ fontFamily: "var(--font-family-base)", marginTop: "2rem" }}>
+                Colores de Botones
+              </h3>
+              <ColorPickerInput
+                label="Botón Guardar (fondo)"
+                name="btn_save_bg"
+                value={customization.btn_save_bg}
+                onChange={handleChange}
+              />
+              <ColorPickerInput
+                label="Botón Guardar (hover)"
+                name="btn_save_hover_bg"
+                value={customization.btn_save_hover_bg}
+                onChange={handleChange}
+              />
+              <ColorPickerInput
+                label="Botón Regresar (fondo)"
+                name="btn_back_bg"
+                value={customization.btn_back_bg}
+                onChange={handleChange}
+              />
+              <ColorPickerInput
+                label="Botón Regresar (hover)"
+                name="btn_back_hover_bg"
+                value={customization.btn_back_hover_bg}
+                onChange={handleChange}
+              />
+              <ColorPickerInput
+                label="Botón Borrar (fondo)"
+                name="btn_delete_bg"
+                value={customization.btn_delete_bg}
+                onChange={handleChange}
+              />
+              <ColorPickerInput
+                label="Botón Borrar (hover)"
+                name="btn_delete_hover_bg"
+                value={customization.btn_delete_hover_bg}
+                onChange={handleChange}
+              />
+              <div className="mb-3">
+                <label style={{ fontFamily: "var(--font-family-base)" }}>Logo</label>
+                <input
+                  type="file"
+                  name="logo"
+                  accept="image/png, image/jpeg"
+                  className="form-control"
+                  onChange={handleFileChange}
+                  style={{ fontFamily: "var(--font-family-base)" }}
+                />
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

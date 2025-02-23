@@ -16,6 +16,7 @@ import { Line, Bar, Pie, Doughnut, Radar } from "react-chartjs-2";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import "../public/assets/css/globals.css";
+import useAuth from "../src/hooks/useAuth";
 
 ChartJS.register(
   CategoryScale,
@@ -31,6 +32,10 @@ ChartJS.register(
 );
 
 const DashboardPage: React.FC = () => {
+  // Ejecutamos la validación de autenticación
+  useAuth();
+  console.log("[DashboardPage] Página cargada y sesión validada.");
+
   // Manejamos dinámicamente el ancho de la barra lateral
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 

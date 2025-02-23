@@ -197,7 +197,7 @@ const Login = () => {
                   fontFamily: "var(--font-family-base)",
                 }}
               >
-                Recuérdame
+                Recuerdame
               </label>
             </div>
             <Link

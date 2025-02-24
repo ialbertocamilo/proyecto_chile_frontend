@@ -423,10 +423,10 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
           name: newMaterialData.name,
           density: newMaterialData.density,
           conductivity: newMaterialData.conductivity,
-          "specific heat": newMaterialData.specific_heat,
+          specific_heat: newMaterialData.specific_heat,
         },
-        name: "string",
-        type: "string"
+        name: "materials",
+        type: "definition materials"
       };
       const url = `${constantUrlApiEndpoint}/constants/create`;
       const headers = { 

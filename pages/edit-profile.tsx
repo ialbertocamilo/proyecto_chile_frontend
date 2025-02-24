@@ -14,7 +14,18 @@ interface ProfileData {
   number_phone: string;
   country: string;
   ubigeo: string;
+  userType: string;
 }
+
+
+const mapRoleIdToText = (roleId: string | null): string => {
+  if (roleId === "1") {
+    return "Administrador";
+  } else if (roleId === "2") {
+    return "Operador";
+  }
+  return "Desconocido"; // En caso de que el role_id no sea 1 ni 2
+};
 
 const EditProfile = () => {
   // Validación de sesión
@@ -28,6 +39,7 @@ const EditProfile = () => {
     number_phone: "",
     country: "",
     ubigeo: "",
+    userType: "", // Inicializar el tipo de usuario
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +47,7 @@ const EditProfile = () => {
 
   useEffect(() => {
     const storedProfile = localStorage.getItem("userProfile");
+    const roleId = localStorage.getItem("role_id");
     if (storedProfile) {
       try {
         const parsedProfile: ProfileData = JSON.parse(storedProfile);
@@ -44,6 +57,7 @@ const EditProfile = () => {
           number_phone: parsedProfile.number_phone || "",
           country: parsedProfile.country || "",
           ubigeo: parsedProfile.ubigeo || "",
+          userType: mapRoleIdToText(roleId), // Mapear el role_id a texto
         });
         console.log("[EditProfile] Perfil cargado desde localStorage:", parsedProfile);
       } catch (err) {
@@ -257,6 +271,20 @@ const EditProfile = () => {
                   className="form-control"
                   value={profile.ubigeo}
                   onChange={handleChange}
+                  style={{ fontFamily: "var(--font-family-base)" }}
+                />
+              </div>
+              {/* Nuevo campo para mostrar el tipo de usuario */}
+              <div className="mb-3">
+                <label style={{ fontFamily: "var(--font-family-base)" }}>
+                  Tipo de Usuario
+                </label>
+                <input
+                  type="text"
+                  name="userType"
+                  className="form-control"
+                  value={profile.userType}
+                  readOnly
                   style={{ fontFamily: "var(--font-family-base)" }}
                 />
               </div>

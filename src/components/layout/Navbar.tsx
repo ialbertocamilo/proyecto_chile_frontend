@@ -1,11 +1,10 @@
-"use client";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import Image from "next/image";
-import GoogleIcons from "./GoogleIcons"; // Asegúrate de tener este archivo en la misma carpeta
+import GoogleIcons from "./GoogleIcons";
 
 interface NavbarProps {
   setSidebarWidth: (width: string) => void;
@@ -14,17 +13,13 @@ interface NavbarProps {
 
 const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [submenuOpen, setSubmenuOpen] = useState({
-    proyectos: false,
-    user: false,
-    parametros: false,
-  });
+  // Se elimina el estado "isOpen" ya que no se usará para expandir/colapsar
   const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
 
+  // Se establece el ancho fijo de la sidebar (sin expansión)
   useEffect(() => {
-    setSidebarWidth(isOpen ? "300px" : "80px");
-  }, [isOpen, setSidebarWidth]);
+    setSidebarWidth("100px");
+  }, [setSidebarWidth]);
 
   useEffect(() => {
     const storedLogo = localStorage.getItem("logoUrl");
@@ -33,268 +28,169 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
     }
   }, []);
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const toggleSubmenu = (menu: "proyectos" | "user" | "parametros") => {
-    if (!isOpen) {
-      setIsOpen(true);
-    }
-    setSubmenuOpen((prev) => ({ ...prev, [menu]: !prev[menu] }));
-  };
-
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
   };
 
+  // --- ESTILOS PRINCIPALES ---
   const navLinkStyle: React.CSSProperties = {
     cursor: "pointer",
     fontFamily: "var(--font-family-base)",
     display: "flex",
+    flexDirection: "column", // Ícono arriba, texto abajo
     alignItems: "center",
-    justifyContent: isOpen ? "flex-start" : "center",
+    justifyContent: "center",
+    textAlign: "center",
     width: "100%",
-    paddingLeft: "2px",
+    padding: "5px",
+    marginBottom: "10px",
+    boxSizing: "border-box",
+    fontSize: "0.7rem",
+    lineHeight: "1.2",
+    whiteSpace: "normal",
+    wordWrap: "break-word",
+    transition: "none",
+    color: "#fff",
   };
 
   const iconStyle: React.CSSProperties = {
-    fontSize: "2rem",     // Tamaño del ícono
-    width: "2rem",        // Ancho
-    textAlign: "center",  // Centra el contenido
-    marginRight: isOpen ? "10px" : "0",
-    marginLeft: "5px",
+    fontSize: "1.5rem",
+    marginBottom: "4px",
+    color: "#fff",
   };
+
+  // Contenedor del logo
+  const logoContainerStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center", // Centrado, ya que se eliminó la flecha
+    width: "100%",         // Ocupa todo el ancho del nav
+    minHeight: "80px",     // Ajusta el alto del área de logo
+    boxSizing: "border-box",
+    padding: "0 0.5rem",
+    marginBottom: "1rem",
+    color: "#fff",
+  };
+
+  // El tamaño del logo se mantiene fijo en el sidebar colapsado
+  const logoSize = 80;
 
   return (
     <>
-      {/* Inyecta la librería de Google Icons */}
       <GoogleIcons />
       <nav
         className="sidebar d-flex flex-column p-3"
-        onMouseEnter={() => setIsOpen(true)}
-        onMouseLeave={() => setIsOpen(false)}
+        // Se eliminan los eventos de mouse para evitar la expansión al pasar el mouse
         style={{
           position: "fixed",
           left: 0,
           top: 0,
           zIndex: 1000,
-          width: isOpen ? "300px" : "80px",
-          backgroundColor: "var(--primary-color)",
-          color: "#fff",
+          width: "100px", // Ancho fijo
+          backgroundColor: "#359EA7",
           height: "100vh",
           fontFamily: "var(--font-family-base)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          transition: "none", // Sin animación
         }}
       >
-        <div
-          className={`d-flex align-items-center mb-4 ${isOpen ? "justify-content-center" : "justify-content-between"}`}
-          style={{ fontFamily: "var(--font-family-base)" }}
-        >
+        {/* Contenedor del logo */}
+        <div style={logoContainerStyle}>
           <Link href="/dashboard">
-            {/* Uso de setActiveView al hacer clic en la imagen */}
-            <div onClick={() => setActiveView("dashboard")}>
+            <div
+              style={{ cursor: "pointer" }}
+              onClick={() => setActiveView("dashboard")}
+            >
               <Image
                 src={logoUrl}
                 alt="Proyecto Ceela"
-                width={55}
-                height={55}
-                style={{ borderRadius: "50%", cursor: "pointer" }}
+                width={logoSize}
+                height={logoSize}
+                style={{ borderRadius: "50%" }}
               />
             </div>
           </Link>
-          {/* Muestra el toggle solo cuando la sidebar está colapsada */}
-          {!isOpen && (
-            <div
-              onClick={toggleSidebar}
-              style={{
-                cursor: "pointer",
-                color: "#fff",
-                fontSize: "2rem",
-                lineHeight: "0",
-                fontFamily: "var(--font-family-base)",
-              }}
-            >
-              <span style={iconStyle} className="material-icons">
-                {isOpen ? "chevron_left" : "chevron_right"}
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* Contenedor del menú de navegación */}
         <div
           className="menu-container"
           style={{
             fontFamily: "var(--font-family-base)",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "flex-end",
             height: "100%",
           }}
         >
+          {/* Grupo Superior */}
           <ul className="nav flex-column">
-            {/* Elemento Dashboard */}
-            <li className="nav-item mb-3">
+            <li className="nav-item">
+              <Link href="/project-list" className="nav-link text-white" style={navLinkStyle}>
+                <span style={iconStyle} className="material-icons">dns</span>
+                Proyectos
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link href="/project-workflow" className="nav-link text-white" style={navLinkStyle}>
+                <span style={iconStyle} className="material-icons">note_add</span>
+                Proyecto Nuevo
+              </Link>
+            </li>
+          </ul>
+
+          {/* Grupo Inferior alineado al fondo */}
+          <ul className="nav flex-column" style={{ marginTop: "auto" }}>
+            <li className="nav-item">
               <Link href="/dashboard" className="nav-link text-white" style={navLinkStyle}>
                 <span style={iconStyle} className="material-icons">dashboard</span>
-                {isOpen && "Dashboard"}
+                Dashboard
               </Link>
             </li>
-
-            {/* Menú de Proyectos */}
-            <li className="nav-item mb-3">
-              <div
-                className="nav-link text-white d-flex justify-content-between align-items-center"
-                style={navLinkStyle}
-                onClick={() => toggleSubmenu("proyectos")}
-              >
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <span style={iconStyle} className="material-icons">view_list</span>
-                  {isOpen && "Proyectos"}
-                </div>
-                {isOpen && (
-                  <span style={iconStyle} className="material-icons">
-                    {submenuOpen.proyectos ? "expand_less" : "expand_more"}
-                  </span>
-                )}
-              </div>
-              {submenuOpen.proyectos && isOpen && (
-                <ul className="nav flex-column ms-3 submenu">
-                  <li className="nav-item">
-                    <Link href="/project-list" className="nav-link text-white" style={navLinkStyle}>
-                      Listado De Proyectos
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link href="/project-workflow" className="nav-link text-white" style={navLinkStyle}>
-                      Registro De Proyectos
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link href="/project-status" className="nav-link text-white" style={navLinkStyle}>
-                      Estado De Proyectos
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link href="/parametros" className="nav-link text-white" style={navLinkStyle}>
-                      Registro De Parámetros
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link href="/recintos" className="nav-link text-white" style={navLinkStyle}>
-                      Registro De Recintos
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link href="/resultados" className="nav-link text-white" style={navLinkStyle}>
-                      Emisión De Resultados
-                    </Link>
-                  </li>
-                </ul>
-              )}
+            <li className="nav-item">
+              <Link href="/project-status" className="nav-link text-white" style={navLinkStyle}>
+                <span style={iconStyle} className="material-icons">format_list_bulleted</span>
+                Proyectos registrados
+              </Link>
             </li>
-
-            {/* Menú de Usuarios */}
-            <li className="nav-item mb-3">
-              <div
-                className="nav-link text-white d-flex justify-content-between align-items-center"
-                style={navLinkStyle}
-                onClick={() => toggleSubmenu("user")}
-              >
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <span style={iconStyle} className="material-icons">person</span>
-                  {isOpen && "Usuarios"}
-                </div>
-                {isOpen && (
-                  <span style={iconStyle} className="material-icons">
-                    {submenuOpen.user ? "expand_less" : "expand_more"}
-                  </span>
-                )}
-              </div>
-              {submenuOpen.user && isOpen && (
-                <ul className="nav flex-column ms-3 submenu">
-                  <li className="nav-item">
-                    <Link href="/user-management" className="nav-link text-white" style={navLinkStyle}>
-                      Listado De Usuarios
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link href="/user-create" className="nav-link text-white" style={navLinkStyle}>
-                      Registro De Usuario
-                    </Link>
-                  </li>
-                </ul>
-              )}
+            <li className="nav-item">
+              <Link href="/user-management" className="nav-link text-white" style={navLinkStyle}>
+                <span style={iconStyle} className="material-icons">person</span>
+                Usuarios
+              </Link>
             </li>
-
-            {/* Menú de Parámetros */}
-            <li className="nav-item mb-3">
-              <div
-                className="nav-link text-white d-flex justify-content-between align-items-center"
-                style={navLinkStyle}
-                onClick={() => toggleSubmenu("parametros")}
-              >
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <span style={iconStyle} className="material-icons">tune</span>
-                  {isOpen && "Parametros"}
-                </div>
-                {isOpen && (
-                  <span style={iconStyle} className="material-icons">
-                    {submenuOpen.parametros ? "expand_less" : "expand_more"}
-                  </span>
-                )}
-              </div>
-              {submenuOpen.parametros && isOpen && (
-                <ul className="nav flex-column ms-3 submenu">
-                  <li className="nav-item">
-                    <Link href="/constants-management" className="nav-link text-white" style={navLinkStyle}>
-                      Listado De Materiales
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link href="/administration" className="nav-link text-white" style={navLinkStyle}>
-                      Administrador de Parametros
-                    </Link>
-                  </li>
-                </ul>
-              )}
+            <li className="nav-item">
+              <Link href="/administration" className="nav-link text-white" style={navLinkStyle}>
+                <span style={iconStyle} className="material-icons">build</span>
+                Parámetros
+              </Link>
             </li>
-
-            {/* Elemento de Configuración */}
-            <li className="nav-item mb-3">
+            <li className="nav-item">
               <Link href="/settings" className="nav-link text-white" style={navLinkStyle}>
                 <span style={iconStyle} className="material-icons">settings</span>
-                {isOpen && "Configuración"}
+                Ajustes
               </Link>
             </li>
-
-            {/* Elemento Salir */}
-            <li className="nav-item mb-3">
+            <li className="nav-item">
               <div className="nav-link text-white" style={navLinkStyle} onClick={handleLogout}>
                 <span style={iconStyle} className="material-icons">logout</span>
-                {isOpen && "Salir"}
+                Salir
               </div>
             </li>
           </ul>
         </div>
 
-        {/* Estilos adicionales locales */}
         <style jsx>{`
           .sidebar {
             overflow-x: hidden;
           }
-          .submenu {
-            margin-top: 0.5rem;
-            font-family: var(--font-family-base);
-          }
           .menu-container {
             width: 100%;
             flex: 1;
-            background-color: var(--primary-color);
+            background-color: #359ea7;
             padding: 0;
-            border-radius: 0.5rem;
-            font-family: var(--font-family-base);
           }
         `}</style>
       </nav>

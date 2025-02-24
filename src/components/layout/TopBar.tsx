@@ -7,8 +7,20 @@ interface TopBarProps {
   sidebarWidth: string;
 }
 
+// Función para mapear el role_id a su correspondiente texto
+const getUserTypeText = (roleId: string): string => {
+  switch (roleId) {
+    case "1":
+      return "Administrador";
+    case "2":
+      return "Operador";
+    default:
+      return "Tipo de Usuario";
+  }
+};
+
 const TopBar = ({ sidebarWidth }: TopBarProps) => {
-  const [user, setUser] = useState({ name: "Usuario", email: "" });
+  const [user, setUser] = useState({ name: "Usuario", email: "", userType: "Tipo de Usuario" });
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
@@ -27,17 +39,22 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
           const nameFromProfile = parsedProfile.name
             ? parsedProfile.name
             : localStorage.getItem("user_name") || "Usuario";
-          setUser({ name: nameFromProfile, email: emailFromProfile });
+          const userTypeFromProfile = parsedProfile.userType
+            ? parsedProfile.userType
+            : localStorage.getItem("role_id") || "Tipo de Usuario"; // Cargar el tipo de usuario
+          setUser({ name: nameFromProfile, email: emailFromProfile, userType: userTypeFromProfile });
         } catch (err) {
           console.error("Error al parsear el perfil desde localStorage:", err);
           const storedName = localStorage.getItem("user_name") || "Usuario";
           const storedEmail = localStorage.getItem("email") || "";
-          setUser({ name: storedName, email: storedEmail });
+          const storedUserType = localStorage.getItem("role_id") || "Tipo de Usuario"; // Cargar el tipo de usuario
+          setUser({ name: storedName, email: storedEmail, userType: storedUserType });
         }
       } else {
         const storedName = localStorage.getItem("user_name") || "Usuario";
         const storedEmail = localStorage.getItem("email") || "";
-        setUser({ name: storedName, email: storedEmail });
+        const storedUserType = localStorage.getItem("role_id") || "Tipo de Usuario"; // Cargar el tipo de usuario
+        setUser({ name: storedName, email: storedEmail, userType: storedUserType });
       }
     }
   }, []);
@@ -118,6 +135,21 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
                   className="bi bi-caret-down-fill ms-1"
                   style={{ fontSize: "10px", fontFamily: "var(--font-family-base)" }}
                 ></i>
+              </span>
+              {/* Mostrar el tipo de usuario */}
+              <span
+                style={{
+                  fontSize: "10px",
+                  backgroundColor: "#3ca7b7", // Color de fondo similar al de la imagen
+                  color: "white", // Texto en blanco
+                  padding: "4px 8px", // Espaciado interno
+                  borderRadius: "12px", // Bordes redondeados
+                  fontWeight: "bold", // Texto en negrita
+                  display: "inline-block", // Para ajustarse al contenido
+                  marginTop: "4px", // Espacio superior
+                }}
+              >
+                {getUserTypeText(user.userType)} {/* Usar la función para obtener el texto del rol */}
               </span>
             </div>
           </button>

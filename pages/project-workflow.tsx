@@ -119,7 +119,7 @@ interface TabElement {
       exterior?: { name: string };
       interior?: { name: string };
     };
-    ref_aisl_bajo_piso?: {
+    aislacion_bajo_piso?: {
       lambda?: number;
       e_aisl?: number;
     };
@@ -540,33 +540,32 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
         return;
       }
+  
       const headers = { Authorization: `Bearer ${token}` };
-      {
-        const url = `${constantUrlApiEndpoint}/projects/${createdProjectId}/details`;
-        const res = await axios.get(url, { headers });
-        setDetailsTabList(res.data || []);
-      }
-      {
-        const url = `${constantUrlApiEndpoint}/project/${createdProjectId}/details/Muro`;
-        const res = await axios.get(url, { headers });
-        setMurosTabList(res.data || []);
-      }
-      {
-        const url = `${constantUrlApiEndpoint}/project/${createdProjectId}/details/Techo`;
-        const res = await axios.get(url, { headers });
-        setTechumbreTabList(res.data || []);
-      }
-      {
-        const url = `${constantUrlApiEndpoint}/project/${createdProjectId}/details/Piso`;
-        const res = await axios.get(url, { headers });
-        setPisosTabList(res.data || []);
-      }
+      const baseUrl = `${constantUrlApiEndpoint}/project/${createdProjectId}/details`;
+  
+      const detailsUrl = `${constantUrlApiEndpoint}/projects/${createdProjectId}/details`;
+      const detailsRes = await axios.get(detailsUrl, { headers });
+      setDetailsTabList(detailsRes.data || []);
+  
+      const requests = [
+        { url: `${baseUrl}/Muro`, setter: setMurosTabList },
+        { url: `${baseUrl}/Techo`, setter: setTechumbreTabList },
+        { url: `${baseUrl}/Piso`, setter: setPisosTabList }
+      ];
+  
+      const responses = await Promise.allSettled(
+        requests.map(({ url }) => axios.get(url, { headers }).catch(() => null))
+      );
+  
+      responses.forEach((response, index) => {
+        if (response.status === "fulfilled" && response.value) {
+          requests[index].setter(response.value.data || []);
+        }
+      });
+  
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error al obtener datos de pestañas step4:", error.response?.data || error.message);
-      } else {
-        console.error("Error desconocido al obtener datos de pestañas step4:", error);
-      }
+      console.error("Error desconocido al obtener datos de pestañas step4:", error);
     }
   };
 
@@ -960,7 +959,7 @@ const ProjectCompleteWorkflowPage: React.FC = () => {
               </thead>
               <tbody>
                 {pisosTabList.map((item, idx) => {
-                  const bajoPiso = item.info?.ref_aisl_bajo_piso || {};
+                  const bajoPiso = item.info?.aislacion_bajo_piso || {};
                   const vert = item.info?.ref_aisl_vertical || {};
                   const horiz = item.info?.ref_aisl_horizontal || {};
                   return (

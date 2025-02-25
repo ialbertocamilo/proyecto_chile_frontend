@@ -779,7 +779,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       </div>
 
       {/* -------------------------------
-          Modales
+          Modalesaa
       ------------------------------- */}
       {/* Modal para Materiales (Paso 3) */}
       {showAddMaterialModal && (

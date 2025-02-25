@@ -364,7 +364,7 @@ const AdministrationPage: React.FC = () => {
           <span style={{ marginRight: "8px", fontSize: "1.3rem" }}>
             <i className={iconClass}></i>
           </span>
-          <span style={{ fontWeight: isSelected ? "bold" : "normal" }}>{title}</span>
+          <span style={{ fontWeight: isSelected ? "normal" : "normal" }}>{title}</span>
         </div>
       </li>
     );
@@ -392,7 +392,7 @@ const AdministrationPage: React.FC = () => {
         }}
       >
         <div className="mb-3">
-          <h1 className="fw-bold">Administrador de Parámetros</h1>
+          <h1 className="fw-normal">Administrador de Parámetros</h1>
         </div>
         {/* Se asigna un minHeight fijo para que el contenedor mantenga el mismo tamaño entre steps */}
         <div className="card shadow w-100" style={{ overflow: "hidden", minHeight: "600px" }}>
@@ -443,6 +443,7 @@ const AdministrationPage: React.FC = () => {
                     </div>
                     <div className="mt-4 text-end">
                       <CustomButton variant="save" onClick={() => setShowCreateMaterialModal(true)}>
+                        <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos
                       </CustomButton>
                     </div>
@@ -476,6 +477,7 @@ const AdministrationPage: React.FC = () => {
                     </div>
                     <div className="mt-4 text-end">
                       <CustomButton variant="save" onClick={() => setShowCreateDetailModal(true)}>
+                        <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos
                       </CustomButton>
                     </div>
@@ -567,6 +569,7 @@ const AdministrationPage: React.FC = () => {
                     </div>
                     <div className="mt-4 text-end">
                       <CustomButton variant="save" onClick={() => setShowCreateElementModal(true)}>
+                        <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos
                       </CustomButton>
                     </div>

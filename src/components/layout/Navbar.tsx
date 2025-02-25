@@ -141,13 +141,13 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
+              <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>
                 <span style={iconStyle} className="material-icons">ballot</span>
                 Desarrollo de proyecto
               </Link>
             </li>
             <li className="nav-item">
-              <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>
+              <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
                 <span style={iconStyle} className="material-icons">input</span>
                 Ingreso de Datos de entrada
               </Link>

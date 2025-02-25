@@ -438,7 +438,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     step >= 3 ? (
       <div className="mb-3">
         <h2 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-          Detalles del proyecto
+          Datos de entrada
         </h2>
         <div className="d-flex align-items-center gap-4 mt-4">
           <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>Proyecto:</span>
@@ -723,6 +723,9 @@ const ProjectWorkflowPart2: React.FC = () => {
                 {/* Paso 6: Perfil de uso (Tipología y caudales, etc.) */}
                 {step === 6 && (
                   <>
+                  <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
+                      Perfil de uso  (Espacio aun en desarrollo, no funcional)
+                    </h5>
                     <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
                       {[
                         { key: "ventilacion", label: "Ventilación y caudales" },

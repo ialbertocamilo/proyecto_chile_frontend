@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Encode+Sans:wght@400;700&display=swap');
 
 :root {
-  --font-family-base: 'Encode Sans', sans-serif;
+  --font-family-base: 'Open Sans', sans-serif;
   --font-size-base: 16px;
   --font-size-heading: 2em;
   --primary-color: #3ca7b7;      /* Color principal, usado en títulos y botones */

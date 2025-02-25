@@ -183,11 +183,12 @@ const ProjectListStatusEditPage = () => {
         <div className="container p-4" style={{ marginTop: "60px" }}>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2
-              className="fw-bold"
+              className="fw-normal"
               style={{
                 color: "var(--primary-color)",
                 margin: 0,
                 fontFamily: "var(--font-family-base)",
+                fontWeight: "normal"
               }}
             >
               Estado de Proyectos
@@ -196,7 +197,7 @@ const ProjectListStatusEditPage = () => {
               <CustomButton variant="backIcon" onClick={() => router.push("/dashboard")} />
             </div>
           </div>
-          {error && <p className="text-danger fw-bold">{error}</p>}
+          {error && <p className="text-danger" style={{ fontWeight: "normal" }}>{error}</p>}
           <div className="input-group mb-3">
             <input
               type="text"
@@ -338,7 +339,9 @@ const ProjectListStatusEditPage = () => {
             border: none;
           }
           .custom-table thead th {
-            background-color: #fff;
+            background-color: #ffff; /* fondo gris claro */
+            color: #666; /* texto gris */
+            font-weight: normal; /* estilo normal, sin negrita */
             position: sticky;
             top: 0;
             z-index: 1;
@@ -360,7 +363,8 @@ const ProjectListStatusEditPage = () => {
           .status-badge {
             display: inline-block;
             font-size: 1.1rem;
-            font-weight: bold;
+            /* Si deseas quitar la negrita del badge, puedes usar font-weight: normal; */
+            font-weight: normal;
             padding: 8px 16px;
             border-radius: 0.5rem;
           }
@@ -391,7 +395,7 @@ const ProjectListStatusEditPage = () => {
           .loading-text {
             font-size: 1.5rem;
             color: var(--primary-color);
-            font-weight: bold;
+            font-weight: normal;
           }
           /* Hacemos que la tabla sea scrolleable manteniendo los headers fijos */
           .scrollable-table {

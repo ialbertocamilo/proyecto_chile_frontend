@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import Image from "next/image";
-import GoogleIcons from "./GoogleIcons";
+import GoogleIcons from "../../../public/GoogleIcons";
+import "../../../public/assets/css/globals.css";
 
 interface NavbarProps {
   setSidebarWidth: (width: string) => void;
@@ -46,7 +47,7 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
     padding: "5px",
     marginBottom: "10px",
     boxSizing: "border-box",
-    fontSize: "0.7rem",
+    fontSize: "0.78rem",
     lineHeight: "1.2",
     whiteSpace: "normal",
     wordWrap: "break-word",
@@ -55,8 +56,8 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
   };
 
   const iconStyle: React.CSSProperties = {
-    fontSize: "1.5rem",
-    marginBottom: "4px",
+    fontSize: "1.958rem",
+    marginBottom: "1px",
     color: "#fff",
   };
 
@@ -89,7 +90,7 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
           top: 0,
           zIndex: 1000,
           width: "100px", // Ancho fijo
-          backgroundColor: "#359EA7",
+          backgroundColor: "#3ca7b7",
           height: "100vh",
           fontFamily: "var(--font-family-base)",
           display: "flex",
@@ -134,9 +135,21 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link href="/project-workflow" className="nav-link text-white" style={navLinkStyle}>
+              <Link href="/project-workflow-part1" className="nav-link text-white" style={navLinkStyle}>
                 <span style={iconStyle} className="material-icons">note_add</span>
                 Proyecto Nuevo
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
+                <span style={iconStyle} className="material-icons">ballot</span>
+                Desarrollo de proyecto
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>
+                <span style={iconStyle} className="material-icons">input</span>
+                Ingreso de Datos de entrada
               </Link>
             </li>
           </ul>
@@ -189,7 +202,7 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
           .menu-container {
             width: 100%;
             flex: 1;
-            background-color: #359ea7;
+            background-color: #3ca7b7;
             padding: 0;
           }
         `}</style>

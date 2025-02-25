@@ -311,21 +311,21 @@ const ProjectListPage = () => {
   };
 
   return (
-    <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
+    <div className="d-flex" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
       <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
         <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container p-4" style={{ marginTop: "60px" }}>
-          <h4 className="fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>
+        <div className="container p-4" style={{ marginTop: "60px", fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+          <h4 style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
             Listado de proyectos
           </h4>
           {error && (
-            <p className="text-danger fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>
+            <p className="text-danger" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
               {error}
             </p>
           )}
           {loading ? (
-            <div className="loading-container">
+            <div className="loading-container" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
               <div className="loading-spinner"></div>
               <div className="loading-text">Cargando...</div>
             </div>
@@ -341,15 +341,17 @@ const ProjectListPage = () => {
                   style={{
                     fontFamily: "var(--font-family-base)",
                     fontSize: "var(--font-size-base)",
+                    fontWeight: "normal",
                   }}
                 />
                 <CustomButton
                   variant="save"
-                  onClick={() => router.push("/project-workflow")}
+                  onClick={() => router.push("/project-workflow-part1")}
                   style={{
                     fontFamily: "var(--font-family-base)",
                     fontSize: "var(--font-size-base)",
                     marginLeft: "1rem",
+                    fontWeight: "normal",
                   }}
                 >
                   + Proyecto Nuevo
@@ -357,15 +359,15 @@ const ProjectListPage = () => {
               </div>
 
               <div className="table-responsive scrollable-table">
-                <table className="custom-table" style={{ fontFamily: "var(--font-family-base)" }}>
+                <table className="custom-table" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
                   <thead>
                     <tr>
                       <th>ID</th>
                       <th>Estado del Proyecto</th>
                       <th>Nombre del proyecto</th>
-                      <th>Propietario</th>
-                      <th>Diseñador</th>
-                      <th>Director responsable</th>
+                      <th>Nombre del Propietario</th>
+                      <th>Nombre del Diseñador</th>
+                      <th>Director responsable de las obras</th>
                       <th>Dirección</th>
                       <th>Departamento</th>
                       <th>Acciones</th>
@@ -382,6 +384,8 @@ const ProjectListPage = () => {
                               style={{
                                 ...getStatusStyle(project.status),
                                 fontSize: "0.8rem",
+                                fontFamily: "var(--font-family-base)",
+                                fontWeight: "normal",
                               }}
                             >
                               {project.status ? project.status.toUpperCase() : "NO DISPONIBLE"}
@@ -405,6 +409,7 @@ const ProjectListPage = () => {
                                   padding: "0.5rem",
                                   width: "40px",
                                   height: "40px",
+                                  fontWeight: "normal",
                                 }}
                               />
                               <CustomButton
@@ -417,6 +422,7 @@ const ProjectListPage = () => {
                                   padding: "0.5rem",
                                   width: "40px",
                                   height: "40px",
+                                  fontWeight: "normal",
                                 }}
                               />
                             </div>
@@ -425,7 +431,7 @@ const ProjectListPage = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={9} className="text-center text-muted">
+                        <td colSpan={9} className="text-center text-muted" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
                           No hay proyectos disponibles o no coinciden con la búsqueda.
                         </td>
                       </tr>
@@ -448,25 +454,30 @@ const ProjectListPage = () => {
                   width: modalWidth,
                   height: modalHeight,
                   fontFamily: "var(--font-family-base)",
+                  fontWeight: "normal",
                 }}
                 tabIndex={-1}
                 role="dialog"
               >
                 <div className="modal-dialog modal-lg" role="document" style={{ width: "100%" }}>
-                  <div className="modal-content" style={{ height: "100%", fontFamily: "var(--font-family-base)" }}>
+                  <div className="modal-content" style={{ height: "100%", fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
                     <div className="modal-header">
-                      <h5 className="modal-title">Editar Proyecto #{editProjectData.id}</h5>
+                      <h5 className="modal-title" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                        Editar Proyecto #{editProjectData.id}
+                      </h5>
                       <button type="button" className="btn-close" onClick={handleCloseModal}></button>
                     </div>
-                    <div className="modal-body">
-                      <div className="row g-3" style={{ fontFamily: "var(--font-family-base)" }}>
+                    <div className="modal-body" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                      <div className="row g-3">
                         <div className="col-md-4">
-                          <label className="form-label">País</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            País
+                          </label>
                           <select
                             className="form-select"
                             value={editProjectData.country}
                             onChange={(e) => handleEditChange("country", e.target.value)}
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           >
                             <option value="">Seleccione un país</option>
                             {countryOptions.map((country) => (
@@ -477,14 +488,16 @@ const ProjectListPage = () => {
                           </select>
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Departamento</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Departamento
+                          </label>
                           <select
                             className="form-select"
                             value={editProjectData.divisions?.department}
                             onChange={(e) =>
                               handleEditDivisionChange("department", e.target.value)
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           >
                             <option value="">Seleccione un departamento</option>
                             {departmentOptions.map((dep) => (
@@ -495,14 +508,16 @@ const ProjectListPage = () => {
                           </select>
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Provincia</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Provincia
+                          </label>
                           <select
                             className="form-select"
                             value={editProjectData.divisions?.province}
                             onChange={(e) =>
                               handleEditDivisionChange("province", e.target.value)
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           >
                             <option value="">Seleccione una provincia</option>
                             {provinceOptions.map((prov) => (
@@ -513,14 +528,16 @@ const ProjectListPage = () => {
                           </select>
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Distrito</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Distrito
+                          </label>
                           <select
                             className="form-select"
                             value={editProjectData.divisions?.district}
                             onChange={(e) =>
                               handleEditDivisionChange("district", e.target.value)
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           >
                             <option value="">Seleccione un distrito</option>
                             {districtOptions.map((dist) => (
@@ -531,7 +548,9 @@ const ProjectListPage = () => {
                           </select>
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Nombre del Proyecto</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Nombre del Proyecto
+                          </label>
                           <input
                             type="text"
                             className="form-control"
@@ -539,11 +558,13 @@ const ProjectListPage = () => {
                             onChange={(e) =>
                               handleEditChange("name_project", e.target.value)
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Propietario</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Propietario
+                          </label>
                           <input
                             type="text"
                             className="form-control"
@@ -551,11 +572,13 @@ const ProjectListPage = () => {
                             onChange={(e) =>
                               handleEditChange("owner_name", e.target.value)
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Apellido Propietario</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Apellido Propietario
+                          </label>
                           <input
                             type="text"
                             className="form-control"
@@ -563,11 +586,13 @@ const ProjectListPage = () => {
                             onChange={(e) =>
                               handleEditChange("owner_lastname", e.target.value)
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Tipo de Edificación</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Tipo de Edificación
+                          </label>
                           <input
                             type="text"
                             className="form-control"
@@ -575,11 +600,13 @@ const ProjectListPage = () => {
                             onChange={(e) =>
                               handleEditChange("building_type", e.target.value)
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Uso Principal</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Uso Principal
+                          </label>
                           <input
                             type="text"
                             className="form-control"
@@ -587,11 +614,13 @@ const ProjectListPage = () => {
                             onChange={(e) =>
                               handleEditChange("main_use_type", e.target.value)
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Niveles</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Niveles
+                          </label>
                           <input
                             type="number"
                             className="form-control"
@@ -599,11 +628,13 @@ const ProjectListPage = () => {
                             onChange={(e) =>
                               handleEditChange("number_levels", Number(e.target.value))
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Viviendas x Nivel</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Viviendas x Nivel
+                          </label>
                           <input
                             type="number"
                             className="form-control"
@@ -611,11 +642,13 @@ const ProjectListPage = () => {
                             onChange={(e) =>
                               handleEditChange("number_homes_per_level", Number(e.target.value))
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Superficie (m2)</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Superficie (m2)
+                          </label>
                           <input
                             type="number"
                             className="form-control"
@@ -623,11 +656,13 @@ const ProjectListPage = () => {
                             onChange={(e) =>
                               handleEditChange("built_surface", Number(e.target.value))
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Latitude</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Latitude
+                          </label>
                           <input
                             type="number"
                             className="form-control"
@@ -635,11 +670,13 @@ const ProjectListPage = () => {
                             onChange={(e) =>
                               handleEditChange("latitude", Number(e.target.value))
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Longitude</label>
+                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                            Longitude
+                          </label>
                           <input
                             type="number"
                             className="form-control"
@@ -647,12 +684,12 @@ const ProjectListPage = () => {
                             onChange={(e) =>
                               handleEditChange("longitude", Number(e.target.value))
                             }
-                            style={{ fontFamily: "var(--font-family-base)" }}
+                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
                           />
                         </div>
                       </div>
                     </div>
-                    <div className="modal-footer" style={{ fontFamily: "var(--font-family-base)" }}>
+                    <div className="modal-footer" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
                       <CustomButton variant="back" onClick={handleCloseModal}>
                         Cancelar
                       </CustomButton>
@@ -687,14 +724,16 @@ const ProjectListPage = () => {
               padding: 8px;
               text-align: center;
               vertical-align: middle;
-              border: none;
             }
             .custom-table thead th {
-              background-color: #fff;
-              position: sticky;
-              top: 0;
-              z-index: 1;
+            background-color: #ffff; /* gris claro */
+            font-weight: normal; /* estilo normal, sin negrita */
+            color: #666; /* color gris, puedes ajustar el tono */
+            position: sticky;
+            top: 0;
+            z-index: 1;
             }
+
             .custom-table tbody tr {
               background-color: #fff;
               box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -716,7 +755,7 @@ const ProjectListPage = () => {
             .status-badge {
               display: inline-block;
               font-size: 1.1rem;
-              font-weight: bold;
+              font-weight: normal;
               padding: 8px 16px;
               border-radius: 0.5rem;
               font-family: var(--font-family-base);
@@ -728,6 +767,7 @@ const ProjectListPage = () => {
               align-items: center;
               height: 80vh;
               font-family: var(--font-family-base);
+              font-weight: normal;
             }
             .loading-spinner {
               border: 8px solid #f3f3f3;
@@ -749,7 +789,7 @@ const ProjectListPage = () => {
             .loading-text {
               font-size: 1.5rem;
               color: var(--primary-color);
-              font-weight: bold;
+              font-weight: normal;
               font-family: var(--font-family-base);
             }
             /* Hacemos que la tabla sea scrolleable manteniendo los headers fijos */

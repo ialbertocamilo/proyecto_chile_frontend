@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
+import "../../../public/assets/css/globals.css"; // Importa tu CSS global
 
 interface TopBarProps {
   sidebarWidth: string;
@@ -140,16 +141,17 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               <span
                 style={{
                   fontSize: "10px",
-                  backgroundColor: "#3ca7b7", // Color de fondo similar al de la imagen
-                  color: "white", // Texto en blanco
-                  padding: "4px 8px", // Espaciado interno
-                  borderRadius: "12px", // Bordes redondeados
-                  fontWeight: "bold", // Texto en negrita
-                  display: "inline-block", // Para ajustarse al contenido
-                  marginTop: "4px", // Espacio superior
+                  backgroundColor: "#3ca7b7",
+                  color: "white",
+                  padding: "4px 8px",
+                  borderRadius: "12px",
+                  fontWeight: "bold",
+                  display: "inline-block",
+                  marginTop: "4px",
+                  fontFamily: "var(--font-family-base)",
                 }}
               >
-                {getUserTypeText(user.userType)} {/* Usar la función para obtener el texto del rol */}
+                {getUserTypeText(user.userType)}
               </span>
             </div>
           </button>

@@ -1,4 +1,5 @@
 import React, { ButtonHTMLAttributes, FC } from 'react';
+import GoogleIcons from '../../../public/GoogleIcons';
 
 interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'save' | 'back' | 'delete' | 'editIcon' | 'deleteIcon' | 'backIcon' | 'forwardIcon' | 'addIcon';
@@ -16,100 +17,26 @@ const CustomButton: FC<CustomButtonProps> = ({
   ...rest
 }) => {
   let content: React.ReactNode = children;
+
   if (variant === 'editIcon') {
     content = (
-      <>
-        <span className="btn-icon-content">
-          {/* icono de editar */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            width="20"
-            height="20"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
-          </svg>
-        </span>
-      </>
+      <span className="btn-icon-content material-icons">edit</span>
     );
   } else if (variant === 'deleteIcon') {
     content = (
-      <>
-        <span className="btn-icon-content">
-          {/* icono de borrar */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            width="20"
-            height="20"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4a1 1 0 011 1v1H9V4a1 1 0 011-1z" />
-          </svg>
-        </span>
-      </>
+      <span className="btn-icon-content material-icons">delete</span>
     );
   } else if (variant === 'backIcon') {
     content = (
-      <>
-        <span className="btn-icon-content">
-          {/* icono de regresar (flecha izquierda) */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            width="20"
-            height="20"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </span>
-      </>
+      <span className="btn-icon-content material-icons">arrow_back</span>
     );
   } else if (variant === 'forwardIcon') {
     content = (
-      <>
-        <span className="btn-icon-content">
-          {/* icono de avanzar (flecha derecha) */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            width="20"
-            height="20"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </span>
-      </>
+      <span className="btn-icon-content material-icons">arrow_forward</span>
     );
   } else if (variant === 'addIcon') {
     content = (
-      <>
-        <span className="btn-icon-content">
-          {/* Ícono de agregar */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            width="20"
-            height="20"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </span>
-      </>
+      <span className="btn-icon-content material-icons">add</span>
     );
   }
 
@@ -118,6 +45,8 @@ const CustomButton: FC<CustomButtonProps> = ({
 
   return (
     <>
+      {/* Carga la hoja de estilos de Material Icons */}
+      <GoogleIcons />
       <button
         type="button"
         disabled={disabled || isLoading}
@@ -221,10 +150,22 @@ const CustomButton: FC<CustomButtonProps> = ({
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 20px;
+          font-size: 20px;
         }
-        .icon {
-          display: block;
+        .material-icons {
+          font-family: 'Material Icons';
+          font-weight: normal;
+          font-style: normal;
+          font-size: 20px;
+          line-height: 1;
+          letter-spacing: normal;
+          text-transform: none;
+          display: inline-block;
+          white-space: nowrap;
+          word-wrap: normal;
+          direction: ltr;
+          -webkit-font-feature-settings: 'liga';
+          -webkit-font-smoothing: antialiased;
         }
         .btn-label {
           display: inline-block;

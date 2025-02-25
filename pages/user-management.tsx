@@ -180,7 +180,7 @@ const UserManagement = () => {
       >
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "60px" }}>
-          <h2 className="fw-bold mb-4" style={{ color: "var(--text-color)" }}>
+          <h2 className="fw-normal mb-4" style={{ color: "var(--text-color)" }}>
             Listado de Usuarios
           </h2>
           <div className="input-group mb-3">
@@ -321,10 +321,10 @@ const UserManagement = () => {
           padding: 8px;
         }
         .custom-table th {
-          color: var(--primary-color);
-          font-weight: bold;
+          background-color: #fff; /* Fondo blanco */
+          color: #666; /* Letras en gris claro */
+          font-weight: normal; /* Sin negrita */
           border-bottom: 1px solid #ddd;
-          background-color: #fff !important;
           font-family: var(--font-family-base);
         }
       `}</style>

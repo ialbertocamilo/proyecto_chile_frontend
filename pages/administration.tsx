@@ -75,6 +75,12 @@ const AdministrationPage: React.FC = () => {
   const [elementsList, setElementsList] = useState<Element[]>([]);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
 
+  // Función para cerrar sesión y redirigir al login
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
+
   // ----------------------------
   // Funciones para obtener datos (GET)
   // ----------------------------
@@ -83,6 +89,7 @@ const AdministrationPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        handleLogout();
         return;
       }
       const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=100`;
@@ -92,7 +99,9 @@ const AdministrationPage: React.FC = () => {
       setMaterialsList(response.data.constants || []);
     } catch (error: unknown) {
       console.error("[fetchMaterialsList] Error al obtener lista de materiales:", error);
-      Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error");
+      Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error").then(() => {
+        handleLogout();
+      });
     }
   };
 
@@ -101,6 +110,7 @@ const AdministrationPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        handleLogout();
         return;
       }
       const url = `${constantUrlApiEndpoint}/details`;
@@ -110,7 +120,9 @@ const AdministrationPage: React.FC = () => {
       setDetails(response.data || []);
     } catch (error: unknown) {
       console.error("[fetchDetails] Error al obtener detalles:", error);
-      Swal.fire("Error", "Error al obtener detalles. Ver consola.", "error");
+      Swal.fire("Error", "Error al obtener detalles. Ver consola.", "error").then(() => {
+        handleLogout();
+      });
     }
   };
 
@@ -119,6 +131,7 @@ const AdministrationPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        handleLogout();
         return;
       }
       const url = `${constantUrlApiEndpoint}/elements/`;
@@ -128,7 +141,9 @@ const AdministrationPage: React.FC = () => {
       setElementsList(response.data || []);
     } catch (error: unknown) {
       console.error("[fetchElements] Error al obtener elementos:", error);
-      Swal.fire("Error", "Error al obtener elementos. Ver consola.", "error");
+      Swal.fire("Error", "Error al obtener elementos. Ver consola.", "error").then(() => {
+        handleLogout();
+      });
     }
   };
 
@@ -153,6 +168,7 @@ const AdministrationPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        handleLogout();
         return;
       }
       const url = `${constantUrlApiEndpoint}/constants/create`;
@@ -182,7 +198,9 @@ const AdministrationPage: React.FC = () => {
       } else {
         console.error("[handleCreateMaterial] Error al crear material:", error);
       }
-      Swal.fire("Error", "No se pudo crear el material", "error");
+      Swal.fire("Error", "No se pudo crear el material", "error").then(() => {
+        handleLogout();
+      });
     }
   };
 
@@ -200,6 +218,7 @@ const AdministrationPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        handleLogout();
         return;
       }
       const url = `${constantUrlApiEndpoint}/details/create`;
@@ -211,7 +230,9 @@ const AdministrationPage: React.FC = () => {
       await fetchDetails();
     } catch (error: unknown) {
       console.error("[handleCreateDetail] Error al crear detalle:", error);
-      Swal.fire("Error", "No se pudo crear el detalle", "error");
+      Swal.fire("Error", "No se pudo crear el detalle", "error").then(() => {
+        handleLogout();
+      });
     }
   };
 
@@ -240,6 +261,7 @@ const AdministrationPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        handleLogout();
         return;
       }
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
@@ -281,7 +303,9 @@ const AdministrationPage: React.FC = () => {
       await fetchElements();
     } catch (error: unknown) {
       console.error("[handleCreateElement] Error al crear elemento:", error);
-      Swal.fire("Error", "No se pudo crear el elemento", "error");
+      Swal.fire("Error", "No se pudo crear el elemento", "error").then(() => {
+        handleLogout();
+      });
     }
   };
 

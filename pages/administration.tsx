@@ -373,8 +373,7 @@ const AdministrationPage: React.FC = () => {
   // Se filtra la lista de elementos para obtener solo ventanas (para el select en Crear Puerta)
   const windowsList = elementsList.filter((el) => el.type === "window");
 
-  // ----------------------------
-  // Renderizado principal
+  // Renderizado principala
   // ----------------------------
   return (
     <>

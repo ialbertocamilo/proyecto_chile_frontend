@@ -39,7 +39,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   const router = useRouter();
   const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [step, setStep] = useState<number>(1);
-  const [createdProjectId, setCreatedProjectId] = useState<number | null>(null);
+  const [, setCreatedProjectId] = useState<number | null>(null);
   const [formData, setFormData] = useState<FormData>({
     name_project: "",
     owner_name: "",
@@ -132,13 +132,19 @@ const ProjectWorkflowPart1: React.FC = () => {
         // Se redirige a la segunda página para continuar el flujo
         router.push(`/project-workflow-part2?project_id=${project_id}`);
       });
-    } catch (error: any) {
-      if (axios.isAxiosError(error)) {
-        Swal.fire("Error al crear proyecto", error.response?.data?.detail || error.message, "error");
-      } else {
-        Swal.fire("Error al crear proyecto", "Error desconocido", "error");
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          Swal.fire(
+            "Error al crear proyecto",
+            error.response?.data?.detail || error.message,
+            "error"
+          );
+        } else if (error instanceof Error) {
+          Swal.fire("Error al crear proyecto", error.message, "error");
+        } else {
+          Swal.fire("Error al crear proyecto", "Error desconocido", "error");
+        }
       }
-    }
   };
 
   // Renderizado del encabezado principal

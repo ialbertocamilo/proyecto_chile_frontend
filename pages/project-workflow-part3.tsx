@@ -20,6 +20,38 @@ interface Detail {
   layer_thickness: number;
 }
 
+// Para las pestañas que no tienen la misma estructura que Detail
+interface TabItem {
+  name_detail: string;
+  value_u?: number;
+  info?: {
+    surface_color?: {
+      exterior?: { name: string };
+      interior?: { name: string };
+    };
+    aislacion_bajo_piso?: {
+      lambda?: number;
+      e_aisl?: number;
+    };
+    ref_aisl_vertical?: {
+      lambda?: number;
+      e_aisl?: number;
+      d?: number;
+    };
+    ref_aisl_horizontal?: {
+      lambda?: number;
+      e_aisl?: number;
+      d?: number;
+    };
+  };
+  // Para el caso de la pestaña "detalles"
+  scantilon_location?: string;
+  material?: string;
+  layer_thickness?: number;
+}
+
+type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos";
+
 const ProjectWorkflowPart3: React.FC = () => {
   useAuth();
   const router = useRouter();
@@ -66,11 +98,11 @@ const ProjectWorkflowPart3: React.FC = () => {
     layer_thickness: 10,
   });
   const [showTabsInStep4, setShowTabsInStep4] = useState(false);
-  const [tabStep4, setTabStep4] = useState<"detalles" | "muros" | "techumbre" | "pisos">("detalles");
-  const [detailsTabList, setDetailsTabList] = useState<any[]>([]);
-  const [murosTabList, setMurosTabList] = useState<any[]>([]);
-  const [techumbreTabList, setTechumbreTabList] = useState<any[]>([]);
-  const [pisosTabList, setPisosTabList] = useState<any[]>([]);
+  const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
+  const [detailsTabList, setDetailsTabList] = useState<Detail[]>([]);
+  const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
+  const [techumbreTabList, setTechumbreTabList] = useState<TabItem[]>([]);
+  const [pisosTabList, setPisosTabList] = useState<TabItem[]>([]);
 
   /** Estados para Recinto (Paso 7) **/
   const recintos = [
@@ -99,7 +131,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setFetchedDetails(response.data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error al obtener detalles:", error);
       Swal.fire("Error", "Error al obtener detalles. Ver consola.");
     }
@@ -119,7 +151,11 @@ const ProjectWorkflowPart3: React.FC = () => {
   };
 
   const handleCreateNewDetail = async () => {
-    if (!newDetailForm.scantilon_location || !newDetailForm.name_detail || !newDetailForm.material_id) {
+    if (
+      !newDetailForm.scantilon_location ||
+      !newDetailForm.name_detail ||
+      !newDetailForm.material_id
+    ) {
       Swal.fire("Error", "Todos los campos son obligatorios", "error");
       return;
     }
@@ -130,16 +166,24 @@ const ProjectWorkflowPart3: React.FC = () => {
         return;
       }
       const url = `${constantUrlApiEndpoint}/details/create`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
       const response = await axios.post(url, newDetailForm, { headers });
-      const returnedDetail = response.data.detail as Detail;
+      // Se recibe el detalle creado, pero no se usa la variable retornada
+      // const returnedDetail = response.data.detail as Detail;
       Swal.fire("Detalle creado", response.data.success, "success");
       fetchFetchedDetails();
       setShowCreateDetailModal(false);
       setNewDetailForm({ scantilon_location: "", name_detail: "", material_id: 0, layer_thickness: 10 });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        Swal.fire("Error al crear detalle", error.response?.data?.detail || error.message, "error");
+        Swal.fire(
+          "Error al crear detalle",
+          error.response?.data?.detail || error.message,
+          "error"
+        );
       } else {
         Swal.fire("Error al crear detalle", "Error desconocido", "error");
       }
@@ -172,7 +216,7 @@ const ProjectWorkflowPart3: React.FC = () => {
           requests[index].setter(response.value.data || []);
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error desconocido al obtener datos de pestañas step4:", error);
       Swal.fire("Error", "Error desconocido al obtener datos de pestañas", "error");
     }
@@ -197,17 +241,22 @@ const ProjectWorkflowPart3: React.FC = () => {
         return;
       }
       const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
       await axios.post(url, detailIds, { headers });
       Swal.fire("Detalles guardados", "Detalles agregados correctamente", "success").then(async () => {
         await fetchStep4TabsData();
         setShowTabsInStep4(true);
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         Swal.fire(
           "Error al guardar detalles",
-          error.response?.data?.message || error.response?.data?.detail || error.message,
+          error.response?.data?.message ||
+            error.response?.data?.detail ||
+            error.message,
           "error"
         );
       } else {
@@ -234,7 +283,9 @@ const ProjectWorkflowPart3: React.FC = () => {
           Desarrollo de proyecto
         </h2>
         <div className="d-flex align-items-center gap-4 mt-4">
-          <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>Proyecto:</span>
+          <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
+            Proyecto:
+          </span>
           <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
             {`Edificación Nº ${projectId ?? "xxxxx"}`}
           </CustomButton>
@@ -287,26 +338,30 @@ const ProjectWorkflowPart3: React.FC = () => {
     return (
       <div className="mt-4">
         <ul className="nav" style={{ display: "flex", padding: 0, listStyle: "none" }}>
-          {[
+          {([
             { key: "detalles", label: "Detalles" },
             { key: "muros", label: "Muros" },
             { key: "techumbre", label: "Techumbre" },
             { key: "pisos", label: "Pisos" },
-          ].map((item) => (
+          ] as { key: TabStep4; label: string }[]).map((item) => (
             <li key={item.key} style={{ flex: 1 }}>
               <button
                 style={{
                   width: "100%",
                   padding: "10px",
                   backgroundColor: "#fff",
-                  color: tabStep4 === item.key ? "var(--primary-color)" : "var(--secondary-color)",
+                  color:
+                    tabStep4 === item.key
+                      ? "var(--primary-color)"
+                      : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
-                  borderBottom: tabStep4 === item.key ? "3px solid var(--primary-color)" : "none",
+                  borderBottom:
+                    tabStep4 === item.key ? "3px solid var(--primary-color)" : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
-                onClick={() => setTabStep4(item.key as any)}
+                onClick={() => setTabStep4(item.key)}
               >
                 {item.label}
               </button>
@@ -318,10 +373,16 @@ const ProjectWorkflowPart3: React.FC = () => {
             <table className="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Ubicación Detalle</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Detalle</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Ubicación Detalle
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Nombre Detalle
+                  </th>
                   <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Material</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Espesor capa (cm)</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Espesor capa (cm)
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -340,16 +401,26 @@ const ProjectWorkflowPart3: React.FC = () => {
             <table className="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U [W/m2K]</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Color Exterior</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Color Interior</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Nombre
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    U [W/m2K]
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Color Exterior
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Color Interior
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {murosTabList.map((item, idx) => {
-                  const exteriorColor = item.info?.surface_color?.exterior?.name || "Desconocido";
-                  const interiorColor = item.info?.surface_color?.interior?.name || "Desconocido";
+                  const exteriorColor =
+                    item.info?.surface_color?.exterior?.name || "Desconocido";
+                  const interiorColor =
+                    item.info?.surface_color?.interior?.name || "Desconocido";
                   return (
                     <tr key={idx}>
                       <td>{item.name_detail}</td>
@@ -366,16 +437,26 @@ const ProjectWorkflowPart3: React.FC = () => {
             <table className="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U [W/m2K]</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Color Exterior</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Color Interior</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Nombre
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    U [W/m2K]
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Color Exterior
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Color Interior
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {techumbreTabList.map((item, idx) => {
-                  const exteriorColor = item.info?.surface_color?.exterior?.name || "Desconocido";
-                  const interiorColor = item.info?.surface_color?.interior?.name || "Desconocido";
+                  const exteriorColor =
+                    item.info?.surface_color?.exterior?.name || "Desconocido";
+                  const interiorColor =
+                    item.info?.surface_color?.interior?.name || "Desconocido";
                   return (
                     <tr key={idx}>
                       <td>{item.name_detail}</td>
@@ -626,8 +707,12 @@ const ProjectWorkflowPart3: React.FC = () => {
             <table className="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Ubicación Detalle</th>
-                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Detalle</th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Ubicación Detalle
+                  </th>
+                  <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                    Nombre Detalle
+                  </th>
                   <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Material</th>
                   <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Espesor capa (cm)</th>
                   <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
@@ -647,8 +732,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                 ))}
               </tbody>
             </table>
-            <div className="text-end">
-            </div>
+            <div className="text-end"></div>
           </div>
         </div>
       )}

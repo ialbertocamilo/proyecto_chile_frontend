@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Swal from "sweetalert2";
@@ -82,9 +82,9 @@ const AdministrationPage: React.FC = () => {
   };
 
   // ----------------------------
-  // Funciones para obtener datos (GET)
+  // Funciones para obtener datos (GET) envueltas en useCallback
   // ----------------------------
-  const fetchMaterialsList = async (page: number): Promise<void> => {
+  const fetchMaterialsList = useCallback(async (page: number): Promise<void> => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -103,9 +103,9 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
       });
     }
-  };
+  }, []);
 
-  const fetchDetails = async (): Promise<void> => {
+  const fetchDetails = useCallback(async (): Promise<void> => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -124,9 +124,9 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
       });
     }
-  };
+  }, []);
 
-  const fetchElements = async (): Promise<void> => {
+  const fetchElements = useCallback(async (): Promise<void> => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -145,7 +145,7 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
       });
     }
-  };
+  }, []);
 
   // ----------------------------
   // Estados y funciones para creación de nuevos ítems
@@ -313,16 +313,22 @@ const AdministrationPage: React.FC = () => {
   // Efectos para cargar datos según step
   // ----------------------------
   useEffect(() => {
-    if (step === 3) fetchMaterialsList(1);
-  }, [step]);
+    if (step === 3) {
+      fetchMaterialsList(1);
+    }
+  }, [step, fetchMaterialsList]);
 
   useEffect(() => {
-    if (step === 4) fetchDetails();
-  }, [step]);
+    if (step === 4) {
+      fetchDetails();
+    }
+  }, [step, fetchDetails]);
 
   useEffect(() => {
-    if (step === 5) fetchElements();
-  }, [step]);
+    if (step === 5) {
+      fetchElements();
+    }
+  }, [step, fetchElements]);
 
   // ----------------------------
   // Sidebar
@@ -364,7 +370,7 @@ const AdministrationPage: React.FC = () => {
           <span style={{ marginRight: "8px", fontSize: "1.3rem" }}>
             <i className={iconClass}></i>
           </span>
-          <span style={{ fontWeight: isSelected ? "normal" : "normal" }}>{title}</span>
+          <span style={{ fontWeight: "normal" }}>{title}</span>
         </div>
       </li>
     );
@@ -373,8 +379,7 @@ const AdministrationPage: React.FC = () => {
   // Se filtra la lista de elementos para obtener solo ventanas (para el select en Crear Puerta)
   const windowsList = elementsList.filter((el) => el.type === "window");
 
-  // Renderizado principala
-  // ----------------------------
+  // Renderizado principal
   return (
     <>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />

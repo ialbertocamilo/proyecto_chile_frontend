@@ -8,14 +8,12 @@ import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
-import dynamic from "next/dynamic";
+// Se eliminó la importación de dynamic, pues no se usa
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 
 // Importa tu componente existente para cargar GooIcons
 import GooIcons from "../public/GoogleIcons";
-
-const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), { ssr: false });
 
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
@@ -161,9 +159,13 @@ const ProjectWorkflowPart2: React.FC = () => {
         }
       }
       setMaterialsList(allMaterials);
-    } catch (error: any) {
-      console.error("Error al obtener materiales:", error);
-      Swal.fire("Error", "Error al obtener materiales. Ver consola.");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error al obtener materiales:", error);
+        Swal.fire("Error", "Error al obtener materiales. Ver consola.");
+      } else {
+        console.error("Error inesperado:", error);
+      }
     }
   };
 
@@ -197,7 +199,7 @@ const ProjectWorkflowPart2: React.FC = () => {
         setShowNewMaterialRow(false);
         setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         Swal.fire("Error al crear material", error.response?.data?.detail || error.message, "error");
       } else {
@@ -217,7 +219,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
       const response = await axios.get(url, { headers });
       setElementsList(response.data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         Swal.fire(
           `Error al obtener ${type === "window" ? "ventanas" : "puertas"}`,
@@ -241,7 +243,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
       const response = await axios.get(url, { headers });
       setAllWindowsForDoor(response.data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error al obtener ventanas para puerta:", error);
       Swal.fire("Error", "Error al obtener ventanas para puerta. Ver consola.");
     }
@@ -294,7 +296,7 @@ const ProjectWorkflowPart2: React.FC = () => {
         u_marco: 0,
         fm: 0,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         Swal.fire("Error", error.response?.data?.detail || error.message, "error");
       }
@@ -339,7 +341,7 @@ const ProjectWorkflowPart2: React.FC = () => {
         u_marco: 0,
         fm: 0,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         Swal.fire("Error", error.response?.data?.detail || error.message, "error");
       }
@@ -366,7 +368,7 @@ const ProjectWorkflowPart2: React.FC = () => {
         // Al guardar los materiales, pasamos al siguiente paso disponible (Paso 5)
         setStep(5);
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         Swal.fire("Error al guardar materiales", error.response?.data?.detail || error.message, "error");
       } else {
@@ -402,7 +404,7 @@ const ProjectWorkflowPart2: React.FC = () => {
         // Al guardar elementos, avanzamos al siguiente paso (Perfil de uso)
         setStep(6);
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         Swal.fire("Error", error.response?.data?.detail || error.message, "error");
       }
@@ -443,7 +445,7 @@ const ProjectWorkflowPart2: React.FC = () => {
         <div className="d-flex align-items-center gap-4 mt-4">
           <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>Proyecto:</span>
           <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
-            {`Edificación Nº ${projectId ?? "xxxxx"}`}
+            {`Edificación Nº ${projectId ?? 'xxxxx'}`}
           </CustomButton>
           {projectDepartment && (
             <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
@@ -482,7 +484,6 @@ const ProjectWorkflowPart2: React.FC = () => {
             paddingLeft: "50px",
             color: isSelected ? activeColor : inactiveColor,
             fontFamily: "var(--font-family-base)",
-            // Se fuerza fontWeight normal en todo momento
             fontWeight: "normal",
           }}
         >
@@ -723,7 +724,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                 {/* Paso 6: Perfil de uso (Tipología y caudales, etc.) */}
                 {step === 6 && (
                   <>
-                  <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
+                    <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
                       Perfil de uso  (Espacio aun en desarrollo, no funcional)
                     </h5>
                     <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
@@ -755,7 +756,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                     </ul>
                     <div className="tab-content border border-top-0 p-3">
                       <p style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-                        Contenido para "{tabTipologiaRecinto}"
+                      Contenido para &apos;{tabTipologiaRecinto}&apos;
                       </p>
                     </div>
                     <div className="mt-4 text-end">

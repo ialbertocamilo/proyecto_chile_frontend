@@ -145,6 +145,9 @@ const ProjectListPage = () => {
 
   const handleOpenEditModal = (project: Project): void => {
     console.log("[handleOpenEditModal] Abriendo modal para editar proyecto:", project.id);
+    localStorage.setItem(`project-${project.id}`, JSON.stringify(project));
+    router.push(`/project-workflow-part3?id=${project.id}`);
+  
     const dataToEdit: Project = {
       id: project.id,
       country: project.country || "",
@@ -315,8 +318,8 @@ const ProjectListPage = () => {
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
       <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
         <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container p-4" style={{ marginTop: "60px", fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-          <h4 style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+        <div className="container p-4" style={{ marginTop: "100px", fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+          <h4 style={{ fontSize: "30px", fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
             Listado de proyectos
           </h4>
           {error && (
@@ -331,46 +334,67 @@ const ProjectListPage = () => {
             </div>
           ) : (
             <>
-              <div className="input-group mb-3">
+              <div style={{ position: "relative", width: "100%", marginTop: "20px" }}>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="🔍︎"
+                  placeholder=""
                   value={search}
                   onChange={handleSearch}
                   style={{
-                    fontFamily: "var(--font-family-base)",
-                    fontSize: "var(--font-size-base)",
-                    fontWeight: "normal",
+                    width: "100%",
+                    height: "70px",
+                    borderRadius: "12px",
+                    paddingLeft: "2.5rem",
+                    paddingRight: "150px", // Espacio para el botón
+                    fontSize: "16px",
+                    border: "1px solid #ddd",
+                    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
                   }}
                 />
+                {/* Ícono de búsqueda a la izquierda */}
+                <span style={{
+                  position: "absolute",
+                  left: "20px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#aaa",
+                  fontSize: "24px"
+                }}>
+                  🔍︎
+                </span>
+                {/* Botón dentro del input */}
                 <CustomButton
                   variant="save"
-                  onClick={() => router.push("/project-workflow-part1")}
+                  onClick={() => router.push("/project-workflow")}
                   style={{
-                    fontFamily: "var(--font-family-base)",
-                    fontSize: "var(--font-size-base)",
-                    marginLeft: "1rem",
-                    fontWeight: "normal",
+                    position: "absolute",
+                    right: "30px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    height: "36px",
+                    fontSize: "14px",
+                    padding: "0 15px",
+                    borderRadius: "8px",
                   }}
                 >
                   + Proyecto Nuevo
                 </CustomButton>
               </div>
 
-              <div className="table-responsive scrollable-table">
-                <table className="custom-table" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+              <div className="table-responsive scrollable-table" style={{ marginTop: "16px" }}>
+                <table className="custom-table" style={{ fontFamily: "var(--font-family-base)", borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>Estado del Proyecto</th>
-                      <th>Nombre del proyecto</th>
-                      <th>Nombre del Propietario</th>
-                      <th>Nombre del Diseñador</th>
-                      <th>Director responsable de las obras</th>
-                      <th>Dirección</th>
-                      <th>Departamento</th>
-                      <th>Acciones</th>
+                      <th className="table-header">ID</th>
+                      <th className="table-header">Estado del <br /> proyecto</th>
+                      <th className="table-header">Nombre del <br /> proyecto</th>
+                      <th className="table-header">Nombre del <br /> propietario</th>
+                      <th className="table-header">Nombre del <br /> Diseñador</th>
+                      <th className="table-header">Director responsable <br /> De las obras</th>
+                      <th className="table-header">Dirección</th>
+                      <th className="table-header">Departamento</th>
+                      <th className="table-header"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -703,6 +727,12 @@ const ProjectListPage = () => {
             </>
           )}
           <style jsx>{`
+            .table-header {
+              color: #f5f5f5; /* Color gris claro */
+              font-size: 13px;
+              font-weight: bold; /* Puedes ajustar el grosor de la fuente si es necesario */
+              font-align: center;
+            }
             .custom-project-btn {
               background-color: #3ca7b7;
               border: 1px solid #3ca7b7;

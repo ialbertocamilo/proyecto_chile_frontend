@@ -14,10 +14,8 @@ interface NavbarProps {
 
 const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
   const router = useRouter();
-  // Se elimina el estado "isOpen" ya que no se usará para expandir/colapsar
   const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
 
-  // Se establece el ancho fijo de la sidebar (sin expansión)
   useEffect(() => {
     setSidebarWidth("100px");
   }, [setSidebarWidth]);
@@ -34,12 +32,11 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
     router.push("/login");
   };
 
-  // --- ESTILOS PRINCIPALES ---
   const navLinkStyle: React.CSSProperties = {
     cursor: "pointer",
     fontFamily: "var(--font-family-base)",
     display: "flex",
-    flexDirection: "column", // Ícono arriba, texto abajo
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
@@ -56,50 +53,49 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
   };
 
   const iconStyle: React.CSSProperties = {
-    fontSize: "1.958rem",
+    fontSize: "1.5rem",
     marginBottom: "1px",
     color: "#fff",
   };
 
-  // Contenedor del logo
   const logoContainerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center", // Centrado, ya que se eliminó la flecha
-    width: "100%",         // Ocupa todo el ancho del nav
-    minHeight: "80px",     // Ajusta el alto del área de logo
+    justifyContent: "center",
+    width: "100%",
+    minHeight: "80px",
     boxSizing: "border-box",
     padding: "0 0.5rem",
     marginBottom: "1rem",
     color: "#fff",
   };
 
-  // El tamaño del logo se mantiene fijo en el sidebar colapsado
   const logoSize = 80;
+
+  // Función para determinar si el enlace está activo
+  const isActive = (path: string) => router.pathname === path;
 
   return (
     <>
       <GoogleIcons />
       <nav
         className="sidebar d-flex flex-column p-3"
-        // Se eliminan los eventos de mouse para evitar la expansión al pasar el mouse
         style={{
           position: "fixed",
           left: 0,
           top: 0,
           zIndex: 1000,
-          width: "100px", // Ancho fijo
+          width: "100px",
           backgroundColor: "#3ca7b7",
           height: "100vh",
           fontFamily: "var(--font-family-base)",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          transition: "none", // Sin animación
+          transition: "none",
         }}
       >
-        {/* Contenedor del logo */}
         <div style={logoContainerStyle}>
           <Link href="/dashboard">
             <div
@@ -126,69 +122,186 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
             height: "100%",
           }}
         >
-          {/* Grupo Superior */}
           <ul className="nav flex-column">
             <li className="nav-item">
               <Link href="/project-list" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">dns</span>
+                <span
+                  style={{
+                    ...iconStyle,
+                    ...(isActive("/project-list") && {
+                      borderRadius: "50%",
+                      padding: "10px",
+                      backgroundColor: "rgba(50, 50, 50, 0.3)",
+                      boxShadow: "0 0 10px rgba(50, 50, 50, 0.0)",
+                    }),
+                  }}
+                  className="material-icons"
+                >
+                  dns
+                </span>
                 Proyectos
               </Link>
             </li>
             <li className="nav-item">
               <Link href="/project-workflow-part1" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">note_add</span>
+                <span
+                  style={{
+                    ...iconStyle,
+                    ...(isActive("/project-workflow-part1") && {
+                      borderRadius: "50%",
+                      padding: "10px",
+                      backgroundColor: "rgba(50, 50, 50, 0.3)",
+                      boxShadow: "0 0 10px rgba(50, 50, 50, 0.0)",
+                    }),
+                  }}
+                  className="material-icons"
+                >
+                  note_add
+                </span>
                 Proyecto Nuevo
               </Link>
             </li>
             <li className="nav-item">
               <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">ballot</span>
+                <span
+                  style={{
+                    ...iconStyle,
+                    ...(isActive("/project-workflow-part3") && {
+                      borderRadius: "50%",
+                      padding: "10px",
+                      backgroundColor: "rgba(50, 50, 50, 0.3)",
+                      boxShadow: "0 0 10px rgba(50, 50, 50, 0.0)",
+                    }),
+                  }}
+                  className="material-icons"
+                >
+                  ballot
+                </span>
                 Desarrollo de proyecto
               </Link>
             </li>
             <li className="nav-item">
               <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">input</span>
+                <span
+                  style={{
+                    ...iconStyle,
+                    ...(isActive("/project-workflow-part2") && {
+                      borderRadius: "50%",
+                      padding: "10px",
+                      backgroundColor: "rgba(50, 50, 50, 0.3)",
+                      boxShadow: "0 0 10px rgba(50, 50, 50, 0.0)",
+                    }),
+                  }}
+                  className="material-icons"
+                >
+                  input
+                </span>
                 Ingreso de Datos de entrada
               </Link>
             </li>
           </ul>
 
-          {/* Grupo Inferior alineado al fondo */}
           <ul className="nav flex-column" style={{ marginTop: "auto" }}>
             <li className="nav-item">
               <Link href="/dashboard" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">dashboard</span>
+                <span
+                  style={{
+                    ...iconStyle,
+                    ...(isActive("/dashboard") && {
+                      borderRadius: "50%",
+                      padding: "10px",
+                      backgroundColor: "rgba(50, 50, 50, 0.3)",
+                      boxShadow: "0 0 10px rgba(50, 50, 50, 0.0)",
+                    }),
+                  }}
+                  className="material-icons"
+                >
+                  dashboard
+                </span>
                 Dashboard
               </Link>
             </li>
             <li className="nav-item">
               <Link href="/project-status" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">format_list_bulleted</span>
+                <span
+                  style={{
+                    ...iconStyle,
+                    ...(isActive("/project-status") && {
+                      borderRadius: "50%",
+                      padding: "10px",
+                      backgroundColor: "rgba(50, 50, 50, 0.3)",
+                      boxShadow: "0 0 10px rgba(50, 50, 50, 0.0)",
+                    }),
+                  }}
+                  className="material-icons"
+                >
+                  format_list_bulleted
+                </span>
                 Proyectos registrados
               </Link>
             </li>
             <li className="nav-item">
               <Link href="/user-management" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">person</span>
+                <span
+                  style={{
+                    ...iconStyle,
+                    ...(isActive("/user-management") && {
+                      borderRadius: "50%",
+                      padding: "10px",
+                      backgroundColor: "rgba(50, 50, 50, 0.3)",
+                      boxShadow: "0 0 10px rgba(50, 50, 50, 0.0)",
+                    }),
+                  }}
+                  className="material-icons"
+                >
+                  person
+                </span>
                 Usuarios
               </Link>
             </li>
             <li className="nav-item">
               <Link href="/administration" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">build</span>
+                <span
+                  style={{
+                    ...iconStyle,
+                    ...(isActive("/administration") && {
+                      borderRadius: "50%",
+                      padding: "10px",
+                      backgroundColor: "rgba(50, 50, 50, 0.3)",
+                      boxShadow: "0 0 10px rgba(50, 50, 50, 0.0)",
+                    }),
+                  }}
+                  className="material-icons"
+                >
+                  build
+                </span>
                 Parámetros
               </Link>
             </li>
             <li className="nav-item">
               <Link href="/settings" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">settings</span>
+                <span
+                  style={{
+                    ...iconStyle,
+                    ...(isActive("/settings") && {
+                      borderRadius: "50%",
+                      padding: "10px",
+                      backgroundColor: "rgba(50, 50, 50, 0.3)",
+                      boxShadow: "0 0 10px rgba(50, 50, 50, 0.0)",
+                    }),
+                  }}
+                  className="material-icons"
+                >
+                  settings
+                </span>
                 Ajustes
               </Link>
             </li>
             <li className="nav-item">
               <div className="nav-link text-white" style={navLinkStyle} onClick={handleLogout}>
-                <span style={iconStyle} className="material-icons">logout</span>
+                <span style={iconStyle} className="material-icons">
+                  logout
+                </span>
                 Salir
               </div>
             </li>

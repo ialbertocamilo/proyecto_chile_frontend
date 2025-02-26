@@ -1,56 +1,60 @@
-// src/components/InteractiveMap.tsx
-import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import React, { useEffect, useState } from "react";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import L, { LatLngExpression } from "leaflet";
 
 interface InteractiveMapProps {
   onLocationSelect: (latlng: { lat: number; lng: number }) => void;
+  initialLat?: number;
+  initialLng?: number;
 }
 
-const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect }) => {
-  const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
+const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect, initialLat, initialLng }) => {
+  const [map, setMap] = useState<L.Map | null>(null);
 
   useEffect(() => {
-    // Configurar los íconos de Leaflet
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png",
-      iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-      shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
-    });
-  }, []);
+    // Inicializar el mapa
+    const leafletMap = L.map("map").setView(
+      initialLat && initialLng ? [initialLat, initialLng] : [0, 0],
+      13
+    );
 
-  // Componente interno para manejar el click en el mapa
-  const MapClickHandler = () => {
-    useMapEvents({
-      click(e) {
-        setPosition(e.latlng);
-        onLocationSelect(e.latlng);
-      },
-    });
-    return null;
-  };
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '© OpenStreetMap contributors',
+    }).addTo(leafletMap);
 
-  // Centro inicial: lat -33.047237, lng -71.612686
-  const initialCenter: LatLngExpression = [-33.047237, -71.612686];
+    // Agregar un marcador si hay una ubicación inicial
+    if (initialLat && initialLng) {
+      L.marker([initialLat, initialLng]).addTo(leafletMap);
+    }
+
+    // Manejar clics en el mapa
+    leafletMap.on("click", (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      onLocationSelect({ lat, lng });
+
+      // Agregar un marcador en la ubicación seleccionada
+      L.marker([lat, lng]).addTo(leafletMap);
+    });
+
+    setMap(leafletMap);
+
+    // Limpiar el mapa al desmontar el componente
+    return () => {
+      leafletMap.remove();
+    };
+  }, [onLocationSelect, initialLat, initialLng]);
 
   return (
-    <MapContainer center={initialCenter} zoom={13} style={{ height: "400px", width: "100%" }}>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <MapClickHandler />
-      {position && (
-        <Marker position={[position.lat, position.lng]}>
-          <Popup>
-            Lat: {position.lat.toFixed(4)} <br /> Lon: {position.lng.toFixed(4)}
-          </Popup>
-        </Marker>
-      )}
-    </MapContainer>
+    <div
+      id="map"
+      style={{
+        height: "400px", // Ajusta la altura del mapa
+        width: "80%",   // Ajusta el ancho del mapa
+        borderRadius: "20px", // Bordes circulares
+        overflow: "hidden", // Asegura que el contenido del mapa no sobresalga de los bordes
+        marginTop: "20px"
+      }}
+    ></div>
   );
 };
 

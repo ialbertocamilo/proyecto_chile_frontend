@@ -11,6 +11,8 @@ import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 
+
+
 interface Detail {
   id_detail: number;
   scantilon_location: string;
@@ -255,8 +257,8 @@ const ProjectWorkflowPart3: React.FC = () => {
         Swal.fire(
           "Error al guardar detalles",
           error.response?.data?.message ||
-            error.response?.data?.detail ||
-            error.message,
+          error.response?.data?.detail ||
+          error.message,
           "error"
         );
       } else {
@@ -279,7 +281,7 @@ const ProjectWorkflowPart3: React.FC = () => {
   const renderMainHeader = () =>
     step >= 4 ? (
       <div className="mb-3">
-        <h2 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
+        <h2 style={{ marginTop: "120px", fontSize: "40px", fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
           Desarrollo de proyecto
         </h2>
         <div className="d-flex align-items-center gap-4 mt-4">
@@ -531,7 +533,7 @@ const ProjectWorkflowPart3: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => { }} setSidebarWidth={setSidebarWidth} />
       <TopBar sidebarWidth={sidebarWidth} />
       <div
         className="container"

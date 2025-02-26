@@ -79,6 +79,7 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
         right: 0,
         zIndex: 1100,
         fontFamily: "var(--font-family-base)",
+        height: "100px", // Aumenta la altura de la TopBar
       }}
     >
       <div

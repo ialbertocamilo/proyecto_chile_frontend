@@ -11,11 +11,7 @@ import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
-
-// Importa tu componente existente para cargar GooIcons
 import GooIcons from "../public/GoogleIcons";
-
-
 
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), { ssr: false });
 
@@ -55,17 +51,15 @@ const ProjectWorkflowPart1: React.FC = () => {
     number_levels: 0,
     number_homes_per_level: 0,
     built_surface: 0,
-    latitude: 0,
-    longitude: 0,
+    latitude: -33.4589314398474,
+    longitude: -70.6703553846175,
   });
   const [locationSearch, setLocationSearch] = useState("");
 
-  // Manejo de inputs del formulario
   const handleFormInputChange = (field: keyof FormData, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Función para validar que todos los campos del paso 1 estén completos
   const validateStep1 = (): boolean => {
     if (
       !formData.name_project.trim() ||
@@ -81,25 +75,35 @@ const ProjectWorkflowPart1: React.FC = () => {
       formData.number_homes_per_level <= 0 ||
       formData.built_surface <= 0
     ) {
-      Swal.fire("Campos incompletos", "Por favor complete todos los campos obligatorios.", "warning");
+      Swal.fire({
+        title: "Campos incompletos",
+        text: "Por favor complete todos los campos obligatorios.",
+        icon: "warning",
+        confirmButtonText: "Entendido",
+        confirmButtonColor: "#3085d6",
+      });
       return false;
     }
     return true;
   };
 
-  // Función que se invoca al dar clic en "Grabar Datos" en el paso 1
   const handleStep1Submit = () => {
     if (validateStep1()) {
       setStep(2);
     }
   };
 
-  // Función para crear el proyecto
   const handleCreateProject = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        Swal.fire({
+          title: "Token no encontrado",
+          text: "Por favor inicie sesión.",
+          icon: "warning",
+          confirmButtonText: "Entendido",
+          confirmButtonColor: "#3085d6",
+        });
         return;
       }
       const requestBody = {
@@ -120,47 +124,81 @@ const ProjectWorkflowPart1: React.FC = () => {
         latitude: formData.latitude,
         longitude: formData.longitude,
       };
+
+      console.log("RequestBody:", requestBody);
+
       const url = `${constantUrlApiEndpoint}/projects/create`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const response = await axios.post(url, requestBody, { headers });
       const { project_id, message } = response.data;
       setCreatedProjectId(project_id);
 
-      // Guardamos el ID y el departamento en el localStorage
       localStorage.setItem("project_id", project_id.toString());
       localStorage.setItem("project_department", formData.department);
 
-      Swal.fire("Proyecto creado", `ID: ${project_id} / Mensaje: ${message}`, "success").then(() => {
-        // Se redirige a la segunda página para continuar el flujo
+      Swal.fire({
+        title: "Proyecto creado",
+        text: `ID: ${project_id} / Mensaje: ${message}`,
+        icon: "success",
+        confirmButtonText: "Continuar",
+        confirmButtonColor: "#3085d6",
+      }).then(() => {
         router.push(`/project-workflow-part2?project_id=${project_id}`);
       });
     } catch (error: unknown) {
+      console.error("Error en handleCreateProject:", error);
+      let errorMessage: string | object = "Error desconocido";
       if (axios.isAxiosError(error)) {
-        Swal.fire(
-          "Error al crear proyecto",
-          error.response?.data?.detail || error.message,
-          "error"
-        );
+        errorMessage = error.response?.data?.detail || error.message;
+        console.error("Error response data:", error.response?.data);
       } else if (error instanceof Error) {
-        Swal.fire("Error al crear proyecto", error.message, "error");
-      } else {
-        Swal.fire("Error al crear proyecto", "Error desconocido", "error");
+        errorMessage = error.message;
       }
+      if (typeof errorMessage !== "string") {
+        errorMessage = JSON.stringify(errorMessage);
+      }
+
+      // Si el error es por nombre duplicado, regresa al paso 1 y muestra un mensaje amigable
+      if (errorMessage.includes("El Nombre del Proyecto") && errorMessage.includes("ya existe")) {
+        setStep(1);
+        Swal.fire({
+          title: "Ooops...",
+          text: "El nombre del proyecto ya existe. Por favor corrija el campo 'Nombre del proyecto'.",
+          icon: "error",
+          confirmButtonText: "Entendido",
+          confirmButtonColor: "#3085d6",
+        });
+        return;
+      }
+
+      // Para otros errores, regresa al paso 1 y muestra un mensaje con el mismo estilo
+      setStep(1);
+      Swal.fire({
+        title: "Algo salió mal",
+        text: "Falta completar algún campo o hay un error en la información. Por favor revise y complete los campos correctamente.",
+        icon: "error",
+        confirmButtonText: "Entendido",
+        confirmButtonColor: "#3085d6",
+      });
     }
   };
 
-  // Renderizado del encabezado principal
   const renderMainHeader = () =>
     step <= 2 ? (
       <div className="mb-3">
-        {/* Se elimina la clase fw-bold para evitar negritas */}
-        <h1 style={{ fontSize: "40px", fontWeight: "normal", fontFamily: "var(--font-family-base)", marginTop: "120px" }}>
+        <h1
+          style={{
+            fontSize: "40px",
+            fontWeight: "normal",
+            fontFamily: "var(--font-family-base)",
+            marginTop: "120px",
+          }}
+        >
           Proyecto nuevo
         </h1>
       </div>
     ) : null;
 
-  // Sidebar con los dos primeros pasos usando Google Material Icons
   const SidebarItem = ({
     stepNumber,
     iconName,
@@ -188,11 +226,13 @@ const ProjectWorkflowPart1: React.FC = () => {
             paddingLeft: "50px",
             color: isSelected ? activeColor : inactiveColor,
             fontFamily: "var(--font-family-base)",
-            fontWeight: "normal", // Fuerza el texto a peso normal
+            fontWeight: "normal",
           }}
         >
           <span style={{ marginRight: "15px", fontSize: "2.5rem", lineHeight: "1" }}>
-            <span className="material-icons" style={{ fontSize: "inherit" }}>{iconName}</span>
+            <span className="material-icons" style={{ fontSize: "inherit" }}>
+              {iconName}
+            </span>
           </span>
           <span style={{ fontWeight: "normal", whiteSpace: "normal", width: "180px" }}>{title}</span>
         </div>
@@ -203,7 +243,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => { }} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
       <TopBar sidebarWidth={sidebarWidth} />
       <div
         className="container"
@@ -214,7 +254,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           marginRight: "50px",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
-          fontWeight: "normal", // Asegura el peso normal en todo el contenido
+          fontWeight: "normal",
         }}
       >
         {renderMainHeader()}
@@ -225,7 +265,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                 style={{
                   width: "380px",
                   padding: "40px",
-                  boxSizing: "border-box"
+                  boxSizing: "border-box",
                 }}
               >
                 <ul className="nav flex-column" style={{ height: "100%" }}>
@@ -234,151 +274,144 @@ const ProjectWorkflowPart1: React.FC = () => {
                     iconName="assignment_ind"
                     title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
                   />
-                  <SidebarItem
-                    stepNumber={2}
-                    iconName="location_on"
-                    title="Ubicación del proyecto" />
+                  <SidebarItem stepNumber={2} iconName="location_on" title="Ubicación del proyecto" />
                 </ul>
               </div>
-              <div style={{
-                flex: 1,
-                padding: "40px",
-
-              }}>
+              <div style={{ flex: 1, padding: "40px" }}>
                 {step === 1 && (
                   <>
                     {/* Paso 1 */}
-                    <div style={{ border: "1px solid #ccc", borderRadius: "8px", padding: "30px", marginBottom: "20px" }}>
-                      {/* Nombre del proyecto */}
-                      <div className="row mb-3">
-                        <div className="col-12">
-                          <label className="form-label">Nombre del proyecto</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={formData.name_project}
-                            onChange={(e) => handleFormInputChange("name_project", e.target.value)}
-                            style={{ width: "49%" }}
-                          />
-                        </div>
+                    <div className="row mb-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Nombre del proyecto</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.name_project}
+                          onChange={(e) => handleFormInputChange("name_project", e.target.value)}
+                        />
                       </div>
-
-                      {/* Propietario / Representante legal ID */}
-                      <div className="row mb-3">
-                        <div className="col-12 col-md-6">
-                          <label className="form-label">Propietario / Representante legal</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={formData.owner_name}
-                            onChange={(e) => handleFormInputChange("owner_name", e.target.value)}
-                          />
-                        </div>
-                        <div className="col-12 col-md-6">
-                          <label className="form-label">ID</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={formData.owner_lastname}
-                            onChange={(e) => handleFormInputChange("owner_lastname", e.target.value)}
-                          />
-                        </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Nombre del propietario</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.owner_name}
+                          onChange={(e) => handleFormInputChange("owner_name", e.target.value)}
+                        />
                       </div>
-
-                      {/* Departamento y Provincia */}
-                      <div className="row mb-3">
-                        <div className="col-12 col-md-6">
-                          <label className="form-label">Departamento</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={formData.department}
-                            onChange={(e) => handleFormInputChange("department", e.target.value)}
-                          />
-                        </div>
-                        <div className="col-12 col-md-6">
-                          <label className="form-label">Provincia</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={formData.province}
-                            onChange={(e) => handleFormInputChange("province", e.target.value)}
-                          />
-                        </div>
+                    </div>
+                    <div className="row mb-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Apellido del propietario</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.owner_lastname}
+                          onChange={(e) => handleFormInputChange("owner_lastname", e.target.value)}
+                        />
                       </div>
-
-                      {/* Tipo de edificación y Tipo de uso principal */}
-                      <div className="row mb-3">
-                        <div className="col-12 col-md-6">
-                          <label className="form-label">Tipo de edificación</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={formData.building_type}
-                            onChange={(e) => handleFormInputChange("building_type", e.target.value)}
-                          />
-                        </div>
-                        <div className="col-12 col-md-6">
-                          <label className="form-label">Tipo de uso principal</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={formData.main_use_type}
-                            onChange={(e) => handleFormInputChange("main_use_type", e.target.value)}
-                          />
-                        </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">País</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.country}
+                          onChange={(e) => handleFormInputChange("country", e.target.value)}
+                        />
                       </div>
-
-                      {/* Número de niveles, Número de viviendas y oficinas por nivel, Superficie construida (m²) */}
-                      <GooIcons />
-                      <Navbar setActiveView={() => { }} setSidebarWidth={setSidebarWidth} />
-                      <TopBar sidebarWidth={sidebarWidth} />
-                      <div className="container">
-                        <div className="row mb-3">
-                          <div className="col-12 col-md-4">
-                            <label className="form-label">Número de niveles</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              value={formData.number_levels || ""}
-                              onChange={(e) =>
-                                handleFormInputChange("number_levels", parseInt(e.target.value) || 0)
-                              }
-                            />
-                          </div>
-                          <div className="col-12 col-md-4">
-                            <label className="form-label">Número de viviendas y oficinas por nivel</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              value={formData.number_homes_per_level || ""}
-                              onChange={(e) =>
-                                handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)
-                              }
-                            />
-                          </div>
-                          <div className="col-12 col-md-4">
-                            <label className="form-label">Superficie construida (m²)</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              value={formData.built_surface || ""}
-                              onChange={(e) =>
-                                handleFormInputChange("built_surface", parseFloat(e.target.value) || 0)
-                              }
-                            />
-                          </div>
-                        </div>
+                    </div>
+                    <div className="row mb-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Departamento</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.department}
+                          onChange={(e) => handleFormInputChange("department", e.target.value)}
+                        />
                       </div>
-
-
-                      {/* Botón Grabar Datos */}
-                      <div className="text-end">
-                        <CustomButton variant="save" onClick={handleStep1Submit}>
-                          <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
-                          Grabar Datos
-                        </CustomButton>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Provincia</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.province}
+                          onChange={(e) => handleFormInputChange("province", e.target.value)}
+                        />
                       </div>
+                    </div>
+                    <div className="row mb-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Distrito</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.district}
+                          onChange={(e) => handleFormInputChange("district", e.target.value)}
+                        />
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Tipo de edificación</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.building_type}
+                          onChange={(e) => handleFormInputChange("building_type", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="row mb-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Tipo de uso principal</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.main_use_type}
+                          onChange={(e) => handleFormInputChange("main_use_type", e.target.value)}
+                        />
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Número de niveles</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={formData.number_levels}
+                          onChange={(e) =>
+                            handleFormInputChange("number_levels", parseInt(e.target.value) || 0)
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="row mb-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Número de viviendas / oficinas x nivel</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={formData.number_homes_per_level}
+                          onChange={(e) =>
+                            handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)
+                          }
+                        />
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Superficie construida (m²)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={formData.built_surface}
+                          onChange={(e) =>
+                            handleFormInputChange("built_surface", parseFloat(e.target.value) || 0)
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="text-end">
+                      <CustomButton variant="save" onClick={handleStep1Submit}>
+                        <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
+                        Grabar Datos
+                      </CustomButton>
                     </div>
                   </>
                 )}
@@ -395,7 +428,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                               className="form-control"
                               value={locationSearch}
                               onChange={(e) => setLocationSearch(e.target.value)}
-                              style={{ paddingLeft: "40px" }} // Añade padding para el ícono
+                              style={{ paddingLeft: "40px" }}
                             />
                             <span
                               className="material-icons"
@@ -420,7 +453,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             initialLat={formData.latitude}
                             initialLng={formData.longitude}
                           />
-                          {/* Botón de Ubicación actual movido aquí */}
                           <CustomButton
                             variant="save"
                             style={{ width: "30%", height: "50px", marginTop: "30px", fontSize: "15px", padding: "10px 20px" }}
@@ -431,26 +463,32 @@ const ProjectWorkflowPart1: React.FC = () => {
                                     const { latitude, longitude } = position.coords;
                                     handleFormInputChange("latitude", latitude);
                                     handleFormInputChange("longitude", longitude);
-                                    Swal.fire(
-                                      "Ubicación actual obtenida",
-                                      `Lat: ${latitude}, Lon: ${longitude}`,
-                                      "success"
-                                    );
+                                    Swal.fire({
+                                      title: "Ubicación obtenida",
+                                      text: `Lat: ${latitude}, Lon: ${longitude}`,
+                                      icon: "success",
+                                      confirmButtonText: "OK",
+                                      confirmButtonColor: "#3085d6",
+                                    });
                                   },
-                                  (error) => {
-                                    Swal.fire(
-                                      "Error al obtener la ubicación",
-                                      error.message,
-                                      "error"
-                                    );
+                                  () => {
+                                    Swal.fire({
+                                      title: "Error",
+                                      text: "No se pudo obtener la ubicación.",
+                                      icon: "error",
+                                      confirmButtonText: "Entendido",
+                                      confirmButtonColor: "#3085d6",
+                                    });
                                   }
                                 );
                               } else {
-                                Swal.fire(
-                                  "Geolocalización no soportada",
-                                  "Tu navegador no soporta la geolocalización.",
-                                  "error"
-                                );
+                                Swal.fire({
+                                  title: "Error",
+                                  text: "Geolocalización no soportada.",
+                                  icon: "error",
+                                  confirmButtonText: "Entendido",
+                                  confirmButtonColor: "#3085d6",
+                                });
                               }
                             }}
                           >
@@ -459,7 +497,9 @@ const ProjectWorkflowPart1: React.FC = () => {
                           </CustomButton>
                         </div>
                         <div className="col-12 col-md-4">
-                          <label className="form-label" style={{ width: "100%", height: "20px", marginLeft: "-80px", marginTop: "20px" }}>Datos de ubicaciones encontradas</label>
+                          <label className="form-label" style={{ width: "100%", height: "20px", marginLeft: "-80px", marginTop: "20px" }}>
+                            Datos de ubicaciones encontradas
+                          </label>
                           <textarea
                             className="form-control mb-2"
                             rows={5}
@@ -483,8 +523,6 @@ const ProjectWorkflowPart1: React.FC = () => {
           </div>
         </div>
       </div>
-
-
 
       <style jsx>{`
         .card {

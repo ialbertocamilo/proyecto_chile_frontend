@@ -393,9 +393,6 @@ const ProjectWorkflowPart2: React.FC = () => {
   const renderMainHeader = () =>
     step >= 3 ? (
       <div className="mb-3">
-<<<<<<< HEAD
-        <h2 style={{ fontSize: "40px", marginTop: "130px", fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-=======
         <h2
           style={{
             fontSize: "40px",
@@ -404,7 +401,6 @@ const ProjectWorkflowPart2: React.FC = () => {
             fontFamily: "var(--font-family-base)",
           }}
         >
->>>>>>> respaldo
           Datos de entrada
         </h2>
         <div className="d-flex align-items-center gap-4 mt-4">

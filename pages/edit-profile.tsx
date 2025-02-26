@@ -158,7 +158,7 @@ const EditProfile = () => {
         }}
       >
         <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container p-4" style={{ marginTop: "60px" }}>
+        <div className="container p-4" style={{ marginTop: "150px" }}>
           {/* Encabezado y botones */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2

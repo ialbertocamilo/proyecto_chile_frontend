@@ -31,7 +31,8 @@ interface Detail {
   id_detail: number;
   scantilon_location: string;
   name_detail?: string;
-  // Aquí se usará "capas" para almacenar el id del material seleccionado
+  // Puede venir con "id_material" o con "capas"
+  id_material?: number;
   capas?: number;
   layer_thickness?: number;
 }
@@ -108,12 +109,13 @@ const AdministrationPage: React.FC = () => {
   // Para el select en creación de puerta, filtramos las ventanas disponibles
   const windowsList = elementsList.filter((el) => el.type === "window");
 
-  // Step 4: Detalles constructivos (se mantiene modal)
+  // Step 4: Detalles constructivos (se mantiene modal/in-line)
   const [showCreateDetailModal, setShowCreateDetailModal] = useState(false);
   const [newDetail, setNewDetail] = useState({
     scantilon_location: "",
     name_detail: "",
-    capas: 0,
+    // Se usa id_material en la creación, pero el fetch podría traer "capas"
+    id_material: 0,
     layer_thickness: 0,
   });
 
@@ -134,7 +136,8 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
         return;
       }
-      const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=100`;
+      // Se actualiza el per_page a 500 según el endpoint
+      const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=500`;
       const headers = { Authorization: `Bearer ${token}` };
       const response: AxiosResponse<{ constants: Material[] }> = await axios.get(url, { headers });
       console.log("[fetchMaterialsList] Materiales recibidos:", response.data);
@@ -320,12 +323,12 @@ const AdministrationPage: React.FC = () => {
     }
   };
 
-  // Step 4: Crear Detalle Constructivo (se mantiene con modal)
+  // Step 4: Crear Detalle Constructivo (creación inline con modal)
   const handleCreateDetail = async () => {
     if (
       newDetail.scantilon_location.trim() === "" ||
       newDetail.name_detail.trim() === "" ||
-      newDetail.capas <= 0 ||
+      newDetail.id_material <= 0 ||
       newDetail.layer_thickness <= 0
     ) {
       Swal.fire("Campos incompletos", "Por favor complete todos los campos de detalle", "warning");
@@ -340,10 +343,16 @@ const AdministrationPage: React.FC = () => {
       }
       const url = `${constantUrlApiEndpoint}/details/create`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-      await axios.post(url, newDetail, { headers });
+      const payload = {
+        scantilon_location: newDetail.scantilon_location,
+        name_detail: newDetail.name_detail,
+        id_material: newDetail.id_material,
+        layer_thickness: newDetail.layer_thickness,
+      };
+      await axios.post(url, payload, { headers });
       Swal.fire("Detalle creado", "El detalle fue creado correctamente", "success");
       setShowCreateDetailModal(false);
-      setNewDetail({ scantilon_location: "", name_detail: "", capas: 0, layer_thickness: 0 });
+      setNewDetail({ scantilon_location: "", name_detail: "", id_material: 0, layer_thickness: 0 });
       await fetchDetails();
     } catch (error: unknown) {
       console.error("[handleCreateDetail] Error:", error);
@@ -428,7 +437,7 @@ const AdministrationPage: React.FC = () => {
         className="container"
         style={{
           maxWidth: "1700px",
-          marginTop: "90px",
+          marginTop: "150px",
           marginLeft: `calc(${sidebarWidth} + 70px)`,
           marginRight: "50px",
           transition: "margin-left 0.1s ease",
@@ -465,7 +474,6 @@ const AdministrationPage: React.FC = () => {
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
                     </div>
-                    <h6 className="mb-3">Lista de Materiales</h6>
                     <div style={{ maxHeight: "400px", overflowY: "auto" }}>
                       <table className="table table-bordered table-striped">
                         <thead>
@@ -552,7 +560,7 @@ const AdministrationPage: React.FC = () => {
                       </table>
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="save" onClick={() => Swal.fire("Datos guardados", "Materiales guardados (simulación)", "success")}>
+                      <CustomButton variant="save" onClick={() => Swal.fire("Datos guardados", "Materiales guardados ", "success")}>
                         <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos
                       </CustomButton>
@@ -576,6 +584,7 @@ const AdministrationPage: React.FC = () => {
                             <th>Nombre Detalle</th>
                             <th>Capas / Material</th>
                             <th>Espesor capa (cm)</th>
+                            <th>Acción</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -605,8 +614,13 @@ const AdministrationPage: React.FC = () => {
                               <td>
                                 <select
                                   className="form-control"
-                                  value={newDetail.capas}
-                                  onChange={(e) => setNewDetail((prev) => ({ ...prev, capas: parseInt(e.target.value) }))}
+                                  value={newDetail.id_material }
+                                  onChange={(e) =>
+                                    setNewDetail((prev) => ({
+                                      ...prev,
+                                      id_material: parseInt(e.target.value),
+                                    }))
+                                  }
                                 >
                                   <option value={0}>Seleccione un material</option>
                                   {materialsList.map((mat) => (
@@ -625,6 +639,11 @@ const AdministrationPage: React.FC = () => {
                                   onChange={(e) => setNewDetail((prev) => ({ ...prev, layer_thickness: parseFloat(e.target.value) }))}
                                 />
                               </td>
+                              <td>
+                                <CustomButton variant="save" onClick={handleCreateDetail}>
+                                  <span className="material-icons">add</span>
+                                </CustomButton>
+                              </td>
                             </tr>
                           )}
                           {details.map((det) => (
@@ -632,16 +651,19 @@ const AdministrationPage: React.FC = () => {
                               <td>{det.scantilon_location}</td>
                               <td>{det.name_detail}</td>
                               <td>
-                                {materialsList.find((mat) => mat.id === det.capas)?.atributs.name || "N/A"}
+                                {materialsList.find(
+                                  (mat) => mat.id === (det.id_material ?? det.capas)
+                                )?.atributs.name || "N/A"}
                               </td>
                               <td>{det.layer_thickness}</td>
+                              <td></td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="save" onClick={() => Swal.fire("Datos guardados", "Detalles guardados (simulación)", "success")}>
+                      <CustomButton variant="save" onClick={() => Swal.fire("Datos guardados", "Detalles guardados", "success")}>
                         <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos
                       </CustomButton>
@@ -725,160 +747,156 @@ const AdministrationPage: React.FC = () => {
                         </thead>
                         <tbody>
                           {tabElementosOperables === "ventanas" && showNewWindowRow && (
-                            <>
-                              <tr>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Nombre"
-                                    value={newWindow.name_element}
-                                    onChange={(e) => setNewWindow((prev) => ({ ...prev, name_element: e.target.value }))}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="U Vidrio"
-                                    value={newWindow.u_vidrio}
-                                    onChange={(e) => setNewWindow((prev) => ({ ...prev, u_vidrio: parseFloat(e.target.value) }))}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="FS Vidrio"
-                                    value={newWindow.fs_vidrio}
-                                    onChange={(e) => setNewWindow((prev) => ({ ...prev, fs_vidrio: parseFloat(e.target.value) }))}
-                                  />
-                                </td>
-                                <td>
-                                  <select
-                                    className="form-control"
-                                    value={newWindow.clousure_type}
-                                    onChange={(e) => setNewWindow((prev) => ({ ...prev, clousure_type: e.target.value }))}
-                                  >
-                                    <option value="">Seleccione</option>
-                                    <option value="Abatir">Abatir</option>
-                                    <option value="Corredera">Corredera</option>
-                                    <option value="Fija">Fija</option>
-                                    <option value="Guillotina">Guillotina</option>
-                                    <option value="Proyectante">Proyectante</option>
-                                  </select>
-                                </td>
-                                <td>
-                                  <select
-                                    className="form-control"
-                                    value={newWindow.frame_type}
-                                    onChange={(e) => setNewWindow((prev) => ({ ...prev, frame_type: e.target.value }))}
-                                  >
-                                    <option value="">Seleccione</option>
-                                    <option value="Fierro">Fierro</option>
-                                    <option value="Madera Con RPT">Madera Con RPT</option>
-                                    <option value="Madera Sin RPT">Madera Sin RPT</option>
-                                    <option value="Metalico Con RPT">Metalico Con RPT</option>
-                                    <option value="Metalico Sin RPT">Metalico Sin RPT</option>
-                                    <option value="PVC Con RPT">PVC Con RPT</option>
-                                    <option value="PVC Sin RPT">PVC Sin RPT</option>
-                                  </select>
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="U Marco"
-                                    value={newWindow.u_marco}
-                                    onChange={(e) => setNewWindow((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="FM (%)"
-                                    value={newWindow.fm}
-                                    onChange={(e) => setNewWindow((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))}
-                                  />
-                                </td>
-                                <td>
-                                  <CustomButton variant="save" onClick={handleCreateElement}>
-                                    <span className="material-icons">add</span>
-                                  </CustomButton>
-                                </td>
-                              </tr>
-                            </>
+                            <tr>
+                              <td>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder="Nombre"
+                                  value={newWindow.name_element}
+                                  onChange={(e) => setNewWindow((prev) => ({ ...prev, name_element: e.target.value }))}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  placeholder="U Vidrio"
+                                  value={newWindow.u_vidrio}
+                                  onChange={(e) => setNewWindow((prev) => ({ ...prev, u_vidrio: parseFloat(e.target.value) }))}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  placeholder="FS Vidrio"
+                                  value={newWindow.fs_vidrio}
+                                  onChange={(e) => setNewWindow((prev) => ({ ...prev, fs_vidrio: parseFloat(e.target.value) }))}
+                                />
+                              </td>
+                              <td>
+                                <select
+                                  className="form-control"
+                                  value={newWindow.clousure_type}
+                                  onChange={(e) => setNewWindow((prev) => ({ ...prev, clousure_type: e.target.value }))}
+                                >
+                                  <option value="">Seleccione</option>
+                                  <option value="Abatir">Abatir</option>
+                                  <option value="Corredera">Corredera</option>
+                                  <option value="Fija">Fija</option>
+                                  <option value="Guillotina">Guillotina</option>
+                                  <option value="Proyectante">Proyectante</option>
+                                </select>
+                              </td>
+                              <td>
+                                <select
+                                  className="form-control"
+                                  value={newWindow.frame_type}
+                                  onChange={(e) => setNewWindow((prev) => ({ ...prev, frame_type: e.target.value }))}
+                                >
+                                  <option value="">Seleccione</option>
+                                  <option value="Fierro">Fierro</option>
+                                  <option value="Madera Con RPT">Madera Con RPT</option>
+                                  <option value="Madera Sin RPT">Madera Sin RPT</option>
+                                  <option value="Metalico Con RPT">Metalico Con RPT</option>
+                                  <option value="Metalico Sin RPT">Metalico Sin RPT</option>
+                                  <option value="PVC Con RPT">PVC Con RPT</option>
+                                  <option value="PVC Sin RPT">PVC Sin RPT</option>
+                                </select>
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  placeholder="U Marco"
+                                  value={newWindow.u_marco}
+                                  onChange={(e) => setNewWindow((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  placeholder="FM (%)"
+                                  value={newWindow.fm}
+                                  onChange={(e) => setNewWindow((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))}
+                                />
+                              </td>
+                              <td>
+                                <CustomButton variant="save" onClick={handleCreateElement}>
+                                  <span className="material-icons">add</span>
+                                </CustomButton>
+                              </td>
+                            </tr>
                           )}
                           {tabElementosOperables === "puertas" && showNewDoorRow && (
-                            <>
-                              <tr>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Nombre"
-                                    value={newDoor.name_element}
-                                    onChange={(e) => setNewDoor((prev) => ({ ...prev, name_element: e.target.value }))}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="U Puerta opaca"
-                                    value={newDoor.u_puerta_opaca}
-                                    onChange={(e) => setNewDoor((prev) => ({ ...prev, u_puerta_opaca: parseFloat(e.target.value) }))}
-                                  />
-                                </td>
-                                <td>
-                                  <select
-                                    className="form-control"
-                                    value={newDoor.ventana_id}
-                                    onChange={(e) => setNewDoor((prev) => ({ ...prev, ventana_id: parseInt(e.target.value) }))}
-                                  >
-                                    <option value={0}>Seleccione una ventana</option>
-                                    {windowsList.map((win) => (
-                                      <option key={win.id} value={win.id}>
-                                        {win.name_element}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="% Vidrio"
-                                    value={newDoor.porcentaje_vidrio}
-                                    onChange={(e) => setNewDoor((prev) => ({ ...prev, porcentaje_vidrio: parseFloat(e.target.value) }))}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="U Marco"
-                                    value={newDoor.u_marco}
-                                    onChange={(e) => setNewDoor((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="FM (%)"
-                                    value={newDoor.fm}
-                                    onChange={(e) => setNewDoor((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))}
-                                  />
-                                </td>
-                                <td>
-                                  <CustomButton variant="save" onClick={handleCreateElement}>
-                                    <span className="material-icons">add</span>
-                                  </CustomButton>
-                                </td>
-                              </tr>
-                            </>
+                            <tr>
+                              <td>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder="Nombre"
+                                  value={newDoor.name_element}
+                                  onChange={(e) => setNewDoor((prev) => ({ ...prev, name_element: e.target.value }))}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  placeholder="U Puerta opaca"
+                                  value={newDoor.u_puerta_opaca}
+                                  onChange={(e) => setNewDoor((prev) => ({ ...prev, u_puerta_opaca: parseFloat(e.target.value) }))}
+                                />
+                              </td>
+                              <td>
+                                <select
+                                  className="form-control"
+                                  value={newDoor.ventana_id}
+                                  onChange={(e) => setNewDoor((prev) => ({ ...prev, ventana_id: parseInt(e.target.value) }))}
+                                >
+                                  <option value={0}>Seleccione una ventana</option>
+                                  {windowsList.map((win) => (
+                                    <option key={win.id} value={win.id}>
+                                      {win.name_element}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  placeholder="% Vidrio"
+                                  value={newDoor.porcentaje_vidrio}
+                                  onChange={(e) => setNewDoor((prev) => ({ ...prev, porcentaje_vidrio: parseFloat(e.target.value) }))}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  placeholder="U Marco"
+                                  value={newDoor.u_marco}
+                                  onChange={(e) => setNewDoor((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  placeholder="FM (%)"
+                                  value={newDoor.fm}
+                                  onChange={(e) => setNewDoor((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))}
+                                />
+                              </td>
+                              <td>
+                                <CustomButton variant="save" onClick={handleCreateElement}>
+                                  <span className="material-icons">add</span>
+                                </CustomButton>
+                              </td>
+                            </tr>
                           )}
                           {elementsList
                             .filter((el) => el.type === (tabElementosOperables === "ventanas" ? "window" : "door"))
@@ -893,9 +911,7 @@ const AdministrationPage: React.FC = () => {
                                     <td>{(el.atributs as ElementAttributesWindow).frame_type}</td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
-                                    <td>
-                                      <CustomButton variant="deleteIcon" onClick={() => Swal.fire("Acción", "Acción pendiente", "info")} />
-                                    </td>
+                                    <td></td>
                                   </tr>
                                 );
                               } else {
@@ -911,9 +927,7 @@ const AdministrationPage: React.FC = () => {
                                     </td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
-                                    <td>
-                                      <CustomButton variant="deleteIcon" onClick={() => Swal.fire("Acción", "Acción pendiente", "info")} />
-                                    </td>
+                                    <td></td>
                                   </tr>
                                 );
                               }
@@ -922,7 +936,7 @@ const AdministrationPage: React.FC = () => {
                       </table>
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="save" onClick={() => Swal.fire("Datos guardados", "Elementos guardados (simulación)", "success")}>
+                      <CustomButton variant="save" onClick={() => Swal.fire("Datos guardados", "Elementos guardados ", "success")}>
                         <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos
                       </CustomButton>

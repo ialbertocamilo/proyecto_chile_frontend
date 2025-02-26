@@ -143,11 +143,9 @@ const ProjectListPage = () => {
     setFilteredProjects(filtered);
   };
 
+  // Función para abrir el modal de edición (sin navegación)
   const handleOpenEditModal = (project: Project): void => {
     console.log("[handleOpenEditModal] Abriendo modal para editar proyecto:", project.id);
-    localStorage.setItem(`project-${project.id}`, JSON.stringify(project));
-    router.push(`/project-workflow-part3?id=${project.id}`);
-  
     const dataToEdit: Project = {
       id: project.id,
       country: project.country || "",
@@ -174,6 +172,15 @@ const ProjectListPage = () => {
     setEditProjectData(dataToEdit);
     setShowEditModal(true);
     setError(null);
+  };
+
+  // Función para navegar a la página de workflow y actualizar el localStorage
+  const handleGoToWorkflow = (project: Project): void => {
+    console.log("[handleGoToWorkflow] Navegando al workflow para el proyecto:", project.id);
+    // Actualizamos el localStorage con los valores requeridos
+    localStorage.setItem("project_id", String(project.id));
+    localStorage.setItem("project_department", project.divisions?.department || "");
+    router.push(`/project-workflow-part3?id=${project.id}`);
   };
 
   const handleEditChange = (
@@ -363,10 +370,10 @@ const ProjectListPage = () => {
                 }}>
                   🔍︎
                 </span>
-                {/* Botón dentro del input */}
+                {/* Botón para agregar nuevo proyecto */}
                 <CustomButton
                   variant="save"
-                  onClick={() => router.push("/project-workflow")}
+                  onClick={() => router.push("/project-workflow-part1")}
                   style={{
                     position: "absolute",
                     right: "30px",
@@ -423,6 +430,21 @@ const ProjectListPage = () => {
                           <td>{project.divisions?.department || "No disponible"}</td>
                           <td className="text-center">
                             <div className="action-btn-group">
+                              {/* Botón para ir a la página del workflow */}
+                              <CustomButton
+                                variant="editIcon"
+                                onClick={() => handleGoToWorkflow(project)}
+                                style={{
+                                  backgroundColor: "#6c63ff",
+                                  border: `2px solid #6c63ff`,
+                                  fontFamily: "var(--font-family-base)",
+                                  padding: "0.5rem",
+                                  width: "40px",
+                                  height: "40px",
+                                }}
+                                title="Editar en Workflow"
+                              />
+                              {/* Botón para abrir el modal de edición */}
                               <CustomButton
                                 variant="editIcon"
                                 onClick={() => handleOpenEditModal(project)}
@@ -433,9 +455,10 @@ const ProjectListPage = () => {
                                   padding: "0.5rem",
                                   width: "40px",
                                   height: "40px",
-                                  fontWeight: "normal",
                                 }}
+                                title="Editar en Modal"
                               />
+                              {/* Botón para eliminar el proyecto */}
                               <CustomButton
                                 variant="deleteIcon"
                                 onClick={() =>
@@ -446,7 +469,6 @@ const ProjectListPage = () => {
                                   padding: "0.5rem",
                                   width: "40px",
                                   height: "40px",
-                                  fontWeight: "normal",
                                 }}
                               />
                             </div>
@@ -473,7 +495,7 @@ const ProjectListPage = () => {
                 className="modal fade show"
                 style={{
                   display: "block",
-                  marginTop: "40px",
+                  marginTop: "140px",
                   marginLeft: "20px",
                   width: modalWidth,
                   height: modalHeight,
@@ -728,10 +750,9 @@ const ProjectListPage = () => {
           )}
           <style jsx>{`
             .table-header {
-              color: #f5f5f5; /* Color gris claro */
+              color: #f5f5f5;
               font-size: 13px;
-              font-weight: bold; /* Puedes ajustar el grosor de la fuente si es necesario */
-              font-align: center;
+              font-weight: bold;
             }
             .custom-project-btn {
               background-color: #3ca7b7;
@@ -756,14 +777,13 @@ const ProjectListPage = () => {
               vertical-align: middle;
             }
             .custom-table thead th {
-            background-color: #ffff; /* gris claro */
-            font-weight: normal; /* estilo normal, sin negrita */
-            color: #666; /* color gris, puedes ajustar el tono */
-            position: sticky;
-            top: 0;
-            z-index: 1;
+              background-color: #ffff;
+              font-weight: normal;
+              color: #666;
+              position: sticky;
+              top: 0;
+              z-index: 1;
             }
-
             .custom-table tbody tr {
               background-color: #fff;
               box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -797,7 +817,6 @@ const ProjectListPage = () => {
               align-items: center;
               height: 80vh;
               font-family: var(--font-family-base);
-              font-weight: normal;
             }
             .loading-spinner {
               border: 8px solid #f3f3f3;
@@ -819,10 +838,8 @@ const ProjectListPage = () => {
             .loading-text {
               font-size: 1.5rem;
               color: var(--primary-color);
-              font-weight: normal;
               font-family: var(--font-family-base);
             }
-            /* Hacemos que la tabla sea scrolleable manteniendo los headers fijos */
             .scrollable-table {
               max-height: 600px;
               overflow-y: auto;

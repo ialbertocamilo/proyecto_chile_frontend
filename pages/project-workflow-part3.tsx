@@ -22,7 +22,6 @@ interface Detail {
   layer_thickness: number;
 }
 
-// Para las pestañas que no tienen la misma estructura que Detail
 interface TabItem {
   name_detail: string;
   value_u?: number;
@@ -46,10 +45,29 @@ interface TabItem {
       d?: number;
     };
   };
-  // Para el caso de la pestaña "detalles"
   scantilon_location?: string;
   material?: string;
   layer_thickness?: number;
+}
+
+interface Material {
+  id: number;
+  name: string;
+}
+
+// Interfaz para los constantes obtenidos del backend
+interface Constant {
+  create_status: string;
+  name: string;
+  type: string;
+  id: number;
+  atributs: {
+    name: string;
+    density: number;
+    conductivity: number;
+    specific_heat: number;
+  };
+  is_deleted: boolean;
 }
 
 type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos";
@@ -119,6 +137,9 @@ const ProjectWorkflowPart3: React.FC = () => {
     },
   ];
 
+  /** Estado para la lista de materiales **/
+  const [materials, setMaterials] = useState<Material[]>([]);
+
   // -------------------------------
   // Funciones para Detalles constructivos
   // -------------------------------
@@ -173,8 +194,6 @@ const ProjectWorkflowPart3: React.FC = () => {
         "Content-Type": "application/json",
       };
       const response = await axios.post(url, newDetailForm, { headers });
-      // Se recibe el detalle creado, pero no se usa la variable retornada
-      // const returnedDetail = response.data.detail as Detail;
       Swal.fire("Detalle creado", response.data.success, "success");
       fetchFetchedDetails();
       setShowCreateDetailModal(false);
@@ -266,6 +285,43 @@ const ProjectWorkflowPart3: React.FC = () => {
       }
     }
   };
+
+  // -------------------------------
+  // Función para cargar materiales desde el endpoint
+  // -------------------------------
+  const fetchMaterials = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire("Token no encontrado", "Inicia sesión.");
+        return;
+      }
+      // Se realiza la consulta al endpoint de constants con los parámetros requeridos
+      const url = `${constantUrlApiEndpoint}/constants/?page=1&per_page=700`;
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(url, { headers });
+      // Se espera que la respuesta tenga una propiedad "constants" con la lista
+      const allConstants: Constant[] = response.data.constants || [];
+      // Se filtra por aquellos que sean de tipo "definition materials"
+      const materialsList: Material[] = allConstants
+        .filter((c: Constant) => c.name === "materials" && c.type === "definition materials")
+        .map((c: Constant) => ({
+          id: c.id,
+          name: c.atributs.name,
+        }));
+      setMaterials(materialsList);
+    } catch (error: unknown) {
+      console.error("Error al obtener materiales:", error);
+      Swal.fire("Error", "Error al obtener materiales. Ver consola.");
+    }
+  };
+
+  // Cargar la lista de materiales cuando se muestre el modal de creación
+  useEffect(() => {
+    if (showCreateDetailModal) {
+      fetchMaterials();
+    }
+  }, [showCreateDetailModal]);
 
   // -------------------------------
   // Efectos para cargar datos
@@ -780,7 +836,11 @@ const ProjectWorkflowPart3: React.FC = () => {
                 }
               >
                 <option value={0}>Seleccione un material</option>
-                {/* La lista de materiales podría cargarse dinámicamente o venir por props */}
+                {materials.map((mat) => (
+                  <option key={mat.id} value={mat.id}>
+                    {mat.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="mb-3">

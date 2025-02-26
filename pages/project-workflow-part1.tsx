@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -14,19 +14,6 @@ import { useRouter } from "next/router";
 
 // Importa tu componente existente para cargar GooIcons
 import GooIcons from "../public/GoogleIcons";
-
-import L from "leaflet";
-
-const customMarkerIcon = new L.Icon({
-  iconUrl: "/assets/images/marker-icon.png",
-  shadowUrl: "/assets/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-
-L.Marker.prototype.options.icon = customMarkerIcon;
 
 
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -9,7 +9,7 @@ interface InteractiveMapProps {
 }
 
 const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect, initialLat, initialLng }) => {
-  const [map, setMap] = useState<L.Map | null>(null);
+  L.Icon.Default.imagePath = 'https://unpkg.com/leaflet@1.7.1/dist/images/';
 
   useEffect(() => {
     // Inicializar el mapa
@@ -36,7 +36,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect, initi
       L.marker([lat, lng]).addTo(leafletMap);
     });
 
-    setMap(leafletMap);
+    
 
     // Limpiar el mapa al desmontar el componente
     return () => {

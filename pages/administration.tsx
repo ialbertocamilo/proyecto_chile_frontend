@@ -388,7 +388,7 @@ const AdministrationPage: React.FC = () => {
         className="container"
         style={{
           maxWidth: "1700px",
-          marginTop: "90px",
+          marginTop: "110px",
           marginLeft: `calc(${sidebarWidth} + 70px)`,
           marginRight: "50px",
           transition: "margin-left 0.1s ease",

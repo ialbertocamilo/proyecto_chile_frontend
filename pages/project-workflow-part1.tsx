@@ -15,6 +15,21 @@ import { useRouter } from "next/router";
 // Importa tu componente existente para cargar GooIcons
 import GooIcons from "../public/GoogleIcons";
 
+import L from "leaflet";
+
+const customMarkerIcon = new L.Icon({
+  iconUrl: "/assets/images/marker-icon.png",
+  shadowUrl: "/assets/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+L.Marker.prototype.options.icon = customMarkerIcon;
+
+
+
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), { ssr: false });
 
 interface FormData {

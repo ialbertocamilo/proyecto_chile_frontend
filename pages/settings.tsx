@@ -308,7 +308,7 @@ const SettingsPage = () => {
       {/* Se usa sidebarWidth para el margen */}
       <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
         <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container p-4" style={{ marginTop: "60px" }}>
+        <div className="container p-4" style={{ marginTop: "80px" }}>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2
               className="fw-bold"

@@ -179,7 +179,7 @@ const UserManagement = () => {
         }}
       >
         <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container p-4" style={{ marginTop: "60px" }}>
+        <div className="container p-4" style={{ marginTop: "100px" }}>
           <h2 className="fw-normal mb-4" style={{ color: "var(--text-color)" }}>
             Listado de Usuarios
           </h2>

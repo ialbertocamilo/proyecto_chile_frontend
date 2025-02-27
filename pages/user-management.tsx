@@ -18,6 +18,7 @@ interface User {
   country: string;
   ubigeo: string;
   role_id: number;
+  active: boolean
 }
 
 const UserManagement = () => {
@@ -75,7 +76,7 @@ const UserManagement = () => {
     setSearchQuery(query);
   };
 
-  const handleDeleteUser = async (id: number, name: string, lastname: string) => {
+  /* const handleDeleteUser = async (id: number, name: string, lastname: string) => {
     Swal.fire({
       title: "Confirmar eliminación",
       text: `¿Estás seguro de eliminar el usuario (ID: ${id}) ${name} ${lastname}?`,
@@ -125,7 +126,7 @@ const UserManagement = () => {
   const handleEditUser = (user: User) => {
     console.log("[handleEditUser] Editando usuario:", user);
     router.push(`/user-edit?id=${user.id}`);
-  };
+  }; */
 
   // Función para traducir el valor numérico del rol a texto
   const getRoleText = (role_id: number) => {
@@ -150,8 +151,6 @@ const UserManagement = () => {
         },
         body: JSON.stringify({
           role_id: newRoleId,
-          active: true,
-          is_deleted: false,
         }),
       });
       if (!response.ok) {
@@ -167,6 +166,63 @@ const UserManagement = () => {
       Swal.fire("Error", message, "error");
     }
   };
+
+  const handleActiveChange = async (
+    e: ChangeEvent<HTMLInputElement>, 
+    userId: number, 
+    userName: string, 
+    userEmail: string
+) => {
+    const isActive = e.target.checked; // `checked` devuelve true o false
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        Swal.fire("Error", "No se encontró token", "error");
+        return;
+    }
+
+    const confirmation = await Swal.fire({
+        title: "¿Estás seguro?",
+        text: `¿Quieres cambiar el estado de ${userName} (${userEmail}) a ${isActive ? "activo" : "inactivo"}?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, cambiar",
+        cancelButtonText: "Cancelar",
+    });
+
+    if (!confirmation.isConfirmed) {
+        e.target.checked = !isActive; // Revertir el cambio si se cancela
+        return;
+    }
+
+    try {
+        console.log(`[handleActiveChange] Actualizando estado del usuario con ID: ${userId} a ${isActive ? "activo" : "inactivo"}`);
+
+        const response = await fetch(`${constantUrlApiEndpoint}/user/${userId}/update-status`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ active: isActive }), // Se envía un booleano (true o false)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Error al actualizar el estado del usuario");
+        }
+
+        const data = await response.json();
+        console.log("[handleActiveChange] Respuesta:", data);
+        Swal.fire("Actualizado", `El usuario ahora está ${isActive ? "activo" : "inactivo"}`, "success");
+
+        fetchUsers(); // Recargar la lista de usuarios para reflejar el cambio
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Error desconocido";
+        console.error("[handleActiveChange] Error:", message);
+        Swal.fire("Error", message, "error");
+    }
+};
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
@@ -221,7 +277,7 @@ const UserManagement = () => {
                   <th>País</th>
                   <th>Ubigeo</th>
                   <th>Rol</th>
-                  <th>Acciones</th>
+                  <th>Estado</th>
                 </tr>
               </thead>
               <tbody>
@@ -251,34 +307,15 @@ const UserManagement = () => {
                         </select>
                       </td>
                       <td className="text-center">
-                        <div className="action-btn-group">
-                          <CustomButton
-                            variant="editIcon"
-                            onClick={() => handleEditUser(u)}
-                            className="action-btn"
-                            style={{
-                              backgroundColor: "var(--primary-color)",
-                              border: `2px solid var(--primary-color)`,
-                              fontFamily: "var(--font-family-base)",
-                              padding: "0.5rem",
-                              width: "40px",
-                              height: "40px",
-                            }}
+                        <label className="switch">
+                          <input
+                            type="checkbox"
+                            checked={u.active}
+                            onChange={(e) => handleActiveChange(e, u.id, u.name, u.email)}
                           />
-                          <CustomButton
-                            variant="deleteIcon"
-                            onClick={() =>
-                              handleDeleteUser(u.id, u.name, u.lastname)
-                            }
-                            className="action-btn"
-                            style={{
-                              fontFamily: "var(--font-family-base)",
-                              padding: "0.5rem",
-                              width: "40px",
-                              height: "40px",
-                            }}
-                          />
-                        </div>
+                          <span className="slider">
+                          </span>
+                        </label>
                       </td>
                     </tr>
                   ))
@@ -327,6 +364,65 @@ const UserManagement = () => {
           border-bottom: 1px solid #ddd;
           font-family: var(--font-family-base);
         }
+        
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 55px;
+          height: 30px;
+        }
+
+        .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: red;
+          border-radius: 30px;
+          transition: 0.4s;
+          box-shadow: inset 3px 3px 8px rgba(51, 5, 5, 0.8); /* Sombra más oscura */
+        }
+
+        /* Estado inactivo */
+        .slider::before {
+          position: absolute;
+          content: "D"; /* Letra en estado inactivo */
+          height: 26px;
+          width: 26px;
+          left: 2px;
+          bottom: 2px;
+          background-color: white;
+          border-radius: 50%;
+          transition: 0.4s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 14px;
+          color: black;
+          box-shadow: inset -2px -2px 6px rgba(51, 5, 5, 0.8); /* Sombra más oscura */
+        }
+
+        /* Estado activo */
+        input:checked + .slider {
+          background-color: #3ca7b7;
+          box-shadow: inset 3px 3px 8px rgba(0, 82, 94, 0.8); /* Sombra más oscura */
+        }
+
+        input:checked + .slider::before {
+          transform: translateX(25px);
+          content: "A"; /* Letra en estado activo */
+          box-shadow: inset -2px -2px 6px rgba(0, 82, 94, 0.8); /* Sombra más oscura */
+        }
+
       `}</style>
     </div>
   );

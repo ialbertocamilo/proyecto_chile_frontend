@@ -89,9 +89,9 @@ interface FormData {
   district: string;
   building_type: string;
   main_use_type: string;
-  number_levels: number;
-  number_homes_per_level: number;
-  built_surface: number;
+  number_levels: number | null;
+  number_homes_per_level: number | null;
+  built_surface: number | null;
   latitude: number;
   longitude: number;
 }
@@ -124,9 +124,9 @@ const ProjectWorkflowPart1: React.FC = () => {
     district: "",
     building_type: "",
     main_use_type: "",
-    number_levels: 0,
-    number_homes_per_level: 0,
-    built_surface: 0,
+    number_levels: null, // Cambiado a null
+    number_homes_per_level: null, // Cambiado a null
+    built_surface: null, // Cambiado a null
     latitude: -33.4589314398474,
     longitude: -70.6703553846175,
   });
@@ -137,8 +137,15 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [locationSearch, setLocationSearch] = useState("");
 
   // Actualiza un campo del formulario y remueve el error si el campo ya tiene valor
-  const handleFormInputChange = (field: keyof FormData, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleFormInputChange = (field: keyof FormData, value: string | number | null) => {
+    let parsedValue: string | number | null = value;
+
+    // Si el valor es una cadena vacía, lo convertimos a null
+    if (typeof value === "string" && value.trim() === "") {
+      parsedValue = null;
+    }
+
+    setFormData((prev) => ({ ...prev, [field]: parsedValue }));
     if (value !== "" && value !== 0) {
       setErrors((prevErrors) => ({ ...prevErrors, [field]: "" }));
     }
@@ -189,13 +196,13 @@ const ProjectWorkflowPart1: React.FC = () => {
     if (!formData.main_use_type.trim()) {
       newErrors.main_use_type = "El tipo de uso principal es obligatorio";
     }
-    if (formData.number_levels <= 0) {
+    if (formData.number_levels === null || formData.number_levels <= 0) {
       newErrors.number_levels = "El número de niveles debe ser mayor a 0";
     }
-    if (formData.number_homes_per_level <= 0) {
+    if (formData.number_homes_per_level === null || formData.number_homes_per_level <= 0) {
       newErrors.number_homes_per_level = "El número de viviendas/oficinas debe ser mayor a 0";
     }
-    if (formData.built_surface <= 0) {
+    if (formData.built_surface === null || formData.built_surface <= 0) {
       newErrors.built_surface = "La superficie construida debe ser mayor a 0";
     }
     return newErrors;
@@ -567,11 +574,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                         <input
                           type="number"
                           className="form-control"
-                          value={formData.number_levels}
+                          value={formData.number_levels === null ? "" : formData.number_levels}
                           onChange={(e) =>
                             handleFormInputChange(
                               "number_levels",
-                              parseInt(e.target.value) || 0
+                              e.target.value === "" ? null : parseInt(e.target.value)
                             )
                           }
                         />
@@ -590,11 +597,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                         <input
                           type="number"
                           className="form-control"
-                          value={formData.number_homes_per_level}
+                          value={formData.number_homes_per_level === null ? "" : formData.number_homes_per_level}
                           onChange={(e) =>
                             handleFormInputChange(
                               "number_homes_per_level",
-                              parseInt(e.target.value) || 0
+                              e.target.value === "" ? null : parseInt(e.target.value)
                             )
                           }
                         />
@@ -611,11 +618,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                         <input
                           type="number"
                           className="form-control"
-                          value={formData.built_surface}
+                          value={formData.built_surface === null ? "" : formData.built_surface}
                           onChange={(e) =>
                             handleFormInputChange(
                               "built_surface",
-                              parseFloat(e.target.value) || 0
+                              e.target.value === "" ? null : parseFloat(e.target.value)
                             )
                           }
                         />

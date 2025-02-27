@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -31,22 +31,54 @@ ChartJS.register(
   Legend
 );
 
+// Función para convertir un color hex (#3ca7b7) a RGBA con alpha.
+function hexToRgba(hex: string, alpha: number) {
+  // Quita el '#' si existe
+  const cleanHex = hex.replace("#", "");
+  // Extrae los valores R, G, B
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Función para leer una variable CSS con fallback
+function getCssVarValue(varName: string, fallback: string) {
+  if (typeof window === "undefined") return fallback; // En SSR no hay window
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return value || fallback;
+}
+
 const DashboardPage: React.FC = () => {
-  // Ejecutamos la validación de autenticación
   useAuth();
   console.log("[DashboardPage] Página cargada y sesión validada.");
 
   // Manejamos dinámicamente el ancho de la barra lateral
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
+  // 1. Leemos las variables CSS al montar el componente (o cada vez que quieras refrescar).
+  const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
+  // Eliminamos secondaryColor si no se va a usar
+
+  useEffect(() => {
+    // Al montar el componente, leemos las variables
+    const pColor = getCssVarValue("--primary-color", "#3ca7b7");
+    // Eliminamos la lectura de secondaryColor
+    setPrimaryColor(pColor);
+  }, []);
+
+  // 2. Creamos colores con alpha para usar en gráficas
+  const primaryColorAlpha = hexToRgba(primaryColor, 0.2);
+
+  // 3. Definimos los datos de las gráficas usando las variables
   const lineData = {
     labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"],
     datasets: [
       {
         label: "Proyectos Nuevos",
         data: [12, 19, 3, 5, 2, 3],
-        borderColor: "#3ca7b7",
-        backgroundColor: "rgba(60, 167, 183, 0.2)",
+        borderColor: primaryColor,
+        backgroundColor: primaryColorAlpha,
         tension: 0.4,
         fill: true,
       },
@@ -59,7 +91,7 @@ const DashboardPage: React.FC = () => {
       {
         label: "Reportes",
         data: [5, 9, 3, 7, 4],
-        backgroundColor: "#3ca7b7",
+        backgroundColor: primaryColor,
       },
     ],
   };
@@ -70,7 +102,7 @@ const DashboardPage: React.FC = () => {
       {
         label: "Proyectos",
         data: [10, 20, 30],
-        backgroundColor: ["#3ca7b7", "#74b9ff", "#dfe6e9"],
+        backgroundColor: [primaryColor, "#74b9ff", "#dfe6e9"],
       },
     ],
   };
@@ -81,7 +113,7 @@ const DashboardPage: React.FC = () => {
       {
         label: "Estado de Proyectos",
         data: [50, 30, 20],
-        backgroundColor: ["#3ca7b7", "#74b9ff", "#dfe6e9"],
+        backgroundColor: [primaryColor, "#74b9ff", "#dfe6e9"],
       },
     ],
   };
@@ -92,13 +124,14 @@ const DashboardPage: React.FC = () => {
       {
         label: "Evaluación de Usuario",
         data: [65, 59, 90, 81, 56],
-        backgroundColor: "rgba(60, 167, 183, 0.2)",
-        borderColor: "#3ca7b7",
-        pointBackgroundColor: "#3ca7b7",
+        backgroundColor: primaryColorAlpha,
+        borderColor: primaryColor,
+        pointBackgroundColor: primaryColor,
       },
     ],
   };
 
+  // Estilos para contenedores y títulos
   const chartContainerStyle: React.CSSProperties = {
     backgroundColor: "#fff",
     padding: "10px",
@@ -112,7 +145,7 @@ const DashboardPage: React.FC = () => {
 
   const chartTitleStyle: React.CSSProperties = {
     textAlign: "center",
-    color: "#3ca7b7",
+    color: primaryColor,
     margin: "0 0 10px 0",
     fontWeight: "normal",
     fontSize: "1.1rem",
@@ -128,7 +161,6 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      {/* Se utiliza el componente Navbar y se le pasa el setSidebarWidth para gestionar el ancho dinámicamente */}
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
       <div
         className="d-flex flex-column flex-grow-1"
@@ -137,7 +169,6 @@ const DashboardPage: React.FC = () => {
           width: "100%",
         }}
       >
-        {/* TopBar recibe el ancho de la barra lateral */}
         <TopBar sidebarWidth={sidebarWidth} />
         <div
           style={{
@@ -147,7 +178,7 @@ const DashboardPage: React.FC = () => {
             fontFamily: "var(--font-family-base)",
           }}
         >
-          <h1 style={{ color: "#3ca7b7", marginBottom: "20px" }}>Dashboard</h1>
+          <h1 style={{ color: primaryColor, marginBottom: "20px" }}>Dashboard</h1>
           <div
             style={{
               display: "grid",
@@ -195,7 +226,6 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
       <style jsx>{`
-        /* Estilos para las tablas, en caso de usarse en otros componentes */
         table {
           width: 100%;
           background-color: #fff;

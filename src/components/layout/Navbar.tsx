@@ -16,6 +16,7 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
   const router = useRouter();
   const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
   const [roleId, setRoleId] = useState<string | null>(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
 
   // Establece el ancho fijo de la sidebar
   useEffect(() => {
@@ -38,11 +39,20 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
     }
   }, []);
 
+  // Recupera el project_id del localStorage
+  useEffect(() => {
+    const storedProjectId = localStorage.getItem("project_id");
+    if (storedProjectId) {
+      setProjectId(storedProjectId);
+    }
+  }, []);
+
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
   };
 
+  // Definición de estilos, usando variables CSS para colores
   const navLinkStyle: React.CSSProperties = {
     cursor: "pointer",
     fontFamily: "var(--font-family-base)",
@@ -73,7 +83,7 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center", // Centrado, ya que se eliminó la flecha
+    justifyContent: "center", // Centrado
     width: "100%", // Ocupa todo el ancho del nav
     minHeight: "80px", // Ajusta el alto del área de logo
     boxSizing: "border-box",
@@ -96,7 +106,7 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
           top: 0,
           zIndex: 1000,
           width: "100px",
-          backgroundColor: "#3ca7b7",
+          backgroundColor: "var(--primary-color)",
           height: "100vh",
           fontFamily: "var(--font-family-base)",
           display: "flex",
@@ -145,22 +155,27 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
                 Proyecto Nuevo
               </Link>
             </li>
-            <li className="nav-item">
-              <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">
-                  ballot
-                </span>
-                Desarrollo de proyecto
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle} className="material-icons">
-                  input
-                </span>
-                Ingreso de Datos de entrada
-              </Link>
-            </li>
+            {/* Se muestran estas opciones solo si existe project_id */}
+            {projectId && (
+              <>
+                <li className="nav-item">
+                  <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>
+                    <span style={iconStyle} className="material-icons">
+                      ballot
+                    </span>
+                    Desarrollo de proyecto
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
+                    <span style={iconStyle} className="material-icons">
+                      input
+                    </span>
+                    Ingreso de Datos de entrada
+                  </Link>
+                </li>
+              </>
+            )}
           </ul>
 
           {/* Grupo Inferior: Condicional según role_id */}
@@ -227,7 +242,7 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
           .menu-container {
             width: 100%;
             flex: 1;
-            background-color: #3ca7b7;
+            background-color: var(--primary-color);
             padding: 0;
           }
         `}</style>

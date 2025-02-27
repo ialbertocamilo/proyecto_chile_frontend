@@ -43,12 +43,19 @@ export interface ElementBase {
   };
 }
 
+/** Función para leer variables CSS con un valor fallback **/
+function getCssVarValue(varName: string, fallback: string) {
+  if (typeof window === "undefined") return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return value || fallback;
+}
+
 /** Página de workflow **/
 const ProjectWorkflowPart2: React.FC = () => {
   useAuth();
   const router = useRouter();
 
-  // Estados para obtener datos del proyecto (se mantienen para la cabecera)
+  // Estados para la cabecera del proyecto
   const [projectId, setProjectId] = useState<number | null>(null);
   const [projectDepartment, setProjectDepartment] = useState<string | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -77,11 +84,11 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
   }, [hasLoaded, projectId, router]);
 
-  // Estado de pasos (se usan los pasos 3, 5 y 6)
+  // Estado para los pasos (3, 5 y 6)
   const [step, setStep] = useState<number>(3);
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  /** Estados para Materiales (Step 3 – Detalles constructivos: solo ver y crear materiales) **/
+  /** Estados para Lista de materiales (Step 3) **/
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
   const [showNewMaterialRow, setShowNewMaterialRow] = useState(false);
   const [newMaterialData, setNewMaterialData] = useState({
@@ -90,21 +97,17 @@ const ProjectWorkflowPart2: React.FC = () => {
     specific_heat: 0,
     density: 0,
   });
+  const [materialSearch, setMaterialSearch] = useState("");
 
-  /** Estados para Elementos translucidos (Step 5) **/
-  // Estado para la pestaña activa: "ventanas" o "puertas"
+  /** Estados para Elementos translúcidos (Step 5) **/
   const [modalElementType, setModalElementType] = useState<string>("ventanas");
-  // Elementos disponibles (según el tipo seleccionado)
   const [elementsList, setElementsList] = useState<ElementBase[]>([]);
-  // Estados para mostrar la fila de creación (in-line) según el tipo
   const [showNewWindowRow, setShowNewWindowRow] = useState(false);
   const [showNewDoorRow, setShowNewDoorRow] = useState(false);
-  // Datos para creación de ventana y puerta
   const [windowData, setWindowData] = useState({
     name_element: "",
     u_vidrio: 0,
     fs_vidrio: 0,
-    // Estos campos se reemplazarán por select
     clousure_type: "Corredera",
     frame_type: "",
     u_marco: 0,
@@ -120,9 +123,17 @@ const ProjectWorkflowPart2: React.FC = () => {
     fm: 0,
   });
   const [allWindowsForDoor, setAllWindowsForDoor] = useState<ElementBase[]>([]);
+  const [elementSearch, setElementSearch] = useState("");
 
   /** Estados para Tipología y Perfil de uso (Step 6) **/
   const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
+
+  // Estado para el color primario
+  const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
+  useEffect(() => {
+    const pColor = getCssVarValue("--primary-color", "#3ca7b7");
+    setPrimaryColor(pColor);
+  }, []);
 
   // -------------------------------
   // Funciones API
@@ -161,7 +172,6 @@ const ProjectWorkflowPart2: React.FC = () => {
   };
 
   const handleCreateMaterial = async () => {
-    // Validación: se deben completar todos los campos
     if (
       newMaterialData.name.trim() === "" ||
       newMaterialData.conductivity <= 0 ||
@@ -188,10 +198,10 @@ const ProjectWorkflowPart2: React.FC = () => {
         type: "definition materials",
       };
       const url = `${constantUrlApiEndpoint}/constants/create`;
-      const headers = { 
-        Authorization: `Bearer ${token}`, 
+      const headers = {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        accept: "application/json"
+        accept: "application/json",
       };
       const response = await axios.post(url, requestBody, { headers });
       if (response.status === 200) {
@@ -251,13 +261,13 @@ const ProjectWorkflowPart2: React.FC = () => {
   };
 
   const handleCreateWindowElement = async () => {
-    // Validación: Se deben completar todos los campos obligatorios
     if (
       windowData.name_element.trim() === "" ||
       windowData.u_vidrio <= 0 ||
       windowData.fs_vidrio <= 0 ||
       windowData.u_marco <= 0 ||
-      windowData.fm <= 0 ||
+      windowData.fm < 0 ||
+      windowData.fm > 100 ||
       windowData.clousure_type.trim() === "" ||
       windowData.frame_type.trim() === ""
     ) {
@@ -309,13 +319,14 @@ const ProjectWorkflowPart2: React.FC = () => {
   };
 
   const handleCreateDoorElement = async () => {
-    // Validación: Se deben completar todos los campos obligatorios
     if (
       doorData.name_element.trim() === "" ||
       doorData.u_puerta_opaca <= 0 ||
-      doorData.porcentaje_vidrio <= 0 ||
+      doorData.porcentaje_vidrio < 0 ||
+      doorData.porcentaje_vidrio > 100 ||
       doorData.u_marco <= 0 ||
-      doorData.fm <= 0 ||
+      doorData.fm < 0 ||
+      doorData.fm > 100 ||
       doorData.ventana_id === 0
     ) {
       Swal.fire("Campos incompletos", "Por favor complete todos los campos de la puerta", "warning");
@@ -365,6 +376,20 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
   };
 
+  // Función para mostrar alerta, guardar datos y redirigir al siguiente step.
+  // En step 6 se redirige a "project-list".
+  const handleStep1Submit = () => {
+    Swal.fire("Datos guardados", "Datos guardados con éxito", "success").then(() => {
+      if (step === 3) {
+        setStep(5);
+      } else if (step === 5) {
+        setStep(6);
+      } else if (step === 6) {
+        router.push("/project-list");
+      }
+    });
+  };
+
   // -------------------------------
   // Efectos para cargar datos
   // -------------------------------
@@ -376,7 +401,6 @@ const ProjectWorkflowPart2: React.FC = () => {
 
   useEffect(() => {
     if (step === 5) {
-      // Cada vez que se cambia la pestaña, se actualiza la lista de elementos disponibles
       fetchElements(modalElementType === "ventanas" ? "window" : "door");
     }
   }, [step, modalElementType]);
@@ -417,7 +441,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       </div>
     ) : null;
 
-  // Componente SidebarItem usando Google Icons
+  // Componente SidebarItem (menú lateral)
   const SidebarItem = ({
     stepNumber,
     iconName,
@@ -428,7 +452,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     title: string;
   }) => {
     const isSelected = step === stepNumber;
-    const activeColor = "#3ca7b7";
+    const activeColor = primaryColor;
     const inactiveColor = "#ccc";
     return (
       <li className="nav-item" style={{ cursor: "pointer" }} onClick={() => setStep(stepNumber)}>
@@ -487,20 +511,35 @@ const ProjectWorkflowPart2: React.FC = () => {
               >
                 <ul className="nav flex-column" style={{ height: "100%" }}>
                   <SidebarItem stepNumber={3} iconName="imagesearch_roller" title="Lista de materiales" />
-                  <SidebarItem stepNumber={5} iconName="home" title="Elementos translucidos" />
+                  <SidebarItem stepNumber={5} iconName="home" title="Elementos translúcidos" />
                   <SidebarItem stepNumber={6} iconName="deck" title="Perfil de uso" />
                 </ul>
               </div>
               <div style={{ flex: 1, padding: "20px" }}>
-                {/* Step 3: Detalles constructivos – Materiales */}
+                {/* Step 3: Lista de materiales */}
                 {step === 3 && (
                   <>
-                    <div className="d-flex justify-content-end mb-3">
-                      <CustomButton variant="save" onClick={() => setShowNewMaterialRow((prev) => !prev)}>
+                    {/* Cabecera: Barra de búsqueda a la izquierda y botón "+Nuevo" en la esquina superior derecha */}
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <div style={{ flex: 1, marginRight: "10px" }}>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Buscar material..."
+                          value={materialSearch}
+                          onChange={(e) => setMaterialSearch(e.target.value)}
+                        />
+                      </div>
+                      <CustomButton
+                        variant="save"
+                        onClick={() => setShowNewMaterialRow((prev) => !prev)}
+                        style={{ borderRadius: "5px", width: "180px" }}
+                      >
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
                     </div>
-                    
+
+                    {/* Tabla de materiales */}
                     <div style={{ maxHeight: "400px", overflowY: "auto" }}>
                       <table className="table table-bordered table-striped" style={{ tableLayout: "fixed" }}>
                         <thead>
@@ -565,76 +604,77 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   }
                                 />
                               </td>
-                              <td>
-                                <CustomButton variant="save" onClick={handleCreateMaterial}>
+                              <td className="d-flex gap-2 justify-content-center">
+                                <CustomButton
+                                  variant="save"
+                                  onClick={handleCreateMaterial}
+                                  style={{ borderRadius: "5px", width: "180px" }}
+                                >
                                   <span className="material-icons">add</span>
+                                </CustomButton>
+                                <CustomButton
+                                  variant="cancelIcon"
+                                  onClick={() => setShowNewMaterialRow(false)}
+                                  style={{ borderRadius: "5px", width: "180px" }}
+                                >
+                                  <span className="material-icons">cancel</span>
                                 </CustomButton>
                               </td>
                             </tr>
                           )}
-                          {materialsList.map((mat, idx) => {
-                            const { name, conductivity, specific_heat, density } = mat.atributs;
-                            return (
-                              <tr key={idx}>
-                                <td>{name}</td>
-                                <td>{conductivity}</td>
-                                <td>{specific_heat}</td>
-                                <td>{density}</td>
-                                <td>
-                                  <span className="material-icons" style={{ color: "#ccc" }}>
-                                    visibility
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
+                          {materialsList
+                            .filter((mat) =>
+                              mat.atributs.name.toLowerCase().includes(materialSearch.toLowerCase())
+                            )
+                            .map((mat, idx) => {
+                              const { name, conductivity, specific_heat, density } = mat.atributs;
+                              return (
+                                <tr key={idx}>
+                                  <td>{name}</td>
+                                  <td>{conductivity}</td>
+                                  <td>{specific_heat}</td>
+                                  <td>{density}</td>
+                                  <td>
+                                    <span className="material-icons" style={{ color: "#ccc" }}>
+                                      visibility
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
                         </tbody>
                       </table>
+                    </div>
+                    {/* Botón "Grabar Datos" en la esquina inferior derecha */}
+                    <div className="mt-3 text-end">
+                      <CustomButton
+                        variant="save"
+                        onClick={handleStep1Submit}
+                        style={{ borderRadius: "5px", width: "180px" }}
+                      >
+                        <span className="material-icons" style={{ marginRight: "5px" }}>
+                          sd_card
+                        </span>
+                        Grabar Datos
+                      </CustomButton>
                     </div>
                   </>
                 )}
 
-                {/* Step 5: Elementos translucidos */}
+                {/* Step 5: Elementos translúcidos */}
                 {step === 5 && (
                   <>
-                    {/* Contenedor para pestañas y botón "Nuevo" alineados */}
+                    {/* Encabezado: campo de búsqueda a la izquierda y botón "+Nuevo" a la derecha */}
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <ul
-                        className="nav"
-                        style={{
-                          display: "flex",
-                          padding: 0,
-                          listStyle: "none",
-                          margin: 0,
-                          flex: 1,
-                          gap: "10px",
-                        }}
-                      >
-                        {["Ventanas", "Puertas"].map((tab) => (
-                          <li key={tab} style={{ flex: 1 }}>
-                            <button
-                              style={{
-                                width: "100%",
-                                padding: "10px",
-                                backgroundColor: "#fff",
-                                color:
-                                  modalElementType === tab.toLowerCase()
-                                    ? "var(--primary-color)"
-                                    : "var(--secondary-color)",
-                                border: "none",
-                                cursor: "pointer",
-                                borderBottom:
-                                  modalElementType === tab.toLowerCase() ? "3px solid var(--primary-color)" : "none",
-                                fontFamily: "var(--font-family-base)",
-                                fontWeight: "normal",
-                              }}
-                              onClick={() => setModalElementType(tab.toLowerCase())}
-                            >
-                              {tab}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
+                      <div style={{ flex: 1, marginRight: "10px" }}>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Buscar elemento..."
+                          value={elementSearch}
+                          onChange={(e) => setElementSearch(e.target.value)}
+                        />
+                      </div>
                       <CustomButton
                         variant="save"
                         onClick={() => {
@@ -644,12 +684,35 @@ const ProjectWorkflowPart2: React.FC = () => {
                             setShowNewDoorRow((prev) => !prev);
                           }
                         }}
+                        style={{ borderRadius: "5px", width: "180px" }}
                       >
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
                     </div>
-                    {/* Contenedor con tamaño definido para la tabla */}
-                    <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+                    {/* Pestañas */}
+                    <div className="d-flex justify-content-start align-items-center mb-2">
+                      {["Ventanas", "Puertas"].map((tab) => (
+                        <button
+                          key={tab}
+                          style={{
+                            flex: 1,
+                            padding: "10px",
+                            backgroundColor: "#fff",
+                            color: modalElementType === tab.toLowerCase() ? primaryColor : "var(--secondary-color)",
+                            border: "none",
+                            cursor: "pointer",
+                            borderBottom: modalElementType === tab.toLowerCase() ? `3px solid ${primaryColor}` : "none",
+                            fontFamily: "var(--font-family-base)",
+                            fontWeight: "normal",
+                          }}
+                          onClick={() => setModalElementType(tab.toLowerCase())}
+                        >
+                          {tab}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Tabla de elementos translúcidos */}
+                    <div style={{ maxHeight: "400px", overflowY: "auto" }}>
                       <table className="table table-bordered table-striped" style={{ tableLayout: "fixed" }}>
                         <thead>
                           {modalElementType === "ventanas" ? (
@@ -676,7 +739,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                           )}
                         </thead>
                         <tbody>
-                          {/* Fila para crear nuevo elemento, si se activa */}
                           {modalElementType === "ventanas" && showNewWindowRow && (
                             <tr>
                               <td>
@@ -761,15 +823,32 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   type="number"
                                   className="form-control"
                                   placeholder="FM"
+                                  min="0"
+                                  max="100"
                                   value={windowData.fm}
-                                  onChange={(e) =>
-                                    setWindowData((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))
-                                  }
+                                  onChange={(e) => {
+                                    let value = parseFloat(e.target.value);
+                                    if (isNaN(value)) value = 0;
+                                    if (value > 100) value = 100;
+                                    if (value < 0) value = 0;
+                                    setWindowData((prev) => ({ ...prev, fm: value }));
+                                  }}
                                 />
                               </td>
-                              <td>
-                                <CustomButton variant="save" onClick={handleCreateWindowElement}>
+                              <td className="d-flex gap-2 justify-content-center">
+                                <CustomButton
+                                  variant="save"
+                                  onClick={handleCreateWindowElement}
+                                  style={{ borderRadius: "5px", width: "180px" }}
+                                >
                                   <span className="material-icons">add</span>
+                                </CustomButton>
+                                <CustomButton
+                                  variant="cancelIcon"
+                                  onClick={() => setShowNewWindowRow(false)}
+                                  style={{ borderRadius: "5px", width: "180px" }}
+                                >
+                                  <span className="material-icons">cancel</span>
                                 </CustomButton>
                               </td>
                             </tr>
@@ -824,10 +903,16 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   type="number"
                                   className="form-control"
                                   placeholder="% Vidrio"
+                                  min="0"
+                                  max="100"
                                   value={doorData.porcentaje_vidrio}
-                                  onChange={(e) =>
-                                    setDoorData((prev) => ({ ...prev, porcentaje_vidrio: parseFloat(e.target.value) }))
-                                  }
+                                  onChange={(e) => {
+                                    let value = parseFloat(e.target.value);
+                                    if (isNaN(value)) value = 0;
+                                    if (value > 100) value = 100;
+                                    if (value < 0) value = 0;
+                                    setDoorData((prev) => ({ ...prev, porcentaje_vidrio: value }));
+                                  }}
                                 />
                               </td>
                               <td>
@@ -846,23 +931,39 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   type="number"
                                   className="form-control"
                                   placeholder="FM"
+                                  min="0"
+                                  max="100"
                                   value={doorData.fm}
-                                  onChange={(e) =>
-                                    setDoorData((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))
-                                  }
+                                  onChange={(e) => {
+                                    let value = parseFloat(e.target.value);
+                                    if (isNaN(value)) value = 0;
+                                    if (value > 100) value = 100;
+                                    if (value < 0) value = 0;
+                                    setDoorData((prev) => ({ ...prev, fm: value }));
+                                  }}
                                 />
                               </td>
-                              <td>
-                                <CustomButton variant="save" onClick={handleCreateDoorElement}>
+                              <td className="d-flex gap-2 justify-content-center">
+                                <CustomButton
+                                  variant="save"
+                                  onClick={handleCreateDoorElement}
+                                  style={{ borderRadius: "5px", width: "180px" }}
+                                >
                                   <span className="material-icons">add</span>
+                                </CustomButton>
+                                <CustomButton
+                                  variant="cancelIcon"
+                                  onClick={() => setShowNewDoorRow(false)}
+                                  style={{ borderRadius: "5px", width: "180px" }}
+                                >
+                                  <span className="material-icons">cancel</span>
                                 </CustomButton>
                               </td>
                             </tr>
                           )}
-                          {/* Listado de elementos disponibles */}
                           {elementsList
                             .filter((el) =>
-                              el.type === (modalElementType === "ventanas" ? "window" : "door")
+                              el.name_element.toLowerCase().includes(elementSearch.toLowerCase())
                             )
                             .map((el, idx) => (
                               <tr key={idx}>
@@ -905,6 +1006,19 @@ const ProjectWorkflowPart2: React.FC = () => {
                         </tbody>
                       </table>
                     </div>
+                    {/* Botón "Grabar Datos" en la esquina inferior derecha */}
+                    <div className="mt-4 text-end">
+                      <CustomButton
+                        variant="save"
+                        onClick={handleStep1Submit}
+                        style={{ borderRadius: "5px", width: "180px" }}
+                      >
+                        <span className="material-icons" style={{ marginRight: "5px" }}>
+                          sd_card
+                        </span>
+                        Grabar Datos
+                      </CustomButton>
+                    </div>
                   </>
                 )}
 
@@ -912,7 +1026,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                 {step === 6 && (
                   <>
                     <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
-                      Perfil de uso  (Espacio aún en desarrollo, no funcional)
+                      Perfil de uso (Espacio aún en desarrollo, no funcional)
                     </h5>
                     <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
                       {[
@@ -927,10 +1041,10 @@ const ProjectWorkflowPart2: React.FC = () => {
                               width: "100%",
                               padding: "10px",
                               backgroundColor: "#fff",
-                              color: tabTipologiaRecinto === tab.key ? "var(--primary-color)" : "var(--secondary-color)",
+                              color: tabTipologiaRecinto === tab.key ? primaryColor : "var(--secondary-color)",
                               border: "none",
                               cursor: "pointer",
-                              borderBottom: tabTipologiaRecinto === tab.key ? "3px solid var(--primary-color)" : "none",
+                              borderBottom: tabTipologiaRecinto === tab.key ? `3px solid ${primaryColor}` : "none",
                               fontFamily: "var(--font-family-base)",
                               fontWeight: "normal",
                             }}
@@ -950,8 +1064,11 @@ const ProjectWorkflowPart2: React.FC = () => {
                       <CustomButton
                         variant="save"
                         onClick={() =>
-                          Swal.fire("Datos guardados", "Se han guardado los datos de tipología", "success")
+                          Swal.fire("Datos guardados", "Se han guardado los datos de tipología", "success").then(() => {
+                            router.push("/project-list");
+                          })
                         }
+                        style={{ borderRadius: "5px", width: "180px" }}
                       >
                         <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos

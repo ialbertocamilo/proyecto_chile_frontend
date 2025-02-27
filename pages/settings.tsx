@@ -12,7 +12,6 @@ interface CustomizationData {
   primary_color: string;
   secondary_color: string;
   background_color: string;
-  // Variables para los colores de los botones
   btn_save_bg: string;
   btn_save_hover_bg: string;
   btn_back_bg: string;
@@ -31,7 +30,7 @@ const SettingsPage = () => {
   const [customization, setCustomization] = useState<CustomizationData>({
     primary_color: "#3ca7b7",
     secondary_color: "#bbc4cb",
-    background_color: "#f9f5f5",
+    background_color: "#fff",
     btn_save_bg: "#3ca7b7",
     btn_save_hover_bg: "#359ea7",
     btn_back_bg: "#6b7280",
@@ -43,10 +42,24 @@ const SettingsPage = () => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Estado para sidebarWidth
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  // Obtener la configuración actual
+  // (Se ha eliminado el useEffect que actualizaba las variables CSS en cada cambio)
+
+  // Función para actualizar las variables CSS globales
+  const updateCSSVariables = () => {
+    document.documentElement.style.setProperty("--primary-color", customization.primary_color);
+    document.documentElement.style.setProperty("--secondary-color", customization.secondary_color);
+    document.documentElement.style.setProperty("--background-color", customization.background_color);
+    document.documentElement.style.setProperty("--btn-save-bg", customization.btn_save_bg);
+    document.documentElement.style.setProperty("--btn-save-hover-bg", customization.btn_save_hover_bg);
+    document.documentElement.style.setProperty("--btn-back-bg", customization.btn_back_bg);
+    document.documentElement.style.setProperty("--btn-back-hover-bg", customization.btn_back_hover_bg);
+    document.documentElement.style.setProperty("--btn-delete-bg", customization.btn_delete_bg);
+    document.documentElement.style.setProperty("--btn-delete-hover-bg", customization.btn_delete_hover_bg);
+  };
+
+  // Obtener la configuración actual desde la API.
   useEffect(() => {
     const fetchCustomization = async () => {
       setFetching(true);
@@ -101,7 +114,7 @@ const SettingsPage = () => {
     fetchCustomization();
   }, []);
 
-  // Actualiza el estado al cambiar el valor
+  // Actualiza el estado al cambiar un input de color o texto.
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     console.log(`[handleChange] ${e.target.name} cambiado a:`, e.target.value);
     setCustomization({
@@ -110,7 +123,7 @@ const SettingsPage = () => {
     });
   };
 
-  // Manejador para el input de archivo
+  // Manejo para el input de archivo (logo).
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       console.log("[handleFileChange] Logo seleccionado:", e.target.files[0]);
@@ -121,7 +134,7 @@ const SettingsPage = () => {
     }
   };
 
-  // Para subir el logo
+  // Función para subir el logo a la API.
   const uploadLogo = async (): Promise<string | null> => {
     if (!customization.logo) return null;
     const formData = new FormData();
@@ -149,7 +162,7 @@ const SettingsPage = () => {
     }
   };
 
-  // Enviar los datos al endpoint que actualiza la configuración
+  // Enviar la configuración actualizada a la API.
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -231,6 +244,10 @@ const SettingsPage = () => {
 
       const resData = await response.json();
       console.log("[handleSubmit] Configuración actualizada:", resData);
+
+      // Actualiza las variables CSS solo cuando se guarde la configuración
+      updateCSSVariables();
+
       await Swal.fire({
         title: "Configuración actualizada",
         text: resData.message || "La configuración se actualizó correctamente.",
@@ -254,7 +271,7 @@ const SettingsPage = () => {
     }
   };
 
-  // Componente para mostrar un selector de color y un input de texto
+  // Componente para mostrar un selector de color y un input de texto.
   const ColorPickerInput = ({
     label,
     name,
@@ -305,7 +322,6 @@ const SettingsPage = () => {
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
-      {/* Se usa sidebarWidth para el margen */}
       <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "80px" }}>

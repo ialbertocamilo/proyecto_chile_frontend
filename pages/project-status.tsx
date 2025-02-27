@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import axios from "axios";
 import Swal from "sweetalert2";
 import Navbar from "../src/components/layout/Navbar";
@@ -44,7 +43,6 @@ const ProjectListStatusEditPage = () => {
   useAuth();
   console.log("[ProjectListStatusEditPage] Página cargada y sesión validada.");
 
-  const router = useRouter();
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -75,7 +73,7 @@ const ProjectListStatusEditPage = () => {
     }
     try {
       console.log("[fetchProjects] Obteniendo proyectos...");
-      const response = await axios.get(`${constantUrlApiEndpoint}/projects`, {
+      const response = await axios.get(`${constantUrlApiEndpoint}/admin/projects`, {
         params: { limit: 999999, num_pag: 1 },
         headers: {
           Authorization: `Bearer ${token}`,
@@ -161,6 +159,42 @@ const ProjectListStatusEditPage = () => {
     }
   };
 
+  // Función para eliminar un proyecto
+  const handleDeleteProject = (project: Project) => {
+    Swal.fire({
+      title: `¿Estás seguro de eliminar el proyecto "${project.name_project}"?`,
+      text: "Esta acción no se puede deshacer.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminarlo",
+      cancelButtonText: "Cancelar"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          Swal.fire("Error", "No estás autenticado. Inicia sesión nuevamente.", "error");
+          return;
+        }
+        try {
+          const url = `${constantUrlApiEndpoint}/project/${project.id}/delete`;
+          await axios.delete(url, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              accept: "application/json",
+            },
+          });
+          Swal.fire("Eliminado", "El proyecto ha sido eliminado exitosamente.", "success");
+          fetchProjects();
+        } catch (error: unknown) {
+          console.error("[handleDeleteProject] Error al eliminar el proyecto:", error);
+          Swal.fire("Error", "Ocurrió un error al eliminar el proyecto.", "error");
+        }
+      }
+    });
+  };
+
   const getStatusStyle = (status: string | undefined): React.CSSProperties => {
     const s = status?.toLowerCase();
     if (s === "finalizado") {
@@ -185,7 +219,7 @@ const ProjectListStatusEditPage = () => {
             <h2
               className="fw-normal"
               style={{
-                color: "var(--primary-color)",
+                color: "#4B5563",
                 margin: 0,
                 fontFamily: "var(--font-family-base)",
                 fontWeight: "normal"
@@ -193,9 +227,6 @@ const ProjectListStatusEditPage = () => {
             >
               Estado de Proyectos
             </h2>
-            <div className="d-flex" style={{ gap: "1rem" }}>
-              <CustomButton variant="backIcon" onClick={() => router.push("/dashboard")} />
-            </div>
           </div>
           {error && <p className="text-danger" style={{ fontWeight: "normal" }}>{error}</p>}
           <div className="input-group mb-3">
@@ -222,6 +253,11 @@ const ProjectListStatusEditPage = () => {
                     <th>Estado del Proyecto</th>
                     <th>Nombre del Proyecto</th>
                     <th>Propietario</th>
+                    <th>Tipo de edificación</th>
+                    <th>Tipo de uso principal</th>
+                    <th>Número de niveles</th>
+                    <th>Número de viviendas/oficinas x nivel</th>
+                    <th>Superficie construida (m²)</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -240,7 +276,12 @@ const ProjectListStatusEditPage = () => {
                         </td>
                         <td>{project.name_project || "No disponible"}</td>
                         <td>{project.owner_name || "No disponible"}</td>
-                        <td>
+                        <td>{project.building_type || "N/D"}</td>
+                        <td>{project.main_use_type || "N/D"}</td>
+                        <td>{project.number_levels !== undefined ? project.number_levels : "N/D"}</td>
+                        <td>{project.number_homes_per_level !== undefined ? project.number_homes_per_level : "N/D"}</td>
+                        <td>{project.built_surface !== undefined ? project.built_surface : "N/D"}</td>
+                        <td className="d-flex justify-content-center">
                           <CustomButton
                             variant="editIcon"
                             onClick={() => openStatusModal(project)}
@@ -252,12 +293,24 @@ const ProjectListStatusEditPage = () => {
                               height: "40px",
                             }}
                           />
+                          <CustomButton
+                            variant="deleteIcon"
+                            onClick={() => handleDeleteProject(project)}
+                            style={{
+                              backgroundColor: "#d33",
+                              border: "2px solid #d33",
+                              padding: "0.5rem",
+                              width: "40px",
+                              height: "40px",
+                              marginLeft: "0.5rem"
+                            }}
+                          />
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="text-center text-muted">
+                      <td colSpan={10} className="text-center text-muted">
                         No hay proyectos disponibles o no coinciden con la búsqueda.
                       </td>
                     </tr>
@@ -275,7 +328,7 @@ const ProjectListStatusEditPage = () => {
               className="modal fade show"
               style={{
                 display: "block",
-                marginTop: "40px",
+                marginTop: "250px",
                 marginLeft: "20px",
                 width: modalWidth,
                 height: modalHeight,
@@ -339,9 +392,9 @@ const ProjectListStatusEditPage = () => {
             border: none;
           }
           .custom-table thead th {
-            background-color: #ffff; /* fondo gris claro */
-            color: #666; /* texto gris */
-            font-weight: normal; /* estilo normal, sin negrita */
+            background-color: #ffff;
+            color: #666;
+            font-weight: normal;
             position: sticky;
             top: 0;
             z-index: 1;
@@ -363,7 +416,6 @@ const ProjectListStatusEditPage = () => {
           .status-badge {
             display: inline-block;
             font-size: 1.1rem;
-            /* Si deseas quitar la negrita del badge, puedes usar font-weight: normal; */
             font-weight: normal;
             padding: 8px 16px;
             border-radius: 0.5rem;
@@ -397,7 +449,6 @@ const ProjectListStatusEditPage = () => {
             color: var(--primary-color);
             font-weight: normal;
           }
-          /* Hacemos que la tabla sea scrolleable manteniendo los headers fijos */
           .scrollable-table {
             max-height: 600px;
             overflow-y: auto;

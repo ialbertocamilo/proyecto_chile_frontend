@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -12,14 +12,78 @@ import "leaflet/dist/leaflet.css";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
+import locationData from "../public/locationData"; // Importamos la información de ubicación
 
-const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), { ssr: false });
+// Componente para el Sidebar interno, ahora recibiendo el estado y la función setStep desde el padre
+interface SidebarItemProps {
+  stepNumber: number;
+  iconName: string;
+  title: string;
+  currentStep: number;
+  setStep: React.Dispatch<React.SetStateAction<number>>;
+  primaryColor: string;
+}
+
+const SidebarItem: React.FC<SidebarItemProps> = ({
+  stepNumber,
+  iconName,
+  title,
+  currentStep,
+  setStep,
+  primaryColor,
+}) => {
+  const isSelected = currentStep === stepNumber;
+  const activeColor = primaryColor;
+  const inactiveColor = "#ccc";
+
+  return (
+    <li
+      className="nav-item"
+      style={{ cursor: "pointer" }}
+      onClick={() => setStep(stepNumber)}
+    >
+      <div
+        style={{
+          width: "100%",
+          height: "100px",
+          border: `1px solid ${isSelected ? activeColor : inactiveColor}`,
+          borderRadius: "8px",
+          marginBottom: "16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          paddingLeft: "50px",
+          color: isSelected ? activeColor : inactiveColor,
+          fontFamily: "var(--font-family-base)",
+          fontWeight: "normal",
+        }}
+      >
+        <span style={{ marginRight: "15px", fontSize: "2.5rem", lineHeight: "1" }}>
+          <span className="material-icons" style={{ fontSize: "inherit" }}>
+            {iconName}
+          </span>
+        </span>
+        <span style={{ fontWeight: "normal", whiteSpace: "normal", width: "180px" }}>
+          {title}
+        </span>
+      </div>
+    </li>
+  );
+};
+
+const NoSSRInteractiveMap = dynamic(
+  () => import("../src/components/InteractiveMap"),
+  { ssr: false }
+);
+
+// Definimos que solo se permite "" | "Perú" | "Chile" en country
+type Country = "" | "Perú" | "Chile";
 
 interface FormData {
   name_project: string;
   owner_name: string;
   owner_lastname: string;
-  country: string;
+  country: Country;
   department: string;
   province: string;
   district: string;
@@ -35,9 +99,21 @@ interface FormData {
 const ProjectWorkflowPart1: React.FC = () => {
   useAuth();
   const router = useRouter();
+
+  // Leer color primario desde CSS
+  const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
+  useEffect(() => {
+    const pColor =
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--primary-color")
+        .trim() || "#3ca7b7";
+    setPrimaryColor(pColor);
+  }, []);
+
   const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [step, setStep] = useState<number>(1);
   const [, setCreatedProjectId] = useState<number | null>(null);
+
   const [formData, setFormData] = useState<FormData>({
     name_project: "",
     owner_name: "",
@@ -54,43 +130,91 @@ const ProjectWorkflowPart1: React.FC = () => {
     latitude: -33.4589314398474,
     longitude: -70.6703553846175,
   });
+
+  // Objeto para almacenar mensajes de error
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+
   const [locationSearch, setLocationSearch] = useState("");
 
+  // Actualiza un campo del formulario y remueve el error si el campo ya tiene valor
   const handleFormInputChange = (field: keyof FormData, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (value !== "" && value !== 0) {
+      setErrors((prevErrors) => ({ ...prevErrors, [field]: "" }));
+    }
   };
 
-  const validateStep1 = (): boolean => {
-    if (
-      !formData.name_project.trim() ||
-      !formData.owner_name.trim() ||
-      !formData.owner_lastname.trim() ||
-      !formData.country.trim() ||
-      !formData.department.trim() ||
-      !formData.province.trim() ||
-      !formData.district.trim() ||
-      !formData.building_type.trim() ||
-      !formData.main_use_type.trim() ||
-      formData.number_levels <= 0 ||
-      formData.number_homes_per_level <= 0 ||
-      formData.built_surface <= 0
-    ) {
+  // Al cambiar país, reiniciamos departamento y provincia y borramos los errores asociados
+  const handleCountryChange = (country: Country) => {
+    handleFormInputChange("country", country);
+    handleFormInputChange("department", "");
+    handleFormInputChange("province", "");
+    setErrors((prev) => ({ ...prev, country: "", department: "", province: "" }));
+  };
+
+  // Al cambiar departamento, reiniciamos provincia y borramos error de provincia
+  const handleDepartmentChange = (department: string) => {
+    handleFormInputChange("department", department);
+    handleFormInputChange("province", "");
+    setErrors((prev) => ({ ...prev, department: "", province: "" }));
+  };
+
+  // Función que valida cada campo y retorna un objeto de errores
+  const validateStep1Fields = (): Partial<Record<keyof FormData, string>> => {
+    const newErrors: Partial<Record<keyof FormData, string>> = {};
+    if (!formData.name_project.trim()) {
+      newErrors.name_project = "El nombre del proyecto es obligatorio";
+    }
+    if (!formData.owner_name.trim()) {
+      newErrors.owner_name = "El nombre del propietario es obligatorio";
+    }
+    if (!formData.owner_lastname.trim()) {
+      newErrors.owner_lastname = "El apellido del propietario es obligatorio";
+    }
+    if (!formData.country.trim()) {
+      newErrors.country = "El país es obligatorio";
+    }
+    if (!formData.department.trim()) {
+      newErrors.department = "El departamento es obligatorio";
+    }
+    if (!formData.province.trim()) {
+      newErrors.province = "La provincia es obligatoria";
+    }
+    if (!formData.district.trim()) {
+      newErrors.district = "El distrito es obligatorio";
+    }
+    if (!formData.building_type.trim()) {
+      newErrors.building_type = "El tipo de edificación es obligatorio";
+    }
+    if (!formData.main_use_type.trim()) {
+      newErrors.main_use_type = "El tipo de uso principal es obligatorio";
+    }
+    if (formData.number_levels <= 0) {
+      newErrors.number_levels = "El número de niveles debe ser mayor a 0";
+    }
+    if (formData.number_homes_per_level <= 0) {
+      newErrors.number_homes_per_level = "El número de viviendas/oficinas debe ser mayor a 0";
+    }
+    if (formData.built_surface <= 0) {
+      newErrors.built_surface = "La superficie construida debe ser mayor a 0";
+    }
+    return newErrors;
+  };
+
+  const handleStep1Submit = () => {
+    const fieldErrors = validateStep1Fields();
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors);
       Swal.fire({
         title: "Campos incompletos",
         text: "Por favor complete todos los campos obligatorios.",
         icon: "warning",
         confirmButtonText: "Entendido",
-        confirmButtonColor: "#3085d6",
+        confirmButtonColor: primaryColor,
       });
-      return false;
+      return;
     }
-    return true;
-  };
-
-  const handleStep1Submit = () => {
-    if (validateStep1()) {
-      setStep(2);
-    }
+    setStep(2);
   };
 
   const handleCreateProject = async () => {
@@ -102,7 +226,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           text: "Por favor inicie sesión.",
           icon: "warning",
           confirmButtonText: "Entendido",
-          confirmButtonColor: "#3085d6",
+          confirmButtonColor: primaryColor,
         });
         return;
       }
@@ -128,7 +252,10 @@ const ProjectWorkflowPart1: React.FC = () => {
       console.log("RequestBody:", requestBody);
 
       const url = `${constantUrlApiEndpoint}/projects/create`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
       const response = await axios.post(url, requestBody, { headers });
       const { project_id, message } = response.data;
       setCreatedProjectId(project_id);
@@ -141,7 +268,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         text: `ID: ${project_id} / Mensaje: ${message}`,
         icon: "success",
         confirmButtonText: "Continuar",
-        confirmButtonColor: "#3085d6",
+        confirmButtonColor: primaryColor,
       }).then(() => {
         router.push(`/project-workflow-part2?project_id=${project_id}`);
       });
@@ -150,7 +277,6 @@ const ProjectWorkflowPart1: React.FC = () => {
       let errorMessage: string | object = "Error desconocido";
       if (axios.isAxiosError(error)) {
         errorMessage = error.response?.data?.detail || error.message;
-        console.error("Error response data:", error.response?.data);
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -158,27 +284,29 @@ const ProjectWorkflowPart1: React.FC = () => {
         errorMessage = JSON.stringify(errorMessage);
       }
 
-      // Si el error es por nombre duplicado, regresa al paso 1 y muestra un mensaje amigable
-      if (errorMessage.includes("El Nombre del Proyecto") && errorMessage.includes("ya existe")) {
+      if (
+        typeof errorMessage === "string" &&
+        errorMessage.includes("El Nombre del Proyecto") &&
+        errorMessage.includes("ya existe")
+      ) {
         setStep(1);
         Swal.fire({
           title: "Ooops...",
           text: "El nombre del proyecto ya existe. Por favor corrija el campo 'Nombre del proyecto'.",
           icon: "error",
           confirmButtonText: "Entendido",
-          confirmButtonColor: "#3085d6",
+          confirmButtonColor: primaryColor,
         });
         return;
       }
 
-      // Para otros errores, regresa al paso 1 y muestra un mensaje con el mismo estilo
       setStep(1);
       Swal.fire({
         title: "Algo salió mal",
         text: "Falta completar algún campo o hay un error en la información. Por favor revise y complete los campos correctamente.",
         icon: "error",
         confirmButtonText: "Entendido",
-        confirmButtonColor: "#3085d6",
+        confirmButtonColor: primaryColor,
       });
     }
   };
@@ -198,47 +326,6 @@ const ProjectWorkflowPart1: React.FC = () => {
         </h1>
       </div>
     ) : null;
-
-  const SidebarItem = ({
-    stepNumber,
-    iconName,
-    title,
-  }: {
-    stepNumber: number;
-    iconName: string;
-    title: string;
-  }) => {
-    const isSelected = step === stepNumber;
-    const activeColor = "#3ca7b7";
-    const inactiveColor = "#ccc";
-    return (
-      <li className="nav-item" style={{ cursor: "pointer" }} onClick={() => setStep(stepNumber)}>
-        <div
-          style={{
-            width: "100%",
-            height: "100px",
-            border: `1px solid ${isSelected ? activeColor : inactiveColor}`,
-            borderRadius: "8px",
-            marginBottom: "16px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            paddingLeft: "50px",
-            color: isSelected ? activeColor : inactiveColor,
-            fontFamily: "var(--font-family-base)",
-            fontWeight: "normal",
-          }}
-        >
-          <span style={{ marginRight: "15px", fontSize: "2.5rem", lineHeight: "1" }}>
-            <span className="material-icons" style={{ fontSize: "inherit" }}>
-              {iconName}
-            </span>
-          </span>
-          <span style={{ fontWeight: "normal", whiteSpace: "normal", width: "180px" }}>{title}</span>
-        </div>
-      </li>
-    );
-  };
 
   return (
     <>
@@ -273,8 +360,18 @@ const ProjectWorkflowPart1: React.FC = () => {
                     stepNumber={1}
                     iconName="assignment_ind"
                     title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
+                    currentStep={step}
+                    setStep={setStep}
+                    primaryColor={primaryColor}
                   />
-                  <SidebarItem stepNumber={2} iconName="location_on" title="Ubicación del proyecto" />
+                  <SidebarItem
+                    stepNumber={2}
+                    iconName="location_on"
+                    title="Ubicación del proyecto"
+                    currentStep={step}
+                    setStep={setStep}
+                    primaryColor={primaryColor}
+                  />
                 </ul>
               </div>
               <div style={{ flex: 1, padding: "40px" }}>
@@ -288,8 +385,15 @@ const ProjectWorkflowPart1: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.name_project}
-                          onChange={(e) => handleFormInputChange("name_project", e.target.value)}
+                          onChange={(e) =>
+                            handleFormInputChange("name_project", e.target.value)
+                          }
                         />
+                        {errors.name_project && (
+                          <div className="text-danger mt-1">
+                            {errors.name_project}
+                          </div>
+                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Nombre del propietario</label>
@@ -297,48 +401,110 @@ const ProjectWorkflowPart1: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.owner_name}
-                          onChange={(e) => handleFormInputChange("owner_name", e.target.value)}
+                          onChange={(e) =>
+                            handleFormInputChange("owner_name", e.target.value)
+                          }
                         />
+                        {errors.owner_name && (
+                          <div className="text-danger mt-1">
+                            {errors.owner_name}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
-                        <label className="form-label">Apellido del propietario</label>
+                        <label className="form-label">
+                          Apellido del propietario
+                        </label>
                         <input
                           type="text"
                           className="form-control"
                           value={formData.owner_lastname}
-                          onChange={(e) => handleFormInputChange("owner_lastname", e.target.value)}
+                          onChange={(e) =>
+                            handleFormInputChange("owner_lastname", e.target.value)
+                          }
                         />
+                        {errors.owner_lastname && (
+                          <div className="text-danger mt-1">
+                            {errors.owner_lastname}
+                          </div>
+                        )}
                       </div>
+                      {/* Desplegable para País */}
                       <div className="col-12 col-md-6">
                         <label className="form-label">País</label>
-                        <input
-                          type="text"
+                        <select
                           className="form-control"
                           value={formData.country}
-                          onChange={(e) => handleFormInputChange("country", e.target.value)}
-                        />
+                          onChange={(e) =>
+                            handleCountryChange(e.target.value as Country)
+                          }
+                        >
+                          <option value="">Seleccione un país</option>
+                          {Object.keys(locationData).map((country) => (
+                            <option key={country} value={country}>
+                              {country}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.country && (
+                          <div className="text-danger mt-1">{errors.country}</div>
+                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
+                      {/* Desplegable para Departamento */}
                       <div className="col-12 col-md-6">
                         <label className="form-label">Departamento</label>
-                        <input
-                          type="text"
+                        <select
                           className="form-control"
                           value={formData.department}
-                          onChange={(e) => handleFormInputChange("department", e.target.value)}
-                        />
+                          onChange={(e) => handleDepartmentChange(e.target.value)}
+                          disabled={!formData.country}
+                        >
+                          <option value="">Seleccione un departamento</option>
+                          {formData.country &&
+                            Object.keys(locationData[formData.country].departments)
+                              .map((dept) => (
+                                <option key={dept} value={dept}>
+                                  {dept}
+                                </option>
+                              ))}
+                        </select>
+                        {errors.department && (
+                          <div className="text-danger mt-1">
+                            {errors.department}
+                          </div>
+                        )}
                       </div>
+                      {/* Desplegable para Provincia */}
                       <div className="col-12 col-md-6">
                         <label className="form-label">Provincia</label>
-                        <input
-                          type="text"
+                        <select
                           className="form-control"
                           value={formData.province}
-                          onChange={(e) => handleFormInputChange("province", e.target.value)}
-                        />
+                          onChange={(e) =>
+                            handleFormInputChange("province", e.target.value)
+                          }
+                          disabled={!formData.department}
+                        >
+                          <option value="">Seleccione una provincia</option>
+                          {formData.country &&
+                            formData.department &&
+                            (locationData[formData.country].departments[
+                              formData.department
+                            ] || []).map((prov) => (
+                              <option key={prov} value={prov}>
+                                {prov}
+                              </option>
+                            ))}
+                        </select>
+                        {errors.province && (
+                          <div className="text-danger mt-1">
+                            {errors.province}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -348,28 +514,53 @@ const ProjectWorkflowPart1: React.FC = () => {
                           type="text"
                           className="form-control"
                           value={formData.district}
-                          onChange={(e) => handleFormInputChange("district", e.target.value)}
+                          onChange={(e) =>
+                            handleFormInputChange("district", e.target.value)
+                          }
                         />
+                        {errors.district && (
+                          <div className="text-danger mt-1">
+                            {errors.district}
+                          </div>
+                        )}
                       </div>
                       <div className="col-12 col-md-6">
-                        <label className="form-label">Tipo de edificación</label>
+                        <label className="form-label">
+                          Tipo de edificación
+                        </label>
                         <input
                           type="text"
                           className="form-control"
                           value={formData.building_type}
-                          onChange={(e) => handleFormInputChange("building_type", e.target.value)}
+                          onChange={(e) =>
+                            handleFormInputChange("building_type", e.target.value)
+                          }
                         />
+                        {errors.building_type && (
+                          <div className="text-danger mt-1">
+                            {errors.building_type}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
-                        <label className="form-label">Tipo de uso principal</label>
+                        <label className="form-label">
+                          Tipo de uso principal
+                        </label>
                         <input
                           type="text"
                           className="form-control"
                           value={formData.main_use_type}
-                          onChange={(e) => handleFormInputChange("main_use_type", e.target.value)}
+                          onChange={(e) =>
+                            handleFormInputChange("main_use_type", e.target.value)
+                          }
                         />
+                        {errors.main_use_type && (
+                          <div className="text-danger mt-1">
+                            {errors.main_use_type}
+                          </div>
+                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Número de niveles</label>
@@ -378,38 +569,68 @@ const ProjectWorkflowPart1: React.FC = () => {
                           className="form-control"
                           value={formData.number_levels}
                           onChange={(e) =>
-                            handleFormInputChange("number_levels", parseInt(e.target.value) || 0)
+                            handleFormInputChange(
+                              "number_levels",
+                              parseInt(e.target.value) || 0
+                            )
                           }
                         />
+                        {errors.number_levels && (
+                          <div className="text-danger mt-1">
+                            {errors.number_levels}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
-                        <label className="form-label">Número de viviendas / oficinas x nivel</label>
+                        <label className="form-label">
+                          Número de viviendas / oficinas x nivel
+                        </label>
                         <input
                           type="number"
                           className="form-control"
                           value={formData.number_homes_per_level}
                           onChange={(e) =>
-                            handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)
+                            handleFormInputChange(
+                              "number_homes_per_level",
+                              parseInt(e.target.value) || 0
+                            )
                           }
                         />
+                        {errors.number_homes_per_level && (
+                          <div className="text-danger mt-1">
+                            {errors.number_homes_per_level}
+                          </div>
+                        )}
                       </div>
                       <div className="col-12 col-md-6">
-                        <label className="form-label">Superficie construida (m²)</label>
+                        <label className="form-label">
+                          Superficie construida (m²)
+                        </label>
                         <input
                           type="number"
                           className="form-control"
                           value={formData.built_surface}
                           onChange={(e) =>
-                            handleFormInputChange("built_surface", parseFloat(e.target.value) || 0)
+                            handleFormInputChange(
+                              "built_surface",
+                              parseFloat(e.target.value) || 0
+                            )
                           }
                         />
+                        {errors.built_surface && (
+                          <div className="text-danger mt-1">
+                            {errors.built_surface}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="text-end">
                       <CustomButton variant="save" onClick={handleStep1Submit}>
-                        <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
+                        <span className="material-icons" style={{ marginRight: "5px" }}>
+                          sd_card
+                        </span>
                         Grabar Datos
                       </CustomButton>
                     </div>
@@ -419,7 +640,14 @@ const ProjectWorkflowPart1: React.FC = () => {
                 {step === 2 && (
                   <>
                     {/* Paso 2 */}
-                    <div style={{ border: "1px solid #ccc", borderRadius: "8px", padding: "30px", marginBottom: "20px" }}>
+                    <div
+                      style={{
+                        border: "1px solid #ccc",
+                        borderRadius: "8px",
+                        padding: "30px",
+                        marginBottom: "20px",
+                      }}
+                    >
                       <div className="row">
                         <div className="col-12 mb-3">
                           <div style={{ position: "relative" }}>
@@ -455,7 +683,13 @@ const ProjectWorkflowPart1: React.FC = () => {
                           />
                           <CustomButton
                             variant="save"
-                            style={{ width: "30%", height: "50px", marginTop: "30px", fontSize: "15px", padding: "10px 20px" }}
+                            style={{
+                              width: "30%",
+                              height: "50px",
+                              marginTop: "30px",
+                              fontSize: "15px",
+                              padding: "10px 20px",
+                            }}
                             onClick={() => {
                               if (navigator.geolocation) {
                                 navigator.geolocation.getCurrentPosition(
@@ -468,7 +702,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                                       text: `Lat: ${latitude}, Lon: ${longitude}`,
                                       icon: "success",
                                       confirmButtonText: "OK",
-                                      confirmButtonColor: "#3085d6",
+                                      confirmButtonColor: primaryColor,
                                     });
                                   },
                                   () => {
@@ -477,7 +711,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                                       text: "No se pudo obtener la ubicación.",
                                       icon: "error",
                                       confirmButtonText: "Entendido",
-                                      confirmButtonColor: "#3085d6",
+                                      confirmButtonColor: primaryColor,
                                     });
                                   }
                                 );
@@ -487,17 +721,27 @@ const ProjectWorkflowPart1: React.FC = () => {
                                   text: "Geolocalización no soportada.",
                                   icon: "error",
                                   confirmButtonText: "Entendido",
-                                  confirmButtonColor: "#3085d6",
+                                  confirmButtonColor: primaryColor,
                                 });
                               }
                             }}
                           >
-                            <span className="material-icons" style={{ marginRight: "5px" }}>location_on</span>
+                            <span className="material-icons" style={{ marginRight: "5px" }}>
+                              location_on
+                            </span>
                             Ubicación actual
                           </CustomButton>
                         </div>
                         <div className="col-12 col-md-4">
-                          <label className="form-label" style={{ width: "100%", height: "20px", marginLeft: "-80px", marginTop: "20px" }}>
+                          <label
+                            className="form-label"
+                            style={{
+                              width: "100%",
+                              height: "20px",
+                              marginLeft: "-80px",
+                              marginTop: "20px",
+                            }}
+                          >
                             Datos de ubicaciones encontradas
                           </label>
                           <textarea
@@ -505,13 +749,20 @@ const ProjectWorkflowPart1: React.FC = () => {
                             rows={5}
                             value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
                             readOnly
-                            style={{ width: "90%", height: "100px", marginLeft: "-80px", marginTop: "0px" }}
+                            style={{
+                              width: "90%",
+                              height: "100px",
+                              marginLeft: "-80px",
+                              marginTop: "0px",
+                            }}
                           />
                         </div>
                       </div>
                       <div className="mt-4 text-end">
                         <CustomButton variant="save" onClick={handleCreateProject}>
-                          <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
+                          <span className="material-icons" style={{ marginRight: "5px" }}>
+                            sd_card
+                          </span>
                           Grabar Datos
                         </CustomButton>
                       </div>

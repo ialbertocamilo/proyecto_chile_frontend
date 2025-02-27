@@ -48,13 +48,13 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
           console.error("Error al parsear el perfil desde localStorage:", err);
           const storedName = localStorage.getItem("user_name") || "Usuario";
           const storedEmail = localStorage.getItem("email") || "";
-          const storedUserType = localStorage.getItem("role_id") || "Tipo de Usuario"; // Cargar el tipo de usuario
+          const storedUserType = localStorage.getItem("role_id") || "Tipo de Usuario";
           setUser({ name: storedName, email: storedEmail, userType: storedUserType });
         }
       } else {
         const storedName = localStorage.getItem("user_name") || "Usuario";
         const storedEmail = localStorage.getItem("email") || "";
-        const storedUserType = localStorage.getItem("role_id") || "Tipo de Usuario"; // Cargar el tipo de usuario
+        const storedUserType = localStorage.getItem("role_id") || "Tipo de Usuario";
         setUser({ name: storedName, email: storedEmail, userType: storedUserType });
       }
     }
@@ -71,7 +71,7 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
 
   return (
     <nav
-      className="navbar navbar-light bg-light shadow-sm px-4"
+      className="navbar shadow-sm px-4"
       style={{
         position: "fixed",
         top: 0,
@@ -80,6 +80,8 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
         zIndex: 1100,
         fontFamily: "var(--font-family-base)",
         height: "100px", // Aumenta la altura de la TopBar
+        // Se usa variable CSS para el fondo del TopBar (defínela en globals.css o como fallback)
+        backgroundColor: "var(--topbar-bg, #f5f5f5)",
       }}
     >
       <div
@@ -109,15 +111,13 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               style={{ marginRight: "8px" }}
             />
             {/* Información del usuario */}
-            <div
-              className="d-flex flex-column align-items-start"
-              style={{ fontFamily: "var(--font-family-base)" }}
-            >
+            <div className="d-flex flex-column align-items-start" style={{ fontFamily: "var(--font-family-base)" }}>
               <span
                 className="fw-bold"
                 style={{
                   fontSize: "14px",
-                  color: "#3ca7b7",
+                  // Se usa variable CSS para el color de texto (puedes modificarla desde Settings)
+                  color: "var(--primary-color)",
                   fontFamily: "var(--font-family-base)",
                 }}
               >
@@ -126,23 +126,21 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               <span
                 style={{
                   fontSize: "12px",
-                  color: "#6c757d",
+                  color: "var(--secondary-color)",
                   display: "flex",
                   alignItems: "center",
                   fontFamily: "var(--font-family-base)",
                 }}
               >
                 {user.name}{" "}
-                <i
-                  className="bi bi-caret-down-fill ms-1"
-                  style={{ fontSize: "10px", fontFamily: "var(--font-family-base)" }}
-                ></i>
+                <i className="bi bi-caret-down-fill ms-1" style={{ fontSize: "10px", fontFamily: "var(--font-family-base)" }}></i>
               </span>
               {/* Mostrar el tipo de usuario */}
               <span
                 style={{
                   fontSize: "10px",
-                  backgroundColor: "#3ca7b7",
+                  // Se usa variable CSS para el fondo del badge
+                  backgroundColor: "var(--primary-color)",
                   color: "white",
                   padding: "4px 8px",
                   borderRadius: "12px",

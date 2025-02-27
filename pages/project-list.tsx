@@ -100,7 +100,7 @@ const ProjectListPage = () => {
       console.log("[fetchProjects] 📡 Obteniendo proyectos...");
       // Forzamos un limit muy grande y num_pag=1 para obtener todos los proyectos
       const response = await axios.get<{ projects: Project[] }>(
-        `${constantUrlApiEndpoint}/projects`,
+        `${constantUrlApiEndpoint}/user/projects`,
         {
           params: { limit: 999999, num_pag: 1 },
           headers: {
@@ -428,23 +428,10 @@ const ProjectListPage = () => {
                           <td>{project.director_name || "N/D"}</td>
                           <td>{project.address || "N/D"}</td>
                           <td>{project.divisions?.department || "No disponible"}</td>
+                          
                           <td className="text-center">
                             <div className="action-btn-group">
-                              {/* Botón para ir a la página del workflow */}
-                              <CustomButton
-                                variant="editIcon"
-                                onClick={() => handleGoToWorkflow(project)}
-                                style={{
-                                  backgroundColor: "#6c63ff",
-                                  border: `2px solid #6c63ff`,
-                                  fontFamily: "var(--font-family-base)",
-                                  padding: "0.5rem",
-                                  width: "40px",
-                                  height: "40px",
-                                }}
-                                title="Editar en Workflow"
-                              />
-                              {/* Botón para abrir el modal de edición */}
+                              {/* Botón para abrir el modal de edición (se muestra primero ahora) */}
                               <CustomButton
                                 variant="editIcon"
                                 onClick={() => handleOpenEditModal(project)}
@@ -457,6 +444,20 @@ const ProjectListPage = () => {
                                   height: "40px",
                                 }}
                                 title="Editar en Modal"
+                              />
+                              {/* Botón para ir a la página del workflow, usando la variante listIcon */}
+                              <CustomButton
+                                variant="listIcon"
+                                onClick={() => handleGoToWorkflow(project)}
+                                style={{
+                                  backgroundColor: "var(--primary-color)",
+                                  border: `2px solid var(--primary-color)`,
+                                  fontFamily: "var(--font-family-base)",
+                                  padding: "0.5rem",
+                                  width: "40px",
+                                  height: "40px",
+                                }}
+                                title="Editar en Workflow"
                               />
                               {/* Botón para eliminar el proyecto */}
                               <CustomButton
@@ -473,6 +474,7 @@ const ProjectListPage = () => {
                               />
                             </div>
                           </td>
+
                         </tr>
                       ))
                     ) : (

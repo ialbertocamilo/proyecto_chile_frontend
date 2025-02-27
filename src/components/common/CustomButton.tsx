@@ -2,7 +2,7 @@ import React, { ButtonHTMLAttributes, FC } from 'react';
 import GoogleIcons from '../../../public/GoogleIcons';
 
 interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'save' | 'back' | 'delete' | 'editIcon' | 'deleteIcon' | 'backIcon' | 'forwardIcon' | 'addIcon';
+  variant?: 'save' | 'back' | 'delete' | 'editIcon' | 'deleteIcon' | 'backIcon' | 'forwardIcon' | 'addIcon' | 'listIcon' | 'cancelIcon';
   isLoading?: boolean;
   margin?: string;
 }
@@ -37,6 +37,14 @@ const CustomButton: FC<CustomButtonProps> = ({
   } else if (variant === 'addIcon') {
     content = (
       <span className="btn-icon-content material-icons">add</span>
+    );
+  } else if (variant === 'listIcon') {
+    content = (
+      <span className="btn-icon-content material-icons">format_list_bulleted</span>
+    );
+  } else if (variant === 'cancelIcon') {
+    content = (
+      <span className="btn-icon-content material-icons">close</span>
     );
   }
 
@@ -136,6 +144,22 @@ const CustomButton: FC<CustomButtonProps> = ({
         }
         .btn-addIcon:hover {
           background-color: var(--btn-save-hover-bg);
+        }
+        .btn-listIcon {
+          background-color: var(--btn-save-bg);
+          color: #ffffff;
+          padding: 0.5rem 1rem;
+        }
+        .btn-listIcon:hover {
+          background-color: var(--btn-save-hover-bg);
+        }
+        .btn-cancelIcon {
+          background-color: var(--btn-delete-bg);
+          color: #ffffff;
+          padding: 0.5rem 1rem;
+        }
+        .btn-cancelIcon:hover {
+          background-color: var(--btn-delete-hover-bg);
         }
         .disabled {
           opacity: 0.6;

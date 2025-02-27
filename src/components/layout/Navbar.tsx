@@ -143,14 +143,17 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
           }}
         >
           <ul className="nav flex-column">
-            <li className="nav-item">
-              <Link href="/project-list" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle("/project-list")} className="material-icons">
-                  dns
-                </span>
-                Proyectos
-              </Link>
-            </li>
+            {/* Se muestra el icono "Proyectos" solo si roleId no es "1" */}
+            {roleId !== "1" && (
+              <li className="nav-item">
+                <Link href="/project-list" className="nav-link text-white" style={navLinkStyle}>
+                  <span style={iconStyle("/project-list")} className="material-icons">
+                    dns
+                  </span>
+                  Proyectos
+                </Link>
+              </li>
+            )}
             <li className="nav-item">
               <Link href="/project-workflow-part1" className="nav-link text-white" style={navLinkStyle}>
                 <span style={iconStyle("/project-workflow-part1")} className="material-icons">

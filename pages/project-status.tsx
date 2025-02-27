@@ -159,55 +159,6 @@ const ProjectListStatusEditPage = () => {
     }
   };
 
-  // Función para eliminar un proyecto
-  const handleDeleteProject = (project: Project) => {
-    Swal.fire({
-      title: `¿Estás seguro de eliminar el proyecto "${project.name_project}"?`,
-      text: "Esta acción no se puede deshacer.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Sí, eliminarlo",
-      cancelButtonText: "Cancelar"
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          Swal.fire("Error", "No estás autenticado. Inicia sesión nuevamente.", "error");
-          return;
-        }
-        try {
-          const url = `${constantUrlApiEndpoint}/project/${project.id}/delete`;
-          await axios.delete(url, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              accept: "application/json",
-            },
-          });
-          Swal.fire("Eliminado", "El proyecto ha sido eliminado exitosamente.", "success");
-          fetchProjects();
-        } catch (error: unknown) {
-          console.error("[handleDeleteProject] Error al eliminar el proyecto:", error);
-          Swal.fire("Error", "Ocurrió un error al eliminar el proyecto.", "error");
-        }
-      }
-    });
-  };
-
-  const getStatusStyle = (status: string | undefined): React.CSSProperties => {
-    const s = status?.toLowerCase();
-    if (s === "finalizado") {
-      return { backgroundColor: "#ffe8e8", color: "#e45f5f" };
-    }
-    if (s === "registrado") {
-      return { backgroundColor: "#e8ffed", color: "#a9dfb4" };
-    }
-    if (s === "en proceso") {
-      return { backgroundColor: "#fff9e8", color: "#edc68c" };
-    }
-    return {};
-  };
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
@@ -277,7 +228,17 @@ const ProjectListStatusEditPage = () => {
                         <td>{project.number_homes_per_level !== undefined ? project.number_homes_per_level : "N/D"}</td>
                         <td>{project.built_surface !== undefined ? project.built_surface : "N/D"}</td>
                         <td className="d-flex justify-content-center">
-                          
+                          <CustomButton
+                            variant="viewIcon"
+                            onClick={() => openStatusModal(project)}
+                            style={{
+                              backgroundColor: "var(--primary-color)",
+                              border: `2px solid var(--primary-color)`,
+                              padding: "0.5rem",
+                              width: "40px",
+                              height: "40px",
+                            }}
+                          />
                         </td>
                       </tr>
                     ))

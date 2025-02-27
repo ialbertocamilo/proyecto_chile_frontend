@@ -12,9 +12,9 @@ import "leaflet/dist/leaflet.css";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
-import locationData from "../public/locationData"; // Importamos la información de ubicación
+import locationData from "../public/locationData"; // Información de ubicación
 
-// Componente para el Sidebar interno, ahora recibiendo el estado y la función setStep desde el padre
+// Componente para el Sidebar interno
 interface SidebarItemProps {
   stepNumber: number;
   iconName: string;
@@ -76,7 +76,7 @@ const NoSSRInteractiveMap = dynamic(
   { ssr: false }
 );
 
-// Definimos que solo se permite "" | "Perú" | "Chile" en country
+// Permitimos "" | "Perú" | "Chile" en country
 type Country = "" | "Perú" | "Chile";
 
 interface FormData {
@@ -131,12 +131,63 @@ const ProjectWorkflowPart1: React.FC = () => {
     longitude: -70.6703553846175,
   });
 
-  // Objeto para almacenar mensajes de error
+  // Objeto para almacenar errores
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-
   const [locationSearch, setLocationSearch] = useState("");
 
-  // Actualiza un campo del formulario y remueve el error si el campo ya tiene valor
+  // Si existe un id en la query se asume modo edición y se pre-cargan los datos
+  useEffect(() => {
+    if (router.query.id) {
+      // Convertir el id a string en caso de que venga como arreglo
+      const projectId = Array.isArray(router.query.id)
+        ? router.query.id[0]
+        : router.query.id;
+      console.log("Project ID recibido:", projectId);
+      const fetchProjectData = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) return;
+          // Usamos la ruta plural según el Swagger
+          const response = await axios.get(
+            `${constantUrlApiEndpoint}/projects/${projectId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          // Se asume que la respuesta es directamente el objeto del proyecto
+          const projectData = response.data;
+          setFormData({
+            name_project: projectData.name_project || "",
+            owner_name: projectData.owner_name || "",
+            owner_lastname: projectData.owner_lastname || "",
+            country: projectData.country || "",
+            department: projectData.divisions?.department || "",
+            province: projectData.divisions?.province || "",
+            district: projectData.divisions?.district || "",
+            building_type: projectData.building_type || "",
+            main_use_type: projectData.main_use_type || "",
+            number_levels: projectData.number_levels || 0,
+            number_homes_per_level: projectData.number_homes_per_level || 0,
+            built_surface: projectData.built_surface || 0,
+            latitude: projectData.latitude || -33.4589314398474,
+            longitude: projectData.longitude || -70.6703553846175,
+          });
+        } catch (error: unknown) {
+          console.error("Error fetching project data", error);
+          Swal.fire({
+            title: "Error",
+            text: "No se pudieron cargar los datos del proyecto.",
+            icon: "error",
+            confirmButtonText: "Aceptar",
+            confirmButtonColor: primaryColor,
+          });
+        }
+      };
+      fetchProjectData();
+    }
+  }, [router.query.id, primaryColor]);
+
+  // Actualiza un campo del formulario y remueve el error si tiene valor
   const handleFormInputChange = (field: keyof FormData, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (value !== "" && value !== 0) {
@@ -144,7 +195,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
-  // Al cambiar país, reiniciamos departamento y provincia y borramos los errores asociados
+  // Al cambiar país, reiniciamos departamento y provincia
   const handleCountryChange = (country: Country) => {
     handleFormInputChange("country", country);
     handleFormInputChange("department", "");
@@ -152,14 +203,14 @@ const ProjectWorkflowPart1: React.FC = () => {
     setErrors((prev) => ({ ...prev, country: "", department: "", province: "" }));
   };
 
-  // Al cambiar departamento, reiniciamos provincia y borramos error de provincia
+  // Al cambiar departamento, reiniciamos provincia
   const handleDepartmentChange = (department: string) => {
     handleFormInputChange("department", department);
     handleFormInputChange("province", "");
     setErrors((prev) => ({ ...prev, department: "", province: "" }));
   };
 
-  // Función que valida cada campo y retorna un objeto de errores
+  // Valida los campos del Step 1
   const validateStep1Fields = (): Partial<Record<keyof FormData, string>> => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
     if (!formData.name_project.trim()) {
@@ -193,7 +244,8 @@ const ProjectWorkflowPart1: React.FC = () => {
       newErrors.number_levels = "El número de niveles debe ser mayor a 0";
     }
     if (formData.number_homes_per_level <= 0) {
-      newErrors.number_homes_per_level = "El número de viviendas/oficinas debe ser mayor a 0";
+      newErrors.number_homes_per_level =
+        "El número de viviendas/oficinas debe ser mayor a 0";
     }
     if (formData.built_surface <= 0) {
       newErrors.built_surface = "La superficie construida debe ser mayor a 0";
@@ -201,6 +253,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     return newErrors;
   };
 
+  // En ambos modos (creación y edición) se valida y se avanza al Step 2
   const handleStep1Submit = () => {
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
@@ -217,6 +270,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     setStep(2);
   };
 
+  // Función para crear un proyecto (modo creación)
   const handleCreateProject = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -249,7 +303,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         longitude: formData.longitude,
       };
 
-      console.log("RequestBody:", requestBody);
+      console.log("RequestBody (creación):", requestBody);
 
       const url = `${constantUrlApiEndpoint}/projects/create`;
       const headers = {
@@ -283,29 +337,82 @@ const ProjectWorkflowPart1: React.FC = () => {
       if (typeof errorMessage !== "string") {
         errorMessage = JSON.stringify(errorMessage);
       }
+      Swal.fire({
+        title: "Algo salió mal",
+        text: errorMessage as string,
+        icon: "error",
+        confirmButtonText: "Entendido",
+        confirmButtonColor: primaryColor,
+      });
+    }
+  };
 
-      if (
-        typeof errorMessage === "string" &&
-        errorMessage.includes("El Nombre del Proyecto") &&
-        errorMessage.includes("ya existe")
-      ) {
-        setStep(1);
+  // Función para actualizar el proyecto (modo edición)
+  const handleUpdateProject = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
         Swal.fire({
-          title: "Ooops...",
-          text: "El nombre del proyecto ya existe. Por favor corrija el campo 'Nombre del proyecto'.",
-          icon: "error",
+          title: "Token no encontrado",
+          text: "Por favor inicie sesión.",
+          icon: "warning",
           confirmButtonText: "Entendido",
           confirmButtonColor: primaryColor,
         });
         return;
       }
+      const projectId = Array.isArray(router.query.id)
+        ? router.query.id[0]
+        : router.query.id;
+      const requestBody = {
+        country: formData.country || "Peru",
+        divisions: {
+          department: formData.department,
+          province: formData.province,
+          district: formData.district,
+        },
+        name_project: formData.name_project,
+        owner_name: formData.owner_name,
+        owner_lastname: formData.owner_lastname,
+        building_type: formData.building_type,
+        main_use_type: formData.main_use_type,
+        number_levels: formData.number_levels,
+        number_homes_per_level: formData.number_homes_per_level,
+        built_surface: formData.built_surface,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+      };
 
-      setStep(1);
+      console.log("RequestBody (actualización):", requestBody);
+      const url = `${constantUrlApiEndpoint}/my-projects/${projectId}/update`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+      const response = await axios.put(url, requestBody, { headers });
       Swal.fire({
-        title: "Algo salió mal",
-        text: "Falta completar algún campo o hay un error en la información. Por favor revise y complete los campos correctamente.",
+        title: "Proyecto actualizado",
+        text: response.data.message || "Proyecto actualizado correctamente.",
+        icon: "success",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: primaryColor,
+      });
+    } catch (error: unknown) {
+      console.error("Error en handleUpdateProject:", error);
+      let errorMessage: string | object = "Error desconocido";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.detail || error.message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      if (typeof errorMessage !== "string") {
+        errorMessage = JSON.stringify(errorMessage);
+      }
+      Swal.fire({
+        title: "Error",
+        text: errorMessage as string,
         icon: "error",
-        confirmButtonText: "Entendido",
+        confirmButtonText: "Aceptar",
         confirmButtonColor: primaryColor,
       });
     }
@@ -389,11 +496,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             handleFormInputChange("name_project", e.target.value)
                           }
                         />
-                        {errors.name_project && (
-                          <div className="text-danger mt-1">
-                            {errors.name_project}
-                          </div>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Nombre del propietario</label>
@@ -405,18 +507,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                             handleFormInputChange("owner_name", e.target.value)
                           }
                         />
-                        {errors.owner_name && (
-                          <div className="text-danger mt-1">
-                            {errors.owner_name}
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Apellido del propietario
-                        </label>
+                        <label className="form-label">Apellido del propietario</label>
                         <input
                           type="text"
                           className="form-control"
@@ -425,11 +520,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             handleFormInputChange("owner_lastname", e.target.value)
                           }
                         />
-                        {errors.owner_lastname && (
-                          <div className="text-danger mt-1">
-                            {errors.owner_lastname}
-                          </div>
-                        )}
                       </div>
                       {/* Desplegable para País */}
                       <div className="col-12 col-md-6">
@@ -448,9 +538,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             </option>
                           ))}
                         </select>
-                        {errors.country && (
-                          <div className="text-danger mt-1">{errors.country}</div>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -465,18 +552,14 @@ const ProjectWorkflowPart1: React.FC = () => {
                         >
                           <option value="">Seleccione un departamento</option>
                           {formData.country &&
-                            Object.keys(locationData[formData.country].departments)
-                              .map((dept) => (
+                            Object.keys(locationData[formData.country]?.departments || {}).map(
+                              (dept) => (
                                 <option key={dept} value={dept}>
                                   {dept}
                                 </option>
-                              ))}
+                              )
+                            )}
                         </select>
-                        {errors.department && (
-                          <div className="text-danger mt-1">
-                            {errors.department}
-                          </div>
-                        )}
                       </div>
                       {/* Desplegable para Provincia */}
                       <div className="col-12 col-md-6">
@@ -492,19 +575,13 @@ const ProjectWorkflowPart1: React.FC = () => {
                           <option value="">Seleccione una provincia</option>
                           {formData.country &&
                             formData.department &&
-                            (locationData[formData.country].departments[
-                              formData.department
-                            ] || []).map((prov) => (
-                              <option key={prov} value={prov}>
-                                {prov}
-                              </option>
-                            ))}
+                            (locationData[formData.country]?.departments?.[formData.department] ||
+                              []).map((prov) => (
+                                <option key={prov} value={prov}>
+                                  {prov}
+                                </option>
+                              ))}
                         </select>
-                        {errors.province && (
-                          <div className="text-danger mt-1">
-                            {errors.province}
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -518,16 +595,9 @@ const ProjectWorkflowPart1: React.FC = () => {
                             handleFormInputChange("district", e.target.value)
                           }
                         />
-                        {errors.district && (
-                          <div className="text-danger mt-1">
-                            {errors.district}
-                          </div>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Tipo de edificación
-                        </label>
+                        <label className="form-label">Tipo de edificación</label>
                         <input
                           type="text"
                           className="form-control"
@@ -536,18 +606,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                             handleFormInputChange("building_type", e.target.value)
                           }
                         />
-                        {errors.building_type && (
-                          <div className="text-danger mt-1">
-                            {errors.building_type}
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Tipo de uso principal
-                        </label>
+                        <label className="form-label">Tipo de uso principal</label>
                         <input
                           type="text"
                           className="form-control"
@@ -556,11 +619,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             handleFormInputChange("main_use_type", e.target.value)
                           }
                         />
-                        {errors.main_use_type && (
-                          <div className="text-danger mt-1">
-                            {errors.main_use_type}
-                          </div>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Número de niveles</label>
@@ -575,11 +633,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             )
                           }
                         />
-                        {errors.number_levels && (
-                          <div className="text-danger mt-1">
-                            {errors.number_levels}
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -598,11 +651,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             )
                           }
                         />
-                        {errors.number_homes_per_level && (
-                          <div className="text-danger mt-1">
-                            {errors.number_homes_per_level}
-                          </div>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -619,11 +667,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             )
                           }
                         />
-                        {errors.built_surface && (
-                          <div className="text-danger mt-1">
-                            {errors.built_surface}
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="text-end">
@@ -631,7 +674,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         <span className="material-icons" style={{ marginRight: "5px" }}>
                           sd_card
                         </span>
-                        Grabar Datos
+                        {router.query.id ? "Editar Proyecto" : "Grabar Datos"}
                       </CustomButton>
                     </div>
                   </>
@@ -639,7 +682,7 @@ const ProjectWorkflowPart1: React.FC = () => {
 
                 {step === 2 && (
                   <>
-                    {/* Paso 2 */}
+                    {/* Paso 2: Ubicación */}
                     <div
                       style={{
                         border: "1px solid #ccc",
@@ -759,11 +802,14 @@ const ProjectWorkflowPart1: React.FC = () => {
                         </div>
                       </div>
                       <div className="mt-4 text-end">
-                        <CustomButton variant="save" onClick={handleCreateProject}>
+                        <CustomButton
+                          variant="save"
+                          onClick={router.query.id ? handleUpdateProject : handleCreateProject}
+                        >
                           <span className="material-icons" style={{ marginRight: "5px" }}>
                             sd_card
                           </span>
-                          Grabar Datos
+                          {router.query.id ? "Actualizar Proyecto" : "Grabar Datos"}
                         </CustomButton>
                       </div>
                     </div>

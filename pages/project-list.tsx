@@ -9,8 +9,6 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
 
-const modalWidth = "90%";
-const modalHeight = "auto";
 const countryOptions = ["Perú", "Chile", "Argentina", "Brasil"];
 const departmentOptions = ["Lima", "Arequipa", "Cusco"];
 const provinceOptions = ["Provincia 1", "Provincia 2", "Provincia 3"];
@@ -46,42 +44,42 @@ interface ErrorResponse {
   detail?: string;
 }
 
-// Objeto inicial para el proyecto a editar
-const initialProject: Project = {
-  id: 0,
-  status: "",
-  name_project: "",
-  owner_name: "",
-  designer_name: "",
-  director_name: "",
-  address: "",
-  country: "",
-  divisions: { department: "", province: "", district: "" },
-  owner_lastname: "",
-  building_type: "",
-  main_use_type: "",
-  number_levels: 0,
-  number_homes_per_level: 0,
-  built_surface: 0,
-  latitude: 0,
-  longitude: 0,
-};
-
 const ProjectListPage = () => {
-  // Validación de sesión mediante useAuth
   useAuth();
   console.log("[ProjectListPage] Página cargada y sesión validada.");
 
   const router = useRouter();
   const [sidebarWidth, setSidebarWidth] = useState<string>("300px");
-
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [showEditModal, setShowEditModal] = useState<boolean>(false);
-  const [editProjectData, setEditProjectData] = useState<Project>(initialProject);
+
+  // Constantes para el manejo de estilos de las cards
+  const CARD_WIDTH = "135%"; // Ancho de ambas cards
+  const CARD_MARGIN_LEFT = "0px"; // Margen izquierdo
+  const CARD_MARGIN_RIGHT = "0px"; // Margen derecho
+  const CARD_MARGIN_TOP = "0px"; // Margen superior
+  const CARD_MARGIN_BOTTOM = "0px"; // Margen inferior
+  const CARD_BORDER_RADIUS = "16px"; // Borde redondeado
+  const CARD_BOX_SHADOW = "0 2px 10px rgba(0,0,0,0.1)"; // Sombra de las cards
+  const CARD_BORDER_COLOR = "#d3d3d3"; // Color del borde
+
+  // Objeto de estilos que se aplicará a ambas cards
+  const cardStyle = {
+    width: CARD_WIDTH,
+    marginLeft: CARD_MARGIN_LEFT,
+    marginRight: CARD_MARGIN_RIGHT,
+    marginTop: CARD_MARGIN_TOP,
+    marginBottom: CARD_MARGIN_BOTTOM,
+    borderRadius: CARD_BORDER_RADIUS,
+    boxShadow: CARD_BOX_SHADOW,
+    border: `1px solid ${CARD_BORDER_COLOR}`,
+  };
+
+  // Si deseas modificar el margen izquierdo del contenedor principal (además del sidebar)
+  const CONTAINER_MARGIN_LEFT = "20px"; // Ejemplo
 
   useEffect(() => {
     fetchProjects();
@@ -98,7 +96,6 @@ const ProjectListPage = () => {
     }
     try {
       console.log("[fetchProjects] 📡 Obteniendo proyectos...");
-      // Forzamos un limit muy grande y num_pag=1 para obtener todos los proyectos
       const response = await axios.get<{ projects: Project[] }>(
         `${constantUrlApiEndpoint}/user/projects`,
         {
@@ -143,116 +140,11 @@ const ProjectListPage = () => {
     setFilteredProjects(filtered);
   };
 
-  // Función para abrir el modal de edición (sin navegación)
-  const handleOpenEditModal = (project: Project): void => {
-    console.log("[handleOpenEditModal] Abriendo modal para editar proyecto:", project.id);
-    const dataToEdit: Project = {
-      id: project.id,
-      country: project.country || "",
-      divisions: {
-        district: project.divisions?.district || "",
-        province: project.divisions?.province || "",
-        department: project.divisions?.department || "",
-      },
-      name_project: project.name_project || "",
-      owner_name: project.owner_name || "",
-      owner_lastname: project.owner_lastname || "",
-      building_type: project.building_type || "",
-      main_use_type: project.main_use_type || "",
-      number_levels: project.number_levels || 0,
-      number_homes_per_level: project.number_homes_per_level || 0,
-      built_surface: project.built_surface || 0,
-      latitude: project.latitude || 0,
-      longitude: project.longitude || 0,
-      designer_name: project.designer_name,
-      director_name: project.director_name,
-      address: project.address,
-      status: project.status,
-    };
-    setEditProjectData(dataToEdit);
-    setShowEditModal(true);
-    setError(null);
-  };
-
-  // Función para navegar a la página de workflow y actualizar el localStorage
   const handleGoToWorkflow = (project: Project): void => {
     console.log("[handleGoToWorkflow] Navegando al workflow para el proyecto:", project.id);
-    // Actualizamos el localStorage con los valores requeridos
     localStorage.setItem("project_id", String(project.id));
     localStorage.setItem("project_department", project.divisions?.department || "");
-    router.push(`/project-workflow-part3?id=${project.id}`);
-  };
-
-  const handleEditChange = (
-    field: keyof Project,
-    value: Project[keyof Project]
-  ): void => {
-    setEditProjectData({ ...editProjectData, [field]: value });
-  };
-
-  const handleEditDivisionChange = (
-    subfield: keyof Divisions,
-    value: string
-  ): void => {
-    setEditProjectData({
-      ...editProjectData,
-      divisions: { ...editProjectData.divisions, [subfield]: value },
-    });
-  };
-
-  const handleEditSubmit = async (): Promise<void> => {
-    const token: string | null = localStorage.getItem("token");
-    if (!token) {
-      setError("No estás autenticado. Inicia sesión nuevamente.");
-      return;
-    }
-    if (!editProjectData.id) {
-      setError("El ID del proyecto no está definido.");
-      return;
-    }
-    try {
-      const url = `${constantUrlApiEndpoint}/my-projects/${editProjectData.id}/update`;
-      const updatedData = {
-        country: editProjectData.country,
-        divisions: editProjectData.divisions,
-        name_project: editProjectData.name_project,
-        owner_name: editProjectData.owner_name,
-        owner_lastname: editProjectData.owner_lastname,
-        building_type: editProjectData.building_type,
-        main_use_type: editProjectData.main_use_type,
-        number_levels: Number(editProjectData.number_levels),
-        number_homes_per_level: Number(editProjectData.number_homes_per_level),
-        built_surface: Number(editProjectData.built_surface),
-        latitude: Number(editProjectData.latitude),
-        longitude: Number(editProjectData.longitude),
-      };
-
-      console.log("[handleEditSubmit] Enviando actualización para el proyecto:", updatedData);
-      await axios.put<void>(url, updatedData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      Swal.fire({
-        title: "¡Proyecto editado correctamente!",
-        icon: "success",
-        confirmButtonText: "Aceptar",
-      }).then((): void => {
-        setShowEditModal(false);
-        fetchProjects(); // Volvemos a cargar la lista completa
-      });
-    } catch (err: unknown) {
-      console.error("[handleEditSubmit] Error al editar el proyecto:", err);
-      setError("Ocurrió un error al editar el proyecto.");
-      Swal.fire({
-        title: "Error",
-        text: "Ocurrió un error al editar el proyecto.",
-        icon: "error",
-        confirmButtonText: "Aceptar",
-      });
-    }
+    router.push(`/project-workflow-part1?id=${project.id}`);
   };
 
   const handleDelete = async (
@@ -277,7 +169,7 @@ const ProjectListPage = () => {
       return;
     }
     try {
-      const url = `${constantUrlApiEndpoint}/project/${projectId}/delete`;
+      const url = `${constantUrlApiEndpoint}/projects/${projectId}/delete`;
       await axios.delete<void>(url, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -289,7 +181,7 @@ const ProjectListPage = () => {
         icon: "success",
         confirmButtonText: "Aceptar",
       });
-      fetchProjects(); // Volvemos a cargar la lista completa tras eliminar
+      fetchProjects();
     } catch (err: unknown) {
       console.error("[handleDelete] Error al eliminar proyecto:", err);
       setError("No se pudo eliminar el proyecto.");
@@ -300,10 +192,6 @@ const ProjectListPage = () => {
         confirmButtonText: "Aceptar",
       });
     }
-  };
-
-  const handleCloseModal = (): void => {
-    setShowEditModal(false);
   };
 
   const getStatusStyle = (status: string | undefined): React.CSSProperties => {
@@ -325,426 +213,163 @@ const ProjectListPage = () => {
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
       <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
         <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container p-4" style={{ marginTop: "100px", fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-          <h4 style={{ fontSize: "30px", fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-            Listado de proyectos
-          </h4>
+        <div
+          className="container p-4"
+          style={{
+            marginTop: "100px",
+            marginLeft: CONTAINER_MARGIN_LEFT,
+            fontFamily: "var(--font-family-base)",
+            fontWeight: "normal",
+          }}
+        >
           {error && (
-            <p className="text-danger" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-              {error}
-            </p>
+            <p className="text-danger">{error}</p>
           )}
           {loading ? (
-            <div className="loading-container" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+            <div className="loading-container">
               <div className="loading-spinner"></div>
               <div className="loading-text">Cargando...</div>
             </div>
           ) : (
             <>
-              <div style={{ position: "relative", width: "100%", marginTop: "20px" }}>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder=""
-                  value={search}
-                  onChange={handleSearch}
-                  style={{
-                    width: "100%",
-                    height: "70px",
-                    borderRadius: "12px",
-                    paddingLeft: "2.5rem",
-                    paddingRight: "150px", // Espacio para el botón
-                    fontSize: "16px",
-                    border: "1px solid #ddd",
-                    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
-                  }}
-                />
-                {/* Ícono de búsqueda a la izquierda */}
-                <span style={{
-                  position: "absolute",
-                  left: "20px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "#aaa",
-                  fontSize: "24px"
-                }}>
-                  🔍︎
-                </span>
-                {/* Botón para agregar nuevo proyecto */}
-                <CustomButton
-                  variant="save"
-                  onClick={() => router.push("/project-workflow-part1")}
-                  style={{
-                    position: "absolute",
-                    right: "30px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    height: "36px",
-                    fontSize: "14px",
-                    padding: "0 15px",
-                    borderRadius: "8px",
-                  }}
-                >
-                  + Proyecto Nuevo
-                </CustomButton>
+              {/* Card para el título y búsqueda */}
+              <div className="card mb-4" style={cardStyle}>
+                <div className="card-body">
+                  <h4 style={{ fontSize: "30px", fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                    Listado de proyectos
+                  </h4>
+                  <div style={{ position: "relative", width: "100%", marginTop: "20px" }}>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Buscar..."
+                      value={search}
+                      onChange={handleSearch}
+                      style={{
+                        width: "100%",
+                        height: "70px",
+                        borderRadius: "12px",
+                        paddingLeft: "2.5rem",
+                        paddingRight: "150px",
+                        fontSize: "16px",
+                        border: "1px solid #ddd",
+                        boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+                      }}
+                    />
+                    <span
+                      style={{
+                        position: "absolute",
+                        left: "20px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#aaa",
+                        fontSize: "24px",
+                      }}
+                    >
+                      🔍︎
+                    </span>
+                    <CustomButton
+                      variant="save"
+                      onClick={() => router.push("/project-workflow-part1")}
+                      style={{
+                        position: "absolute",
+                        right: "30px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        height: "36px",
+                        fontSize: "14px",
+                        padding: "0 15px",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      + Proyecto Nuevo
+                    </CustomButton>
+                  </div>
+                </div>
               </div>
 
-              <div className="table-responsive scrollable-table" style={{ marginTop: "16px" }}>
-                <table className="custom-table" style={{ fontFamily: "var(--font-family-base)", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr>
-                      <th className="table-header">ID</th>
-                      <th className="table-header">Estado del <br /> proyecto</th>
-                      <th className="table-header">Nombre del <br /> proyecto</th>
-                      <th className="table-header">Nombre del <br /> propietario</th>
-                      <th className="table-header">Nombre del <br /> Diseñador</th>
-                      <th className="table-header">Director responsable <br /> De las obras</th>
-                      <th className="table-header">Dirección</th>
-                      <th className="table-header">Departamento</th>
-                      <th className="table-header"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProjects.length > 0 ? (
-                      filteredProjects.map((project: Project) => (
-                        <tr key={project.id}>
-                          <td>{project.id || "N/D"}</td>
-                          <td>
-                            <span
-                              className="badge status-badge"
-                              style={{
-                                ...getStatusStyle(project.status),
-                                fontSize: "0.8rem",
-                                fontFamily: "var(--font-family-base)",
-                                fontWeight: "normal",
-                              }}
-                            >
-                              {project.status ? project.status.toUpperCase() : "NO DISPONIBLE"}
-                            </span>
-                          </td>
-                          <td>{project.name_project || "No disponible"}</td>
-                          <td>{project.owner_name || "No disponible"}</td>
-                          <td>{project.designer_name || "N/D"}</td>
-                          <td>{project.director_name || "N/D"}</td>
-                          <td>{project.address || "N/D"}</td>
-                          <td>{project.divisions?.department || "No disponible"}</td>
-                          
-                          <td className="text-center">
-                            <div className="action-btn-group">
-                              {/* Botón para abrir el modal de edición (se muestra primero ahora) */}
-                              <CustomButton
-                                variant="editIcon"
-                                onClick={() => handleOpenEditModal(project)}
-                                style={{
-                                  backgroundColor: "var(--primary-color)",
-                                  border: `2px solid var(--primary-color)`,
-                                  fontFamily: "var(--font-family-base)",
-                                  padding: "0.5rem",
-                                  width: "40px",
-                                  height: "40px",
-                                }}
-                                title="Editar en Modal"
-                              />
-                              {/* Botón para ir a la página del workflow, usando la variante listIcon */}
-                              <CustomButton
-                                variant="listIcon"
-                                onClick={() => handleGoToWorkflow(project)}
-                                style={{
-                                  backgroundColor: "var(--primary-color)",
-                                  border: `2px solid var(--primary-color)`,
-                                  fontFamily: "var(--font-family-base)",
-                                  padding: "0.5rem",
-                                  width: "40px",
-                                  height: "40px",
-                                }}
-                                title="Editar en Workflow"
-                              />
-                              {/* Botón para eliminar el proyecto */}
-                              <CustomButton
-                                variant="deleteIcon"
-                                onClick={() =>
-                                  handleDelete(project.id, project.name_project || "N/D")
-                                }
-                                style={{
-                                  fontFamily: "var(--font-family-base)",
-                                  padding: "0.5rem",
-                                  width: "40px",
-                                  height: "40px",
-                                }}
-                              />
-                            </div>
-                          </td>
-
+              {/* Card para la tabla de proyectos */}
+              <div className="card" style={cardStyle}>
+                <div className="card-body">
+                  <div className="table-responsive scrollable-table" style={{ marginTop: "16px" }}>
+                    <table className="custom-table" style={{ fontFamily: "var(--font-family-base)", borderCollapse: "collapse" }}>
+                      <thead>
+                        <tr>
+                          <th className="table-header">ID</th>
+                          <th className="table-header">Estado del <br /> proyecto</th>
+                          <th className="table-header">Nombre del <br /> proyecto</th>
+                          <th className="table-header">Nombre del <br /> propietario</th>
+                          <th className="table-header">Nombre del <br /> Diseñador</th>
+                          <th className="table-header">Director responsable <br /> De las obras</th>
+                          <th className="table-header">Dirección</th>
+                          <th className="table-header">Departamento</th>
+                          <th className="table-header">Acciones</th>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={9} className="text-center text-muted" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                          No hay proyectos disponibles o no coinciden con la búsqueda.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-
-          {showEditModal && (
-            <>
-              <div className="modal-backdrop fade show"></div>
-              <div
-                className="modal fade show"
-                style={{
-                  display: "block",
-                  marginTop: "140px",
-                  marginLeft: "20px",
-                  width: modalWidth,
-                  height: modalHeight,
-                  fontFamily: "var(--font-family-base)",
-                  fontWeight: "normal",
-                }}
-                tabIndex={-1}
-                role="dialog"
-              >
-                <div className="modal-dialog modal-lg" role="document" style={{ width: "100%" }}>
-                  <div className="modal-content" style={{ height: "100%", fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                    <div className="modal-header">
-                      <h5 className="modal-title" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                        Editar Proyecto #{editProjectData.id}
-                      </h5>
-                      <button type="button" className="btn-close" onClick={handleCloseModal}></button>
-                    </div>
-                    <div className="modal-body" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                      <div className="row g-3">
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            País
-                          </label>
-                          <select
-                            className="form-select"
-                            value={editProjectData.country}
-                            onChange={(e) => handleEditChange("country", e.target.value)}
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          >
-                            <option value="">Seleccione un país</option>
-                            {countryOptions.map((country) => (
-                              <option key={country} value={country}>
-                                {country}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Departamento
-                          </label>
-                          <select
-                            className="form-select"
-                            value={editProjectData.divisions?.department}
-                            onChange={(e) =>
-                              handleEditDivisionChange("department", e.target.value)
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          >
-                            <option value="">Seleccione un departamento</option>
-                            {departmentOptions.map((dep) => (
-                              <option key={dep} value={dep}>
-                                {dep}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Provincia
-                          </label>
-                          <select
-                            className="form-select"
-                            value={editProjectData.divisions?.province}
-                            onChange={(e) =>
-                              handleEditDivisionChange("province", e.target.value)
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          >
-                            <option value="">Seleccione una provincia</option>
-                            {provinceOptions.map((prov) => (
-                              <option key={prov} value={prov}>
-                                {prov}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Distrito
-                          </label>
-                          <select
-                            className="form-select"
-                            value={editProjectData.divisions?.district}
-                            onChange={(e) =>
-                              handleEditDivisionChange("district", e.target.value)
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          >
-                            <option value="">Seleccione un distrito</option>
-                            {districtOptions.map((dist) => (
-                              <option key={dist} value={dist}>
-                                {dist}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Nombre del Proyecto
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={editProjectData.name_project}
-                            onChange={(e) =>
-                              handleEditChange("name_project", e.target.value)
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          />
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Propietario
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={editProjectData.owner_name}
-                            onChange={(e) =>
-                              handleEditChange("owner_name", e.target.value)
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          />
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Apellido Propietario
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={editProjectData.owner_lastname}
-                            onChange={(e) =>
-                              handleEditChange("owner_lastname", e.target.value)
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          />
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Tipo de Edificación
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={editProjectData.building_type}
-                            onChange={(e) =>
-                              handleEditChange("building_type", e.target.value)
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          />
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Uso Principal
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={editProjectData.main_use_type}
-                            onChange={(e) =>
-                              handleEditChange("main_use_type", e.target.value)
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          />
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Niveles
-                          </label>
-                          <input
-                            type="number"
-                            className="form-control"
-                            value={editProjectData.number_levels}
-                            onChange={(e) =>
-                              handleEditChange("number_levels", Number(e.target.value))
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          />
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Viviendas x Nivel
-                          </label>
-                          <input
-                            type="number"
-                            className="form-control"
-                            value={editProjectData.number_homes_per_level}
-                            onChange={(e) =>
-                              handleEditChange("number_homes_per_level", Number(e.target.value))
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          />
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Superficie (m2)
-                          </label>
-                          <input
-                            type="number"
-                            className="form-control"
-                            value={editProjectData.built_surface}
-                            onChange={(e) =>
-                              handleEditChange("built_surface", Number(e.target.value))
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          />
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Latitude
-                          </label>
-                          <input
-                            type="number"
-                            className="form-control"
-                            value={editProjectData.latitude}
-                            onChange={(e) =>
-                              handleEditChange("latitude", Number(e.target.value))
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          />
-                        </div>
-                        <div className="col-md-4">
-                          <label className="form-label" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                            Longitude
-                          </label>
-                          <input
-                            type="number"
-                            className="form-control"
-                            value={editProjectData.longitude}
-                            onChange={(e) =>
-                              handleEditChange("longitude", Number(e.target.value))
-                            }
-                            style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="modal-footer" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                      <CustomButton variant="back" onClick={handleCloseModal}>
-                        Cancelar
-                      </CustomButton>
-                      <CustomButton variant="save" onClick={handleEditSubmit}>
-                        Guardar Cambios
-                      </CustomButton>
-                    </div>
+                      </thead>
+                      <tbody>
+                        {filteredProjects.length > 0 ? (
+                          filteredProjects.map((project: Project) => (
+                            <tr key={project.id}>
+                              <td>{project.id || "N/D"}</td>
+                              <td>
+                                <span
+                                  className="badge status-badge"
+                                  style={{
+                                    ...getStatusStyle(project.status),
+                                    fontSize: "0.8rem",
+                                    fontFamily: "var(--font-family-base)",
+                                    fontWeight: "normal",
+                                  }}
+                                >
+                                  {project.status ? project.status.toUpperCase() : "NO DISPONIBLE"}
+                                </span>
+                              </td>
+                              <td>{project.name_project || "No disponible"}</td>
+                              <td>{project.owner_name || "No disponible"}</td>
+                              <td>{project.designer_name || "N/D"}</td>
+                              <td>{project.director_name || "N/D"}</td>
+                              <td>{project.address || "N/D"}</td>
+                              <td>{project.divisions?.department || "No disponible"}</td>
+                              <td className="text-center">
+                                <div className="action-btn-group">
+                                  <CustomButton
+                                    variant="editIcon"
+                                    onClick={() => handleGoToWorkflow(project)}
+                                    style={{
+                                      backgroundColor: "var(--primary-color)",
+                                      border: `2px solid var(--primary-color)`,
+                                      fontFamily: "var(--font-family-base)",
+                                      padding: "0.5rem",
+                                      width: "40px",
+                                      height: "40px",
+                                    }}
+                                    title="Editar en Workflow"
+                                  />
+                                  <CustomButton
+                                    variant="deleteIcon"
+                                    onClick={() =>
+                                      handleDelete(project.id, project.name_project || "N/D")
+                                    }
+                                    style={{
+                                      fontFamily: "var(--font-family-base)",
+                                      padding: "0.5rem",
+                                      width: "40px",
+                                      height: "40px",
+                                    }}
+                                  />
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={9} className="text-center text-muted" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+                              No hay proyectos disponibles o no coinciden con la búsqueda.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -788,20 +413,21 @@ const ProjectListPage = () => {
             }
             .custom-table tbody tr {
               background-color: #fff;
-              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-              border-radius: 16px;
               overflow: hidden;
             }
             .custom-table tbody tr td:first-child {
-              border-top-left-radius: 16px;
-              border-bottom-left-radius: 16px;
+              border-top-left-radius: ${CARD_BORDER_RADIUS};
+              border-bottom-left-radius: ${CARD_BORDER_RADIUS};
             }
             .custom-table tbody tr td:last-child {
-              border-top-right-radius: 16px;
-              border-bottom-right-radius: 16px;
+              border-top-right-radius: ${CARD_BORDER_RADIUS};
+              border-bottom-right-radius: ${CARD_BORDER_RADIUS};
             }
+            /* Centrado de iconos en la columna de acciones */
             .action-btn-group {
               display: flex;
+              justify-content: center;
+              align-items: center;
               gap: 0.5rem;
             }
             .status-badge {
@@ -843,8 +469,23 @@ const ProjectListPage = () => {
               font-family: var(--font-family-base);
             }
             .scrollable-table {
-              max-height: 600px;
+              max-height: 500px;
               overflow-y: auto;
+            }
+            /* Personalización del scrollbar para Chrome y navegadores WebKit */
+            .scrollable-table::-webkit-scrollbar {
+              width: 10px;
+            }
+            .scrollable-table::-webkit-scrollbar-track {
+              background: #f1f1f1;
+              border-radius: 10px;
+            }
+            .scrollable-table::-webkit-scrollbar-thumb {
+              background: #c1c1c1;
+              border-radius: 10px;
+            }
+            .scrollable-table::-webkit-scrollbar-thumb:hover {
+              background: #a8a8a8;
             }
           `}</style>
         </div>

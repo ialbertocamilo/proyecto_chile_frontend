@@ -225,7 +225,7 @@ const ProjectListStatusEditPage = () => {
                 fontWeight: "normal"
               }}
             >
-              Estado de Proyectos
+              Administrar proyectos
             </h2>
           </div>
           {error && <p className="text-danger" style={{ fontWeight: "normal" }}>{error}</p>}
@@ -250,7 +250,7 @@ const ProjectListStatusEditPage = () => {
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Estado del Proyecto</th>
+                    <th></th>
                     <th>Nombre del Proyecto</th>
                     <th>Propietario</th>
                     <th>Tipo de edificación</th>
@@ -267,12 +267,7 @@ const ProjectListStatusEditPage = () => {
                       <tr key={project.id}>
                         <td>{project.id || "N/D"}</td>
                         <td>
-                          <span
-                            className="badge status-badge"
-                            style={{ ...getStatusStyle(project.status), fontSize: "0.8rem" }}
-                          >
-                            {(project.status || "No disponible").toUpperCase()}
-                          </span>
+                         
                         </td>
                         <td>{project.name_project || "No disponible"}</td>
                         <td>{project.owner_name || "No disponible"}</td>
@@ -282,29 +277,7 @@ const ProjectListStatusEditPage = () => {
                         <td>{project.number_homes_per_level !== undefined ? project.number_homes_per_level : "N/D"}</td>
                         <td>{project.built_surface !== undefined ? project.built_surface : "N/D"}</td>
                         <td className="d-flex justify-content-center">
-                          <CustomButton
-                            variant="editIcon"
-                            onClick={() => openStatusModal(project)}
-                            style={{
-                              backgroundColor: "var(--primary-color)",
-                              border: `2px solid var(--primary-color)`,
-                              padding: "0.5rem",
-                              width: "40px",
-                              height: "40px",
-                            }}
-                          />
-                          <CustomButton
-                            variant="deleteIcon"
-                            onClick={() => handleDeleteProject(project)}
-                            style={{
-                              backgroundColor: "#d33",
-                              border: "2px solid #d33",
-                              padding: "0.5rem",
-                              width: "40px",
-                              height: "40px",
-                              marginLeft: "0.5rem"
-                            }}
-                          />
+                          
                         </td>
                       </tr>
                     ))

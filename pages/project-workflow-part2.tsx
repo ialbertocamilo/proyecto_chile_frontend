@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Swal from "sweetalert2";
 import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
 import "../public/assets/css/globals.css";
@@ -74,13 +73,7 @@ const ProjectWorkflowPart2: React.FC = () => {
 
   useEffect(() => {
     if (hasLoaded && projectId === null) {
-      Swal.fire(
-        "Ningún proyecto está seleccionado",
-        "Serás redirigido a la creación de proyecto",
-        "warning"
-      ).then(() => {
-        router.push("/project-workflow-part1");
-      });
+      router.push("/project-workflow-part1");
     }
   }, [hasLoaded, projectId, router]);
 
@@ -142,7 +135,6 @@ const ProjectWorkflowPart2: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.");
         return;
       }
       let allMaterials: Material[] = [];
@@ -162,12 +154,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       }
       setMaterialsList(allMaterials);
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error al obtener materiales:", error);
-        Swal.fire("Error", "Error al obtener materiales. Ver consola.");
-      } else {
-        console.error("Error inesperado:", error);
-      }
+      console.error("Error al obtener materiales:", error);
     }
   };
 
@@ -178,13 +165,11 @@ const ProjectWorkflowPart2: React.FC = () => {
       newMaterialData.specific_heat <= 0 ||
       newMaterialData.density <= 0
     ) {
-      Swal.fire("Campos incompletos", "Por favor complete todos los campos de material", "warning");
       return;
     }
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.");
         return;
       }
       const requestBody = {
@@ -205,17 +190,12 @@ const ProjectWorkflowPart2: React.FC = () => {
       };
       const response = await axios.post(url, requestBody, { headers });
       if (response.status === 200) {
-        Swal.fire("Material creado", "Se ha creado el material correctamente", "success");
         await fetchMaterialsList();
         setShowNewMaterialRow(false);
         setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
       }
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        Swal.fire("Error al crear material", error.response?.data?.detail || error.message, "error");
-      } else {
-        Swal.fire("Error al crear material", "Error desconocido", "error");
-      }
+      console.error("Error al crear material:", error);
     }
   };
 
@@ -223,7 +203,6 @@ const ProjectWorkflowPart2: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.");
         return;
       }
       const url = `${constantUrlApiEndpoint}/elements/?type=${type}`;
@@ -231,15 +210,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       const response = await axios.get(url, { headers });
       setElementsList(response.data);
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        Swal.fire(
-          `Error al obtener ${type === "window" ? "ventanas" : "puertas"}`,
-          error.response?.data?.detail || error.message,
-          "error"
-        );
-      } else {
-        Swal.fire("Error", "Error desconocido", "error");
-      }
+      console.error(`Error al obtener ${type === "window" ? "ventanas" : "puertas"}`, error);
     }
   };
 
@@ -247,7 +218,6 @@ const ProjectWorkflowPart2: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.");
         return;
       }
       const url = `${constantUrlApiEndpoint}/elements/?type=window`;
@@ -256,7 +226,6 @@ const ProjectWorkflowPart2: React.FC = () => {
       setAllWindowsForDoor(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener ventanas para puerta:", error);
-      Swal.fire("Error", "Error al obtener ventanas para puerta. Ver consola.");
     }
   };
 
@@ -271,27 +240,25 @@ const ProjectWorkflowPart2: React.FC = () => {
       windowData.clousure_type.trim() === "" ||
       windowData.frame_type.trim() === ""
     ) {
-      Swal.fire("Campos incompletos", "Por favor complete todos los campos de la ventana", "warning");
       return;
     }
-    const token = localStorage.getItem("token");
-    if (!token) {
-      Swal.fire("Token no encontrado", "Inicia sesión.");
-      return;
-    }
-    const body = {
-      name_element: windowData.name_element,
-      type: "window",
-      atributs: {
-        u_vidrio: windowData.u_vidrio,
-        fs_vidrio: windowData.fs_vidrio,
-        clousure_type: windowData.clousure_type,
-        frame_type: windowData.frame_type,
-      },
-      u_marco: windowData.u_marco,
-      fm: windowData.fm,
-    };
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return;
+      }
+      const body = {
+        name_element: windowData.name_element,
+        type: "window",
+        atributs: {
+          u_vidrio: windowData.u_vidrio,
+          fs_vidrio: windowData.fs_vidrio,
+          clousure_type: windowData.clousure_type,
+          frame_type: windowData.frame_type,
+        },
+        u_marco: windowData.u_marco,
+        fm: windowData.fm,
+      };
       const response = await axios.post(`${constantUrlApiEndpoint}/elements/create`, body, {
         headers: {
           "Content-Type": "application/json",
@@ -300,7 +267,6 @@ const ProjectWorkflowPart2: React.FC = () => {
         },
       });
       setElementsList((prev) => [...prev, response.data.element]);
-      Swal.fire("Ventana creada", `La ventana "${windowData.name_element}" ha sido creada.`, "success");
       setShowNewWindowRow(false);
       setWindowData({
         name_element: "",
@@ -312,9 +278,7 @@ const ProjectWorkflowPart2: React.FC = () => {
         fm: 0,
       });
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        Swal.fire("Error", error.response?.data?.detail || error.message, "error");
-      }
+      console.error("Error al crear ventana:", error);
     }
   };
 
@@ -329,27 +293,25 @@ const ProjectWorkflowPart2: React.FC = () => {
       doorData.fm > 100 ||
       doorData.ventana_id === 0
     ) {
-      Swal.fire("Campos incompletos", "Por favor complete todos los campos de la puerta", "warning");
       return;
     }
-    const token = localStorage.getItem("token");
-    if (!token) {
-      Swal.fire("Token no encontrado", "Inicia sesión.");
-      return;
-    }
-    const body = {
-      name_element: doorData.name_element,
-      type: "door",
-      atributs: {
-        ventana_id: doorData.ventana_id,
-        name_ventana: doorData.name_ventana,
-        u_puerta_opaca: doorData.u_puerta_opaca,
-        porcentaje_vidrio: doorData.porcentaje_vidrio,
-      },
-      u_marco: doorData.u_marco,
-      fm: doorData.fm,
-    };
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return;
+      }
+      const body = {
+        name_element: doorData.name_element,
+        type: "door",
+        atributs: {
+          ventana_id: doorData.ventana_id,
+          name_ventana: doorData.name_ventana,
+          u_puerta_opaca: doorData.u_puerta_opaca,
+          porcentaje_vidrio: doorData.porcentaje_vidrio,
+        },
+        u_marco: doorData.u_marco,
+        fm: doorData.fm,
+      };
       const response = await axios.post(`${constantUrlApiEndpoint}/elements/create`, body, {
         headers: {
           "Content-Type": "application/json",
@@ -358,7 +320,6 @@ const ProjectWorkflowPart2: React.FC = () => {
         },
       });
       setElementsList((prev) => [...prev, response.data.element]);
-      Swal.fire("Puerta creada", `La puerta "${doorData.name_element}" ha sido creada.`, "success");
       setShowNewDoorRow(false);
       setDoorData({
         name_element: "",
@@ -370,24 +331,24 @@ const ProjectWorkflowPart2: React.FC = () => {
         fm: 0,
       });
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        Swal.fire("Error", error.response?.data?.detail || error.message, "error");
-      }
+      console.error("Error al crear puerta:", error);
     }
   };
 
-  // Función para mostrar alerta, guardar datos y redirigir al siguiente step.
-  // En step 6 se redirige a "project-list".
-  const handleStep1Submit = () => {
-    Swal.fire("Datos guardados", "Datos guardados con éxito", "success").then(() => {
-      if (step === 3) {
-        setStep(5);
-      } else if (step === 5) {
-        setStep(6);
-      } else if (step === 6) {
-        router.push("/project-list");
-      }
-    });
+  // En el Step 3, el botón "Grabar Datos" solo guarda los datos sin avanzar al siguiente step.
+  const handleGrabarDatosStep3 = async () => {
+    if (showNewMaterialRow) {
+      await handleCreateMaterial();
+    }
+  };
+
+  // En el Step 5, el botón "Grabar Datos" guarda el nuevo elemento sin avanzar al siguiente step.
+  const handleGrabarDatosStep5 = async () => {
+    if (modalElementType === "ventanas" && showNewWindowRow) {
+      await handleCreateWindowElement();
+    } else if (modalElementType === "puertas" && showNewDoorRow) {
+      await handleCreateDoorElement();
+    }
   };
 
   // -------------------------------
@@ -519,7 +480,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                 {/* Step 3: Lista de materiales */}
                 {step === 3 && (
                   <>
-                    {/* Cabecera: Barra de búsqueda a la izquierda y botón "+Nuevo" en la esquina superior derecha */}
+                    {/* Cabecera: Barra de búsqueda y botón "+ Nuevo" */}
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <div style={{ flex: 1, marginRight: "10px" }}>
                         <input
@@ -528,12 +489,13 @@ const ProjectWorkflowPart2: React.FC = () => {
                           placeholder="Buscar material..."
                           value={materialSearch}
                           onChange={(e) => setMaterialSearch(e.target.value)}
+                          style={{ height: "40px" }}
                         />
                       </div>
                       <CustomButton
                         variant="save"
                         onClick={() => setShowNewMaterialRow((prev) => !prev)}
-                        style={{ borderRadius: "5px", width: "180px" }}
+                        style={{ borderRadius: "5px", width: "180px", height: "40px" }}
                       >
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
@@ -548,7 +510,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                             <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Conductividad (W/m2K)</th>
                             <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Calor específico (J/kgK)</th>
                             <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Densidad (kg/m3)</th>
-                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -604,22 +565,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   }
                                 />
                               </td>
-                              <td className="d-flex gap-2 justify-content-center">
-                                <CustomButton
-                                  variant="save"
-                                  onClick={handleCreateMaterial}
-                                  style={{ borderRadius: "5px", width: "180px" }}
-                                >
-                                  <span className="material-icons">add</span>
-                                </CustomButton>
-                                <CustomButton
-                                  variant="cancelIcon"
-                                  onClick={() => setShowNewMaterialRow(false)}
-                                  style={{ borderRadius: "5px", width: "180px" }}
-                                >
-                                  <span className="material-icons">cancel</span>
-                                </CustomButton>
-                              </td>
                             </tr>
                           )}
                           {materialsList
@@ -634,23 +579,18 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   <td>{conductivity}</td>
                                   <td>{specific_heat}</td>
                                   <td>{density}</td>
-                                  <td>
-                                    <span className="material-icons" style={{ color: "#ccc" }}>
-                                      visibility
-                                    </span>
-                                  </td>
                                 </tr>
                               );
                             })}
                         </tbody>
                       </table>
                     </div>
-                    {/* Botón "Grabar Datos" en la esquina inferior derecha */}
+                    {/* Botón "Grabar Datos" en Step 3: Solo guarda los datos sin avanzar */}
                     <div className="mt-3 text-end">
                       <CustomButton
                         variant="save"
-                        onClick={handleStep1Submit}
-                        style={{ borderRadius: "5px", width: "180px" }}
+                        onClick={handleGrabarDatosStep3}
+                        style={{ borderRadius: "5px", width: "180px", height: "40px" }}
                       >
                         <span className="material-icons" style={{ marginRight: "5px" }}>
                           sd_card
@@ -664,7 +604,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                 {/* Step 5: Elementos translúcidos */}
                 {step === 5 && (
                   <>
-                    {/* Encabezado: campo de búsqueda a la izquierda y botón "+Nuevo" a la derecha */}
+                    {/* Encabezado: Barra de búsqueda y botón "+ Nuevo" */}
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <div style={{ flex: 1, marginRight: "10px" }}>
                         <input
@@ -673,6 +613,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                           placeholder="Buscar elemento..."
                           value={elementSearch}
                           onChange={(e) => setElementSearch(e.target.value)}
+                          style={{ height: "40px" }}
                         />
                       </div>
                       <CustomButton
@@ -684,7 +625,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                             setShowNewDoorRow((prev) => !prev);
                           }
                         }}
-                        style={{ borderRadius: "5px", width: "180px" }}
+                        style={{ borderRadius: "5px", width: "180px", height: "40px" }}
                       >
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
@@ -724,7 +665,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                               <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Tipo Marco</th>
                               <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Marco [W/m2K]</th>
                               <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FM [%]</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
                             </tr>
                           ) : (
                             <tr>
@@ -734,7 +674,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                               <th style={{ color: "var(--primary-color)", textAlign: "center" }}>% Vidrio</th>
                               <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Marco [W/m2K]</th>
                               <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FM [%]</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Acción</th>
                             </tr>
                           )}
                         </thead>
@@ -835,22 +774,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   }}
                                 />
                               </td>
-                              <td className="d-flex gap-2 justify-content-center">
-                                <CustomButton
-                                  variant="save"
-                                  onClick={handleCreateWindowElement}
-                                  style={{ borderRadius: "5px", width: "180px" }}
-                                >
-                                  <span className="material-icons">add</span>
-                                </CustomButton>
-                                <CustomButton
-                                  variant="cancelIcon"
-                                  onClick={() => setShowNewWindowRow(false)}
-                                  style={{ borderRadius: "5px", width: "180px" }}
-                                >
-                                  <span className="material-icons">cancel</span>
-                                </CustomButton>
-                              </td>
                             </tr>
                           )}
                           {modalElementType === "puertas" && showNewDoorRow && (
@@ -943,22 +866,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   }}
                                 />
                               </td>
-                              <td className="d-flex gap-2 justify-content-center">
-                                <CustomButton
-                                  variant="save"
-                                  onClick={handleCreateDoorElement}
-                                  style={{ borderRadius: "5px", width: "180px" }}
-                                >
-                                  <span className="material-icons">add</span>
-                                </CustomButton>
-                                <CustomButton
-                                  variant="cancelIcon"
-                                  onClick={() => setShowNewDoorRow(false)}
-                                  style={{ borderRadius: "5px", width: "180px" }}
-                                >
-                                  <span className="material-icons">cancel</span>
-                                </CustomButton>
-                              </td>
                             </tr>
                           )}
                           {elementsList
@@ -976,11 +883,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                                     <td>{el.atributs.frame_type}</td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
-                                    <td>
-                                      <span className="material-icons" style={{ color: "#ccc" }}>
-                                        visibility
-                                      </span>
-                                    </td>
                                   </>
                                 ) : (
                                   <>
@@ -994,11 +896,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                                     </td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
-                                    <td>
-                                      <span className="material-icons" style={{ color: "#ccc" }}>
-                                        visibility
-                                      </span>
-                                    </td>
                                   </>
                                 )}
                               </tr>
@@ -1006,12 +903,12 @@ const ProjectWorkflowPart2: React.FC = () => {
                         </tbody>
                       </table>
                     </div>
-                    {/* Botón "Grabar Datos" en la esquina inferior derecha */}
+                    {/* Botón "Grabar Datos" en Step 5: Solo guarda el nuevo elemento sin avanzar */}
                     <div className="mt-4 text-end">
                       <CustomButton
                         variant="save"
-                        onClick={handleStep1Submit}
-                        style={{ borderRadius: "5px", width: "180px" }}
+                        onClick={handleGrabarDatosStep5}
+                        style={{ borderRadius: "5px", width: "180px", height: "40px" }}
                       >
                         <span className="material-icons" style={{ marginRight: "5px" }}>
                           sd_card
@@ -1063,12 +960,8 @@ const ProjectWorkflowPart2: React.FC = () => {
                     <div className="mt-4 text-end">
                       <CustomButton
                         variant="save"
-                        onClick={() =>
-                          Swal.fire("Datos guardados", "Se han guardado los datos de tipología", "success").then(() => {
-                            router.push("/project-list");
-                          })
-                        }
-                        style={{ borderRadius: "5px", width: "180px" }}
+                        onClick={() => router.push("/project-list")}
+                        style={{ borderRadius: "5px", width: "180px", height: "40px" }}
                       >
                         <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos

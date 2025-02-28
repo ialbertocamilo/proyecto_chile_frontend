@@ -953,7 +953,7 @@ const ProjectWorkflowPart3: React.FC = () => {
     if (showTabsInStep4) return null;
     return (
       <>
-        <div className="mb-3 d-flex justify-content-between align-items-center">
+        <div className="mb-3 d-flex justify-content-between align-items-stretch">
           <div style={{ flex: 1, marginRight: "10px" }}>
             <input
               type="text"
@@ -961,6 +961,7 @@ const ProjectWorkflowPart3: React.FC = () => {
               placeholder="Buscar..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ height: "38px" }}
             />
           </div>
           <CustomButton
@@ -969,7 +970,13 @@ const ProjectWorkflowPart3: React.FC = () => {
               setShowNewDetailRow((prev) => !prev);
               if (!showNewDetailRow) fetchMaterials();
             }}
-            style={{ width: "200px" }}
+            style={{
+              width: "200px",
+              height: "38px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
             <span className="material-icons">add</span> Nuevo
           </CustomButton>

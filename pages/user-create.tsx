@@ -43,26 +43,6 @@ const UserCreate = () => {
   const [error, setError] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-
-  const CARD_WIDTH = "90%"; // Reducido para evitar desbordamiento
-  const CARD_MARGIN_LEFT = "20%"; // Alinear más a la izquierda
-  const CARD_MARGIN_RIGHT = "auto";
-  const CARD_MARGIN_TOP = "30px";
-  const CARD_MARGIN_BOTTOM = "30px";
-  const CARD_BORDER_RADIUS = "16px";
-  const CARD_BOX_SHADOW = "0 2px 10px rgba(0,0,0,0.1)";
-  const CARD_BORDER_COLOR = "#d3d3d3";
-  const CONTAINER_MARGIN_LEFT = "10px";
-
-  const cardStyle = {
-    width: CARD_WIDTH,
-    margin: `${CARD_MARGIN_TOP} ${CARD_MARGIN_RIGHT} ${CARD_MARGIN_BOTTOM} ${CARD_MARGIN_LEFT}`,
-    borderRadius: CARD_BORDER_RADIUS,
-    boxShadow: CARD_BOX_SHADOW,
-    border: `1px solid ${CARD_BORDER_COLOR}`,
-    padding: "20px",
-    backgroundColor: "#fff",
-  };
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -195,196 +175,192 @@ const UserCreate = () => {
         }}
       >
         <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container p-4" style={{ marginTop: "80px", marginLeft: CONTAINER_MARGIN_LEFT }}>
-          {/* Card para el Título */}
-          <div style={cardStyle}>
+        <div className="container p-4" style={{ marginTop: "60px" }}>
+          <div className="d-flex justify-content-between align-items-center mb-4">
             <h2
+              className="fw-bold"
               style={{
-                color: "black",
+                color: "var(--primary-color)",
                 margin: 0,
                 fontFamily: "var(--font-family-base)",
               }}
             >
               Registro de Usuario
             </h2>
+            <div className="d-flex gap-2">
+              <Button
+                text="Volver"
+                onClick={() => router.push("/user-management")}
+                className="btn-secondary"
+              />
+              <button
+                type="submit"
+                form="userCreateForm"
+                className="btn custom-create-btn"
+                disabled={loading}
+                style={{ fontFamily: "var(--font-family-base)" }}
+              >
+                {loading ? "Creando..." : "Crear"}
+              </button>
+            </div>
           </div>
-  
-          {/* Card para el Formulario */}
-          <div style={cardStyle}>
-            {error && (
-              <p className="text-danger fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>
-                {error}
-              </p>
-            )}
-            {loading ? (
-              <p className="text-primary" style={{ fontFamily: "var(--font-family-base)" }}>
-                Cargando...
-              </p>
-            ) : (
-              <form id="userCreateForm" onSubmit={handleSubmit}>
+          {error && (
+            <p className="text-danger fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>
+              {error}
+            </p>
+          )}
+          {loading ? (
+            <p className="text-primary" style={{ fontFamily: "var(--font-family-base)" }}>
+              Cargando...
+            </p>
+          ) : (
+            <form id="userCreateForm" onSubmit={handleSubmit}>
+              <div className="border rounded p-3 mb-3" style={{ fontFamily: "var(--font-family-base)" }}>
                 <div className="row">
                   <div className="col-md-6">
-                    <label>Nombre</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Nombre</label>
                     <input
                       type="text"
                       name="name"
                       className="form-control"
                       value={userData.name}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label>Apellidos</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Apellidos</label>
                     <input
                       type="text"
                       name="lastname"
                       className="form-control"
                       value={userData.lastname}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                 </div>
-  
                 <div className="row mt-3">
                   <div className="col-md-6">
-                    <label>Email</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Email</label>
                     <input
                       type="email"
                       name="email"
                       className="form-control"
                       value={userData.email}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label>Teléfono</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Teléfono</label>
                     <input
                       type="text"
                       name="number_phone"
                       className="form-control"
                       value={userData.number_phone}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                 </div>
-  
                 <div className="row mt-3">
                   <div className="col-md-6">
-                    <label>Fecha de Nacimiento</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Fecha de Nacimiento</label>
                     <input
                       type="date"
                       name="birthdate"
                       className="form-control"
                       value={userData.birthdate}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label>País</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>País</label>
                     <input
                       type="text"
                       name="country"
                       className="form-control"
                       value={userData.country}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                 </div>
-  
                 <div className="row mt-3">
                   <div className="col-md-6">
-                    <label>Contraseña</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Contraseña</label>
                     <input
                       type="password"
                       name="password"
                       className="form-control"
                       value={userData.password}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label>Ubigeo</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Ubigeo</label>
                     <input
                       type="text"
                       name="ubigeo"
                       className="form-control"
                       value={userData.ubigeo}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                 </div>
-  
                 <div className="row mt-3">
                   <div className="col-md-6">
-                    <label>Confirmar Contraseña</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Confirmar Contraseña</label>
                     <input
                       type="password"
                       name="confirm_password"
                       className="form-control"
                       value={userData.confirm_password}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label>Rol</label>
+                    <label style={{ fontFamily: "var(--font-family-base)" }}>Rol</label>
                     <select
                       name="role_id"
                       className="form-control"
                       value={userData.role_id}
                       onChange={handleChange}
+                      style={{ fontFamily: "var(--font-family-base)" }}
                     >
                       <option value="1">Administrador</option>
                       <option value="2">Operador</option>
                     </select>
                   </div>
                 </div>
-  
-                {/* Botones de acción */}
-                <div className="d-flex justify-content-end gap-2 mt-4">
-                  <Button
-                    text="Volver"
-                    onClick={() => router.push("/user-management")}
-                    className="btn-secondary"
-                  />
-                  <button
-                    type="submit"
-                    form="userCreateForm"
-                    className="btn custom-create-btn"
-                    disabled={loading}
-                  >
-                    {loading ? "Creando..." : "Crear"}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
+              </div>
+            </form>
+          )}
         </div>
-  
-        <style jsx>{`
-          .card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            border: none;
-          }
-  
-          .custom-create-btn {
-            background-color: var(--primary-color) !important;
-            border: none !important;
-            border-radius: 0.5rem !important;
-            padding: 12px !important;
-            font-size: 1rem !important;
-            transition: background 0.3s ease !important;
-            color: #fff !important;
-            cursor: pointer;
-            font-family: var(--font-family-base) !important;
-          }
-          .custom-create-btn:hover {
-            background-color: var(--secondary-color) !important;
-          }
-        `}</style>
       </div>
+      <style jsx>{`
+        .custom-create-btn {
+          background-color: var(--primary-color) !important;
+          border: none !important;
+          border-radius: 0.5rem !important;
+          padding: 12px !important;
+          font-size: 1rem !important;
+          transition: background 0.3s ease !important;
+          color: #fff !important;
+          cursor: pointer;
+          font-family: var(--font-family-base) !important;
+        }
+        .custom-create-btn:hover {
+          background-color: var(--secondary-color) !important;
+        }
+      `}</style>
     </div>
   );
-}  
+};
+
 export default UserCreate;

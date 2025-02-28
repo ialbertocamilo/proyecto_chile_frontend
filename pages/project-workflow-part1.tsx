@@ -14,6 +14,50 @@ import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData"; // Información de ubicación
 
+// ---------------------------
+// Constantes para estilos de las cards
+// ---------------------------
+const CARD_WIDTH = "100%";
+const CARD_MARGIN_LEFT = "0px";
+const CARD_MARGIN_RIGHT = "0px";
+export const CARD_MARGIN_TOP = "120px"; // Margen superior para la card de títulos
+const CARD_MARGIN_BOTTOM = "20px";
+const CARD_BORDER_RADIUS = "16px";
+const CARD_BOX_SHADOW = "0 4px 8px rgba(0, 0, 0, 0.1)";
+const CARD_BORDER_COLOR = "#ccc";
+
+// Estilo base que se extiende para cada card
+const baseCardStyle: React.CSSProperties = {
+  width: CARD_WIDTH,
+  marginLeft: CARD_MARGIN_LEFT,
+  marginRight: CARD_MARGIN_RIGHT,
+  marginBottom: CARD_MARGIN_BOTTOM,
+  borderRadius: CARD_BORDER_RADIUS,
+  boxShadow: CARD_BOX_SHADOW,
+  border: `1px solid ${CARD_BORDER_COLOR}`,
+};
+
+// Estilo específico para la card de los títulos (alineado a la izquierda)
+const titleCardStyle: React.CSSProperties = {
+  ...baseCardStyle,
+  height: "60px",           // Altura fija para que sea "más chata"
+  padding: "0 20px",        // Padding horizontal sin vertical
+  marginTop: CARD_MARGIN_TOP,
+  display: "flex",          // Flex para centrar verticalmente
+  alignItems: "center",
+  justifyContent: "flex-start", // Alinea el contenido a la izquierda
+  textAlign: "left",        // Alinea el texto a la izquierda
+};
+
+// Estilo para la card de formularios y steps
+const formCardStyle: React.CSSProperties = {
+  ...baseCardStyle,
+  padding: "0px",      
+  marginTop: "10px",    
+  minHeight: "400px",   
+  width: "100%",
+};
+
 // Componente para el Sidebar interno
 interface SidebarItemProps {
   stepNumber: number;
@@ -131,14 +175,12 @@ const ProjectWorkflowPart1: React.FC = () => {
     longitude: -70.6703553846175,
   });
 
-  // Objeto para almacenar errores
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [locationSearch, setLocationSearch] = useState("");
 
-  // Si existe un id en la query se asume modo edición y se pre-cargan los datos
+  // Si existe un id en la query, se asume modo edición y se pre-cargan los datos
   useEffect(() => {
     if (router.query.id) {
-      // Convertir el id a string en caso de que venga como arreglo
       const projectId = Array.isArray(router.query.id)
         ? router.query.id[0]
         : router.query.id;
@@ -147,14 +189,12 @@ const ProjectWorkflowPart1: React.FC = () => {
         try {
           const token = localStorage.getItem("token");
           if (!token) return;
-          // Usamos la ruta plural según el Swagger
           const response = await axios.get(
             `${constantUrlApiEndpoint}/projects/${projectId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
           );
-          // Se asume que la respuesta es directamente el objeto del proyecto
           const projectData = response.data;
           setFormData({
             name_project: projectData.name_project || "",
@@ -187,7 +227,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   }, [router.query.id, primaryColor]);
 
-  // Actualiza un campo del formulario y remueve el error si tiene valor
   const handleFormInputChange = (field: keyof FormData, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (value !== "" && value !== 0) {
@@ -195,7 +234,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
-  // Al cambiar país, reiniciamos departamento y provincia
   const handleCountryChange = (country: Country) => {
     handleFormInputChange("country", country);
     handleFormInputChange("department", "");
@@ -203,58 +241,43 @@ const ProjectWorkflowPart1: React.FC = () => {
     setErrors((prev) => ({ ...prev, country: "", department: "", province: "" }));
   };
 
-  // Al cambiar departamento, reiniciamos provincia
   const handleDepartmentChange = (department: string) => {
     handleFormInputChange("department", department);
     handleFormInputChange("province", "");
     setErrors((prev) => ({ ...prev, department: "", province: "" }));
   };
 
-  // Valida los campos del Step 1
   const validateStep1Fields = (): Partial<Record<keyof FormData, string>> => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
-    if (!formData.name_project.trim()) {
+    if (!formData.name_project.trim())
       newErrors.name_project = "El nombre del proyecto es obligatorio";
-    }
-    if (!formData.owner_name.trim()) {
+    if (!formData.owner_name.trim())
       newErrors.owner_name = "El nombre del propietario es obligatorio";
-    }
-    if (!formData.owner_lastname.trim()) {
+    if (!formData.owner_lastname.trim())
       newErrors.owner_lastname = "El apellido del propietario es obligatorio";
-    }
-    if (!formData.country.trim()) {
-      newErrors.country = "El país es obligatorio";
-    }
-    if (!formData.department.trim()) {
+    if (!formData.country.trim()) newErrors.country = "El país es obligatorio";
+    if (!formData.department.trim())
       newErrors.department = "El departamento es obligatorio";
-    }
-    if (!formData.province.trim()) {
+    if (!formData.province.trim())
       newErrors.province = "La provincia es obligatoria";
-    }
-    if (!formData.district.trim()) {
+    if (!formData.district.trim())
       newErrors.district = "El distrito es obligatorio";
-    }
-    if (!formData.building_type.trim()) {
+    if (!formData.building_type.trim())
       newErrors.building_type = "El tipo de edificación es obligatorio";
-    }
-    if (!formData.main_use_type.trim()) {
+    if (!formData.main_use_type.trim())
       newErrors.main_use_type = "El tipo de uso principal es obligatorio";
-    }
-    if (formData.number_levels <= 0) {
+    if (formData.number_levels <= 0)
       newErrors.number_levels = "El número de niveles debe ser mayor a 0";
-    }
-    if (formData.number_homes_per_level <= 0) {
+    if (formData.number_homes_per_level <= 0)
       newErrors.number_homes_per_level =
         "El número de viviendas/oficinas debe ser mayor a 0";
-    }
-    if (formData.built_surface <= 0) {
+    if (formData.built_surface <= 0)
       newErrors.built_surface = "La superficie construida debe ser mayor a 0";
-    }
     return newErrors;
   };
 
-  // En ambos modos (creación y edición) se valida y se avanza al Step 2
-  const handleStep1Submit = () => {
+  // Función para el modo edición en el step 1
+  const handleStep1Action = async () => {
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
@@ -267,11 +290,30 @@ const ProjectWorkflowPart1: React.FC = () => {
       });
       return;
     }
+    if (router.query.id) {
+      await handleUpdateProject();
+    }
+  };
+
+  // Botón para pasar al Step 2 (modo edición)
+  const goToStep2 = () => {
     setStep(2);
   };
 
-  // Función para crear un proyecto (modo creación)
+  // Función para crear proyecto (modo creación)
   const handleCreateProject = async () => {
+    const fieldErrors = validateStep1Fields();
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors);
+      Swal.fire({
+        title: "Campos incompletos",
+        text: "Por favor complete todos los campos obligatorios.",
+        icon: "warning",
+        confirmButtonText: "Entendido",
+        confirmButtonColor: primaryColor,
+      });
+      return;
+    }
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -347,7 +389,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
-  // Función para actualizar el proyecto (modo edición)
+  // Función para actualizar proyecto (modo edición)
   const handleUpdateProject = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -418,21 +460,20 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
-  const renderMainHeader = () =>
-    step <= 2 ? (
-      <div className="mb-3">
-        <h1
-          style={{
-            fontSize: "40px",
-            fontWeight: "normal",
-            fontFamily: "var(--font-family-base)",
-            marginTop: "120px",
-          }}
-        >
-          Proyecto nuevo
-        </h1>
-      </div>
-    ) : null;
+  // Renderiza el encabezado principal
+  const renderMainHeader = () => (
+    <h1
+      style={{
+        fontSize: "24px",   // Tamaño de la fuente
+        fontWeight: "normal",
+        fontFamily: "var(--font-family-base)",
+        margin: 0,
+        textAlign: "left",  // Alinea el texto a la izquierda
+      }}
+    >
+      {router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"}
+    </h1>
+  );
 
   return (
     <>
@@ -451,9 +492,14 @@ const ProjectWorkflowPart1: React.FC = () => {
           fontWeight: "normal",
         }}
       >
-        {renderMainHeader()}
-        <div className="card shadow w-100" style={{ overflow: "hidden" }}>
-          <div className="card-body p-0">
+        {/* Card para el Título */}
+        <div className="card" style={titleCardStyle}>
+          <div className="card-body">{renderMainHeader()}</div>
+        </div>
+
+        {/* Card para el contenedor de formularios y steps */}
+        <div className="card" style={formCardStyle}>
+          <div className="card-body" style={{ padding: "0" }}>
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
               <div
                 style={{
@@ -484,7 +530,7 @@ const ProjectWorkflowPart1: React.FC = () => {
               <div style={{ flex: 1, padding: "40px" }}>
                 {step === 1 && (
                   <>
-                    {/* Paso 1 */}
+                    {/* STEP 1: Datos Generales */}
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Nombre del proyecto</label>
@@ -521,7 +567,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                           }
                         />
                       </div>
-                      {/* Desplegable para País */}
                       <div className="col-12 col-md-6">
                         <label className="form-label">País</label>
                         <select
@@ -541,7 +586,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                     </div>
                     <div className="row mb-3">
-                      {/* Desplegable para Departamento */}
                       <div className="col-12 col-md-6">
                         <label className="form-label">Departamento</label>
                         <select
@@ -561,7 +605,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             )}
                         </select>
                       </div>
-                      {/* Desplegable para Provincia */}
                       <div className="col-12 col-md-6">
                         <label className="form-label">Provincia</label>
                         <select
@@ -598,27 +641,37 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Tipo de edificación</label>
-                        <input
-                          type="text"
+                        <select
                           className="form-control"
                           value={formData.building_type}
                           onChange={(e) =>
                             handleFormInputChange("building_type", e.target.value)
                           }
-                        />
+                        >
+                          <option value="">Seleccione un tipo de edificación</option>
+                          <option value="Unifamiliar">Unifamiliar</option>
+                          <option value="Duplex">Duplex</option>
+                          <option value="Vertical / Departamentos">
+                            Vertical / Departamentos
+                          </option>
+                        </select>
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Tipo de uso principal</label>
-                        <input
-                          type="text"
+                        <select
                           className="form-control"
                           value={formData.main_use_type}
                           onChange={(e) =>
                             handleFormInputChange("main_use_type", e.target.value)
                           }
-                        />
+                        >
+                          <option value="">Seleccione un tipo de uso</option>
+                          <option value="Viviendas">Viviendas</option>
+                          <option value="Oficinas">Oficinas</option>
+                          <option value="Terciarios">Terciarios</option>
+                        </select>
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">Número de niveles</label>
@@ -669,20 +722,48 @@ const ProjectWorkflowPart1: React.FC = () => {
                         />
                       </div>
                     </div>
-                    <div className="text-end">
-                      <CustomButton variant="save" onClick={handleStep1Submit}>
-                        <span className="material-icons" style={{ marginRight: "5px" }}>
-                          sd_card
-                        </span>
-                        {router.query.id ? "Editar Proyecto" : "Grabar Datos"}
-                      </CustomButton>
-                    </div>
+                    {/* Botones en Step 1 */}
+                    {router.query.id ? (
+                      <div className="d-flex justify-content-end align-items-center mt-4">
+                        <CustomButton
+                          variant="save"
+                          onClick={handleStep1Action}
+                          style={{ height: "50px" }}
+                        >
+                          <span className="material-icons" style={{ marginRight: "5px" }}>
+                            save_as
+                          </span>
+                          Actualizar Datos
+                        </CustomButton>
+                        <CustomButton
+                          variant="forwardIcon"
+                          onClick={goToStep2}
+                          style={{ marginLeft: "10px", height: "50px" }}
+                        >
+                          Siguiente
+                        </CustomButton>
+                      </div>
+                    ) : (
+                      <div className="d-flex justify-content-end align-items-center mt-4">
+                        {/* En modo creación se elimina el botón "Ubicación actual" en Step 1 */}
+                        <CustomButton
+                          variant="save"
+                          onClick={handleCreateProject}
+                          style={{ height: "50px" }}
+                        >
+                          <span className="material-icons" style={{ marginRight: "5px" }}>
+                            sd_card
+                          </span>
+                          Grabar Datos
+                        </CustomButton>
+                      </div>
+                    )}
                   </>
                 )}
 
                 {step === 2 && (
                   <>
-                    {/* Paso 2: Ubicación */}
+                    {/* STEP 2: Ubicación */}
                     <div
                       style={{
                         border: "1px solid #ccc",
@@ -724,56 +805,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             initialLat={formData.latitude}
                             initialLng={formData.longitude}
                           />
-                          <CustomButton
-                            variant="save"
-                            style={{
-                              width: "30%",
-                              height: "50px",
-                              marginTop: "30px",
-                              fontSize: "15px",
-                              padding: "10px 20px",
-                            }}
-                            onClick={() => {
-                              if (navigator.geolocation) {
-                                navigator.geolocation.getCurrentPosition(
-                                  (position) => {
-                                    const { latitude, longitude } = position.coords;
-                                    handleFormInputChange("latitude", latitude);
-                                    handleFormInputChange("longitude", longitude);
-                                    Swal.fire({
-                                      title: "Ubicación obtenida",
-                                      text: `Lat: ${latitude}, Lon: ${longitude}`,
-                                      icon: "success",
-                                      confirmButtonText: "OK",
-                                      confirmButtonColor: primaryColor,
-                                    });
-                                  },
-                                  () => {
-                                    Swal.fire({
-                                      title: "Error",
-                                      text: "No se pudo obtener la ubicación.",
-                                      icon: "error",
-                                      confirmButtonText: "Entendido",
-                                      confirmButtonColor: primaryColor,
-                                    });
-                                  }
-                                );
-                              } else {
-                                Swal.fire({
-                                  title: "Error",
-                                  text: "Geolocalización no soportada.",
-                                  icon: "error",
-                                  confirmButtonText: "Entendido",
-                                  confirmButtonColor: primaryColor,
-                                });
-                              }
-                            }}
-                          >
-                            <span className="material-icons" style={{ marginRight: "5px" }}>
-                              location_on
-                            </span>
-                            Ubicación actual
-                          </CustomButton>
                         </div>
                         <div className="col-12 col-md-4">
                           <label
@@ -801,17 +832,148 @@ const ProjectWorkflowPart1: React.FC = () => {
                           />
                         </div>
                       </div>
-                      <div className="mt-4 text-end">
-                        <CustomButton
-                          variant="save"
-                          onClick={router.query.id ? handleUpdateProject : handleCreateProject}
-                        >
-                          <span className="material-icons" style={{ marginRight: "5px" }}>
-                            sd_card
-                          </span>
-                          {router.query.id ? "Actualizar Proyecto" : "Grabar Datos"}
-                        </CustomButton>
-                      </div>
+                      {/* Botones en Step 2: se incluye el botón "Ubicación actual" */}
+                      {router.query.id ? (
+                        <div className="d-flex justify-content-between align-items-center mt-4">
+                          <div className="d-flex">
+                            <CustomButton
+                              variant="backIcon"
+                              onClick={() => setStep(1)}
+                              style={{ height: "50px" }}
+                            >
+                              Atrás
+                            </CustomButton>
+                            <CustomButton
+                              variant="save"
+                              onClick={() => {
+                                if (navigator.geolocation) {
+                                  navigator.geolocation.getCurrentPosition(
+                                    (position) => {
+                                      const { latitude, longitude } = position.coords;
+                                      handleFormInputChange("latitude", latitude);
+                                      handleFormInputChange("longitude", longitude);
+                                      Swal.fire({
+                                        title: "Ubicación obtenida",
+                                        text: `Lat: ${latitude}, Lon: ${longitude}`,
+                                        icon: "success",
+                                        confirmButtonText: "OK",
+                                        confirmButtonColor: primaryColor,
+                                      });
+                                    },
+                                    () => {
+                                      Swal.fire({
+                                        title: "Error",
+                                        text: "No se pudo obtener la ubicación.",
+                                        icon: "error",
+                                        confirmButtonText: "Entendido",
+                                        confirmButtonColor: primaryColor,
+                                      });
+                                    }
+                                  );
+                                } else {
+                                  Swal.fire({
+                                    title: "Error",
+                                    text: "Geolocalización no soportada.",
+                                    icon: "error",
+                                    confirmButtonText: "Entendido",
+                                    confirmButtonColor: primaryColor,
+                                  });
+                                }
+                              }}
+                              style={{ marginLeft: "10px", height: "50px", width: "200px" }}
+                            >
+                              <span className="material-icons" style={{ marginRight: "5px" }}>
+                                location_on
+                              </span>
+                              Ubicación actual
+                            </CustomButton>
+                          </div>
+                          <div className="d-flex">
+                            <CustomButton
+                              variant="save"
+                              onClick={handleUpdateProject}
+                              style={{ height: "50px" }}
+                            >
+                              <span className="material-icons" style={{ marginRight: "5px" }}>
+                                save_as
+                              </span>
+                              Actualizar Datos
+                            </CustomButton>
+                            <CustomButton
+                              variant="forwardIcon"
+                              onClick={() =>
+                                router.push(
+                                  `/project-workflow-part2?project_id=${
+                                    router.query.id || localStorage.getItem("project_id")
+                                  }`
+                                )
+                              }
+                              style={{ marginLeft: "10px", height: "50px" }}
+                            >
+                              Siguiente
+                            </CustomButton>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="d-flex justify-content-between align-items-center mt-4">
+                          <div className="d-flex">
+                            <CustomButton
+                              variant="save"
+                              onClick={() => {
+                                if (navigator.geolocation) {
+                                  navigator.geolocation.getCurrentPosition(
+                                    (position) => {
+                                      const { latitude, longitude } = position.coords;
+                                      handleFormInputChange("latitude", latitude);
+                                      handleFormInputChange("longitude", longitude);
+                                      Swal.fire({
+                                        title: "Ubicación obtenida",
+                                        text: `Lat: ${latitude}, Lon: ${longitude}`,
+                                        icon: "success",
+                                        confirmButtonText: "OK",
+                                        confirmButtonColor: primaryColor,
+                                      });
+                                    },
+                                    () => {
+                                      Swal.fire({
+                                        title: "Error",
+                                        text: "No se pudo obtener la ubicación.",
+                                        icon: "error",
+                                        confirmButtonText: "Entendido",
+                                        confirmButtonColor: primaryColor,
+                                      });
+                                    }
+                                  );
+                                } else {
+                                  Swal.fire({
+                                    title: "Error",
+                                    text: "Geolocalización no soportada.",
+                                    icon: "error",
+                                    confirmButtonText: "Entendido",
+                                    confirmButtonColor: primaryColor,
+                                  });
+                                }
+                              }}
+                              style={{ marginLeft: "10px", height: "50px", width: "200px" }}
+                            >
+                              <span className="material-icons" style={{ marginRight: "5px" }}>
+                                location_on
+                              </span>
+                              Ubicación actual
+                            </CustomButton>
+                          </div>
+                          <CustomButton
+                            variant="save"
+                            onClick={handleCreateProject}
+                            style={{ height: "50px" }}
+                          >
+                            <span className="material-icons" style={{ marginRight: "5px" }}>
+                              sd_card
+                            </span>
+                            Grabar Datos
+                          </CustomButton>
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -823,7 +985,7 @@ const ProjectWorkflowPart1: React.FC = () => {
 
       <style jsx>{`
         .card {
-          border: 1px solid #ccc;
+          /* Estilos adicionales para las cards, si es necesario */
         }
         .container {
           font-family: var(--font-family-base);

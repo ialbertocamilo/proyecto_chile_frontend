@@ -162,9 +162,9 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               <Link href="/edit-profile" className="dropdown-item" style={{ fontFamily: "var(--font-family-base)" }}>
                 <i className="bi bi-person me-2"></i> Perfil
               </Link>
-              <Link href="/settings" className="dropdown-item" style={{ fontFamily: "var(--font-family-base)" }}>
+              {/* <Link href="/settings" className="dropdown-item" style={{ fontFamily: "var(--font-family-base)" }}>
                 <i className="bi bi-gear me-2"></i> Configuración
-              </Link>
+              </Link> */}
               <div className="dropdown-divider"></div>
               <button
                 className="dropdown-item text-danger"

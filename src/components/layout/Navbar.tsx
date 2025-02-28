@@ -221,14 +221,14 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
                     Parámetros
                   </Link>
                 </li>
-                <li className="nav-item">
+                {/* <li className="nav-item">
                   <Link href="/settings" className="nav-link text-white" style={navLinkStyle}>
                     <span style={iconStyle("/settings")} className="material-icons">
                       settings
                     </span>
                     Ajustes
                   </Link>
-                </li>
+                </li> */}
               </>
             )}
             <li className="nav-item">

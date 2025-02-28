@@ -18,7 +18,7 @@ interface User {
   country: string;
   ubigeo: string;
   role_id: number;
-  active: boolean
+  active: boolean;
 }
 
 const UserManagement = () => {
@@ -30,6 +30,28 @@ const UserManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
   const [sidebarWidth, setSidebarWidth] = useState("300px");
+
+  const CARD_WIDTH = "135%"; // Reducido para evitar desbordamiento
+  const CARD_MARGIN_LEFT = "-18%"; // Alinear más a la izquierda
+  const CARD_MARGIN_RIGHT = "auto";
+  const CARD_MARGIN_TOP = "7px";
+  const CARD_MARGIN_BOTTOM = "0px";
+  const CARD_BORDER_RADIUS = "16px";
+  const CARD_BOX_SHADOW = "0 2px 10px rgba(0,0,0,0.1)";
+  const CARD_BORDER_COLOR = "#d3d3d3";
+  const CONTAINER_MARGIN_LEFT = "10px";
+
+  const cardStyle = {
+    width: CARD_WIDTH,
+    margin: `${CARD_MARGIN_TOP} ${CARD_MARGIN_RIGHT} ${CARD_MARGIN_BOTTOM} ${CARD_MARGIN_LEFT}`,
+    borderRadius: CARD_BORDER_RADIUS,
+    boxShadow: CARD_BOX_SHADOW,
+    border: `1px solid ${CARD_BORDER_COLOR}`,
+    padding: "20px",
+    backgroundColor: "#fff",
+  };
+
+  // Si deseas modificar el margen izquierdo del contenedor principal (además del sidebar)
 
   const fetchUsers = useCallback(async () => {
     console.log("[fetchUsers] Fetching users from backend...");
@@ -130,11 +152,18 @@ const UserManagement = () => {
 
   // Función para traducir el valor numérico del rol a texto
   const getRoleText = (role_id: number) => {
-    return role_id === 1 ? "Administrador" : role_id === 2 ? "Operador" : "Desconocido";
+    return role_id === 1
+      ? "Administrador"
+      : role_id === 2
+      ? "Operador"
+      : "Desconocido";
   };
 
   // Función para manejar el cambio de rol desde el desplegable
-  const handleRoleChange = async (e: ChangeEvent<HTMLSelectElement>, userId: number) => {
+  const handleRoleChange = async (
+    e: ChangeEvent<HTMLSelectElement>,
+    userId: number
+  ) => {
     const newRoleId = parseInt(e.target.value);
     const token = localStorage.getItem("token");
     if (!token) {
@@ -142,23 +171,35 @@ const UserManagement = () => {
       return;
     }
     try {
-      console.log("[handleRoleChange] Actualizando rol del usuario con ID:", userId, "a", newRoleId);
-      const response = await fetch(`${constantUrlApiEndpoint}/user/${userId}/update`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          role_id: newRoleId,
-        }),
-      });
+      console.log(
+        "[handleRoleChange] Actualizando rol del usuario con ID:",
+        userId,
+        "a",
+        newRoleId
+      );
+      const response = await fetch(
+        `${constantUrlApiEndpoint}/user/${userId}/update`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            role_id: newRoleId,
+          }),
+        }
+      );
       if (!response.ok) {
         throw new Error("Error al actualizar el rol del usuario");
       }
       const data = await response.json();
       console.log("[handleRoleChange] Respuesta:", data);
-      Swal.fire("Actualizado", `Usuario actualizado al rol de ${getRoleText(newRoleId)}`, "success");
+      Swal.fire(
+        "Actualizado",
+        `Usuario actualizado al rol de ${getRoleText(newRoleId)}`,
+        "success"
+      );
       // Actualizamos la lista de usuarios
       fetchUsers();
     } catch (err: unknown) {
@@ -168,51 +209,62 @@ const UserManagement = () => {
   };
 
   const handleActiveChange = async (
-    e: ChangeEvent<HTMLInputElement>, 
+    e: ChangeEvent<HTMLInputElement>,
     userId: number,
     roleId: number // Agregamos el rol del usuario
-) => {
+  ) => {
     if (roleId === 1) {
-        Swal.fire("Acción no permitida", "No se puede modificar el estado de un administrador", "warning");
-        e.target.checked = !e.target.checked; // Revertir el cambio en el switch
-        return;
+      Swal.fire(
+        "Acción no permitida",
+        "No se puede modificar el estado de un administrador",
+        "warning"
+      );
+      e.target.checked = !e.target.checked; // Revertir el cambio en el switch
+      return;
     }
 
     const isActive = e.target.checked;
     const token = localStorage.getItem("token");
 
     if (!token) {
-        Swal.fire("Error", "No se encontró token", "error");
-        return;
+      Swal.fire("Error", "No se encontró token", "error");
+      return;
     }
 
     try {
-        console.log(`[handleActiveChange] Actualizando estado del usuario con ID: ${userId} a ${isActive ? "activo" : "inactivo"}`);
+      console.log(
+        `[handleActiveChange] Actualizando estado del usuario con ID: ${userId} a ${
+          isActive ? "activo" : "inactivo"
+        }`
+      );
 
-        const response = await fetch(`${constantUrlApiEndpoint}/user/${userId}/update-status`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ active: isActive }),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Error al actualizar el estado del usuario");
+      const response = await fetch(
+        `${constantUrlApiEndpoint}/user/${userId}/update-status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ active: isActive }),
         }
+      );
 
-        console.log("[handleActiveChange] Estado actualizado correctamente");
-        fetchUsers(); // Recargar la lista de usuarios para reflejar el cambio
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Error al actualizar el estado del usuario"
+        );
+      }
+
+      console.log("[handleActiveChange] Estado actualizado correctamente");
+      fetchUsers(); // Recargar la lista de usuarios para reflejar el cambio
     } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Error desconocido";
-        console.error("[handleActiveChange] Error:", message);
-        Swal.fire("Error", message, "error");
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      console.error("[handleActiveChange] Error:", message);
+      Swal.fire("Error", message, "error");
     }
-};
-
-
+  };
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
@@ -222,106 +274,180 @@ const UserManagement = () => {
         style={{
           marginLeft: sidebarWidth,
           width: "100%",
+          paddingLeft: CONTAINER_MARGIN_LEFT,
         }}
       >
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "100px" }}>
+        <div style={cardStyle}>
           <h2 className="fw-normal mb-4" style={{ color: "var(--text-color)" }}>
             Listado de Usuarios
           </h2>
-          <div className="input-group mb-3">
+          <div
+            className="input-group mb-3"
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+              borderRadius: "8px",
+              overflow: "hidden",
+              height: "70px", /* Hace la barra de búsqueda más gruesa */
+              position: "relative",
+            }}
+          >
             <input
               type="text"
-              placeholder="Buscar usuario..."
+              placeholder="Buscar..."
               className="form-control"
               value={searchQuery}
               onChange={handleSearch}
               style={{
+                flexGrow: 1,
                 fontFamily: "var(--font-family-base)",
                 fontSize: "var(--font-size-base)",
+                height: "100%", /* Asegura que ocupe todo el alto */
+                boxShadow: "none",
+                paddingLeft: "1rem",
+                borderRadius: "8px", /* Bordes redondeados */
               }}
             />
-            <CustomButton
-              type="button"
-              variant="save"
-              onClick={() => router.push("/user-create")}
+            <div
               style={{
-                fontFamily: "var(--font-family-base)",
-                fontSize: "var(--font-size-base)",
-                marginLeft: "1rem",
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
               }}
             >
-              Agregar Usuario
-            </CustomButton>
+              <CustomButton
+                type="button"
+                variant="save"
+                onClick={() => router.push("/user-create")}
+                style={{
+                  minWidth: "150px", /* Botón más notorio */
+                  height: "40px", /* Más pequeño que la barra */
+                  fontFamily: "var(--font-family-base)",
+                  fontSize: "var(--font-size-base)",
+                  borderRadius: "8px", /* Bordes redondeados */
+                }}
+              >
+                Agregar Usuario
+              </CustomButton>
+            </div>
           </div>
-          {/* Tabla con scroll interno */}
-          <div className="table-responsive" style={{ maxHeight: "600px", overflowY: "auto" }}>
-            <table className="custom-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Apellidos</th>
-                  <th>Email</th>
-                  <th>Teléfono</th>
-                  <th>País</th>
-                  <th>Ubigeo</th>
-                  <th>Rol</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.length > 0 ? (
-                  users.map((u: User) => (
-                    <tr key={u.id}>
-                      <td>{u.id}</td>
-                      <td>{u.name}</td>
-                      <td>{u.lastname}</td>
-                      <td>{u.email}</td>
-                      <td>{u.number_phone}</td>
-                      <td>{u.country}</td>
-                      <td>{u.ubigeo}</td>
-                      <td>
-                        <select
-                          value={u.role_id}
-                          onChange={(e) => handleRoleChange(e, u.id)}
-                          style={{
-                            padding: "0.3rem",
-                            border: "none",
-                            outline: "none",
-                            background: "transparent",
-                          }}
-                        >
-                          <option value="1">Administrador</option>
-                          <option value="2">Operador</option>
-                        </select>
-                      </td>
-                      <td className="text-center">
-                        <label className="switch">
-                          <input
-                            type="checkbox"
-                            checked={u.active}
-                            onChange={(e) => handleActiveChange(e, u.id, u.role_id)}
-                          />
-                          <span className="slider">
-                          </span>
-                        </label>
+        </div>
+          {/* Segunda Card: Tabla de Usuarios */}
+          <div style={{ ...cardStyle, marginTop: "20px" }}>
+            <div
+              className="table-responsive scrollable-table"
+              style={{ maxHeight: "500px", overflowY: "auto" }}
+            >
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellidos</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>País</th>
+                    <th>Ubigeo</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.length > 0 ? (
+                    users.map((u) => (
+                      <tr key={u.id}>
+                        <td>{u.id}</td>
+                        <td>{u.name}</td>
+                        <td>{u.lastname}</td>
+                        <td>{u.email}</td>
+                        <td>{u.number_phone}</td>
+                        <td>{u.country}</td>
+                        <td>{u.ubigeo}</td>
+                        <td>
+                          <select
+                            value={u.role_id}
+                            onChange={(e) => handleRoleChange(e, u.id)}
+                            style={{
+                              padding: "0.3rem",
+                              border: "none",
+                              outline: "none",
+                              background: "transparent",
+                            }}
+                          >
+                            <option value="1">Administrador</option>
+                            <option value="2">Operador</option>
+                          </select>
+                        </td>
+                        <td className="text-center">
+                          <label className="switch">
+                            <input
+                              type="checkbox"
+                              checked={u.active}
+                              onChange={(e) =>
+                                handleActiveChange(e, u.id, u.role_id)
+                              }
+                            />
+                            <span className="slider"></span>
+                          </label>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={9} className="text-center text-muted">
+                        No hay usuarios o no coinciden con la búsqueda.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={9} className="text-center text-muted">
-                      No hay usuarios o no coinciden con la búsqueda.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
+
       <style jsx>{`
+        .scrollable-table::-webkit-scrollbar {
+          width: 10px;
+        }
+        .scrollable-table::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .scrollable-table::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 10px;
+        }
+        .scrollable-table::-webkit-scrollbar-thumb:hover {
+          background: #a8a8a8;
+        }
+        .custom-table {
+          width: 100%;
+          border-collapse: collapse;
+          background-color: #fff;
+          border-radius: 8px;
+          overflow: hidden;
+          font-family: var(--font-family-base);
+        }
+        .custom-table th,
+        .custom-table td {
+          padding: 15px;
+          text-align: center; /* Centra tanto los encabezados como el contenido */
+        }
+        .custom-table th {
+          background-color: #fff;
+          color: #666;
+          font-weight: normal;
+          font-size: 0.9rem; /* Reduce el tamaño de los encabezados */
+        }
+        .custom-table tbody tr {
+          border-bottom: none; /* Elimina los bordes entre filas */
+        }
         .action-btn-group {
           display: flex;
           gap: 0.5rem;
@@ -332,29 +458,7 @@ const UserManagement = () => {
           justify-content: center;
           padding: 0 !important;
         }
-        .custom-table {
-          width: 100%;
-          border: 1px solid #ddd;
-          border-collapse: separate;
-          border-spacing: 0;
-          background-color: #fff !important;
-          border-radius: 8px;
-          overflow: hidden;
-          font-family: var(--font-family-base);
-        }
-        .custom-table th,
-        .custom-table td {
-          border: none;
-          padding: 8px;
-        }
-        .custom-table th {
-          background-color: #fff; /* Fondo blanco */
-          color: #666; /* Letras en gris claro */
-          font-weight: normal; /* Sin negrita */
-          border-bottom: 1px solid #ddd;
-          font-family: var(--font-family-base);
-        }
-        
+
         .switch {
           position: relative;
           display: inline-block;
@@ -412,7 +516,6 @@ const UserManagement = () => {
           transform: translateX(25px);
           /* box-shadow: inset -2px -2px 6px rgba(0, 82, 94, 0.5); */ /* Sombra más oscura */
         }
-
       `}</style>
     </div>
   );

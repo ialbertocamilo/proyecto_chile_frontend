@@ -148,6 +148,10 @@ interface FormData {
 const ProjectWorkflowPart1: React.FC = () => {
   useAuth();
   const router = useRouter();
+  // Leemos el modo de la URL (por ejemplo, mode=view)
+  const mode = router.query.mode as string;
+  const isViewMode = mode === "view";
+
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [step, setStep] = useState<number>(1);
@@ -171,9 +175,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     longitude: -70.6703553846175,
   });
 
-  const [, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
-    {}
-  );
+  const [, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
   useEffect(() => {
     const pColor =
@@ -183,7 +185,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
 
-  // Precargar datos en modo edición
+  // Precargar datos en modo edición o vista
   useEffect(() => {
     if (router.query.id) {
       const projectId = Array.isArray(router.query.id)
@@ -232,6 +234,8 @@ const ProjectWorkflowPart1: React.FC = () => {
     field: keyof FormData,
     value: string | number
   ) => {
+    // Solo permitimos cambios si NO estamos en modo vista
+    if (isViewMode) return;
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (value !== "" && value !== 0) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -239,6 +243,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   };
 
   const handleCountryChange = (country: Country) => {
+    if (isViewMode) return;
     handleFormInputChange("country", country);
     handleFormInputChange("department", "");
     handleFormInputChange("province", "");
@@ -251,6 +256,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   };
 
   const handleDepartmentChange = (department: string) => {
+    if (isViewMode) return;
     handleFormInputChange("department", department);
     handleFormInputChange("province", "");
     setErrors((prev) => ({ ...prev, department: "", province: "" }));
@@ -288,6 +294,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   };
 
   const handleGeolocation = () => {
+    if (isViewMode) return;
     if (!navigator.geolocation) {
       Swal.fire({
         title: "Error",
@@ -324,6 +331,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   };
 
   const handleStep1Action = async () => {
+    if (isViewMode) return;
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
@@ -344,6 +352,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   const goToStep2 = () => setStep(2);
 
   const handleCreateProject = async () => {
+    if (isViewMode) return;
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
@@ -437,6 +446,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   };
 
   const handleUpdateProject = async () => {
+    if (isViewMode) return;
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -591,6 +601,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           onChange={(e) =>
                             handleFormInputChange("name_project", e.target.value)
                           }
+                          disabled={isViewMode}
                         />
                       </div>
                       <div className="col-12 col-md-6">
@@ -602,6 +613,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           onChange={(e) =>
                             handleFormInputChange("owner_name", e.target.value)
                           }
+                          disabled={isViewMode}
                         />
                       </div>
                     </div>
@@ -615,6 +627,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           onChange={(e) =>
                             handleFormInputChange("owner_lastname", e.target.value)
                           }
+                          disabled={isViewMode}
                         />
                       </div>
                       <div className="col-12 col-md-6">
@@ -625,6 +638,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           onChange={(e) =>
                             handleCountryChange(e.target.value as Country)
                           }
+                          disabled={isViewMode}
                         >
                           <option value="">Seleccione un país</option>
                           {Object.keys(locationData).map((country) => (
@@ -642,7 +656,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           className="form-control"
                           value={formData.department}
                           onChange={(e) => handleDepartmentChange(e.target.value)}
-                          disabled={!formData.country}
+                          disabled={!formData.country || isViewMode}
                         >
                           <option value="">Seleccione un departamento</option>
                           {formData.country &&
@@ -663,7 +677,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           onChange={(e) =>
                             handleFormInputChange("province", e.target.value)
                           }
-                          disabled={!formData.department}
+                          disabled={!formData.department || isViewMode}
                         >
                           <option value="">Seleccione una provincia</option>
                           {formData.country &&
@@ -687,6 +701,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           onChange={(e) =>
                             handleFormInputChange("district", e.target.value)
                           }
+                          disabled={isViewMode}
                         />
                       </div>
                       <div className="col-12 col-md-6">
@@ -697,6 +712,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           onChange={(e) =>
                             handleFormInputChange("building_type", e.target.value)
                           }
+                          disabled={isViewMode}
                         >
                           <option value="">Seleccione un tipo de edificación</option>
                           <option value="Unifamiliar">Unifamiliar</option>
@@ -716,6 +732,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           onChange={(e) =>
                             handleFormInputChange("main_use_type", e.target.value)
                           }
+                          disabled={isViewMode}
                         >
                           <option value="">Seleccione un tipo de uso</option>
                           <option value="Viviendas">Viviendas</option>
@@ -735,6 +752,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                               parseInt(e.target.value) || 0
                             )
                           }
+                          disabled={isViewMode}
                         />
                       </div>
                     </div>
@@ -753,6 +771,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                               parseInt(e.target.value) || 0
                             )
                           }
+                          disabled={isViewMode}
                         />
                       </div>
                       <div className="col-12 col-md-6">
@@ -769,11 +788,17 @@ const ProjectWorkflowPart1: React.FC = () => {
                               parseFloat(e.target.value) || 0
                             )
                           }
+                          disabled={isViewMode}
                         />
                       </div>
                     </div>
                     <div className="d-flex justify-content-end align-items-center mt-4">
-                      {router.query.id ? (
+                      {isViewMode ? (
+                        // En modo vista, mostramos solo un botón de navegación para volver
+                        <CustomButton variant="backIcon" onClick={() => router.back()} style={{ height: "50px" }}>
+                          Atrás
+                        </CustomButton>
+                      ) : router.query.id ? (
                         <>
                           <CustomButton
                             variant="save"
@@ -829,6 +854,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                               value={locationSearch}
                               onChange={(e) => setLocationSearch(e.target.value)}
                               style={{ paddingLeft: "40px" }}
+                              disabled={isViewMode}
                             />
                             <span
                               className="material-icons"
@@ -845,14 +871,18 @@ const ProjectWorkflowPart1: React.FC = () => {
                           </div>
                         </div>
                         <div className="col-12 col-md-8 mb-3">
-                          <NoSSRInteractiveMap
-                            onLocationSelect={(latlng) => {
-                              handleFormInputChange("latitude", latlng.lat);
-                              handleFormInputChange("longitude", latlng.lng);
-                            }}
-                            initialLat={formData.latitude}
-                            initialLng={formData.longitude}
-                          />
+                          <div style={{ pointerEvents: isViewMode ? "none" : "auto" }}>
+                            <NoSSRInteractiveMap
+                              onLocationSelect={(latlng) => {
+                                if (!isViewMode) {
+                                  handleFormInputChange("latitude", latlng.lat);
+                                  handleFormInputChange("longitude", latlng.lng);
+                                }
+                              }}
+                              initialLat={formData.latitude}
+                              initialLng={formData.longitude}
+                            />
+                          </div>
                         </div>
                         <div className="col-12 col-md-4">
                           <label
@@ -882,26 +912,38 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <div className="d-flex">
-                          <CustomButton
-                            variant="backIcon"
-                            onClick={() => setStep(1)}
-                            style={{ height: "50px" }}
-                          >
-                            Atrás
-                          </CustomButton>
-                          <CustomButton
-                            variant="save"
-                            onClick={handleGeolocation}
-                            style={{ marginLeft: "10px", height: "50px", width: "200px" }}
-                          >
-                            <span className="material-icons" style={{ marginRight: "5px" }}>
-                              location_on
-                            </span>
-                            Ubicación actual
-                          </CustomButton>
+                          {isViewMode ? (
+                            <CustomButton variant="backIcon" onClick={() => router.back()} style={{ height: "50px" }}>
+                              Atrás
+                            </CustomButton>
+                          ) : (
+                            <CustomButton
+                              variant="backIcon"
+                              onClick={() => setStep(1)}
+                              style={{ height: "50px" }}
+                            >
+                              Atrás
+                            </CustomButton>
+                          )}
+                          {!isViewMode && (
+                            <CustomButton
+                              variant="save"
+                              onClick={handleGeolocation}
+                              style={{ marginLeft: "10px", height: "50px", width: "200px" }}
+                            >
+                              <span className="material-icons" style={{ marginRight: "5px" }}>
+                                location_on
+                              </span>
+                              Ubicación actual
+                            </CustomButton>
+                          )}
                         </div>
                         <div className="d-flex">
-                          {router.query.id ? (
+                          {isViewMode ? (
+                            <CustomButton variant="forwardIcon" onClick={() => router.back()} style={{ height: "50px" }}>
+                              Volver
+                            </CustomButton>
+                          ) : router.query.id ? (
                             <>
                               <CustomButton
                                 variant="save"

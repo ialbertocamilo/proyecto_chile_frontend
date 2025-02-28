@@ -10,7 +10,6 @@ import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 
-// Interfaces para tipar la información
 interface MaterialAttributes {
   name: string;
   conductivity: number;
@@ -28,13 +27,13 @@ interface Material {
 }
 
 interface Detail {
-  id_detail: number;
+  id: number;
   scantilon_location: string;
-  name_detail?: string;
-  // Puede venir con "id_material" o con "capas"
-  id_material?: number;
-  capas?: number;
-  layer_thickness?: number;
+  name_detail: string;
+  id_material: number;
+  layer_thickness: number;
+  created_status?: string;
+  is_deleted?: boolean;
 }
 
 interface ElementAttributesDoor {
@@ -63,22 +62,16 @@ interface Element {
 }
 
 const AdministrationPage: React.FC = () => {
-  // Validar la sesión
   useAuth();
   console.log("[AdministrationPage] Página cargada y sesión validada.");
 
   const [sidebarWidth, setSidebarWidth] = useState("300px");
-  // Steps: 3=Materiales, 4=Detalles constructivos, 5=Elementos operables
   const [step, setStep] = useState<number>(3);
-
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
   const [details, setDetails] = useState<Detail[]>([]);
   const [elementsList, setElementsList] = useState<Element[]>([]);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
 
-  // ----------------------------
-  // Estados para creación inline (sin modales)
-  // Step 3: Materiales
   const [showNewMaterialRow, setShowNewMaterialRow] = useState(false);
   const [newMaterialData, setNewMaterialData] = useState<MaterialAttributes>({
     name: "",
@@ -86,7 +79,7 @@ const AdministrationPage: React.FC = () => {
     specific_heat: 0,
     density: 0,
   });
-  // Step 5: Elementos operables
+
   const [showNewWindowRow, setShowNewWindowRow] = useState(false);
   const [newWindow, setNewWindow] = useState({
     name_element: "",
@@ -106,28 +99,42 @@ const AdministrationPage: React.FC = () => {
     fm: 0,
     porcentaje_vidrio: 0,
   });
-  // Para el select en creación de puerta, filtramos las ventanas disponibles
   const windowsList = elementsList.filter((el) => el.type === "window");
 
-  // Step 4: Detalles constructivos (se mantiene modal/in-line)
   const [showCreateDetailModal, setShowCreateDetailModal] = useState(false);
   const [newDetail, setNewDetail] = useState({
     scantilon_location: "",
     name_detail: "",
-    // Se usa id_material en la creación, pero el fetch podría traer "capas"
     id_material: 0,
     layer_thickness: 0,
   });
 
-  // Función para cerrar sesión y redirigir al login
+  const CARD_WIDTH = "100%";
+  const CARD_MARGIN_LEFT = "0px";
+  const CARD_MARGIN_RIGHT = "0px";
+  const CARD_MARGIN_TOP = "20px";
+  const CARD_MARGIN_BOTTOM = "20px";
+  const CARD_BORDER_RADIUS = "8px";
+  const CARD_BOX_SHADOW = "0 2px 10px rgba(0, 0, 0, 0.2)";
+  const CARD_BORDER_COLOR = "#ccc";
+
+  const cardStyle = {
+    width: CARD_WIDTH,
+    marginLeft: CARD_MARGIN_LEFT,
+    marginRight: CARD_MARGIN_RIGHT,
+    marginTop: CARD_MARGIN_TOP,
+    marginBottom: CARD_MARGIN_BOTTOM,
+    borderRadius: CARD_BORDER_RADIUS,
+    boxShadow: CARD_BOX_SHADOW,
+    border: `1px solid ${CARD_BORDER_COLOR}`,
+    overflow: "hidden",
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     window.location.href = "/login";
   };
 
-  // ----------------------------
-  // Funciones para obtener datos (GET)
-  // ----------------------------
   const fetchMaterialsList = useCallback(async (page: number): Promise<void> => {
     try {
       const token = localStorage.getItem("token");
@@ -136,7 +143,6 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
         return;
       }
-      // Se actualiza el per_page a 500 según el endpoint
       const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=500`;
       const headers = { Authorization: `Bearer ${token}` };
       const response: AxiosResponse<{ constants: Material[] }> = await axios.get(url, { headers });
@@ -192,9 +198,6 @@ const AdministrationPage: React.FC = () => {
     }
   }, []);
 
-  // ----------------------------
-  // Funciones de creación con validaciones
-  // Step 3: Crear Material inline
   const handleCreateMaterial = async () => {
     if (
       newMaterialData.name.trim() === "" ||
@@ -239,7 +242,6 @@ const AdministrationPage: React.FC = () => {
     }
   };
 
-  // Step 5: Crear Elemento Operable inline
   const handleCreateElement = async () => {
     if (tabElementosOperables === "ventanas") {
       if (
@@ -323,7 +325,6 @@ const AdministrationPage: React.FC = () => {
     }
   };
 
-  // Step 4: Crear Detalle Constructivo (creación inline con modal)
   const handleCreateDetail = async () => {
     if (
       newDetail.scantilon_location.trim() === "" ||
@@ -341,19 +342,21 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
         return;
       }
-      const url = `${constantUrlApiEndpoint}/details/create`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const payload = {
         scantilon_location: newDetail.scantilon_location,
         name_detail: newDetail.name_detail,
         id_material: newDetail.id_material,
         layer_thickness: newDetail.layer_thickness,
       };
-      await axios.post(url, payload, { headers });
-      Swal.fire("Detalle creado", "El detalle fue creado correctamente", "success");
-      setShowCreateDetailModal(false);
-      setNewDetail({ scantilon_location: "", name_detail: "", id_material: 0, layer_thickness: 0 });
-      await fetchDetails();
+      const url = `${constantUrlApiEndpoint}/details/create`;
+      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const response = await axios.post(url, payload, { headers });
+      if (response.status === 200) {
+        Swal.fire("Detalle creado", "El detalle fue creado correctamente", "success");
+        setShowCreateDetailModal(false);
+        setNewDetail({ scantilon_location: "", name_detail: "", id_material: 0, layer_thickness: 0 });
+        await fetchDetails();
+      }
     } catch (error: unknown) {
       console.error("[handleCreateDetail] Error:", error);
       Swal.fire("Error", "No se pudo crear el detalle", "error").then(() => {
@@ -362,9 +365,6 @@ const AdministrationPage: React.FC = () => {
     }
   };
 
-  // ----------------------------
-  // Efectos para cargar datos según step
-  // ----------------------------
   useEffect(() => {
     if (step === 3) {
       fetchMaterialsList(1);
@@ -383,9 +383,6 @@ const AdministrationPage: React.FC = () => {
     }
   }, [step, fetchElements]);
 
-  // ----------------------------
-  // Sidebar
-  // ----------------------------
   const internalSidebarWidth = 380;
   const sidebarItemHeight = 100;
   const sidebarItemBorderSize = 1;
@@ -444,11 +441,12 @@ const AdministrationPage: React.FC = () => {
           fontFamily: "var(--font-family-base)",
         }}
       >
-        <div className="mb-3">
-          <h1 className="fw-normal">Administrador de Parámetros</h1>
+        <div className="card" style={cardStyle}>
+          <div className="card-body">
+            <h1 className="fw-normal">Administrador de Parámetros</h1>
+          </div>
         </div>
-        {/* Contenedor con minHeight fijo */}
-        <div className="card shadow w-100" style={{ overflow: "hidden", minHeight: "600px" }}>
+        <div className="card" style={{ ...cardStyle, minHeight: "600px" }}>
           <div className="card-body p-0">
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
               <div
@@ -466,7 +464,6 @@ const AdministrationPage: React.FC = () => {
                 </ul>
               </div>
               <div style={{ flex: 1, padding: "20px" }}>
-                {/* Step 3: Materiales */}
                 {step === 3 && (
                   <>
                     <div className="d-flex justify-content-end mb-3">
@@ -482,7 +479,6 @@ const AdministrationPage: React.FC = () => {
                             <th>Conductividad (W/m2K)</th>
                             <th>Calor específico (J/kgK)</th>
                             <th>Densidad (kg/m3)</th>
-                            <th>Acción</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -536,11 +532,6 @@ const AdministrationPage: React.FC = () => {
                                   }
                                 />
                               </td>
-                              <td>
-                                <CustomButton variant="save" onClick={handleCreateMaterial}>
-                                  <span className="material-icons">add</span>
-                                </CustomButton>
-                              </td>
                             </tr>
                           )}
                           {materialsList.map((mat, idx) => (
@@ -549,26 +540,19 @@ const AdministrationPage: React.FC = () => {
                               <td>{mat.atributs.conductivity}</td>
                               <td>{mat.atributs.specific_heat}</td>
                               <td>{mat.atributs.density}</td>
-                              <td>
-                                <span className="material-icons" style={{ color: "#ccc" }}>
-                                  visibility
-                                </span>
-                              </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="save" onClick={() => Swal.fire("Datos guardados", "Materiales guardados ", "success")}>
+                      <CustomButton variant="save" onClick={handleCreateMaterial}>
                         <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos
                       </CustomButton>
                     </div>
                   </>
                 )}
-
-                {/* Step 4: Detalles constructivos */}
                 {step === 4 && (
                   <>
                     <div className="d-flex justify-content-end mb-3">
@@ -582,9 +566,8 @@ const AdministrationPage: React.FC = () => {
                           <tr>
                             <th>Ubicación Detalle</th>
                             <th>Nombre Detalle</th>
-                            <th>Capas / Material</th>
+                            <th>Material</th>
                             <th>Espesor capa (cm)</th>
-                            <th>Acción</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -614,7 +597,7 @@ const AdministrationPage: React.FC = () => {
                               <td>
                                 <select
                                   className="form-control"
-                                  value={newDetail.id_material }
+                                  value={newDetail.id_material}
                                   onChange={(e) =>
                                     setNewDetail((prev) => ({
                                       ...prev,
@@ -639,42 +622,29 @@ const AdministrationPage: React.FC = () => {
                                   onChange={(e) => setNewDetail((prev) => ({ ...prev, layer_thickness: parseFloat(e.target.value) }))}
                                 />
                               </td>
-                              <td>
-                                <CustomButton variant="save" onClick={handleCreateDetail}>
-                                  <span className="material-icons">add</span>
-                                </CustomButton>
-                              </td>
                             </tr>
                           )}
                           {details.map((det) => (
-                            <tr key={det.id_detail}>
+                            <tr key={det.id}>
                               <td>{det.scantilon_location}</td>
                               <td>{det.name_detail}</td>
-                              <td>
-                                {materialsList.find(
-                                  (mat) => mat.id === (det.id_material ?? det.capas)
-                                )?.atributs.name || "N/A"}
-                              </td>
+                              <td>{materialsList.find((mat) => mat.id === det.id_material)?.atributs.name || "N/A"}</td>
                               <td>{det.layer_thickness}</td>
-                              <td></td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="save" onClick={() => Swal.fire("Datos guardados", "Detalles guardados", "success")}>
+                      <CustomButton variant="save" onClick={handleCreateDetail}>
                         <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos
                       </CustomButton>
                     </div>
                   </>
                 )}
-
-                {/* Step 5: Elementos operables */}
                 {step === 5 && (
                   <>
-                    {/* Contenedor para pestañas y botón "+ Nuevo" alineados */}
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <ul
                         className="nav"
@@ -731,7 +701,6 @@ const AdministrationPage: React.FC = () => {
                               <th>Tipo Marco</th>
                               <th>U Marco [W/m2K]</th>
                               <th>FM [%]</th>
-                              <th>Acción</th>
                             </tr>
                           ) : (
                             <tr>
@@ -741,7 +710,6 @@ const AdministrationPage: React.FC = () => {
                               <th>% Vidrio</th>
                               <th>U Marco [W/m2K]</th>
                               <th>FM [%]</th>
-                              <th>Acción</th>
                             </tr>
                           )}
                         </thead>
@@ -823,11 +791,6 @@ const AdministrationPage: React.FC = () => {
                                   onChange={(e) => setNewWindow((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))}
                                 />
                               </td>
-                              <td>
-                                <CustomButton variant="save" onClick={handleCreateElement}>
-                                  <span className="material-icons">add</span>
-                                </CustomButton>
-                              </td>
                             </tr>
                           )}
                           {tabElementosOperables === "puertas" && showNewDoorRow && (
@@ -891,11 +854,6 @@ const AdministrationPage: React.FC = () => {
                                   onChange={(e) => setNewDoor((prev) => ({ ...prev, fm: parseFloat(e.target.value) }))}
                                 />
                               </td>
-                              <td>
-                                <CustomButton variant="save" onClick={handleCreateElement}>
-                                  <span className="material-icons">add</span>
-                                </CustomButton>
-                              </td>
                             </tr>
                           )}
                           {elementsList
@@ -911,7 +869,6 @@ const AdministrationPage: React.FC = () => {
                                     <td>{(el.atributs as ElementAttributesWindow).frame_type}</td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
-                                    <td></td>
                                   </tr>
                                 );
                               } else {
@@ -927,7 +884,6 @@ const AdministrationPage: React.FC = () => {
                                     </td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
-                                    <td></td>
                                   </tr>
                                 );
                               }
@@ -936,7 +892,7 @@ const AdministrationPage: React.FC = () => {
                       </table>
                     </div>
                     <div className="mt-4 text-end">
-                      <CustomButton variant="save" onClick={() => Swal.fire("Datos guardados", "Elementos guardados ", "success")}>
+                      <CustomButton variant="save" onClick={handleCreateElement}>
                         <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
                         Grabar datos
                       </CustomButton>
@@ -951,7 +907,6 @@ const AdministrationPage: React.FC = () => {
 
       <style jsx>{`
         .card {
-          border: 1px solid #ccc;
         }
         .modal-overlay {
           position: fixed;

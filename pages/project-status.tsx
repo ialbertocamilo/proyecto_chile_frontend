@@ -7,6 +7,7 @@ import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
+import { useRouter } from "next/router";
 
 const modalWidth = "90%";
 const modalHeight = "auto";
@@ -64,6 +65,7 @@ export interface Project {
 
 const ProjectListStatusEditPage = () => {
   useAuth();
+  const router = useRouter();
   console.log("[ProjectListStatusEditPage] Página cargada y sesión validada.");
 
   const [sidebarWidth, setSidebarWidth] = useState("300px");
@@ -126,13 +128,6 @@ const ProjectListStatusEditPage = () => {
     setFilteredProjects(filtered);
   };
 
-  const openStatusModal = (project: Project) => {
-    console.log("[openStatusModal] Abriendo modal para proyecto:", project.id);
-    setEditStatusProjectId(project.id);
-    setCurrentStatus(project.status || "registrado");
-    setShowStatusModal(true);
-    setError(null);
-  };
 
   const closeStatusModal = () => {
     console.log("[closeStatusModal] Cerrando modal de edición de estado.");
@@ -151,7 +146,12 @@ const ProjectListStatusEditPage = () => {
     try {
       const url = `${constantUrlApiEndpoint}/project/${editStatusProjectId}/status`;
       const data = { status: currentStatus };
-      console.log("[handleStatusUpdate] Actualizando estado para el proyecto:", editStatusProjectId, "con data:", data);
+      console.log(
+        "[handleStatusUpdate] Actualizando estado para el proyecto:",
+        editStatusProjectId,
+        "con data:",
+        data
+      );
       await axios.put(url, data, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -178,10 +178,19 @@ const ProjectListStatusEditPage = () => {
     }
   };
 
+  // Función para redirigir al modo vista del workflow del proyecto
+  const handleViewProject = (project: Project) => {
+    // Redirige a la página de workflow en modo "view" con el id del proyecto
+    router.push(`/project-workflow-part1?mode=view&id=${project.id}`);
+  };
+
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
-      <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
+      <div
+        className="d-flex flex-column flex-grow-1"
+        style={{ marginLeft: sidebarWidth, width: "100%" }}
+      >
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "100px" }}>
           {/* Card para el título */}
@@ -193,7 +202,7 @@ const ProjectListStatusEditPage = () => {
                   color: "#4B5563",
                   margin: 0,
                   fontFamily: "var(--font-family-base)",
-                  fontWeight: "normal"
+                  fontWeight: "normal",
                 }}
               >
                 Administrar proyectos
@@ -246,13 +255,22 @@ const ProjectListStatusEditPage = () => {
                           <td>{project.owner_name || "No disponible"}</td>
                           <td>{project.building_type || "N/D"}</td>
                           <td>{project.main_use_type || "N/D"}</td>
-                          <td>{project.number_levels !== undefined ? project.number_levels : "N/D"}</td>
-                          <td>{project.number_homes_per_level !== undefined ? project.number_homes_per_level : "N/D"}</td>
-                          <td>{project.built_surface !== undefined ? project.built_surface : "N/D"}</td>
+                          <td>
+                            {project.number_levels !== undefined ? project.number_levels : "N/D"}
+                          </td>
+                          <td>
+                            {project.number_homes_per_level !== undefined
+                              ? project.number_homes_per_level
+                              : "N/D"}
+                          </td>
+                          <td>
+                            {project.built_surface !== undefined ? project.built_surface : "N/D"}
+                          </td>
                           <td className="d-flex justify-content-center">
+                            {/* Botón para activar el modo vista (redirige a project-workflow-part1 con mode=view) */}
                             <CustomButton
                               variant="viewIcon"
-                              onClick={() => openStatusModal(project)}
+                              onClick={() => handleViewProject(project)}
                               style={{
                                 backgroundColor: "var(--primary-color)",
                                 border: `2px solid var(--primary-color)`,
@@ -411,19 +429,19 @@ const ProjectListStatusEditPage = () => {
             overflow-y: auto;
           }
           .scrollable-table::-webkit-scrollbar {
-              width: 10px;
-            }
-            .scrollable-table::-webkit-scrollbar-track {
-              background: #f1f1f1;
-              border-radius: 10px;
-            }
-            .scrollable-table::-webkit-scrollbar-thumb {
-              background: #c1c1c1;
-              border-radius: 10px;
-            }
-            .scrollable-table::-webkit-scrollbar-thumb:hover {
-              background: #a8a8a8;
-            }  
+            width: 10px;
+          }
+          .scrollable-table::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+          }
+          .scrollable-table::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+          }
+          .scrollable-table::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+          }
         `}</style>
       </div>
     </div>

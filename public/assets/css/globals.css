@@ -6,8 +6,8 @@
   --font-size-base: 16px;
   --font-size-heading: 2em;
   --primary-color: #3ca7b7;      /* Color principal, usado en títulos y botones */
-  --secondary-color: #66696b;    /* Color secundario, por ejemplo para hover en botones */
-  --background-color: #fffafa;  /* Color de fondo */
+  --secondary-color: #bbc4cb;    /* Color secundario, por ejemplo para hover en botones */
+  --background-color: #FFF;  /* Color de fondo */
   --text-color: #333;
   --muted-text: #d3d3d3;
 

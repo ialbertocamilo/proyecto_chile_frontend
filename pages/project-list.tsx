@@ -9,10 +9,7 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
 
-const countryOptions = ["Perú", "Chile", "Argentina", "Brasil"];
-const departmentOptions = ["Lima", "Arequipa", "Cusco"];
-const provinceOptions = ["Provincia 1", "Provincia 2", "Provincia 3"];
-const districtOptions = ["Distrito 1", "Distrito 2", "Distrito 3"];
+// Se han eliminado las variables no utilizadas: countryOptions, departmentOptions, provinceOptions, districtOptions
 
 interface Divisions {
   department?: string;

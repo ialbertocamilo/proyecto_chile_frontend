@@ -2,31 +2,30 @@ import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
 import axios from "axios";
-import CustomButton from "../src/components/common/CustomButton";
-import "../public/assets/css/globals.css";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
-import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
+
+import CustomButton from "../src/components/common/CustomButton";
+import Navbar from "../src/components/layout/Navbar";
+import TopBar from "../src/components/layout/TopBar";
 import GooIcons from "../public/GoogleIcons";
-import locationData from "../public/locationData"; // Información de ubicación
+import locationData from "../public/locationData";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import useAuth from "../src/hooks/useAuth";
 
 // ---------------------------
-// Constantes para estilos de las cards
+// Constantes de estilos para las cards
 // ---------------------------
 const CARD_WIDTH = "100%";
 const CARD_MARGIN_LEFT = "0px";
 const CARD_MARGIN_RIGHT = "0px";
-export const CARD_MARGIN_TOP = "120px"; // Margen superior para la card de títulos
+export const CARD_MARGIN_TOP = "120px";
 const CARD_MARGIN_BOTTOM = "20px";
 const CARD_BORDER_RADIUS = "16px";
 const CARD_BOX_SHADOW = "0 4px 8px rgba(0, 0, 0, 0.1)";
 const CARD_BORDER_COLOR = "#ccc";
 
-// Estilo base que se extiende para cada card
 const baseCardStyle: React.CSSProperties = {
   width: CARD_WIDTH,
   marginLeft: CARD_MARGIN_LEFT,
@@ -37,28 +36,23 @@ const baseCardStyle: React.CSSProperties = {
   border: `1px solid ${CARD_BORDER_COLOR}`,
 };
 
-// Estilo específico para la card de los títulos (alineado a la izquierda)
 const titleCardStyle: React.CSSProperties = {
   ...baseCardStyle,
-  height: "60px",           // Altura fija para que sea "más chata"
-  padding: "0 20px",        // Padding horizontal sin vertical
+  height: "80px",
+  padding: "10px 20px",
   marginTop: CARD_MARGIN_TOP,
-  display: "flex",          // Flex para centrar verticalmente
-  alignItems: "center",
-  justifyContent: "flex-start", // Alinea el contenido a la izquierda
-  textAlign: "left",        // Alinea el texto a la izquierda
+  textAlign: "left",
 };
 
-// Estilo para la card de formularios y steps
 const formCardStyle: React.CSSProperties = {
   ...baseCardStyle,
-  padding: "0px",      
-  marginTop: "10px",    
-  minHeight: "400px",   
+  padding: "0px",
+  marginTop: "10px",
+  minHeight: "400px",
   width: "100%",
 };
 
-// Componente para el Sidebar interno
+// Componente SidebarItem
 interface SidebarItemProps {
   stepNumber: number;
   iconName: string;
@@ -95,19 +89,30 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           marginBottom: "16px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "flex-start",
           paddingLeft: "50px",
           color: isSelected ? activeColor : inactiveColor,
           fontFamily: "var(--font-family-base)",
           fontWeight: "normal",
         }}
       >
-        <span style={{ marginRight: "15px", fontSize: "2.5rem", lineHeight: "1" }}>
+        <span
+          style={{
+            marginRight: "15px",
+            fontSize: "2.5rem",
+            lineHeight: "1",
+          }}
+        >
           <span className="material-icons" style={{ fontSize: "inherit" }}>
             {iconName}
           </span>
         </span>
-        <span style={{ fontWeight: "normal", whiteSpace: "normal", width: "180px" }}>
+        <span
+          style={{
+            fontWeight: "normal",
+            whiteSpace: "normal",
+            width: "180px",
+          }}
+        >
           {title}
         </span>
       </div>
@@ -120,7 +125,7 @@ const NoSSRInteractiveMap = dynamic(
   { ssr: false }
 );
 
-// Permitimos "" | "Perú" | "Chile" en country
+// Tipado para FormData y Country
 type Country = "" | "Perú" | "Chile";
 
 interface FormData {
@@ -143,20 +148,11 @@ interface FormData {
 const ProjectWorkflowPart1: React.FC = () => {
   useAuth();
   const router = useRouter();
-
-  // Leer color primario desde CSS
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
-  useEffect(() => {
-    const pColor =
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("--primary-color")
-        .trim() || "#3ca7b7";
-    setPrimaryColor(pColor);
-  }, []);
-
   const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [step, setStep] = useState<number>(1);
   const [, setCreatedProjectId] = useState<number | null>(null);
+  const [locationSearch, setLocationSearch] = useState("");
 
   const [formData, setFormData] = useState<FormData>({
     name_project: "",
@@ -175,27 +171,32 @@ const ProjectWorkflowPart1: React.FC = () => {
     longitude: -70.6703553846175,
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-  const [locationSearch, setLocationSearch] = useState("");
+  const [, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
+    {}
+  );
 
-  // Si existe un id en la query, se asume modo edición y se pre-cargan los datos
+  useEffect(() => {
+    const pColor =
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--primary-color")
+        .trim() || "#3ca7b7";
+    setPrimaryColor(pColor);
+  }, []);
+
+  // Precargar datos en modo edición
   useEffect(() => {
     if (router.query.id) {
       const projectId = Array.isArray(router.query.id)
         ? router.query.id[0]
         : router.query.id;
-      console.log("Project ID recibido:", projectId);
       const fetchProjectData = async () => {
         try {
           const token = localStorage.getItem("token");
           if (!token) return;
-          const response = await axios.get(
+          const { data: projectData } = await axios.get(
             `${constantUrlApiEndpoint}/projects/${projectId}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
+            { headers: { Authorization: `Bearer ${token}` } }
           );
-          const projectData = response.data;
           setFormData({
             name_project: projectData.name_project || "",
             owner_name: projectData.owner_name || "",
@@ -227,10 +228,13 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   }, [router.query.id, primaryColor]);
 
-  const handleFormInputChange = (field: keyof FormData, value: string | number) => {
+  const handleFormInputChange = (
+    field: keyof FormData,
+    value: string | number
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (value !== "" && value !== 0) {
-      setErrors((prevErrors) => ({ ...prevErrors, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -238,7 +242,12 @@ const ProjectWorkflowPart1: React.FC = () => {
     handleFormInputChange("country", country);
     handleFormInputChange("department", "");
     handleFormInputChange("province", "");
-    setErrors((prev) => ({ ...prev, country: "", department: "", province: "" }));
+    setErrors((prev) => ({
+      ...prev,
+      country: "",
+      department: "",
+      province: "",
+    }));
   };
 
   const handleDepartmentChange = (department: string) => {
@@ -255,7 +264,8 @@ const ProjectWorkflowPart1: React.FC = () => {
       newErrors.owner_name = "El nombre del propietario es obligatorio";
     if (!formData.owner_lastname.trim())
       newErrors.owner_lastname = "El apellido del propietario es obligatorio";
-    if (!formData.country.trim()) newErrors.country = "El país es obligatorio";
+    if (!formData.country.trim())
+      newErrors.country = "El país es obligatorio";
     if (!formData.department.trim())
       newErrors.department = "El departamento es obligatorio";
     if (!formData.province.trim())
@@ -272,11 +282,47 @@ const ProjectWorkflowPart1: React.FC = () => {
       newErrors.number_homes_per_level =
         "El número de viviendas/oficinas debe ser mayor a 0";
     if (formData.built_surface <= 0)
-      newErrors.built_surface = "La superficie construida debe ser mayor a 0";
+      newErrors.built_surface =
+        "La superficie construida debe ser mayor a 0";
     return newErrors;
   };
 
-  // Función para el modo edición en el step 1
+  const handleGeolocation = () => {
+    if (!navigator.geolocation) {
+      Swal.fire({
+        title: "Error",
+        text: "Geolocalización no soportada.",
+        icon: "error",
+        confirmButtonText: "Entendido",
+        confirmButtonColor: primaryColor,
+      });
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        handleFormInputChange("latitude", latitude);
+        handleFormInputChange("longitude", longitude);
+        Swal.fire({
+          title: "Ubicación obtenida",
+          text: `Lat: ${latitude}, Lon: ${longitude}`,
+          icon: "success",
+          confirmButtonText: "OK",
+          confirmButtonColor: primaryColor,
+        });
+      },
+      () => {
+        Swal.fire({
+          title: "Error",
+          text: "No se pudo obtener la ubicación.",
+          icon: "error",
+          confirmButtonText: "Entendido",
+          confirmButtonColor: primaryColor,
+        });
+      }
+    );
+  };
+
   const handleStep1Action = async () => {
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
@@ -295,12 +341,8 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
-  // Botón para pasar al Step 2 (modo edición)
-  const goToStep2 = () => {
-    setStep(2);
-  };
+  const goToStep2 = () => setStep(2);
 
-  // Función para crear proyecto (modo creación)
   const handleCreateProject = async () => {
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
@@ -326,6 +368,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         });
         return;
       }
+
       const requestBody = {
         country: formData.country || "Peru",
         divisions: {
@@ -347,15 +390,19 @@ const ProjectWorkflowPart1: React.FC = () => {
 
       console.log("RequestBody (creación):", requestBody);
 
-      const url = `${constantUrlApiEndpoint}/projects/create`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-      const response = await axios.post(url, requestBody, { headers });
-      const { project_id, message } = response.data;
-      setCreatedProjectId(project_id);
+      const { data } = await axios.post(
+        `${constantUrlApiEndpoint}/projects/create`,
+        requestBody,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
+      const { project_id, message } = data;
+      setCreatedProjectId(project_id);
       localStorage.setItem("project_id", project_id.toString());
       localStorage.setItem("project_department", formData.department);
 
@@ -389,7 +436,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
-  // Función para actualizar proyecto (modo edición)
   const handleUpdateProject = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -426,15 +472,21 @@ const ProjectWorkflowPart1: React.FC = () => {
       };
 
       console.log("RequestBody (actualización):", requestBody);
-      const url = `${constantUrlApiEndpoint}/my-projects/${projectId}/update`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-      const response = await axios.put(url, requestBody, { headers });
+
+      const { data } = await axios.put(
+        `${constantUrlApiEndpoint}/my-projects/${projectId}/update`,
+        requestBody,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       Swal.fire({
         title: "Proyecto actualizado",
-        text: response.data.message || "Proyecto actualizado correctamente.",
+        text: data.message || "Proyecto actualizado correctamente.",
         icon: "success",
         confirmButtonText: "Aceptar",
         confirmButtonColor: primaryColor,
@@ -460,15 +512,14 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
-  // Renderiza el encabezado principal
   const renderMainHeader = () => (
     <h1
       style={{
-        fontSize: "24px",   // Tamaño de la fuente
+        fontSize: "24px",
         fontWeight: "normal",
         fontFamily: "var(--font-family-base)",
         margin: 0,
-        textAlign: "left",  // Alinea el texto a la izquierda
+        textAlign: "left",
       }}
     >
       {router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"}
@@ -492,12 +543,11 @@ const ProjectWorkflowPart1: React.FC = () => {
           fontWeight: "normal",
         }}
       >
-        {/* Card para el Título */}
         <div className="card" style={titleCardStyle}>
-          <div className="card-body">{renderMainHeader()}</div>
+          <div className="card-body" style={{ display: "flex", alignItems: "center" }}>
+            {renderMainHeader()}
+          </div>
         </div>
-
-        {/* Card para el contenedor de formularios y steps */}
         <div className="card" style={formCardStyle}>
           <div className="card-body" style={{ padding: "0" }}>
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
@@ -722,30 +772,28 @@ const ProjectWorkflowPart1: React.FC = () => {
                         />
                       </div>
                     </div>
-                    {/* Botones en Step 1 */}
-                    {router.query.id ? (
-                      <div className="d-flex justify-content-end align-items-center mt-4">
-                        <CustomButton
-                          variant="save"
-                          onClick={handleStep1Action}
-                          style={{ height: "50px" }}
-                        >
-                          <span className="material-icons" style={{ marginRight: "5px" }}>
-                            save_as
-                          </span>
-                          Actualizar Datos
-                        </CustomButton>
-                        <CustomButton
-                          variant="forwardIcon"
-                          onClick={goToStep2}
-                          style={{ marginLeft: "10px", height: "50px" }}
-                        >
-                          Siguiente
-                        </CustomButton>
-                      </div>
-                    ) : (
-                      <div className="d-flex justify-content-end align-items-center mt-4">
-                        {/* En modo creación se elimina el botón "Ubicación actual" en Step 1 */}
+                    <div className="d-flex justify-content-end align-items-center mt-4">
+                      {router.query.id ? (
+                        <>
+                          <CustomButton
+                            variant="save"
+                            onClick={handleStep1Action}
+                            style={{ height: "50px" }}
+                          >
+                            <span className="material-icons" style={{ marginRight: "5px" }}>
+                              save_as
+                            </span>
+                            Actualizar Datos
+                          </CustomButton>
+                          <CustomButton
+                            variant="forwardIcon"
+                            onClick={goToStep2}
+                            style={{ marginLeft: "10px", height: "50px" }}
+                          >
+                            Siguiente
+                          </CustomButton>
+                        </>
+                      ) : (
                         <CustomButton
                           variant="save"
                           onClick={handleCreateProject}
@@ -756,8 +804,8 @@ const ProjectWorkflowPart1: React.FC = () => {
                           </span>
                           Grabar Datos
                         </CustomButton>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </>
                 )}
 
@@ -832,148 +880,68 @@ const ProjectWorkflowPart1: React.FC = () => {
                           />
                         </div>
                       </div>
-                      {/* Botones en Step 2: se incluye el botón "Ubicación actual" */}
-                      {router.query.id ? (
-                        <div className="d-flex justify-content-between align-items-center mt-4">
-                          <div className="d-flex">
-                            <CustomButton
-                              variant="backIcon"
-                              onClick={() => setStep(1)}
-                              style={{ height: "50px" }}
-                            >
-                              Atrás
-                            </CustomButton>
-                            <CustomButton
-                              variant="save"
-                              onClick={() => {
-                                if (navigator.geolocation) {
-                                  navigator.geolocation.getCurrentPosition(
-                                    (position) => {
-                                      const { latitude, longitude } = position.coords;
-                                      handleFormInputChange("latitude", latitude);
-                                      handleFormInputChange("longitude", longitude);
-                                      Swal.fire({
-                                        title: "Ubicación obtenida",
-                                        text: `Lat: ${latitude}, Lon: ${longitude}`,
-                                        icon: "success",
-                                        confirmButtonText: "OK",
-                                        confirmButtonColor: primaryColor,
-                                      });
-                                    },
-                                    () => {
-                                      Swal.fire({
-                                        title: "Error",
-                                        text: "No se pudo obtener la ubicación.",
-                                        icon: "error",
-                                        confirmButtonText: "Entendido",
-                                        confirmButtonColor: primaryColor,
-                                      });
-                                    }
-                                  );
-                                } else {
-                                  Swal.fire({
-                                    title: "Error",
-                                    text: "Geolocalización no soportada.",
-                                    icon: "error",
-                                    confirmButtonText: "Entendido",
-                                    confirmButtonColor: primaryColor,
-                                  });
-                                }
-                              }}
-                              style={{ marginLeft: "10px", height: "50px", width: "200px" }}
-                            >
-                              <span className="material-icons" style={{ marginRight: "5px" }}>
-                                location_on
-                              </span>
-                              Ubicación actual
-                            </CustomButton>
-                          </div>
-                          <div className="d-flex">
-                            <CustomButton
-                              variant="save"
-                              onClick={handleUpdateProject}
-                              style={{ height: "50px" }}
-                            >
-                              <span className="material-icons" style={{ marginRight: "5px" }}>
-                                save_as
-                              </span>
-                              Actualizar Datos
-                            </CustomButton>
-                            <CustomButton
-                              variant="forwardIcon"
-                              onClick={() =>
-                                router.push(
-                                  `/project-workflow-part2?project_id=${
-                                    router.query.id || localStorage.getItem("project_id")
-                                  }`
-                                )
-                              }
-                              style={{ marginLeft: "10px", height: "50px" }}
-                            >
-                              Siguiente
-                            </CustomButton>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="d-flex justify-content-between align-items-center mt-4">
-                          <div className="d-flex">
-                            <CustomButton
-                              variant="save"
-                              onClick={() => {
-                                if (navigator.geolocation) {
-                                  navigator.geolocation.getCurrentPosition(
-                                    (position) => {
-                                      const { latitude, longitude } = position.coords;
-                                      handleFormInputChange("latitude", latitude);
-                                      handleFormInputChange("longitude", longitude);
-                                      Swal.fire({
-                                        title: "Ubicación obtenida",
-                                        text: `Lat: ${latitude}, Lon: ${longitude}`,
-                                        icon: "success",
-                                        confirmButtonText: "OK",
-                                        confirmButtonColor: primaryColor,
-                                      });
-                                    },
-                                    () => {
-                                      Swal.fire({
-                                        title: "Error",
-                                        text: "No se pudo obtener la ubicación.",
-                                        icon: "error",
-                                        confirmButtonText: "Entendido",
-                                        confirmButtonColor: primaryColor,
-                                      });
-                                    }
-                                  );
-                                } else {
-                                  Swal.fire({
-                                    title: "Error",
-                                    text: "Geolocalización no soportada.",
-                                    icon: "error",
-                                    confirmButtonText: "Entendido",
-                                    confirmButtonColor: primaryColor,
-                                  });
-                                }
-                              }}
-                              style={{ marginLeft: "10px", height: "50px", width: "200px" }}
-                            >
-                              <span className="material-icons" style={{ marginRight: "5px" }}>
-                                location_on
-                              </span>
-                              Ubicación actual
-                            </CustomButton>
-                          </div>
+                      <div className="d-flex justify-content-between align-items-center mt-4">
+                        <div className="d-flex">
                           <CustomButton
-                            variant="save"
-                            onClick={handleCreateProject}
+                            variant="backIcon"
+                            onClick={() => setStep(1)}
                             style={{ height: "50px" }}
                           >
+                            Atrás
+                          </CustomButton>
+                          <CustomButton
+                            variant="save"
+                            onClick={handleGeolocation}
+                            style={{ marginLeft: "10px", height: "50px", width: "200px" }}
+                          >
                             <span className="material-icons" style={{ marginRight: "5px" }}>
-                              sd_card
+                              location_on
                             </span>
-                            Grabar Datos
+                            Ubicación actual
                           </CustomButton>
                         </div>
-                      )}
+                        <div className="d-flex">
+                          {router.query.id ? (
+                            <>
+                              <CustomButton
+                                variant="save"
+                                onClick={handleUpdateProject}
+                                style={{ height: "50px" }}
+                              >
+                                <span className="material-icons" style={{ marginRight: "5px" }}>
+                                  save_as
+                                </span>
+                                Actualizar Datos
+                              </CustomButton>
+                              <CustomButton
+                                variant="forwardIcon"
+                                onClick={() =>
+                                  router.push(
+                                    `/project-workflow-part2?project_id=${
+                                      router.query.id ||
+                                      localStorage.getItem("project_id")
+                                    }`
+                                  )
+                                }
+                                style={{ marginLeft: "10px", height: "50px" }}
+                              >
+                                Siguiente
+                              </CustomButton>
+                            </>
+                          ) : (
+                            <CustomButton
+                              variant="save"
+                              onClick={handleCreateProject}
+                              style={{ height: "50px" }}
+                            >
+                              <span className="material-icons" style={{ marginRight: "5px" }}>
+                                sd_card
+                              </span>
+                              Grabar Datos
+                            </CustomButton>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </>
                 )}
@@ -982,11 +950,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           </div>
         </div>
       </div>
-
       <style jsx>{`
-        .card {
-          /* Estilos adicionales para las cards, si es necesario */
-        }
         .container {
           font-family: var(--font-family-base);
           font-weight: normal;

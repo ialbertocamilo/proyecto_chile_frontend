@@ -11,6 +11,30 @@ import useAuth from "../src/hooks/useAuth";
 const modalWidth = "90%";
 const modalHeight = "auto";
 
+// Constantes para los estilos de las cards
+const CARD_WIDTH = "135%";
+const CARD_MARGIN_LEFT = "-18%";
+const CARD_MARGIN_RIGHT = "20px";
+const CARD_MARGIN_TOP = "20px";
+const CARD_MARGIN_BOTTOM = "20px";
+const CARD_BORDER_RADIUS = "16px";
+const CARD_BOX_SHADOW = "0 2px 10px rgba(0, 0, 0, 0.1)";
+const CARD_BORDER_COLOR = "#d3d3d3";
+
+// Objeto para los estilos de las cards
+const cardStyle = {
+  width: CARD_WIDTH,
+  marginLeft: CARD_MARGIN_LEFT,
+  marginRight: CARD_MARGIN_RIGHT,
+  marginTop: CARD_MARGIN_TOP,
+  marginBottom: CARD_MARGIN_BOTTOM,
+  borderRadius: CARD_BORDER_RADIUS,
+  boxShadow: CARD_BOX_SHADOW,
+  border: `1px solid ${CARD_BORDER_COLOR}`,
+  padding: "20px",
+  backgroundColor: "#fff",
+};
+
 interface Divisions {
   department?: string;
   province?: string;
@@ -39,19 +63,15 @@ export interface Project {
 }
 
 const ProjectListStatusEditPage = () => {
-  // Validación de sesión mediante useAuth
   useAuth();
   console.log("[ProjectListStatusEditPage] Página cargada y sesión validada.");
 
   const [sidebarWidth, setSidebarWidth] = useState("300px");
-
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-
-  // Estados para el modal de edición de status
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [editStatusProjectId, setEditStatusProjectId] = useState<number | null>(null);
   const [currentStatus, setCurrentStatus] = useState("");
@@ -61,7 +81,6 @@ const ProjectListStatusEditPage = () => {
     fetchProjects();
   }, []);
 
-  // Forzamos un limit muy grande y num_pag=1 para obtener todos los proyectos
   const fetchProjects = async (): Promise<void> => {
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -145,7 +164,7 @@ const ProjectListStatusEditPage = () => {
         confirmButtonText: "Aceptar",
       }).then(() => {
         closeStatusModal();
-        fetchProjects(); // Vuelve a cargar todos los proyectos
+        fetchProjects();
       });
     } catch (err: unknown) {
       console.error("[handleStatusUpdate] Error al actualizar el estado del proyecto:", err);
@@ -159,100 +178,104 @@ const ProjectListStatusEditPage = () => {
     }
   };
 
-
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
       <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "100px" }}>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2
-              className="fw-normal"
-              style={{
-                color: "#4B5563",
-                margin: 0,
-                fontFamily: "var(--font-family-base)",
-                fontWeight: "normal"
-              }}
-            >
-              Administrar proyectos
-            </h2>
-          </div>
-          {error && <p className="text-danger" style={{ fontWeight: "normal" }}>{error}</p>}
-          <div className="input-group mb-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="🔍︎ Buscar..."
-              value={search}
-              onChange={handleSearch}
-              style={{ fontFamily: "var(--font-family-base)" }}
-            />
-          </div>
-          {loading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
-              <div className="loading-text">Cargando...</div>
+          {/* Card para el título */}
+          <div style={cardStyle}>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h2
+                className="fw-normal"
+                style={{
+                  color: "#4B5563",
+                  margin: 0,
+                  fontFamily: "var(--font-family-base)",
+                  fontWeight: "normal"
+                }}
+              >
+                Administrar proyectos
+              </h2>
             </div>
-          ) : (
-            <div className="table-responsive scrollable-table">
-              <table className="custom-table" style={{ fontFamily: "var(--font-family-base)" }}>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th></th>
-                    <th>Nombre del Proyecto</th>
-                    <th>Propietario</th>
-                    <th>Tipo de edificación</th>
-                    <th>Tipo de uso principal</th>
-                    <th>Número de niveles</th>
-                    <th>Número de viviendas/oficinas x nivel</th>
-                    <th>Superficie construida (m²)</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProjects.length > 0 ? (
-                    filteredProjects.map((project: Project) => (
-                      <tr key={project.id}>
-                        <td>{project.id || "N/D"}</td>
-                        <td>
-                         
-                        </td>
-                        <td>{project.name_project || "No disponible"}</td>
-                        <td>{project.owner_name || "No disponible"}</td>
-                        <td>{project.building_type || "N/D"}</td>
-                        <td>{project.main_use_type || "N/D"}</td>
-                        <td>{project.number_levels !== undefined ? project.number_levels : "N/D"}</td>
-                        <td>{project.number_homes_per_level !== undefined ? project.number_homes_per_level : "N/D"}</td>
-                        <td>{project.built_surface !== undefined ? project.built_surface : "N/D"}</td>
-                        <td className="d-flex justify-content-center">
-                          <CustomButton
-                            variant="viewIcon"
-                            onClick={() => openStatusModal(project)}
-                            style={{
-                              backgroundColor: "var(--primary-color)",
-                              border: `2px solid var(--primary-color)`,
-                              padding: "0.5rem",
-                              width: "40px",
-                              height: "40px",
-                            }}
-                          />
+          </div>
+
+          {/* Card para la tabla de proyectos */}
+          <div style={cardStyle}>
+            {error && <p className="text-danger" style={{ fontWeight: "normal" }}>{error}</p>}
+            <div className="input-group mb-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="🔍︎ Buscar..."
+                value={search}
+                onChange={handleSearch}
+                style={{ fontFamily: "var(--font-family-base)" }}
+              />
+            </div>
+            {loading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <div className="loading-text">Cargando...</div>
+              </div>
+            ) : (
+              <div className="table-responsive scrollable-table">
+                <table className="custom-table" style={{ fontFamily: "var(--font-family-base)" }}>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th></th>
+                      <th>Nombre del Proyecto</th>
+                      <th>Propietario</th>
+                      <th>Tipo de edificación</th>
+                      <th>Tipo de uso principal</th>
+                      <th>Número de niveles</th>
+                      <th>Número de viviendas/oficinas x nivel</th>
+                      <th>Superficie construida (m²)</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProjects.length > 0 ? (
+                      filteredProjects.map((project: Project) => (
+                        <tr key={project.id}>
+                          <td>{project.id || "N/D"}</td>
+                          <td></td>
+                          <td>{project.name_project || "No disponible"}</td>
+                          <td>{project.owner_name || "No disponible"}</td>
+                          <td>{project.building_type || "N/D"}</td>
+                          <td>{project.main_use_type || "N/D"}</td>
+                          <td>{project.number_levels !== undefined ? project.number_levels : "N/D"}</td>
+                          <td>{project.number_homes_per_level !== undefined ? project.number_homes_per_level : "N/D"}</td>
+                          <td>{project.built_surface !== undefined ? project.built_surface : "N/D"}</td>
+                          <td className="d-flex justify-content-center">
+                            <CustomButton
+                              variant="viewIcon"
+                              onClick={() => openStatusModal(project)}
+                              style={{
+                                backgroundColor: "var(--primary-color)",
+                                border: `2px solid var(--primary-color)`,
+                                padding: "0.5rem",
+                                width: "40px",
+                                height: "40px",
+                              }}
+                            />
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={10} className="text-center text-muted">
+                          No hay proyectos disponibles o no coinciden con la búsqueda.
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={10} className="text-center text-muted">
-                        No hay proyectos disponibles o no coinciden con la búsqueda.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
         {showStatusModal && (
@@ -384,9 +407,23 @@ const ProjectListStatusEditPage = () => {
             font-weight: normal;
           }
           .scrollable-table {
-            max-height: 600px;
+            max-height: 500px;
             overflow-y: auto;
           }
+          .scrollable-table::-webkit-scrollbar {
+              width: 10px;
+            }
+            .scrollable-table::-webkit-scrollbar-track {
+              background: #f1f1f1;
+              border-radius: 10px;
+            }
+            .scrollable-table::-webkit-scrollbar-thumb {
+              background: #c1c1c1;
+              border-radius: 10px;
+            }
+            .scrollable-table::-webkit-scrollbar-thumb:hover {
+              background: #a8a8a8;
+            }  
         `}</style>
       </div>
     </div>

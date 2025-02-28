@@ -169,29 +169,20 @@ const UserManagement = () => {
 
   const handleActiveChange = async (
     e: ChangeEvent<HTMLInputElement>, 
-    userId: number, 
-    userName: string, 
-    userEmail: string
+    userId: number,
+    roleId: number // Agregamos el rol del usuario
 ) => {
-    const isActive = e.target.checked; // `checked` devuelve true o false
+    if (roleId === 1) {
+        Swal.fire("Acción no permitida", "No se puede modificar el estado de un administrador", "warning");
+        e.target.checked = !e.target.checked; // Revertir el cambio en el switch
+        return;
+    }
+
+    const isActive = e.target.checked;
     const token = localStorage.getItem("token");
 
     if (!token) {
         Swal.fire("Error", "No se encontró token", "error");
-        return;
-    }
-
-    const confirmation = await Swal.fire({
-        title: "¿Estás seguro?",
-        text: `¿Quieres cambiar el estado de ${userName} (${userEmail}) a ${isActive ? "activo" : "inactivo"}?`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Sí, cambiar",
-        cancelButtonText: "Cancelar",
-    });
-
-    if (!confirmation.isConfirmed) {
-        e.target.checked = !isActive; // Revertir el cambio si se cancela
         return;
     }
 
@@ -204,7 +195,7 @@ const UserManagement = () => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ active: isActive }), // Se envía un booleano (true o false)
+            body: JSON.stringify({ active: isActive }),
         });
 
         if (!response.ok) {
@@ -212,10 +203,7 @@ const UserManagement = () => {
             throw new Error(errorData.message || "Error al actualizar el estado del usuario");
         }
 
-        const data = await response.json();
-        console.log("[handleActiveChange] Respuesta:", data);
-        Swal.fire("Actualizado", `El usuario ahora está ${isActive ? "activo" : "inactivo"}`, "success");
-
+        console.log("[handleActiveChange] Estado actualizado correctamente");
         fetchUsers(); // Recargar la lista de usuarios para reflejar el cambio
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : "Error desconocido";
@@ -223,6 +211,8 @@ const UserManagement = () => {
         Swal.fire("Error", message, "error");
     }
 };
+
+
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
@@ -311,7 +301,7 @@ const UserManagement = () => {
                           <input
                             type="checkbox"
                             checked={u.active}
-                            onChange={(e) => handleActiveChange(e, u.id, u.name, u.email)}
+                            onChange={(e) => handleActiveChange(e, u.id, u.role_id)}
                           />
                           <span className="slider">
                           </span>
@@ -385,42 +375,42 @@ const UserManagement = () => {
           left: 0;
           right: 0;
           bottom: 0;
-          background-color: red;
+          background-color: #f65a82;
           border-radius: 30px;
-          transition: 0.4s;
-          box-shadow: inset 3px 3px 8px rgba(51, 5, 5, 0.8); /* Sombra más oscura */
+          transition: 0.2s;
+          /* box-shadow: inset 3px 3px 8px rgba(51, 5, 5, 0.8); */ /* Sombra más oscura */
         }
 
         /* Estado inactivo */
         .slider::before {
           position: absolute;
-          content: "D"; /* Letra en estado inactivo */
+          content: ""; /* Letra en estado inactivo */
           height: 26px;
           width: 26px;
           left: 2px;
           bottom: 2px;
           background-color: white;
           border-radius: 50%;
-          transition: 0.4s;
+          transition: 0.2s;
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: bold;
           font-size: 14px;
           color: black;
-          box-shadow: inset -2px -2px 6px rgba(51, 5, 5, 0.8); /* Sombra más oscura */
+          /* box-shadow: inset -2px -2px 6px rgba(51, 5, 5, 0.5); */ /* Sombra más oscura */
         }
 
         /* Estado activo */
         input:checked + .slider {
-          background-color: #3ca7b7;
-          box-shadow: inset 3px 3px 8px rgba(0, 82, 94, 0.8); /* Sombra más oscura */
+          background-color: #89e790;
+          /* background-color: #3ca7b7; */
+          /* box-shadow: inset 3px 3px 8px rgba(0, 82, 94, 0.5); */ /* Sombra más oscura */
         }
 
         input:checked + .slider::before {
           transform: translateX(25px);
-          content: "A"; /* Letra en estado activo */
-          box-shadow: inset -2px -2px 6px rgba(0, 82, 94, 0.8); /* Sombra más oscura */
+          /* box-shadow: inset -2px -2px 6px rgba(0, 82, 94, 0.5); */ /* Sombra más oscura */
         }
 
       `}</style>

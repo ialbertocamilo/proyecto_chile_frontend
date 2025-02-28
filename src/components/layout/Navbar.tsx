@@ -154,14 +154,17 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
                 </Link>
               </li>
             )}
-            <li className="nav-item">
-              <Link href="/project-workflow-part1" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle("/project-workflow-part1")} className="material-icons">
-                  note_add
-                </span>
-                Proyecto Nuevo
-              </Link>
-            </li>
+            {/* Se muestra el botón "Proyecto Nuevo" solo si roleId no es "1" */}
+            {roleId !== "1" && (
+              <li className="nav-item">
+                <Link href="/project-workflow-part1" className="nav-link text-white" style={navLinkStyle}>
+                  <span style={iconStyle("/project-workflow-part1")} className="material-icons">
+                    note_add
+                  </span>
+                  Proyecto Nuevo
+                </Link>
+              </li>
+            )}
             {/* Se muestran estas opciones solo si existe project_id */}
             {projectId && (
               <>
@@ -221,14 +224,6 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
                     Parámetros
                   </Link>
                 </li>
-                {/* <li className="nav-item">
-                  <Link href="/settings" className="nav-link text-white" style={navLinkStyle}>
-                    <span style={iconStyle("/settings")} className="material-icons">
-                      settings
-                    </span>
-                    Ajustes
-                  </Link>
-                </li> */}
               </>
             )}
             <li className="nav-item">

@@ -10,7 +10,7 @@ import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 
-/** Tipos e interfaces necesarias **/
+/** Tipos e interfaces necesarias aa **/
 interface MaterialAtributs {
   name: string;
   conductivity: number;

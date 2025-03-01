@@ -8,8 +8,6 @@ import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
-
-// Importa tu componente existente para cargar Google Icons
 import GooIcons from "../public/GoogleIcons";
 
 /** Tipos e interfaces necesarias **/
@@ -42,17 +40,17 @@ export interface ElementBase {
   };
 }
 
-/** Función para leer variables CSS con un valor fallback **/
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
   return value || fallback;
 }
 
-/** Página de workflow **/
 const ProjectWorkflowPart2: React.FC = () => {
   useAuth();
   const router = useRouter();
+  const mode = router.query.mode as string;
+  const isViewMode = mode === "view";
 
   // Estados para la cabecera del proyecto
   const [projectId, setProjectId] = useState<number | null>(null);
@@ -77,7 +75,6 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
   }, [hasLoaded, projectId, router]);
 
-  // Estado para los pasos (3, 5 y 6)
   const [step, setStep] = useState<number>(3);
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
@@ -118,10 +115,8 @@ const ProjectWorkflowPart2: React.FC = () => {
   const [allWindowsForDoor, setAllWindowsForDoor] = useState<ElementBase[]>([]);
   const [elementSearch, setElementSearch] = useState("");
 
-  /** Estados para Tipología y Perfil de uso (Step 6) **/
   const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
 
-  // Estado para el color primario
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   useEffect(() => {
     const pColor = getCssVarValue("--primary-color", "#3ca7b7");
@@ -129,14 +124,24 @@ const ProjectWorkflowPart2: React.FC = () => {
   }, []);
 
   // -------------------------------
-  // Funciones API
+  // Configuración de estilos para las cards
+  // -------------------------------
+  const cardHorizontalSize = "100%"; 
+  const headerCardHeight = "150px"; 
+
+  const cardStyleConfig = {
+    border: "1px solid white", 
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)", 
+    borderRadius: "16px", 
+  };
+
+  // -------------------------------
+  // Funciones API (se mantienen sin cambios)
   // -------------------------------
   const fetchMaterialsList = async () => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        return;
-      }
+      if (!token) return;
       let allMaterials: Material[] = [];
       let page = 1;
       let hasMore = true;
@@ -169,9 +174,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        return;
-      }
+      if (!token) return;
       const requestBody = {
         atributs: {
           name: newMaterialData.name,
@@ -202,9 +205,7 @@ const ProjectWorkflowPart2: React.FC = () => {
   const fetchElements = async (type: "window" | "door") => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        return;
-      }
+      if (!token) return;
       const url = `${constantUrlApiEndpoint}/elements/?type=${type}`;
       const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
       const response = await axios.get(url, { headers });
@@ -217,9 +218,7 @@ const ProjectWorkflowPart2: React.FC = () => {
   const fetchAllWindowsForDoor = async () => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        return;
-      }
+      if (!token) return;
       const url = `${constantUrlApiEndpoint}/elements/?type=window`;
       const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
       const response = await axios.get(url, { headers });
@@ -244,9 +243,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        return;
-      }
+      if (!token) return;
       const body = {
         name_element: windowData.name_element,
         type: "window",
@@ -297,9 +294,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        return;
-      }
+      if (!token) return;
       const body = {
         name_element: doorData.name_element,
         type: "door",
@@ -336,6 +331,7 @@ const ProjectWorkflowPart2: React.FC = () => {
   };
 
   // En el Step 3, el botón "Grabar Datos" solo guarda los datos sin avanzar al siguiente step.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleGrabarDatosStep3 = async () => {
     if (showNewMaterialRow) {
       await handleCreateMaterial();
@@ -343,6 +339,7 @@ const ProjectWorkflowPart2: React.FC = () => {
   };
 
   // En el Step 5, el botón "Grabar Datos" guarda el nuevo elemento sin avanzar al siguiente step.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleGrabarDatosStep5 = async () => {
     if (modalElementType === "ventanas" && showNewWindowRow) {
       await handleCreateWindowElement();
@@ -372,23 +369,48 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
   }, [step, modalElementType]);
 
-  // -------------------------------
-  // Renderizado de la interfaz
-  // -------------------------------
+  // Funciones de navegación entre steps
+  const handleBackStep = () => {
+    if (step === 3) {
+      router.push(`/project-workflow-part1${isViewMode ? "?mode=view" : ""}`);
+    } else if (step === 5) {
+      setStep(3);
+    } else if (step === 6) {
+      setStep(5);
+    }
+  };
+
+  const handleNextStep = () => {
+    if (step === 3) {
+      setStep(5);
+    } else if (step === 5) {
+      setStep(6);
+    } else if (step === 6) {
+      router.push(`/project-workflow-part3${isViewMode ? "?mode=view" : ""}`);
+    }
+  };
+
   const renderMainHeader = () =>
     step >= 3 ? (
-      <div className="mb-3">
+      <div
+        className="mb-3"
+        style={{
+          height: headerCardHeight,
+          padding: "20px", 
+          textAlign: "left", 
+        }}
+      >
         <h2
           style={{
             fontSize: "40px",
-            marginTop: "130px",
+            margin: "0 0 20px 0", 
             fontWeight: "normal",
             fontFamily: "var(--font-family-base)",
           }}
         >
-          Datos de entrada
+          {isViewMode ? "Vista de datos de entrada" : "Datos de entrada"}
         </h2>
-        <div className="d-flex align-items-center gap-4 mt-4">
+        <div className="d-flex align-items-center gap-4">
           <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>Proyecto:</span>
           <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
             {`Edificación Nº ${projectId ?? "xxxxx"}`}
@@ -402,8 +424,8 @@ const ProjectWorkflowPart2: React.FC = () => {
       </div>
     ) : null;
 
-  // Componente SidebarItem (menú lateral)
-  const SidebarItem = ({
+  // Componente SidebarItem (menú lateral) – siempre interactivo
+  const SidebarItemComponent = ({
     stepNumber,
     iconName,
     title,
@@ -416,7 +438,11 @@ const ProjectWorkflowPart2: React.FC = () => {
     const activeColor = primaryColor;
     const inactiveColor = "#ccc";
     return (
-      <li className="nav-item" style={{ cursor: "pointer" }} onClick={() => setStep(stepNumber)}>
+      <li
+        className="nav-item"
+        style={{ cursor: "pointer" }}
+        onClick={() => setStep(stepNumber)}
+      >
         <div
           style={{
             width: "100%",
@@ -451,15 +477,34 @@ const ProjectWorkflowPart2: React.FC = () => {
         className="container"
         style={{
           maxWidth: "1700px",
-          marginTop: "90px",
+          marginTop: "130px",
           marginLeft: `calc(${sidebarWidth} + 70px)`,
           marginRight: "50px",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
         }}
       >
-        {renderMainHeader()}
-        <div className="card shadow w-100" style={{ overflow: "hidden" }}>
+        {/* Card 1: Encabezado del proyecto */}
+        <div
+          className="card mb-4"
+          style={{
+            width: cardHorizontalSize,
+            overflow: "hidden",
+            ...cardStyleConfig,
+          }}
+        >
+          <div className="card-body p-0">{renderMainHeader()}</div>
+        </div>
+
+        {/* Card 2: Contenedor de los steps */}
+        <div
+          className="card"
+          style={{
+            width: cardHorizontalSize,
+            overflow: "hidden",
+            ...cardStyleConfig,
+          }}
+        >
           <div className="card-body p-0">
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
               <div
@@ -471,16 +516,16 @@ const ProjectWorkflowPart2: React.FC = () => {
                 }}
               >
                 <ul className="nav flex-column" style={{ height: "100%" }}>
-                  <SidebarItem stepNumber={3} iconName="imagesearch_roller" title="Lista de materiales" />
-                  <SidebarItem stepNumber={5} iconName="home" title="Elementos translúcidos" />
-                  <SidebarItem stepNumber={6} iconName="deck" title="Perfil de uso" />
+                  <SidebarItemComponent stepNumber={3} iconName="imagesearch_roller" title="Lista de materiales" />
+                  <SidebarItemComponent stepNumber={5} iconName="home" title="Elementos translúcidos" />
+                  <SidebarItemComponent stepNumber={6} iconName="deck" title="Perfil de uso" />
                 </ul>
               </div>
               <div style={{ flex: 1, padding: "20px" }}>
                 {/* Step 3: Lista de materiales */}
                 {step === 3 && (
                   <>
-                    {/* Cabecera: Barra de búsqueda y botón "+ Nuevo" */}
+                    {/* Barra de búsqueda y botón "+ Nuevo" */}
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <div style={{ flex: 1, marginRight: "10px" }}>
                         <input
@@ -492,15 +537,16 @@ const ProjectWorkflowPart2: React.FC = () => {
                           style={{ height: "40px" }}
                         />
                       </div>
-                      <CustomButton
-                        variant="save"
-                        onClick={() => setShowNewMaterialRow((prev) => !prev)}
-                        style={{ borderRadius: "5px", width: "180px", height: "40px" }}
-                      >
-                        <span className="material-icons">add</span> Nuevo
-                      </CustomButton>
+                      {!isViewMode && (
+                        <CustomButton
+                          variant="save"
+                          onClick={() => setShowNewMaterialRow((prev) => !prev)}
+                          style={{ borderRadius: "5px", width: "180px", height: "40px" }}
+                        >
+                          <span className="material-icons">add</span> Nuevo
+                        </CustomButton>
+                      )}
                     </div>
-
                     {/* Tabla de materiales */}
                     <div style={{ maxHeight: "400px", overflowY: "auto" }}>
                       <table className="table table-bordered table-striped" style={{ tableLayout: "fixed" }}>
@@ -524,6 +570,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setNewMaterialData((prev) => ({ ...prev, name: e.target.value }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -538,6 +585,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                       conductivity: parseFloat(e.target.value),
                                     }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -552,6 +600,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                       specific_heat: parseFloat(e.target.value),
                                     }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -563,6 +612,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setNewMaterialData((prev) => ({ ...prev, density: parseFloat(e.target.value) }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                             </tr>
@@ -585,19 +635,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                         </tbody>
                       </table>
                     </div>
-                    {/* Botón "Grabar Datos" en Step 3: Solo guarda los datos sin avanzar */}
-                    <div className="mt-3 text-end">
-                      <CustomButton
-                        variant="save"
-                        onClick={handleGrabarDatosStep3}
-                        style={{ borderRadius: "5px", width: "180px", height: "40px" }}
-                      >
-                        <span className="material-icons" style={{ marginRight: "5px" }}>
-                          sd_card
-                        </span>
-                        Grabar Datos
-                      </CustomButton>
-                    </div>
                   </>
                 )}
 
@@ -616,19 +653,21 @@ const ProjectWorkflowPart2: React.FC = () => {
                           style={{ height: "40px" }}
                         />
                       </div>
-                      <CustomButton
-                        variant="save"
-                        onClick={() => {
-                          if (modalElementType === "ventanas") {
-                            setShowNewWindowRow((prev) => !prev);
-                          } else {
-                            setShowNewDoorRow((prev) => !prev);
-                          }
-                        }}
-                        style={{ borderRadius: "5px", width: "180px", height: "40px" }}
-                      >
-                        <span className="material-icons">add</span> Nuevo
-                      </CustomButton>
+                      {!isViewMode && (
+                        <CustomButton
+                          variant="save"
+                          onClick={() => {
+                            if (modalElementType === "ventanas") {
+                              setShowNewWindowRow((prev) => !prev);
+                            } else {
+                              setShowNewDoorRow((prev) => !prev);
+                            }
+                          }}
+                          style={{ borderRadius: "5px", width: "180px", height: "40px" }}
+                        >
+                          <span className="material-icons">add</span> Nuevo
+                        </CustomButton>
+                      )}
                     </div>
                     {/* Pestañas */}
                     <div className="d-flex justify-content-start align-items-center mb-2">
@@ -689,6 +728,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setWindowData((prev) => ({ ...prev, name_element: e.target.value }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -700,6 +740,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setWindowData((prev) => ({ ...prev, u_vidrio: parseFloat(e.target.value) }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -711,6 +752,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setWindowData((prev) => ({ ...prev, fs_vidrio: parseFloat(e.target.value) }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -720,6 +762,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setWindowData((prev) => ({ ...prev, clousure_type: e.target.value }))
                                   }
+                                  disabled={isViewMode}
                                 >
                                   <option value="Abatir">Abatir</option>
                                   <option value="Corredera">Corredera</option>
@@ -735,6 +778,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setWindowData((prev) => ({ ...prev, frame_type: e.target.value }))
                                   }
+                                  disabled={isViewMode}
                                 >
                                   <option value="">Seleccione</option>
                                   <option value="Fierro">Fierro</option>
@@ -755,6 +799,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setWindowData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -772,6 +817,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                     if (value < 0) value = 0;
                                     setWindowData((prev) => ({ ...prev, fm: value }));
                                   }}
+                                  disabled={isViewMode}
                                 />
                               </td>
                             </tr>
@@ -787,6 +833,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setDoorData((prev) => ({ ...prev, name_element: e.target.value }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -798,6 +845,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setDoorData((prev) => ({ ...prev, u_puerta_opaca: parseFloat(e.target.value) }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -812,6 +860,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                       name_ventana: allWindowsForDoor.find((win) => win.id === winId)?.name_element || "",
                                     }));
                                   }}
+                                  disabled={isViewMode}
                                 >
                                   <option value="">Seleccione</option>
                                   {allWindowsForDoor.map((win) => (
@@ -836,6 +885,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                     if (value < 0) value = 0;
                                     setDoorData((prev) => ({ ...prev, porcentaje_vidrio: value }));
                                   }}
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -847,6 +897,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   onChange={(e) =>
                                     setDoorData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))
                                   }
+                                  disabled={isViewMode}
                                 />
                               </td>
                               <td>
@@ -864,6 +915,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                                     if (value < 0) value = 0;
                                     setDoorData((prev) => ({ ...prev, fm: value }));
                                   }}
+                                  disabled={isViewMode}
                                 />
                               </td>
                             </tr>
@@ -903,26 +955,16 @@ const ProjectWorkflowPart2: React.FC = () => {
                         </tbody>
                       </table>
                     </div>
-                    {/* Botón "Grabar Datos" en Step 5: Solo guarda el nuevo elemento sin avanzar */}
-                    <div className="mt-4 text-end">
-                      <CustomButton
-                        variant="save"
-                        onClick={handleGrabarDatosStep5}
-                        style={{ borderRadius: "5px", width: "180px", height: "40px" }}
-                      >
-                        <span className="material-icons" style={{ marginRight: "5px" }}>
-                          sd_card
-                        </span>
-                        Grabar Datos
-                      </CustomButton>
-                    </div>
                   </>
                 )}
 
                 {/* Step 6: Perfil de uso */}
                 {step === 6 && (
                   <>
-                    <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
+                    <h5
+                      style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}
+                      className="mb-3"
+                    >
                       Perfil de uso (Espacio aún en desarrollo, no funcional)
                     </h5>
                     <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
@@ -957,17 +999,27 @@ const ProjectWorkflowPart2: React.FC = () => {
                         Contenido para &apos;{tabTipologiaRecinto}&apos;
                       </p>
                     </div>
-                    <div className="mt-4 text-end">
-                      <CustomButton
-                        variant="save"
-                        onClick={() => router.push("/project-list")}
-                        style={{ borderRadius: "5px", width: "180px", height: "40px" }}
-                      >
-                        <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
-                        Grabar datos
-                      </CustomButton>
-                    </div>
                   </>
+                )}
+
+                {/* Botones de navegación entre steps */}
+                {(step === 3 || step === 5 || step === 6) && (
+                  <div className="d-flex justify-content-between align-items-center mt-3">
+                    <CustomButton
+                      variant="backIcon"
+                      onClick={handleBackStep}
+                      style={{ borderRadius: "5px", width: "180px", height: "40px" }}
+                    >
+                      Atrás
+                    </CustomButton>
+                    <CustomButton
+                      variant="forwardIcon"
+                      onClick={handleNextStep}
+                      style={{ borderRadius: "5px", width: "180px", height: "40px" }}
+                    >
+                      Siguiente
+                    </CustomButton>
+                  </div>
                 )}
               </div>
             </div>
@@ -977,7 +1029,7 @@ const ProjectWorkflowPart2: React.FC = () => {
 
       <style jsx>{`
         .card {
-          border: 1px solid #ccc;
+          /* Estilos complementarios a cardStyleConfig */
         }
         .table th,
         .table td {

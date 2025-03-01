@@ -114,7 +114,7 @@ const AdministrationPage: React.FC = () => {
   const CARD_MARGIN_RIGHT = "0px";
   const CARD_MARGIN_TOP = "20px";
   const CARD_MARGIN_BOTTOM = "20px";
-  const CARD_BORDER_RADIUS = "8px";
+  const CARD_BORDER_RADIUS = "16px";
   const CARD_BOX_SHADOW = "0 2px 10px rgba(0, 0, 0, 0.2)";
   const CARD_BORDER_COLOR = "#ccc";
 

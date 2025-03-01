@@ -39,14 +39,14 @@ const EditProfile = () => {
     number_phone: "",
     country: "",
     ubigeo: "",
-    userType: "", // Inicializar el tipo de usuario
+    userType: "", 
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  const CARD_WIDTH = "90%"; // Reducido para evitar desbordamiento
-  const CARD_MARGIN_LEFT = "20%"; // Alinear más a la izquierda
+  const CARD_WIDTH = "90%"; 
+  const CARD_MARGIN_LEFT = "20%"; 
   const CARD_MARGIN_RIGHT = "auto";
   const CARD_MARGIN_TOP = "30px";
   const CARD_MARGIN_BOTTOM = "30px";
@@ -77,7 +77,7 @@ const EditProfile = () => {
           number_phone: parsedProfile.number_phone || "",
           country: parsedProfile.country || "",
           ubigeo: parsedProfile.ubigeo || "",
-          userType: mapRoleIdToText(roleId), // Mapear el role_id a texto
+          userType: mapRoleIdToText(roleId), 
         });
         console.log("[EditProfile] Perfil cargado desde localStorage:", parsedProfile);
       } catch (err) {

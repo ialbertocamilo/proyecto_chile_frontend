@@ -18,12 +18,10 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
   const [roleId, setRoleId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
 
-  // Establece el ancho fijo de la sidebar
   useEffect(() => {
     setSidebarWidth("100px");
   }, [setSidebarWidth]);
 
-  // Recupera la URL del logo del localStorage, si existe
   useEffect(() => {
     const storedLogo = localStorage.getItem("logoUrl");
     if (storedLogo) {
@@ -31,7 +29,6 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
     }
   }, []);
 
-  // Recupera el role_id del localStorage
   useEffect(() => {
     const storedRole = localStorage.getItem("role_id");
     if (storedRole) {
@@ -39,7 +36,6 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
     }
   }, []);
 
-  // Recupera el project_id del localStorage
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id");
     if (storedProjectId) {
@@ -52,7 +48,6 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
     router.push("/login");
   };
 
-  // Definición de estilos, usando variables CSS para colores
   const navLinkStyle: React.CSSProperties = {
     cursor: "pointer",
     fontFamily: "var(--font-family-base)",
@@ -87,16 +82,16 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center", // Centrado
-    width: "100%", // Ocupa todo el ancho del nav
-    minHeight: "80px", // Ajusta el alto del área de logo
+    justifyContent: "center", 
+    width: "100%", 
+    minHeight: "80px", 
     boxSizing: "border-box",
     padding: "0 0.5rem",
     marginBottom: "1rem",
     color: "#fff",
   };
 
-  // Tamaño fijo del logo
+  
   const logoSize = 80;
 
   return (
@@ -165,8 +160,8 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
                 </Link>
               </li>
             )}
-            {/* Se muestran estas opciones solo si existe project_id */}
-            {projectId && (
+            {/* Se muestran estas opciones solo si existe projectId y roleId es "2" */}
+            {projectId && roleId === "2" && (
               <>
                 <li className="nav-item">
                   <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>

@@ -185,18 +185,22 @@ const ProjectWorkflowPart1: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
 
-  // Precargar datos en modo edición o vista
   useEffect(() => {
-    if (router.query.id) {
-      const projectId = Array.isArray(router.query.id)
-        ? router.query.id[0]
-        : router.query.id;
+    let projectIdParam = router.query.id;
+    if (!projectIdParam) {
+      projectIdParam = localStorage.getItem("project_id") ?? undefined;
+    }
+    
+    if (projectIdParam) {
+      const projectIdStr = Array.isArray(projectIdParam)
+        ? projectIdParam[0]
+        : projectIdParam;
       const fetchProjectData = async () => {
         try {
           const token = localStorage.getItem("token");
           if (!token) return;
           const { data: projectData } = await axios.get(
-            `${constantUrlApiEndpoint}/projects/${projectId}`,
+            `${constantUrlApiEndpoint}/projects/${projectIdStr}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setFormData({
@@ -234,7 +238,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     field: keyof FormData,
     value: string | number
   ) => {
-    // Solo permitimos cambios si NO estamos en modo vista
     if (isViewMode) return;
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (value !== "" && value !== 0) {
@@ -459,9 +462,9 @@ const ProjectWorkflowPart1: React.FC = () => {
         });
         return;
       }
-      const projectId = Array.isArray(router.query.id)
+      const projectIdParam = Array.isArray(router.query.id)
         ? router.query.id[0]
-        : router.query.id;
+        : router.query.id || localStorage.getItem("project_id");
       const requestBody = {
         country: formData.country || "Peru",
         divisions: {
@@ -484,7 +487,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       console.log("RequestBody (actualización):", requestBody);
 
       const { data } = await axios.put(
-        `${constantUrlApiEndpoint}/my-projects/${projectId}/update`,
+        `${constantUrlApiEndpoint}/my-projects/${projectIdParam}/update`,
         requestBody,
         {
           headers: {
@@ -522,19 +525,36 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
-  const renderMainHeader = () => (
-    <h1
-      style={{
-        fontSize: "24px",
-        fontWeight: "normal",
-        fontFamily: "var(--font-family-base)",
-        margin: 0,
-        textAlign: "left",
-      }}
-    >
-      {router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"}
-    </h1>
-  );
+  const renderMainHeader = () => {
+    if (isViewMode) {
+      return (
+        <h1
+          style={{
+            fontSize: "24px",
+            fontWeight: "normal",
+            fontFamily: "var(--font-family-base)",
+            margin: 0,
+            textAlign: "left",
+          }}
+        >
+          Vista de Proyecto
+        </h1>
+      );
+    }
+    return (
+      <h1
+        style={{
+          fontSize: "24px",
+          fontWeight: "normal",
+          fontFamily: "var(--font-family-base)",
+          margin: 0,
+          textAlign: "left",
+        }}
+      >
+        {router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"}
+      </h1>
+    );
+  };
 
   return (
     <>
@@ -792,33 +812,46 @@ const ProjectWorkflowPart1: React.FC = () => {
                         />
                       </div>
                     </div>
-                    <div className="d-flex justify-content-end align-items-center mt-4">
-                      {isViewMode ? (
-                        // En modo vista, mostramos solo un botón de navegación para volver
-                        <CustomButton variant="backIcon" onClick={() => router.back()} style={{ height: "50px" }}>
+                    {isViewMode ? (
+                      // En modo vista, mostramos botones de navegación
+                      <div className="d-flex justify-content-between align-items-center mt-4">
+                        <CustomButton
+                          variant="backIcon"
+                          onClick={() => router.back()}
+                          style={{ height: "50px" }}
+                        >
                           Atrás
                         </CustomButton>
-                      ) : router.query.id ? (
-                        <>
-                          <CustomButton
-                            variant="save"
-                            onClick={handleStep1Action}
-                            style={{ height: "50px" }}
-                          >
-                            <span className="material-icons" style={{ marginRight: "5px" }}>
-                              save_as
-                            </span>
-                            Actualizar Datos
-                          </CustomButton>
-                          <CustomButton
-                            variant="forwardIcon"
-                            onClick={goToStep2}
-                            style={{ marginLeft: "10px", height: "50px" }}
-                          >
-                            Siguiente
-                          </CustomButton>
-                        </>
-                      ) : (
+                        <CustomButton
+                          variant="forwardIcon"
+                          onClick={goToStep2}
+                          style={{ height: "50px" }}
+                        >
+                          Siguiente
+                        </CustomButton>
+                      </div>
+                    ) : router.query.id ? (
+                      <div className="d-flex justify-content-end align-items-center mt-4" style={{ gap: "10px" }}>
+                        <CustomButton
+                          variant="save"
+                          onClick={handleStep1Action}
+                          style={{ height: "50px" }}
+                        >
+                          <span className="material-icons" style={{ marginRight: "5px" }}>
+                            save_as
+                          </span>
+                          Actualizar Datos
+                        </CustomButton>
+                        <CustomButton
+                          variant="forwardIcon"
+                          onClick={goToStep2}
+                          style={{ marginLeft: "10px", height: "50px" }}
+                        >
+                          Siguiente
+                        </CustomButton>
+                      </div>
+                    ) : (
+                      <div className="d-flex justify-content-end align-items-center mt-4">
                         <CustomButton
                           variant="save"
                           onClick={handleCreateProject}
@@ -829,8 +862,8 @@ const ProjectWorkflowPart1: React.FC = () => {
                           </span>
                           Grabar Datos
                         </CustomButton>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </>
                 )}
 
@@ -912,19 +945,13 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <div className="d-flex">
-                          {isViewMode ? (
-                            <CustomButton variant="backIcon" onClick={() => router.back()} style={{ height: "50px" }}>
-                              Atrás
-                            </CustomButton>
-                          ) : (
-                            <CustomButton
-                              variant="backIcon"
-                              onClick={() => setStep(1)}
-                              style={{ height: "50px" }}
-                            >
-                              Atrás
-                            </CustomButton>
-                          )}
+                          <CustomButton
+                            variant="backIcon"
+                            onClick={() => setStep(1)}
+                            style={{ height: "50px" }}
+                          >
+                            Atrás
+                          </CustomButton>
                           {!isViewMode && (
                             <CustomButton
                               variant="save"
@@ -940,8 +967,18 @@ const ProjectWorkflowPart1: React.FC = () => {
                         </div>
                         <div className="d-flex">
                           {isViewMode ? (
-                            <CustomButton variant="forwardIcon" onClick={() => router.back()} style={{ height: "50px" }}>
-                              Volver
+                            <CustomButton
+                              variant="forwardIcon"
+                              onClick={() =>
+                                router.push(
+                                  `/project-workflow-part2?project_id=${
+                                    router.query.id || localStorage.getItem("project_id")
+                                  }&mode=view`
+                                )
+                              }
+                              style={{ height: "50px" }}
+                            >
+                              Siguiente
                             </CustomButton>
                           ) : router.query.id ? (
                             <>

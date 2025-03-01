@@ -18,7 +18,7 @@ interface UserFormData {
   ubigeo: string;
   password: string;
   confirm_password: string;
-  role_id: string; // Se usa string para el select y luego se convertirá a número
+  role_id: string; 
 }
 
 const UserCreate = () => {
@@ -37,15 +37,15 @@ const UserCreate = () => {
     ubigeo: "",
     password: "",
     confirm_password: "",
-    role_id: "2", // Valor por defecto: Operador
+    role_id: "2", 
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
 
-  const CARD_WIDTH = "90%"; // Reducido para evitar desbordamiento
-  const CARD_MARGIN_LEFT = "20%"; // Alinear más a la izquierda
+  const CARD_WIDTH = "90%"; 
+  const CARD_MARGIN_LEFT = "20%"; 
   const CARD_MARGIN_RIGHT = "auto";
   const CARD_MARGIN_TOP = "30px";
   const CARD_MARGIN_BOTTOM = "30px";
@@ -124,7 +124,6 @@ const UserCreate = () => {
       if (!token) {
         throw new Error("No estás autenticado. Inicia sesión nuevamente.");
       }
-      // Convertir role_id a número antes de enviarlo
       const bodyToSend = { 
         ...userData,
         role_id: Number(role_id)

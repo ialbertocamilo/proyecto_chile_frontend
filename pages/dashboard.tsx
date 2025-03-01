@@ -31,18 +31,14 @@ ChartJS.register(
   Legend
 );
 
-// Función para convertir un color hex (#3ca7b7) a RGBA con alpha.
 function hexToRgba(hex: string, alpha: number) {
-  // Quita el '#' si existe
   const cleanHex = hex.replace("#", "");
-  // Extrae los valores R, G, B
   const r = parseInt(cleanHex.substring(0, 2), 16);
   const g = parseInt(cleanHex.substring(2, 4), 16);
   const b = parseInt(cleanHex.substring(4, 6), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-// Función para leer una variable CSS con fallback
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback; // En SSR no hay window
   const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();

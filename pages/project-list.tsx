@@ -9,7 +9,6 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
 
-// Se han eliminado las variables no utilizadas: countryOptions, departmentOptions, provinceOptions, districtOptions
 
 interface Divisions {
   department?: string;
@@ -75,8 +74,7 @@ const ProjectListPage = () => {
     border: `1px solid ${CARD_BORDER_COLOR}`,
   };
 
-  // Si deseas modificar el margen izquierdo del contenedor principal (además del sidebar)
-  const CONTAINER_MARGIN_LEFT = "20px"; // Ejemplo
+  const CONTAINER_MARGIN_LEFT = "20px"; 
 
   useEffect(() => {
     fetchProjects();

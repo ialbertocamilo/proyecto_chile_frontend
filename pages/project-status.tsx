@@ -128,7 +128,6 @@ const ProjectListStatusEditPage = () => {
     setFilteredProjects(filtered);
   };
 
-
   const closeStatusModal = () => {
     console.log("[closeStatusModal] Cerrando modal de edición de estado.");
     setShowStatusModal(false);
@@ -178,8 +177,12 @@ const ProjectListStatusEditPage = () => {
     }
   };
 
-  // Función para redirigir al modo vista del workflow del proyecto
+  // Función para redirigir al modo vista del workflow del proyecto y guardar en el local storage
   const handleViewProject = (project: Project) => {
+    // Guardamos el project id y el departamento en el local storage
+    localStorage.setItem("project_id", project.id.toString());
+    localStorage.setItem("project_department", project.divisions?.department || "N/A");
+
     // Redirige a la página de workflow en modo "view" con el id del proyecto
     router.push(`/project-workflow-part1?mode=view&id=${project.id}`);
   };
@@ -267,7 +270,7 @@ const ProjectListStatusEditPage = () => {
                             {project.built_surface !== undefined ? project.built_surface : "N/D"}
                           </td>
                           <td className="d-flex justify-content-center">
-                            {/* Botón para activar el modo vista (redirige a project-workflow-part1 con mode=view) */}
+                            {/* Botón para activar el modo vista */}
                             <CustomButton
                               variant="viewIcon"
                               onClick={() => handleViewProject(project)}

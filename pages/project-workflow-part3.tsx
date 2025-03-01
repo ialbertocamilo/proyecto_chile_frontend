@@ -71,7 +71,6 @@ interface Constant {
 
 type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
 
-// Interfaces para evitar "any"
 interface Ventana {
   name_element: string;
   atributs?: {
@@ -109,9 +108,17 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+const cardStyleConfig = {
+  border: "1px solid white",
+  boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+  borderRadius: "16px",
+};
+
 const ProjectWorkflowPart3: React.FC = () => {
   useAuth();
   const router = useRouter();
+  const mode = router.query.mode as string;
+  const isViewMode = mode === "view";
 
   const [projectId, setProjectId] = useState<number | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -147,12 +154,9 @@ const ProjectWorkflowPart3: React.FC = () => {
     material_id: 0,
     layer_thickness: 10,
   });
-  // showTabsInStep4 === false → primera pantalla (lista de detalles)
-  // showTabsInStep4 === true → segunda pantalla (tabla con pestañas)
   const [showTabsInStep4, setShowTabsInStep4] = useState(false);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
-  // Listas para cada pestaña (se eliminó detailsTabList por no usarse)
   const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
   const [techumbreTabList, setTechumbreTabList] = useState<TabItem[]>([]);
   const [pisosTabList, setPisosTabList] = useState<TabItem[]>([]);
@@ -176,14 +180,12 @@ const ProjectWorkflowPart3: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Estados para edición en Muros
+  // Estados para edición en Muros y Techumbre
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [editingColors, setEditingColors] = useState<{ interior: string; exterior: string }>({
     interior: "Intermedio",
     exterior: "Intermedio",
   });
-
-  // Estados para edición en Techumbre (Techo)
   const [editingTechRowId, setEditingTechRowId] = useState<number | null>(null);
   const [editingTechColors, setEditingTechColors] = useState<{ interior: string; exterior: string }>({
     interior: "Intermedio",
@@ -206,14 +208,12 @@ const ProjectWorkflowPart3: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setFetchedDetails(response.data || []);
-      // Se eliminó setDetailsTabList ya que no se utiliza
     } catch (error: unknown) {
       console.error("Error al obtener detalles:", error);
       Swal.fire("Error", "Error al obtener detalles. Ver consola.");
     }
   };
 
-  // Función para obtener datos de Muros
   const fetchMurosDetails = useCallback(async () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");
@@ -232,7 +232,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   }, [projectId]);
 
-  // Función para obtener datos de Techumbre (Techo)
   const fetchTechumbreDetails = useCallback(async () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");
@@ -251,7 +250,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   }, [projectId]);
 
-  // Función para obtener datos de Piso
   const fetchPisosDetails = useCallback(async () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");
@@ -270,7 +268,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   }, [projectId]);
 
-  // Función para obtener datos de Ventanas
   const fetchVentanasDetails = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -288,7 +285,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   }, []);
 
-  // Función para obtener datos de Puertas
   const fetchPuertasDetails = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -312,7 +308,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   }, [step]);
 
-  // Obtención de datos según la pestaña seleccionada
   useEffect(() => {
     if (showTabsInStep4) {
       if (tabStep4 === "muros") {
@@ -386,8 +381,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       layer_thickness: 10,
     });
   };
-
-  // Esta función guarda los detalles (a través de una llamada API) y luego muestra la vista con pestañas
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSaveDetails = async () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");
@@ -439,13 +433,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (showNewDetailRow) {
-      fetchMaterials();
-    }
-  }, [showNewDetailRow]);
-
-  // Funciones para editar en Muros
   const handleEditClick = (detail: TabItem) => {
     setEditingRowId(detail.id || null);
     setEditingColors({
@@ -500,7 +487,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   };
 
-  // Funciones para editar en Techumbre (Techo)
   const handleEditTechClick = (detail: TabItem) => {
     setEditingTechRowId(detail.id || null);
     setEditingTechColors({
@@ -555,20 +541,21 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   };
 
+  // --- Render del encabezado ---
   const renderMainHeader = () =>
     step >= 4 ? (
-      <div className="mb-3">
+      <div className="mb-3" style={{ padding: "20px" }}>
         <h2
           style={{
-            marginTop: "120px",
             fontSize: "40px",
+            margin: "0 0 20px 0",
             fontWeight: "normal",
             fontFamily: "var(--font-family-base)",
           }}
         >
-          Desarrollo de proyecto
+          {isViewMode ? "Vista de desarrollo de proyecto" : "Desarrollo de proyecto"}
         </h2>
-        <div className="d-flex align-items-center gap-4 mt-4">
+        <div className="d-flex align-items-center gap-4">
           <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
             Proyecto:
           </span>
@@ -618,7 +605,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     );
   };
 
-  // Estilos para encabezados fijos (sticky)
   const stickyHeaderStyle1 = {
     position: "sticky" as const,
     top: 0,
@@ -626,7 +612,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     zIndex: 3,
   };
 
-  // Para tablas con dos filas en el encabezado (ej: "pisos")
   const stickyHeaderStyle2 = {
     position: "sticky" as const,
     top: 40,
@@ -634,7 +619,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     zIndex: 2,
   };
 
-  // Vista con pestañas (segunda pantalla)
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
     const tabs = [
@@ -663,6 +647,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                   fontWeight: "normal",
                 }}
                 onClick={() => setTabStep4(item.key)}
+                disabled={isViewMode}
               >
                 {item.label}
               </button>
@@ -674,11 +659,21 @@ const ProjectWorkflowPart3: React.FC = () => {
             <table className="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Nombre Abreviado</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Valor U (W/m²K)</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Color Exterior</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Color Interior</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Acciones</th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                    Nombre Abreviado
+                  </th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                    Valor U (W/m²K)
+                  </th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                    Color Exterior
+                  </th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                    Color Interior
+                  </th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -688,7 +683,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                       <td>{item.name_detail}</td>
                       <td>{item.value_u?.toFixed(3) ?? "--"}</td>
                       <td>
-                        {editingRowId === item.id ? (
+                        {editingRowId === item.id && !isViewMode ? (
                           <select
                             value={editingColors.exterior}
                             onChange={(e) =>
@@ -704,7 +699,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                         )}
                       </td>
                       <td>
-                        {editingRowId === item.id ? (
+                        {editingRowId === item.id && !isViewMode ? (
                           <select
                             value={editingColors.interior}
                             onChange={(e) =>
@@ -720,15 +715,16 @@ const ProjectWorkflowPart3: React.FC = () => {
                         )}
                       </td>
                       <td>
-                        {editingRowId === item.id ? (
-                          <CustomButton variant="save" onClick={() => handleConfirmEdit(item)}>
-                            Confirmar
-                          </CustomButton>
-                        ) : (
-                          <CustomButton variant="editIcon" onClick={() => handleEditClick(item)}>
-                            Editar
-                          </CustomButton>
-                        )}
+                        {!isViewMode &&
+                          (editingRowId === item.id ? (
+                            <CustomButton variant="save" onClick={() => handleConfirmEdit(item)}>
+                              Confirmar
+                            </CustomButton>
+                          ) : (
+                            <CustomButton variant="editIcon" onClick={() => handleEditClick(item)}>
+                              Editar
+                            </CustomButton>
+                          ))}
                       </td>
                     </tr>
                   ))
@@ -744,11 +740,21 @@ const ProjectWorkflowPart3: React.FC = () => {
             <table className="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Nombre Abreviado</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Valor U (W/m²K)</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Color Exterior</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Color Interior</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Acciones</th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                    Nombre Abreviado
+                  </th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                    Valor U (W/m²K)
+                  </th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                    Color Exterior
+                  </th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                    Color Interior
+                  </th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -758,7 +764,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                       <td>{item.name_detail}</td>
                       <td>{item.value_u?.toFixed(3) ?? "--"}</td>
                       <td>
-                        {editingTechRowId === item.id ? (
+                        {editingTechRowId === item.id && !isViewMode ? (
                           <select
                             value={editingTechColors.exterior}
                             onChange={(e) =>
@@ -774,7 +780,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                         )}
                       </td>
                       <td>
-                        {editingTechRowId === item.id ? (
+                        {editingTechRowId === item.id && !isViewMode ? (
                           <select
                             value={editingTechColors.interior}
                             onChange={(e) =>
@@ -790,15 +796,16 @@ const ProjectWorkflowPart3: React.FC = () => {
                         )}
                       </td>
                       <td>
-                        {editingTechRowId === item.id ? (
-                          <CustomButton variant="save" onClick={() => handleConfirmTechEdit(item)}>
-                            Confirmar
-                          </CustomButton>
-                        ) : (
-                          <CustomButton variant="editIcon" onClick={() => handleEditTechClick(item)}>
-                            Editar
-                          </CustomButton>
-                        )}
+                        {!isViewMode &&
+                          (editingTechRowId === item.id ? (
+                            <CustomButton variant="save" onClick={() => handleConfirmTechEdit(item)}>
+                              Confirmar
+                            </CustomButton>
+                          ) : (
+                            <CustomButton variant="editIcon" onClick={() => handleEditTechClick(item)}>
+                              Editar
+                            </CustomButton>
+                          ))}
                       </td>
                     </tr>
                   ))
@@ -815,21 +822,47 @@ const ProjectWorkflowPart3: React.FC = () => {
               <table className="table table-bordered table-striped">
                 <thead>
                   <tr>
-                    <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Nombre</th>
-                    <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>U [W/m²K]</th>
-                    <th colSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Aislamiento bajo piso</th>
-                    <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Ref Aisl Vert.</th>
-                    <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Ref Aisl Horiz.</th>
+                    <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      Nombre
+                    </th>
+                    <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      U [W/m²K]
+                    </th>
+                    <th colSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      Aislamiento bajo piso
+                    </th>
+                    <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      Ref Aisl Vert.
+                    </th>
+                    <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      Ref Aisl Horiz.
+                    </th>
                   </tr>
                   <tr>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>I [W/mK]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>e Aisl [cm]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>I [W/mK]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>e Aisl [cm]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>D [cm]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>I [W/mK]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>e Aisl [cm]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>D [cm]</th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
+                      I [W/mK]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
+                      e Aisl [cm]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
+                      I [W/mK]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
+                      e Aisl [cm]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
+                      D [cm]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
+                      I [W/mK]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
+                      e Aisl [cm]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
+                      D [cm]
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -867,13 +900,27 @@ const ProjectWorkflowPart3: React.FC = () => {
               <table className="table table-bordered table-striped">
                 <thead>
                   <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Nombre Elemento</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>U Vidrio [W/m²K]</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>FS Vidrio []</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Tipo Marco</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Tipo Cierre</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>U Marco [W/m²K]</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>FV [%]</th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      Nombre Elemento
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      U Vidrio [W/m²K]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      FS Vidrio []
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      Tipo Marco
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      Tipo Cierre
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      U Marco [W/m²K]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      FV [%]
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -903,12 +950,24 @@ const ProjectWorkflowPart3: React.FC = () => {
               <table className="table table-bordered table-striped">
                 <thead>
                   <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Nombre Elemento</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>U puerta opaca [W/m²K]</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>Vidrio []</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>% vidrio</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>U Marco [W/m²K]</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>FM [%]</th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      Nombre Elemento
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      U puerta opaca [W/m²K]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      Vidrio []
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      % vidrio
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      U Marco [W/m²K]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
+                      FM [%]
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -933,22 +992,37 @@ const ProjectWorkflowPart3: React.FC = () => {
             </div>
           )}
         </div>
-        {/* Botones de navegación en la vista con pestañas (segunda pantalla) */}
+        {/* Botones de navegación dentro del contenedor del step */}
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
-          <CustomButton variant="save" onClick={() => setShowTabsInStep4(false)} style={{ width: "200px" }}>
-            <span className="material-icons" style={{ marginRight: "5px" }}>arrow_back</span>
-            Ver Detalles
+          <CustomButton
+            variant="backIcon"
+            onClick={() => {
+              if (step === 4) {
+                router.push("/project-workflow-part2?mode=view");
+              } else if (step === 7) {
+                setStep(4);
+              }
+            }}
+          >
+            <span className="material-icons">arrow_back</span>
           </CustomButton>
-          <CustomButton variant="save" onClick={handleSaveDetails} style={{ width: "200px" }}>
-            <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
-            Grabar datos
+          <CustomButton
+            variant="forwardIcon"
+            onClick={() => {
+              if (step === 4) {
+                setStep(7);
+              } else if (step === 7) {
+                router.push("/project-status");
+              }
+            }}
+          >
+            <span className="material-icons">arrow_forward</span>
           </CustomButton>
         </div>
       </div>
     );
   };
 
-  // Vista inicial: lista de detalles (primera pantalla)
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
     return (
@@ -964,22 +1038,17 @@ const ProjectWorkflowPart3: React.FC = () => {
               style={{ height: "38px" }}
             />
           </div>
-          <CustomButton
-            variant="save"
-            onClick={() => {
-              setShowNewDetailRow((prev) => !prev);
-              if (!showNewDetailRow) fetchMaterials();
-            }}
-            style={{
-              width: "200px",
-              height: "38px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <span className="material-icons">add</span> Nuevo
-          </CustomButton>
+          {!isViewMode && (
+            <CustomButton
+              variant="save"
+              onClick={() => {
+                setShowNewDetailRow((prev) => !prev);
+                if (!showNewDetailRow) fetchMaterials();
+              }}
+            >
+              <span className="material-icons">add</span> Nuevo
+            </CustomButton>
+          )}
         </div>
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
@@ -1016,6 +1085,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                             scantilon_location: e.target.value,
                           }))
                         }
+                        disabled={isViewMode}
                       >
                         <option value="">Seleccione</option>
                         <option value="Muro">Muro</option>
@@ -1035,6 +1105,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                             name_detail: e.target.value,
                           }))
                         }
+                        disabled={isViewMode}
                       />
                     </td>
                     <td>
@@ -1047,6 +1118,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                             material_id: parseInt(e.target.value),
                           }))
                         }
+                        disabled={isViewMode}
                       >
                         <option value={0}>Seleccione un material</option>
                         {materials.map((mat) => (
@@ -1068,15 +1140,20 @@ const ProjectWorkflowPart3: React.FC = () => {
                             layer_thickness: parseFloat(e.target.value) || 0,
                           }))
                         }
+                        disabled={isViewMode}
                       />
                     </td>
                     <td className="d-flex gap-2 justify-content-center">
-                      <CustomButton variant="save" onClick={handleCreateNewDetail}>
-                        <span className="material-icons">add</span>
-                      </CustomButton>
-                      <CustomButton variant="cancelIcon" onClick={handleCancelNewDetail}>
-                        <span className="material-icons">cancel</span>
-                      </CustomButton>
+                      {!isViewMode && (
+                        <>
+                          <CustomButton variant="save" onClick={handleCreateNewDetail}>
+                            <span className="material-icons">add</span>
+                          </CustomButton>
+                          <CustomButton variant="cancelIcon" onClick={handleCancelNewDetail}>
+                            <span className="material-icons">cancel</span>
+                          </CustomButton>
+                        </>
+                      )}
                     </td>
                   </tr>
                 )}
@@ -1096,22 +1173,89 @@ const ProjectWorkflowPart3: React.FC = () => {
                       <td>{det.name_detail}</td>
                       <td>{det.material}</td>
                       <td>{det.layer_thickness}</td>
-                      <td>{/* Acciones si son necesarias */}</td>
+                      <td>{/* En modo vista no se muestran acciones de edición */}</td>
                     </tr>
                   ))}
               </tbody>
             </table>
           </div>
         </div>
-        {/* Grupo de botones para navegar en la primera pantalla */}
+        {/* Botones de navegación dentro del contenedor */}
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
-          <CustomButton variant="save" onClick={() => setShowTabsInStep4(true)} style={{ width: "200px" }}>
-            <span className="material-icons" style={{ marginRight: "5px" }}>arrow_forward</span>
-            Ver datos guardados
+          <CustomButton
+            variant="backIcon"
+            onClick={() => {
+              if (step === 4) {
+                router.push("/project-workflow-part2?mode=view");
+              } else if (step === 7) {
+                setStep(4);
+              }
+            }}
+          >
+            <span className="material-icons">arrow_back</span>
           </CustomButton>
-          <CustomButton variant="save" onClick={handleSaveDetails} style={{ width: "200px" }}>
-            <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
-            Grabar datos
+          <CustomButton
+            variant="forwardIcon"
+            onClick={() => {
+              if (step === 4) {
+                setStep(7);
+              } else if (step === 7) {
+                router.push("/project-workflow-part4?mode=view");
+              }
+            }}
+          >
+            <span className="material-icons">arrow_forward</span>
+          </CustomButton>
+        </div>
+      </>
+    );
+  };
+
+  // --- Vista para el step 7 (Recinto) ---
+  const renderRecinto = () => {
+    return (
+      <>
+        <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
+          Recinto (Espacio aún en desarrollo, no funcional)
+        </h5>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div></div>
+        </div>
+        <div style={{ height: "390px", overflowY: "scroll" }}>
+          <table className="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th style={{ ...stickyHeaderStyle1 }}>ID</th>
+                <th style={{ ...stickyHeaderStyle1 }}>Estado</th>
+                <th style={{ ...stickyHeaderStyle1 }}>Nombre del Recinto</th>
+                <th style={{ ...stickyHeaderStyle1 }}>Perfil de Ocupación</th>
+                <th style={{ ...stickyHeaderStyle1 }}>Sensor CO2</th>
+                <th style={{ ...stickyHeaderStyle1 }}>Altura Promedio</th>
+                <th style={{ ...stickyHeaderStyle1 }}>Área</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recintos.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.id}</td>
+                  <td>{r.estado}</td>
+                  <td>{r.nombre}</td>
+                  <td>{r.perfilOcup}</td>
+                  <td>{r.sensorCO2}</td>
+                  <td>{r.alturaProm}</td>
+                  <td>{r.area}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {/* Botones de navegación dentro del contenedor */}
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
+          <CustomButton variant="backIcon" onClick={() => setStep(4)}>
+            <span className="material-icons">arrow_back</span>
+          </CustomButton>
+          <CustomButton variant="forwardIcon" onClick={() => router.push("/project-status")}>
+            <span className="material-icons">arrow_forward</span>
           </CustomButton>
         </div>
       </>
@@ -1126,16 +1270,23 @@ const ProjectWorkflowPart3: React.FC = () => {
       <div
         className="container"
         style={{
-          maxWidth: "1700px",
-          marginTop: "90px",
-          marginLeft: `calc(${sidebarWidth} + 70px)`,
+          maxWidth: "1780px",
+          marginTop: "120px", 
+          marginLeft: "120px",
           marginRight: "50px",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
         }}
       >
-        {renderMainHeader()}
-        <div className="card shadow w-100" style={{ overflow: "hidden" }}>
+        {/* Card de Encabezado */}
+        <div className="card mb-4" style={{ width: "100%", height: "155px",overflow: "hidden", ...cardStyleConfig }}>
+          <div className="card-body p-0">
+            {renderMainHeader()}
+          </div>
+        </div>
+
+        {/* Card de contenido principal */}
+        <div className="card shadow w-100" style={{ overflow: "hidden", ...cardStyleConfig }}>
           <div className="card-body p-0">
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
               <div
@@ -1159,56 +1310,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                   </>
                 )}
 
-                {step === 7 && (
-                  <>
-                    <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
-                      Recinto (Espacio aún en desarrollo, no funcional)
-                    </h5>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <div></div>
-                    </div>
-                    <div style={{ height: "500px", overflowY: "scroll" }}>
-                      <table className="table table-bordered table-striped">
-                        <thead>
-                          <tr>
-                            <th style={{ ...stickyHeaderStyle1 }}>ID</th>
-                            <th style={{ ...stickyHeaderStyle1 }}>Estado</th>
-                            <th style={{ ...stickyHeaderStyle1 }}>Nombre del Recinto</th>
-                            <th style={{ ...stickyHeaderStyle1 }}>Perfil de Ocupación</th>
-                            <th style={{ ...stickyHeaderStyle1 }}>Sensor CO2</th>
-                            <th style={{ ...stickyHeaderStyle1 }}>Altura Promedio</th>
-                            <th style={{ ...stickyHeaderStyle1 }}>Área</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {recintos.map((r) => (
-                            <tr key={r.id}>
-                              <td>{r.id}</td>
-                              <td>{r.estado}</td>
-                              <td>{r.nombre}</td>
-                              <td>{r.perfilOcup}</td>
-                              <td>{r.sensorCO2}</td>
-                              <td>{r.alturaProm}</td>
-                              <td>{r.area}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div style={{ textAlign: "right", marginTop: "10px" }}>
-                      <CustomButton
-                        variant="save"
-                        onClick={() =>
-                          Swal.fire("Datos guardados", "Se han guardado los datos del recinto (simulación)", "success")
-                        }
-                        style={{ width: "200px" }}
-                      >
-                        <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
-                        Grabar datos
-                      </CustomButton>
-                    </div>
-                  </>
-                )}
+                {step === 7 && renderRecinto()}
               </div>
             </div>
           </div>

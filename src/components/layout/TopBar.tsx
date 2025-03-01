@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
-import "../../../public/assets/css/globals.css"; // Importa tu CSS global
+import "../../../public/assets/css/globals.css"; 
 
 interface TopBarProps {
   sidebarWidth: string;
 }
 
-// Función para mapear el role_id a su correspondiente texto
 const getUserTypeText = (roleId: string): string => {
   switch (roleId) {
     case "1":
@@ -79,9 +78,10 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
         right: 0,
         zIndex: 1100,
         fontFamily: "var(--font-family-base)",
-        height: "100px", // Aumenta la altura de la TopBar
-        // Se usa variable CSS para el fondo del TopBar (defínela en globals.css o como fallback)
-        backgroundColor: "var(--topbar-bg, #f5f5f5)",
+        height: "100px", 
+        backgroundColor: "rgba(255, 255, 255, 0.8)", 
+        backdropFilter: "blur(10px)", 
+        boxShadow: "0px 12px 16px rgba(0, 0, 0, 0.3)", 
       }}
     >
       <div
@@ -116,7 +116,6 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
                 className="fw-bold"
                 style={{
                   fontSize: "14px",
-                  // Se usa variable CSS para el color de texto (puedes modificarla desde Settings)
                   color: "var(--primary-color)",
                   fontFamily: "var(--font-family-base)",
                 }}
@@ -139,7 +138,6 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               <span
                 style={{
                   fontSize: "10px",
-                  // Se usa variable CSS para el fondo del badge
                   backgroundColor: "var(--primary-color)",
                   color: "white",
                   padding: "4px 8px",

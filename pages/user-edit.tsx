@@ -18,7 +18,6 @@ type User = {
 };
 
 const UserEdit = () => {
-  // Validación de sesión
   useAuth();
   console.log("[UserEdit] Página cargada y sesión validada.");
 

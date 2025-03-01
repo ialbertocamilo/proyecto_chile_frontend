@@ -22,7 +22,6 @@ interface CustomizationData {
 }
 
 const SettingsPage = () => {
-  // Validamos la sesión con useAuth
   useAuth();
   console.log("[SettingsPage] Página cargada y sesión validada.");
 
@@ -44,9 +43,7 @@ const SettingsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
-  // (Se ha eliminado el useEffect que actualizaba las variables CSS en cada cambio)
 
-  // Función para actualizar las variables CSS globales
   const updateCSSVariables = () => {
     document.documentElement.style.setProperty("--primary-color", customization.primary_color);
     document.documentElement.style.setProperty("--secondary-color", customization.secondary_color);
@@ -59,7 +56,6 @@ const SettingsPage = () => {
     document.documentElement.style.setProperty("--btn-delete-hover-bg", customization.btn_delete_hover_bg);
   };
 
-  // Obtener la configuración actual desde la API.
   useEffect(() => {
     const fetchCustomization = async () => {
       setFetching(true);
@@ -114,7 +110,6 @@ const SettingsPage = () => {
     fetchCustomization();
   }, []);
 
-  // Actualiza el estado al cambiar un input de color o texto.
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     console.log(`[handleChange] ${e.target.name} cambiado a:`, e.target.value);
     setCustomization({
@@ -123,7 +118,6 @@ const SettingsPage = () => {
     });
   };
 
-  // Manejo para el input de archivo (logo).
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       console.log("[handleFileChange] Logo seleccionado:", e.target.files[0]);
@@ -134,7 +128,6 @@ const SettingsPage = () => {
     }
   };
 
-  // Función para subir el logo a la API.
   const uploadLogo = async (): Promise<string | null> => {
     if (!customization.logo) return null;
     const formData = new FormData();
@@ -162,7 +155,6 @@ const SettingsPage = () => {
     }
   };
 
-  // Enviar la configuración actualizada a la API.
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -245,7 +237,6 @@ const SettingsPage = () => {
       const resData = await response.json();
       console.log("[handleSubmit] Configuración actualizada:", resData);
 
-      // Actualiza las variables CSS solo cuando se guarde la configuración
       updateCSSVariables();
 
       await Swal.fire({
@@ -271,7 +262,6 @@ const SettingsPage = () => {
     }
   };
 
-  // Componente para mostrar un selector de color y un input de texto.
   const ColorPickerInput = ({
     label,
     name,

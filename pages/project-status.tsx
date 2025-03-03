@@ -68,7 +68,7 @@ const ProjectListStatusEditPage = () => {
   const router = useRouter();
   console.log("[ProjectListStatusEditPage] Página cargada y sesión validada.");
 
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const [sidebarWidth, ] = useState("300px");
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState("");
@@ -189,13 +189,13 @@ const ProjectListStatusEditPage = () => {
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => {}}  />
       <div
         className="d-flex flex-column flex-grow-1"
-        style={{ marginLeft: sidebarWidth, width: "100%" }}
+        style={{ marginLeft: "100px", width: "100%" }}
       >
         <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container p-4" style={{ marginTop: "100px" }}>
+        <div className="container p-4" style={{ marginTop: "80px" }}>
           {/* Card para el título */}
           <div style={cardStyle}>
             <div className="d-flex justify-content-between align-items-center mb-4">

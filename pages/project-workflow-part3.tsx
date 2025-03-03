@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
 import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
+import Card from "../src/components/common/Card"; 
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
@@ -100,19 +101,6 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-function hexToRgba(hex: string, alpha: number) {
-  const cleanHex = hex.replace("#", "");
-  const r = parseInt(cleanHex.substring(0, 2), 16);
-  const g = parseInt(cleanHex.substring(2, 4), 16);
-  const b = parseInt(cleanHex.substring(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-const cardStyleConfig = {
-  border: "1px solid white",
-  boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-  borderRadius: "16px",
-};
 
 // Se agregó la propiedad activeStep para conocer cuál opción está activa
 interface SidebarItemProps {
@@ -126,7 +114,6 @@ interface SidebarItemProps {
 const SidebarItem: React.FC<SidebarItemProps> = ({ stepNumber, iconName, title, activeStep, onClickAction }) => {
   const primaryColor = "#3ca7b7";
   const inactiveColor = "#ccc";
-  // Se utiliza activeStep pasado por props o se podría leer desde el query si no se pasa
   const currentStep = activeStep !== undefined ? activeStep : stepNumber;
   const handleClick = () => {
     if (onClickAction) {
@@ -190,7 +177,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   }, [hasLoaded, projectId, router]);
 
-  // Se utiliza el estado step del componente padre para controlar el contenido seleccionado
   const [step, setStep] = useState<number>(4);
   useEffect(() => {
     if (router.query.step) {
@@ -201,7 +187,7 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   }, [router.query.step]);
 
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const sidebarWidth = "300px";
 
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [showNewDetailRow, setShowNewDetailRow] = useState(false);
@@ -211,6 +197,7 @@ const ProjectWorkflowPart3: React.FC = () => {
     material_id: 0,
     layer_thickness: 10,
   });
+  // Controla si se muestra la vista inicial o la de pestañas
   const [showTabsInStep4, setShowTabsInStep4] = useState(false);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
@@ -284,7 +271,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setMurosTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de muros:", error);
-      Swal.fire("Error", "Error al obtener datos de muros. Ver consola.");
+      Swal.fire("Información", "Aún no hay datos para mostrar", "info");
     }
   }, [projectId]);
 
@@ -302,7 +289,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setTechumbreTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de techo:", error);
-      Swal.fire("Error", "Error al obtener datos de techo. Ver consola.");
+      Swal.fire("Información", "Aún no hay datos para mostrar", "info");
     }
   }, [projectId]);
 
@@ -320,7 +307,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setPisosTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de piso:", error);
-      Swal.fire("Error", "Error al obtener datos de piso. Ver consola.");
+      Swal.fire("Información", "Aún no hay datos para mostrar", "info");
     }
   }, [projectId]);
 
@@ -363,6 +350,13 @@ const ProjectWorkflowPart3: React.FC = () => {
       fetchFetchedDetails();
     }
   }, [step]);
+
+  useEffect(() => {
+    if (showTabsInStep4) {
+      setTabStep4("muros");
+    }
+  }, [showTabsInStep4]);
+  
 
   useEffect(() => {
     if (showTabsInStep4) {
@@ -428,15 +422,6 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   };
 
-  const handleCancelNewDetail = () => {
-    setShowNewDetailRow(false);
-    setNewDetailForm({
-      scantilon_location: "",
-      name_detail: "",
-      material_id: 0,
-      layer_thickness: 10,
-    });
-  };
 
   const handleSaveDetails = async () => {
     if (!projectId) return;
@@ -603,7 +588,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       <div className="mb-3" style={{ padding: "20px" }}>
         <h2
           style={{
-            fontSize: "40px",
+            fontSize: "30px",
             margin: "0 0 20px 0",
             fontWeight: "normal",
             fontFamily: "var(--font-family-base)",
@@ -687,7 +672,6 @@ const ProjectWorkflowPart3: React.FC = () => {
                   fontWeight: "normal",
                 }}
                 onClick={() => setTabStep4(item.key)}
-                disabled={isViewMode}
               >
                 {item.label}
               </button>
@@ -879,30 +863,20 @@ const ProjectWorkflowPart3: React.FC = () => {
                     </th>
                   </tr>
                   <tr>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                      I [W/mK]
-                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>I [W/mK]</th>
                     <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
                       e Aisl [cm]
                     </th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                      I [W/mK]
-                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>I [W/mK]</th>
                     <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
                       e Aisl [cm]
                     </th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                      D [cm]
-                    </th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                      I [W/mK]
-                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>D [cm]</th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>I [W/mK]</th>
                     <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
                       e Aisl [cm]
                     </th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                      D [cm]
-                    </th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>D [cm]</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1032,32 +1006,16 @@ const ProjectWorkflowPart3: React.FC = () => {
             </div>
           )}
         </div>
-        {/* Botones de navegación dentro del contenedor del step */}
+        {/* Botón "Regresar" para volver a la tabla inicial */}
+        <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "10px" }}>
+          <CustomButton variant="save" onClick={() => setShowTabsInStep4(false)}>
+            <span className="material-icons">arrow_back</span> Regresar
+          </CustomButton>
+        </div>
+        {/* Botones de navegación: se muestran tanto en modo vista como en edición */}
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
-          <CustomButton
-            variant="backIcon"
-            onClick={() => {
-              if (step === 4) {
-                router.push("/project-workflow-part2?mode=view");
-              } else if (step === 7) {
-                setStep(4);
-              }
-            }}
-          >
-            <span className="material-icons">arrow_back</span>
-          </CustomButton>
-          <CustomButton
-            variant="forwardIcon"
-            onClick={() => {
-              if (step === 4) {
-                setStep(7);
-              } else if (step === 7) {
-                router.push("/project-workflow-part4?mode=view");
-              }
-            }}
-          >
-            <span className="material-icons">arrow_forward</span>
-          </CustomButton>
+          
+          
         </div>
       </div>
     );
@@ -1075,24 +1033,27 @@ const ProjectWorkflowPart3: React.FC = () => {
               placeholder="Buscar..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ height: "38px" }}
+              style={{ height: "50px" }}
             />
           </div>
           {!isViewMode && (
-            <CustomButton
-              variant="save"
-              onClick={() => {
-                setShowNewDetailRow((prev) => !prev);
-                if (!showNewDetailRow) fetchMaterials();
-              }}
-            >
-              <span className="material-icons">add</span> Nuevo
-            </CustomButton>
+            <div style={{ height: "50px" }}>
+              <CustomButton
+                variant="save"
+                onClick={() => {
+                  setShowNewDetailRow((prev) => !prev);
+                  if (!showNewDetailRow) fetchMaterials();
+                }}
+                style={{ height: "100%" }}
+              >
+                <span className="material-icons">add</span> Nuevo
+              </CustomButton>
+            </div>
           )}
         </div>
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
-            <table className="table table-bordered table-striped">
+            <table className="table table-bordered table-striped" style={{ textAlign: "center" }}>
               <thead>
                 <tr>
                   <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
@@ -1106,9 +1067,6 @@ const ProjectWorkflowPart3: React.FC = () => {
                   </th>
                   <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
                     Espesor capa (cm)
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
-                    Acción
                   </th>
                 </tr>
               </thead>
@@ -1183,18 +1141,6 @@ const ProjectWorkflowPart3: React.FC = () => {
                         disabled={isViewMode}
                       />
                     </td>
-                    <td className="d-flex gap-2 justify-content-center">
-                      {!isViewMode && (
-                        <>
-                          <CustomButton variant="save" onClick={handleCreateNewDetail}>
-                            <span className="material-icons">add</span>
-                          </CustomButton>
-                          <CustomButton variant="cancelIcon" onClick={handleCancelNewDetail}>
-                            <span className="material-icons">cancel</span>
-                          </CustomButton>
-                        </>
-                      )}
-                    </td>
                   </tr>
                 )}
                 {fetchedDetails
@@ -1213,45 +1159,50 @@ const ProjectWorkflowPart3: React.FC = () => {
                       <td>{det.name_detail}</td>
                       <td>{det.material}</td>
                       <td>{det.layer_thickness}</td>
-                      <td>{/* En modo vista no se muestran acciones de edición */}</td>
                     </tr>
                   ))}
               </tbody>
             </table>
           </div>
         </div>
-        {/* Botones de navegación dentro del contenedor */}
+        {/* Botones para la tabla inicial */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "10px",
+            marginBottom: "10px",
+          }}
+        >
+          <CustomButton variant="save" onClick={() => setShowTabsInStep4(true)}>
+            Mostrar datos
+          </CustomButton>
+          {!isViewMode && showNewDetailRow && (
+            <div style={{ height: "50px" }}>
+              <CustomButton
+                variant="save"
+                onClick={handleCreateNewDetail}
+                style={{ height: "100%" }}
+              >
+                <span className="material-icons">save</span> Crear
+              </CustomButton>
+            </div>
+          )}
+          {!isViewMode && (
+          <CustomButton variant="save" onClick={handleSaveDetails}>
+            <span className="material-icons">sd_card</span> Grabar Datos
+          </CustomButton>
+          )}
+        </div>
+        {/* En modo vista se muestran también los botones de navegación */}
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
-          <CustomButton
-            variant="backIcon"
-            onClick={() => {
-              if (step === 4) {
-                router.push("/project-workflow-part3?mode=view");
-              } else if (step === 7) {
-                setStep(4);
-              }
-            }}
-          >
-            <span className="material-icons">arrow_back</span>
-          </CustomButton>
-          <CustomButton
-            variant="forwardIcon"
-            onClick={() => {
-              if (step === 4) {
-                setStep(7);
-              } else if (step === 7) {
-                router.push("/project-status");
-              }
-            }}
-          >
-            <span className="material-icons">arrow_forward</span>
-          </CustomButton>
+          
         </div>
       </>
     );
   };
 
-  // --- Vista para el step 7 (Recinto) ---
   const renderRecinto = () => {
     return (
       <>
@@ -1289,14 +1240,8 @@ const ProjectWorkflowPart3: React.FC = () => {
             </tbody>
           </table>
         </div>
-        {/* Botones de navegación dentro del contenedor */}
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
-          <CustomButton variant="backIcon" onClick={() => setStep(4)}>
-            <span className="material-icons">arrow_back</span>
-          </CustomButton>
-          <CustomButton variant="forwardIcon" onClick={() => router.push("/project-status")}>
-            <span className="material-icons">arrow_forward</span>
-          </CustomButton>
+          
         </div>
       </>
     );
@@ -1305,101 +1250,112 @@ const ProjectWorkflowPart3: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => {}} />
       <TopBar sidebarWidth={sidebarWidth} />
       <div
         className="container"
         style={{
-          maxWidth: "1780px",
+          maxWidth: "1800px",
           marginTop: "120px",
-          marginLeft: "120px",
+          marginLeft: "110px",
           marginRight: "50px",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
         }}
       >
-        {/* Card de Encabezado */}
-        <div className="card mb-4" style={{ width: "100%", height: "155px", overflow: "hidden", ...cardStyleConfig }}>
-          <div className="card-body p-0">{renderMainHeader()}</div>
-        </div>
-
-        {/* Card de contenido principal */}
-        <div className="card shadow w-100" style={{ overflow: "hidden", ...cardStyleConfig }}>
-          <div className="card-body p-0">
-            <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
-              <div
-                style={{
-                  width: "380px",
-                  padding: "20px",
-                  boxSizing: "border-box",
-                  borderRight: "1px solid #ccc",
-                }}
-              >
-                <ul className="nav flex-column" style={{ height: "100%" }}>
-                  {/* Opciones que solo se muestran en modo vista */}
-                  {isViewMode && (
-                    <>
-                      <SidebarItemComponent
-                        stepNumber={1}
-                        iconName="assignment_ind"
-                        title="Detalles de propietario / proyecto y clasificación de edificaciones"
-                        onClickAction={() => router.push("/project-workflow-part1?mode=view&step=1")}
-                      />
-                      <SidebarItemComponent
-                        stepNumber={2}
-                        iconName="location_on"
-                        title="Ubicación del proyecto"
-                        onClickAction={() => router.push("/project-workflow-part1?mode=view&step=2")}
-                      />
-                      <SidebarItemComponent
-                        stepNumber={3}
-                        iconName="imagesearch_roller"
-                        title="Lista de materiales"
-                        onClickAction={() => router.push("/project-workflow-part2?mode=view&step=3")}
-                      />
-                      <SidebarItemComponent
-                        stepNumber={5}
-                        iconName="home"
-                        title="Elementos translúcidos"
-                        onClickAction={() => router.push("/project-workflow-part2?mode=view&step=5")}
-                      />
-                      <SidebarItemComponent
-                        stepNumber={6}
-                        iconName="deck"
-                        title="Perfil de uso"
-                        onClickAction={() => router.push("/project-workflow-part2?mode=view&step=6")}
-                      />
-                    </>
-                  )}
-                  {/* Opciones ya existentes: se pasa la función para actualizar el step y se muestra cuál está activo */}
-                  <SidebarItemComponent
-                    stepNumber={4}
-                    iconName="build"
-                    title="Detalles constructivos"
-                    onClickAction={() => setStep(4)}
-                  />
-                  <SidebarItemComponent
-                    stepNumber={7}
-                    iconName="design_services"
-                    title="Recinto"
-                    onClickAction={() => setStep(7)}
-                  />
-                </ul>
-              </div>
-              <div style={{ flex: 1, padding: "20px" }}>
-                {step === 4 && (
+        <Card marginLeft="1px" width="100%">
+          {renderMainHeader()}
+        </Card>
+        <Card marginTop="15px" marginLeft="1px" width="100%">
+          <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
+            <div
+              style={{
+                width: "380px",
+                padding: "20px",
+                boxSizing: "border-box",
+                borderRight: "1px solid #ccc",
+              }}
+            >
+              <ul className="nav flex-column" style={{ height: "100%" }}>
+                {isViewMode && (
                   <>
-                    {renderInitialDetails()}
-                    {renderStep4Tabs()}
+                    <SidebarItemComponent
+                      stepNumber={1}
+                      iconName="assignment_ind"
+                      title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
+                      onClickAction={() => router.push("/project-workflow-part1?mode=view&step=1")}
+                    />
+                    <SidebarItemComponent
+                      stepNumber={2}
+                      iconName="location_on"
+                      title="Ubicación del proyecto"
+                      onClickAction={() => router.push("/project-workflow-part1?mode=view&step=2")}
+                    />
+                    <SidebarItemComponent
+                      stepNumber={3}
+                      iconName="imagesearch_roller"
+                      title="Lista de materiales"
+                      onClickAction={() => router.push("/project-workflow-part2?mode=view&step=3")}
+                    />
+                    <SidebarItemComponent
+                      stepNumber={5}
+                      iconName="home"
+                      title="Elementos translúcidos"
+                      onClickAction={() => router.push("/project-workflow-part2?mode=view&step=5")}
+                    />
+                    <SidebarItemComponent
+                      stepNumber={6}
+                      iconName="deck"
+                      title="Perfil de uso"
+                      onClickAction={() => router.push("/project-workflow-part2?mode=view&step=6")}
+                    />
                   </>
                 )}
-
-                {step === 7 && renderRecinto()}
-              </div>
+                <SidebarItemComponent
+                  stepNumber={4}
+                  iconName="build"
+                  title="Detalles constructivos"
+                  onClickAction={() => setStep(4)}
+                />
+                <SidebarItemComponent
+                  stepNumber={7}
+                  iconName="design_services"
+                  title="Recinto"
+                  onClickAction={() => setStep(7)}
+                />
+              </ul>
+            </div>
+            <div style={{ flex: 1, padding: "20px" }}>
+              {step === 4 && (
+                <>
+                  {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+                </>
+              )}
+              {step === 7 && renderRecinto()}
             </div>
           </div>
-        </div>
+        </Card>
       </div>
+      <style jsx>{`
+        .header-card {
+          width: 100%;
+          height: 155px;
+          overflow: hidden;
+          border: 1px solid white;
+          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+          border-radius: 16px;
+        }
+        .content-card {
+          overflow: hidden;
+          border: 1px solid white;
+          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+          border-radius: 16px;
+        }
+        .header-card .card-body,
+        .content-card .card-body {
+          padding: 0;
+        }
+      `}</style>
     </>
   );
 };

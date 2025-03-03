@@ -43,7 +43,7 @@ const EditProfile = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const [sidebarWidth, ] = useState("300px");
 
   const CARD_WIDTH = "90%"; 
   const CARD_MARGIN_LEFT = "20%"; 
@@ -169,11 +169,11 @@ const EditProfile = () => {
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => {}} />
       <div
         className="d-flex flex-column flex-grow-1"
         style={{
-          marginLeft: sidebarWidth,
+          marginLeft: "130px",
           width: "100%",
         }}
       >

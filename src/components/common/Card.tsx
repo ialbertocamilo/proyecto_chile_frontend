@@ -13,11 +13,11 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({
   children,
-  width = "100%",
-  borderRadius = "16px",
+  width = "106%",
+  borderRadius = "14px",
   marginTop = "120px",
   marginRight = "0px",
-  marginLeft = "0px",
+  marginLeft = "-60px",
   style,
 }) => {
   const cardStyle: React.CSSProperties = {

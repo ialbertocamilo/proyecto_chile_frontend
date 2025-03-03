@@ -19,7 +19,7 @@ const getUserTypeText = (roleId: string): string => {
   }
 };
 
-const TopBar = ({ sidebarWidth }: TopBarProps) => {
+const TopBar = ({  }: TopBarProps) => {
   const [user, setUser] = useState({ name: "Usuario", email: "", userType: "Tipo de Usuario" });
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -33,15 +33,9 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
       if (storedProfile) {
         try {
           const parsedProfile = JSON.parse(storedProfile);
-          const emailFromProfile = parsedProfile.email
-            ? parsedProfile.email
-            : localStorage.getItem("email") || "";
-          const nameFromProfile = parsedProfile.name
-            ? parsedProfile.name
-            : localStorage.getItem("user_name") || "Usuario";
-          const userTypeFromProfile = parsedProfile.userType
-            ? parsedProfile.userType
-            : localStorage.getItem("role_id") || "Tipo de Usuario"; // Cargar el tipo de usuario
+          const emailFromProfile = parsedProfile.email ? parsedProfile.email : localStorage.getItem("email") || "";
+          const nameFromProfile = parsedProfile.name ? parsedProfile.name : localStorage.getItem("user_name") || "Usuario";
+          const userTypeFromProfile = parsedProfile.userType ? parsedProfile.userType : localStorage.getItem("role_id") || "Tipo de Usuario";
           setUser({ name: nameFromProfile, email: emailFromProfile, userType: userTypeFromProfile });
         } catch (err) {
           console.error("Error al parsear el perfil desde localStorage:", err);
@@ -74,21 +68,22 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
       style={{
         position: "fixed",
         top: 0,
-        left: sidebarWidth,
+        left: 0, // Se elimina el offset de la sidebar
         right: 0,
         zIndex: 1100,
         fontFamily: "var(--font-family-base)",
         height: "100px", 
-        backgroundColor: "rgba(255, 255, 255, 0.8)", 
-        backdropFilter: "blur(10px)", 
+        backgroundColor: "rgba(255, 255, 255, 0.2)", 
+        backdropFilter: "blur(7px)", 
         boxShadow: "0px 12px 16px rgba(0, 0, 0, 0.3)", 
+        width: "100%" // Aseguramos que ocupe el 100% del ancho
       }}
     >
       <div
         className="container-fluid d-flex justify-content-end align-items-center"
         style={{ fontFamily: "var(--font-family-base)" }}
       >
-        <div className="dropdown" style={{ fontFamily: "var(--font-family-base)" }}>
+        <div className="dropdown" style={{ position: "relative", fontFamily: "var(--font-family-base)" }}>
           <button
             className="btn d-flex align-items-center"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -101,7 +96,6 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               fontFamily: "var(--font-family-base)",
             }}
           >
-            {/* Icono de perfil usando next/image */}
             <Image
               src="/assets/images/user_icon.png"
               alt="User"
@@ -110,7 +104,6 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               className="rounded-circle"
               style={{ marginRight: "8px" }}
             />
-            {/* Información del usuario */}
             <div className="d-flex flex-column align-items-start" style={{ fontFamily: "var(--font-family-base)" }}>
               <span
                 className="fw-bold"
@@ -134,7 +127,6 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
                 {user.name}{" "}
                 <i className="bi bi-caret-down-fill ms-1" style={{ fontSize: "10px", fontFamily: "var(--font-family-base)" }}></i>
               </span>
-              {/* Mostrar el tipo de usuario */}
               <span
                 style={{
                   fontSize: "10px",
@@ -160,9 +152,6 @@ const TopBar = ({ sidebarWidth }: TopBarProps) => {
               <Link href="/edit-profile" className="dropdown-item" style={{ fontFamily: "var(--font-family-base)" }}>
                 <i className="bi bi-person me-2"></i> Perfil
               </Link>
-              {/* <Link href="/settings" className="dropdown-item" style={{ fontFamily: "var(--font-family-base)" }}>
-                <i className="bi bi-gear me-2"></i> Configuración
-              </Link> */}
               <div className="dropdown-divider"></div>
               <button
                 className="dropdown-item text-danger"

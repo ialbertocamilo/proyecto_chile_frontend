@@ -7,7 +7,7 @@ import TopBar from "./layout/TopBar";
 
 const Dashboard = () => {
   const [activeView, setActiveView] = useState("projects"); // manejar las vistas
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const [sidebarWidth, ] = useState("300px");
 
   // Renderiza la vista activa
   const renderContent = () => {
@@ -27,7 +27,7 @@ const Dashboard = () => {
   return (
     <div className="d-flex">
       {/* Barra lateral: Se envían ambas props obligatorias */}
-      <Navbar setActiveView={setActiveView} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={setActiveView}  />
 
       {/* Contenedor principal: Se pasa la propiedad "sidebarWidth" a TopBar */}
       <div className="d-flex flex-column flex-grow-1">

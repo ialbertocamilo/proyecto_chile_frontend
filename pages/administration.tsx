@@ -20,6 +20,8 @@ interface MaterialAttributes {
 interface Material {
   id: number;
   atributs: MaterialAttributes;
+  // Se normaliza la propiedad para que siempre exista "material_id"
+  material_id?: number;
   name?: string;
   type?: string;
   is_deleted?: boolean;
@@ -30,7 +32,7 @@ interface Detail {
   id: number;
   scantilon_location: string;
   name_detail: string;
-  id_material: number;
+  material_id: number;
   layer_thickness: number;
   created_status?: string;
   is_deleted?: boolean;
@@ -65,7 +67,7 @@ const AdministrationPage: React.FC = () => {
   useAuth();
   console.log("[AdministrationPage] Página cargada y sesión validada.");
 
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const [sidebarWidth] = useState("300px");
   const [step, setStep] = useState<number>(3);
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
   const [details, setDetails] = useState<Detail[]>([]);
@@ -105,7 +107,7 @@ const AdministrationPage: React.FC = () => {
   const [newDetail, setNewDetail] = useState({
     scantilon_location: "",
     name_detail: "",
-    id_material: 0,
+    material_id: 0,
     layer_thickness: 0,
   });
 
@@ -135,6 +137,7 @@ const AdministrationPage: React.FC = () => {
     window.location.href = "/login";
   };
 
+  // Normalizamos la respuesta para que cada material tenga "material_id"
   const fetchMaterialsList = useCallback(async (page: number): Promise<void> => {
     try {
       const token = localStorage.getItem("token");
@@ -147,7 +150,13 @@ const AdministrationPage: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}` };
       const response: AxiosResponse<{ constants: Material[] }> = await axios.get(url, { headers });
       console.log("[fetchMaterialsList] Materiales recibidos:", response.data);
-      setMaterialsList(response.data.constants || []);
+      const mappedMaterials = (response.data.constants || []).map(
+        (mat: Material & { id_material?: number }) => ({
+          ...mat,
+          material_id: mat.id_material || mat.id, // Si el GET devuelve id_material, lo usamos; si no, usamos id
+        })
+      );
+      setMaterialsList(mappedMaterials);
     } catch (error: unknown) {
       console.error("[fetchMaterialsList] Error al obtener lista de materiales:", error);
       Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error").then(() => {
@@ -156,6 +165,7 @@ const AdministrationPage: React.FC = () => {
     }
   }, []);
 
+  // Normalizamos los detalles para que tengan "material_id"
   const fetchDetails = useCallback(async (): Promise<void> => {
     try {
       const token = localStorage.getItem("token");
@@ -168,7 +178,13 @@ const AdministrationPage: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}` };
       const response: AxiosResponse<Detail[]> = await axios.get(url, { headers });
       console.log("[fetchDetails] Detalles recibidos:", response.data);
-      setDetails(response.data || []);
+      const mappedDetails = (response.data || []).map(
+        (det: Detail & { id_material?: number }) => ({
+          ...det,
+          material_id: det.id_material || det.material_id, // Normalizamos el id del material
+        })
+      );
+      setDetails(mappedDetails);
     } catch (error: unknown) {
       console.error("[fetchDetails] Error al obtener detalles:", error);
       Swal.fire("Error", "Error al obtener detalles. Ver consola.", "error").then(() => {
@@ -329,7 +345,7 @@ const AdministrationPage: React.FC = () => {
     if (
       newDetail.scantilon_location.trim() === "" ||
       newDetail.name_detail.trim() === "" ||
-      newDetail.id_material <= 0 ||
+      newDetail.material_id <= 0 ||
       newDetail.layer_thickness <= 0
     ) {
       Swal.fire("Campos incompletos", "Por favor complete todos los campos de detalle", "warning");
@@ -345,7 +361,7 @@ const AdministrationPage: React.FC = () => {
       const payload = {
         scantilon_location: newDetail.scantilon_location,
         name_detail: newDetail.name_detail,
-        id_material: newDetail.id_material,
+        material_id: newDetail.material_id,
         layer_thickness: newDetail.layer_thickness,
       };
       const url = `${constantUrlApiEndpoint}/details/create`;
@@ -354,7 +370,7 @@ const AdministrationPage: React.FC = () => {
       if (response.status === 200) {
         Swal.fire("Detalle creado", "El detalle fue creado correctamente", "success");
         setShowCreateDetailModal(false);
-        setNewDetail({ scantilon_location: "", name_detail: "", id_material: 0, layer_thickness: 0 });
+        setNewDetail({ scantilon_location: "", name_detail: "", material_id: 0, layer_thickness: 0 });
         await fetchDetails();
       }
     } catch (error: unknown) {
@@ -428,14 +444,14 @@ const AdministrationPage: React.FC = () => {
 
   return (
     <>
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => {}} />
       <TopBar sidebarWidth={sidebarWidth} />
       <div
         className="container"
         style={{
-          maxWidth: "1700px",
-          marginTop: "150px",
-          marginLeft: `calc(${sidebarWidth} + 70px)`,
+          maxWidth: "1780px",
+          marginTop: "120px",
+          marginLeft: "120px",
           marginRight: "50px",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
@@ -443,7 +459,7 @@ const AdministrationPage: React.FC = () => {
       >
         <div className="card" style={cardStyle}>
           <div className="card-body">
-            <h1 className="fw-normal">Administrador de Parámetros</h1>
+            <h1 style={{ fontSize: "30px" }}>Administrador de Parámetros</h1>
           </div>
         </div>
         <div className="card" style={{ ...cardStyle, minHeight: "600px" }}>
@@ -547,7 +563,9 @@ const AdministrationPage: React.FC = () => {
                     </div>
                     <div className="mt-4 text-end">
                       <CustomButton variant="save" onClick={handleCreateMaterial}>
-                        <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
+                        <span className="material-icons" style={{ marginRight: "5px" }}>
+                          sd_card
+                        </span>
                         Grabar datos
                       </CustomButton>
                     </div>
@@ -577,7 +595,9 @@ const AdministrationPage: React.FC = () => {
                                 <select
                                   className="form-control"
                                   value={newDetail.scantilon_location}
-                                  onChange={(e) => setNewDetail((prev) => ({ ...prev, scantilon_location: e.target.value }))}
+                                  onChange={(e) =>
+                                    setNewDetail((prev) => ({ ...prev, scantilon_location: e.target.value }))
+                                  }
                                 >
                                   <option value="">Seleccione</option>
                                   <option value="Techo">Techo</option>
@@ -597,17 +617,17 @@ const AdministrationPage: React.FC = () => {
                               <td>
                                 <select
                                   className="form-control"
-                                  value={newDetail.id_material}
+                                  value={newDetail.material_id}
                                   onChange={(e) =>
                                     setNewDetail((prev) => ({
                                       ...prev,
-                                      id_material: parseInt(e.target.value),
+                                      material_id: parseInt(e.target.value),
                                     }))
                                   }
                                 >
                                   <option value={0}>Seleccione un material</option>
                                   {materialsList.map((mat) => (
-                                    <option key={mat.id} value={mat.id}>
+                                    <option key={mat.material_id} value={mat.material_id}>
                                       {mat.atributs.name}
                                     </option>
                                   ))}
@@ -619,7 +639,9 @@ const AdministrationPage: React.FC = () => {
                                   className="form-control"
                                   placeholder="Espesor (cm)"
                                   value={newDetail.layer_thickness || 0}
-                                  onChange={(e) => setNewDetail((prev) => ({ ...prev, layer_thickness: parseFloat(e.target.value) }))}
+                                  onChange={(e) =>
+                                    setNewDetail((prev) => ({ ...prev, layer_thickness: parseFloat(e.target.value) }))
+                                  }
                                 />
                               </td>
                             </tr>
@@ -628,7 +650,10 @@ const AdministrationPage: React.FC = () => {
                             <tr key={det.id}>
                               <td>{det.scantilon_location}</td>
                               <td>{det.name_detail}</td>
-                              <td>{materialsList.find((mat) => mat.id === det.id_material)?.atributs.name || "N/A"}</td>
+                              <td>
+                                {materialsList.find((mat) => mat.material_id === det.material_id)?.atributs.name ||
+                                  "N/A"}
+                              </td>
                               <td>{det.layer_thickness}</td>
                             </tr>
                           ))}
@@ -637,7 +662,9 @@ const AdministrationPage: React.FC = () => {
                     </div>
                     <div className="mt-4 text-end">
                       <CustomButton variant="save" onClick={handleCreateDetail}>
-                        <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
+                        <span className="material-icons" style={{ marginRight: "5px" }}>
+                          sd_card
+                        </span>
                         Grabar datos
                       </CustomButton>
                     </div>
@@ -670,7 +697,8 @@ const AdministrationPage: React.FC = () => {
                                     : "var(--secondary-color)",
                                 border: "none",
                                 cursor: "pointer",
-                                borderBottom: tabElementosOperables === tab.toLowerCase() ? "3px solid var(--primary-color)" : "none",
+                                borderBottom:
+                                  tabElementosOperables === tab.toLowerCase() ? "3px solid var(--primary-color)" : "none",
                               }}
                               onClick={() => setTabElementosOperables(tab.toLowerCase())}
                             >
@@ -893,7 +921,9 @@ const AdministrationPage: React.FC = () => {
                     </div>
                     <div className="mt-4 text-end">
                       <CustomButton variant="save" onClick={handleCreateElement}>
-                        <span className="material-icons" style={{ marginRight: "5px" }}>sd_card</span>
+                        <span className="material-icons" style={{ marginRight: "5px" }}>
+                          sd_card
+                        </span>
                         Grabar datos
                       </CustomButton>
                     </div>
@@ -964,4 +994,3 @@ const AdministrationPage: React.FC = () => {
 };
 
 export default AdministrationPage;
-//a

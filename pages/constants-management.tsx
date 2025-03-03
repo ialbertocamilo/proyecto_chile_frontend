@@ -29,7 +29,7 @@ const ConstantsManagement = () => {
   console.log("[ConstantsManagement] Sesión validada y página cargada.");
 
   // Se elimina router ya que no se utiliza.
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const [sidebarWidth, ] = useState("300px");
 
   // -- Para la tabla (se muestran todos los materiales sin paginación) --
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -284,11 +284,11 @@ const ConstantsManagement = () => {
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => {}}/>
       <div
         className="d-flex flex-column flex-grow-1"
         style={{
-          marginLeft: sidebarWidth,
+          marginLeft: "100px",
           width: "100%",
         }}
       >

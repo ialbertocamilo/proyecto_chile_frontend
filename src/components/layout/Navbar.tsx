@@ -8,19 +8,14 @@ import GoogleIcons from "../../../public/GoogleIcons";
 import "../../../public/assets/css/globals.css";
 
 interface NavbarProps {
-  setSidebarWidth: (width: string) => void;
   setActiveView: (view: string) => void;
 }
 
-const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
+const Navbar = ({ setActiveView }: NavbarProps) => {
   const router = useRouter();
   const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
   const [roleId, setRoleId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setSidebarWidth("100px");
-  }, [setSidebarWidth]);
 
   useEffect(() => {
     const storedLogo = localStorage.getItem("logoUrl");
@@ -91,7 +86,6 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
     color: "#fff",
   };
 
-  
   const logoSize = 80;
 
   return (
@@ -103,8 +97,8 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
           position: "fixed",
           left: 0,
           top: 0,
-          zIndex: 1000,
-          width: "100px",
+          zIndex: 1200,
+          width: "100px", // Ancho fijo
           backgroundColor: "var(--primary-color)",
           height: "100vh",
           fontFamily: "var(--font-family-base)",
@@ -138,7 +132,6 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
           }}
         >
           <ul className="nav flex-column">
-            {/* Se muestra el icono "Proyectos" solo si roleId no es "1" */}
             {roleId !== "1" && (
               <li className="nav-item">
                 <Link href="/project-list" className="nav-link text-white" style={navLinkStyle}>
@@ -149,7 +142,6 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
                 </Link>
               </li>
             )}
-            {/* Se muestra el botón "Proyecto Nuevo" solo si roleId no es "1" */}
             {roleId !== "1" && (
               <li className="nav-item">
                 <Link href="/project-workflow-part1" className="nav-link text-white" style={navLinkStyle}>
@@ -160,7 +152,6 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
                 </Link>
               </li>
             )}
-            {/* Se muestran estas opciones solo si existe projectId y roleId es "2" */}
             {projectId && roleId === "2" && (
               <>
                 <li className="nav-item">
@@ -183,7 +174,6 @@ const Navbar = ({ setSidebarWidth, setActiveView }: NavbarProps) => {
             )}
           </ul>
 
-          {/* Grupo Inferior: Condicional según role_id */}
           <ul className="nav flex-column" style={{ marginTop: "auto" }}>
             {roleId !== "2" && (
               <>

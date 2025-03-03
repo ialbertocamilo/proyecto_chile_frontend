@@ -50,7 +50,7 @@ const DashboardPage: React.FC = () => {
   console.log("[DashboardPage] Página cargada y sesión validada.");
 
   // Manejamos dinámicamente el ancho de la barra lateral
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const [sidebarWidth, ] = useState("300px");
 
   // 1. Leemos las variables CSS al montar el componente (o cada vez que quieras refrescar).
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
@@ -157,11 +157,11 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => {}} />
       <div
         className="d-flex flex-column flex-grow-1"
         style={{
-          marginLeft: sidebarWidth,
+          marginLeft: "110px",
           width: "100%",
         }}
       >

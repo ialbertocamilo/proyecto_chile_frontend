@@ -29,7 +29,7 @@ const UserEdit = () => {
   const [active, setActive] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const [sidebarWidth, ] = useState("300px");
 
   const fetchUser = useCallback(async () => {
     try {
@@ -204,7 +204,7 @@ const UserEdit = () => {
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => {}}  />
       <div
         className="d-flex flex-column flex-grow-1"
         style={{

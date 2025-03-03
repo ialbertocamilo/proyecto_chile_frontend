@@ -5,134 +5,23 @@ import axios from "axios";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { useRouter } from "next/router";
-
 import CustomButton from "../src/components/common/CustomButton";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
+import Card from "../src/components/common/Card"; // Componente Card con estilos por defecto
 import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 
-// ---------------------------
-// Constantes de estilos para las cards
-// ---------------------------
-const CARD_WIDTH = "100%";
-const CARD_MARGIN_LEFT = "0px";
-const CARD_MARGIN_RIGHT = "0px";
-export const CARD_MARGIN_TOP = "120px";
-const CARD_MARGIN_BOTTOM = "20px";
-const CARD_BORDER_RADIUS = "16px";
-const CARD_BOX_SHADOW = "0 4px 8px rgba(0, 0, 0, 0.1)";
-const CARD_BORDER_COLOR = "#ccc";
-
-const baseCardStyle: React.CSSProperties = {
-  width: CARD_WIDTH,
-  marginLeft: CARD_MARGIN_LEFT,
-  marginRight: CARD_MARGIN_RIGHT,
-  marginBottom: CARD_MARGIN_BOTTOM,
-  borderRadius: CARD_BORDER_RADIUS,
-  boxShadow: CARD_BOX_SHADOW,
-  border: `1px solid ${CARD_BORDER_COLOR}`,
-};
-
-const titleCardStyle: React.CSSProperties = {
-  ...baseCardStyle,
-  height: "80px",
-  padding: "10px 20px",
-  marginTop: CARD_MARGIN_TOP,
-  textAlign: "left",
-};
-
-const formCardStyle: React.CSSProperties = {
-  ...baseCardStyle,
-  padding: "0px",
-  marginTop: "10px",
-  minHeight: "400px",
-  width: "100%",
-};
-
-// Componente SidebarItem
-interface SidebarItemProps {
-  stepNumber: number;
-  iconName: string;
-  title: string;
-  currentStep: number;
-  setStep: React.Dispatch<React.SetStateAction<number>>;
-  primaryColor: string;
-  // Prop opcional para definir una acción al hacer click (usada en modo vista)
-  onClickAction?: () => void;
-}
-
-const SidebarItem: React.FC<SidebarItemProps> = ({
-  stepNumber,
-  iconName,
-  title,
-  currentStep,
-  setStep,
-  primaryColor,
-  onClickAction,
-}) => {
-  const isSelected = currentStep === stepNumber;
-  const activeColor = primaryColor;
-  const inactiveColor = "#ccc";
-
-  const handleClick = () => {
-    if (onClickAction) {
-      onClickAction();
-    } else {
-      setStep(stepNumber);
-    }
-  };
-
-  return (
-    <li className="nav-item" style={{ cursor: "pointer" }} onClick={handleClick}>
-      <div
-        style={{
-          width: "100%",
-          height: "100px",
-          border: `1px solid ${isSelected ? activeColor : inactiveColor}`,
-          borderRadius: "8px",
-          marginBottom: "16px",
-          display: "flex",
-          alignItems: "center",
-          paddingLeft: "50px",
-          color: isSelected ? activeColor : inactiveColor,
-          fontFamily: "var(--font-family-base)",
-          fontWeight: "normal",
-        }}
-      >
-        <span
-          style={{
-            marginRight: "15px",
-            fontSize: "2.5rem",
-            lineHeight: "1",
-          }}
-        >
-          <span className="material-icons" style={{ fontSize: "inherit" }}>
-            {iconName}
-          </span>
-        </span>
-        <span
-          style={{
-            fontWeight: "normal",
-            whiteSpace: "normal",
-            width: "180px",
-          }}
-        >
-          {title}
-        </span>
-      </div>
-    </li>
-  );
-};
+// Importamos el nuevo componente SidebarItemComponent
+import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
 
 const NoSSRInteractiveMap = dynamic(
   () => import("../src/components/InteractiveMap"),
   { ssr: false }
 );
 
-// Tipado para FormData y Country
 type Country = "" | "Perú" | "Chile";
 
 interface FormData {
@@ -155,12 +44,12 @@ interface FormData {
 const ProjectWorkflowPart1: React.FC = () => {
   useAuth();
   const router = useRouter();
-  // Leemos el modo de la URL (por ejemplo, mode=view)
   const mode = router.query.mode as string;
   const isViewMode = mode === "view";
 
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  // Ancho estático del sidebar.
+  const sidebarWidth = "300px";
   const [step, setStep] = useState<number>(1);
   const [, setCreatedProjectId] = useState<number | null>(null);
   const [locationSearch, setLocationSearch] = useState("");
@@ -192,7 +81,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
 
-  // Nuevo efecto para leer el query param "step" en modo view
   useEffect(() => {
     if (router.isReady && isViewMode) {
       const stepQuery = router.query.step;
@@ -362,7 +250,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         title: "Campos incompletos",
         text: "Por favor complete todos los campos obligatorios.",
         icon: "warning",
-        confirmButtonText: "Entendido",
+        confirmButtonText: "Ok",
         confirmButtonColor: primaryColor,
       });
       return;
@@ -370,6 +258,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     if (router.query.id) {
       await handleUpdateProject();
     }
+    goToStep2();
   };
 
   const goToStep2 = () => setStep(2);
@@ -459,10 +348,8 @@ const ProjectWorkflowPart1: React.FC = () => {
         errorMessage = JSON.stringify(errorMessage);
       }
       Swal.fire({
-        title: "Algo salió mal",
         text: errorMessage as string,
-        icon: "error",
-        confirmButtonText: "Entendido",
+        confirmButtonText: "Ok",
         confirmButtonColor: primaryColor,
       });
     }
@@ -550,7 +437,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       return (
         <h1
           style={{
-            fontSize: "24px",
+            fontSize: "30px",
             fontWeight: "normal",
             fontFamily: "var(--font-family-base)",
             margin: 0,
@@ -579,106 +466,97 @@ const ProjectWorkflowPart1: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      {/* Eliminamos la prop setSidebarWidth para usar el navbar estático */}
+      <Navbar setActiveView={() => {}} />
       <TopBar sidebarWidth={sidebarWidth} />
       <div
         className="container"
         style={{
           maxWidth: "1700px",
           marginTop: "90px",
-          marginLeft: `calc(${sidebarWidth} + 70px)`,
+          marginLeft: "170px",
           marginRight: "50px",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
           fontWeight: "normal",
         }}
       >
-        <div className="card" style={titleCardStyle}>
-          <div className="card-body" style={{ display: "flex", alignItems: "center" }}>
+        {/* Tarjeta de título sin estilos inline extra */}
+        <Card>
+          <div style={{ display: "flex", alignItems: "center" }}>
             {renderMainHeader()}
           </div>
-        </div>
-        <div className="card" style={formCardStyle}>
-          <div className="card-body" style={{ padding: "0" }}>
+        </Card>
+        {/* Tarjeta del formulario sin estilos inline extra */}
+        <Card marginTop="15px">
+          <div style={{ padding: "0" }}>
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
               <div
                 style={{
                   width: "380px",
-                  padding: "40px",
+                  padding: "20px",
                   boxSizing: "border-box",
+                  borderRight: "1px solid #ccc",
                 }}
               >
                 <ul className="nav flex-column" style={{ height: "100%" }}>
-                  <SidebarItem
+                  <SidebarItemComponent
                     stepNumber={1}
                     iconName="assignment_ind"
                     title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
-                    currentStep={step}
-                    setStep={setStep}
-                    primaryColor={primaryColor}
+                    activeStep={step}
+                    onClickAction={() => setStep(1)}
                   />
-                  <SidebarItem
+                  <SidebarItemComponent
                     stepNumber={2}
                     iconName="location_on"
                     title="Ubicación del proyecto"
-                    currentStep={step}
-                    setStep={setStep}
-                    primaryColor={primaryColor}
+                    activeStep={step}
+                    onClickAction={() => setStep(2)}
                   />
-                  {/* Opciones adicionales solo para modo vista */}
                   {isViewMode && (
                     <>
-                      <SidebarItem
+                      <SidebarItemComponent
                         stepNumber={3}
                         iconName="imagesearch_roller"
                         title="Lista de materiales"
-                        currentStep={step}
-                        setStep={setStep}
-                        primaryColor={primaryColor}
+                        activeStep={step}
                         onClickAction={() =>
                           router.push("/project-workflow-part2?mode=view&step=3")
                         }
                       />
-                      <SidebarItem
+                      <SidebarItemComponent
                         stepNumber={4}
                         iconName="home"
                         title="Elementos translúcidos"
-                        currentStep={step}
-                        setStep={setStep}
-                        primaryColor={primaryColor}
+                        activeStep={step}
                         onClickAction={() =>
                           router.push("/project-workflow-part2?mode=view&step=5")
                         }
                       />
-                      <SidebarItem
+                      <SidebarItemComponent
                         stepNumber={5}
                         iconName="deck"
                         title="Perfil de uso"
-                        currentStep={step}
-                        setStep={setStep}
-                        primaryColor={primaryColor}
+                        activeStep={step}
                         onClickAction={() =>
                           router.push("/project-workflow-part2?mode=view&step=6")
                         }
                       />
-                      <SidebarItem
+                      <SidebarItemComponent
                         stepNumber={6}
                         iconName="build"
                         title="Detalles constructivos"
-                        currentStep={step}
-                        setStep={setStep}
-                        primaryColor={primaryColor}
+                        activeStep={step}
                         onClickAction={() =>
                           router.push("/project-workflow-part3?mode=view&step=4")
                         }
                       />
-                      <SidebarItem
+                      <SidebarItemComponent
                         stepNumber={7}
                         iconName="design_services"
                         title="Recinto"
-                        currentStep={step}
-                        setStep={setStep}
-                        primaryColor={primaryColor}
+                        activeStep={step}
                         onClickAction={() =>
                           router.push("/project-workflow-part3?mode=view&step=7")
                         }
@@ -893,7 +771,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                     </div>
                     {isViewMode ? (
-                      // En modo vista, mostramos botones de navegación
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <CustomButton
                           variant="backIcon"
@@ -932,15 +809,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                     ) : (
                       <div className="d-flex justify-content-end align-items-center mt-4">
-                        <CustomButton
+                       <CustomButton
                           variant="save"
-                          onClick={handleCreateProject}
+                          onClick={handleStep1Action} 
                           style={{ height: "50px" }}
                         >
-                          <span className="material-icons" style={{ marginRight: "5px" }}>
-                            sd_card
-                          </span>
-                          Grabar Datos
+                          Continuar
                         </CustomButton>
                       </div>
                     )}
@@ -1106,7 +980,7 @@ const ProjectWorkflowPart1: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
       <style jsx>{`
         .container {

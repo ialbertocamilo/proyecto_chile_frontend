@@ -41,7 +41,7 @@ const UserCreate = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const [sidebarWidth, ] = useState("300px");
 
 
   const CARD_WIDTH = "90%"; 
@@ -184,11 +184,11 @@ const UserCreate = () => {
 
   return (
     <div className="d-flex">
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => {}}  />
       <div
         className="d-flex flex-column flex-grow-1"
         style={{
-          marginLeft: sidebarWidth,
+          marginLeft: "150px",
           width: "100%",
           fontFamily: "var(--font-family-base)",
         }}

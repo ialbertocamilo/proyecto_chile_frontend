@@ -45,7 +45,7 @@ const ProjectListPage = () => {
   console.log("[ProjectListPage] Página cargada y sesión validada.");
 
   const router = useRouter();
-  const [sidebarWidth, setSidebarWidth] = useState<string>("300px");
+  const [sidebarWidth, ] = useState<string>("300px");
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState<string>("");
@@ -205,8 +205,8 @@ const ProjectListPage = () => {
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
-      <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: sidebarWidth, width: "100%" }}>
+      <Navbar setActiveView={() => {}} />
+      <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: "100px", width: "100%" }}>
         <TopBar sidebarWidth={sidebarWidth} />
         <div
           className="container p-4"

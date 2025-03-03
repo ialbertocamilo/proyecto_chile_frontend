@@ -9,6 +9,7 @@ import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
+import Card from "../src/components/common/Card"; // Usamos el componente Card
 
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
@@ -93,7 +94,8 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
   }, [router.query.step]);
 
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  // Como el nav bar ahora es estático, definimos el ancho de forma fija.
+  const sidebarWidth = "300px";
 
   /** Estados para Lista de materiales (Step 3) **/
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
@@ -139,18 +141,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     const pColor = getCssVarValue("--primary-color", "#3ca7b7");
     setPrimaryColor(pColor);
   }, []);
-
-  // -------------------------------
-  // Configuración de estilos para las cards
-  // -------------------------------
-  const cardHorizontalSize = "100%";
   const headerCardHeight = "150px";
-
-  const cardStyleConfig = {
-    border: "1px solid white",
-    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-    borderRadius: "16px",
-  };
 
   // -------------------------------
   // Funciones API (se mantienen sin cambios)
@@ -407,47 +398,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
   };
 
-  const renderMainHeader = () =>
-    step >= 3 ? (
-      <div
-        className="mb-3"
-        style={{
-          height: headerCardHeight,
-          padding: "20px",
-          textAlign: "left",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "40px",
-            margin: "0 0 20px 0",
-            fontWeight: "normal",
-            fontFamily: "var(--font-family-base)",
-          }}
-        >
-          {isViewMode ? "Vista de datos de entrada" : "Datos de entrada"}
-        </h2>
-        <div className="d-flex align-items-center gap-4">
-          <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>Proyecto:</span>
-          <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
-            {`Edificación Nº ${projectId ?? "xxxxx"}`}
-          </CustomButton>
-          {projectDepartment && (
-            <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
-              {`Departamento: ${projectDepartment}`}
-            </CustomButton>
-          )}
-        </div>
-      </div>
-    ) : null;
-
   // Componente SidebarItemComponent que acepta una acción personalizada
-  interface SidebarItemComponentProps {
-    stepNumber: number;
-    iconName: string;
-    title: string;
-    onClickAction?: () => void;
-  }
   const SidebarItemComponent = ({
     stepNumber,
     iconName,
@@ -491,43 +442,67 @@ const ProjectWorkflowPart2: React.FC = () => {
     );
   };
 
+  const renderMainHeader = () =>
+    step >= 3 ? (
+      <div
+        className="mb-3"
+        style={{
+          height: headerCardHeight,
+          padding: "20px",
+          textAlign: "left",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "30px",
+            margin: "0 0 20px 0",
+            fontWeight: "normal",
+            fontFamily: "var(--font-family-base)",
+          }}
+        >
+          {isViewMode ? "Vista de datos de entrada" : "Datos de entrada"}
+        </h2>
+        <div className="d-flex align-items-center gap-4">
+          <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
+            Proyecto:
+          </span>
+          <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
+            {`Edificación Nº ${projectId ?? "xxxxx"}`}
+          </CustomButton>
+          {projectDepartment && (
+            <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
+              {`Departamento: ${projectDepartment}`}
+            </CustomButton>
+          )}
+        </div>
+      </div>
+    ) : null;
+
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      {/* Se elimina la prop setSidebarWidth ya que el nav bar es estático */}
+      <Navbar setActiveView={() => {}} />
       <TopBar sidebarWidth={sidebarWidth} />
       <div
         className="container"
         style={{
           maxWidth: "1700px",
           marginTop: "130px",
-          marginLeft: `calc(${sidebarWidth} + 70px)`,
+          // Se establece el margen izquierdo fijo (300px de nav bar + 70px de espacio)
+          marginLeft: "170px",
           marginRight: "50px",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
         }}
       >
         {/* Card 1: Encabezado del proyecto */}
-        <div
-          className="card mb-4"
-          style={{
-            width: cardHorizontalSize,
-            overflow: "hidden",
-            ...cardStyleConfig,
-          }}
-        >
+        <Card>
           <div className="card-body p-0">{renderMainHeader()}</div>
-        </div>
+        </Card>
 
         {/* Card 2: Contenedor de los steps */}
-        <div
-          className="card"
-          style={{
-            width: cardHorizontalSize,
-            overflow: "hidden",
-            ...cardStyleConfig,
-          }}
-        >
+        <Card marginTop="15px">
           <div className="card-body p-0">
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
               <div
@@ -684,7 +659,10 @@ const ProjectWorkflowPart2: React.FC = () => {
                                   placeholder="Densidad"
                                   value={newMaterialData.density}
                                   onChange={(e) =>
-                                    setNewMaterialData((prev) => ({ ...prev, density: parseFloat(e.target.value) }))
+                                    setNewMaterialData((prev) => ({
+                                      ...prev,
+                                      density: parseFloat(e.target.value),
+                                    }))
                                   }
                                   disabled={isViewMode}
                                 />
@@ -771,21 +749,41 @@ const ProjectWorkflowPart2: React.FC = () => {
                         <thead>
                           {modalElementType === "ventanas" ? (
                             <tr>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Elemento</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Vidrio [W/m2K]</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                                Nombre Elemento
+                              </th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                                U Vidrio [W/m2K]
+                              </th>
                               <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FS Vidrio</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Tipo Cierre</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Tipo Marco</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Marco [W/m2K]</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                                Tipo Cierre
+                              </th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                                Tipo Marco
+                              </th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                                U Marco [W/m2K]
+                              </th>
                               <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FM [%]</th>
                             </tr>
                           ) : (
                             <tr>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Elemento</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Puerta opaca [W/m2K]</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Ventana</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>% Vidrio</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Marco [W/m2K]</th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                                Nombre Elemento
+                              </th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                                U Puerta opaca [W/m2K]
+                              </th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                                Nombre Ventana
+                              </th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                                % Vidrio
+                              </th>
+                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                                U Marco [W/m2K]
+                              </th>
                               <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FM [%]</th>
                             </tr>
                           )}
@@ -1098,7 +1096,7 @@ const ProjectWorkflowPart2: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       <style jsx>{`

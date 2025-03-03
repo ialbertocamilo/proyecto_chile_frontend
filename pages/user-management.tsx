@@ -29,7 +29,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
+  const [sidebarWidth, ] = useState("300px");
 
   const CARD_WIDTH = "135%"; // Reducido para evitar desbordamiento
   const CARD_MARGIN_LEFT = "-18%"; // Alinear más a la izquierda
@@ -268,11 +268,11 @@ const UserManagement = () => {
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      <Navbar setActiveView={() => {}} setSidebarWidth={setSidebarWidth} />
+      <Navbar setActiveView={() => {}} />
       <div
         className="d-flex flex-column flex-grow-1"
         style={{
-          marginLeft: sidebarWidth,
+          marginLeft: "80px",
           width: "100%",
           paddingLeft: CONTAINER_MARGIN_LEFT,
         }}

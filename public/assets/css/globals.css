@@ -20,6 +20,11 @@
   --btn-delete-hover-bg: #dc2626;
 }
 
+.material-icons {
+  font-size: 2.4rem; /* o el tamaño que desees */
+}
+
+
 /* Estilos base */
 body {
   font-family: var(--font-family-base);

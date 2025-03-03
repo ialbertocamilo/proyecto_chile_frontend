@@ -10,7 +10,7 @@ import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 
-/** Tipos e interfaces necesarias aa **/
+/** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
   name: string;
   conductivity: number;
@@ -46,6 +46,13 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
+interface SidebarItemComponentProps {
+  stepNumber: number;
+  iconName: string;
+  title: string;
+  onClickAction?: () => void;
+}
+
 const ProjectWorkflowPart2: React.FC = () => {
   useAuth();
   const router = useRouter();
@@ -75,7 +82,17 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
   }, [hasLoaded, projectId, router]);
 
+  // Aquí leemos el query parameter "step" para configurar el paso inicial
   const [step, setStep] = useState<number>(3);
+  useEffect(() => {
+    if (router.query.step) {
+      const queryStep = parseInt(router.query.step as string, 10);
+      if (!isNaN(queryStep)) {
+        setStep(queryStep);
+      }
+    }
+  }, [router.query.step]);
+
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
   /** Estados para Lista de materiales (Step 3) **/
@@ -126,13 +143,13 @@ const ProjectWorkflowPart2: React.FC = () => {
   // -------------------------------
   // Configuración de estilos para las cards
   // -------------------------------
-  const cardHorizontalSize = "100%"; 
-  const headerCardHeight = "150px"; 
+  const cardHorizontalSize = "100%";
+  const headerCardHeight = "150px";
 
   const cardStyleConfig = {
-    border: "1px solid white", 
-    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)", 
-    borderRadius: "16px", 
+    border: "1px solid white",
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+    borderRadius: "16px",
   };
 
   // -------------------------------
@@ -396,14 +413,14 @@ const ProjectWorkflowPart2: React.FC = () => {
         className="mb-3"
         style={{
           height: headerCardHeight,
-          padding: "20px", 
-          textAlign: "left", 
+          padding: "20px",
+          textAlign: "left",
         }}
       >
         <h2
           style={{
             fontSize: "40px",
-            margin: "0 0 20px 0", 
+            margin: "0 0 20px 0",
             fontWeight: "normal",
             fontFamily: "var(--font-family-base)",
           }}
@@ -424,25 +441,31 @@ const ProjectWorkflowPart2: React.FC = () => {
       </div>
     ) : null;
 
-  // Componente SidebarItem (menú lateral) – siempre interactivo
+  // Componente SidebarItemComponent que acepta una acción personalizada
+  interface SidebarItemComponentProps {
+    stepNumber: number;
+    iconName: string;
+    title: string;
+    onClickAction?: () => void;
+  }
   const SidebarItemComponent = ({
     stepNumber,
     iconName,
     title,
-  }: {
-    stepNumber: number;
-    iconName: string;
-    title: string;
-  }) => {
+    onClickAction,
+  }: SidebarItemComponentProps) => {
     const isSelected = step === stepNumber;
     const activeColor = primaryColor;
     const inactiveColor = "#ccc";
+    const handleClick = () => {
+      if (onClickAction) {
+        onClickAction();
+      } else {
+        setStep(stepNumber);
+      }
+    };
     return (
-      <li
-        className="nav-item"
-        style={{ cursor: "pointer" }}
-        onClick={() => setStep(stepNumber)}
-      >
+      <li className="nav-item" style={{ cursor: "pointer" }} onClick={handleClick}>
         <div
           style={{
             width: "100%",
@@ -516,9 +539,52 @@ const ProjectWorkflowPart2: React.FC = () => {
                 }}
               >
                 <ul className="nav flex-column" style={{ height: "100%" }}>
+                  {/* Opciones nuevas (solo en modo vista) */}
+                  {isViewMode && (
+                    <>
+                      <SidebarItemComponent
+                        stepNumber={1}
+                        iconName="assignment_ind"
+                        title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
+                        onClickAction={() =>
+                          router.push("/project-workflow-part1?mode=view&step=1")
+                        }
+                      />
+                      <SidebarItemComponent
+                        stepNumber={2}
+                        iconName="location_on"
+                        title="Ubicación del proyecto"
+                        onClickAction={() =>
+                          router.push("/project-workflow-part1?mode=view&step=2")
+                        }
+                      />
+                    </>
+                  )}
+                  {/* Opciones originales */}
                   <SidebarItemComponent stepNumber={3} iconName="imagesearch_roller" title="Lista de materiales" />
                   <SidebarItemComponent stepNumber={5} iconName="home" title="Elementos translúcidos" />
                   <SidebarItemComponent stepNumber={6} iconName="deck" title="Perfil de uso" />
+                  {/* Opciones adicionales (solo en modo vista) */}
+                  {isViewMode && (
+                    <>
+                      <SidebarItemComponent
+                        stepNumber={4}
+                        iconName="build"
+                        title="Detalles constructivos"
+                        onClickAction={() =>
+                          router.push("/project-workflow-part3?mode=view&step=4")
+                        }
+                      />
+                      <SidebarItemComponent
+                        stepNumber={7}
+                        iconName="design_services"
+                        title="Recinto"
+                        onClickAction={() =>
+                          router.push("/project-workflow-part3?mode=view&step=7")
+                        }
+                      />
+                    </>
+                  )}
                 </ul>
               </div>
               <div style={{ flex: 1, padding: "20px" }}>
@@ -552,10 +618,18 @@ const ProjectWorkflowPart2: React.FC = () => {
                       <table className="table table-bordered table-striped" style={{ tableLayout: "fixed" }}>
                         <thead>
                           <tr>
-                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Material</th>
-                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Conductividad (W/m2K)</th>
-                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Calor específico (J/kgK)</th>
-                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Densidad (kg/m3)</th>
+                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                              Nombre Material
+                            </th>
+                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                              Conductividad (W/m2K)
+                            </th>
+                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                              Calor específico (J/kgK)
+                            </th>
+                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
+                              Densidad (kg/m3)
+                            </th>
                           </tr>
                         </thead>
                         <tbody>

@@ -114,6 +114,53 @@ const cardStyleConfig = {
   borderRadius: "16px",
 };
 
+// Se agregó la propiedad activeStep para conocer cuál opción está activa
+interface SidebarItemProps {
+  stepNumber: number;
+  iconName: string;
+  title: string;
+  activeStep?: number;
+  onClickAction?: () => void;
+}
+
+const SidebarItem: React.FC<SidebarItemProps> = ({ stepNumber, iconName, title, activeStep, onClickAction }) => {
+  const primaryColor = "#3ca7b7";
+  const inactiveColor = "#ccc";
+  // Se utiliza activeStep pasado por props o se podría leer desde el query si no se pasa
+  const currentStep = activeStep !== undefined ? activeStep : stepNumber;
+  const handleClick = () => {
+    if (onClickAction) {
+      onClickAction();
+    }
+  };
+
+  return (
+    <li className="nav-item" style={{ cursor: "pointer" }} onClick={handleClick}>
+      <div
+        style={{
+          width: "100%",
+          height: "100px",
+          border: `1px solid ${currentStep === stepNumber ? primaryColor : inactiveColor}`,
+          borderRadius: "8px",
+          marginBottom: "16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          paddingLeft: "50px",
+          color: currentStep === stepNumber ? primaryColor : inactiveColor,
+          fontFamily: "var(--font-family-base)",
+          fontWeight: "normal",
+        }}
+      >
+        <span style={{ marginRight: "15px", fontSize: "2rem" }}>
+          <span className="material-icons">{iconName}</span>
+        </span>
+        <span style={{ fontWeight: "normal" }}>{title}</span>
+      </div>
+    </li>
+  );
+};
+
 const ProjectWorkflowPart3: React.FC = () => {
   useAuth();
   const router = useRouter();
@@ -143,7 +190,17 @@ const ProjectWorkflowPart3: React.FC = () => {
     }
   }, [hasLoaded, projectId, router]);
 
+  // Se utiliza el estado step del componente padre para controlar el contenido seleccionado
   const [step, setStep] = useState<number>(4);
+  useEffect(() => {
+    if (router.query.step) {
+      const queryStep = parseInt(router.query.step as string, 10);
+      if (!isNaN(queryStep)) {
+        setStep(queryStep);
+      }
+    }
+  }, [router.query.step]);
+
   const [sidebarWidth, setSidebarWidth] = useState("300px");
 
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
@@ -177,7 +234,6 @@ const ProjectWorkflowPart3: React.FC = () => {
 
   const [materials, setMaterials] = useState<Material[]>([]);
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
-
   const [searchQuery, setSearchQuery] = useState("");
 
   // Estados para edición en Muros y Techumbre
@@ -381,7 +437,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       layer_thickness: 10,
     });
   };
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const handleSaveDetails = async () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");
@@ -566,42 +622,26 @@ const ProjectWorkflowPart3: React.FC = () => {
       </div>
     ) : null;
 
-  const SidebarItem = ({
+  // Se modificó SidebarItemComponent para pasar el step activo
+  const SidebarItemComponent = ({
     stepNumber,
     iconName,
     title,
+    onClickAction,
   }: {
     stepNumber: number;
     iconName: string;
     title: string;
+    onClickAction?: () => void;
   }) => {
-    const isSelected = step === stepNumber;
-    const activeColor = primaryColor;
-    const inactiveColor = hexToRgba(primaryColor, 0.5);
     return (
-      <li className="nav-item" style={{ cursor: "pointer" }} onClick={() => setStep(stepNumber)}>
-        <div
-          style={{
-            width: "100%",
-            height: "100px",
-            border: `1px solid ${isSelected ? activeColor : inactiveColor}`,
-            borderRadius: "8px",
-            marginBottom: "16px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            paddingLeft: "50px",
-            color: isSelected ? activeColor : inactiveColor,
-            fontFamily: "var(--font-family-base)",
-            fontWeight: "normal",
-          }}
-        >
-          <span style={{ marginRight: "15px", fontSize: "2rem" }}>
-            <span className="material-icons">{iconName}</span>
-          </span>
-          <span style={{ fontWeight: "normal" }}>{title}</span>
-        </div>
-      </li>
+      <SidebarItem
+        stepNumber={stepNumber}
+        iconName={iconName}
+        title={title}
+        activeStep={step}
+        onClickAction={onClickAction}
+      />
     );
   };
 
@@ -1012,7 +1052,7 @@ const ProjectWorkflowPart3: React.FC = () => {
               if (step === 4) {
                 setStep(7);
               } else if (step === 7) {
-                router.push("/project-status");
+                router.push("/project-workflow-part4?mode=view");
               }
             }}
           >
@@ -1186,7 +1226,7 @@ const ProjectWorkflowPart3: React.FC = () => {
             variant="backIcon"
             onClick={() => {
               if (step === 4) {
-                router.push("/project-workflow-part2?mode=view");
+                router.push("/project-workflow-part3?mode=view");
               } else if (step === 7) {
                 setStep(4);
               }
@@ -1200,7 +1240,7 @@ const ProjectWorkflowPart3: React.FC = () => {
               if (step === 4) {
                 setStep(7);
               } else if (step === 7) {
-                router.push("/project-workflow-part4?mode=view");
+                router.push("/project-status");
               }
             }}
           >
@@ -1271,7 +1311,7 @@ const ProjectWorkflowPart3: React.FC = () => {
         className="container"
         style={{
           maxWidth: "1780px",
-          marginTop: "120px", 
+          marginTop: "120px",
           marginLeft: "120px",
           marginRight: "50px",
           transition: "margin-left 0.1s ease",
@@ -1279,10 +1319,8 @@ const ProjectWorkflowPart3: React.FC = () => {
         }}
       >
         {/* Card de Encabezado */}
-        <div className="card mb-4" style={{ width: "100%", height: "155px",overflow: "hidden", ...cardStyleConfig }}>
-          <div className="card-body p-0">
-            {renderMainHeader()}
-          </div>
+        <div className="card mb-4" style={{ width: "100%", height: "155px", overflow: "hidden", ...cardStyleConfig }}>
+          <div className="card-body p-0">{renderMainHeader()}</div>
         </div>
 
         {/* Card de contenido principal */}
@@ -1298,8 +1336,54 @@ const ProjectWorkflowPart3: React.FC = () => {
                 }}
               >
                 <ul className="nav flex-column" style={{ height: "100%" }}>
-                  <SidebarItem stepNumber={4} iconName="build" title="Detalles constructivos" />
-                  <SidebarItem stepNumber={7} iconName="design_services" title="Recinto" />
+                  {/* Opciones que solo se muestran en modo vista */}
+                  {isViewMode && (
+                    <>
+                      <SidebarItemComponent
+                        stepNumber={1}
+                        iconName="assignment_ind"
+                        title="Detalles de propietario / proyecto y clasificación de edificaciones"
+                        onClickAction={() => router.push("/project-workflow-part1?mode=view&step=1")}
+                      />
+                      <SidebarItemComponent
+                        stepNumber={2}
+                        iconName="location_on"
+                        title="Ubicación del proyecto"
+                        onClickAction={() => router.push("/project-workflow-part1?mode=view&step=2")}
+                      />
+                      <SidebarItemComponent
+                        stepNumber={3}
+                        iconName="imagesearch_roller"
+                        title="Lista de materiales"
+                        onClickAction={() => router.push("/project-workflow-part2?mode=view&step=3")}
+                      />
+                      <SidebarItemComponent
+                        stepNumber={5}
+                        iconName="home"
+                        title="Elementos translúcidos"
+                        onClickAction={() => router.push("/project-workflow-part2?mode=view&step=5")}
+                      />
+                      <SidebarItemComponent
+                        stepNumber={6}
+                        iconName="deck"
+                        title="Perfil de uso"
+                        onClickAction={() => router.push("/project-workflow-part2?mode=view&step=6")}
+                      />
+                    </>
+                  )}
+                  {/* Opciones ya existentes: se pasa la función para actualizar el step y se muestra cuál está activo */}
+                  <SidebarItemComponent
+                    stepNumber={4}
+                    iconName="build"
+                    title="Detalles constructivos"
+                    onClickAction={() => setStep(4)}
+                  />
+                  <SidebarItemComponent
+                    stepNumber={7}
+                    iconName="design_services"
+                    title="Recinto"
+                    onClickAction={() => setStep(7)}
+                  />
                 </ul>
               </div>
               <div style={{ flex: 1, padding: "20px" }}>

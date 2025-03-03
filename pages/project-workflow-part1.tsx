@@ -60,6 +60,8 @@ interface SidebarItemProps {
   currentStep: number;
   setStep: React.Dispatch<React.SetStateAction<number>>;
   primaryColor: string;
+  // Prop opcional para definir una acción al hacer click (usada en modo vista)
+  onClickAction?: () => void;
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -69,17 +71,22 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   currentStep,
   setStep,
   primaryColor,
+  onClickAction,
 }) => {
   const isSelected = currentStep === stepNumber;
   const activeColor = primaryColor;
   const inactiveColor = "#ccc";
 
+  const handleClick = () => {
+    if (onClickAction) {
+      onClickAction();
+    } else {
+      setStep(stepNumber);
+    }
+  };
+
   return (
-    <li
-      className="nav-item"
-      style={{ cursor: "pointer" }}
-      onClick={() => setStep(stepNumber)}
-    >
+    <li className="nav-item" style={{ cursor: "pointer" }} onClick={handleClick}>
       <div
         style={{
           width: "100%",
@@ -184,6 +191,19 @@ const ProjectWorkflowPart1: React.FC = () => {
         .trim() || "#3ca7b7";
     setPrimaryColor(pColor);
   }, []);
+
+  // Nuevo efecto para leer el query param "step" en modo view
+  useEffect(() => {
+    if (router.isReady && isViewMode) {
+      const stepQuery = router.query.step;
+      if (stepQuery) {
+        const stepNumber = parseInt(stepQuery as string, 10);
+        if (!isNaN(stepNumber)) {
+          setStep(stepNumber);
+        }
+      }
+    }
+  }, [router.isReady, router.query.step, isViewMode]);
 
   useEffect(() => {
     let projectIdParam = router.query.id;
@@ -605,6 +625,66 @@ const ProjectWorkflowPart1: React.FC = () => {
                     setStep={setStep}
                     primaryColor={primaryColor}
                   />
+                  {/* Opciones adicionales solo para modo vista */}
+                  {isViewMode && (
+                    <>
+                      <SidebarItem
+                        stepNumber={3}
+                        iconName="imagesearch_roller"
+                        title="Lista de materiales"
+                        currentStep={step}
+                        setStep={setStep}
+                        primaryColor={primaryColor}
+                        onClickAction={() =>
+                          router.push("/project-workflow-part2?mode=view&step=3")
+                        }
+                      />
+                      <SidebarItem
+                        stepNumber={4}
+                        iconName="home"
+                        title="Elementos translúcidos"
+                        currentStep={step}
+                        setStep={setStep}
+                        primaryColor={primaryColor}
+                        onClickAction={() =>
+                          router.push("/project-workflow-part2?mode=view&step=5")
+                        }
+                      />
+                      <SidebarItem
+                        stepNumber={5}
+                        iconName="deck"
+                        title="Perfil de uso"
+                        currentStep={step}
+                        setStep={setStep}
+                        primaryColor={primaryColor}
+                        onClickAction={() =>
+                          router.push("/project-workflow-part2?mode=view&step=6")
+                        }
+                      />
+                      <SidebarItem
+                        stepNumber={6}
+                        iconName="build"
+                        title="Detalles constructivos"
+                        currentStep={step}
+                        setStep={setStep}
+                        primaryColor={primaryColor}
+                        onClickAction={() =>
+                          router.push("/project-workflow-part3?mode=view&step=4")
+                        }
+                      />
+                      <SidebarItem
+                        stepNumber={7}
+                        iconName="design_services"
+                        title="Recinto"
+                        currentStep={step}
+                        setStep={setStep}
+                        primaryColor={primaryColor}
+                        onClickAction={() =>
+                          router.push("/project-workflow-part3?mode=view&step=7")
+                        }
+                      />
+                    </>
+                  )}
                 </ul>
               </div>
               <div style={{ flex: 1, padding: "40px" }}>
@@ -997,8 +1077,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                                 onClick={() =>
                                   router.push(
                                     `/project-workflow-part2?project_id=${
-                                      router.query.id ||
-                                      localStorage.getItem("project_id")
+                                      router.query.id || localStorage.getItem("project_id")
                                     }`
                                   )
                                 }

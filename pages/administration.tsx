@@ -20,7 +20,7 @@ interface MaterialAttributes {
 interface Material {
   id: number;
   atributs: MaterialAttributes;
-  // Se normaliza la propiedad para que siempre exista "material_id"
+  // Se normaliza la propiedad para que siempre exista "material_id" aa
   material_id?: number;
   name?: string;
   type?: string;
@@ -567,7 +567,7 @@ const AdministrationPage: React.FC = () => {
                           sd_card
                         </span>
                         Grabar datos
-                      </CustomButton>
+                      </CustomButton> 
                     </div>
                   </>
                 )}

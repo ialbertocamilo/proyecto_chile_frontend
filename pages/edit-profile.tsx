@@ -116,7 +116,7 @@ const EditProfile = () => {
     }
 
     // Excluir `userType` del payload
-    const { userType, ...payload } = profile;
+    const {  ...payload } = profile;
 
     console.log("[EditProfile] Enviando actualización del perfil:", payload);
 

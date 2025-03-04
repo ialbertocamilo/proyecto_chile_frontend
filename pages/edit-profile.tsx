@@ -115,7 +115,7 @@ const EditProfile = () => {
         throw new Error("No estás autenticado. Inicia sesión.");
       }
   
-      // Crear el payload sin `userType`
+      // Crear el payload sin `userTypea`
       const payload = { ...profile } as Partial<typeof profile>;
       delete payload.userType;
   

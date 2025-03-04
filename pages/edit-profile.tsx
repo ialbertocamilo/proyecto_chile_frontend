@@ -115,7 +115,7 @@ const EditProfile = () => {
       throw new Error("No estás autenticado. Inicia sesión.");
     }
 
-    // Excluir `userType` del payload
+    // Excluir `userType` del payload a
     const {  ...payload } = profile;
 
     console.log("[EditProfile] Enviando actualización del perfil:", payload);

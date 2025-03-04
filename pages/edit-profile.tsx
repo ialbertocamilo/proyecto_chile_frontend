@@ -94,74 +94,74 @@ const EditProfile = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError(null);
-  const { name, lastname, number_phone, country, ubigeo } = profile;
-
-  if (!name.trim() || !lastname.trim() || !number_phone.trim() || !country.trim() || !ubigeo.trim()) {
-    Swal.fire({
-      title: "Campos incompletos",
-      text: "Por favor, complete todos los campos.",
-      icon: "warning",
-      confirmButtonText: "Aceptar",
-    });
-    return;
-  }
-
-  try {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("No estás autenticado. Inicia sesión.");
+    e.preventDefault();
+    setError(null);
+    const { name, lastname, number_phone, country, ubigeo } = profile;
+  
+    if (!name.trim() || !lastname.trim() || !number_phone.trim() || !country.trim() || !ubigeo.trim()) {
+      Swal.fire({
+        title: "Campos incompletos",
+        text: "Por favor, complete todos los campos.",
+        icon: "warning",
+        confirmButtonText: "Aceptar",
+      });
+      return;
     }
-
-    // Excluir `userType` del payload a
-    const {  ...payload } = profile;
-
-    console.log("[EditProfile] Enviando actualización del perfil:", payload);
-
-    const response = await fetch(`${constantUrlApiEndpoint}/user/me/update`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("[EditProfile] Error actualizando perfil:", errorData);
-      throw new Error(errorData.detail || errorData.message || "No se pudo actualizar el perfil");
+  
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No estás autenticado. Inicia sesión.");
+      }
+  
+      // Crear el payload sin `userType`
+      const payload = { ...profile } as Partial<typeof profile>;
+      delete payload.userType;
+  
+      console.log("[EditProfile] Enviando actualización del perfil:", payload);
+  
+      const response = await fetch(`${constantUrlApiEndpoint}/user/me/update`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("[EditProfile] Error actualizando perfil:", errorData);
+        throw new Error(errorData.detail || errorData.message || "No se pudo actualizar el perfil");
+      }
+  
+      const resData = await response.json();
+      localStorage.setItem("userProfile", JSON.stringify(payload));
+  
+      console.log("[EditProfile] Perfil actualizado correctamente:", resData);
+  
+      await Swal.fire({
+        title: "Perfil actualizado",
+        text: resData.message || "Tu perfil se actualizó correctamente.",
+        icon: "success",
+        confirmButtonText: "Aceptar",
+      });
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      console.error("[EditProfile] Error actualizando perfil:", err);
+      const message = err instanceof Error ? err.message : "Error al actualizar el perfil";
+      Swal.fire({
+        title: "Error",
+        text: message,
+        icon: "error",
+        confirmButtonText: "Aceptar",
+      });
+      setError(message);
+    } finally {
+      setLoading(false);
     }
-
-    const resData = await response.json();
-    localStorage.setItem("userProfile", JSON.stringify(payload));
-
-    console.log("[EditProfile] Perfil actualizado correctamente:", resData);
-
-    await Swal.fire({
-      title: "Perfil actualizado",
-      text: resData.message || "Tu perfil se actualizó correctamente.",
-      icon: "success",
-      confirmButtonText: "Aceptar",
-    });
-    router.push("/dashboard");
-  } catch (err: unknown) {
-    console.error("[EditProfile] Error actualizando perfil:", err);
-    const message = err instanceof Error ? err.message : "Error al actualizar el perfil";
-    Swal.fire({
-      title: "Error",
-      text: message,
-      icon: "error",
-      confirmButtonText: "Aceptar",
-    });
-    setError(message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>

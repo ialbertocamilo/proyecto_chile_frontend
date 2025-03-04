@@ -20,7 +20,7 @@ interface MaterialAttributes {
 interface Material {
   id: number;
   atributs: MaterialAttributes;
-  // Se normaliza la propiedad para que siempre exista "material_id" aa
+  // Se normaliza la propiedad para que siempre exista "material_id" aaa
   material_id?: number;
   name?: string;
   type?: string;

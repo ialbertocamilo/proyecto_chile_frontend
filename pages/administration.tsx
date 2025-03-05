@@ -118,6 +118,7 @@ const AdministrationPage: React.FC = () => {
 
   const windowsList = elementsList.filter((el) => el.type === "window");
 
+  // Estilos para la card (se usa en varios lugares)
   const CARD_WIDTH = "100%";
   const CARD_MARGIN_LEFT = "0px";
   const CARD_MARGIN_RIGHT = "0px";
@@ -470,15 +471,15 @@ const AdministrationPage: React.FC = () => {
 
   return (
     <>
-      <Navbar setActiveView={() => { }} />
+      <Navbar setActiveView={() => {}} />
       <TopBar sidebarWidth={sidebarWidth} />
       <div
-        className="container"
+        className="container custom-container"
         style={{
           maxWidth: "1780px",
           marginTop: "120px",
-          marginLeft: "120px",
-          marginRight: "50px",
+          marginLeft: "103px",
+          marginRight: "0px",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
         }}
@@ -490,8 +491,9 @@ const AdministrationPage: React.FC = () => {
         </div>
         <div className="card" style={{ ...cardStyle, minHeight: "600px" }}>
           <div className="card-body p-0">
-            <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
+            <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
               <div
+                className="internal-sidebar"
                 style={{
                   width: `${internalSidebarWidth}px`,
                   padding: "20px",
@@ -505,7 +507,7 @@ const AdministrationPage: React.FC = () => {
                   <SidebarItem stepNumber={5} iconClass="bi bi-house" title="Elementos operables" />
                 </ul>
               </div>
-              <div style={{ flex: 1, padding: "20px" }}>
+              <div className="content-area" style={{ flex: 1, padding: "20px" }}>
                 {step === 3 && (
                   <>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
@@ -680,12 +682,13 @@ const AdministrationPage: React.FC = () => {
       </div>
 
       {showNewMaterialModal && (
-        <Modal
-          isOpen={showNewMaterialModal}
-          onClose={() => setShowNewMaterialModal(false)}
-          title="Agregar Nuevo Material"
-        >
-          <form onSubmit={(e) => { e.preventDefault(); handleCreateMaterial(); }}>
+        <Modal isOpen={showNewMaterialModal} onClose={() => setShowNewMaterialModal(false)} title="Agregar Nuevo Material">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleCreateMaterial();
+            }}
+          >
             <div className="form-group">
               <label>Nombre Material</label>
               <input
@@ -739,12 +742,13 @@ const AdministrationPage: React.FC = () => {
       )}
 
       {showNewDetailModal && (
-        <Modal
-          isOpen={showNewDetailModal}
-          onClose={() => setShowNewDetailModal(false)}
-          title="Agregar Nuevo Detalle Constructivo"
-        >
-          <form onSubmit={(e) => { e.preventDefault(); handleCreateDetail(); }}>
+        <Modal isOpen={showNewDetailModal} onClose={() => setShowNewDetailModal(false)} title="Agregar Nuevo Detalle Constructivo">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleCreateDetail();
+            }}
+          >
             <div className="form-group">
               <label>Ubicación del Detalle</label>
               <select
@@ -816,12 +820,13 @@ const AdministrationPage: React.FC = () => {
       )}
 
       {showNewWindowModal && (
-        <Modal
-          isOpen={showNewWindowModal}
-          onClose={() => setShowNewWindowModal(false)}
-          title="Agregar Nueva Ventana"
-        >
-          <form onSubmit={(e) => { e.preventDefault(); handleCreateElement(); }}>
+        <Modal isOpen={showNewWindowModal} onClose={() => setShowNewWindowModal(false)} title="Agregar Nueva Ventana">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleCreateElement();
+            }}
+          >
             <div className="row">
               <div className="col-md-6">
                 <div className="form-group">
@@ -930,12 +935,13 @@ const AdministrationPage: React.FC = () => {
       )}
 
       {showNewDoorModal && (
-        <Modal
-          isOpen={showNewDoorModal}
-          onClose={() => setShowNewDoorModal(false)}
-          title="Agregar Nueva Puerta"
-        >
-          <form onSubmit={(e) => { e.preventDefault(); handleCreateElement(); }}>
+        <Modal isOpen={showNewDoorModal} onClose={() => setShowNewDoorModal(false)} title="Agregar Nueva Puerta">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleCreateElement();
+            }}
+          >
             <div className="form-group">
               <label>Nombre del Elemento</label>
               <input
@@ -1014,8 +1020,14 @@ const AdministrationPage: React.FC = () => {
       )}
 
       <style jsx>{`
-        .card {
+        /* Ajustes generales */
+        .custom-container {
+          padding: 0 15px;
         }
+        .card {
+          /* Puedes personalizar estilos adicionales para la card aquí */
+        }
+        /* Ajustes para el modal */
         .modal-overlay {
           position: fixed;
           top: 0;
@@ -1056,7 +1068,8 @@ const AdministrationPage: React.FC = () => {
           display: block;
           margin-bottom: 0.5rem;
         }
-        .form-group input {
+        .form-group input,
+        .form-group select {
           width: 100%;
           padding: 0.5rem;
           border: 1px solid #ccc;
@@ -1079,6 +1092,31 @@ const AdministrationPage: React.FC = () => {
         }
         .table-striped tbody tr:nth-child(even) {
           background-color: #f2f2f2;
+        }
+        /* Media queries para ajustar márgenes, layout y tamaños en pantallas medianas y móviles */
+        @media (max-width: 1024px) {
+          .custom-container {
+            margin-left: 50px;
+            margin-right: 20px;
+          }
+          .internal-sidebar {
+            width: 100% !important;
+            border-right: none;
+            border-bottom: 1px solid #ccc;
+            padding: 10px;
+          }
+          .content-area {
+            padding: 10px;
+          }
+          .d-flex-responsive {
+            flex-direction: column;
+          }
+        }
+        @media (max-width: 480px) {
+          .custom-container {
+            margin-left: 10px;
+            margin-right: 10px;
+          }
         }
       `}</style>
     </>

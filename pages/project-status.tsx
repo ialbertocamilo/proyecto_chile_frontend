@@ -1,40 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Swal from "sweetalert2";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
+import Card from "../src/components/common/Card";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
-
-const modalWidth = "90%";
-const modalHeight = "auto";
-
-// Constantes para los estilos de las cards
-const CARD_WIDTH = "135%";
-const CARD_MARGIN_LEFT = "-18%";
-const CARD_MARGIN_RIGHT = "20px";
-const CARD_MARGIN_TOP = "20px";
-const CARD_MARGIN_BOTTOM = "20px";
-const CARD_BORDER_RADIUS = "16px";
-const CARD_BOX_SHADOW = "0 2px 10px rgba(0, 0, 0, 0.1)";
-const CARD_BORDER_COLOR = "#d3d3d3";
-
-// Objeto para los estilos de las cards
-const cardStyle = {
-  width: CARD_WIDTH,
-  marginLeft: CARD_MARGIN_LEFT,
-  marginRight: CARD_MARGIN_RIGHT,
-  marginTop: CARD_MARGIN_TOP,
-  marginBottom: CARD_MARGIN_BOTTOM,
-  borderRadius: CARD_BORDER_RADIUS,
-  boxShadow: CARD_BOX_SHADOW,
-  border: `1px solid ${CARD_BORDER_COLOR}`,
-  padding: "20px",
-  backgroundColor: "#fff",
-};
 
 interface Divisions {
   department?: string;
@@ -68,16 +41,12 @@ const ProjectListStatusEditPage = () => {
   const router = useRouter();
   console.log("[ProjectListStatusEditPage] Página cargada y sesión validada.");
 
-  const [sidebarWidth, ] = useState("300px");
+  const [sidebarWidth] = useState("300px");
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [editStatusProjectId, setEditStatusProjectId] = useState<number | null>(null);
-  const [currentStatus, setCurrentStatus] = useState("");
-  const statusOptions = ["registrado", "finalizado", "en proceso"];
 
   useEffect(() => {
     fetchProjects();
@@ -128,54 +97,7 @@ const ProjectListStatusEditPage = () => {
     setFilteredProjects(filtered);
   };
 
-  const closeStatusModal = () => {
-    console.log("[closeStatusModal] Cerrando modal de edición de estado.");
-    setShowStatusModal(false);
-    setEditStatusProjectId(null);
-    setCurrentStatus("");
-  };
 
-  const handleStatusUpdate = async () => {
-    if (!editStatusProjectId) return;
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("No estás autenticado. Inicia sesión nuevamente.");
-      return;
-    }
-    try {
-      const url = `${constantUrlApiEndpoint}/project/${editStatusProjectId}/status`;
-      const data = { status: currentStatus };
-      console.log(
-        "[handleStatusUpdate] Actualizando estado para el proyecto:",
-        editStatusProjectId,
-        "con data:",
-        data
-      );
-      await axios.put(url, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      Swal.fire({
-        title: "¡Proyecto actualizado correctamente!",
-        icon: "success",
-        confirmButtonText: "Aceptar",
-      }).then(() => {
-        closeStatusModal();
-        fetchProjects();
-      });
-    } catch (err: unknown) {
-      console.error("[handleStatusUpdate] Error al actualizar el estado del proyecto:", err);
-      setError("Ocurrió un error al actualizar el estado del proyecto.");
-      Swal.fire({
-        title: "Error",
-        text: "Ocurrió un error al actualizar el estado del proyecto.",
-        icon: "error",
-        confirmButtonText: "Aceptar",
-      });
-    }
-  };
 
   // Función para redirigir al modo vista del workflow del proyecto y guardar en el local storage
   const handleViewProject = (project: Project) => {
@@ -196,166 +118,114 @@ const ProjectListStatusEditPage = () => {
       >
         <TopBar sidebarWidth={sidebarWidth} />
         <div className="container p-4" style={{ marginTop: "80px" }}>
-          {/* Card para el título */}
-          <div style={cardStyle}>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2
-                className="fw-normal"
-                style={{
-                  color: "#4B5563",
-                  margin: 0,
-                  fontFamily: "var(--font-family-base)",
-                  fontWeight: "normal",
-                }}
-              >
-                Administrar proyectos
-              </h2>
-            </div>
-          </div>
-
-          {/* Card para la tabla de proyectos */}
-          <div style={cardStyle}>
-            {error && <p className="text-danger" style={{ fontWeight: "normal" }}>{error}</p>}
-            <div className="input-group mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="🔍︎ Buscar..."
-                value={search}
-                onChange={handleSearch}
-                style={{ fontFamily: "var(--font-family-base)" }}
-              />
-            </div>
-            {loading ? (
-              <div className="loading-container">
-                <div className="loading-spinner"></div>
-                <div className="loading-text">Cargando...</div>
+          {/* Card que contiene el título y la barra de búsqueda */}
+          <Card>
+            <div>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2
+                  className="fw-normal"
+                  style={{
+                    color: "#4B5563",
+                    margin: 0,
+                    fontFamily: "var(--font-family-base)",
+                    fontWeight: "normal",
+                  }}
+                >
+                  Administrar proyectos
+                </h2>
               </div>
-            ) : (
-              <div className="table-responsive scrollable-table">
-                <table className="custom-table" style={{ fontFamily: "var(--font-family-base)" }}>
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th></th>
-                      <th>Nombre del Proyecto</th>
-                      <th>Propietario</th>
-                      <th>Tipo de edificación</th>
-                      <th>Tipo de uso principal</th>
-                      <th>Número de niveles</th>
-                      <th>Número de viviendas/oficinas x nivel</th>
-                      <th>Superficie construida (m²)</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProjects.length > 0 ? (
-                      filteredProjects.map((project: Project) => (
-                        <tr key={project.id}>
-                          <td>{project.id || "N/D"}</td>
-                          <td></td>
-                          <td>{project.name_project || "No disponible"}</td>
-                          <td>{project.owner_name || "No disponible"}</td>
-                          <td>{project.building_type || "N/D"}</td>
-                          <td>{project.main_use_type || "N/D"}</td>
-                          <td>
-                            {project.number_levels !== undefined ? project.number_levels : "N/D"}
-                          </td>
-                          <td>
-                            {project.number_homes_per_level !== undefined
-                              ? project.number_homes_per_level
-                              : "N/D"}
-                          </td>
-                          <td>
-                            {project.built_surface !== undefined ? project.built_surface : "N/D"}
-                          </td>
-                          <td className="d-flex justify-content-center">
-                            {/* Botón para activar el modo vista */}
-                            <CustomButton
-                              variant="viewIcon"
-                              onClick={() => handleViewProject(project)}
-                              style={{
-                                backgroundColor: "var(--primary-color)",
-                                border: `2px solid var(--primary-color)`,
-                                padding: "0.5rem",
-                                width: "40px",
-                                height: "40px",
-                              }}
-                            />
+              <div className="input-group mb-3">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="🔍︎ Buscar..."
+                  value={search}
+                  onChange={handleSearch}
+                  style={{ fontFamily: "var(--font-family-base)" }}
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Card que contiene la tabla de proyectos */}
+          <Card style={{ marginTop: "20px" }}>
+            <div>
+              {error && <p className="text-danger" style={{ fontWeight: "normal" }}>{error}</p>}
+              {loading ? (
+                <div className="loading-container">
+                  <div className="loading-spinner"></div>
+                  <div className="loading-text">Cargando...</div>
+                </div>
+              ) : (
+                <div className="table-responsive scrollable-table">
+                  <table className="custom-table" style={{ fontFamily: "var(--font-family-base)" }}>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th></th>
+                        <th>Nombre del Proyecto</th>
+                        <th>Propietario</th>
+                        <th>Tipo de edificación</th>
+                        <th>Tipo de uso principal</th>
+                        <th>Número de niveles</th>
+                        <th>Número de viviendas/oficinas x nivel</th>
+                        <th>Superficie construida (m²)</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredProjects.length > 0 ? (
+                        filteredProjects.map((project: Project) => (
+                          <tr key={project.id}>
+                            <td>{project.id || "N/D"}</td>
+                            <td></td>
+                            <td>{project.name_project || "No disponible"}</td>
+                            <td>{project.owner_name || "No disponible"}</td>
+                            <td>{project.building_type || "N/D"}</td>
+                            <td>{project.main_use_type || "N/D"}</td>
+                            <td>
+                              {project.number_levels !== undefined ? project.number_levels : "N/D"}
+                            </td>
+                            <td>
+                              {project.number_homes_per_level !== undefined
+                                ? project.number_homes_per_level
+                                : "N/D"}
+                            </td>
+                            <td>
+                              {project.built_surface !== undefined ? project.built_surface : "N/D"}
+                            </td>
+                            <td className="d-flex justify-content-center">
+                              {/* Botón para activar el modo vista */}
+                              <CustomButton
+                                variant="viewIcon"
+                                onClick={() => handleViewProject(project)}
+                                style={{
+                                  backgroundColor: "var(--primary-color)",
+                                  border: `2px solid var(--primary-color)`,
+                                  padding: "0.5rem",
+                                  width: "40px",
+                                  height: "40px",
+                                }}
+                              />
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={10} className="text-center text-muted">
+                            No hay proyectos disponibles o no coinciden con la búsqueda.
                           </td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={10} className="text-center text-muted">
-                          No hay proyectos disponibles o no coinciden con la búsqueda.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </Card>
         </div>
 
-        {showStatusModal && (
-          <>
-            <div className="modal-backdrop fade show"></div>
-            <div
-              className="modal fade show"
-              style={{
-                display: "block",
-                marginTop: "250px",
-                marginLeft: "20px",
-                width: modalWidth,
-                height: modalHeight,
-                fontFamily: "var(--font-family-base)",
-              }}
-              tabIndex={-1}
-              role="dialog"
-            >
-              <div className="modal-dialog modal-lg" role="document" style={{ width: "100%" }}>
-                <div className="modal-content" style={{ fontFamily: "var(--font-family-base)" }}>
-                  <div className="modal-header">
-                    <h5 className="modal-title">
-                      Editar Estado del Proyecto #{editStatusProjectId}
-                    </h5>
-                    <button type="button" className="btn-close" onClick={closeStatusModal}></button>
-                  </div>
-                  <div className="modal-body">
-                    <div className="form-group">
-                      <label htmlFor="editStatus" className="form-label">
-                        Estado del Proyecto
-                      </label>
-                      <select
-                        id="editStatus"
-                        className="form-select"
-                        value={currentStatus}
-                        onChange={(e) => setCurrentStatus(e.target.value)}
-                        style={{ fontFamily: "var(--font-family-base)" }}
-                      >
-                        {statusOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="modal-footer">
-                    <CustomButton variant="back" onClick={closeStatusModal}>
-                      Cancelar
-                    </CustomButton>
-                    <CustomButton variant="save" onClick={handleStatusUpdate}>
-                      Guardar Cambios
-                    </CustomButton>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        
         <style jsx>{`
           .custom-table {
             width: 100%;
@@ -428,7 +298,7 @@ const ProjectListStatusEditPage = () => {
             font-weight: normal;
           }
           .scrollable-table {
-            max-height: 500px;
+            max-height: 550px;
             overflow-y: auto;
           }
           .scrollable-table::-webkit-scrollbar {

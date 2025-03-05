@@ -68,15 +68,15 @@ const TopBar = ({  }: TopBarProps) => {
       style={{
         position: "fixed",
         top: 0,
-        left: 0, // Se elimina el offset de la sidebar
+        left: 0, 
         right: 0,
         zIndex: 1100,
         fontFamily: "var(--font-family-base)",
-        height: "100px", 
+        height: "9.2%", 
         backgroundColor: "rgba(255, 255, 255, 0.2)", 
         backdropFilter: "blur(7px)", 
         boxShadow: "0px 12px 16px rgba(0, 0, 0, 0.3)", 
-        width: "100%" // Aseguramos que ocupe el 100% del ancho
+        width: "100%" 
       }}
     >
       <div
@@ -106,7 +106,7 @@ const TopBar = ({  }: TopBarProps) => {
             />
             <div className="d-flex flex-column align-items-start" style={{ fontFamily: "var(--font-family-base)" }}>
               <span
-                className="fw-bold"
+                className="fw-normal"
                 style={{
                   fontSize: "14px",
                   color: "var(--primary-color)",
@@ -134,7 +134,7 @@ const TopBar = ({  }: TopBarProps) => {
                   color: "white",
                   padding: "4px 8px",
                   borderRadius: "12px",
-                  fontWeight: "bold",
+                  fontWeight: "normal",
                   display: "inline-block",
                   marginTop: "4px",
                   fontFamily: "var(--font-family-base)",

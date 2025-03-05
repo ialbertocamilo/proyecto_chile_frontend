@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
+import Card from "../src/components/common/Card";
 import "../public/assets/css/globals.css";
 import Swal from "sweetalert2";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
@@ -29,29 +30,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
-  const [sidebarWidth, ] = useState("300px");
-
-  const CARD_WIDTH = "135%"; // Reducido para evitar desbordamiento
-  const CARD_MARGIN_LEFT = "-18%"; // Alinear más a la izquierda
-  const CARD_MARGIN_RIGHT = "auto";
-  const CARD_MARGIN_TOP = "7px";
-  const CARD_MARGIN_BOTTOM = "0px";
-  const CARD_BORDER_RADIUS = "16px";
-  const CARD_BOX_SHADOW = "0 2px 10px rgba(0,0,0,0.1)";
-  const CARD_BORDER_COLOR = "#d3d3d3";
-  const CONTAINER_MARGIN_LEFT = "10px";
-
-  const cardStyle = {
-    width: CARD_WIDTH,
-    margin: `${CARD_MARGIN_TOP} ${CARD_MARGIN_RIGHT} ${CARD_MARGIN_BOTTOM} ${CARD_MARGIN_LEFT}`,
-    borderRadius: CARD_BORDER_RADIUS,
-    boxShadow: CARD_BOX_SHADOW,
-    border: `1px solid ${CARD_BORDER_COLOR}`,
-    padding: "20px",
-    backgroundColor: "#fff",
-  };
-
-  // Si deseas modificar el margen izquierdo del contenedor principal (además del sidebar)
+  const [sidebarWidth] = useState("300px");
 
   const fetchUsers = useCallback(async () => {
     console.log("[fetchUsers] Fetching users from backend...");
@@ -97,58 +76,6 @@ const UserManagement = () => {
     console.log("[handleSearch] Buscando:", query);
     setSearchQuery(query);
   };
-
-  /* const handleDeleteUser = async (id: number, name: string, lastname: string) => {
-    Swal.fire({
-      title: "Confirmar eliminación",
-      text: `¿Estás seguro de eliminar el usuario (ID: ${id}) ${name} ${lastname}?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc3545",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          Swal.fire("Error", "No se encontró token", "error");
-          return;
-        }
-        try {
-          console.log("[handleDeleteUser] Eliminando usuario con ID:", id);
-          const response = await fetch(
-            `${constantUrlApiEndpoint}/user/${id}/delete`,
-            {
-              method: "DELETE",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          if (!response.ok) {
-            throw new Error("Error al eliminar usuario");
-          }
-          Swal.fire(
-            "Eliminado",
-            `El usuario (ID: ${id}) ${name} ${lastname} ha sido eliminado.`,
-            "success"
-          );
-          fetchUsers();
-        } catch (err: unknown) {
-          const message =
-            err instanceof Error ? err.message : "Error desconocido";
-          Swal.fire("Error", message, "error");
-        }
-      }
-    });
-  };
-
-  const handleEditUser = (user: User) => {
-    console.log("[handleEditUser] Editando usuario:", user);
-    router.push(`/user-edit?id=${user.id}`);
-  }; */
 
   // Función para traducir el valor numérico del rol a texto
   const getRoleText = (role_id: number) => {
@@ -211,7 +138,7 @@ const UserManagement = () => {
   const handleActiveChange = async (
     e: ChangeEvent<HTMLInputElement>,
     userId: number,
-    roleId: number // Agregamos el rol del usuario
+    roleId: number
   ) => {
     if (roleId === 1) {
       Swal.fire(
@@ -258,7 +185,7 @@ const UserManagement = () => {
       }
 
       console.log("[handleActiveChange] Estado actualizado correctamente");
-      fetchUsers(); // Recargar la lista de usuarios para reflejar el cambio
+      fetchUsers();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
       console.error("[handleActiveChange] Error:", message);
@@ -269,79 +196,79 @@ const UserManagement = () => {
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} />
-      <div
-        className="d-flex flex-column flex-grow-1"
-        style={{
-          marginLeft: "80px",
-          width: "100%",
-          paddingLeft: CONTAINER_MARGIN_LEFT,
-        }}
-      >
+      <div className="d-flex flex-column flex-grow-1">
         <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container p-4" style={{ marginTop: "100px" }}>
-        <div style={cardStyle}>
-          <h2 className="fw-normal mb-4" style={{ color: "var(--text-color)" }}>
-            Listado de Usuarios
-          </h2>
-          <div
-            className="input-group mb-3"
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-              borderRadius: "8px",
-              overflow: "hidden",
-              height: "70px", /* Hace la barra de búsqueda más gruesa */
-              position: "relative",
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Buscar..."
-              className="form-control"
-              value={searchQuery}
-              onChange={handleSearch}
-              style={{
-                flexGrow: 1,
-                fontFamily: "var(--font-family-base)",
-                fontSize: "var(--font-size-base)",
-                height: "100%", /* Asegura que ocupe todo el alto */
-                boxShadow: "none",
-                paddingLeft: "1rem",
-                borderRadius: "8px", /* Bordes redondeados */
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                right: "10px",
-                top: "50%",
-                transform: "translateY(-50%)",
-              }}
-            >
-              <CustomButton
-                type="button"
-                variant="save"
-                onClick={() => router.push("/user-create")}
+        <div
+          className="container p-4 custom-container"
+          style={{ marginTop: "100px" }}
+        >
+          {/* Primera sección: Encabezado y búsqueda en una Card */}
+          <Card style={{ marginTop: "-25px", width: "100%", marginLeft: "80px" }}>
+            <div>
+              <h2 className="fw-normal" style={{ color: "var(--text-color)" }}>
+                Listado de Usuarios
+              </h2>
+              <div
+                className="input-group"
                 style={{
-                  minWidth: "150px", /* Botón más notorio */
-                  height: "40px", /* Más pequeño que la barra */
-                  fontFamily: "var(--font-family-base)",
-                  fontSize: "var(--font-size-base)",
-                  borderRadius: "8px", /* Bordes redondeados */
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  height: "70px",
+                  position: "relative",
                 }}
               >
-                Agregar Usuario
-              </CustomButton>
+                <input
+                  type="text"
+                  placeholder="Buscar..."
+                  className="form-control"
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  style={{
+                    flexGrow: 1,
+                    fontFamily: "var(--font-family-base)",
+                    fontSize: "var(--font-size-base)",
+                    height: "100%",
+                    boxShadow: "none",
+                    paddingLeft: "1rem",
+                    borderRadius: "8px",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
+                >
+                  <CustomButton
+                    type="button"
+                    variant="save"
+                    onClick={() => router.push("/user-create")}
+                    style={{
+                      minWidth: "150px",
+                      height: "40px",
+                      fontFamily: "var(--font-family-base)",
+                      fontSize: "var(--font-size-base)",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    Agregar Usuario
+                  </CustomButton>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-          {/* Segunda Card: Tabla de Usuarios */}
-          <div style={{ ...cardStyle, marginTop: "20px" }}>
+          </Card>
+
+          {/* Segunda sección: Tabla de Usuarios en otra Card */}
+          <Card style={{ marginTop: "10px", width: "100%", marginLeft: "80px" }}>
             <div
               className="table-responsive scrollable-table"
-              style={{ maxHeight: "500px", overflowY: "auto" }}
+              style={{ maxHeight: "600px", overflowY: "auto" }}
             >
               <table className="custom-table">
                 <thead>
@@ -407,11 +334,12 @@ const UserManagement = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
 
       <style jsx>{`
+        /* Estilos personalizados para la tabla, scroll y switches */
         .scrollable-table::-webkit-scrollbar {
           width: 10px;
         }
@@ -437,16 +365,16 @@ const UserManagement = () => {
         .custom-table th,
         .custom-table td {
           padding: 15px;
-          text-align: center; /* Centra tanto los encabezados como el contenido */
+          text-align: center;
         }
         .custom-table th {
           background-color: #fff;
           color: #666;
           font-weight: normal;
-          font-size: 0.9rem; /* Reduce el tamaño de los encabezados */
+          font-size: 0.9rem;
         }
         .custom-table tbody tr {
-          border-bottom: none; /* Elimina los bordes entre filas */
+          border-bottom: none;
         }
         .action-btn-group {
           display: flex;
@@ -456,22 +384,19 @@ const UserManagement = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 0 !important;
+          padding: 0;
         }
-
         .switch {
           position: relative;
           display: inline-block;
           width: 55px;
           height: 30px;
         }
-
         .switch input {
           opacity: 0;
           width: 0;
           height: 0;
         }
-
         .slider {
           position: absolute;
           cursor: pointer;
@@ -482,13 +407,10 @@ const UserManagement = () => {
           background-color: #f65a82;
           border-radius: 30px;
           transition: 0.2s;
-          /* box-shadow: inset 3px 3px 8px rgba(51, 5, 5, 0.8); */ /* Sombra más oscura */
         }
-
-        /* Estado inactivo */
         .slider::before {
           position: absolute;
-          content: ""; /* Letra en estado inactivo */
+          content: "";
           height: 26px;
           width: 26px;
           left: 2px;
@@ -502,19 +424,45 @@ const UserManagement = () => {
           font-weight: bold;
           font-size: 14px;
           color: black;
-          /* box-shadow: inset -2px -2px 6px rgba(51, 5, 5, 0.5); */ /* Sombra más oscura */
         }
-
-        /* Estado activo */
         input:checked + .slider {
           background-color: #89e790;
-          /* background-color: #3ca7b7; */
-          /* box-shadow: inset 3px 3px 8px rgba(0, 82, 94, 0.5); */ /* Sombra más oscura */
         }
-
         input:checked + .slider::before {
           transform: translateX(25px);
-          /* box-shadow: inset -2px -2px 6px rgba(0, 82, 94, 0.5); */ /* Sombra más oscura */
+        }
+
+        /* Media queries para responsividad */
+        @media (max-width: 1024px) {
+          .custom-container {
+            margin-left: 20px;
+            margin-right: 20px;
+          }
+          /* Aseguramos que las Cards se adapten bien */
+          .card {
+            width: 100%;
+            margin: 10px auto;
+            padding: 15px;
+          }
+        }
+        @media (max-width: 480px) {
+          .custom-container {
+            margin-left: 10px;
+            margin-right: 10px;
+          }
+          .card {
+            width: 100%;
+            margin: 5px auto;
+            padding: 10px;
+          }
+          .custom-table th,
+          .custom-table td {
+            padding: 10px;
+            font-size: 0.8rem;
+          }
+          .input-group {
+            height: 60px;
+          }
         }
       `}</style>
     </div>

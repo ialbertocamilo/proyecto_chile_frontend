@@ -77,9 +77,9 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center", 
-    width: "100%", 
-    minHeight: "80px", 
+    justifyContent: "center",
+    width: "100%",
+    minHeight: "80px",
     boxSizing: "border-box",
     padding: "0 0.5rem",
     marginBottom: "1rem",
@@ -92,20 +92,19 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
     <>
       <GoogleIcons />
       <nav
-        className="sidebar d-flex flex-column p-3"
+        className="sidebar d-flex flex-column"
         style={{
           position: "fixed",
-          left: 0,
           top: 0,
+          bottom: 0,
+          left: 0,
           zIndex: 1200,
-          width: "100px", // Ancho fijo
+          width: "100px",
           backgroundColor: "var(--primary-color)",
-          height: "100vh",
           fontFamily: "var(--font-family-base)",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          transition: "none",
         }}
       >
         <div style={logoContainerStyle}>
@@ -231,6 +230,24 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
             flex: 1;
             background-color: var(--primary-color);
             padding: 0;
+          }
+
+          /* Ocultar texto en pantallas pequeñas (ejemplo) */
+          @media (max-width: 768px) {
+            .sidebar {
+              width: 60px;
+            }
+            .sidebar .nav-link {
+              font-size: 0.7rem;
+              padding: 3px;
+            }
+            .sidebar .nav-link .material-icons {
+              margin-bottom: 0;
+            }
+            /* Si deseas ocultar el texto en móvil, puedes hacer: */
+            /* .sidebar .nav-link span:not(.material-icons) {
+              display: none;
+            } */
           }
         `}</style>
       </nav>

@@ -24,7 +24,12 @@
   font-size: 2.05rem; /* o el tamaño que desees */
 }
 
-
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
 /* Estilos base */
 body {
   font-family: var(--font-family-base);

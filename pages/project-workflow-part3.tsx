@@ -244,7 +244,7 @@ const ProjectWorkflowPart3: React.FC = () => {
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Estados para edición en Muros y Techumbre
+  // Estados para edición en Muros y Techumbredd
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [editingColors, setEditingColors] = useState<{
     interior: string;

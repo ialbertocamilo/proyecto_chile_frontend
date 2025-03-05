@@ -659,7 +659,7 @@ const ProjectWorkflowPart3: React.FC = () => {
   };
 
   const handleCancelEdit = (detail: TabItem) => {
-    // Revertir al estado original o deshacer los cambios
+    // Revertir al estado original o deshacer los cambiosss
     setEditingColors({
       interior: detail.info?.surface_color?.interior?.name || "Intermedio",
       exterior: detail.info?.surface_color?.exterior?.name || "Intermedio",

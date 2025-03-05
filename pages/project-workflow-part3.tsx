@@ -1142,7 +1142,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                         {!isViewMode &&
                           (editingTechRowId === item.id ? (
                             <div>
-                              {editingTechRowId !== null && ( // 🔹 Solo muestra botones si ya se seleccionó algo
+                              {editingTechRowId !== null && ( // 🔹 Solo muestra botones si ya se seleccionó algoaa
                                 <>
                                   <CustomButton
                                     variant="save"

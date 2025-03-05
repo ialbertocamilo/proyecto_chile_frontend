@@ -10,6 +10,7 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
+import { toast } from "react-toastify";
 
 interface MaterialAttributes {
   name: string;
@@ -227,13 +228,13 @@ const AdministrationPage: React.FC = () => {
       newMaterialData.specific_heat <= 0 ||
       newMaterialData.density <= 0
     ) {
-      Swal.fire("Campos incompletos", "Por favor complete todos los campos de material", "warning");
+      toast.warning("Por favor complete todos los campos de material"); // Notificación de advertencia
       return;
     }
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
+        toast.warning("Token no encontrado. Inicia sesión."); // Notificación de advertencia
         handleLogout();
         return;
       }
@@ -251,16 +252,15 @@ const AdministrationPage: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json", accept: "application/json" };
       const response = await axios.post(url, payload, { headers });
       if (response.status === 200) {
-        Swal.fire("Material creado", "El material fue creado correctamente", "success");
+        toast.success("El material fue creado correctamente"); // Notificación de éxito
         await fetchMaterialsList(1);
         setShowNewMaterialModal(false);
         setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
       }
     } catch (error: unknown) {
       console.error("[handleCreateMaterial] Error:", error);
-      Swal.fire("Error", "No se pudo crear el material", "error").then(() => {
-        handleLogout();
-      });
+      toast.error("No se pudo crear el material"); // Notificación de error
+      handleLogout();
     }
   };
 

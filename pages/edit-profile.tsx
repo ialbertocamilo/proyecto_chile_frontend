@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Swal from "sweetalert2";
+import { toast } from 'react-toastify';
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
@@ -16,7 +16,6 @@ interface ProfileData {
   ubigeo: string;
   userType: string;
 }
-
 
 const mapRoleIdToText = (roleId: string | null): string => {
   if (roleId === "1") {
@@ -88,7 +87,6 @@ const EditProfile = () => {
     }
   }, []);
   
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
@@ -99,11 +97,14 @@ const EditProfile = () => {
     const { name, lastname, number_phone, country, ubigeo } = profile;
   
     if (!name.trim() || !lastname.trim() || !number_phone.trim() || !country.trim() || !ubigeo.trim()) {
-      Swal.fire({
-        title: "Campos incompletos",
-        text: "Por favor, complete todos los campos.",
-        icon: "warning",
-        confirmButtonText: "Aceptar",
+      toast.warning("Por favor, complete todos los campos.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
       return;
     }
@@ -141,21 +142,27 @@ const EditProfile = () => {
   
       console.log("[EditProfile] Perfil actualizado correctamente:", resData);
   
-      await Swal.fire({
-        title: "Perfil actualizado",
-        text: resData.message || "Tu perfil se actualizó correctamente.",
-        icon: "success",
-        confirmButtonText: "Aceptar",
+      toast.success(resData.message || "Tu perfil se actualizó correctamente.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
       router.push("/dashboard");
     } catch (err: unknown) {
       console.error("[EditProfile] Error actualizando perfil:", err);
       const message = err instanceof Error ? err.message : "Error al actualizar el perfil";
-      Swal.fire({
-        title: "Error",
-        text: message,
-        icon: "error",
-        confirmButtonText: "Aceptar",
+      toast.error(message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
       setError(message);
     } finally {

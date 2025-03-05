@@ -23,7 +23,6 @@ interface User {
 }
 
 const UserManagement = () => {
-  // Validación de sesión
   useAuth();
   console.log("[UserManagement] Página cargada y sesión validada.");
 
@@ -77,7 +76,6 @@ const UserManagement = () => {
     setSearchQuery(query);
   };
 
-  // Función para traducir el valor numérico del rol a texto
   const getRoleText = (role_id: number) => {
     return role_id === 1
       ? "Administrador"
@@ -86,7 +84,6 @@ const UserManagement = () => {
       : "Desconocido";
   };
 
-  // Función para manejar el cambio de rol desde el desplegable
   const handleRoleChange = async (
     e: ChangeEvent<HTMLSelectElement>,
     userId: number
@@ -127,7 +124,6 @@ const UserManagement = () => {
         `Usuario actualizado al rol de ${getRoleText(newRoleId)}`,
         "success"
       );
-      // Actualizamos la lista de usuarios
       fetchUsers();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
@@ -146,7 +142,7 @@ const UserManagement = () => {
         "No se puede modificar el estado de un administrador",
         "warning"
       );
-      e.target.checked = !e.target.checked; // Revertir el cambio en el switch
+      e.target.checked = !e.target.checked;
       return;
     }
 
@@ -202,7 +198,6 @@ const UserManagement = () => {
           className="container p-4 custom-container"
           style={{ marginTop: "100px" }}
         >
-          {/* Primera sección: Encabezado y búsqueda en una Card */}
           <Card style={{ marginTop: "-25px", width: "100%", marginLeft: "80px" }}>
             <div>
               <h2 className="fw-normal" style={{ color: "var(--text-color)" }}>
@@ -264,7 +259,6 @@ const UserManagement = () => {
             </div>
           </Card>
 
-          {/* Segunda sección: Tabla de Usuarios en otra Card */}
           <Card style={{ marginTop: "10px", width: "100%", marginLeft: "80px" }}>
             <div
               className="table-responsive scrollable-table"
@@ -339,7 +333,6 @@ const UserManagement = () => {
       </div>
 
       <style jsx>{`
-        /* Estilos personalizados para la tabla, scroll y switches */
         .scrollable-table::-webkit-scrollbar {
           width: 10px;
         }
@@ -432,20 +425,23 @@ const UserManagement = () => {
           transform: translateX(25px);
         }
 
-        /* Media queries para responsividad */
         @media (max-width: 1024px) {
           .custom-container {
             margin-left: 20px;
             margin-right: 20px;
           }
-          /* Aseguramos que las Cards se adapten bien */
           .card {
             width: 100%;
             margin: 10px auto;
             padding: 15px;
           }
+          .custom-table th,
+          .custom-table td {
+            padding: 10px;
+            font-size: 0.8rem;
+          }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
           .custom-container {
             margin-left: 10px;
             margin-right: 10px;
@@ -457,11 +453,52 @@ const UserManagement = () => {
           }
           .custom-table th,
           .custom-table td {
-            padding: 10px;
-            font-size: 0.8rem;
+            padding: 8px;
+            font-size: 0.75rem;
           }
           .input-group {
             height: 60px;
+          }
+          .switch {
+            width: 45px;
+            height: 25px;
+          }
+          .slider::before {
+            height: 21px;
+            width: 21px;
+          }
+          input:checked + .slider::before {
+            transform: translateX(20px);
+          }
+        }
+        @media (max-width: 480px) {
+          .custom-container {
+            margin-left: 5px;
+            margin-right: 5px;
+          }
+          .card {
+            width: 100%;
+            margin: 5px auto;
+            padding: 5px;
+          }
+          .custom-table th,
+          .custom-table td {
+            padding: 5px;
+            font-size: 0.7rem;
+          }
+          .input-group {
+            height: 50px;
+          }
+          .switch {
+            width: 40px;
+            height: 20px;
+          }
+          .slider::before {
+            height: 18px;
+            width: 18px;
+          }
+          input:checked + .slider::before {
+            transform: translateX(18px);
           }
         }
       `}</style>

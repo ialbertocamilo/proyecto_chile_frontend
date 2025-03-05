@@ -50,7 +50,7 @@ const DashboardPage: React.FC = () => {
   console.log("[DashboardPage] Página cargada y sesión validada.");
 
   // Manejamos dinámicamente el ancho de la barra lateral
-  const [sidebarWidth, ] = useState("300px");
+  const [sidebarWidth,] = useState("300px");
 
   // 1. Leemos las variables CSS al montar el componente (o cada vez que quieras refrescar).
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
@@ -157,7 +157,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      <Navbar setActiveView={() => {}} />
+      <Navbar setActiveView={() => { }} />
       <div
         className="d-flex flex-column flex-grow-1"
         style={{
@@ -178,7 +178,7 @@ const DashboardPage: React.FC = () => {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
               gap: "30px",
             }}
           >
@@ -236,6 +236,22 @@ const DashboardPage: React.FC = () => {
           text-align: center;
           background-color: #fff;
           font-weight: normal;
+        }
+        @media (max-width: 1200px) {
+        .chart-container {
+          grid-template-columns: repeat(2, 1fr); // 2 columnas en pantallas medianas
+        }
+
+        @media (max-width: 768px) {
+        .chart-container {
+          grid-template-columns: 1fr; // 1 columna en pantallas pequeñas
+          height: 250px;
+        }
+        @media (max-width: 768px) {
+        .dashboard-content {
+          padding: 10px;
+          margin-right: 10px;
+          margin-top: 70px;
         }
       `}</style>
     </div>

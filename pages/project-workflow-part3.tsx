@@ -306,9 +306,7 @@ const ProjectWorkflowPart3: React.FC = () => {
 
       if (response.data && response.data.length > 0) {
         setMurosTabList(response.data);
-      } else {
-        Swal.fire("Información", "Aún no hay datos para mostrar", "info");
-      }
+      } 
     } catch (error) {
       console.error("Error al obtener datos de muros:", error);
     }

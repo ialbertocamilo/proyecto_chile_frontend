@@ -19,7 +19,7 @@ const getUserTypeText = (roleId: string): string => {
   }
 };
 
-const TopBar = ({  }: TopBarProps) => {
+const TopBar = ({ }: TopBarProps) => {
   const [user, setUser] = useState({ name: "Usuario", email: "", userType: "Tipo de Usuario" });
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -72,16 +72,18 @@ const TopBar = ({  }: TopBarProps) => {
         right: 0,
         zIndex: 1100,
         fontFamily: "var(--font-family-base)",
-        height: "9.2%", 
+        minHeight: "60px", // Altura mínima para dispositivos móviles y de escritorio
+        padding: "10px 20px", // Padding para evitar que el contenido se pegue a los bordes
         backgroundColor: "rgba(255, 255, 255, 0.2)", 
         backdropFilter: "blur(7px)", 
         boxShadow: "0px 12px 16px rgba(0, 0, 0, 0.3)", 
-        width: "100%" 
+        width: "100%",
+        overflow: "hidden", // Evita que el contenido se desborde
       }}
     >
       <div
         className="container-fluid d-flex justify-content-end align-items-center"
-        style={{ fontFamily: "var(--font-family-base)" }}
+        style={{ fontFamily: "var(--font-family-base)", flexWrap: "wrap" }} // Permite que el contenido se ajuste en pantallas pequeñas
       >
         <div className="dropdown" style={{ position: "relative", fontFamily: "var(--font-family-base)" }}>
           <button

@@ -293,17 +293,17 @@ const ProjectWorkflowPart3: React.FC = () => {
       Swal.fire("Token no encontrado", "Inicia sesión.");
       return;
     }
-    
+
     try {
-      console.log("Proyecto id: ", projectId)
+      console.log("Proyecto id: ", projectId);
       const url = `http://ceela-backend.svgdev.tech/project/${projectId}/details/Muro`;
-      console.log("URL: ", url)
+      console.log("URL: ", url);
       const headers = { Authorization: `Bearer ${token}` };
-      console.log("token: ", token)
+      console.log("token: ", token);
       const response = await axios.get(url, { headers });
-      console.log("response", response)
+      console.log("response", response);
       console.log("Datos recibidos de la API:", response.data);
-  
+
       if (response.data && response.data.length > 0) {
         setMurosTabList(response.data);
       } else {
@@ -311,7 +311,6 @@ const ProjectWorkflowPart3: React.FC = () => {
       }
     } catch (error) {
       console.error("Error al obtener datos de muros:", error);
-      Swal.fire("Error", "No se pudo obtener los datos", "error");
     }
   }, [projectId]);
 
@@ -510,64 +509,63 @@ const ProjectWorkflowPart3: React.FC = () => {
   };
 
   const handleSaveDetails = async () => {
-  // Retrasar la ejecución de la función 1 segundo al inicio
-  await new Promise(resolve => setTimeout(resolve, 1000));
+    // Retrasar la ejecución de la función 1 segundo al inicio
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Verifica que el ID de proyecto esté disponible
-  if (!projectId) {
-    console.error("No se proporcionó un ID de proyecto.");
-    return;
-  }
-
-  // Verifica que el token esté presente
-  const token = localStorage.getItem("token");
-  if (!token) {
-    console.error("Token no disponible.");
-    return;
-  }
-
-  // Verifica si `fetchedDetails` tiene datos antes de hacer la solicitud
-  if (fetchedDetails.length === 0) {
-    console.error("No se encontraron detalles para enviar.");
-    return;
-  }
-
-  // Mapea los detalles para obtener solo los ID de detalle
-  const detailIds = fetchedDetails.map((det) => det.id_detail);
-  console.log("Detalles ID antes de la solicitud:", detailIds);
-  
-  // Si `detailIds` está vacío, no proceder
-  if (detailIds.length === 0) {
-    console.error("No se encontraron detalles para enviar.");
-    return;
-  }
-
-  // Configuración de la URL y headers
-  const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
-
-  try {
-    // Realizar la solicitud POST
-    const response = await axios.post(url, detailIds, { headers });
-    console.log("Respuesta de la API:", response.data);
-
-    // Verifica si la respuesta contiene datos antes de continuar
-    if (response && response.data) {
-      setShowTabsInStep4(true);  // Cambia la vista de la pestaña
-      setTabStep4("muros");      // Establece el paso correcto
-    } else {
-      console.error("La respuesta no contiene datos.");
+    // Verifica que el ID de proyecto esté disponible
+    if (!projectId) {
+      console.error("No se proporcionó un ID de proyecto.");
+      return;
     }
-  } catch (error) {
-    // Verifica si hay un error en la respuesta de la API
-    console.error("Error al enviar la solicitud:", error);
-};
+
+    // Verifica que el token esté presente
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("Token no disponible.");
+      return;
+    }
+
+    // Verifica si `fetchedDetails` tiene datos antes de hacer la solicitud
+    if (fetchedDetails.length === 0) {
+      console.error("No se encontraron detalles para enviar.");
+      return;
+    }
+
+    // Mapea los detalles para obtener solo los ID de detalle
+    const detailIds = fetchedDetails.map((det) => det.id_detail);
+    console.log("Detalles ID antes de la solicitud:", detailIds);
+
+    // Si `detailIds` está vacío, no proceder
+    if (detailIds.length === 0) {
+      console.error("No se encontraron detalles para enviar.");
+      return;
+    }
+
+    // Configuración de la URL y headers
+    const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
+    try {
+      // Realizar la solicitud POST
+      console.log("Headers", headers);
+      const response = await axios.post(url, detailIds, { headers });
+      console.log("Respuesta de la API:", response.data);
+
+      // Verifica si la respuesta contiene datos antes de continuar
+      if (response && response.data) {
+        setShowTabsInStep4(true); // Cambia la vista de la pestaña
+        setTabStep4("muros"); // Establece el paso correcto
+      } else {
+        console.error("La respuesta no contiene datos.");
+      }
+    } catch (error) {
+      // Verifica si hay un error en la respuesta de la API
+      console.error("Error al enviar la solicitud:", error);
+    }
   };
-  
-  
 
   const handleSaveDetailsCopy = async () => {
     // Lógica original de guardar detalles
@@ -575,47 +573,48 @@ const ProjectWorkflowPart3: React.FC = () => {
       console.error("No se proporcionó un ID de proyecto.");
       return;
     }
-  
+
     // Verifica que el token esté presente
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("Token no disponible.");
       return;
     }
-  
+
     // Verifica si `fetchedDetails` tiene datos antes de hacer la solicitud
     if (fetchedDetails.length === 0) {
       console.error("No se encontraron detalles para enviar.");
       return;
     }
-  
+
     // Mapea los detalles para obtener solo los ID de detalle
     const detailIds = fetchedDetails.map((det) => det.id_detail);
     console.log("Detalles ID antes de la solicitud:", detailIds);
-    
+
     // Si `detailIds` está vacío, no proceder
     if (detailIds.length === 0) {
       console.error("No se encontraron detalles para enviar.");
       return;
     }
-  
+
     // Configuración de la URL y headers
     const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
     const headers = {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     };
-  
+
     try {
       // Realizar la solicitud POST
+      console.log("Headers", headers);
       const response = await axios.post(url, detailIds, { headers });
+
       console.log("Respuesta de la API:", response.data);
-  
     } catch (error) {
       // Verifica si hay un error en la respuesta de la API
       console.error("Error al enviar la solicitud:", error);
+    }
   };
-    };
 
   useEffect(() => {
     if (fetchedDetails.length > 0) {
@@ -1094,99 +1093,104 @@ const ProjectWorkflowPart3: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-              {techumbreTabList.length > 0 ? (
-  techumbreTabList.map((item, idx) => (
-    <tr key={idx}>
-      <td style={{ textAlign: "center" }}>{item.name_detail}</td>
-      <td style={{ textAlign: "center" }}>{item.value_u?.toFixed(3) ?? "--"}</td>
-      <td style={{ textAlign: "center" }}>
-        {editingTechRowId === item.id && !isViewMode ? (
-          <select
-            value={editingTechColors.exterior}
-            onChange={(e) =>
-              setEditingTechColors((prev) => ({
-                ...prev,
-                exterior: e.target.value,
-              }))
-            }
-          >
-            <option value="Claro">Claro</option>
-            <option value="Oscuro">Oscuro</option>
-            <option value="Intermedio">Intermedio</option>
-          </select>
-        ) : (
-          item.info?.surface_color?.exterior?.name || "Desconocido"
-        )}
-      </td>
-      <td style={{ textAlign: "center" }}>
-        {editingTechRowId === item.id && !isViewMode ? (
-          <select
-            value={editingTechColors.interior}
-            onChange={(e) =>
-              setEditingTechColors((prev) => ({
-                ...prev,
-                interior: e.target.value,
-              }))
-            }
-          >
-            <option value="Claro">Claro</option>
-            <option value="Oscuro">Oscuro</option>
-            <option value="Intermedio">Intermedio</option>
-          </select>
-        ) : (
-          item.info?.surface_color?.interior?.name || "Desconocido"
-        )}
-      </td>
-      <td style={{ textAlign: "center" }}>
-        {!isViewMode && editingTechRowId === item.id ? (
-          <div>
-            {editingTechRowId !== null && ( // 🔹 Solo muestra botones si ya se seleccionó algo
-              <>
-                <CustomButton
-                  className="custom-button"
-                  variant="save"
-                  onClick={() => handleConfirmTechEdit(item)}
-                  style={{
-                    fontSize: "10px",
-                    padding: "3px 8px",
-                    marginRight: "10px"
-                  }}
-                >
-                  <span className="material-icons">check</span>
-                </CustomButton>
-                <CustomButton
-                  className="custom-button"
-                  variant="cancelIcon"
-                  onClick={() => handleCancelTechEdit(item)}
-                  style={{
-                    fontSize: "10px",
-                    padding: "3px 8px",
-                  }}
-                >
-                  ✗
-                </CustomButton>
-              </>
-            )}
-          </div>
-        ) : (
-          <CustomButton
-            className="custom-button"
-            variant="editIcon"
-            onClick={() => handleEditTechClick(item)}
-            style={{ fontSize: "10px", padding: "3px 8px" }}
-          >
-            Editar
-          </CustomButton>
-        )}
-      </td>
-    </tr>
-  ))
-) : (
-  <tr>
-    <td style={{ textAlign: "center" }}>Cargando datos...</td>
-  </tr>
-)}
-
+                {techumbreTabList.length > 0 ? (
+                  techumbreTabList.map((item, idx) => (
+                    <tr key={idx}>
+                      <td style={{ textAlign: "center" }}>
+                        {item.name_detail}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.value_u?.toFixed(3) ?? "--"}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {editingTechRowId === item.id && !isViewMode ? (
+                          <select
+                            value={editingTechColors.exterior}
+                            onChange={(e) =>
+                              setEditingTechColors((prev) => ({
+                                ...prev,
+                                exterior: e.target.value,
+                              }))
+                            }
+                          >
+                            <option value="Claro">Claro</option>
+                            <option value="Oscuro">Oscuro</option>
+                            <option value="Intermedio">Intermedio</option>
+                          </select>
+                        ) : (
+                          item.info?.surface_color?.exterior?.name ||
+                          "Desconocido"
+                        )}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {editingTechRowId === item.id && !isViewMode ? (
+                          <select
+                            value={editingTechColors.interior}
+                            onChange={(e) =>
+                              setEditingTechColors((prev) => ({
+                                ...prev,
+                                interior: e.target.value,
+                              }))
+                            }
+                          >
+                            <option value="Claro">Claro</option>
+                            <option value="Oscuro">Oscuro</option>
+                            <option value="Intermedio">Intermedio</option>
+                          </select>
+                        ) : (
+                          item.info?.surface_color?.interior?.name ||
+                          "Desconocido"
+                        )}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {!isViewMode && editingTechRowId === item.id ? (
+                          <div>
+                            {editingTechRowId !== null && ( // 🔹 Solo muestra botones si ya se seleccionó algo
+                              <>
+                                <CustomButton
+                                  className="custom-button"
+                                  variant="save"
+                                  onClick={() => handleConfirmTechEdit(item)}
+                                  style={{
+                                    fontSize: "10px",
+                                    padding: "3px 8px",
+                                    marginRight: "10px",
+                                  }}
+                                >
+                                  <span className="material-icons">check</span>
+                                </CustomButton>
+                                <CustomButton
+                                  className="custom-button"
+                                  variant="cancelIcon"
+                                  onClick={() => handleCancelTechEdit(item)}
+                                  style={{
+                                    fontSize: "10px",
+                                    padding: "3px 8px",
+                                  }}
+                                >
+                                  ✗
+                                </CustomButton>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <CustomButton
+                            className="custom-button"
+                            variant="editIcon"
+                            onClick={() => handleEditTechClick(item)}
+                            style={{ fontSize: "10px", padding: "3px 8px" }}
+                          >
+                            Editar
+                          </CustomButton>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td style={{ textAlign: "center" }}>Cargando datos...</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           )}
@@ -1601,7 +1605,10 @@ const ProjectWorkflowPart3: React.FC = () => {
               marginTop: "30px",
             }}
           >
-            <span className="material-icons" style={{ fontSize: "24px" }}>arrow_back</span> {/* Regresar */}
+            <span className="material-icons" style={{ fontSize: "24px" }}>
+              arrow_back
+            </span>{" "}
+            {/* Regresar */}
           </CustomButton>
         </div>
         {/* Botones de navegación: se muestran tanto en modo vista como en edición */}
@@ -1850,7 +1857,8 @@ const ProjectWorkflowPart3: React.FC = () => {
                             fontSize: "16px",
                           }}
                         >
-                          <span className="material-icons">sd_card</span> Grabar Datos
+                          <span className="material-icons">sd_card</span> Grabar
+                          Datos
                         </CustomButton>
                       </div>
                     )}
@@ -1924,7 +1932,7 @@ const ProjectWorkflowPart3: React.FC = () => {
             </CustomButton>
 
             <Tooltip anchorSelect="#seccion-anterior-btn" place="top">
-            {`Sección anterior: "Perfil de Uso"`}
+              {`Sección anterior: "Perfil de Uso"`}
             </Tooltip>
 
             {/* Contenedor interno para centrar "Mostrar datos" */}

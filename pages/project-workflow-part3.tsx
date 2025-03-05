@@ -1143,46 +1143,47 @@ const ProjectWorkflowPart3: React.FC = () => {
                         )}
                       </td>
                       <td style={{ textAlign: "center" }}>
-                        {!isViewMode && editingTechRowId === item.id ? (
-                          <div>
-                            {editingTechRowId !== null && ( // 🔹 Solo muestra botones si ya se seleccionó algo
-                              <>
-                                <CustomButton
-                                  className="custom-button"
-                                  variant="save"
-                                  onClick={() => handleConfirmTechEdit(item)}
-                                  style={{
-                                    fontSize: "10px",
-                                    padding: "3px 8px",
-                                    marginRight: "10px",
-                                  }}
-                                >
-                                  <span className="material-icons">check</span>
-                                </CustomButton>
-                                <CustomButton
-                                  className="custom-button"
-                                  variant="cancelIcon"
-                                  onClick={() => handleCancelTechEdit(item)}
-                                  style={{
-                                    fontSize: "10px",
-                                    padding: "3px 8px",
-                                  }}
-                                >
-                                  ✗
-                                </CustomButton>
-                              </>
-                            )}
-                          </div>
-                        ) : (
-                          <CustomButton
-                            className="custom-button"
-                            variant="editIcon"
-                            onClick={() => handleEditTechClick(item)}
-                            style={{ fontSize: "10px", padding: "3px 8px" }}
-                          >
-                            Editar
-                          </CustomButton>
-                        )}
+                        {!isViewMode &&
+                          (editingTechRowId === item.id ? (
+                            <div>
+                              {editingTechRowId !== null && ( // 🔹 Solo muestra botones si ya se seleccionó algo
+                                <>
+                                  <CustomButton
+                                    variant="save"
+                                    onClick={() => handleConfirmTechEdit(item)}
+                                    style={{
+                                      fontSize: "10px",
+                                      padding: "3px 8px",
+                                      marginRight: "10px",
+                                    }}
+                                  >
+                                    <span className="material-icons">
+                                      check
+                                    </span>
+                                  </CustomButton>
+                                  <CustomButton
+                                    className="custom-button"
+                                    variant="cancelIcon"
+                                    onClick={() => handleCancelTechEdit(item)}
+                                    style={{
+                                      fontSize: "10px",
+                                      padding: "3px 8px",
+                                    }}
+                                  >
+                                    ✗
+                                  </CustomButton>
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            <CustomButton
+                              variant="editIcon"
+                              onClick={() => handleEditTechClick(item)}
+                              style={{ fontSize: "10px", padding: "3px 8px" }}
+                            >
+                              Editar
+                            </CustomButton>
+                          ))}
                       </td>
                     </tr>
                   ))

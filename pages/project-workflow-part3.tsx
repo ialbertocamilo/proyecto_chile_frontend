@@ -306,7 +306,7 @@ const ProjectWorkflowPart3: React.FC = () => {
 
       if (response.data && response.data.length > 0) {
         setMurosTabList(response.data);
-      } 
+      }
     } catch (error) {
       console.error("Error al obtener datos de muros:", error);
     }
@@ -326,7 +326,6 @@ const ProjectWorkflowPart3: React.FC = () => {
       setTechumbreTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de techo:", error);
-      Swal.fire("Información", "Aún no hay datos para mostrar", "info");
     }
   }, [projectId]);
 
@@ -344,7 +343,6 @@ const ProjectWorkflowPart3: React.FC = () => {
       setPisosTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de piso:", error);
-      Swal.fire("Información", "Aún no hay datos para mostrar", "info");
     }
   }, [projectId]);
 
@@ -1187,7 +1185,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                   ))
                 ) : (
                   <tr>
-                    <td style={{ textAlign: "center" }}>Cargando datos...</td>
+                    <td style={{ textAlign: "center" }}>No hay datos</td>
                   </tr>
                 )}
               </tbody>
@@ -1913,9 +1911,16 @@ const ProjectWorkflowPart3: React.FC = () => {
             }}
           >
             {/* Botón de navegación izquierda */}
+            {/* Botón de navegación izquierda */}
             <CustomButton
               id="seccion-anterior-btn"
-              onClick={() => router.push("/project-workflow-part2?step=6")}
+              onClick={() =>
+                router.push(
+                  isViewMode
+                    ? "/project-workflow-part2?mode=view&step=6"
+                    : "/project-workflow-part2?step=6"
+                )
+              }
               style={{
                 display: "flex",
                 alignItems: "center",

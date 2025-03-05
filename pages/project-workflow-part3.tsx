@@ -1612,7 +1612,7 @@ const ProjectWorkflowPart3: React.FC = () => {
             {/* Regresar */}
           </CustomButton>
         </div>
-        {/* Botones de navegación: se muestran tanto en modo vista como en edición */}
+        {/* Botones de navegación: se muestran tanto en modo vista como en ediciónss */}
         <div
           style={{
             display: "flex",

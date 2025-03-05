@@ -420,7 +420,7 @@ const ProjectWorkflowPart3: React.FC = () => {
   ]);
 
   const handleCreateNewDetail = async () => {
-    if (!isCreatingNewDetail) return; // Solo permite la acción si se presionó "Nuevo"
+    if (!isCreatingNewDetail) return; // Solo permite la acción si se presionódd "Nuevo"
 
     if (
       !newDetailForm.scantilon_location ||

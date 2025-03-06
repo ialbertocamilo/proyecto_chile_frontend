@@ -95,7 +95,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     if (!projectIdParam) {
       projectIdParam = localStorage.getItem("project_id") ?? undefined;
     }
-    
+
     if (projectIdParam) {
       const projectIdStr = Array.isArray(projectIdParam)
         ? projectIdParam[0]
@@ -146,6 +146,9 @@ const ProjectWorkflowPart1: React.FC = () => {
     value: string | number
   ) => {
     if (isViewMode) return;
+    if (field === "number_levels" && typeof value === "number" && value < 0) {
+      value = 0;
+    }
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (value !== "" && value !== 0) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -174,6 +177,8 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   const validateStep1Fields = (): Partial<Record<keyof FormData, string>> => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
+    if (formData.number_levels <= 0)
+      newErrors.number_levels = "El número de niveles debe ser mayor a 0";
     if (!formData.name_project.trim())
       newErrors.name_project = "El nombre del proyecto es obligatorio";
     if (!formData.owner_name.trim())
@@ -489,7 +494,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} />
+      <Navbar setActiveView={() => { }} />
       <TopBar sidebarWidth={sidebarWidth} />
       <div
         className="container"
@@ -743,13 +748,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                           type="number"
                           className="form-control"
                           value={formData.number_levels}
-                          onChange={(e) =>
-                            handleFormInputChange(
-                              "number_levels",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
+                            handleFormInputChange("number_levels", value >= 0 ? value : 0);
+                          }}
                           disabled={isViewMode}
+                          min="0"
                         />
                       </div>
                     </div>
@@ -762,13 +766,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                           type="number"
                           className="form-control"
                           value={formData.number_homes_per_level}
-                          onChange={(e) =>
-                            handleFormInputChange(
-                              "number_homes_per_level",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
+                            handleFormInputChange("number_homes_per_level", value >= 0 ? value : 0);
+                          }}
                           disabled={isViewMode}
+                          min="0"
                         />
                       </div>
                       <div className="col-12 col-md-6">
@@ -779,13 +782,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                           type="number"
                           className="form-control"
                           value={formData.built_surface}
-                          onChange={(e) =>
-                            handleFormInputChange(
-                              "built_surface",
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
+                          onChange={(e) => {
+                            const value = parseFloat(e.target.value) || 0;
+                            handleFormInputChange("built_surface", value >= 0 ? value : 0);
+                          }}
                           disabled={isViewMode}
+                          min="0"
                         />
                       </div>
                     </div>
@@ -828,9 +830,9 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                     ) : (
                       <div className="d-flex justify-content-end align-items-center mt-4">
-                       <CustomButton
+                        <CustomButton
                           variant="save"
-                          onClick={handleStep1Action} 
+                          onClick={handleStep1Action}
                           style={{ height: "50px" }}
                         >
                           Continuar
@@ -943,8 +945,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                               variant="forwardIcon"
                               onClick={() =>
                                 router.push(
-                                  `/project-workflow-part2?project_id=${
-                                    router.query.id || localStorage.getItem("project_id")
+                                  `/project-workflow-part2?project_id=${router.query.id || localStorage.getItem("project_id")
                                   }&mode=view`
                                 )
                               }
@@ -968,8 +969,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                                 variant="forwardIcon"
                                 onClick={() =>
                                   router.push(
-                                    `/project-workflow-part2?project_id=${
-                                      router.query.id || localStorage.getItem("project_id")
+                                    `/project-workflow-part2?project_id=${router.query.id || localStorage.getItem("project_id")
                                     }`
                                   )
                                 }

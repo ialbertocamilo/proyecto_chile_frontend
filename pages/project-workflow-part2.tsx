@@ -143,7 +143,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     const pColor = getCssVarValue("--primary-color", "#3ca7b7");
     setPrimaryColor(pColor);
   }, []);
-  const headerCardHeight = "150px";
+  const headerCardHeight = "30px";
 
   /** Funciones API **/
   const fetchMaterialsList = useCallback(async () => {
@@ -239,7 +239,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       }
     } catch (error) {
       console.error("Error al crear material:", error);
-      toast.error("Error al crear material");
+      toast.warn("Error al crear material");
     }
   };
 
@@ -293,7 +293,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       });
     } catch (error) {
       console.error("Error al crear ventana:", error);
-      toast.error("Error al crear ventana");
+      toast.warn("Ese nombre de ventana ya existe");
     }
   };
 
@@ -346,7 +346,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       });
     } catch (error) {
       console.error("Error al crear puerta:", error);
-      toast.error("Error al crear puerta");
+      toast.warn("Error al crear puerta");
     }
   };
 
@@ -437,20 +437,10 @@ const ProjectWorkflowPart2: React.FC = () => {
   const renderMainHeader = () =>
     step >= 3 && (
       <div className="mb-3" style={{ height: headerCardHeight, padding: "20px", textAlign: "left" }}>
-        <h2 style={{ fontSize: "30px", margin: "0 0 20px 0", fontWeight: "normal" }}>
+        <h1 style={{ fontSize: "30px", margin: "0 0 20px 0", fontWeight: "normal" }}>
           {isViewMode ? "Vista de datos de entrada" : "Datos de entrada"}
-        </h2>
-        <div className="d-flex flex-wrap align-items-center gap-4">
-          <span style={{ fontWeight: "normal" }}>Proyecto:</span>
-          <CustomButton variant="flatPrimary">
-            {`Edificación Nº ${projectId ?? "xxxxx"}`}
-          </CustomButton>
-          {projectDepartment && (
-            <CustomButton variant="flatPrimary">
-              {`Departamento: ${projectDepartment}`}
-            </CustomButton>
-          )}
-        </div>
+        </h1>
+        
       </div>
     );
 

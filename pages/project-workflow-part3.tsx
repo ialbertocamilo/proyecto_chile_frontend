@@ -2189,7 +2189,7 @@ const handleCreateNewDetail = async () => {
               </div>
             </div>
 
-            {/* Contenido principal */}
+            {/* Contenido principal a*/}
             <div className="col-lg-9 col-12 order-last">
               <div style={{ padding: "20px" }}>
                 {step === 4 && (

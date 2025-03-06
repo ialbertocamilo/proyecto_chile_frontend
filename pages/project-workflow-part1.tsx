@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Swal from "sweetalert2";
+import { toast } from 'react-toastify';
 import axios from "axios";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
@@ -8,13 +8,11 @@ import { useRouter } from "next/router";
 import CustomButton from "../src/components/common/CustomButton";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
-import Card from "../src/components/common/Card"; // Componente Card con estilos por defecto
+import Card from "../src/components/common/Card";
 import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
-
-// Importamos el nuevo componente SidebarItemComponent
 import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
 
 const NoSSRInteractiveMap = dynamic(
@@ -48,7 +46,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   const isViewMode = mode === "view";
 
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
-  // Ancho estático del sidebar.
   const sidebarWidth = "300px";
   const [step, setStep] = useState<number>(1);
   const [, setCreatedProjectId] = useState<number | null>(null);
@@ -129,12 +126,14 @@ const ProjectWorkflowPart1: React.FC = () => {
           });
         } catch (error: unknown) {
           console.error("Error fetching project data", error);
-          Swal.fire({
-            title: "Error",
-            text: "No se pudieron cargar los datos del proyecto.",
-            icon: "error",
-            confirmButtonText: "Aceptar",
-            confirmButtonColor: primaryColor,
+          toast.error("No se pudieron cargar los datos del proyecto.", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
           });
         }
       };
@@ -207,12 +206,14 @@ const ProjectWorkflowPart1: React.FC = () => {
   const handleGeolocation = () => {
     if (isViewMode) return;
     if (!navigator.geolocation) {
-      Swal.fire({
-        title: "Error",
-        text: "Geolocalización no soportada.",
-        icon: "error",
-        confirmButtonText: "Entendido",
-        confirmButtonColor: primaryColor,
+      toast.error("Geolocalización no soportada.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
       return;
     }
@@ -221,21 +222,25 @@ const ProjectWorkflowPart1: React.FC = () => {
         const { latitude, longitude } = position.coords;
         handleFormInputChange("latitude", latitude);
         handleFormInputChange("longitude", longitude);
-        Swal.fire({
-          title: "Ubicación obtenida",
-          text: `Lat: ${latitude}, Lon: ${longitude}`,
-          icon: "success",
-          confirmButtonText: "OK",
-          confirmButtonColor: primaryColor,
+        toast.success(`Lat: ${latitude}, Lon: ${longitude}`, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
         });
       },
       () => {
-        Swal.fire({
-          title: "Error",
-          text: "No se pudo obtener la ubicación.",
-          icon: "error",
-          confirmButtonText: "Entendido",
-          confirmButtonColor: primaryColor,
+        toast.error("No se pudo obtener la ubicación.", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
         });
       }
     );
@@ -246,12 +251,14 @@ const ProjectWorkflowPart1: React.FC = () => {
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
-      Swal.fire({
-        title: "Campos incompletos",
-        text: "Por favor complete todos los campos obligatorios.",
-        icon: "warning",
-        confirmButtonText: "Ok",
-        confirmButtonColor: primaryColor,
+      toast.warning("Por favor complete todos los campos obligatorios.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
       return;
     }
@@ -268,24 +275,28 @@ const ProjectWorkflowPart1: React.FC = () => {
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
-      Swal.fire({
-        title: "Campos incompletos",
-        text: "Por favor complete todos los campos obligatorios.",
-        icon: "warning",
-        confirmButtonText: "Entendido",
-        confirmButtonColor: primaryColor,
+      toast.warning("Por favor complete todos los campos obligatorios.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
       return;
     }
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire({
-          title: "Token no encontrado",
-          text: "Por favor inicie sesión.",
-          icon: "warning",
-          confirmButtonText: "Entendido",
-          confirmButtonColor: primaryColor,
+        toast.warning("Por favor inicie sesión.", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
         });
         return;
       }
@@ -327,15 +338,17 @@ const ProjectWorkflowPart1: React.FC = () => {
       localStorage.setItem("project_id", project_id.toString());
       localStorage.setItem("project_department", formData.department);
 
-      Swal.fire({
-        title: "Proyecto creado",
-        text: `ID: ${project_id} / Mensaje: ${message}`,
-        icon: "success",
-        confirmButtonText: "Continuar",
-        confirmButtonColor: primaryColor,
-      }).then(() => {
-        router.push(`/project-workflow-part2?project_id=${project_id}`);
+      toast.success(`ID: ${project_id} / Mensaje: ${message}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
+
+      router.push(`/project-workflow-part2?project_id=${project_id}`);
     } catch (error: unknown) {
       console.error("Error en handleCreateProject:", error);
       let errorMessage: string | object = "Error desconocido";
@@ -347,10 +360,14 @@ const ProjectWorkflowPart1: React.FC = () => {
       if (typeof errorMessage !== "string") {
         errorMessage = JSON.stringify(errorMessage);
       }
-      Swal.fire({
-        text: errorMessage as string,
-        confirmButtonText: "Ok",
-        confirmButtonColor: primaryColor,
+      toast.error(errorMessage as string, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
     }
   };
@@ -360,12 +377,14 @@ const ProjectWorkflowPart1: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire({
-          title: "Token no encontrado",
-          text: "Por favor inicie sesión.",
-          icon: "warning",
-          confirmButtonText: "Entendido",
-          confirmButtonColor: primaryColor,
+        toast.warning("Por favor inicie sesión.", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
         });
         return;
       }
@@ -404,12 +423,14 @@ const ProjectWorkflowPart1: React.FC = () => {
         }
       );
 
-      Swal.fire({
-        title: "Proyecto actualizado",
-        text: data.message || "Proyecto actualizado correctamente.",
-        icon: "success",
-        confirmButtonText: "Aceptar",
-        confirmButtonColor: primaryColor,
+      toast.success(data.message || "Proyecto actualizado correctamente.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
     } catch (error: unknown) {
       console.error("Error en handleUpdateProject:", error);
@@ -422,12 +443,14 @@ const ProjectWorkflowPart1: React.FC = () => {
       if (typeof errorMessage !== "string") {
         errorMessage = JSON.stringify(errorMessage);
       }
-      Swal.fire({
-        title: "Error",
-        text: errorMessage as string,
-        icon: "error",
-        confirmButtonText: "Aceptar",
-        confirmButtonColor: primaryColor,
+      toast.error(errorMessage as string, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
     }
   };
@@ -466,7 +489,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   return (
     <>
       <GooIcons />
-      {/* Eliminamos la prop setSidebarWidth para usar el navbar estático */}
       <Navbar setActiveView={() => {}} />
       <TopBar sidebarWidth={sidebarWidth} />
       <div
@@ -481,13 +503,11 @@ const ProjectWorkflowPart1: React.FC = () => {
           fontWeight: "normal",
         }}
       >
-        {/* Tarjeta de título sin estilos inline extra */}
         <Card>
           <div style={{ display: "flex", alignItems: "center" }}>
             {renderMainHeader()}
           </div>
         </Card>
-        {/* Tarjeta del formulario sin estilos inline extra */}
         <Card marginTop="15px">
           <div style={{ padding: "0" }}>
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
@@ -568,7 +588,6 @@ const ProjectWorkflowPart1: React.FC = () => {
               <div style={{ flex: 1, padding: "40px" }}>
                 {step === 1 && (
                   <>
-                    {/* STEP 1: Datos Generales */}
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Nombre del proyecto</label>
@@ -823,7 +842,6 @@ const ProjectWorkflowPart1: React.FC = () => {
 
                 {step === 2 && (
                   <>
-                    {/* STEP 2: Ubicación */}
                     <div
                       style={{
                         border: "1px solid #ccc",

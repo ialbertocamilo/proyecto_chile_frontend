@@ -13,7 +13,8 @@ interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     | 'addIcon'
     | 'listIcon'
     | 'cancelIcon'
-    | 'viewIcon';
+    | 'viewIcon'
+    | 'flatPrimary'; // Nueva variante
   isLoading?: boolean;
   margin?: string;
 }
@@ -30,37 +31,21 @@ const CustomButton: FC<CustomButtonProps> = ({
   let content: React.ReactNode = children;
 
   if (variant === 'editIcon') {
-    content = (
-      <span className="btn-icon-content material-icons">edit</span>
-    );
+    content = <span className="btn-icon-content material-icons">edit</span>;
   } else if (variant === 'deleteIcon') {
-    content = (
-      <span className="btn-icon-content material-icons">delete</span>
-    );
+    content = <span className="btn-icon-content material-icons">delete</span>;
   } else if (variant === 'backIcon') {
-    content = (
-      <span className="btn-icon-content material-icons">arrow_back</span>
-    );
+    content = <span className="btn-icon-content material-icons">arrow_back</span>;
   } else if (variant === 'forwardIcon') {
-    content = (
-      <span className="btn-icon-content material-icons">arrow_forward</span>
-    );
+    content = <span className="btn-icon-content material-icons">arrow_forward</span>;
   } else if (variant === 'addIcon') {
-    content = (
-      <span className="btn-icon-content material-icons">add</span>
-    );
+    content = <span className="btn-icon-content material-icons">add</span>;
   } else if (variant === 'listIcon') {
-    content = (
-      <span className="btn-icon-content material-icons">format_list_bulleted</span>
-    );
+    content = <span className="btn-icon-content material-icons">format_list_bulleted</span>;
   } else if (variant === 'cancelIcon') {
-    content = (
-      <span className="btn-icon-content material-icons">close</span>
-    );
+    content = <span className="btn-icon-content material-icons">close</span>;
   } else if (variant === 'viewIcon') {
-    content = (
-      <span className="btn-icon-content material-icons">visibility</span>
-    );
+    content = <span className="btn-icon-content material-icons">visibility</span>;
   }
 
   const variantClass = `btn-${variant}`;
@@ -68,7 +53,6 @@ const CustomButton: FC<CustomButtonProps> = ({
 
   return (
     <>
-      {/* Carga la hoja de estilos de Material Icons */}
       <GoogleIcons />
       <button
         type="button"
@@ -98,7 +82,7 @@ const CustomButton: FC<CustomButtonProps> = ({
         .btn:hover {
           transform: translateY(-2px);
         }
-        /* Variantes de color usando CSS variables */
+        /* Variantes existentes */
         .btn-save {
           background-color: var(--btn-save-bg);
           color: #ffffff;
@@ -176,7 +160,6 @@ const CustomButton: FC<CustomButtonProps> = ({
         .btn-cancelIcon:hover {
           background-color: var(--btn-delete-hover-bg);
         }
-        /* Nueva variante viewIcon */
         .btn-viewIcon {
           background-color: var(--btn-save-bg);
           color: #ffffff;
@@ -184,6 +167,27 @@ const CustomButton: FC<CustomButtonProps> = ({
         }
         .btn-viewIcon:hover {
           background-color: var(--btn-save-hover-bg);
+        }
+        /* Nueva variante flatPrimary: botón estático sin efectos hover */
+        .btn-flatPrimary {
+          background-color: var(--primary-color);
+          color: #ffffff;
+          padding: 0.8rem 3rem;
+          border: none;
+          border-radius: 0.375rem;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: none;
+        }
+        .btn-flatPrimary:hover,
+        .btn-flatPrimary:active,
+        .btn-flatPrimary:focus {
+          background-color: var(--primary-color) !important;
+          color: #ffffff !important;
+          transform: none !important;
+          box-shadow: none !important;
+          transition: none !important;
         }
         .disabled {
           opacity: 0.6;

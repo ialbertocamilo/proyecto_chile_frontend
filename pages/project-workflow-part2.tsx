@@ -203,7 +203,7 @@ const ProjectWorkflowPart2: React.FC = () => {
   }, []);
 
   /** Funciones para crear nuevos registros **/
-  const handleCreateMaterial = async () => {
+  const handleCreateMaterial = async (): Promise<boolean> => {
     if (
       newMaterialData.name.trim() === "" ||
       newMaterialData.conductivity <= 0 ||
@@ -211,11 +211,11 @@ const ProjectWorkflowPart2: React.FC = () => {
       newMaterialData.density <= 0
     ) {
       toast.error("Por favor, complete todos los campos correctamente para crear el material");
-      return;
+      return false;
     }
     try {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) return false;
       const requestBody = {
         atributs: {
           name: newMaterialData.name,
@@ -236,16 +236,18 @@ const ProjectWorkflowPart2: React.FC = () => {
       if (response.status === 200) {
         await fetchMaterialsList();
         toast.success("Material creado exitosamente");
-        setShowMaterialModal(false);
         setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+        return true;
       }
+      return false;
     } catch (error) {
       console.error("Error al crear material:", error);
       toast.warn("Error al crear material");
+      return false;
     }
   };
 
-  const handleCreateWindowElement = async () => {
+  const handleCreateWindowElement = async (): Promise<boolean> => {
     if (
       windowData.name_element.trim() === "" ||
       windowData.u_vidrio <= 0 ||
@@ -257,11 +259,11 @@ const ProjectWorkflowPart2: React.FC = () => {
       windowData.frame_type.trim() === ""
     ) {
       toast.error("Por favor, complete todos los campos correctamente para crear la ventana");
-      return;
+      return false;
     }
     try {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) return false;
       const body = {
         name_element: windowData.name_element,
         type: "window",
@@ -293,13 +295,15 @@ const ProjectWorkflowPart2: React.FC = () => {
         u_marco: 0,
         fm: 0,
       });
+      return true;
     } catch (error) {
       console.error("Error al crear ventana:", error);
       toast.warn("Ese nombre de ventana ya existe");
+      return false;
     }
   };
 
-  const handleCreateDoorElement = async () => {
+  const handleCreateDoorElement = async (): Promise<boolean> => {
     if (
       doorData.name_element.trim() === "" ||
       doorData.u_puerta_opaca <= 0 ||
@@ -311,11 +315,11 @@ const ProjectWorkflowPart2: React.FC = () => {
       doorData.ventana_id === 0
     ) {
       toast.error("Por favor, complete todos los campos correctamente para crear la puerta");
-      return;
+      return false;
     }
     try {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) return false;
       const body = {
         name_element: doorData.name_element,
         type: "door",
@@ -346,9 +350,11 @@ const ProjectWorkflowPart2: React.FC = () => {
         u_marco: 0,
         fm: 0,
       });
+      return true;
     } catch (error) {
       console.error("Error al crear puerta:", error);
       toast.warn("Error al crear puerta");
+      return false;
     }
   };
 
@@ -484,11 +490,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                       />
                     </>
                   )}
-                  <SidebarItemComponent
-                    stepNumber={3}
-                    iconName="imagesearch_roller"
-                    title="Lista de materiales"
-                  />
+                  <SidebarItemComponent stepNumber={3} iconName="imagesearch_roller" title="Lista de materiales" />
                   <SidebarItemComponent stepNumber={5} iconName="home" title="Elementos translúcidos" />
                   <SidebarItemComponent stepNumber={6} iconName="deck" title="Perfil de uso" />
                   {isViewMode && (
@@ -818,8 +820,10 @@ const ProjectWorkflowPart2: React.FC = () => {
               <CustomButton
                 variant="save"
                 onClick={async () => {
-                  await handleCreateMaterial();
-                  setShowMaterialModal(false);
+                  const success = await handleCreateMaterial();
+                  if (success) {
+                    setShowMaterialModal(false);
+                  }
                 }}
               >
                 Crear Material
@@ -982,8 +986,10 @@ const ProjectWorkflowPart2: React.FC = () => {
                 <CustomButton
                   variant="save"
                   onClick={async () => {
-                    await handleCreateWindowElement();
-                    setShowElementModal(false);
+                    const success = await handleCreateWindowElement();
+                    if (success) {
+                      setShowElementModal(false);
+                    }
                   }}
                 >
                   Crear Ventana
@@ -1103,8 +1109,10 @@ const ProjectWorkflowPart2: React.FC = () => {
                 <CustomButton
                   variant="save"
                   onClick={async () => {
-                    await handleCreateDoorElement();
-                    setShowElementModal(false);
+                    const success = await handleCreateDoorElement();
+                    if (success) {
+                      setShowElementModal(false);
+                    }
                   }}
                 >
                   Crear Puerta

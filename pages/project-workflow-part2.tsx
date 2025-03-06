@@ -74,7 +74,7 @@ const ProjectWorkflowPart2: React.FC = () => {
 
   /** Estados de cabecera del proyecto **/
   const [projectId, setProjectId] = useState<number | null>(null);
-  const [projectDepartment, setProjectDepartment] = useState<string | null>(null);
+  const [, setProjectDepartment] = useState<string | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {

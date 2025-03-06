@@ -41,6 +41,12 @@ interface FormData {
   longitude: number;
 }
 
+// Definimos la interfaz para los proyectos
+interface Project {
+  name_project: string;
+  // Puedes agregar más propiedades según tu modelo
+}
+
 // Valor inicial del formulario
 const initialFormData: FormData = {
   name_project: "",
@@ -68,7 +74,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   const isViewOnly = mode === "view";
   const modeParam = isViewOnly ? `&mode=${mode}` : "";
 
-  const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
+  const [, setPrimaryColor] = useState("#3ca7b7");
   const sidebarWidth = "300px";
   const [step, setStep] = useState<number>(1);
   const [locationSearch, setLocationSearch] = useState("");
@@ -232,9 +238,9 @@ const ProjectWorkflowPart1: React.FC = () => {
         `${constantUrlApiEndpoint}/user/projects/`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const projects = data.projects || [];
+      const projects: Project[] = data.projects || [];
       return projects.some(
-        (project: any) =>
+        (project: Project) =>
           project.name_project.trim().toLowerCase() ===
           formData.name_project.trim().toLowerCase()
       );
@@ -333,7 +339,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         toast.success("Proyecto creado con éxito.");
         // Reiniciamos el formulario y redirigimos
         setFormData(initialFormData);
-        router.push(`/project-workflow-part2?project_id=${project_id}`);
+        router.push(`/project-workflow-part3?project_id=${project_id}`);
       }
     } catch (error: unknown) {
       console.error("Error al enviar el proyecto:", error);
@@ -1080,7 +1086,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                               variant="forwardIcon"
                               onClick={() =>
                                 router.push(
-                                  `/project-workflow-part2?project_id=${
+                                  `/project-workflow-part3?project_id=${
                                     router.query.id ||
                                     localStorage.getItem("project_id")
                                   }&mode=view`

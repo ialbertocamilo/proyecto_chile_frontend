@@ -1841,7 +1841,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                             const inputValue = e.target.value.replace(
                               /[^0-9.]/g,
                               ""
-                            ); // Permite solo números y punto decfdsfsimal
+                            ); // Permite solo números y punto decfdsfsimalaa
                             const value = inputValue
                               ? parseFloat(inputValue)
                               : null;

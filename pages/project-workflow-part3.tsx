@@ -1833,13 +1833,14 @@ const handleCreateNewDetail = async () => {
                           type="number"
                           className="form-control"
                           placeholder="Espesor (cm)"
-                          value={newDetailForm.layer_thickness}
-                          onChange={(e) =>
-                            setNewDetailForm((prev) => ({
-                              ...prev,
-                              layer_thickness: parseFloat(e.target.value) || 0,
-                            }))
-                          }
+                          value={newDetailForm.layer_thickness === null ? "" : newDetailForm.layer_thickness}
+                          onChange={(e) => {
+                            const value = e.target.value ? parseFloat(e.target.value) : null;
+                            if (value === null || value >= 0) {
+                              setNewDetailForm((prev) => ({ ...prev, layer_thickness: value ?? 0 }));
+                            }
+                          }}
+                          min="0"
                           disabled={isViewMode}
                         />
                       </div>
@@ -2018,7 +2019,7 @@ const handleCreateNewDetail = async () => {
             </div>
 
             <Tooltip anchorSelect="#siguiente-seccion-btn" place="top">
-              Siguiente sección
+              {`Siguiente sección "Recinto"`}
             </Tooltip>
           </div>
         </div>

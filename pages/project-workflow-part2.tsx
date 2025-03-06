@@ -109,7 +109,8 @@ const ProjectWorkflowPart2: React.FC = () => {
     specific_heat: 0,
     density: 0,
   });
-  const [materialSearch] = useState("");
+  // Estado para el buscador de materiales
+  const [materialSearch, setMaterialSearch] = useState("");
 
   /** Estados para Elementos translúcidos (Step 5) **/
   const [modalElementType, setModalElementType] = useState<string>("ventanas");
@@ -134,7 +135,8 @@ const ProjectWorkflowPart2: React.FC = () => {
     fm: 0,
   });
   const [allWindowsForDoor, setAllWindowsForDoor] = useState<ElementBase[]>([]);
-  const [elementSearch] = useState("");
+  // Estado para el buscador de elementos
+  const [elementSearch, setElementSearch] = useState("");
 
   const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
 
@@ -515,13 +517,22 @@ const ProjectWorkflowPart2: React.FC = () => {
               <div className="content-area">
                 {step === 3 && (
                   <>
-                    {/* Botón "Nuevo" colocado arriba de la tabla */}
-                    <div className="text-end p-2">
+                    {/* Contenedor para el botón y el buscador al mismo nivel */}
+                    <div className="d-flex justify-content-between align-items-center p-2">
                       {!isViewMode && (
                         <CustomButton variant="save" onClick={() => setShowMaterialModal(true)}>
                           <span className="material-icons">add</span> Nuevo
                         </CustomButton>
                       )}
+                      <div style={{ flex: 1, marginLeft: "10px" }}>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Buscar material..."
+                          value={materialSearch}
+                          onChange={(e) => setMaterialSearch(e.target.value)}
+                        />
+                      </div>
                     </div>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
                       <div style={{ maxHeight: "400px", overflowY: "auto" }}>
@@ -556,13 +567,22 @@ const ProjectWorkflowPart2: React.FC = () => {
 
                 {step === 5 && (
                   <>
-                    {/* Botón "Nuevo" colocado arriba de la tabla */}
-                    <div className="text-end p-2">
+                    {/* Contenedor para el botón y el buscador al mismo nivel */}
+                    <div className="d-flex justify-content-between align-items-center p-2">
                       {!isViewMode && (
                         <CustomButton variant="save" onClick={() => setShowElementModal(true)}>
                           <span className="material-icons">add</span> Nuevo
                         </CustomButton>
                       )}
+                      <div style={{ flex: 1, marginLeft: "10px" }}>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Buscar elemento..."
+                          value={elementSearch}
+                          onChange={(e) => setElementSearch(e.target.value)}
+                        />
+                      </div>
                     </div>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
                       <div

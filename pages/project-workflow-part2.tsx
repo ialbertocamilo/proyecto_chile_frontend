@@ -109,7 +109,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     specific_heat: 0,
     density: 0,
   });
-  const [materialSearch, setMaterialSearch] = useState("");
+  const [materialSearch, ] = useState("");
 
   /** Estados para Elementos translúcidos (Step 5) **/
   const [modalElementType, setModalElementType] = useState<string>("ventanas");
@@ -134,7 +134,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     fm: 0,
   });
   const [allWindowsForDoor, setAllWindowsForDoor] = useState<ElementBase[]>([]);
-  const [elementSearch, setElementSearch] = useState("");
+  const [elementSearch, ] = useState("");
 
   const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
 

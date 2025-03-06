@@ -109,7 +109,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     specific_heat: 0,
     density: 0,
   });
-  const [materialSearch, ] = useState("");
+  const [materialSearch] = useState("");
 
   /** Estados para Elementos translúcidos (Step 5) **/
   const [modalElementType, setModalElementType] = useState<string>("ventanas");
@@ -134,7 +134,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     fm: 0,
   });
   const [allWindowsForDoor, setAllWindowsForDoor] = useState<ElementBase[]>([]);
-  const [elementSearch, ] = useState("");
+  const [elementSearch] = useState("");
 
   const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
 
@@ -440,7 +440,6 @@ const ProjectWorkflowPart2: React.FC = () => {
         <h1 style={{ fontSize: "30px", margin: "0 0 20px 0", fontWeight: "normal" }}>
           {isViewMode ? "Vista de datos de entrada" : "Datos de entrada"}
         </h1>
-        
       </div>
     );
 
@@ -690,7 +689,8 @@ const ProjectWorkflowPart2: React.FC = () => {
                   </>
                 )}
 
-                {(step === 3 || step === 5 || step === 6) && (
+                {/* Los botones de navegación se muestran solo en el modo de vista */}
+                {isViewMode && (step === 3 || step === 5 || step === 6) && (
                   <div className="d-flex justify-content-between align-items-center mt-3">
                     <CustomButton
                       variant="backIcon"
@@ -716,10 +716,14 @@ const ProjectWorkflowPart2: React.FC = () => {
 
       {/* Modal para crear Material */}
       {showMaterialModal && (
-        <Modal isOpen={showMaterialModal} onClose={() => {
-          setShowMaterialModal(false);
-          setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
-        }} title="Nuevo Material">
+        <Modal
+          isOpen={showMaterialModal}
+          onClose={() => {
+            setShowMaterialModal(false);
+            setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+          }}
+          title="Nuevo Material"
+        >
           <div>
             <div className="form-group mb-3">
               <label>Nombre</label>
@@ -1081,7 +1085,16 @@ const ProjectWorkflowPart2: React.FC = () => {
         </Modal>
       )}
 
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
 
       <style jsx>{`
         /* Estilos generales para contenedor y layout responsive */

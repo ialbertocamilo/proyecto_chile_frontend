@@ -528,9 +528,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Nombre del proyecto{" "}
-                          {submitted && errors.name_project && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <input
                           type="text"
@@ -546,18 +543,16 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.name_project && (
-                          <small className="text-danger">
-                            {errors.name_project}
-                          </small>
-                        )}
+                        {submitted &&
+                          errors.name_project === "Este nombre ya existe. Use otro nombre." && (
+                            <small className="text-danger">
+                              {errors.name_project}
+                            </small>
+                          )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Nombre del propietario{" "}
-                          {submitted && errors.owner_name && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <input
                           type="text"
@@ -573,20 +568,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.owner_name && (
-                          <small className="text-danger">
-                            {errors.owner_name}
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Apellido del propietario{" "}
-                          {submitted && errors.owner_lastname && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <input
                           type="text"
@@ -602,18 +589,10 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.owner_lastname && (
-                          <small className="text-danger">
-                            {errors.owner_lastname}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           País{" "}
-                          {submitted && errors.country && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <select
                           className="form-control"
@@ -635,20 +614,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                             </option>
                           ))}
                         </select>
-                        {submitted && errors.country && (
-                          <small className="text-danger">
-                            {errors.country}
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Departamento{" "}
-                          {submitted && errors.department && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <select
                           className="form-control"
@@ -673,18 +644,10 @@ const ProjectWorkflowPart1: React.FC = () => {
                               </option>
                             ))}
                         </select>
-                        {submitted && errors.department && (
-                          <small className="text-danger">
-                            {errors.department}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Provincia{" "}
-                          {submitted && errors.province && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <select
                           className="form-control"
@@ -710,20 +673,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                               </option>
                             ))}
                         </select>
-                        {submitted && errors.province && (
-                          <small className="text-danger">
-                            {errors.province}
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Distrito{" "}
-                          {submitted && errors.district && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <input
                           type="text"
@@ -739,18 +694,10 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.district && (
-                          <small className="text-danger">
-                            {errors.district}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Tipo de edificación{" "}
-                          {submitted && errors.building_type && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <select
                           className="form-control"
@@ -774,20 +721,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                             Vertical / Departamentos
                           </option>
                         </select>
-                        {submitted && errors.building_type && (
-                          <small className="text-danger">
-                            {errors.building_type}
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Tipo de uso principal{" "}
-                          {submitted && errors.main_use_type && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <select
                           className="form-control"
@@ -807,18 +746,10 @@ const ProjectWorkflowPart1: React.FC = () => {
                           <option value="Oficinas">Oficinas</option>
                           <option value="Terciarios">Terciarios</option>
                         </select>
-                        {submitted && errors.main_use_type && (
-                          <small className="text-danger">
-                            {errors.main_use_type}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Número de niveles{" "}
-                          {submitted && errors.number_levels && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <input
                           type="number"
@@ -838,20 +769,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.number_levels && (
-                          <small className="text-danger">
-                            {errors.number_levels}
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Número de viviendas / oficinas x nivel{" "}
-                          {submitted && errors.number_homes_per_level && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <input
                           type="number"
@@ -871,18 +794,10 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.number_homes_per_level && (
-                          <small className="text-danger">
-                            {errors.number_homes_per_level}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Superficie construida (m²){" "}
-                          {submitted && errors.built_surface && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
                         </label>
                         <input
                           type="number"
@@ -902,11 +817,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.built_surface && (
-                          <small className="text-danger">
-                            {errors.built_surface}
-                          </small>
-                        )}
                       </div>
                     </div>
                     {globalError && (
@@ -914,13 +824,13 @@ const ProjectWorkflowPart1: React.FC = () => {
                         {globalError}
                       </div>
                     )}
-                    {/* Se muestra un mensaje consolidado solo si existen errores y no es modo vista */}
+                    {/* Mensaje consolidado si existen errores */}
                     {!isViewOnly && (
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <div>
                           {submitted && Object.keys(errors).length > 0 && (
                             <small style={{ color: "red", textAlign: "left" }}>
-                              Por favor, corrija los campos marcados en rojo.
+                              (*) Campos obligatorios
                             </small>
                           )}
                         </div>

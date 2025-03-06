@@ -135,8 +135,11 @@ const ProjectListPage = () => {
     console.log("[handleGoToWorkflow] Navegando al workflow para el proyecto:", project.id);
     localStorage.setItem("project_id", String(project.id));
     localStorage.setItem("project_department", project.divisions?.department || "");
-    router.push(`/project-workflow-part1?id=${project.id}`);
+    // Se añade el query parameter 'mode=edit' para que la página se cargue en modo edición
+    router.push(`/project-workflow-part1?id=${project.id}&mode=edit`);
   };
+  
+  
 
   const handleDelete = async (projectId: number, projectName: string): Promise<void> => {
     const result: SweetAlertResult = await Swal.fire({

@@ -13,7 +13,7 @@ import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { Tooltip } from "react-tooltip";
 import Modal from "../src/components/common/Modal";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 interface Detail {
   id_detail: number;
@@ -418,77 +418,78 @@ const ProjectWorkflowPart3: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
+  const handleCreateNewDetail = async () => {
+    if (!isCreatingNewDetail) return; // Solo permite la acción si se presionó "Nuevo"
 
-const handleCreateNewDetail = async () => {
-  if (!isCreatingNewDetail) return; // Solo permite la acción si se presionó "Nuevo"
-
-  if (
-    !newDetailForm.scantilon_location ||
-    !newDetailForm.name_detail ||
-    !newDetailForm.material_id
-  ) {
-    toast.error("Todos los campos son obligatorios");
-    setShowNewDetailRow(false);
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Token no encontrado. Inicia sesión.");
+    if (
+      !newDetailForm.scantilon_location ||
+      !newDetailForm.name_detail ||
+      !newDetailForm.material_id
+    ) {
+      toast.error("Todos los campos son obligatorios");
+      setShowNewDetailRow(false);
       return;
     }
 
-    // Crear nuevo detalle
-    const createUrl = `${constantUrlApiEndpoint}/details/create`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Token no encontrado. Inicia sesión.");
+        return;
+      }
 
-    const response = await axios.post(createUrl, newDetailForm, { headers });
-    setShowNewDetailRow(false);
-    console.log("Respuesta del backend al crear detalle:", response.data);
+      // Crear nuevo detalle
+      const createUrl = `${constantUrlApiEndpoint}/details/create`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
 
-    const newDetailId = response.data.detail.id; // Accede correctamente al ID dentro de detail
+      const response = await axios.post(createUrl, newDetailForm, { headers });
+      setShowNewDetailRow(false);
+      console.log("Respuesta del backend al crear detalle:", response.data);
 
-    if (!newDetailId) {
-      toast.error("El backend no devolvió un ID de detalle válido.");
-      return;
+      const newDetailId = response.data.detail.id; // Accede correctamente al ID dentro de detail
+
+      if (!newDetailId) {
+        toast.error("El backend no devolvió un ID de detalle válido.");
+        return;
+      }
+
+      toast.success(response.data.success || "Detalle creado exitosamente");
+
+      // Agregar el nuevo detalle a la lista de detalles seleccionados del proyecto
+      if (!projectId) return;
+
+      const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
+      const detailIds = [
+        ...fetchedDetails.map((det) => det.id_detail),
+        newDetailId,
+      ];
+
+      await axios.post(selectUrl, detailIds, { headers });
+
+      // Actualizar la lista de detalles y resetear formulario
+      fetchFetchedDetails();
+      setNewDetailForm({
+        scantilon_location: "",
+        name_detail: "",
+        material_id: 0,
+        layer_thickness: 10,
+      });
+      setIsCreatingNewDetail(false);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Error en la creación del detalle:",
+          error.response?.data
+        );
+        toast.error(error.response?.data?.detail || error.message);
+      } else {
+        toast.error("Error desconocido al crear el detalle");
+      }
     }
-
-    toast.success(response.data.success || "Detalle creado exitosamente");
-
-    // Agregar el nuevo detalle a la lista de detalles seleccionados del proyecto
-    if (!projectId) return;
-
-    const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const detailIds = [
-      ...fetchedDetails.map((det) => det.id_detail),
-      newDetailId,
-    ];
-
-    await axios.post(selectUrl, detailIds, { headers });
-
-    // Actualizar la lista de detalles y resetear formulario
-    fetchFetchedDetails();
-    setNewDetailForm({
-      scantilon_location: "",
-      name_detail: "",
-      material_id: 0,
-      layer_thickness: 10,
-    });
-    setIsCreatingNewDetail(false);
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("Error en la creación del detalle:", error.response?.data);
-      toast.error(error.response?.data?.detail || error.message);
-    } else {
-      toast.error("Error desconocido al crear el detalle");
-    }
-  }
-};
-
+  };
 
   const handleNewButtonClick = () => {
     setIsCreatingNewDetail(true);
@@ -669,9 +670,9 @@ const handleCreateNewDetail = async () => {
         },
       };
       const response = await axios.put(url, payload, { headers });
-      console.log("Respuesta API: ", response)
+      console.log("Respuesta API: ", response);
       toast.success("Detalle tipo Muro actualizado con éxito");
-  
+
       setMurosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -688,7 +689,7 @@ const handleCreateNewDetail = async () => {
             : item
         )
       );
-  
+
       setEditingRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
@@ -714,54 +715,54 @@ const handleCreateNewDetail = async () => {
   };
 
   const handleConfirmTechEdit = async (detail: TabItem) => {
-  if (!projectId) return;
-  const token = localStorage.getItem("token");
-  if (!token) {
-    toast.error("Token no encontrado. Inicia sesión.");
-    return;
-  }
-  try {
-    const url = `http://ceela-backend.svgdev.tech/project/${projectId}/update_details/Techo/${detail.id}`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-    const payload = {
-      info: {
-        surface_color: {
-          interior: { name: editingTechColors.interior },
-          exterior: { name: editingTechColors.exterior },
+    if (!projectId) return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Token no encontrado. Inicia sesión.");
+      return;
+    }
+    try {
+      const url = `http://ceela-backend.svgdev.tech/project/${projectId}/update_details/Techo/${detail.id}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+      const payload = {
+        info: {
+          surface_color: {
+            interior: { name: editingTechColors.interior },
+            exterior: { name: editingTechColors.exterior },
+          },
         },
-      },
-    };
+      };
 
-    const response = await axios.put(url, payload, { headers });
-    console.log("Respuesta API: ", response)
-    toast.success("Detalle tipo Techo actualizado con éxito");
+      const response = await axios.put(url, payload, { headers });
+      console.log("Respuesta API: ", response);
+      toast.success("Detalle tipo Techo actualizado con éxito");
 
-    setTechumbreTabList((prev) =>
-      prev.map((item) =>
-        item.id === detail.id
-          ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingTechColors.interior },
-                  exterior: { name: editingTechColors.exterior },
+      setTechumbreTabList((prev) =>
+        prev.map((item) =>
+          item.id === detail.id
+            ? {
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingTechColors.interior },
+                    exterior: { name: editingTechColors.exterior },
+                  },
                 },
-              },
-            }
-          : item
-      )
-    );
+              }
+            : item
+        )
+      );
 
-    setEditingTechRowId(null);
-  } catch (error: unknown) {
-    console.error("Error al actualizar detalle:", error);
-    toast.error("Error al actualizar detalle. Ver consola.");
-  }
-};
+      setEditingTechRowId(null);
+    } catch (error: unknown) {
+      console.error("Error al actualizar detalle:", error);
+      toast.error("Error al actualizar detalle. Ver consola.");
+    }
+  };
 
   // --- Render del encabezado ---
   const renderMainHeader = () =>
@@ -1207,393 +1208,381 @@ const handleCreateNewDetail = async () => {
           )}
           ;
           {tabStep4 === "pisos" && (
-            <div style={{ height: "400px", overflowY: "scroll" }}>
-              <table className="table table-bordered table-striped">
-                <thead>
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th
+                    rowSpan={2}
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    Nombre
+                  </th>
+                  <th
+                    rowSpan={2}
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    U [W/m²K]
+                  </th>
+                  <th
+                    colSpan={2}
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    Aislamiento bajo piso
+                  </th>
+                  <th
+                    colSpan={3}
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    Ref Aisl Vert.
+                  </th>
+                  <th
+                    colSpan={3}
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    Ref Aisl Horiz.
+                  </th>
+                </tr>
+                <tr>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle2,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    I [W/mK]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle2,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    e Aisl [cm]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle2,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    I [W/mK]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle2,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    e Aisl [cm]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle2,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    D [cm]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle2,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    I [W/mK]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle2,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    e Aisl [cm]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle2,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    D [cm]
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {pisosTabList.length > 0 ? (
+                  pisosTabList.map((item, idx) => {
+                    const bajoPiso = item.info?.aislacion_bajo_piso || {};
+                    const vert = item.info?.ref_aisl_vertical || {};
+                    const horiz = item.info?.ref_aisl_horizontal || {};
+                    return (
+                      <tr key={idx}>
+                        <td style={{ textAlign: "center" }}>
+                          {item.name_detail}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.value_u?.toFixed(3) ?? "--"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {bajoPiso.e_aisl ? bajoPiso.e_aisl : "N/A"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {vert.lambda ? vert.lambda.toFixed(3) : "N/A"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {vert.e_aisl ? vert.e_aisl : "N/A"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {vert.d ? vert.d : "N/A"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {horiz.e_aisl ? horiz.e_aisl : "N/A"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {horiz.d ? horiz.d : "N/A"}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
                   <tr>
-                    <th
-                      rowSpan={2}
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      Nombre
-                    </th>
-                    <th
-                      rowSpan={2}
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      U [W/m²K]
-                    </th>
-                    <th
-                      colSpan={2}
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      Aislamiento bajo piso
-                    </th>
-                    <th
-                      colSpan={3}
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      Ref Aisl Vert.
-                    </th>
-                    <th
-                      colSpan={3}
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      Ref Aisl Horiz.
-                    </th>
+                    <td colSpan={9} style={{ textAlign: "center" }}>
+                      No hay datos
+                    </td>
                   </tr>
-                  <tr>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle2,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      I [W/mK]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle2,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      e Aisl [cm]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle2,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      I [W/mK]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle2,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      e Aisl [cm]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle2,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      D [cm]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle2,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      I [W/mK]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle2,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      e Aisl [cm]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle2,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      D [cm]
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pisosTabList.length > 0 ? (
-                    pisosTabList.map((item, idx) => {
-                      const bajoPiso = item.info?.aislacion_bajo_piso || {};
-                      const vert = item.info?.ref_aisl_vertical || {};
-                      const horiz = item.info?.ref_aisl_horizontal || {};
-                      return (
-                        <tr key={idx}>
-                          <td style={{ textAlign: "center" }}>
-                            {item.name_detail}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {item.value_u?.toFixed(3) ?? "--"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {bajoPiso.lambda
-                              ? bajoPiso.lambda.toFixed(3)
-                              : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {bajoPiso.e_aisl ? bajoPiso.e_aisl : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {vert.lambda ? vert.lambda.toFixed(3) : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {vert.e_aisl ? vert.e_aisl : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {vert.d ? vert.d : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {horiz.e_aisl ? horiz.e_aisl : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {horiz.d ? horiz.d : "N/A"}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={9} style={{ textAlign: "center" }}>
-                        No hay datos
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                )}
+              </tbody>
+            </table>
           )}
           {tabStep4 === "ventanas" && (
-            <div style={{ height: "400px", overflowY: "scroll" }}>
-              <table className="table table-bordered table-striped">
-                <thead>
-                  <tr>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      Nombre Elemento
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      U Vidrio [W/m²K]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      FS Vidrio []
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      Tipo Marco
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      Tipo Cierre
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      U Marco [W/m²K]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      FV [%]
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ventanasTabList.length > 0 ? (
-                    ventanasTabList.map((item, idx) => (
-                      <tr key={idx}>
-                        <td style={{ textAlign: "center" }}>
-                          {item.name_element}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.u_vidrio?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.fs_vidrio ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.frame_type ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.clousure_type ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.u_marco?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.fm ?? "--"}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={7} style={{ textAlign: "center" }}>
-                        No hay datos
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    Nombre Elemento
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    U Vidrio [W/m²K]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    FS Vidrio []
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    Tipo Marco
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    Tipo Cierre
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    U Marco [W/m²K]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    FV [%]
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {ventanasTabList.length > 0 ? (
+                  ventanasTabList.map((item, idx) => (
+                    <tr key={idx}>
+                      <td style={{ textAlign: "center" }}>
+                        {item.name_element}
                       </td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.atributs?.u_vidrio?.toFixed(3) ?? "--"}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.atributs?.fs_vidrio ?? "--"}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.atributs?.frame_type ?? "--"}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.atributs?.clousure_type ?? "--"}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.u_marco?.toFixed(3) ?? "--"}
+                      </td>
+                      <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: "center" }}>
+                      No hay datos
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           )}
           {tabStep4 === "puertas" && (
-            <div style={{ height: "400px", overflowY: "scroll" }}>
-              <table className="table table-bordered table-striped">
-                <thead>
-                  <tr>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      Nombre Elemento
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      U puerta opaca [W/m²K]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      Vidrio []
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      % vidrio
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      U Marco [W/m²K]
-                    </th>
-                    <th
-                      style={{
-                        ...stickyHeaderStyle1,
-                        color: primaryColor,
-                        textAlign: "center",
-                      }}
-                    >
-                      FM [%]
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {puertasTabList.length > 0 ? (
-                    puertasTabList.map((item, idx) => (
-                      <tr key={idx}>
-                        <td style={{ textAlign: "center" }}>
-                          {item.name_element}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.u_puerta_opaca?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.name_ventana ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.porcentaje_vidrio ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.u_marco?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.fm ?? "--"}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} style={{ textAlign: "center" }}>
-                        No hay datos
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    Nombre Elemento
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    U puerta opaca [W/m²K]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    Vidrio []
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    % vidrio
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    U Marco [W/m²K]
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: primaryColor,
+                      textAlign: "center",
+                    }}
+                  >
+                    FM [%]
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {puertasTabList.length > 0 ? (
+                  puertasTabList.map((item, idx) => (
+                    <tr key={idx}>
+                      <td style={{ textAlign: "center" }}>
+                        {item.name_element}
                       </td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.atributs?.u_puerta_opaca?.toFixed(3) ?? "--"}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.atributs?.name_ventana ?? "--"}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.atributs?.porcentaje_vidrio ?? "--"}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.u_marco?.toFixed(3) ?? "--"}
+                      </td>
+                      <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: "center" }}>
+                      No hay datos
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           )}
         </div>
         {/* Botón "Regresar" para volver a la tabla inicial */}
@@ -1833,11 +1822,20 @@ const handleCreateNewDetail = async () => {
                           type="number"
                           className="form-control"
                           placeholder="Espesor (cm)"
-                          value={newDetailForm.layer_thickness === null ? "" : newDetailForm.layer_thickness}
+                          value={
+                            newDetailForm.layer_thickness === null
+                              ? ""
+                              : newDetailForm.layer_thickness
+                          }
                           onChange={(e) => {
-                            const value = e.target.value ? parseFloat(e.target.value) : null;
+                            const value = e.target.value
+                              ? parseFloat(e.target.value)
+                              : null;
                             if (value === null || value >= 0) {
-                              setNewDetailForm((prev) => ({ ...prev, layer_thickness: value ?? 0 }));
+                              setNewDetailForm((prev) => ({
+                                ...prev,
+                                layer_thickness: value ?? 0,
+                              }));
                             }
                           }}
                           min="0"

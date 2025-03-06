@@ -1112,12 +1112,28 @@ const ProjectWorkflowPart1: React.FC = () => {
                                 Actualizar Datos
                               </CustomButton>
                               <CustomButton
-                                variant="forwardIcon"
-                                onClick={goToStep2}
-                                style={{ marginLeft: "10px", height: "50px" }}
-                              >
-                                Siguiente
-                              </CustomButton>
+  variant="forwardIcon"
+  onClick={() => {
+    // Convertir router.query.id a string
+    const projectId = Array.isArray(router.query.id)
+      ? router.query.id[0]
+      : router.query.id;
+    
+    if (projectId) {
+      localStorage.setItem("project_id", projectId);
+      router.push(`/project-workflow-part3?project_id=${projectId}&mode=edit`);
+    } else {
+      console.error("project_id is undefined");
+      // Aquí podrías manejar el caso en que projectId sea undefined
+    }
+  }}
+  style={{ marginLeft: "10px", height: "50px" }}
+>
+  Siguiente
+</CustomButton>
+
+
+
                             </>
                           ) : (
                             <CustomButton

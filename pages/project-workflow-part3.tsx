@@ -442,7 +442,7 @@ const ProjectWorkflowPart3: React.FC = () => {
         return;
       }
 
-      // Crear nuevo detalle
+      // Crear nuevo detallefff
       const createUrl = `${constantUrlApiEndpoint}/details/create`;
       const headers = {
         Authorization: `Bearer ${token}`,

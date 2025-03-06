@@ -151,26 +151,26 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
                 </Link>
               </li>
             )}
+            {/* La opción "Desarrollo de proyecto" sigue siendo condicional */}
             {projectId && roleId === "2" && (
-              <>
-                <li className="nav-item">
-                  <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>
-                    <span style={iconStyle("/project-workflow-part3")} className="material-icons">
-                      ballot
-                    </span>
-                    Desarrollo de proyecto
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
-                    <span style={iconStyle("/project-workflow-part2")} className="material-icons">
-                      input
-                    </span>
-                    Ingreso de Datos de entrada
-                  </Link>
-                </li>
-              </>
+              <li className="nav-item">
+                <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>
+                  <span style={iconStyle("/project-workflow-part3")} className="material-icons">
+                    ballot
+                  </span>
+                  Desarrollo de proyecto
+                </Link>
+              </li>
             )}
+            {/* La opción "Ingreso de Datos de entrada" se muestra siempre */}
+            <li className="nav-item">
+              <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
+                <span style={iconStyle("/project-workflow-part2")} className="material-icons">
+                  input
+                </span>
+                Ingreso de Datos de entrada
+              </Link>
+            </li>
           </ul>
 
           <ul className="nav flex-column" style={{ marginTop: "auto" }}>
@@ -244,10 +244,6 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
             .sidebar .nav-link .material-icons {
               margin-bottom: 0;
             }
-            /* Si deseas ocultar el texto en móvil, puedes hacer: */
-            /* .sidebar .nav-link span:not(.material-icons) {
-              display: none;
-            } */
           }
         `}</style>
       </nav>

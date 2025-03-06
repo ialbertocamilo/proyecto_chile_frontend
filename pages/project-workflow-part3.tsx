@@ -669,7 +669,7 @@ const handleCreateNewDetail = async () => {
         },
       };
       const response = await axios.put(url, payload, { headers });
-  
+      console.log("Respuesta API: ", response)
       toast.success("Detalle tipo Muro actualizado con éxito");
   
       setMurosTabList((prev) =>
@@ -736,7 +736,7 @@ const handleCreateNewDetail = async () => {
     };
 
     const response = await axios.put(url, payload, { headers });
-
+    console.log("Respuesta API: ", response)
     toast.success("Detalle tipo Techo actualizado con éxito");
 
     setTechumbreTabList((prev) =>

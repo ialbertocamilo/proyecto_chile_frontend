@@ -431,8 +431,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       !newDetailForm.name_detail ||
       !newDetailForm.material_id
     ) {
-      toast.error("Todos los campos son obligatorios");
-      setShowNewDetailRow(false);
+      toast.warning("Por favor complete todos los campos de detalle");
       return;
     }
 

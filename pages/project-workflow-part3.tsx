@@ -453,7 +453,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setShowNewDetailRow(false);
       console.log("Respuesta del backend al crear detalle:", response.data);
 
-      const newDetailId = response.data.detail.id; // Accede correctamente al ID dentro de detail
+      const newDetailId = response.data.detail.id; // Accede correctamente al ID dentrfdfso de detail
 
       if (!newDetailId) {
         toast.error("El backend no devolvió un ID de detalle válido.");

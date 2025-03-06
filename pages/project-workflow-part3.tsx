@@ -112,7 +112,7 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-// Se agregó la propiedad activeStep psara conocer cuál opción está activadfs
+// Se agregó la propiedad activeStep para conocer cuál opción está activadfs
 interface SidebarItemProps {
   stepNumber: number;
   iconName: string;
@@ -213,11 +213,16 @@ const ProjectWorkflowPart3: React.FC = () => {
 
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [showNewDetailRow, setShowNewDetailRow] = useState(false);
-  const [newDetailForm, setNewDetailForm] = useState({
+  const [newDetailForm, setNewDetailForm] = useState<{
+    scantilon_location: string;
+    name_detail: string;
+    material_id: number;
+    layer_thickness: number | null;
+  }>({
     scantilon_location: "",
     name_detail: "",
     material_id: 0,
-    layer_thickness: 10,
+    layer_thickness: null,
   });
   // Controla si se muestra la vista inicial o la de pestañas
   const [showTabsInStep4, setShowTabsInStep4] = useState(false);
@@ -475,7 +480,7 @@ const ProjectWorkflowPart3: React.FC = () => {
         scantilon_location: "",
         name_detail: "",
         material_id: 0,
-        layer_thickness: 10,
+        layer_thickness: null,
       });
       setIsCreatingNewDetail(false);
     } catch (error) {
@@ -1820,6 +1825,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                         </label>
                         <input
                           type="number"
+                          inputMode="decimal"
                           className="form-control"
                           placeholder="Espesor (cm)"
                           value={
@@ -1827,14 +1833,23 @@ const ProjectWorkflowPart3: React.FC = () => {
                               ? ""
                               : newDetailForm.layer_thickness
                           }
+                          onKeyDown={(e) => {
+                            if (e.key === "-" || e.key === "e") {
+                              e.preventDefault();
+                            }
+                          }}
                           onChange={(e) => {
-                            const value = e.target.value
-                              ? parseFloat(e.target.value)
+                            const inputValue = e.target.value.replace(
+                              /[^0-9.]/g,
+                              ""
+                            ); // Permite solo números y punto decimal
+                            const value = inputValue
+                              ? parseFloat(inputValue)
                               : null;
                             if (value === null || value >= 0) {
                               setNewDetailForm((prev) => ({
                                 ...prev,
-                                layer_thickness: value ?? 0,
+                                layer_thickness: value,
                               }));
                             }
                           }}
@@ -1856,20 +1871,26 @@ const ProjectWorkflowPart3: React.FC = () => {
                       >
                         <CustomButton
                           variant="save"
+                          onClick={() => {
+                            setShowNewDetailRow(false);
+                            setNewDetailForm({
+                              scantilon_location: "",
+                              name_detail: "",
+                              material_id: 0,
+                              layer_thickness: null,
+                            }); // Restablecer el estado
+                          }}
+                        >
+                          Cancelar
+                        </CustomButton>
+                        <CustomButton
+                          variant="save"
                           onClick={async () => {
                             await handleCreateNewDetail();
                           }}
                           id="grabar-datos-btn"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            padding: "10px 20px",
-                            fontSize: "16px",
-                          }}
                         >
-                          <span className="material-icons">sd_card</span> Grabar
-                          Datos
+                          Crear Detalles
                         </CustomButton>
                       </div>
                     )}

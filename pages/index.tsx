@@ -10,7 +10,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       permanent: false,
     },
   };
-};
+}
 
 export default function Home() {
   return null;

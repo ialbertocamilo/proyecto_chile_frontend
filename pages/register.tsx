@@ -20,7 +20,21 @@ const Register = () => {
     acceptTerms: false,
   });
 
-  const [error, setError] = useState<string | null>(null);
+  // Estado para saber si un campo obligatorio ha sido tocado
+  const [touched, setTouched] = useState<Record<keyof typeof formData, boolean>>({
+    name: false,
+    lastname: false,
+    email: false,
+    number_phone: false,
+    birthdate: false,
+    country: false,
+    ubigeo: false,
+    proffesion: false,
+    password: false,
+    confirm_password: false,
+    acceptTerms: false,
+  });
+
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -35,30 +49,36 @@ const Register = () => {
     }));
   };
 
+  // Se actualiza el estado "touched" cuando un campo pierde el foco
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
-    setSuccessMessage(null);
-
     // Validación de campos obligatorios
     if (
       !formData.name ||
       !formData.lastname ||
       !formData.email ||
+      !formData.number_phone ||
+      !formData.birthdate ||
+      !formData.country ||
+      !formData.ubigeo ||
+      !formData.proffesion ||
       !formData.password ||
       !formData.confirm_password
     ) {
-      setError("Todos los campos obligatorios deben estar completos.");
+      // Aquí podrías manejar un error global, pero se opta por la validación inline
       return;
     }
     // Validación de la longitud de la contraseña
     if (formData.password.length < 8 || formData.password.length > 20) {
-      setError("La contraseña debe tener mínimo 8 caracteres y máximo 20.");
       return;
     }
     // Validación de coincidencia de contraseñas
     if (formData.password !== formData.confirm_password) {
-      setError("Las contraseñas no coinciden.");
       return;
     }
 
@@ -92,8 +112,8 @@ const Register = () => {
         router.push("/login");
       }, 500);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Error desconocido";
-      setError(message);
+      // Aquí se podría manejar el error de forma global o dejarlo en consola
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -134,6 +154,9 @@ const Register = () => {
     fontFamily: "var(--font-family-base)",
   };
 
+  // Función para determinar si un campo obligatorio está vacío y ha sido tocado
+  const isError = (field: keyof typeof formData) => touched[field] && !formData[field];
+
   return (
     <div
       className="register-container d-flex justify-content-center align-items-center"
@@ -160,14 +183,6 @@ const Register = () => {
         >
           Crear perfil nuevo
         </h4>
-        {error && (
-          <div
-            className="alert alert-danger"
-            style={{ marginBottom: "1rem", fontFamily: "var(--font-family-base)" }}
-          >
-            {error}
-          </div>
-        )}
         {successMessage && (
           <div
             className="alert alert-success"
@@ -233,8 +248,14 @@ const Register = () => {
                   </div>
                 </div>
                 <div style={leftSpacingStyle}>
-                  <label className="form-label fw-bold" style={{ color: "#000", ...labelStyle }}>
-                    Dirección de Email
+                  <label
+                    className="form-label fw-bold"
+                    style={{
+                      color: isError("email") ? "red" : "#000",
+                      ...labelStyle,
+                    }}
+                  >
+                    Dirección de Email {isError("email") && <span>*</span>}
                   </label>
                   <input
                     type="email"
@@ -243,15 +264,21 @@ const Register = () => {
                     placeholder="Example@gmail.com"
                     value={formData.email}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     required
                     style={inputStyle}
                   />
                 </div>
                 <div style={leftSpacingStyle}>
-                  <label className="form-label fw-bold" style={{ color: "#000", ...labelStyle }}>
-                    Crear contraseña
+                  <label
+                    className="form-label fw-bold"
+                    style={{
+                      color: isError("password") ? "red" : "#000",
+                      ...labelStyle,
+                    }}
+                  >
+                    Crear contraseña {isError("password") && <span>*</span>}
                   </label>
-                  {/* Contenedor con position relative, el texto explicativo va fuera */}
                   <div style={{ position: "relative" }}>
                     <input
                       type={showPassword ? "text" : "password"}
@@ -260,6 +287,7 @@ const Register = () => {
                       placeholder="••••••••"
                       value={formData.password}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       required
                       style={{ ...inputStyle, paddingRight: "4rem" }}
                     />
@@ -279,8 +307,14 @@ const Register = () => {
                   </small>
                 </div>
                 <div style={leftSpacingStyle}>
-                  <label className="form-label fw-bold" style={{ color: "#000", ...labelStyle }}>
-                    Confirmar contraseña
+                  <label
+                    className="form-label fw-bold"
+                    style={{
+                      color: isError("confirm_password") ? "red" : "#000",
+                      ...labelStyle,
+                    }}
+                  >
+                    Confirmar contraseña {isError("confirm_password") && <span>*</span>}
                   </label>
                   <div style={{ position: "relative" }}>
                     <input
@@ -290,6 +324,7 @@ const Register = () => {
                       placeholder="••••••••"
                       value={formData.confirm_password}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       required
                       style={{ ...inputStyle, paddingRight: "4rem" }}
                     />
@@ -312,12 +347,12 @@ const Register = () => {
                       <label
                         className="form-label fw-bold"
                         style={{
-                          color: "#000",
+                          color: isError("name") ? "red" : "#000",
                           marginBottom: "0.25rem",
                           fontFamily: "var(--font-family-base)",
                         }}
                       >
-                        Nombres
+                        Nombres {isError("name") && <span>*</span>}
                       </label>
                       <input
                         type="text"
@@ -325,6 +360,7 @@ const Register = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         required
                         style={inputStyle}
                       />
@@ -333,12 +369,12 @@ const Register = () => {
                       <label
                         className="form-label fw-bold"
                         style={{
-                          color: "#000",
+                          color: isError("lastname") ? "red" : "#000",
                           marginBottom: "0.25rem",
                           fontFamily: "var(--font-family-base)",
                         }}
                       >
-                        Apellidos
+                        Apellidos {isError("lastname") && <span>*</span>}
                       </label>
                       <input
                         type="text"
@@ -346,6 +382,7 @@ const Register = () => {
                         name="lastname"
                         value={formData.lastname}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         required
                         style={inputStyle}
                       />
@@ -354,12 +391,12 @@ const Register = () => {
                       <label
                         className="form-label fw-bold"
                         style={{
-                          color: "#000",
+                          color: isError("birthdate") ? "red" : "#000",
                           marginBottom: "0.25rem",
                           fontFamily: "var(--font-family-base)",
                         }}
                       >
-                        Fecha de Nacimiento
+                        Fecha de Nacimiento {isError("birthdate") && <span>*</span>}
                       </label>
                       <input
                         type="date"
@@ -367,6 +404,7 @@ const Register = () => {
                         name="birthdate"
                         value={formData.birthdate}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         required
                         style={inputStyle}
                       />
@@ -377,12 +415,12 @@ const Register = () => {
                       <label
                         className="form-label fw-bold"
                         style={{
-                          color: "#000",
+                          color: isError("number_phone") ? "red" : "#000",
                           marginBottom: "0.25rem",
                           fontFamily: "var(--font-family-base)",
                         }}
                       >
-                        Teléfono
+                        Teléfono {isError("number_phone") && <span>*</span>}
                       </label>
                       <input
                         type="text"
@@ -390,6 +428,7 @@ const Register = () => {
                         name="number_phone"
                         value={formData.number_phone}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         required
                         style={inputStyle}
                       />
@@ -398,12 +437,12 @@ const Register = () => {
                       <label
                         className="form-label fw-bold"
                         style={{
-                          color: "#000",
+                          color: isError("country") ? "red" : "#000",
                           marginBottom: "0.25rem",
                           fontFamily: "var(--font-family-base)",
                         }}
                       >
-                        País
+                        País {isError("country") && <span>*</span>}
                       </label>
                       <input
                         type="text"
@@ -411,6 +450,7 @@ const Register = () => {
                         name="country"
                         value={formData.country}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         required
                         style={inputStyle}
                       />
@@ -419,12 +459,12 @@ const Register = () => {
                       <label
                         className="form-label fw-bold"
                         style={{
-                          color: "#000",
+                          color: isError("ubigeo") ? "red" : "#000",
                           marginBottom: "0.25rem",
                           fontFamily: "var(--font-family-base)",
                         }}
                       >
-                        Ubigeo
+                        Ubigeo {isError("ubigeo") && <span>*</span>}
                       </label>
                       <input
                         type="text"
@@ -432,21 +472,21 @@ const Register = () => {
                         name="ubigeo"
                         value={formData.ubigeo}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         required
                         style={inputStyle}
                       />
                     </div>
-                    {/* Campo de Profesión */}
                     <div style={rightSpacingStyle}>
                       <label
                         className="form-label fw-bold"
                         style={{
-                          color: "#000",
+                          color: isError("proffesion") ? "red" : "#000",
                           marginBottom: "0.25rem",
                           fontFamily: "var(--font-family-base)",
                         }}
                       >
-                        Profesión
+                        Profesión {isError("proffesion") && <span>*</span>}
                       </label>
                       <input
                         type="text"
@@ -454,6 +494,7 @@ const Register = () => {
                         name="proffesion"
                         value={formData.proffesion}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         placeholder="Ej. Ingeniero Civil"
                         required
                         style={inputStyle}

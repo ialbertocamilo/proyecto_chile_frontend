@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,6 +24,7 @@ const TopBar = ({ }: TopBarProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -53,6 +54,20 @@ const TopBar = ({ }: TopBarProps) => {
     }
   }, []);
 
+  // Escucha los clics fuera del dropdown para cerrarlo
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
   if (!isMounted) {
     return null;
   }
@@ -78,14 +93,14 @@ const TopBar = ({ }: TopBarProps) => {
         backdropFilter: "blur(7px)", 
         boxShadow: "0px 12px 16px rgba(0, 0, 0, 0.3)", 
         width: "100%",
-        overflow: "hidden", // Evita que el contenido se desborde
+        overflow: "visible", // Se cambia a visible para evitar recortes
       }}
     >
       <div
         className="container-fluid d-flex justify-content-end align-items-center"
         style={{ fontFamily: "var(--font-family-base)", flexWrap: "wrap" }} // Permite que el contenido se ajuste en pantallas pequeñas
       >
-        <div className="dropdown" style={{ position: "relative", fontFamily: "var(--font-family-base)" }}>
+        <div className="dropdown" style={{ position: "relative", fontFamily: "var(--font-family-base)" }} ref={dropdownRef}>
           <button
             className="btn d-flex align-items-center"
             onClick={() => setMenuOpen(!menuOpen)}

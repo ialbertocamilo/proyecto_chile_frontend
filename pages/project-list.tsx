@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Swal, { SweetAlertResult } from "sweetalert2";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
-
 
 interface Divisions {
   department?: string;
@@ -45,36 +46,31 @@ const ProjectListPage = () => {
   console.log("[ProjectListPage] Página cargada y sesión validada.");
 
   const router = useRouter();
-  const [sidebarWidth, ] = useState<string>("300px");
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Constantes para el manejo de estilos de las cards
-  const CARD_WIDTH = "135%"; // Ancho de ambas cards
-  const CARD_MARGIN_LEFT = "0px"; // Margen izquierdo
-  const CARD_MARGIN_RIGHT = "0px"; // Margen derecho
-  const CARD_MARGIN_TOP = "0px"; // Margen superior
-  const CARD_MARGIN_BOTTOM = "0px"; // Margen inferior
-  const CARD_BORDER_RADIUS = "16px"; // Borde redondeado
-  const CARD_BOX_SHADOW = "0 2px 10px rgba(0,0,0,0.1)"; // Sombra de las cards
-  const CARD_BORDER_COLOR = "#d3d3d3"; // Color del borde
+  // ===========================
+  //   ESTILOS "CARD" SIMILARES
+  // ===========================
+  const CARD_WIDTH = "100%";
+  const CARD_MARGIN_TOP = "20px";
+  const CARD_MARGIN_BOTTOM = "20px";
+  const CARD_BORDER_RADIUS = "16px";
+  const CARD_BOX_SHADOW = "0 2px 10px rgba(0, 0, 0, 0.2)";
+  const CARD_BORDER_COLOR = "#ccc";
 
-  // Objeto de estilos que se aplicará a ambas cards
   const cardStyle = {
     width: CARD_WIDTH,
-    marginLeft: CARD_MARGIN_LEFT,
-    marginRight: CARD_MARGIN_RIGHT,
     marginTop: CARD_MARGIN_TOP,
     marginBottom: CARD_MARGIN_BOTTOM,
     borderRadius: CARD_BORDER_RADIUS,
     boxShadow: CARD_BOX_SHADOW,
     border: `1px solid ${CARD_BORDER_COLOR}`,
+    overflow: "hidden",
   };
-
-  const CONTAINER_MARGIN_LEFT = "20px"; 
 
   useEffect(() => {
     fetchProjects();
@@ -142,10 +138,7 @@ const ProjectListPage = () => {
     router.push(`/project-workflow-part1?id=${project.id}`);
   };
 
-  const handleDelete = async (
-    projectId: number,
-    projectName: string
-  ): Promise<void> => {
+  const handleDelete = async (projectId: number, projectName: string): Promise<void> => {
     const result: SweetAlertResult = await Swal.fire({
       title: "¿Estás seguro de eliminar este proyecto?",
       text: `ID: ${projectId} - Nombre: ${projectName}\nEsta acción no se puede deshacer.`,
@@ -171,21 +164,12 @@ const ProjectListPage = () => {
           "Content-Type": "application/json",
         },
       });
-      Swal.fire({
-        title: "¡Proyecto eliminado exitosamente!",
-        icon: "success",
-        confirmButtonText: "Aceptar",
-      });
+      toast.success("¡Proyecto eliminado exitosamente!");
       fetchProjects();
     } catch (err: unknown) {
       console.error("[handleDelete] Error al eliminar proyecto:", err);
       setError("No se pudo eliminar el proyecto.");
-      Swal.fire({
-        title: "Error",
-        text: "No se pudo eliminar el proyecto.",
-        icon: "error",
-        confirmButtonText: "Aceptar",
-      });
+      toast.error("No se pudo eliminar el proyecto.");
     }
   };
 
@@ -204,288 +188,306 @@ const ProjectListPage = () => {
   };
 
   return (
-    <div className="d-flex" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
+    <>
+      {/* Navbar y TopBar */}
       <Navbar setActiveView={() => {}} />
-      <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: "100px", width: "100%" }}>
-        <TopBar sidebarWidth={sidebarWidth} />
-        <div
-          className="container p-4"
-          style={{
-            marginTop: "100px",
-            marginLeft: CONTAINER_MARGIN_LEFT,
-            fontFamily: "var(--font-family-base)",
-            fontWeight: "normal",
-          }}
-        >
-          {error && (
-            <p className="text-danger">{error}</p>
-          )}
-          {loading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
-              <div className="loading-text">Cargando...</div>
-            </div>
-          ) : (
-            <>
-              {/* Card para el título y búsqueda */}
-              <div className="card mb-4" style={cardStyle}>
-                <div className="card-body">
-                  <h4 style={{ fontSize: "30px", fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                    Listado de proyectos
-                  </h4>
-                  <div style={{ position: "relative", width: "100%", marginTop: "20px" }}>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Buscar..."
-                      value={search}
-                      onChange={handleSearch}
-                      style={{
-                        width: "100%",
-                        height: "70px",
-                        borderRadius: "12px",
-                        paddingLeft: "2.5rem",
-                        paddingRight: "150px",
-                        fontSize: "16px",
-                        border: "1px solid #ddd",
-                        boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
-                      }}
-                    />
-                    <span
-                      style={{
-                        position: "absolute",
-                        left: "20px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        color: "#aaa",
-                        fontSize: "24px",
-                      }}
-                    >
-                      🔍︎
-                    </span>
-                    <CustomButton
-                      variant="save"
-                      onClick={() => router.push("/project-workflow-part1")}
-                      style={{
-                        position: "absolute",
-                        right: "30px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        height: "36px",
-                        fontSize: "14px",
-                        padding: "0 15px",
-                        borderRadius: "8px",
-                      }}
-                    >
-                      + Proyecto Nuevo
-                    </CustomButton>
-                  </div>
-                </div>
-              </div>
+      <TopBar sidebarWidth="80px" />
 
-              {/* Card para la tabla de proyectos */}
-              <div className="card" style={cardStyle}>
-                <div className="card-body">
-                  <div className="table-responsive scrollable-table" style={{ marginTop: "16px" }}>
-                    <table className="custom-table" style={{ fontFamily: "var(--font-family-base)", borderCollapse: "collapse" }}>
-                      <thead>
-                        <tr>
-                          <th className="table-header">ID</th>
-                          <th className="table-header">Estado del <br /> proyecto</th>
-                          <th className="table-header">Nombre del <br /> proyecto</th>
-                          <th className="table-header">Nombre del <br /> propietario</th>
-                          <th className="table-header">Nombre del <br /> Diseñador</th>
-                          <th className="table-header">Director responsable <br /> De las obras</th>
-                          <th className="table-header">Dirección</th>
-                          <th className="table-header">Departamento</th>
-                          <th className="table-header">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredProjects.length > 0 ? (
-                          filteredProjects.map((project: Project) => (
-                            <tr key={project.id}>
-                              <td>{project.id || "N/D"}</td>
-                              <td>
-                                <span
-                                  className="badge status-badge"
-                                  style={{
-                                    ...getStatusStyle(project.status),
-                                    fontSize: "0.8rem",
-                                    fontFamily: "var(--font-family-base)",
-                                    fontWeight: "normal",
-                                  }}
-                                >
-                                  {project.status ? project.status.toUpperCase() : "NO DISPONIBLE"}
-                                </span>
-                              </td>
-                              <td>{project.name_project || "No disponible"}</td>
-                              <td>{project.owner_name || "No disponible"}</td>
-                              <td>{project.designer_name || "N/D"}</td>
-                              <td>{project.director_name || "N/D"}</td>
-                              <td>{project.address || "N/D"}</td>
-                              <td>{project.divisions?.department || "No disponible"}</td>
-                              <td className="text-center">
-                                <div className="action-btn-group">
-                                  <CustomButton
-                                    variant="editIcon"
-                                    onClick={() => handleGoToWorkflow(project)}
-                                    style={{
-                                      backgroundColor: "var(--primary-color)",
-                                      border: `2px solid var(--primary-color)`,
-                                      fontFamily: "var(--font-family-base)",
-                                      padding: "0.5rem",
-                                      width: "40px",
-                                      height: "40px",
-                                    }}
-                                    title="Editar en Workflow"
-                                  />
-                                  <CustomButton
-                                    variant="deleteIcon"
-                                    onClick={() =>
-                                      handleDelete(project.id, project.name_project || "N/D")
-                                    }
-                                    style={{
-                                      fontFamily: "var(--font-family-base)",
-                                      padding: "0.5rem",
-                                      width: "40px",
-                                      height: "40px",
-                                    }}
-                                  />
-                                </div>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={9} className="text-center text-muted" style={{ fontFamily: "var(--font-family-base)", fontWeight: "normal" }}>
-                              No hay proyectos disponibles o no coinciden con la búsqueda.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+      {/* Contenedor principal */}
+      <div
+        className="container custom-container"
+        style={{
+          maxWidth: "1780px",
+          marginTop: "120px",
+          marginLeft: "103px", // Ajusta según necesites
+          marginRight: "0px",
+          transition: "margin-left 0.1s ease",
+          fontFamily: "var(--font-family-base)",
+        }}
+      >
+        {/* Card: Título y búsqueda */}
+        <div className="card" style={cardStyle}>
+          <div className="card-body">
+            <h4 className="page-title" style={{ fontSize: "25px" }}>
+              Listado de proyectos
+            </h4>
+            <div
+              className="search-wrapper"
+              style={{ marginTop: "20px", position: "relative" }}
+            >
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Buscar..."
+                value={search}
+                onChange={handleSearch}
+                style={{
+                  height: "50px",
+                  borderRadius: "12px",
+                  paddingLeft: "2rem",
+                  paddingRight: "150px",
+                  fontSize: "16px",
+                  border: "1px solid #ddd",
+                  boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+                }}
+              />
+              <CustomButton
+                variant="save"
+                onClick={() => router.push("/project-workflow-part1")}
+                className="new-project-btn"
+                style={{
+                  position: "absolute",
+                  right: "30px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  height: "36px",
+                  fontSize: "14px",
+                  padding: "0 15px",
+                  borderRadius: "8px",
+                }}
+              >
+                + Proyecto Nuevo
+              </CustomButton>
+            </div>
+          </div>
+        </div>
+
+        {/* Card: Tabla de proyectos */}
+        <div className="card" style={cardStyle}>
+          <div className="card-body">
+            {error && <p className="text-danger">{error}</p>}
+            {loading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <div className="loading-text">Cargando...</div>
               </div>
-            </>
-          )}
-          <style jsx>{`
-            .table-header {
-              color: #f5f5f5;
-              font-size: 13px;
-              font-weight: bold;
-            }
-            .custom-project-btn {
-              background-color: #3ca7b7;
-              border: 1px solid #3ca7b7;
-              color: #fff;
-              border-top-left-radius: 0;
-              border-bottom-left-radius: 0;
-              transition: background-color 0.3s ease;
-            }
-            .custom-project-btn:hover {
-              background-color: #329ca1;
-            }
-            .custom-table {
-              width: 100%;
-              border-collapse: separate;
-              border-spacing: 0 12px;
-            }
-            .custom-table th,
-            .custom-table td {
-              padding: 8px;
-              text-align: center;
-              vertical-align: middle;
-            }
-            .custom-table thead th {
-              background-color: #ffff;
-              font-weight: normal;
-              color: #666;
-              position: sticky;
-              top: 0;
-              z-index: 1;
-            }
-            .custom-table tbody tr {
-              background-color: #fff;
-              overflow: hidden;
-            }
-            .custom-table tbody tr td:first-child {
-              border-top-left-radius: ${CARD_BORDER_RADIUS};
-              border-bottom-left-radius: ${CARD_BORDER_RADIUS};
-            }
-            .custom-table tbody tr td:last-child {
-              border-top-right-radius: ${CARD_BORDER_RADIUS};
-              border-bottom-right-radius: ${CARD_BORDER_RADIUS};
-            }
-            /* Centrado de iconos en la columna de acciones */
-            .action-btn-group {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              gap: 0.5rem;
-            }
-            .status-badge {
-              display: inline-block;
-              font-size: 1.1rem;
-              font-weight: normal;
-              padding: 8px 16px;
-              border-radius: 0.5rem;
-              font-family: var(--font-family-base);
-            }
-            .loading-container {
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              align-items: center;
-              height: 80vh;
-              font-family: var(--font-family-base);
-            }
-            .loading-spinner {
-              border: 8px solid #f3f3f3;
-              border-top: 8px solid var(--primary-color);
-              border-radius: 50%;
-              width: 60px;
-              height: 60px;
-              animation: spin 1s linear infinite;
-              margin-bottom: 15px;
-            }
-            @keyframes spin {
-              0% {
-                transform: rotate(0deg);
-              }
-              100% {
-                transform: rotate(360deg);
-              }
-            }
-            .loading-text {
-              font-size: 1.5rem;
-              color: var(--primary-color);
-              font-family: var(--font-family-base);
-            }
-            .scrollable-table {
-              max-height: 500px;
-              overflow-y: auto;
-            }
-            /* Personalización del scrollbar para Chrome y navegadores WebKit */
-            .scrollable-table::-webkit-scrollbar {
-              width: 10px;
-            }
-            .scrollable-table::-webkit-scrollbar-track {
-              background: #f1f1f1;
-              border-radius: 10px;
-            }
-            .scrollable-table::-webkit-scrollbar-thumb {
-              background: #c1c1c1;
-              border-radius: 10px;
-            }
-            .scrollable-table::-webkit-scrollbar-thumb:hover {
-              background: #a8a8a8;
-            }
-          `}</style>
+            ) : (
+              <div
+                className="table-responsive scrollable-table"
+                style={{ maxHeight: "500px", overflow: "auto" }}
+              >
+                <table className="custom-table">
+                  <thead>
+                    <tr>
+                      <th className="table-header">ID</th>
+                      <th className="table-header">Estado</th>
+                      <th className="table-header">Nombre proyecto</th>
+                      <th className="table-header">Propietario</th>
+                      <th className="table-header">Diseñador</th>
+                      <th className="table-header">Director</th>
+                      <th className="table-header">Dirección</th>
+                      <th className="table-header">Departamento</th>
+                      <th className="table-header">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProjects.length > 0 ? (
+                      filteredProjects.map((project: Project) => (
+                        <tr key={project.id}>
+                          <td>{project.id || "N/D"}</td>
+                          <td>
+                            <span
+                              className="badge status-badge"
+                              style={{
+                                ...getStatusStyle(project.status),
+                                display: "inline-block",
+                                fontSize: "0.8rem",
+                                fontWeight: "normal",
+                                padding: "8px 16px",
+                                borderRadius: "0.5rem",
+                                fontFamily: "var(--font-family-base)",
+                              }}
+                            >
+                              {project.status
+                                ? project.status.toUpperCase()
+                                : "NO DISPONIBLE"}
+                            </span>
+                          </td>
+                          <td>{project.name_project || "No disponible"}</td>
+                          <td>{project.owner_name || "No disponible"}</td>
+                          <td>{project.designer_name || "N/D"}</td>
+                          <td>{project.director_name || "N/D"}</td>
+                          <td>{project.address || "N/D"}</td>
+                          <td>
+                            {project.divisions?.department || "No disponible"}
+                          </td>
+                          <td className="text-center">
+                            <div
+                              className="action-btn-group"
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                gap: "0.5rem",
+                              }}
+                            >
+                              <CustomButton
+                                variant="editIcon"
+                                onClick={() => handleGoToWorkflow(project)}
+                                title="Editar en Workflow"
+                                style={{
+                                  width: "36px",
+                                  height: "36px",
+                                  padding: "0.5rem",
+                                }}
+                              />
+                              <CustomButton
+                                variant="deleteIcon"
+                                onClick={() =>
+                                  handleDelete(
+                                    project.id,
+                                    project.name_project || "N/D"
+                                  )
+                                }
+                                style={{
+                                  width: "36px",
+                                  height: "36px",
+                                  padding: "0.5rem",
+                                }}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={9} className="text-center text-muted">
+                          No hay proyectos disponibles o no coinciden con la búsqueda.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
+      <style jsx>{`
+        /* ================================
+           ESTILOS GENERALES Y DE LA TABLA
+           ================================ */
+        .custom-table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0 12px;
+        }
+        .custom-table th,
+        .custom-table td {
+          padding: 8px;
+          text-align: center;
+          vertical-align: middle;
+          white-space: nowrap;
+        }
+        .custom-table thead th {
+          background-color: #ffff;
+          font-weight: normal;
+          color: #666;
+          position: sticky;
+          top: 0;
+          z-index: 1;
+        }
+        .custom-table tbody tr {
+          background-color: #fff;
+          overflow: hidden;
+        }
+        .custom-table tbody tr td:first-child {
+          border-top-left-radius: ${CARD_BORDER_RADIUS};
+          border-bottom-left-radius: ${CARD_BORDER_RADIUS};
+        }
+        .custom-table tbody tr td:last-child {
+          border-top-right-radius: ${CARD_BORDER_RADIUS};
+          border-bottom-right-radius: ${CARD_BORDER_RADIUS};
+        }
+        .table-header {
+          color: #f5f5f5;
+          font-size: 13px;
+          font-weight: bold;
+        }
+        .status-badge {
+          font-family: var(--font-family-base);
+        }
+
+        /* Spinner de carga */
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          min-height: 200px;
+        }
+        .loading-spinner {
+          border: 8px solid #f3f3f3;
+          border-top: 8px solid var(--primary-color);
+          border-radius: 50%;
+          width: 60px;
+          height: 60px;
+          animation: spin 1s linear infinite;
+          margin-bottom: 15px;
+        }
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+        .loading-text {
+          font-size: 1.2rem;
+          color: var(--primary-color);
+        }
+
+        /* ===========================
+           AJUSTES RESPONSIVE
+           =========================== */
+        @media (max-width: 1024px) {
+          .custom-container {
+            margin-left: 50px;
+            margin-right: 20px;
+          }
+        }
+        @media (max-width: 768px) {
+          .custom-container {
+            margin-left: 10px;
+            margin-right: 10px;
+          }
+          .search-wrapper .form-control {
+            font-size: 14px;
+            padding-left: 1rem;
+            padding-right: 90px;
+            height: 40px;
+          }
+          .page-title {
+            font-size: 20px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .search-wrapper .form-control {
+            height: 36px;
+            font-size: 14px;
+            padding-left: 0.8rem;
+            padding-right: 80px;
+          }
+          .custom-container {
+            margin-left: 10px;
+            margin-right: 10px;
+          }
+        }
+      `}</style>
+    </>
   );
 };
 

@@ -841,12 +841,21 @@ const AdministrationPage: React.FC = () => {
                   placeholder="Espesor (cm)"
                   value={newDetail.layer_thickness || ""}
                   onChange={(e) => {
-                    const value = e.target.value ? parseFloat(e.target.value) : null;
-                    if (value === null || value >= 0) { // Solo actualiza el estado si el valor es positivo o null
+                    const inputValue = e.target.value;
+                    // Solo permite números positivos y valores decimales
+                    if (/^\d*\.?\d*$/.test(inputValue)) { // Expresión regular para validar números positivos
+                      const value = inputValue === "" ? null : parseFloat(inputValue);
                       setNewDetail((prev) => ({ ...prev, layer_thickness: value }));
                     }
                   }}
                   min="0" // Restringe la entrada a valores no negativos
+                  step="0.01" // Permite valores decimales
+                  onKeyDown={(e) => {
+                    // Bloquea la entrada del signo negativo
+                    if (e.key === "-" || e.key === "e" || e.key === "E") {
+                      e.preventDefault();
+                    }
+                  }}
                 />
               </div>
               <div className="mt-4 text-end">

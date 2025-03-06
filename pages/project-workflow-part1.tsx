@@ -367,6 +367,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       setErrors(fieldErrors);
       return;
     }
+    // En modo creación se verifica que el nombre del proyecto sea único
     if (!router.query.id) {
       const nameExists = await checkProjectNameExists();
       if (nameExists) {
@@ -381,7 +382,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     if (router.query.id) {
       await enviarProyecto();
     }
-    // En modo creación, enviarProyecto redirige automáticamente; en edición se pasa al siguiente paso
+    // En modo creación, enviarProyecto redirige automáticamente; en edición se pasa al siguiente step
     setStep(2);
   };
 
@@ -545,6 +546,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
+                        {submitted && errors.name_project && (
+                          <small className="text-danger">
+                            {errors.name_project}
+                          </small>
+                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -567,6 +573,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
+                        {submitted && errors.owner_name && (
+                          <small className="text-danger">
+                            {errors.owner_name}
+                          </small>
+                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -591,6 +602,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
+                        {submitted && errors.owner_lastname && (
+                          <small className="text-danger">
+                            {errors.owner_lastname}
+                          </small>
+                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -619,6 +635,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                             </option>
                           ))}
                         </select>
+                        {submitted && errors.country && (
+                          <small className="text-danger">
+                            {errors.country}
+                          </small>
+                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -652,6 +673,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                               </option>
                             ))}
                         </select>
+                        {submitted && errors.department && (
+                          <small className="text-danger">
+                            {errors.department}
+                          </small>
+                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -684,6 +710,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                               </option>
                             ))}
                         </select>
+                        {submitted && errors.province && (
+                          <small className="text-danger">
+                            {errors.province}
+                          </small>
+                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -708,6 +739,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
+                        {submitted && errors.district && (
+                          <small className="text-danger">
+                            {errors.district}
+                          </small>
+                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -738,6 +774,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                             Vertical / Departamentos
                           </option>
                         </select>
+                        {submitted && errors.building_type && (
+                          <small className="text-danger">
+                            {errors.building_type}
+                          </small>
+                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -766,6 +807,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                           <option value="Oficinas">Oficinas</option>
                           <option value="Terciarios">Terciarios</option>
                         </select>
+                        {submitted && errors.main_use_type && (
+                          <small className="text-danger">
+                            {errors.main_use_type}
+                          </small>
+                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -792,6 +838,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
+                        {submitted && errors.number_levels && (
+                          <small className="text-danger">
+                            {errors.number_levels}
+                          </small>
+                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -820,6 +871,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
+                        {submitted && errors.number_homes_per_level && (
+                          <small className="text-danger">
+                            {errors.number_homes_per_level}
+                          </small>
+                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -846,6 +902,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
+                        {submitted && errors.built_surface && (
+                          <small className="text-danger">
+                            {errors.built_surface}
+                          </small>
+                        )}
                       </div>
                     </div>
                     {globalError && (

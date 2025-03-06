@@ -1623,7 +1623,7 @@ const handleCreateNewDetail = async () => {
             {/* Regresar */}
           </CustomButton>
         </div>
-        {/* Botones de navegación: se muestran tanto en modo vista como en ediciónss */}
+        {/* Botones de navegación: se muestran tanto en modo vista como en ediciónsss */}
         <div
           style={{
             display: "flex",

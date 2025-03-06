@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
@@ -8,9 +8,11 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
-import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
-import Card from "../src/components/common/Card"; // Usamos el componente Card
+import Card from "../src/components/common/Card";
+import { useRouter } from "next/router";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
@@ -56,7 +58,7 @@ interface SidebarItemComponentProps {
   onClickAction?: () => void;
 }
 
-// Función helper para validar porcentajes (valor entre 0 y 100)
+// Helper para validar porcentajes
 const validatePercentage = (value: number) => {
   if (isNaN(value)) return 0;
   if (value < 0) return 0;
@@ -70,7 +72,7 @@ const ProjectWorkflowPart2: React.FC = () => {
   const mode = router.query.mode as string;
   const isViewMode = mode === "view";
 
-  // Estados para la cabecera del proyecto
+  /** Estados de cabecera del proyecto **/
   const [projectId, setProjectId] = useState<number | null>(null);
   const [projectDepartment, setProjectDepartment] = useState<string | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -78,12 +80,8 @@ const ProjectWorkflowPart2: React.FC = () => {
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id");
     const storedDepartment = localStorage.getItem("project_department");
-    if (storedProjectId) {
-      setProjectId(Number(storedProjectId));
-    }
-    if (storedDepartment) {
-      setProjectDepartment(storedDepartment);
-    }
+    if (storedProjectId) setProjectId(Number(storedProjectId));
+    if (storedDepartment) setProjectDepartment(storedDepartment);
     setHasLoaded(true);
   }, []);
 
@@ -93,23 +91,17 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
   }, [hasLoaded, projectId, router]);
 
-  // Aquí leemos el query parameter "step" para configurar el paso inicial
+  /** Estado para el step actual **/
   const [step, setStep] = useState<number>(3);
   useEffect(() => {
     if (router.query.step) {
       const queryStep = parseInt(router.query.step as string, 10);
-      if (!isNaN(queryStep)) {
-        setStep(queryStep);
-      }
+      if (!isNaN(queryStep)) setStep(queryStep);
     }
   }, [router.query.step]);
 
-  // Ancho fijo para el nav bar estático.
-  const sidebarWidth = "300px";
-
-  /** Estados para Lista de materiales (Step 3) **/
+  /** Estados para Lista de Materiales (Step 3) **/
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
-  // Modal para la creación de material
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const [newMaterialData, setNewMaterialData] = useState({
     name: "",
@@ -117,12 +109,11 @@ const ProjectWorkflowPart2: React.FC = () => {
     specific_heat: 0,
     density: 0,
   });
-  const [materialSearch, setMaterialSearch] = useState("");
+  const [materialSearch, ] = useState("");
 
   /** Estados para Elementos translúcidos (Step 5) **/
   const [modalElementType, setModalElementType] = useState<string>("ventanas");
   const [elementsList, setElementsList] = useState<ElementBase[]>([]);
-  // Modal para la creación de elementos
   const [showElementModal, setShowElementModal] = useState(false);
   const [windowData, setWindowData] = useState({
     name_element: "",
@@ -143,7 +134,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     fm: 0,
   });
   const [allWindowsForDoor, setAllWindowsForDoor] = useState<ElementBase[]>([]);
-  const [elementSearch, setElementSearch] = useState("");
+  const [elementSearch, ] = useState("");
 
   const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
 
@@ -154,10 +145,8 @@ const ProjectWorkflowPart2: React.FC = () => {
   }, []);
   const headerCardHeight = "150px";
 
-  // -------------------------------
-  // Funciones API (sin cambios lógicos, pero con mensajes de error unificados)
-  // -------------------------------
-  const fetchMaterialsList = async () => {
+  /** Funciones API **/
+  const fetchMaterialsList = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -179,9 +168,39 @@ const ProjectWorkflowPart2: React.FC = () => {
       setMaterialsList(allMaterials);
     } catch (error) {
       console.error("Error al obtener materiales:", error);
+      toast.error("Error al obtener materiales");
     }
-  };
+  }, []);
 
+  const fetchElements = useCallback(async (type: "window" | "door") => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const url = `${constantUrlApiEndpoint}/elements/?type=${type}`;
+      const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
+      const response = await axios.get(url, { headers });
+      setElementsList(response.data);
+    } catch (error) {
+      console.error(`Error al obtener ${type === "window" ? "ventanas" : "puertas"}`, error);
+      toast.error(`Error al obtener ${type === "window" ? "ventanas" : "puertas"}`);
+    }
+  }, []);
+
+  const fetchAllWindowsForDoor = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const url = `${constantUrlApiEndpoint}/elements/?type=window`;
+      const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
+      const response = await axios.get(url, { headers });
+      setAllWindowsForDoor(response.data);
+    } catch (error) {
+      console.error("Error al obtener ventanas para puerta:", error);
+      toast.error("Error al obtener ventanas para puerta");
+    }
+  }, []);
+
+  /** Funciones para crear nuevos registros **/
   const handleCreateMaterial = async () => {
     if (
       newMaterialData.name.trim() === "" ||
@@ -189,6 +208,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       newMaterialData.specific_heat <= 0 ||
       newMaterialData.density <= 0
     ) {
+      toast.error("Por favor, complete todos los campos correctamente para crear el material");
       return;
     }
     try {
@@ -213,37 +233,13 @@ const ProjectWorkflowPart2: React.FC = () => {
       const response = await axios.post(url, requestBody, { headers });
       if (response.status === 200) {
         await fetchMaterialsList();
+        toast.success("Material creado exitosamente");
         setShowMaterialModal(false);
         setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
       }
     } catch (error) {
       console.error("Error al crear material:", error);
-    }
-  };
-
-  const fetchElements = async (type: "window" | "door") => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      const url = `${constantUrlApiEndpoint}/elements/?type=${type}`;
-      const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
-      const response = await axios.get(url, { headers });
-      setElementsList(response.data);
-    } catch (error) {
-      console.error(`Error al obtener ${type === "window" ? "ventanas" : "puertas"}`, error);
-    }
-  };
-
-  const fetchAllWindowsForDoor = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      const url = `${constantUrlApiEndpoint}/elements/?type=window`;
-      const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
-      const response = await axios.get(url, { headers });
-      setAllWindowsForDoor(response.data);
-    } catch (error) {
-      console.error("Error al obtener ventanas para puerta:", error);
+      toast.error("Error al crear material");
     }
   };
 
@@ -258,6 +254,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       windowData.clousure_type.trim() === "" ||
       windowData.frame_type.trim() === ""
     ) {
+      toast.error("Por favor, complete todos los campos correctamente para crear la ventana");
       return;
     }
     try {
@@ -284,6 +281,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       });
       setElementsList((prev) => [...prev, response.data.element]);
       setAllWindowsForDoor((prev) => [...prev, response.data.element]);
+      toast.success("Ventana creada exitosamente");
       setWindowData({
         name_element: "",
         u_vidrio: 0,
@@ -295,6 +293,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       });
     } catch (error) {
       console.error("Error al crear ventana:", error);
+      toast.error("Error al crear ventana");
     }
   };
 
@@ -309,6 +308,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       doorData.fm > 100 ||
       doorData.ventana_id === 0
     ) {
+      toast.error("Por favor, complete todos los campos correctamente para crear la puerta");
       return;
     }
     try {
@@ -334,6 +334,7 @@ const ProjectWorkflowPart2: React.FC = () => {
         },
       });
       setElementsList((prev) => [...prev, response.data.element]);
+      toast.success("Puerta creada exitosamente");
       setDoorData({
         name_element: "",
         ventana_id: 0,
@@ -345,38 +346,30 @@ const ProjectWorkflowPart2: React.FC = () => {
       });
     } catch (error) {
       console.error("Error al crear puerta:", error);
+      toast.error("Error al crear puerta");
     }
   };
 
-  // En el Step 3, el botón "Grabar Datos" solo guarda sin avanzar al siguiente step.
-  // const handleGrabarDatosStep3 = async () => {
-  //   if (showMaterialModal) {
-  //     await handleCreateMaterial();
-  //   }
-  // };
-
-  // -------------------------------
-  // Efectos para cargar datos según el step
-  // -------------------------------
+  /** Efectos para cargar datos según el step **/
   useEffect(() => {
     if (step === 3) {
       fetchMaterialsList();
     }
-  }, [step]);
+  }, [step, fetchMaterialsList]);
 
   useEffect(() => {
     if (step === 5) {
       fetchElements(modalElementType === "ventanas" ? "window" : "door");
     }
-  }, [step, modalElementType]);
+  }, [step, modalElementType, fetchElements]);
 
   useEffect(() => {
     if (step === 5 && modalElementType === "puertas") {
       fetchAllWindowsForDoor();
     }
-  }, [step, modalElementType]);
+  }, [step, modalElementType, fetchAllWindowsForDoor]);
 
-  // Funciones de navegación entre steps
+  /** Funciones de navegación entre steps **/
   const handleBackStep = () => {
     if (step === 3) {
       router.push(`/project-workflow-part1${isViewMode ? "?mode=view" : ""}`);
@@ -397,7 +390,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
   };
 
-  // Componente SidebarItemComponent
+  /** Componente SidebarItem **/
   const SidebarItemComponent = ({
     stepNumber,
     iconName,
@@ -429,88 +422,57 @@ const ProjectWorkflowPart2: React.FC = () => {
             paddingLeft: "50px",
             color: isSelected ? activeColor : inactiveColor,
             fontFamily: "var(--font-family-base)",
-            fontWeight: "normal",
           }}
         >
           <span style={{ marginRight: "15px", fontSize: "2rem" }}>
             <span className="material-icons">{iconName}</span>
           </span>
-          <span style={{ fontWeight: "normal" }}>{title}</span>
+          <span>{title}</span>
         </div>
       </li>
     );
   };
 
+  /** Render del header principal **/
   const renderMainHeader = () =>
-    step >= 3 ? (
-      <div
-        className="mb-3"
-        style={{
-          height: headerCardHeight,
-          padding: "20px",
-          textAlign: "left",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "30px",
-            margin: "0 0 20px 0",
-            fontWeight: "normal",
-            fontFamily: "var(--font-family-base)",
-          }}
-        >
+    step >= 3 && (
+      <div className="mb-3" style={{ height: headerCardHeight, padding: "20px", textAlign: "left" }}>
+        <h2 style={{ fontSize: "30px", margin: "0 0 20px 0", fontWeight: "normal" }}>
           {isViewMode ? "Vista de datos de entrada" : "Datos de entrada"}
         </h2>
-        <div className="d-flex align-items-center gap-4">
-          <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-            Proyecto:
-          </span>
-          <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
+        <div className="d-flex flex-wrap align-items-center gap-4">
+          <span style={{ fontWeight: "normal" }}>Proyecto:</span>
+          <CustomButton variant="flatPrimary">
             {`Edificación Nº ${projectId ?? "xxxxx"}`}
           </CustomButton>
           {projectDepartment && (
-            <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
+            <CustomButton variant="flatPrimary">
               {`Departamento: ${projectDepartment}`}
             </CustomButton>
           )}
         </div>
       </div>
-    ) : null;
+    );
 
   return (
     <>
       <GooIcons />
       <Navbar setActiveView={() => {}} />
-      <TopBar sidebarWidth={sidebarWidth} />
+      <TopBar sidebarWidth="300px" />
       <div
-        className="container"
-        style={{
-          maxWidth: "1700px",
-          marginTop: "130px",
-          marginLeft: "170px",
-          marginRight: "50px",
-          transition: "margin-left 0.1s ease",
-          fontFamily: "var(--font-family-base)",
-        }}
+        className="container custom-container"
+        style={{ marginTop: "120px", fontFamily: "var(--font-family-base)" }}
       >
-        {/* Card 1: Encabezado del proyecto */}
         <Card>
           <div className="card-body p-0">{renderMainHeader()}</div>
         </Card>
 
-        {/* Card 2: Contenedor de los steps */}
         <Card marginTop="15px">
           <div className="card-body p-0">
-            <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
-              <div
-                style={{
-                  width: "380px",
-                  padding: "20px",
-                  boxSizing: "border-box",
-                  borderRight: "1px solid #ccc",
-                }}
-              >
-                <ul className="nav flex-column" style={{ height: "100%" }}>
+            <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
+              {/* Sidebar */}
+              <div className="internal-sidebar">
+                <ul className="nav flex-column">
                   {isViewMode && (
                     <>
                       <SidebarItemComponent
@@ -531,7 +493,11 @@ const ProjectWorkflowPart2: React.FC = () => {
                       />
                     </>
                   )}
-                  <SidebarItemComponent stepNumber={3} iconName="imagesearch_roller" title="Lista de materiales" />
+                  <SidebarItemComponent
+                    stepNumber={3}
+                    iconName="imagesearch_roller"
+                    title="Lista de materiales"
+                  />
                   <SidebarItemComponent stepNumber={5} iconName="home" title="Elementos translúcidos" />
                   <SidebarItemComponent stepNumber={6} iconName="deck" title="Perfil de uso" />
                   {isViewMode && (
@@ -556,156 +522,115 @@ const ProjectWorkflowPart2: React.FC = () => {
                   )}
                 </ul>
               </div>
-              <div style={{ flex: 1, padding: "20px" }}>
-                {/* Step 3: Lista de materiales */}
+              {/* Área de contenido */}
+              <div className="content-area">
                 {step === 3 && (
                   <>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <div style={{ flex: 1, marginRight: "10px" }}>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Buscar material..."
-                          value={materialSearch}
-                          onChange={(e) => setMaterialSearch(e.target.value)}
-                          style={{ height: "40px" }}
-                        />
-                      </div>
+                    {/* Botón "Nuevo" colocado arriba de la tabla */}
+                    <div className="text-end p-2">
                       {!isViewMode && (
-                        <CustomButton
-                          variant="save"
-                          onClick={() => setShowMaterialModal(true)}
-                          style={{ borderRadius: "5px", width: "180px", height: "40px" }}
-                        >
+                        <CustomButton variant="save" onClick={() => setShowMaterialModal(true)}>
                           <span className="material-icons">add</span> Nuevo
                         </CustomButton>
                       )}
                     </div>
-                    <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                      <table className="table table-bordered table-striped" style={{ tableLayout: "fixed" }}>
-                        <thead>
-                          <tr>
-                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
-                              Nombre Material
-                            </th>
-                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
-                              Conductividad (W/m2K)
-                            </th>
-                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
-                              Calor específico (J/kgK)
-                            </th>
-                            <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
-                              Densidad (kg/m3)
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {materialsList
-                            .filter((mat) =>
-                              mat.atributs.name.toLowerCase().includes(materialSearch.toLowerCase())
-                            )
-                            .map((mat, idx) => {
-                              const { name, conductivity, specific_heat, density } = mat.atributs;
-                              return (
+                    <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
+                      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+                        <table className="table table-bordered table-striped">
+                          <thead>
+                            <tr>
+                              <th style={{ textAlign: "center" }}>Nombre Material</th>
+                              <th style={{ textAlign: "center" }}>Conductividad (W/m2K)</th>
+                              <th style={{ textAlign: "center" }}>Calor específico (J/kgK)</th>
+                              <th style={{ textAlign: "center" }}>Densidad (kg/m3)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {materialsList
+                              .filter((mat) =>
+                                mat.atributs.name.toLowerCase().includes(materialSearch.toLowerCase())
+                              )
+                              .map((mat, idx) => (
                                 <tr key={idx}>
-                                  <td>{name}</td>
-                                  <td>{conductivity}</td>
-                                  <td>{specific_heat}</td>
-                                  <td>{density}</td>
+                                  <td>{mat.atributs.name}</td>
+                                  <td>{mat.atributs.conductivity}</td>
+                                  <td>{mat.atributs.specific_heat}</td>
+                                  <td>{mat.atributs.density}</td>
                                 </tr>
-                              );
-                            })}
-                        </tbody>
-                      </table>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </>
                 )}
 
-                {/* Step 5: Elementos translúcidos */}
                 {step === 5 && (
                   <>
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <div style={{ flex: 1, marginRight: "10px" }}>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Buscar elemento..."
-                          value={elementSearch}
-                          onChange={(e) => setElementSearch(e.target.value)}
-                          style={{ height: "40px" }}
-                        />
-                      </div>
+                    {/* Botón "Nuevo" colocado arriba de la tabla */}
+                    <div className="text-end p-2">
                       {!isViewMode && (
-                        <CustomButton
-                          variant="save"
-                          onClick={() => setShowElementModal(true)}
-                          style={{ borderRadius: "5px", width: "180px", height: "40px" }}
-                        >
+                        <CustomButton variant="save" onClick={() => setShowElementModal(true)}>
                           <span className="material-icons">add</span> Nuevo
                         </CustomButton>
                       )}
                     </div>
-                    <div className="d-flex justify-content-start align-items-center mb-2">
-                      {["Ventanas", "Puertas"].map((tab) => (
-                        <button
-                          key={tab}
-                          style={{
-                            flex: 1,
-                            padding: "10px",
-                            backgroundColor: "#fff",
-                            color: modalElementType === tab.toLowerCase() ? primaryColor : "var(--secondary-color)",
-                            border: "none",
-                            cursor: "pointer",
-                            borderBottom:
-                              modalElementType === tab.toLowerCase() ? `3px solid ${primaryColor}` : "none",
-                            fontFamily: "var(--font-family-base)",
-                            fontWeight: "normal",
-                          }}
-                          onClick={() => setModalElementType(tab.toLowerCase())}
-                        >
-                          {tab}
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                      <table className="table table-bordered table-striped" style={{ tableLayout: "fixed" }}>
-                        <thead>
-                          {modalElementType === "ventanas" ? (
-                            <tr>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
-                                Nombre Elemento
-                              </th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Vidrio [W/m2K]</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FS Vidrio</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Tipo Cierre</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Tipo Marco</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Marco [W/m2K]</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FM [%]</th>
-                            </tr>
-                          ) : (
-                            <tr>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
-                                Nombre Elemento
-                              </th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>
-                                U Puerta opaca [W/m2K]
-                              </th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>Nombre Ventana</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>% Vidrio</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>U Marco [W/m2K]</th>
-                              <th style={{ color: "var(--primary-color)", textAlign: "center" }}>FM [%]</th>
-                            </tr>
-                          )}
-                        </thead>
-                        <tbody>
-                          {elementsList
-                            .filter((el) =>
-                              el.name_element.toLowerCase().includes(elementSearch.toLowerCase())
-                            )
-                            .map((el, idx) => (
-                              <tr key={idx}>
-                                {modalElementType === "ventanas" ? (
-                                  <>
+                    <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
+                      <div
+                        className="d-flex justify-content-start align-items-center mb-2"
+                        style={{ padding: "10px" }}
+                      >
+                        {["Ventanas", "Puertas"].map((tab) => (
+                          <button
+                            key={tab}
+                            style={{
+                              flex: 1,
+                              padding: "10px",
+                              backgroundColor: "#fff",
+                              color: modalElementType === tab.toLowerCase() ? primaryColor : "var(--secondary-color)",
+                              border: "none",
+                              cursor: "pointer",
+                              borderBottom:
+                                modalElementType === tab.toLowerCase() ? "3px solid " + primaryColor : "none",
+                            }}
+                            onClick={() => setModalElementType(tab.toLowerCase())}
+                          >
+                            {tab}
+                          </button>
+                        ))}
+                      </div>
+                      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+                        <table className="table table-bordered table-striped">
+                          <thead>
+                            {modalElementType === "ventanas" ? (
+                              <tr>
+                                <th style={{ textAlign: "center" }}>Nombre Elemento</th>
+                                <th style={{ textAlign: "center" }}>U Vidrio [W/m2K]</th>
+                                <th style={{ textAlign: "center" }}>FS Vidrio</th>
+                                <th style={{ textAlign: "center" }}>Tipo Cierre</th>
+                                <th style={{ textAlign: "center" }}>Tipo Marco</th>
+                                <th style={{ textAlign: "center" }}>U Marco [W/m2K]</th>
+                                <th style={{ textAlign: "center" }}>FM [%]</th>
+                              </tr>
+                            ) : (
+                              <tr>
+                                <th style={{ textAlign: "center" }}>Nombre Elemento</th>
+                                <th style={{ textAlign: "center" }}>U Puerta opaca [W/m2K]</th>
+                                <th style={{ textAlign: "center" }}>Nombre Ventana</th>
+                                <th style={{ textAlign: "center" }}>% Vidrio</th>
+                                <th style={{ textAlign: "center" }}>U Marco [W/m2K]</th>
+                                <th style={{ textAlign: "center" }}>FM [%]</th>
+                              </tr>
+                            )}
+                          </thead>
+                          <tbody>
+                            {elementsList
+                              .filter((el) =>
+                                el.name_element.toLowerCase().includes(elementSearch.toLowerCase())
+                              )
+                              .map((el, idx) =>
+                                modalElementType === "ventanas" ? (
+                                  <tr key={idx}>
                                     <td>{el.name_element}</td>
                                     <td>{el.atributs.u_vidrio}</td>
                                     <td>{el.atributs.fs_vidrio}</td>
@@ -713,9 +638,9 @@ const ProjectWorkflowPart2: React.FC = () => {
                                     <td>{el.atributs.frame_type}</td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
-                                  </>
+                                  </tr>
                                 ) : (
-                                  <>
+                                  <tr key={idx}>
                                     <td>{el.name_element}</td>
                                     <td>{el.atributs.u_puerta_opaca}</td>
                                     <td>{el.atributs.name_ventana}</td>
@@ -726,26 +651,25 @@ const ProjectWorkflowPart2: React.FC = () => {
                                     </td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
-                                  </>
-                                )}
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
+                                  </tr>
+                                )
+                              )}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </>
                 )}
 
-                {/* Step 6: Perfil de uso */}
                 {step === 6 && (
                   <>
-                    <h5
-                      style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}
-                      className="mb-3"
-                    >
-                      Perfil de uso (Espacio aún en desarrollo, no funcional)
+                    <h5 className="mb-3" style={{ fontWeight: "normal" }}>
+                      Perfil de uso (Espacio en desarrollo)
                     </h5>
-                    <ul className="nav mb-3" style={{ display: "flex", padding: 0, listStyle: "none" }}>
+                    <ul
+                      className="nav mb-3"
+                      style={{ display: "flex", listStyle: "none", padding: 0 }}
+                    >
                       {[
                         { key: "ventilacion", label: "Ventilación y caudales" },
                         { key: "iluminacion", label: "Iluminación" },
@@ -761,9 +685,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                               color: tabTipologiaRecinto === tab.key ? primaryColor : "var(--secondary-color)",
                               border: "none",
                               cursor: "pointer",
-                              borderBottom: tabTipologiaRecinto === tab.key ? `3px solid ${primaryColor}` : "none",
-                              fontFamily: "var(--font-family-base)",
-                              fontWeight: "normal",
+                              borderBottom: tabTipologiaRecinto === tab.key ? "3px solid " + primaryColor : "none",
                             }}
                             onClick={() => setTabTipologiaRecinto(tab.key)}
                           >
@@ -773,9 +695,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                       ))}
                     </ul>
                     <div className="tab-content border border-top-0 p-3">
-                      <p style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-                        Contenido para &apos;{tabTipologiaRecinto}&apos;
-                      </p>
+                      <p>Contenido para &apos;{tabTipologiaRecinto}&apos;</p>
                     </div>
                   </>
                 )}
@@ -804,76 +724,80 @@ const ProjectWorkflowPart2: React.FC = () => {
         </Card>
       </div>
 
-      {/* Modal para crear nuevo Material (Step 3) */}
+      {/* Modal para crear Material */}
       {showMaterialModal && (
-        <Modal
-          isOpen={showMaterialModal}
-          onClose={() => setShowMaterialModal(false)}
-          title="Nuevo Material"
-        >
+        <Modal isOpen={showMaterialModal} onClose={() => {
+          setShowMaterialModal(false);
+          setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+        }} title="Nuevo Material">
           <div>
-            <div className="mb-3">
+            <div className="form-group mb-3">
               <label>Nombre</label>
               <input
                 type="text"
                 className="form-control"
                 placeholder="Nombre"
                 value={newMaterialData.name}
-                onChange={(e) =>
-                  setNewMaterialData((prev) => ({ ...prev, name: e.target.value }))
-                }
+                onChange={(e) => setNewMaterialData((prev) => ({ ...prev, name: e.target.value }))}
               />
             </div>
-            <div className="mb-3">
+            <div className="form-group mb-3">
               <label>Conductividad (W/m2K)</label>
               <input
                 type="number"
+                min="0"
                 className="form-control"
                 placeholder="Conductividad"
                 value={newMaterialData.conductivity}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({
-                    ...prev,
-                    conductivity: parseFloat(e.target.value),
-                  }))
+                  setNewMaterialData((prev) => ({ ...prev, conductivity: parseFloat(e.target.value) }))
                 }
               />
             </div>
-            <div className="mb-3">
+            <div className="form-group mb-3">
               <label>Calor específico (J/kgK)</label>
               <input
                 type="number"
+                min="0"
                 className="form-control"
                 placeholder="Calor específico"
                 value={newMaterialData.specific_heat}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({
-                    ...prev,
-                    specific_heat: parseFloat(e.target.value),
-                  }))
+                  setNewMaterialData((prev) => ({ ...prev, specific_heat: parseFloat(e.target.value) }))
                 }
               />
             </div>
-            <div className="mb-3">
+            <div className="form-group mb-3">
               <label>Densidad (kg/m3)</label>
               <input
                 type="number"
+                min="0"
                 className="form-control"
                 placeholder="Densidad"
                 value={newMaterialData.density}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({
-                    ...prev,
-                    density: parseFloat(e.target.value),
-                  }))
+                  setNewMaterialData((prev) => ({ ...prev, density: parseFloat(e.target.value) }))
                 }
               />
             </div>
-            <div className="d-flex justify-content-end gap-2">
-              <CustomButton variant="save" onClick={() => setShowMaterialModal(false)}>
+            <div className="text-end">
+              <CustomButton
+                variant="save"
+                onClick={() => {
+                  setShowMaterialModal(false);
+                  setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+                }}
+                style={{ marginRight: "10px" }}
+              >
                 Cancelar
               </CustomButton>
-              <CustomButton variant="save" onClick={handleCreateMaterial}>
+              <CustomButton
+                variant="save"
+                onClick={async () => {
+                  await handleCreateMaterial();
+                  setShowMaterialModal(false);
+                }}
+              >
                 Crear Material
               </CustomButton>
             </div>
@@ -881,32 +805,54 @@ const ProjectWorkflowPart2: React.FC = () => {
         </Modal>
       )}
 
-      {/* Modal para crear nuevo Elemento translúcido (Step 5) */}
+      {/* Modal para crear Elemento translúcido */}
       {showElementModal && (
         <Modal
           isOpen={showElementModal}
-          onClose={() => setShowElementModal(false)}
+          onClose={() => {
+            setShowElementModal(false);
+            if (modalElementType === "ventanas") {
+              setWindowData({
+                name_element: "",
+                u_vidrio: 0,
+                fs_vidrio: 0,
+                clousure_type: "Corredera",
+                frame_type: "",
+                u_marco: 0,
+                fm: 0,
+              });
+            } else {
+              setDoorData({
+                name_element: "",
+                ventana_id: 0,
+                name_ventana: "",
+                u_puerta_opaca: 0,
+                porcentaje_vidrio: 0,
+                u_marco: 0,
+                fm: 0,
+              });
+            }
+          }}
           title={modalElementType === "ventanas" ? "Nueva Ventana" : "Nueva Puerta"}
         >
           {modalElementType === "ventanas" ? (
             <div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>Nombre</label>
                 <input
                   type="text"
                   className="form-control"
                   placeholder="Nombre"
                   value={windowData.name_element}
-                  onChange={(e) =>
-                    setWindowData((prev) => ({ ...prev, name_element: e.target.value }))
-                  }
+                  onChange={(e) => setWindowData((prev) => ({ ...prev, name_element: e.target.value }))}
                   disabled={isViewMode}
                 />
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>U Vidrio [W/m2K]</label>
                 <input
                   type="number"
+                  min="0"
                   className="form-control"
                   placeholder="U Vidrio"
                   value={windowData.u_vidrio}
@@ -916,10 +862,11 @@ const ProjectWorkflowPart2: React.FC = () => {
                   disabled={isViewMode}
                 />
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>FS Vidrio</label>
                 <input
                   type="number"
+                  min="0"
                   className="form-control"
                   placeholder="FS Vidrio"
                   value={windowData.fs_vidrio}
@@ -929,14 +876,12 @@ const ProjectWorkflowPart2: React.FC = () => {
                   disabled={isViewMode}
                 />
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>Tipo Cierre</label>
                 <select
                   className="form-control"
                   value={windowData.clousure_type}
-                  onChange={(e) =>
-                    setWindowData((prev) => ({ ...prev, clousure_type: e.target.value }))
-                  }
+                  onChange={(e) => setWindowData((prev) => ({ ...prev, clousure_type: e.target.value }))}
                   disabled={isViewMode}
                 >
                   <option value="Abatir">Abatir</option>
@@ -946,14 +891,12 @@ const ProjectWorkflowPart2: React.FC = () => {
                   <option value="Proyectante">Proyectante</option>
                 </select>
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>Tipo Marco</label>
                 <select
                   className="form-control"
                   value={windowData.frame_type}
-                  onChange={(e) =>
-                    setWindowData((prev) => ({ ...prev, frame_type: e.target.value }))
-                  }
+                  onChange={(e) => setWindowData((prev) => ({ ...prev, frame_type: e.target.value }))}
                   disabled={isViewMode}
                 >
                   <option value="">Seleccione</option>
@@ -966,27 +909,26 @@ const ProjectWorkflowPart2: React.FC = () => {
                   <option value="PVC Sin RPT">PVC Sin RPT</option>
                 </select>
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>U Marco [W/m2K]</label>
                 <input
                   type="number"
+                  min="0"
                   className="form-control"
                   placeholder="U Marco"
                   value={windowData.u_marco}
-                  onChange={(e) =>
-                    setWindowData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))
-                  }
+                  onChange={(e) => setWindowData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
                   disabled={isViewMode}
                 />
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>FM [%]</label>
                 <input
                   type="number"
-                  className="form-control"
-                  placeholder="FM"
                   min="0"
                   max="100"
+                  className="form-control"
+                  placeholder="FM"
                   value={windowData.fm}
                   onChange={(e) => {
                     const value = validatePercentage(parseFloat(e.target.value));
@@ -995,7 +937,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                   disabled={isViewMode}
                 />
               </div>
-              <div className="d-flex justify-content-end gap-2">
+              <div className="text-end">
                 <CustomButton
                   variant="save"
                   onClick={() => {
@@ -1026,33 +968,30 @@ const ProjectWorkflowPart2: React.FC = () => {
             </div>
           ) : (
             <div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>Nombre</label>
                 <input
                   type="text"
                   className="form-control"
                   placeholder="Nombre"
                   value={doorData.name_element}
-                  onChange={(e) =>
-                    setDoorData((prev) => ({ ...prev, name_element: e.target.value }))
-                  }
+                  onChange={(e) => setDoorData((prev) => ({ ...prev, name_element: e.target.value }))}
                   disabled={isViewMode}
                 />
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>U Puerta opaca [W/m2K]</label>
                 <input
                   type="number"
+                  min="0"
                   className="form-control"
                   placeholder="U Puerta opaca"
                   value={doorData.u_puerta_opaca}
-                  onChange={(e) =>
-                    setDoorData((prev) => ({ ...prev, u_puerta_opaca: parseFloat(e.target.value) }))
-                  }
+                  onChange={(e) => setDoorData((prev) => ({ ...prev, u_puerta_opaca: parseFloat(e.target.value) }))}
                   disabled={isViewMode}
                 />
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>Ventana Asociada</label>
                 <select
                   className="form-control"
@@ -1075,14 +1014,14 @@ const ProjectWorkflowPart2: React.FC = () => {
                   ))}
                 </select>
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>% Vidrio</label>
                 <input
                   type="number"
-                  className="form-control"
-                  placeholder="% Vidrio"
                   min="0"
                   max="100"
+                  className="form-control"
+                  placeholder="% Vidrio"
                   value={doorData.porcentaje_vidrio}
                   onChange={(e) => {
                     const value = validatePercentage(parseFloat(e.target.value));
@@ -1091,27 +1030,26 @@ const ProjectWorkflowPart2: React.FC = () => {
                   disabled={isViewMode}
                 />
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>U Marco [W/m2K]</label>
                 <input
                   type="number"
+                  min="0"
                   className="form-control"
                   placeholder="U Marco"
                   value={doorData.u_marco}
-                  onChange={(e) =>
-                    setDoorData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))
-                  }
+                  onChange={(e) => setDoorData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
                   disabled={isViewMode}
                 />
               </div>
-              <div className="mb-3">
+              <div className="form-group mb-3">
                 <label>FM [%]</label>
                 <input
                   type="number"
-                  className="form-control"
-                  placeholder="FM"
                   min="0"
                   max="100"
+                  className="form-control"
+                  placeholder="FM"
                   value={doorData.fm}
                   onChange={(e) => {
                     const value = validatePercentage(parseFloat(e.target.value));
@@ -1120,7 +1058,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                   disabled={isViewMode}
                 />
               </div>
-              <div className="d-flex justify-content-end gap-2">
+              <div className="text-end">
                 <CustomButton
                   variant="save"
                   onClick={() => {
@@ -1153,24 +1091,80 @@ const ProjectWorkflowPart2: React.FC = () => {
         </Modal>
       )}
 
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+
       <style jsx>{`
-        .card {
-          /* Estilos complementarios a cardStyleConfig */
+        /* Estilos generales para contenedor y layout responsive */
+        .custom-container {
+          max-width: 1780px;
+          margin-left: 103px;
+          margin-right: 0px;
+          padding: 0 15px;
+        }
+        .internal-sidebar {
+          width: 380px;
+          padding: 20px;
+          box-sizing: border-box;
+          border-right: 1px solid #ccc;
+        }
+        .content-area {
+          flex: 1;
+          padding: 20px;
+        }
+        .d-flex-responsive {
+          display: flex;
+          align-items: stretch;
+          gap: 0;
+        }
+        @media (max-width: 1024px) {
+          .custom-container {
+            margin-left: 50px;
+            margin-right: 20px;
+          }
+          .internal-sidebar {
+            width: 100% !important;
+            border-right: none;
+            border-bottom: 1px solid #ccc;
+            padding: 10px;
+          }
+          .content-area {
+            padding: 10px;
+          }
+          .d-flex-responsive {
+            flex-direction: column;
+          }
+        }
+        @media (max-width: 480px) {
+          .custom-container {
+            margin-left: 10px;
+            margin-right: 10px;
+          }
+        }
+        /* Ajustes para la tabla */
+        .table {
+          border-collapse: collapse; /* Eliminar bordes internos */
         }
         .table th,
         .table td {
           text-align: center;
           vertical-align: middle;
+          border: none !important; /* Forzar sin borde */
         }
         .table thead th {
           background-color: #fff;
           color: var(--primary-color);
+          position: sticky;
+          top: 0;
+          z-index: 2;
         }
+        /* Alternar colores en las filas de la tabla */
         .table-striped tbody tr:nth-child(odd) {
-          background-color: #ffffff;
+          background-color: #fff;
+          border: none !important;
         }
         .table-striped tbody tr:nth-child(even) {
-          background-color: #f2f2f2;
+          background-color: #f8f8f8;
+          border: none !important;
         }
       `}</style>
     </>

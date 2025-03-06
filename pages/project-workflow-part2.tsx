@@ -517,22 +517,27 @@ const ProjectWorkflowPart2: React.FC = () => {
               <div className="content-area">
                 {step === 3 && (
                   <>
-                    {/* Contenedor para el botón y el buscador al mismo nivel */}
-                    <div className="d-flex justify-content-between align-items-center p-2">
-                      {!isViewMode && (
-                        <CustomButton variant="save" onClick={() => setShowMaterialModal(true)}>
-                          <span className="material-icons">add</span> Nuevo
-                        </CustomButton>
-                      )}
-                      <div style={{ flex: 1, marginLeft: "10px" }}>
+                    {/* Contenedor para el buscador y el botón (botón alineado a la derecha) */}
+                    <div className="d-flex align-items-center p-2">
+                      <div style={{ flex: 1, marginRight: "10px" }}>
                         <input
                           type="text"
                           className="form-control"
                           placeholder="Buscar material..."
                           value={materialSearch}
                           onChange={(e) => setMaterialSearch(e.target.value)}
+                          style={{ height: "40px" }}
                         />
                       </div>
+                      {!isViewMode && (
+                        <CustomButton
+                          variant="save"
+                          onClick={() => setShowMaterialModal(true)}
+                          style={{ height: "40px" }}
+                        >
+                          <span className="material-icons">add</span> Nuevo
+                        </CustomButton>
+                      )}
                     </div>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
                       <div style={{ maxHeight: "400px", overflowY: "auto" }}>
@@ -567,22 +572,27 @@ const ProjectWorkflowPart2: React.FC = () => {
 
                 {step === 5 && (
                   <>
-                    {/* Contenedor para el botón y el buscador al mismo nivel */}
-                    <div className="d-flex justify-content-between align-items-center p-2">
-                      {!isViewMode && (
-                        <CustomButton variant="save" onClick={() => setShowElementModal(true)}>
-                          <span className="material-icons">add</span> Nuevo
-                        </CustomButton>
-                      )}
-                      <div style={{ flex: 1, marginLeft: "10px" }}>
+                    {/* Contenedor para el buscador y el botón (botón alineado a la derecha) */}
+                    <div className="d-flex align-items-center p-2">
+                      <div style={{ flex: 1, marginRight: "10px" }}>
                         <input
                           type="text"
                           className="form-control"
                           placeholder="Buscar elemento..."
                           value={elementSearch}
                           onChange={(e) => setElementSearch(e.target.value)}
+                          style={{ height: "40px" }}
                         />
                       </div>
+                      {!isViewMode && (
+                        <CustomButton
+                          variant="save"
+                          onClick={() => setShowElementModal(true)}
+                          style={{ height: "40px" }}
+                        >
+                          <span className="material-icons">add</span> Nuevo
+                        </CustomButton>
+                      )}
                     </div>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
                       <div

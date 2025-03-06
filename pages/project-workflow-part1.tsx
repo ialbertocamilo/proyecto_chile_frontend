@@ -545,11 +545,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.name_project && (
-                          <small style={{ color: "red" }}>
-                            {errors.name_project}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -572,11 +567,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.owner_name && (
-                          <small style={{ color: "red" }}>
-                            {errors.owner_name}
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -601,11 +591,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.owner_lastname && (
-                          <small style={{ color: "red" }}>
-                            {errors.owner_lastname}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -634,11 +619,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             </option>
                           ))}
                         </select>
-                        {submitted && errors.country && (
-                          <small style={{ color: "red" }}>
-                            {errors.country}
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -672,11 +652,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                               </option>
                             ))}
                         </select>
-                        {submitted && errors.department && (
-                          <small style={{ color: "red" }}>
-                            {errors.department}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -709,11 +684,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                               </option>
                             ))}
                         </select>
-                        {submitted && errors.province && (
-                          <small style={{ color: "red" }}>
-                            {errors.province}
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -738,11 +708,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.district && (
-                          <small style={{ color: "red" }}>
-                            {errors.district}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -773,11 +738,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             Vertical / Departamentos
                           </option>
                         </select>
-                        {submitted && errors.building_type && (
-                          <small style={{ color: "red" }}>
-                            {errors.building_type}
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -806,11 +766,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                           <option value="Oficinas">Oficinas</option>
                           <option value="Terciarios">Terciarios</option>
                         </select>
-                        {submitted && errors.main_use_type && (
-                          <small style={{ color: "red" }}>
-                            {errors.main_use_type}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -837,11 +792,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.number_levels && (
-                          <small style={{ color: "red" }}>
-                            {errors.number_levels}
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="row mb-3">
@@ -870,11 +820,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.number_homes_per_level && (
-                          <small style={{ color: "red" }}>
-                            {errors.number_homes_per_level}
-                          </small>
-                        )}
                       </div>
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -901,11 +846,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                               : undefined
                           }
                         />
-                        {submitted && errors.built_surface && (
-                          <small style={{ color: "red" }}>
-                            {errors.built_surface}
-                          </small>
-                        )}
                       </div>
                     </div>
                     {globalError && (
@@ -913,7 +853,54 @@ const ProjectWorkflowPart1: React.FC = () => {
                         {globalError}
                       </div>
                     )}
-                    {isViewOnly ? (
+                    {/* Se muestra un mensaje consolidado solo si existen errores y no es modo vista */}
+                    {!isViewOnly && (
+                      <div className="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                          {submitted && Object.keys(errors).length > 0 && (
+                            <small style={{ color: "red", textAlign: "left" }}>
+                              Por favor, corrija los campos marcados en rojo.
+                            </small>
+                          )}
+                        </div>
+                        {router.query.id ? (
+                          <div style={{ display: "flex", gap: "10px" }}>
+                            <CustomButton
+                              variant="save"
+                              onClick={handleStep1Action}
+                              style={{ height: "50px" }}
+                            >
+                              <span
+                                className="material-icons"
+                                style={{ marginRight: "5px" }}
+                              >
+                                save_as
+                              </span>
+                              Actualizar Datos
+                            </CustomButton>
+                            <CustomButton
+                              variant="forwardIcon"
+                              onClick={goToStep2}
+                              style={{ marginLeft: "10px", height: "50px" }}
+                            >
+                              Siguiente
+                            </CustomButton>
+                          </div>
+                        ) : (
+                          <div>
+                            <CustomButton
+                              variant="save"
+                              onClick={handleStep1Action}
+                              style={{ height: "50px" }}
+                              disabled={loading}
+                            >
+                              Continuar
+                            </CustomButton>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {isViewOnly && (
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <CustomButton
                           variant="backIcon"
@@ -922,50 +909,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                         >
                           Atrás
                         </CustomButton>
-                        {/* En modo vista, al hacer clic en "Siguiente" en el step 1 se pasa al step 2 */}
                         <CustomButton
                           variant="forwardIcon"
                           onClick={() => setStep(2)}
                           style={{ height: "50px" }}
                         >
                           Siguiente
-                        </CustomButton>
-                      </div>
-                    ) : router.query.id ? (
-                      <div
-                        className="d-flex justify-content-end align-items-center mt-4"
-                        style={{ gap: "10px" }}
-                      >
-                        <CustomButton
-                          variant="save"
-                          onClick={handleStep1Action}
-                          style={{ height: "50px" }}
-                        >
-                          <span
-                            className="material-icons"
-                            style={{ marginRight: "5px" }}
-                          >
-                            save_as
-                          </span>
-                          Actualizar Datos
-                        </CustomButton>
-                        <CustomButton
-                          variant="forwardIcon"
-                          onClick={goToStep2}
-                          style={{ marginLeft: "10px", height: "50px" }}
-                        >
-                          Siguiente
-                        </CustomButton>
-                      </div>
-                    ) : (
-                      <div className="d-flex justify-content-end align-items-center mt-4">
-                        <CustomButton
-                          variant="save"
-                          onClick={handleStep1Action}
-                          style={{ height: "50px" }}
-                          disabled={loading}
-                        >
-                          Continuar
                         </CustomButton>
                       </div>
                     )}
@@ -1083,7 +1032,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                         </div>
                         <div className="d-flex">
                           {isViewOnly ? (
-                            // En modo vista, el botón "Siguiente" en el step 2 redirige al flujo 2 en modo vista
                             <CustomButton
                               variant="forwardIcon"
                               onClick={() =>
@@ -1116,17 +1064,14 @@ const ProjectWorkflowPart1: React.FC = () => {
                               <CustomButton
                                 variant="forwardIcon"
                                 onClick={() => {
-                                  // Convertir router.query.id a string
                                   const projectId = Array.isArray(router.query.id)
                                     ? router.query.id[0]
                                     : router.query.id;
-                                  
                                   if (projectId) {
                                     localStorage.setItem("project_id", projectId);
                                     router.push(`/project-workflow-part3?project_id=${projectId}&mode=edit`);
                                   } else {
                                     console.error("project_id is undefined");
-                                    // Aquí podrías manejar el caso en que projectId sea undefined
                                   }
                                 }}
                                 style={{ marginLeft: "10px", height: "50px" }}

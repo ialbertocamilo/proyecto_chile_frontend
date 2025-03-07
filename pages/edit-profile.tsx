@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { toast } from 'react-toastify';
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface ProfileData {
   name: string;
@@ -105,6 +106,7 @@ const EditProfile = () => {
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
+        toastId: "warning"
       });
       return;
     }
@@ -150,6 +152,7 @@ const EditProfile = () => {
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
+        toastId: "success"
       });
       router.push("/dashboard");
     } catch (err: unknown) {
@@ -163,6 +166,7 @@ const EditProfile = () => {
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
+        toastId: "warning"
       });
       setError(message);
     } finally {

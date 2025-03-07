@@ -228,13 +228,13 @@ const AdministrationPage: React.FC = () => {
       newMaterialData.specific_heat <= 0 ||
       newMaterialData.density <= 0
     ) {
-      toast.warning("Por favor complete todos los campos de material"); // Notificación de advertencia
+      toast.warning("Por favor complete todos los campos de material", { toastId: "material-warning" });
       return;
     }
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.warning("Token no encontrado. Inicia sesión."); // Notificación de advertencia
+        toast.warning("Token no encontrado. Inicia sesión.", { toastId: "token-warning" });
         handleLogout();
         return;
       }
@@ -252,14 +252,14 @@ const AdministrationPage: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json", accept: "application/json" };
       const response = await axios.post(url, payload, { headers });
       if (response.status === 200) {
-        toast.success("El material fue creado correctamente"); // Notificación de éxito
+        toast.success("El material fue creado correctamente", { toastId: "material-success" });
         await fetchMaterialsList(1);
         setShowNewMaterialModal(false);
         setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
       }
     } catch (error: unknown) {
       console.error("[handleCreateMaterial] Error:", error);
-      toast.error("No se pudo crear el material"); // Notificación de error
+      toast.error("No se pudo crear el material", { toastId: "material-error" });
       handleLogout();
     }
   };
@@ -272,14 +272,14 @@ const AdministrationPage: React.FC = () => {
       newDetail.layer_thickness === null ||
       newDetail.layer_thickness <= 0
     ) {
-      toast.warning("Por favor complete todos los campos de detalle"); // Notificación de advertencia
+      toast.warning("Por favor complete todos los campos de detalle", { toastId: "detail-warning" });
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.warning("Token no encontrado. Inicia sesión."); // Notificación de advertencia
+        toast.warning("Token no encontrado. Inicia sesión.", { toastId: "token-warning" });
         handleLogout();
         return;
       }
@@ -296,7 +296,7 @@ const AdministrationPage: React.FC = () => {
       const response = await axios.post(url, payload, { headers });
 
       if (response.status === 200) {
-        toast.success("El detalle fue creado correctamente"); // Notificación de éxito
+        toast.success("El detalle fue creado correctamente", { toastId: "detail-success" });
         setShowNewDetailModal(false);
         setNewDetail({
           scantilon_location: "",
@@ -308,7 +308,7 @@ const AdministrationPage: React.FC = () => {
       }
     } catch (error: unknown) {
       console.error("[handleCreateDetail] Error:", error);
-      toast.error("No se pudo crear el detalle"); // Notificación de error
+      toast.error("No se pudo crear el detalle", { toastId: "detail-error" });
       handleLogout();
     }
   };
@@ -324,7 +324,7 @@ const AdministrationPage: React.FC = () => {
         newWindow.clousure_type.trim() === "" ||
         newWindow.frame_type.trim() === ""
       ) {
-        toast.warning("Por favor complete todos los campos de la ventana"); // Notificación de advertencia
+        toast.warning("Por favor complete todos los campos de la ventana", { toastId: "window-warning" });
         return;
       }
     } else {
@@ -336,7 +336,7 @@ const AdministrationPage: React.FC = () => {
         newDoor.fm <= 0 ||
         newDoor.porcentaje_vidrio <= 0
       ) {
-        toast.warning("Por favor complete todos los campos de la puerta"); // Notificación de advertencia
+        toast.warning("Por favor complete todos los campos de la puerta", { toastId: "door-warning" });
         return;
       }
     }
@@ -344,7 +344,7 @@ const AdministrationPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.warning("Token no encontrado. Inicia sesión."); // Notificación de advertencia
+        toast.warning("Token no encontrado. Inicia sesión.", { toastId: "token-warning" });
         handleLogout();
         return;
       }
@@ -383,7 +383,7 @@ const AdministrationPage: React.FC = () => {
       }
 
       await axios.post(url, payload, { headers });
-      toast.success("El elemento fue creado correctamente"); // Notificación de éxito
+      toast.success("El elemento fue creado correctamente", { toastId: "element-success" });
 
       if (tabElementosOperables === "ventanas") {
         setShowNewWindowModal(false);
@@ -411,7 +411,7 @@ const AdministrationPage: React.FC = () => {
       await fetchElements();
     } catch (error: unknown) {
       console.error("[handleCreateElement] Error:", error);
-      toast.error("No se pudo crear el elemento"); // Notificación de error
+      toast.error("No se pudo crear el elemento", { toastId: "element-error" });
       handleLogout();
     }
   };

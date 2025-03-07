@@ -58,7 +58,7 @@ interface SidebarItemComponentProps {
   onClickAction?: () => void;
 }
 
-// Helper para validar porcentajesfdfdsf
+// Helper para validar porcentajes
 const validatePercentage = (value: number) => {
   if (isNaN(value)) return 0;
   if (value < 0) return 0;
@@ -69,8 +69,6 @@ const validatePercentage = (value: number) => {
 const ProjectWorkflowPart2: React.FC = () => {
   useAuth();
   const router = useRouter();
-  const mode = router.query.mode as string;
-  const isViewMode = mode === "view";
 
   /** Estados de cabecera del proyecto **/
   const [, setProjectId] = useState<number | null>(null);
@@ -84,16 +82,6 @@ const ProjectWorkflowPart2: React.FC = () => {
     if (storedDepartment) setProjectDepartment(storedDepartment);
     setHasLoaded(true);
   }, []);
-
-  /** Función para redirigir a "Agregar detalles de propietario / proyecto y clasificación de edificaciones" usando el project_id del local storage **/
-  const handleOwnerDetailsRedirect = () => {
-    const storedProjectId = localStorage.getItem("project_id");
-    if (storedProjectId) {
-      router.push(`/project-workflow-part1?mode=view&id=${storedProjectId}&step=1`);
-    } else {
-      toast.error("No se encontró el ID del proyecto en el local storage.");
-    }
-  };
 
   /** Estado para el step actual **/
   const [step, setStep] = useState<number>(3);
@@ -383,12 +371,7 @@ const ProjectWorkflowPart2: React.FC = () => {
   /** Funciones de navegación entre steps **/
   const handleBackStep = () => {
     if (step === 3) {
-      // En modo vista, en el step 3 se redirige al step 2
-      if (isViewMode) {
-        router.push(`/project-workflow-part1?mode=view&step=2`);
-      } else {
-        router.push(`/project-workflow-part1`);
-      }
+      router.push(`/project-workflow-part1`);
     } else if (step === 5) {
       setStep(3);
     } else if (step === 6) {
@@ -402,7 +385,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     } else if (step === 5) {
       setStep(6);
     } else if (step === 6) {
-      router.push(`/project-workflow-part3${isViewMode ? "?mode=view" : ""}`);
+      router.push(`/project-workflow-part3`);
     }
   };
 
@@ -454,7 +437,7 @@ const ProjectWorkflowPart2: React.FC = () => {
     step >= 3 && (
       <div className="mb-3" style={{ height: headerCardHeight, padding: "20px", textAlign: "left" }}>
         <h1 style={{ fontSize: "30px", margin: "0 0 20px 0", fontWeight: "normal" }}>
-          {isViewMode ? "Vista de datos de entrada" : "Datos de entrada"}
+          Datos de entrada
         </h1>
       </div>
     );
@@ -462,7 +445,7 @@ const ProjectWorkflowPart2: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} />
+      <Navbar setActiveView={() => { }} />
       <TopBar sidebarWidth="300px" />
       <div
         className="container custom-container"
@@ -478,47 +461,9 @@ const ProjectWorkflowPart2: React.FC = () => {
               {/* Sidebar */}
               <div className="internal-sidebar">
                 <ul className="nav flex-column">
-                  {isViewMode && (
-                    <>
-                      <SidebarItemComponent
-                        stepNumber={1}
-                        iconName="assignment_ind"
-                        title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
-                        onClickAction={handleOwnerDetailsRedirect}
-                      />
-                      <SidebarItemComponent
-                        stepNumber={2}
-                        iconName="location_on"
-                        title="Ubicación del proyecto"
-                        onClickAction={() =>
-                          router.push("/project-workflow-part1?mode=view&step=2")
-                        }
-                      />
-                    </>
-                  )}
                   <SidebarItemComponent stepNumber={3} iconName="imagesearch_roller" title="Lista de materiales" />
                   <SidebarItemComponent stepNumber={5} iconName="home" title="Elementos translúcidos" />
                   <SidebarItemComponent stepNumber={6} iconName="deck" title="Perfil de uso" />
-                  {isViewMode && (
-                    <>
-                      <SidebarItemComponent
-                        stepNumber={4}
-                        iconName="build"
-                        title="Detalles constructivos"
-                        onClickAction={() =>
-                          router.push("/project-workflow-part3?mode=view&step=4")
-                        }
-                      />
-                      <SidebarItemComponent
-                        stepNumber={7}
-                        iconName="design_services"
-                        title="Recinto"
-                        onClickAction={() =>
-                          router.push("/project-workflow-part3?mode=view&step=7")
-                        }
-                      />
-                    </>
-                  )}
                 </ul>
               </div>
               {/* Área de contenido */}
@@ -537,15 +482,13 @@ const ProjectWorkflowPart2: React.FC = () => {
                           style={{ height: "40px" }}
                         />
                       </div>
-                      {!isViewMode && (
-                        <CustomButton
-                          variant="save"
-                          onClick={() => setShowMaterialModal(true)}
-                          style={{ height: "40px" }}
-                        >
-                          <span className="material-icons">add</span> Nuevo
-                        </CustomButton>
-                      )}
+                      <CustomButton
+                        variant="save"
+                        onClick={() => setShowMaterialModal(true)}
+                        style={{ height: "40px" }}
+                      >
+                        <span className="material-icons">add</span> Nuevo
+                      </CustomButton>
                     </div>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
                       <div style={{ maxHeight: "400px", overflowY: "auto" }}>
@@ -592,15 +535,13 @@ const ProjectWorkflowPart2: React.FC = () => {
                           style={{ height: "40px" }}
                         />
                       </div>
-                      {!isViewMode && (
-                        <CustomButton
-                          variant="save"
-                          onClick={() => setShowElementModal(true)}
-                          style={{ height: "40px" }}
-                        >
-                          <span className="material-icons">add</span> Nuevo
-                        </CustomButton>
-                      )}
+                      <CustomButton
+                        variant="save"
+                        onClick={() => setShowElementModal(true)}
+                        style={{ height: "40px" }}
+                      >
+                        <span className="material-icons">add</span> Nuevo
+                      </CustomButton>
                     </div>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
                       <div
@@ -725,26 +666,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                       <p>Contenido para &apos;{tabTipologiaRecinto}&apos;</p>
                     </div>
                   </>
-                )}
-
-                {/* Los botones de navegación se muestran solo en el modo de vista */}
-                {isViewMode && (step === 3 || step === 5 || step === 6) && (
-                  <div className="d-flex justify-content-between align-items-center mt-3">
-                    <CustomButton
-                      variant="backIcon"
-                      onClick={handleBackStep}
-                      style={{ borderRadius: "5px", width: "180px", height: "40px" }}
-                    >
-                      Atrás
-                    </CustomButton>
-                    <CustomButton
-                      variant="forwardIcon"
-                      onClick={handleNextStep}
-                      style={{ borderRadius: "5px", width: "180px", height: "40px" }}
-                    >
-                      Siguiente
-                    </CustomButton>
-                  </div>
                 )}
               </div>
             </div>
@@ -879,7 +800,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                   placeholder="Nombre"
                   value={windowData.name_element}
                   onChange={(e) => setWindowData((prev) => ({ ...prev, name_element: e.target.value }))}
-                  disabled={isViewMode}
                 />
               </div>
               <div className="form-group mb-3">
@@ -893,7 +813,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                   onChange={(e) =>
                     setWindowData((prev) => ({ ...prev, u_vidrio: parseFloat(e.target.value) }))
                   }
-                  disabled={isViewMode}
                 />
               </div>
               <div className="form-group mb-3">
@@ -907,7 +826,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                   onChange={(e) =>
                     setWindowData((prev) => ({ ...prev, fs_vidrio: parseFloat(e.target.value) }))
                   }
-                  disabled={isViewMode}
                 />
               </div>
               <div className="form-group mb-3">
@@ -916,7 +834,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                   className="form-control"
                   value={windowData.clousure_type}
                   onChange={(e) => setWindowData((prev) => ({ ...prev, clousure_type: e.target.value }))}
-                  disabled={isViewMode}
                 >
                   <option value="Abatir">Abatir</option>
                   <option value="Corredera">Corredera</option>
@@ -931,7 +848,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                   className="form-control"
                   value={windowData.frame_type}
                   onChange={(e) => setWindowData((prev) => ({ ...prev, frame_type: e.target.value }))}
-                  disabled={isViewMode}
                 >
                   <option value="">Seleccione</option>
                   <option value="Fierro">Fierro</option>
@@ -951,8 +867,10 @@ const ProjectWorkflowPart2: React.FC = () => {
                   className="form-control"
                   placeholder="U Marco"
                   value={windowData.u_marco}
-                  onChange={(e) => setWindowData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
-                  disabled={isViewMode}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    setWindowData((prev) => ({ ...prev, u_marco: isNaN(value) ? 0 : value }));
+                  }}
                 />
               </div>
               <div className="form-group mb-3">
@@ -968,7 +886,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                     const value = validatePercentage(parseFloat(e.target.value));
                     setWindowData((prev) => ({ ...prev, fm: value }));
                   }}
-                  disabled={isViewMode}
                 />
               </div>
               <div className="text-end">
@@ -1012,7 +929,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                   placeholder="Nombre"
                   value={doorData.name_element}
                   onChange={(e) => setDoorData((prev) => ({ ...prev, name_element: e.target.value }))}
-                  disabled={isViewMode}
                 />
               </div>
               <div className="form-group mb-3">
@@ -1024,7 +940,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                   placeholder="U Puerta opaca"
                   value={doorData.u_puerta_opaca}
                   onChange={(e) => setDoorData((prev) => ({ ...prev, u_puerta_opaca: parseFloat(e.target.value) }))}
-                  disabled={isViewMode}
                 />
               </div>
               <div className="form-group mb-3">
@@ -1040,7 +955,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                       name_ventana: allWindowsForDoor.find((win) => win.id === winId)?.name_element || "",
                     }));
                   }}
-                  disabled={isViewMode}
                 >
                   <option value="">Seleccione</option>
                   {allWindowsForDoor.map((win) => (
@@ -1075,7 +989,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                   placeholder="U Marco"
                   value={doorData.u_marco}
                   onChange={(e) => setDoorData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
-                  disabled={isViewMode}
                 />
               </div>
               <div className="form-group mb-3">
@@ -1091,7 +1004,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                     const value = validatePercentage(parseFloat(e.target.value));
                     setDoorData((prev) => ({ ...prev, fm: value }));
                   }}
-                  disabled={isViewMode}
                 />
               </div>
               <div className="text-end">

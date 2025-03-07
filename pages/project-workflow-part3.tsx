@@ -724,7 +724,7 @@ const ProjectWorkflowPart3: React.FC = () => {
 
   const handleCancelTechEdit = (detail: TabItem) => {
     // Restablecer los valores de edición al estado originafdfsl
-    setEditingTechRowId(null); // Salir del modo de edición
+    setEditingTechRowId(null); // Salir del modo de edicióndfdsf
     setEditingTechColors({
       interior: detail.info?.surface_color?.interior?.name || "Intermedio",
       exterior: detail.info?.surface_color?.exterior?.name || "Intermedio",

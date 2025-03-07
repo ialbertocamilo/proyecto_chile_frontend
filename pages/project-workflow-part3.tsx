@@ -9,7 +9,7 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
-import { useRouter } from "next/router";
+import router, { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { Tooltip } from "react-tooltip";
 import Modal from "../src/components/common/Modal";
@@ -170,7 +170,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     </li>
   );
 };
-
+const handleOwnerDetailsRedirect = () => {
+  const storedProjectId = localStorage.getItem("project_id");
+  if (storedProjectId) {
+    router.push(`/project-workflow-part1?mode=view&id=${storedProjectId}&step=1`);
+  } else {
+    toast.error("No se encontró el ID del proyecto en el local storage.");
+  }
+};
 const ProjectWorkflowPart3: React.FC = () => {
   useAuth();
   const router = useRouter();
@@ -2163,11 +2170,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                         stepNumber={1}
                         iconName="assignment_ind"
                         title="Agregar detalles..."
-                        onClickAction={() =>
-                          router.push(
-                            "/project-workflow-part1?mode=view&step=1"
-                          )
-                        }
+                        onClickAction={handleOwnerDetailsRedirect}
                       />
                       <SidebarItemComponent
                         stepNumber={2}

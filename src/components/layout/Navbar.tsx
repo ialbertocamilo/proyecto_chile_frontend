@@ -151,7 +151,6 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
                 </Link>
               </li>
             )}
-            {/* La opción "Desarrollo de proyecto" sigue siendo condicional */}
             {projectId && roleId === "2" && (
               <li className="nav-item">
                 <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>
@@ -162,7 +161,6 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
                 </Link>
               </li>
             )}
-            {/* Mostrar "Ingreso de Datos de entrada" solo cuando roleId no es "1" */}
             {roleId !== "1" && (
               <li className="nav-item">
                 <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
@@ -234,7 +232,6 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
             padding: 0;
           }
 
-          /* Ocultar texto en pantallas pequeñas (ejemplo) */
           @media (max-width: 768px) {
             .sidebar {
               width: 60px;

@@ -14,7 +14,7 @@ interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     | 'listIcon'
     | 'cancelIcon'
     | 'viewIcon'
-    | 'flatPrimary'; // Nueva variante
+    
   isLoading?: boolean;
   margin?: string;
 }
@@ -31,21 +31,21 @@ const CustomButton: FC<CustomButtonProps> = ({
   let content: React.ReactNode = children;
 
   if (variant === 'editIcon') {
-    content = <span className="btn-icon-content material-icons">edit</span>;
+    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>edit</span>;
   } else if (variant === 'deleteIcon') {
-    content = <span className="btn-icon-content material-icons">delete</span>;
+    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>delete</span>;
   } else if (variant === 'backIcon') {
-    content = <span className="btn-icon-content material-icons">arrow_back</span>;
+    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>arrow_back</span>;
   } else if (variant === 'forwardIcon') {
-    content = <span className="btn-icon-content material-icons">arrow_forward</span>;
+    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>arrow_forward</span>;
   } else if (variant === 'addIcon') {
-    content = <span className="btn-icon-content material-icons">add</span>;
+    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>add</span>;
   } else if (variant === 'listIcon') {
-    content = <span className="btn-icon-content material-icons">format_list_bulleted</span>;
+    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>format_list_bulleted</span>;
   } else if (variant === 'cancelIcon') {
-    content = <span className="btn-icon-content material-icons">close</span>;
+    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>close</span>;
   } else if (variant === 'viewIcon') {
-    content = <span className="btn-icon-content material-icons">visibility</span>;
+    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>visibility</span>;
   }
 
   const variantClass = `btn-${variant}`;
@@ -59,179 +59,70 @@ const CustomButton: FC<CustomButtonProps> = ({
         disabled={disabled || isLoading}
         aria-busy={isLoading}
         style={{ margin }}
-        className={`btn ${variantClass} ${className} ${disabledClass}`}
+        className={`button btn btn-primary ${variantClass} ${className} ${disabledClass}`}
         {...rest}
       >
         {isLoading ? <span className="loading">Cargando...</span> : content}
       </button>
       <style jsx>{`
         .btn {
-          padding: 0.75rem 1.25rem;
-          border: none;
-          border-radius: 0.375rem;
-          font-size: 1rem;
-          font-weight: 600;
-          display: inline-flex;
+          display: flex;
           align-items: center;
           justify-content: center;
-          transition: background-color 0.3s ease, transform 0.2s ease;
-          cursor: pointer;
-          outline: none;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .btn:hover {
-          transform: translateY(-2px);
-        }
-        /* Variantes existentes */
-        .btn-save {
-          background-color: var(--btn-save-bg);
-          color: #ffffff;
-        }
-        .btn-save:hover {
-          background-color: var(--btn-save-hover-bg);
-        }
-        .btn-back {
-          background-color: var(--btn-back-bg);
-          color: #ffffff;
-        }
-        .btn-back:hover {
-          background-color: var(--btn-back-hover-bg);
-        }
-        .btn-delete {
-          background-color: var(--btn-delete-bg);
-          color: #ffffff;
-        }
-        .btn-delete:hover {
-          background-color: var(--btn-delete-hover-bg);
-        }
-        .btn-editIcon {
-          background-color: var(--btn-save-bg);
-          color: #ffffff;
-          padding: 0.5rem 1rem;
-        }
-        .btn-editIcon:hover {
-          background-color: var(--btn-save-hover-bg);
-        }
-        .btn-deleteIcon {
-          background-color: var(--btn-delete-bg);
-          color: #ffffff;
-          padding: 0.5rem 1rem;
-        }
-        .btn-deleteIcon:hover {
-          background-color: var(--btn-delete-hover-bg);
-        }
-        .btn-backIcon {
-          background-color: var(--btn-save-bg);
-          color: #ffffff;
-          padding: 0.5rem 1rem;
-        }
-        .btn-backIcon:hover {
-          background-color: var(--btn-save-hover-bg);
-        }
-        .btn-forwardIcon {
-          background-color: var(--btn-save-bg);
-          color: #ffffff;
-          padding: 0.5rem 1rem;
-        }
-        .btn-forwardIcon:hover {
-          background-color: var(--btn-save-hover-bg);
-        }
-        .btn-addIcon {
-          background-color: var(--btn-save-bg);
-          color: #ffffff;
-          padding: 0.5rem 1rem;
-        }
-        .btn-addIcon:hover {
-          background-color: var(--btn-save-hover-bg);
-        }
-        .btn-listIcon {
-          background-color: var(--btn-save-bg);
-          color: #ffffff;
-          padding: 0.5rem 1rem;
-        }
-        .btn-listIcon:hover {
-          background-color: var(--btn-save-hover-bg);
-        }
-        .btn-cancelIcon {
-          background-color: var(--btn-delete-bg);
-          color: #ffffff;
-          padding: 0.5rem 1rem;
-        }
-        .btn-cancelIcon:hover {
-          background-color: var(--btn-delete-hover-bg);
-        }
-        .btn-viewIcon {
-          background-color: var(--btn-save-bg);
-          color: #ffffff;
-          padding: 0.5rem 1rem;
-        }
-        .btn-viewIcon:hover {
-          background-color: var(--btn-save-hover-bg);
-        }
-        /* Nueva variante flatPrimary: botón estático sin efectos hover */
-        .btn-flatPrimary {
-          background-color: var(--primary-color);
-          color: #ffffff;
-          padding: 0.8rem 3rem;
+          transition: background-color 0.3s ease, transform 0.3s ease;
+          background-color: var(--btn-save-bg) !important; /* Usar la variable CSS */
           border: none;
-          border-radius: 0.375rem;
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: none;
         }
-        .btn-flatPrimary:hover,
-        .btn-flatPrimary:active,
-        .btn-flatPrimary:focus {
-          background-color: var(--primary-color) !important;
-          color: #ffffff !important;
-          transform: none !important;
-          box-shadow: none !important;
-          transition: none !important;
+
+        .btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-small {
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.btn-large {
+  padding: 15px 30px;
+  font-size: 18px;
+}
+  
+        .btn:hover {
+          background-color: var(--btn-save-hover-bg) !important;
+          transform: scale(1.05);
         }
-        .disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          transform: none;
+
+        .btn:active {
+          transform: scale(0.95);
         }
-        .loading {
-          font-style: italic;
-        }
-        /* Estilos para botones con ícono */
+
         .btn-icon-content {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          font-size: 20px;
+          transition: transform 0.3s ease;
         }
-        .material-icons {
-          font-family: 'Material Icons';
-          font-weight: normal;
-          font-style: normal;
-          font-size: 20px;
-          line-height: 1;
-          letter-spacing: normal;
-          text-transform: none;
-          display: inline-block;
-          white-space: nowrap;
-          word-wrap: normal;
-          direction: ltr;
-          -webkit-font-feature-settings: 'liga';
-          -webkit-font-smoothing: antialiased;
+
+        .btn-icon-content:hover {
+          transform: rotate(360deg);
         }
-        .btn-label {
-          display: inline-block;
-          max-width: 0;
-          overflow: hidden;
-          opacity: 0;
-          margin-left: 0;
-          white-space: nowrap;
-          transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+
+        .loading {
+          animation: spin 1s linear infinite;
         }
-        .btn:hover .btn-label {
-          max-width: 100px;
-          opacity: 1;
-          margin-left: 0.5rem;
+
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </>

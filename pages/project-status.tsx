@@ -201,7 +201,6 @@ const ProjectListStatusEditPage = () => {
                                 onClick={() => handleViewProject(project)}
                                 style={{
                                   backgroundColor: "var(--primary-color)",
-                                  border: `2px solid var(--primary-color)`,
                                   padding: "0.5rem",
                                   width: "40px",
                                   height: "40px",

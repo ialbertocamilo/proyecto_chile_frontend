@@ -453,7 +453,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setShowNewDetailRow(false);
       console.log("Respuesta del backend al crear detalle:", response.data);
 
-      const newDetailId = response.data.detail.id; // Accede correctamente al ID dentro de detail
+      const newDetailId = response.data.detail.id; // Accede correctamente al ID dentrfdfso de detail
 
       if (!newDetailId) {
         toast.error("El backend no devolvió un ID de detalle válido.");
@@ -793,7 +793,11 @@ const ProjectWorkflowPart3: React.FC = () => {
           >
             Proyecto:
           </span>
-          <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
+          <CustomButton
+            variant="save"
+            className="no-hover"
+            style={{ padding: "0.8rem 3rem" }}
+          >
             {`Edificación Nº ${projectId ?? "xxxxx"}`}
           </CustomButton>
         </div>
@@ -1841,7 +1845,7 @@ const ProjectWorkflowPart3: React.FC = () => {
                             const inputValue = e.target.value.replace(
                               /[^0-9.]/g,
                               ""
-                            ); // Permite solo números y punto decfdsfsimal
+                            ); // Permite solo números y punto decfdsfsimalaa
                             const value = inputValue
                               ? parseFloat(inputValue)
                               : null;
@@ -2280,6 +2284,16 @@ const ProjectWorkflowPart3: React.FC = () => {
           top: 0;
           z-index: 2;
           background: white;
+        }
+        .no-hover {
+          transition: none !important;
+          cursor: default !important;
+          pointer-events: none !important; /* Desactiva clics y eventos */
+        }
+
+        .no-hover:hover {
+          box-shadow: none !important;
+          transform: none !important;
         }
       `}</style>
     </>

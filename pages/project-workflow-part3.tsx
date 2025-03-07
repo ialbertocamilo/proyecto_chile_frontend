@@ -793,7 +793,11 @@ const ProjectWorkflowPart3: React.FC = () => {
           >
             Proyecto:
           </span>
-          <CustomButton variant="save" style={{ padding: "0.8rem 3rem" }}>
+          <CustomButton
+            variant="save"
+            className="no-hover"
+            style={{ padding: "0.8rem 3rem" }}
+          >
             {`Edificación Nº ${projectId ?? "xxxxx"}`}
           </CustomButton>
         </div>
@@ -2280,6 +2284,16 @@ const ProjectWorkflowPart3: React.FC = () => {
           top: 0;
           z-index: 2;
           background: white;
+        }
+        .no-hover {
+          transition: none !important;
+          cursor: default !important;
+          pointer-events: none !important; /* Desactiva clics y eventos */
+        }
+
+        .no-hover:hover {
+          box-shadow: none !important;
+          transform: none !important;
         }
       `}</style>
     </>

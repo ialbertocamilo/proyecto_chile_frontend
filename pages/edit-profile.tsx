@@ -77,7 +77,7 @@ const EditProfile = () => {
           number_phone: parsedProfile.number_phone || "",
           country: parsedProfile.country || "",
           ubigeo: parsedProfile.ubigeo || "",
-          userType: mapRoleIdToText(roleId), // Asegurar que userType se mantenga
+          userType: mapRoleIdToText(roleId), // Asegurar que userType se mantengaaaa
         });
         console.log("[EditProfile] Perfil cargado desde localStorage:", parsedProfile);
       } catch (err) {

@@ -859,74 +859,82 @@ const ProjectWorkflowPart1: React.FC = () => {
                         {globalError}
                       </div>
                     )}
-                    {/* En modo vista, el botón "Siguiente" redirige a project-workflow-part1 con step=2 */}
+                    {/* Botones para el paso 1 */}
                     {isViewOnly ? (
-                      <div className="d-flex justify-content-between align-items-center mt-4">
+                      // En modo vista, si estamos en el step 1 no mostramos el botón "Atrás"
+                      step === 1 ? (
+                        <div className="d-flex justify-content-end align-items-center mt-4">
+                          <CustomButton
+                            variant="forwardIcon"
+                            onClick={() =>
+                              router.push(
+                                "/project-workflow-part1?mode=view&step=2",
+                                undefined,
+                                { shallow: false }
+                              )
+                            }
+                            style={{ height: "50px" }}
+                          >
+                            Siguiente
+                          </CustomButton>
+                        </div>
+                      ) : (
+                        <div className="d-flex justify-content-between align-items-center mt-4">
+                          <CustomButton
+                            variant="backIcon"
+                            onClick={handleBackToOwnerDetails}
+                            style={{ height: "50px" }}
+                          >
+                            Atrás
+                          </CustomButton>
+                          <CustomButton
+                            variant="forwardIcon"
+                            onClick={() =>
+                              router.push(
+                                "/project-workflow-part1?mode=view&step=2",
+                                undefined,
+                                { shallow: false }
+                              )
+                            }
+                            style={{ height: "50px" }}
+                          >
+                            Siguiente
+                          </CustomButton>
+                        </div>
+                      )
+                    ) : router.query.id ? (
+                      <div style={{ display: "flex", gap: "10px" }}>
                         <CustomButton
-                          variant="backIcon"
-                          onClick={handleBackToOwnerDetails}
+                          variant="save"
+                          onClick={handleStep1Action}
                           style={{ height: "50px" }}
                         >
-                          Atrás
+                          <span
+                            className="material-icons"
+                            style={{ marginRight: "5px" }}
+                          >
+                            save_as
+                          </span>
+                          Actualizar Datos
                         </CustomButton>
                         <CustomButton
                           variant="forwardIcon"
-                          onClick={() =>
-                            router.push(
-                              "/project-workflow-part1?mode=view&step=2",
-                              undefined,
-                              { shallow: false }
-                            )
-                          }
-                          style={{ height: "50px" }}
+                          onClick={goToStep2}
+                          style={{ marginLeft: "10px", height: "50px" }}
                         >
                           Siguiente
                         </CustomButton>
                       </div>
                     ) : (
-                      <div className="d-flex justify-content-between align-items-center mt-4">
-                        <div>
-                          {submitted && Object.keys(errors).length > 0 && (
-                            <small style={{ color: "red", textAlign: "left" }}>
-                              (*) Campos obligatorios
-                            </small>
-                          )}
-                        </div>
-                        {router.query.id ? (
-                          <div style={{ display: "flex", gap: "10px" }}>
-                            <CustomButton
-                              variant="save"
-                              onClick={handleStep1Action}
-                              style={{ height: "50px" }}
-                            >
-                              <span
-                                className="material-icons"
-                                style={{ marginRight: "5px" }}
-                              >
-                                save_as
-                              </span>
-                              Actualizar Datos
-                            </CustomButton>
-                            <CustomButton
-                              variant="forwardIcon"
-                              onClick={goToStep2}
-                              style={{ marginLeft: "10px", height: "50px" }}
-                            >
-                              Siguiente
-                            </CustomButton>
-                          </div>
-                        ) : (
-                          <div>
-                            <CustomButton
-                              variant="save"
-                              onClick={handleStep1Action}
-                              style={{ height: "50px" }}
-                              disabled={loading}
-                            >
-                              Continuar
-                            </CustomButton>
-                          </div>
-                        )}
+                      <div className="d-flex justify-content-end mt-4">
+                        <CustomButton
+                          variant="save"
+                          onClick={handleStep1Action}
+                          style={{ height: "50px" }}
+                          disabled={loading}
+                        >
+                          Continuar
+                        </CustomButton>
                       </div>
                     )}
                   </>

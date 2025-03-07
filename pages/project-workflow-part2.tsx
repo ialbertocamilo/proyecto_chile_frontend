@@ -13,7 +13,7 @@ import Card from "../src/components/common/Card";
 import { useRouter } from "next/router";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-<ToastContainer position="top-right" autoClose={2000} hideProgressBar />
+
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
   name: string;
@@ -85,12 +85,15 @@ const ProjectWorkflowPart2: React.FC = () => {
     setHasLoaded(true);
   }, []);
 
-  // Se ha removido la redirección que impedía el acceso cuando no hay project id o department.
-  // useEffect(() => {
-  //   if (hasLoaded && projectId === null) {
-  //     router.push("/project-workflow-part1");
-  //   }
-  // }, [hasLoaded, projectId, router]);
+  /** Función para redirigir a "Agregar detalles de propietario / proyecto y clasificación de edificaciones" usando el project_id del local storage **/
+  const handleOwnerDetailsRedirect = () => {
+    const storedProjectId = localStorage.getItem("project_id");
+    if (storedProjectId) {
+      router.push(`/project-workflow-part1?mode=view&id=${storedProjectId}&step=1`);
+    } else {
+      toast.error("No se encontró el ID del proyecto en el local storage.");
+    }
+  };
 
   /** Estado para el step actual **/
   const [step, setStep] = useState<number>(3);
@@ -305,7 +308,6 @@ const ProjectWorkflowPart2: React.FC = () => {
   };
 
   const handleCreateDoorElement = async (): Promise<boolean> => {
-    // Se elimina la validación que obligaba a seleccionar una ventana.
     if (
       doorData.name_element.trim() === "" ||
       doorData.u_puerta_opaca <= 0 ||
@@ -328,7 +330,6 @@ const ProjectWorkflowPart2: React.FC = () => {
           ventana_id: doorData.ventana_id,
           name_ventana: doorData.ventana_id ? doorData.name_ventana : "",
           u_puerta_opaca: doorData.u_puerta_opaca,
-          // Si no se ha seleccionado ventana, se fija automáticamente el % vidrio a 0
           porcentaje_vidrio: doorData.ventana_id ? doorData.porcentaje_vidrio : 0,
         },
         u_marco: doorData.u_marco,
@@ -355,7 +356,6 @@ const ProjectWorkflowPart2: React.FC = () => {
       return true;
     } catch (error) {
       console.error("Error al crear puerta:", error);
-      // Se muestra mensaje específico en caso de nombre repetido
       toast.warn("Ese nombre de puerta ya existe");
       return false;
     }
@@ -383,7 +383,12 @@ const ProjectWorkflowPart2: React.FC = () => {
   /** Funciones de navegación entre steps **/
   const handleBackStep = () => {
     if (step === 3) {
-      router.push(`/project-workflow-part1${isViewMode ? "?mode=view" : ""}`);
+      // En modo vista, en el step 3 se redirige al step 2
+      if (isViewMode) {
+        router.push(`/project-workflow-part1?mode=view&step=2`);
+      } else {
+        router.push(`/project-workflow-part1`);
+      }
     } else if (step === 5) {
       setStep(3);
     } else if (step === 6) {
@@ -479,9 +484,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                         stepNumber={1}
                         iconName="assignment_ind"
                         title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
-                        onClickAction={() =>
-                          router.push("/project-workflow-part1?mode=view&step=1")
-                        }
+                        onClickAction={handleOwnerDetailsRedirect}
                       />
                       <SidebarItemComponent
                         stepNumber={2}
@@ -1055,7 +1058,6 @@ const ProjectWorkflowPart2: React.FC = () => {
                   max="100"
                   className="form-control"
                   placeholder="% Vidrio"
-                  // Si no se selecciona ventana, se muestra 0 y se deshabilita el campo
                   value={doorData.ventana_id ? doorData.porcentaje_vidrio : 0}
                   onChange={(e) => {
                     const value = validatePercentage(parseFloat(e.target.value));
@@ -1187,13 +1189,13 @@ const ProjectWorkflowPart2: React.FC = () => {
         }
         /* Ajustes para la tabla */
         .table {
-          border-collapse: collapse; /* Eliminar bordes internos */
+          border-collapse: collapse;
         }
         .table th,
         .table td {
           text-align: center;
           vertical-align: middle;
-          border: none !important; /* Forzar sin borde */
+          border: none !important;
         }
         .table thead th {
           background-color: #fff;
@@ -1202,7 +1204,6 @@ const ProjectWorkflowPart2: React.FC = () => {
           top: 0;
           z-index: 2;
         }
-        /* Alternar colores en las filas de la tabla */
         .table-striped tbody tr:nth-child(odd) {
           background-color: #fff;
           border: none !important;

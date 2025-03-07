@@ -358,7 +358,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     setLoading(false);
   };
 
-  // Acción del botón "Continuar" (Paso 1)
+  // Función para el botón "Continuar" (Paso 1)
   const handleStep1Action = async () => {
     if (isViewOnly) return;
     setSubmitted(true);
@@ -383,10 +383,45 @@ const ProjectWorkflowPart1: React.FC = () => {
       await enviarProyecto();
     }
     // En modo creación, enviarProyecto redirige automáticamente; en edición se pasa al siguiente step
-    setStep(2);
+    // En modo vista, redirigimos a project-workflow-part1 con step=2
+    if (isViewOnly) {
+      router.push("/project-workflow-part1?mode=view&step=2", undefined, {
+        shallow: false,
+      });
+    } else {
+      setStep(2);
+    }
   };
 
   const goToStep2 = () => setStep(2);
+
+  // Función para redirigir a "Agregar detalles de propietario / proyecto y clasificación de edificaciones" en modo vista
+  const handleOwnerDetailsRedirect = () => {
+    const projectId = router.query.id || localStorage.getItem("project_id");
+    if (projectId) {
+      router.push(
+        `/project-workflow-part1?mode=view&id=${projectId}&step=1`,
+        undefined,
+        { shallow: false }
+      );
+    } else {
+      toast.error("No se encontró el ID del proyecto.");
+    }
+  };
+
+  // Función para el botón "Atrás" en el paso 2 en modo vista
+  const handleBackToOwnerDetails = () => {
+    const projectId = router.query.id || localStorage.getItem("project_id");
+    if (projectId) {
+      router.push(
+        `/project-workflow-part1?mode=view&id=${projectId}&step=1`,
+        undefined,
+        { shallow: false }
+      );
+    } else {
+      toast.error("No se encontró el ID del proyecto");
+    }
+  };
 
   // Render del encabezado principal
   const renderMainHeader = () => {
@@ -459,7 +494,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                     iconName="assignment_ind"
                     title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
                     activeStep={step}
-                    onClickAction={() => setStep(1)}
+                    onClickAction={handleOwnerDetailsRedirect}
                   />
                   <SidebarItemComponent
                     stepNumber={2}
@@ -824,8 +859,31 @@ const ProjectWorkflowPart1: React.FC = () => {
                         {globalError}
                       </div>
                     )}
-                    {/* Mensaje consolidado si existen errores */}
-                    {!isViewOnly && (
+                    {/* En modo vista, el botón "Siguiente" redirige a project-workflow-part1 con step=2 */}
+                    {isViewOnly ? (
+                      <div className="d-flex justify-content-between align-items-center mt-4">
+                        <CustomButton
+                          variant="backIcon"
+                          onClick={handleBackToOwnerDetails}
+                          style={{ height: "50px" }}
+                        >
+                          Atrás
+                        </CustomButton>
+                        <CustomButton
+                          variant="forwardIcon"
+                          onClick={() =>
+                            router.push(
+                              "/project-workflow-part1?mode=view&step=2",
+                              undefined,
+                              { shallow: false }
+                            )
+                          }
+                          style={{ height: "50px" }}
+                        >
+                          Siguiente
+                        </CustomButton>
+                      </div>
+                    ) : (
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <div>
                           {submitted && Object.keys(errors).length > 0 && (
@@ -869,24 +927,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             </CustomButton>
                           </div>
                         )}
-                      </div>
-                    )}
-                    {isViewOnly && (
-                      <div className="d-flex justify-content-between align-items-center mt-4">
-                        <CustomButton
-                          variant="backIcon"
-                          onClick={() => router.back()}
-                          style={{ height: "50px" }}
-                        >
-                          Atrás
-                        </CustomButton>
-                        <CustomButton
-                          variant="forwardIcon"
-                          onClick={() => setStep(2)}
-                          style={{ height: "50px" }}
-                        >
-                          Siguiente
-                        </CustomButton>
                       </div>
                     )}
                   </>
@@ -976,7 +1016,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         <div className="d-flex">
                           <CustomButton
                             variant="backIcon"
-                            onClick={() => setStep(1)}
+                            onClick={handleBackToOwnerDetails}
                             style={{ height: "50px" }}
                           >
                             Atrás
@@ -1008,8 +1048,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                               onClick={() =>
                                 router.push(
                                   `/project-workflow-part2?project_id=${
-                                    router.query.id ||
-                                    localStorage.getItem("project_id")
+                                    router.query.id || localStorage.getItem("project_id")
                                   }&mode=view`
                                 )
                               }

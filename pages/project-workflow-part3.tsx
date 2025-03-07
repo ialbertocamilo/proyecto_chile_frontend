@@ -148,9 +148,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         style={{
           width: "100%",
           height: "100px",
-          border: `1px solid ${
-            currentStep === stepNumber ? primaryColor : inactiveColor
-          }`,
+          border: `1px solid ${currentStep === stepNumber ? primaryColor : inactiveColor
+            }`,
           borderRadius: "8px",
           marginBottom: "16px",
           display: "flex",
@@ -180,9 +179,14 @@ const handleOwnerDetailsRedirect = () => {
 };
 const ProjectWorkflowPart3: React.FC = () => {
   useAuth();
+  const [isViewMode, setIsViewMode] = useState(false);
   const router = useRouter();
-  const mode = router.query.mode as string;
-  const isViewMode = mode === "view";
+  useEffect(() => {
+    if (router.isReady) {
+      const mode = router.query.mode as string;
+      setIsViewMode(mode === "view");
+    }
+  }, [router.isReady, router.query.mode]);
 
   const [projectId, setProjectId] = useState<number | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -216,7 +220,12 @@ const ProjectWorkflowPart3: React.FC = () => {
       }
     }
   }, [router.query.step]);
-
+  useEffect(() => {
+    if (router.isReady) {
+      const mode = router.query.mode as string;
+      setIsViewMode(mode === "view");
+    }
+  }, [router.isReady, router.query.mode]);
   const sidebarWidth = "300px";
 
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
@@ -701,15 +710,15 @@ const ProjectWorkflowPart3: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingColors.interior },
-                    exterior: { name: editingColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingColors.interior },
+                  exterior: { name: editingColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -770,15 +779,15 @@ const ProjectWorkflowPart3: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingTechColors.interior },
-                    exterior: { name: editingTechColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingTechColors.interior },
+                  exterior: { name: editingTechColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -1616,32 +1625,30 @@ const ProjectWorkflowPart3: React.FC = () => {
           )}
         </div>
         {/* Botón "Regresar" para volver a la tabla inicial */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            marginTop: "10px",
-          }}
-        >
-          <CustomButton
-            variant="save"
-            onClick={() => setShowTabsInStep4(false)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "12px 67px",
-              borderRadius: "8px",
-              height: "40px",
-              marginTop: "30px",
-            }}
-          >
-            <span className="material-icons" style={{ fontSize: "24px" }}>
-              arrow_back
-            </span>{" "}
-            {/* Regresar */}
-          </CustomButton>
-        </div>
+        {isViewMode && (
+          <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "10px" }}>
+            <CustomButton
+              variant="save"
+              onClick={() => setShowTabsInStep4(false)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "12px 67px",
+                borderRadius: "8px",
+                height: "40px",
+                marginTop: "30px",
+              }}
+            >
+              <span className="material-icons" style={{ fontSize: "24px" }}>
+                arrow_back
+              </span>
+            </CustomButton>
+          </div>
+        )}
+
+
+
         {/* Botones de navegación: se muestran tanto en modo vista como en ediciónsss */}
         <div
           style={{
@@ -2128,7 +2135,7 @@ const ProjectWorkflowPart3: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} />
+      <Navbar setActiveView={() => { }} />
       <TopBar sidebarWidth={sidebarWidth} />
       <div
         className="container custom-container"

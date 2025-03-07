@@ -58,7 +58,7 @@ interface SidebarItemComponentProps {
   onClickAction?: () => void;
 }
 
-// Helper para validar porcentajes
+// Helper para validar porcentajesfdfdsf
 const validatePercentage = (value: number) => {
   if (isNaN(value)) return 0;
   if (value < 0) return 0;

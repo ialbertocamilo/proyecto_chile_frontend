@@ -73,9 +73,9 @@ const ProjectWorkflowPart2: React.FC = () => {
   const isViewMode = mode === "view";
 
   /** Estados de cabecera del proyecto **/
-  const [projectId, setProjectId] = useState<number | null>(null);
+  const [, setProjectId] = useState<number | null>(null);
   const [, setProjectDepartment] = useState<string | null>(null);
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const [, setHasLoaded] = useState(false);
 
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id");

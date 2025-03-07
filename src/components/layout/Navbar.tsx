@@ -162,15 +162,17 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
                 </Link>
               </li>
             )}
-            {/* La opción "Ingreso de Datos de entrada" se muestra siempre */}
-            <li className="nav-item">
-              <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
-                <span style={iconStyle("/project-workflow-part2")} className="material-icons">
-                  input
-                </span>
-                Ingreso de Datos de entrada
-              </Link>
-            </li>
+            {/* Mostrar "Ingreso de Datos de entrada" solo cuando roleId no es "1" */}
+            {roleId !== "1" && (
+              <li className="nav-item">
+                <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
+                  <span style={iconStyle("/project-workflow-part2")} className="material-icons">
+                    input
+                  </span>
+                  Ingreso de Datos de entrada
+                </Link>
+              </li>
+            )}
           </ul>
 
           <ul className="nav flex-column" style={{ marginTop: "auto" }}>

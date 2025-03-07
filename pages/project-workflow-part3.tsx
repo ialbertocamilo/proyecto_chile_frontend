@@ -14,6 +14,7 @@ import GooIcons from "../public/GoogleIcons";
 import { Tooltip } from "react-tooltip";
 import Modal from "../src/components/common/Modal";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Detail {
   id_detail: number;
@@ -365,7 +366,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setVentanasTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de ventanas:", error);
-      Swal.fire("Error", "Error al obtener datos de ventanas. Ver consola.");
+      toast.error("Error al obtener datos de ventanas. Ver consola.");
     }
   }, []);
 
@@ -382,7 +383,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setPuertasTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de puertas:", error);
-      Swal.fire("Error", "Error al obtener datos de puertas. Ver consola.");
+      toast.error("Error al obtener datos de puertas. Ver consola.");
     }
   }, []);
 
@@ -431,7 +432,9 @@ const ProjectWorkflowPart3: React.FC = () => {
       !newDetailForm.name_detail ||
       !newDetailForm.material_id
     ) {
-      toast.warning("Por favor complete todos los campos de detalle");
+      toast.warning("Por favor complete todos los campos de detalle", {
+        toastId: "material-warning",
+      });
       return;
     }
 
@@ -460,7 +463,9 @@ const ProjectWorkflowPart3: React.FC = () => {
         return;
       }
 
-      toast.success(response.data.success || "Detalle creado exitosamente");
+      toast.success(response.data.success || "Detalle creado exitosamente", {
+        toastId: "material-sucess",
+      });
 
       // Agregar el nuevo detalle a la lista de detalles seleccionados del proyecto
       if (!projectId) return;
@@ -488,9 +493,13 @@ const ProjectWorkflowPart3: React.FC = () => {
           "Error en la creación del detalle:",
           error.response?.data
         );
-        toast.error(error.response?.data?.detail || error.message);
+        toast.error(error.response?.data?.detail || error.message, {
+          toastId: "material-warning",
+        });
       } else {
-        toast.error("Error desconocido al crear el detalle");
+        toast.error("Error desconocido al crear el detalle", {
+          toastId: "material-warning",
+        });
       }
     }
   };
@@ -629,7 +638,9 @@ const ProjectWorkflowPart3: React.FC = () => {
       setMaterials(materialsList);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
-      Swal.fire("Error", "Error al obtener materiales. Ver consola.");
+      toast.error("Error al obtener materiales.", {
+        toastId: "material-warning ",
+      });
     }
   };
 
@@ -675,7 +686,9 @@ const ProjectWorkflowPart3: React.FC = () => {
       };
       const response = await axios.put(url, payload, { headers });
       console.log("Respuesta API: ", response);
-      toast.success("Detalle tipo Muro actualizado con éxito");
+      toast.success("Detalle tipo Muro actualizado con éxito", {
+        toastId: "material-sucess",
+      });
 
       setMurosTabList((prev) =>
         prev.map((item) =>
@@ -742,7 +755,9 @@ const ProjectWorkflowPart3: React.FC = () => {
 
       const response = await axios.put(url, payload, { headers });
       console.log("Respuesta API: ", response);
-      toast.success("Detalle tipo Techo actualizado con éxito");
+      toast.success("Detalle tipo Techo actualizado con éxito", {
+        toastId: "material-success",
+      });
 
       setTechumbreTabList((prev) =>
         prev.map((item) =>

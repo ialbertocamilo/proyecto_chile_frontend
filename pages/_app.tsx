@@ -8,15 +8,14 @@ function MyApp({ Component, pageProps }: AppProps) {
     <>
       <Component {...pageProps} />
       <ToastContainer
+        limit={1} // Muestra solo una notificación a la vez
         position="top-right"
-        autoClose={5000}
+        autoClose={2000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
         rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
+        draggable={false} // Desactiva el arrastre
       />
     </>
   );

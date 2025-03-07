@@ -13,7 +13,7 @@ import Card from "../src/components/common/Card";
 import { useRouter } from "next/router";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+<ToastContainer position="top-right" autoClose={2000} hideProgressBar />
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
   name: string;
@@ -85,11 +85,12 @@ const ProjectWorkflowPart2: React.FC = () => {
     setHasLoaded(true);
   }, []);
 
-  useEffect(() => {
-    if (hasLoaded && projectId === null) {
-      router.push("/project-workflow-part1");
-    }
-  }, [hasLoaded, projectId, router]);
+  // Se ha removido la redirección que impedía el acceso cuando no hay project id o department.
+  // useEffect(() => {
+  //   if (hasLoaded && projectId === null) {
+  //     router.push("/project-workflow-part1");
+  //   }
+  // }, [hasLoaded, projectId, router]);
 
   /** Estado para el step actual **/
   const [step, setStep] = useState<number>(3);
@@ -304,6 +305,7 @@ const ProjectWorkflowPart2: React.FC = () => {
   };
 
   const handleCreateDoorElement = async (): Promise<boolean> => {
+    // Se elimina la validación que obligaba a seleccionar una ventana.
     if (
       doorData.name_element.trim() === "" ||
       doorData.u_puerta_opaca <= 0 ||
@@ -311,8 +313,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       doorData.porcentaje_vidrio > 100 ||
       doorData.u_marco <= 0 ||
       doorData.fm < 0 ||
-      doorData.fm > 100 ||
-      doorData.ventana_id === 0
+      doorData.fm > 100
     ) {
       toast.error("Por favor, complete todos los campos correctamente para crear la puerta");
       return false;
@@ -325,9 +326,10 @@ const ProjectWorkflowPart2: React.FC = () => {
         type: "door",
         atributs: {
           ventana_id: doorData.ventana_id,
-          name_ventana: doorData.name_ventana,
+          name_ventana: doorData.ventana_id ? doorData.name_ventana : "",
           u_puerta_opaca: doorData.u_puerta_opaca,
-          porcentaje_vidrio: doorData.porcentaje_vidrio,
+          // Si no se ha seleccionado ventana, se fija automáticamente el % vidrio a 0
+          porcentaje_vidrio: doorData.ventana_id ? doorData.porcentaje_vidrio : 0,
         },
         u_marco: doorData.u_marco,
         fm: doorData.fm,
@@ -353,7 +355,8 @@ const ProjectWorkflowPart2: React.FC = () => {
       return true;
     } catch (error) {
       console.error("Error al crear puerta:", error);
-      toast.warn("Error al crear puerta");
+      // Se muestra mensaje específico en caso de nombre repetido
+      toast.warn("Ese nombre de puerta ya existe");
       return false;
     }
   };
@@ -1052,12 +1055,13 @@ const ProjectWorkflowPart2: React.FC = () => {
                   max="100"
                   className="form-control"
                   placeholder="% Vidrio"
-                  value={doorData.porcentaje_vidrio}
+                  // Si no se selecciona ventana, se muestra 0 y se deshabilita el campo
+                  value={doorData.ventana_id ? doorData.porcentaje_vidrio : 0}
                   onChange={(e) => {
                     const value = validatePercentage(parseFloat(e.target.value));
                     setDoorData((prev) => ({ ...prev, porcentaje_vidrio: value }));
                   }}
-                  disabled={isViewMode}
+                  disabled={doorData.ventana_id ? false : true}
                 />
               </div>
               <div className="form-group mb-3">

@@ -100,13 +100,13 @@ const ProjectListStatusEditPage = () => {
 
 
   // Función para redirigir al modo vista del workflow del proyecto y guardar en el local storage
-  const handleViewProject = (project: Project) => {
+  const handleViewProject = (project_view: Project) => {
     // Guardamos el project id y el departamento en el local storage
-    localStorage.setItem("project_id", project.id.toString());
-    localStorage.setItem("project_department", project.divisions?.department || "N/A");
+    localStorage.setItem("project_id_view", project_view.id.toString());
+    localStorage.setItem("project_department_view", project_view.divisions?.department || "N/A");
 
     // Redirige a la página de workflow en modo "view" con el id del proyecto
-    router.push(`/project-workflow-part1?mode=view&id=${project.id}`);
+    router.push(`/workflow-part1-view?id=${project_view.id}`);
   };
 
   return (

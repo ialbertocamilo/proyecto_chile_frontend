@@ -368,26 +368,6 @@ const ProjectWorkflowPart2: React.FC = () => {
     }
   }, [step, modalElementType, fetchAllWindowsForDoor]);
 
-  /** Funciones de navegación entre steps **/
-  const handleBackStep = () => {
-    if (step === 3) {
-      router.push(`/project-workflow-part1`);
-    } else if (step === 5) {
-      setStep(3);
-    } else if (step === 6) {
-      setStep(5);
-    }
-  };
-
-  const handleNextStep = () => {
-    if (step === 3) {
-      setStep(5);
-    } else if (step === 5) {
-      setStep(6);
-    } else if (step === 6) {
-      router.push(`/project-workflow-part3`);
-    }
-  };
 
   /** Componente SidebarItem **/
   const SidebarItemComponent = ({

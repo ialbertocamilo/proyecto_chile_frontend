@@ -131,12 +131,12 @@ const ProjectListPage = () => {
     setFilteredProjects(filtered);
   };
 
-  const handleGoToWorkflow = (project: Project): void => {
-    console.log("[handleGoToWorkflow] Navegando al workflow para el proyecto:", project.id);
-    localStorage.setItem("project_id", String(project.id));
-    localStorage.setItem("project_department", project.divisions?.department || "");
+  const handleGoToWorkflow = (project_edit: Project): void => {
+    console.log("[handleGoToWorkflow] Navegando al workflow para el proyecto:", project_edit.id);
+    localStorage.setItem("project_id_edit", String(project_edit.id));
+    localStorage.setItem("project_department_edit", project_edit.divisions?.department || "");
     // Se añade el query parameter 'mode=edit' para que la página se cargue en modo edición
-    router.push(`/project-workflow-part1?id=${project.id}&mode=edit`);
+    router.push(`/workflow-part1-edit?id=${project_edit.id}`);
   };
   
   
@@ -236,7 +236,7 @@ const ProjectListPage = () => {
               />
               <CustomButton
                 variant="save"
-                onClick={() => router.push("/project-workflow-part1")}
+                onClick={() => router.push("/workflow-part1-create")}
                 className="new-project-btn"
                 style={{
                   position: "absolute",

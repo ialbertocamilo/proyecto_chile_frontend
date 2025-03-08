@@ -181,7 +181,7 @@ const ProjectListPage = () => {
       <Navbar setActiveView={() => {}} />
       <TopBar sidebarWidth="80px" />
 
-      {/* Contenedor principal */}
+      {/* Contenedor principfdsfdsfal */}
       <div
         className="container custom-container"
         style={{

@@ -17,7 +17,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
 
-// Cargamos el mapa sin SSR
+// Cargamos el mapa sin SSR aa
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
   ssr: false,
 });

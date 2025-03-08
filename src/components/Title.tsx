@@ -10,7 +10,7 @@ const Title: React.FC<TitleProps> = ({ text }) => {
       <h1 className="title">{text}</h1>
       <style jsx>{`
         .title {
-          font-size: 1.8rem;
+          font-size:1.8rem;
           font-weight: bold;
           color: #333;
           margin-bottom: 1rem;

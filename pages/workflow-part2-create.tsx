@@ -304,7 +304,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   const fetchMurosDetails = useCallback(() => {
     fetchData<TabItem[]>(
-      `http://ceela-backend.svgdev.tech/project/${projectId}/details/Muro`,
+      `${constantUrlApiEndpoint}/project/${projectId}/details/Muro`,
       (data) => {
         if (data && data.length > 0) setMurosTabList(data);
       }
@@ -313,14 +313,14 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   const fetchTechumbreDetails = useCallback(() => {
     fetchData<TabItem[]>(
-      `http://ceela-backend.svgdev.tech/project/${projectId}/details/Techo`,
+      `${constantUrlApiEndpoint}/project/${projectId}/details/Techo`,
       setTechumbreTabList
     );
   }, [projectId, fetchData]);
 
   const fetchPisosDetails = useCallback(() => {
     fetchData<TabItem[]>(
-      `http://ceela-backend.svgdev.tech/project/${projectId}/details/Piso`,
+      `${constantUrlApiEndpoint}/project/${projectId}/details/Piso`,
       setPisosTabList
     );
   }, [projectId, fetchData]);
@@ -329,7 +329,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     axios
-      .get(`http://ceela-backend.svgdev.tech/elements/?type=window`, {
+      .get(`${constantUrlApiEndpoint}/elements/?type=window`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => setVentanasTabList(response.data))
@@ -343,7 +343,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     axios
-      .get(`http://ceela-backend.svgdev.tech/elements/?type=door`, {
+      .get(`${constantUrlApiEndpoint}/elements/?type=door`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => setPuertasTabList(response.data))
@@ -526,7 +526,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     try {
-      const url = `http://ceela-backend.svgdev.tech/project/${projectId}/update_details/Muro/${detail.id}`;
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Muro/${detail.id}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -588,7 +588,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     try {
-      const url = `http://ceela-backend.svgdev.tech/project/${projectId}/update_details/Techo/${detail.id}`;
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Techo/${detail.id}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",

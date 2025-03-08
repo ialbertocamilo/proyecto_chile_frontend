@@ -216,7 +216,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return false;
-      const response = await axios.get("http://ceela-backend.svgdev.tech/user/projects/", {
+      const response = await axios.get(`${constantUrlApiEndpoint}/user/projects/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const projects: Project[] = response.data.projects || [];

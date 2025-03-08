@@ -481,10 +481,7 @@ const AdministrationPage: React.FC = () => {
         <Title text="Administración de Parámetros" />
       </div>
 
-      {/* 
-        Card con una clase adicional "bordered-main-card" para agregarle 
-        bordes y separación sin sobrescribir tus estilos nativos del Card 
-      */}
+      {/* Card con clase adicional */}
       <Card className="bordered-main-card">
         <div
           className="container"
@@ -524,8 +521,8 @@ const AdministrationPage: React.FC = () => {
                       </CustomButton>
                     </div>
 
-                    {/* Ancho de tabla aumentado de 800 a 900 */}
-                    <div style={{ maxWidth: "900px", margin: "0 auto", overflow: "hidden", padding: "10px" }}>
+                    {/* Quitar cualquier maxWidth para que la tabla use todo el espacio */}
+                    <div style={{ overflow: "hidden", padding: "10px" }}>
                       <div style={{ maxHeight: "400px", overflowY: "auto" }}>
                         <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
                           <thead>
@@ -560,8 +557,7 @@ const AdministrationPage: React.FC = () => {
                       </CustomButton>
                     </div>
 
-                    {/* Ancho de tabla aumentado de 800 a 900 */}
-                    <div style={{ maxWidth: "900px", margin: "0 auto", overflow: "hidden", padding: "10px" }}>
+                    <div style={{ overflow: "hidden", padding: "10px" }}>
                       <div style={{ maxHeight: "500px", overflowY: "auto" }}>
                         <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
                           <thead>
@@ -605,8 +601,7 @@ const AdministrationPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Ancho de tabla aumentado de 800 a 900 */}
-                    <div style={{ maxWidth: "900px", margin: "0 auto", overflow: "hidden" }}>
+                    <div style={{ overflow: "hidden", padding: "10px" }}>
                       <div
                         className="d-flex justify-content-between align-items-center mb-2"
                         style={{ padding: "10px" }}
@@ -1255,14 +1250,14 @@ const AdministrationPage: React.FC = () => {
         }
         /* Font más pequeño en las tablas */
         .smaller-font-table {
-          font-size: 0.85rem; 
+          font-size: 1rem; 
         }
         /* 
           Clase para bordes y separación extra en el card grande. 
           No sobreescribe estilos internos del Card, solo le añade margen y borde.
         */
         .bordered-main-card {
-          margin: 100rem; /* Ajusta según quieras separarlo de los bordes */
+          margin: 2rem; /* Ajusta según quieras separarlo de los bordes */
           border: 1px solid #ccc;
           border-radius: 8px;
         }

@@ -21,7 +21,7 @@ interface Detail {
   id_detail: number;
   scantilon_location: string;
   name_detail: string;
-  id_material: number;
+  material_id: number;
   material: string;
   layer_thickness: number;
 }
@@ -75,13 +75,7 @@ interface Constant {
   is_deleted: boolean;
 }
 
-type TabStep4 =
-  | "detalles"
-  | "muros"
-  | "techumbre"
-  | "pisos"
-  | "ventanas"
-  | "puertas";
+type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
 
 interface Ventana {
   name_element: string;
@@ -152,18 +146,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const currentStep = activeStep !== undefined ? activeStep : stepNumber;
 
   return (
-    <li
-      className="nav-item"
-      style={{ cursor: "pointer" }}
-      onClick={onClickAction}
-    >
+    <li className="nav-item" style={{ cursor: "pointer" }} onClick={onClickAction}>
       <div
         style={{
           width: "100%",
           height: "100px",
-          border: `1px solid ${
-            currentStep === stepNumber ? primaryColor : inactiveColor
-          }`,
+          border: `1px solid ${currentStep === stepNumber ? primaryColor : inactiveColor}`,
           borderRadius: "8px",
           marginBottom: "16px",
           display: "flex",
@@ -299,7 +287,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     [projectId]
   );
 
-  // Envolvemos fetchFetchedDetails en useCallback para estabilidad en la dependencia
+  // Función para obtener detalles
   const fetchFetchedDetails = useCallback(async () => {
     const token = getToken();
     if (!token) return;
@@ -364,6 +352,33 @@ const WorkFlowpar2createPage: React.FC = () => {
         toast.error("Error al obtener datos de puertas. Ver consola.");
       });
   }, []);
+
+  // Función para obtener materiales (Falta por lo que se reincorporó)
+  const fetchMaterials = async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/constants/?page=1&per_page=700`;
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(url, { headers });
+      const allConstants: Constant[] = response.data.constants || [];
+      const materialsList: Material[] = allConstants
+        .filter(
+          (c: Constant) =>
+            c.name === "materials" && c.type === "definition materials"
+        )
+        .map((c: Constant) => ({
+          id: c.id,
+          name: c.atributs.name,
+        }));
+      setMaterials(materialsList);
+    } catch (error: unknown) {
+      console.error("Error al obtener materiales:", error);
+      toast.error("Error al obtener materiales.", {
+        toastId: "material-warning",
+      });
+    }
+  };
 
   // Efectos para carga de datos según el step y pestaña seleccionada
   useEffect(() => {
@@ -443,10 +458,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          "Error en la creación del detalle:",
-          error.response?.data
-        );
+        console.error("Error en la creación del detalle:", error.response?.data);
         toast.error(error.response?.data?.detail || error.message, {
           toastId: "material-warning",
         });
@@ -471,10 +483,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
     const token = getToken();
     if (!token) return;
-    if (fetchedDetails.length === 0) {
-      console.error("No se encontraron detalles para enviar.");
-      return;
-    }
+    
     const detailIds = fetchedDetails.map((det) => det.id_detail);
     const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
     const headers = {
@@ -482,68 +491,16 @@ const WorkFlowpar2createPage: React.FC = () => {
       "Content-Type": "application/json",
     };
     try {
-      await axios.post(url, detailIds, { headers });
+      // Si existen detalles, se realiza el POST; si no, se muestra un warning y se continúa.
+      if (detailIds.length > 0) {
+        await axios.post(url, detailIds, { headers });
+      } else {
+        console.warn("No se encontraron detalles para enviar. Se mostrará la vista vacía.");
+      }
       setShowTabsInStep4(true);
       setTabStep4("muros");
     } catch (error) {
       console.error("Error al enviar la solicitud:", error);
-    }
-  };
-
-  // Guarda detalles en copia (se dispara automáticamente al cambiar fetchedDetails)
-  const handleSaveDetailsCopy = useCallback(async () => {
-    if (!projectId) {
-      console.error("No se proporcionó un ID de proyecto.");
-      return;
-    }
-    const token = getToken();
-    if (!token) return;
-    if (fetchedDetails.length === 0) {
-      console.error("No se encontraron detalles para enviar.");
-      return;
-    }
-    const detailIds = fetchedDetails.map((det) => det.id_detail);
-    const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-    try {
-      await axios.post(url, detailIds, { headers });
-    } catch (error) {
-      console.error("Error al enviar la solicitud:", error);
-    }
-  }, [projectId, fetchedDetails]);
-
-  useEffect(() => {
-    if (fetchedDetails.length > 0) {
-      handleSaveDetailsCopy();
-    }
-  }, [fetchedDetails, handleSaveDetailsCopy]);
-
-  const fetchMaterials = async () => {
-    const token = getToken();
-    if (!token) return;
-    try {
-      const url = `${constantUrlApiEndpoint}/constants/?page=1&per_page=700`;
-      const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(url, { headers });
-      const allConstants: Constant[] = response.data.constants || [];
-      const materialsList: Material[] = allConstants
-        .filter(
-          (c: Constant) =>
-            c.name === "materials" && c.type === "definition materials"
-        )
-        .map((c: Constant) => ({
-          id: c.id,
-          name: c.atributs.name,
-        }));
-      setMaterials(materialsList);
-    } catch (error: unknown) {
-      console.error("Error al obtener materiales:", error);
-      toast.error("Error al obtener materiales.", {
-        toastId: "material-warning",
-      });
     }
   };
 
@@ -727,16 +684,10 @@ const WorkFlowpar2createPage: React.FC = () => {
                   width: "100%",
                   padding: "10px",
                   backgroundColor: "#fff",
-                  color:
-                    tabStep4 === item.key
-                      ? primaryColor
-                      : "var(--secondary-color)",
+                  color: tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
-                  borderBottom:
-                    tabStep4 === item.key
-                      ? `3px solid ${primaryColor}`
-                      : "none",
+                  borderBottom: tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -747,7 +698,6 @@ const WorkFlowpar2createPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        {/* Contenedor con overflow horizontal para controlar la anchura */}
         <div style={{ height: "400px", overflowY: "auto", overflowX: "auto", position: "relative" }}>
           {tabStep4 === "muros" && (
             <div style={{ minWidth: "600px" }}>
@@ -986,7 +936,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                     <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
                     <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
                     <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/m²K]</th>
                     <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
                     <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
                   </tr>
@@ -1205,18 +1155,22 @@ const WorkFlowpar2createPage: React.FC = () => {
             />
           </div>
           <div style={{ height: "50px" }}>
-            <CustomButton
-              variant="save"
-              onClick={handleNewButtonClick}
-              style={{ height: "100%" }}
-            >
+            <CustomButton variant="save" onClick={handleNewButtonClick} style={{ height: "100%" }}>
               <span className="material-icons">add</span> Nuevo
             </CustomButton>
           </div>
         </div>
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll", overflowX: "auto" }}>
-            <table className="table table-bordered table-striped" style={{ width: "80%", minWidth: "600px", textAlign: "center", margin: "auto" }}>
+            <table
+              className="table table-bordered table-striped"
+              style={{
+                width: "80%",
+                minWidth: "600px",
+                textAlign: "center",
+                margin: "auto",
+              }}
+            >
               <thead>
                 <tr>
                   <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
@@ -1529,23 +1483,14 @@ const WorkFlowpar2createPage: React.FC = () => {
           fontFamily: "var(--font-family-base)",
         }}
       >
-        <h3 style={{ marginLeft: "0.1rem", width: "100%" }}>
-          {renderMainHeader()}
-        </h3>
-        <Card
-          style={{
-            height: "10vh",
-            padding: 0,
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
+        <h3 style={{ marginLeft: "0.1rem", width: "100%" }}>{renderMainHeader()}</h3>
+        <Card style={{ height: "10vh", padding: 0, display: "flex", justifyContent: "center" }}>
           <div className="d-flex align-items-center gap-4">
             <span
               style={{
                 fontWeight: "normal",
                 fontFamily: "var(--font-family-base)",
-                paddingLeft: "2rem"
+                paddingLeft: "2rem",
               }}
             >
               Proyecto:
@@ -1555,13 +1500,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             </CustomButton>
           </div>
         </Card>
-        <Card
-          style={{
-            marginTop: "clamp(0.5rem, 2vw, 1rem)",
-            marginLeft: "0.1rem",
-            width: "100%",
-          }}
-        >
+        <Card style={{ marginTop: "clamp(0.5rem, 2vw, 1rem)", marginLeft: "0.1rem", width: "100%" }}>
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div
@@ -1601,7 +1540,6 @@ const WorkFlowpar2createPage: React.FC = () => {
           </div>
         </Card>
       </div>
-      {/* Estilos globales adicionales para tablas */}
       <style jsx global>{`
         /* Estilos generales para las tablas */
         .table {

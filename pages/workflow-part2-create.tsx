@@ -171,7 +171,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   );
 };
 
-const ProjectWorkflowCreationEdit: React.FC = () => {
+const WorkFlowpar2createPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
@@ -1499,4 +1499,4 @@ const ProjectWorkflowCreationEdit: React.FC = () => {
   );
 };
 
-export default ProjectWorkflowCreationEdit;
+export default WorkFlowpar2createPage;

@@ -4,7 +4,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import CustomButton from "../src/components/common/CustomButton";
 import Link from "next/link";
 
 const Login = () => {
@@ -69,192 +68,112 @@ const Login = () => {
 
   return (
     <div
-      className="login-container"
+      className="container-fluid"
       style={{
-        height: "100vh",
-        background: "url('/assets/images/background.jpg') no-repeat center center/cover",
-        fontFamily: "var(--font-family-base)",
+        minHeight: "100vh",
+        background:
+          "url('/assets/images/background.jpg') no-repeat center center/cover",
       }}
     >
-      <div
-        className="card p-5 shadow-lg forgot-password-card"
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          borderRadius: "15px",
-          backgroundColor: "rgba(255, 255, 255, 0.9)",
-          textAlign: "left",
-        }}
-      >
-        <h5
-          className="fw-bold"
-          style={{
-            color: "var(--primary-color)",
-            textAlign: "left",
-            fontFamily: "var(--font-family-base)",
-          }}
-        >
-          Ingresa a tu cuenta
-        </h5>
-        <p
-          style={{
-            textAlign: "left",
-            color: "var(--muted-text)",
-            fontFamily: "var(--font-family-base)",
-            fontSize: "var(--font-size-base)",
-          }}
-        >
-          Ingresa tu Email y contraseña para acceder
-        </p>
-        {error && <p className="text-danger text-center fw-bold">{error}</p>}
+      <div className="row">
+        <div className="col-12 p-0">
+          <div className="login-card login-dark">
+            <div>
+              <div className="login-main">
+                <form className="theme-form" onSubmit={handleSubmit}>
+                  <h4 style={{ color: "var(--primary-color)" }}>
+                    Ingresa a tu cuenta
+                  </h4>
+                  <p>Ingresa tu email y contraseña para iniciar sesión</p>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label
-              className="form-label fw-semibold"
-              style={{
-                textAlign: "left",
-                display: "block",
-                fontFamily: "var(--font-family-base)",
-              }}
-            >
-              Dirección de Email
-            </label>
-            <input
-              type="email"
-              className="form-control"
-              placeholder="Example@gmail.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={{
-                border: "2px solid var(--muted-text)",
-                borderRadius: "0.5rem",
-                fontFamily: "var(--font-family-base)",
-                fontSize: "var(--font-size-base)",
-              }}
-            />
-          </div>
-          <div className="mb-3">
-            <label
-              className="form-label fw-semibold"
-              style={{
-                textAlign: "left",
-                display: "block",
-                fontFamily: "var(--font-family-base)",
-              }}
-            >
-              Contraseña
-            </label>
-            <div style={{ position: "relative" }}>
-              <input
-                type={showPassword ? "text" : "password"}
-                className="form-control"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                style={{
-                  border: "2px solid var(--muted-text)",
-                  borderRadius: "0.5rem",
-                  paddingRight: "4rem",
-                  fontFamily: "var(--font-family-base)",
-                  fontSize: "var(--font-size-base)",
-                }}
-              />
-              <span
-                style={{
-                  position: "absolute",
-                  right: "10px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  cursor: "pointer",
-                  color: "var(--primary-color)",
-                  fontSize: "0.9rem",
-                  fontWeight: "bold",
-                  fontFamily: "var(--font-family-base)",
-                }}
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? "Ocultar" : "Mostrar"}
-              </span>
+                  {error && (
+                    <p className="text-danger text-center fw-bold">{error}</p>
+                  )}
+
+                  <div className="form-group">
+                    <label className="col-form-label">Dirección de Email</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      placeholder="Test@gmail.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="col-form-label">Contraseña</label>
+                    <div className="form-input position-relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className="form-control"
+                        placeholder="********"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <div
+                        className="show-hide"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        <span className="show">
+                          {showPassword ? "Ocultar" : "Mostrar"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="form-group mb-0">
+                    <div className="checkbox p-0">
+                      <input
+                        id="remember"
+                        type="checkbox"
+                        checked={remember}
+                        onChange={(e) => setRemember(e.target.checked)}
+                      />
+                      <label className="text-muted" htmlFor="remember">
+                        Recuerdame
+                      </label>
+                    </div>
+                    <Link
+                      style={{ color: "var(--primary-color)" }}
+                      className="link"
+                      href="/forgot-password"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                    <div className="text-end mt-3">
+                      <button
+                        className="btn btn-block w-100"
+                        type="submit"
+                        disabled={loading}
+                        style={{
+                          backgroundColor: "var(--primary-color)",
+                          borderColor: "var(--primary-color)",
+                          color: "#fff",
+                        }}
+                      >
+                        {loading ? "Ingresando..." : "Iniciar sesión"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <p className="mt-4 mb-0 text-center">
+                    ¿No tienes cuenta?
+                    <Link
+                      style={{ color: "var(--primary-color)" }}
+                      className="ms-2"
+                      href="/register"
+                    >
+                      Crear cuenta
+                    </Link>
+                  </p>
+                </form>
+              </div>
             </div>
           </div>
-
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <div className="d-flex align-items-center">
-              <input
-                type="checkbox"
-                id="remember"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                style={{ marginRight: "0.5rem" }}
-              />
-              <label
-                htmlFor="remember"
-                style={{
-                  cursor: "pointer",
-                  color: "var(--muted-text)",
-                  fontFamily: "var(--font-family-base)",
-                }}
-              >
-                Recuerdame
-              </label>
-            </div>
-            <Link
-              href="/forgot-password"
-              className="text-decoration-none"
-              style={{
-                color: "var(--primary-color)",
-                fontFamily: "var(--font-family-base)",
-              }}
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
-
-          <CustomButton
-            type="submit"
-            variant="save"
-            disabled={loading}
-            style={{
-              borderRadius: "0.5rem",
-              fontFamily: "var(--font-family-base)",
-              fontSize: "var(--font-size-base)",
-              width: "100%",
-            }}
-          >
-            {loading ? "Ingresando..." : "Ingresar"}
-          </CustomButton>
-        </form>
-
-        <div className="text-center mt-4">
-          <p style={{ color: "var(--muted-text)" }} className="text-muted">
-            ¿Aún no tienes cuenta?{" "}
-            <Link
-              href="/register"
-              className="text-decoration-none"
-              style={{
-                color: "var(--primary-color)",
-                fontFamily: "var(--font-family-base)",
-              }}
-            >
-              Crear una cuenta
-            </Link>
-          </p>
         </div>
       </div>
-
-      <style jsx>{`
-        .login-container {
-          height: 100vh;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          background: url('/assets/images/background.jpg')
-            no-repeat center center/cover;
-          position: relative;
-        }
-      `}</style>
     </div>
   );
 };

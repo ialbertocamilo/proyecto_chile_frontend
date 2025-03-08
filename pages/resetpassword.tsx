@@ -43,12 +43,9 @@ const ResetPassword = () => {
     try {
       const response = await fetch(`${constantUrlApiEndpoint}/reset-password`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
       const result = await response.json();
 
       if (!response.ok) {
@@ -62,8 +59,8 @@ const ResetPassword = () => {
         showConfirmButton: false,
         timer: 2000,
         customClass: {
-          popup: "rounded-swal"
-        }
+          popup: "rounded-swal",
+        },
       });
       router.push("/login");
     } catch (err: unknown) {
@@ -72,91 +69,140 @@ const ResetPassword = () => {
     }
   };
 
+  // Estilos base
+  const baseFontSize = "0.875rem";
+
+  const inputContainerStyle = {
+    position: "relative" as const,
+    display: "flex",
+    alignItems: "center",
+  };
+
   const inputStyle = {
+    width: "100%",
     border: "2px solid var(--muted-text)",
     borderRadius: "0.5rem",
     padding: "0.5rem",
-    margin: 0,
     fontFamily: "var(--font-family-base)",
     fontSize: "var(--font-size-base)",
+    paddingRight: "70px", // espacio para el texto de Mostrar/Ocultar
   };
-
-  const spacingStyle = { marginBottom: "0.5rem" };
 
   const labelStyle = {
     marginBottom: "0.25rem",
-    fontWeight: "bold",
+    fontWeight: 400,
     color: "var(--text-color)",
     fontFamily: "var(--font-family-base)",
+    fontSize: baseFontSize,
   };
 
   const regresarButtonStyle = {
     border: "none",
     backgroundColor: "transparent",
     color: "var(--primary-color)",
-    fontSize: "var(--font-size-base)",
+    fontSize: baseFontSize,
     cursor: "pointer",
     textDecoration: "none" as const,
     fontFamily: "var(--font-family-base)",
+  };
+
+  // Estilo para el correo, dándole un toque más elegante
+  const emailStyle = {
+    fontFamily: "var(--font-family-base)",
+    fontSize: "1.2rem",
+    fontWeight: 500,
+    color: "var(--primary-color)",
+    textAlign: "center" as const,
+    display: "block",
+  };
+
+  // Estilo para el contenedor que encierra el correo
+  const emailBoxStyle = {
+    marginBottom: "1rem",
+    border: "1px solid var(--muted-text)",
+    borderRadius: "0.5rem",
+    padding: "0.5rem",
+  };
+
+  // Estilo para el texto "Mostrar/Ocultar"
+  const toggleTextStyle = {
+    position: "absolute" as const,
+    right: "10px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    cursor: "pointer",
+    fontFamily: "var(--font-family-base)",
+    fontSize: baseFontSize,
+    color: "var(--primary-color)",
+    userSelect: "none" as const,
   };
 
   return (
     <div
       className="reset-password-container d-flex justify-content-center align-items-center"
       style={{
-        height: "100vh",
+        minHeight: "100vh",
         background: "url('/assets/images/background.jpg') no-repeat center center/cover",
         fontFamily: "var(--font-family-base)",
       }}
     >
       <div
-        className="card p-4 shadow-lg"
+        className="card p-4 shadow"
         style={{
           width: "100%",
-          maxWidth: "420px",
+          maxWidth: "400px",
           borderRadius: "15px",
           backgroundColor: "#fff",
+          border: "1px solid #eee",
         }}
       >
+        {/* Título */}
         <h4
-          className="text-start fw-bold"
+          className="text-start"
           style={{
-            color: "var(--primary-color)",
-            marginBottom: "0.5rem",
             fontFamily: "var(--font-family-base)",
+            color: "var(--primary-color)",
+            fontWeight: 400,
+            fontSize: "1rem",
+            marginBottom: "0.25rem",
           }}
         >
           Restablecer contraseña
         </h4>
+
+        {/* Texto de instrucciones (alineado a la izquierda) */}
         <p
-          className="text-start"
           style={{
-            color: "var(--muted-text)",
-            marginBottom: "1rem",
             fontFamily: "var(--font-family-base)",
+            color: "var(--text-color)",
+            fontSize: baseFontSize,
+            marginBottom: "1rem",
+            textAlign: "left",
           }}
         >
-          Ingresa tu correo, el código de verificación y tu nueva contraseña
+          Ingresa tu código de verificación y tu nueva contraseña
         </p>
+
+        {/* Contenedor con ligera línea alrededor del correo (centrado) */}
+        <div style={emailBoxStyle}>
+          <span style={emailStyle}>{formData.email}</span>
+          <p
+            style={{
+              fontFamily: "var(--font-family-base)",
+              color: "var(--muted-text)",
+              fontSize: baseFontSize,
+              margin: 0,
+              textAlign: "center",
+            }}
+          >
+            Este es el correo asociado a tu cuenta.
+          </p>
+        </div>
+
         <form onSubmit={handleSubmit}>
-          <div style={spacingStyle}>
-            <label className="form-label fw-bold" style={labelStyle}>
-              Correo electrónico
-            </label>
-            <input
-              type="email"
-              className="form-control"
-              name="email"
-              placeholder="Example@gmail.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              readOnly
-              style={inputStyle}
-            />
-          </div>
-          <div style={spacingStyle}>
-            <label className="form-label fw-bold" style={labelStyle}>
+          {/* Código de verificación */}
+          <div className="mb-3">
+            <label className="form-label" style={labelStyle}>
               Código de verificación
             </label>
             <input
@@ -167,14 +213,19 @@ const ResetPassword = () => {
               value={formData.code}
               onChange={handleChange}
               required
-              style={inputStyle}
+              style={{
+                ...inputStyle,
+                paddingRight: "0.5rem", // no necesitamos mostrar toggle
+              }}
             />
           </div>
-          <div style={spacingStyle}>
-            <label className="form-label fw-bold" style={labelStyle}>
+
+          {/* Nueva contraseña */}
+          <div className="mb-3">
+            <label className="form-label" style={labelStyle}>
               Nueva contraseña
             </label>
-            <div className="input-group">
+            <div style={inputContainerStyle}>
               <input
                 type={showNewPassword ? "text" : "password"}
                 className="form-control"
@@ -185,21 +236,21 @@ const ResetPassword = () => {
                 required
                 style={inputStyle}
               />
-              <button
-                type="button"
-                className="btn"
-                style={{ border: "none", background: "transparent" }}
+              <span
+                style={toggleTextStyle}
                 onClick={() => setShowNewPassword(!showNewPassword)}
               >
                 {showNewPassword ? "Ocultar" : "Mostrar"}
-              </button>
+              </span>
             </div>
           </div>
-          <div style={spacingStyle}>
-            <label className="form-label fw-bold" style={labelStyle}>
-              Confirmar nueva contraseña
+
+          {/* Confirmar contraseña */}
+          <div className="mb-3">
+            <label className="form-label" style={labelStyle}>
+              Confirmar contraseña
             </label>
-            <div className="input-group">
+            <div style={inputContainerStyle}>
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 className="form-control"
@@ -210,22 +261,20 @@ const ResetPassword = () => {
                 required
                 style={inputStyle}
               />
-              <button
-                type="button"
-                className="btn"
-                style={{ border: "none", background: "transparent" }}
+              <span
+                style={toggleTextStyle}
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
                 {showConfirmPassword ? "Ocultar" : "Mostrar"}
-              </button>
+              </span>
             </div>
           </div>
+
           <button
             type="submit"
-            className="btn btn-primary w-100"
+            className="btn btn-primary w-100 submit-btn"
             style={{
               borderRadius: "0.5rem",
-              backgroundColor: "var(--primary-color)",
               border: "none",
               padding: "12px",
               fontSize: "var(--font-size-base)",
@@ -237,11 +286,16 @@ const ResetPassword = () => {
             Restablecer contraseña
           </button>
         </form>
+
         {error && (
-          <p className="text-danger text-center mt-3" style={{ fontFamily: "var(--font-family-base)" }}>
+          <p
+            className="text-danger text-center mt-3"
+            style={{ fontFamily: "var(--font-family-base)", fontSize: baseFontSize }}
+          >
             {error}
           </p>
         )}
+
         <div className="text-center mt-3">
           <Link href="/login" style={regresarButtonStyle}>
             ← Regresar
@@ -251,19 +305,17 @@ const ResetPassword = () => {
 
       <style jsx>{`
         .reset-password-container {
-          height: 100vh;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          background: url('/assets/images/background.jpg') no-repeat center center/cover;
           position: relative;
         }
         a:hover {
           color: var(--secondary-color);
         }
       `}</style>
-      {/* Estilos globales para SweetAlert2 */}
+      {/* Forzamos el color primario en el botón con !important */}
       <style jsx global>{`
+        .submit-btn {
+          background-color: var(--primary-color) !important;
+        }
         .swal2-popup.rounded-swal {
           border-radius: 1rem !important;
         }

@@ -14,6 +14,7 @@ import useAuth from "../src/hooks/useAuth";
 import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Title from "../src/components/Title";
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -132,17 +133,10 @@ const ProjectWorkflowPart1: React.FC = () => {
     // Render del encabezado principal
     const renderMainHeader = () => {
         return (
-            <h1
-                style={{
-                    fontSize: "30px",
-                    fontWeight: "normal",
-                    fontFamily: "var(--font-family-base)",
-                    margin: 0,
-                    textAlign: "left",
-                }}
+            <Title
+                text="Vista de Proyecto"
             >
-                Vista de Proyecto
-            </h1>
+            </Title>
         );
     };
 
@@ -161,16 +155,16 @@ const ProjectWorkflowPart1: React.FC = () => {
                 style={{
                     maxWidth: "1700px",
                     marginTop: "90px",
-                    marginLeft: "170px",
+                    marginLeft: "110px",
                     marginRight: "50px",
                     transition: "margin-left 0.1s ease",
                     fontFamily: "var(--font-family-base)",
                     fontWeight: "normal",
-                }}
+                  }}
             >
-                <Card>
-                    <div style={{ display: "flex", alignItems: "center" }}>{renderMainHeader()}</div>
-                </Card>
+               
+                    <div>{renderMainHeader()}</div>
+                
                 <Card marginTop="15px">
                     <div style={{ padding: "0" }}>
                         <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>

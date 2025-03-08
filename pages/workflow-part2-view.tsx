@@ -13,6 +13,7 @@ import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Title from "../src/components/Title"; 
 
 interface Detail {
   id_detail: number;
@@ -342,26 +343,9 @@ const WorkFlowpar2viewPage: React.FC = () => {
   // Render del encabezado principal
   const renderMainHeader = () =>
     step >= 4 && (
-      <div className="mb-3" style={{ padding: "20px" }}>
-        <h2
-          style={{
-            fontSize: "2em",
-            margin: "0 0 20px 0",
-            fontWeight: "normal",
-            fontFamily: "var(--font-family-base)",
-          }}
-        >
-          Vista de Desarrollo de proyecto
-        </h2>
-        <div className="d-flex align-items-center gap-4">
-          <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-            Proyecto:
-          </span>
-          <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
-            {`Edificación Nº ${projectId ?? "xxxxx"}`}
-          </CustomButton>
-        </div>
-      </div>
+        <Title text="Vista de Desarrollo de proyecto">
+        </Title>
+        
     );
 
   const SidebarItemComponent = ({
@@ -933,15 +917,26 @@ const WorkFlowpar2viewPage: React.FC = () => {
       <div
         className="container custom-container"
         style={{
-          maxWidth: "1780px",
-          marginTop: "120px",
-          marginLeft: "103px",
-          marginRight: "0px",
+          maxWidth: "1700px",
+          marginTop: "90px",
+          marginLeft: "110px",
+          marginRight: "50px",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
+          fontWeight: "normal",
         }}
       >
-        <Card style={{ marginLeft: "0.1rem", width: "100%" }}>{renderMainHeader()}</Card>
+        <div>{renderMainHeader()}</div>
+        <Card style={{height: "10vh"}}>
+        <div className="d-flex align-items-center gap-4">
+          <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
+            Proyecto: 
+          </span>
+          <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
+            {`Edificación Nº ${projectId ?? "xxxxx"}`}
+          </CustomButton>
+        </div>
+        </Card>
         <Card style={{ marginTop: "clamp(0.5rem, 2vw, 1rem)", marginLeft: "0.1rem", width: "100%" }}>
           <div className="row">
             {/* Sidebar con los elementos necesarios */}

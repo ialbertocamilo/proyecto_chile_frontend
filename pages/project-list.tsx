@@ -146,7 +146,7 @@ const ProjectListPage = () => {
       return;
     }
     try {
-      const url = `${constantUrlApiEndpoint}/projects/${projectId}/delete`;
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/delete`;
       await axios.delete<void>(url, {
         headers: {
           Authorization: `Bearer ${token}`,

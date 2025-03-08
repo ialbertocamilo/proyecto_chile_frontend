@@ -16,7 +16,7 @@ import SidebarItemComponent from "../src/components/common/SidebarItemComponent"
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Cargamos el mapa sin SSR
+// Cargamos el mapa sin SSR aa
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
   ssr: false,
 });

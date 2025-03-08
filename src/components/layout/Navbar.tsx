@@ -13,9 +13,7 @@ interface NavbarProps {
 
 const Navbar = ({}: NavbarProps) => {
   const router = useRouter();
-  const [logoUrl, setLogoUrl] = useState(
-    "/assets/images/proyecto-deuman-logo.png"
-  );
+  const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
   const [roleId, setRoleId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
@@ -121,11 +119,13 @@ const Navbar = ({}: NavbarProps) => {
     marginBottom: "1rem",
     color: "#fff",
     backgroundColor: "rgba(0, 0, 0, 0.2)",
+    paddingBottom: "2.6rem" 
   };
 
   const logoSize = 80;
 
-  // Estilo para el botón toggle en desktop
+  // Estilo para el botón toggle en desktop (commented out so you won't see the icon in desktop)
+  /*
   const toggleStyle: React.CSSProperties = isNavbarVisible
     ? {
         cursor: "pointer",
@@ -151,6 +151,7 @@ const Navbar = ({}: NavbarProps) => {
         padding: "8px",
         zIndex: 1300,
       };
+  */
 
   // Estilo para el toggle en móviles: contenedor circular con animación al presionar
   const mobileToggleContainerStyle: React.CSSProperties = {
@@ -220,21 +221,16 @@ const Navbar = ({}: NavbarProps) => {
             style={{ borderRadius: "50%" }}
           />
 
-          {/* Botón toggle dentro del sidebar en desktop */}
+          {/* Botón toggle dentro del sidebar en desktop - COMENTADO */}
+          {/*
           {!isMobile && (
-            <div
-              className="navbar-toggle"
-              onClick={toggleNavbar}
-              style={toggleStyle}
-            >
-              <span
-                className="material-icons"
-                style={{ color: "#fff", fontSize: "1.5rem" }}
-              >
+            <div className="navbar-toggle" onClick={toggleNavbar} style={toggleStyle}>
+              <span className="material-icons" style={{ color: "#fff", fontSize: "1.5rem" }}>
                 menu
               </span>
             </div>
           )}
+          */}
         </div>
 
         <div
@@ -254,10 +250,7 @@ const Navbar = ({}: NavbarProps) => {
                   className="nav-link text-white"
                   style={navLinkStyle}
                 >
-                  <span
-                    style={iconStyle("/project-list")}
-                    className="material-icons"
-                  >
+                  <span style={iconStyle("/project-list")} className="material-icons">
                     dns
                   </span>
                   Proyectos
@@ -305,10 +298,7 @@ const Navbar = ({}: NavbarProps) => {
                   className="nav-link text-white"
                   style={navLinkStyle}
                 >
-                  <span
-                    style={iconStyle("/data-entry")}
-                    className="material-icons"
-                  >
+                  <span style={iconStyle("/data-entry")} className="material-icons">
                     input
                   </span>
                   Ingreso de Datos de entrada
@@ -326,10 +316,7 @@ const Navbar = ({}: NavbarProps) => {
                     className="nav-link text-white"
                     style={navLinkStyle}
                   >
-                    <span
-                      style={iconStyle("/dashboard")}
-                      className="material-icons"
-                    >
+                    <span style={iconStyle("/dashboard")} className="material-icons">
                       dashboard
                     </span>
                     Dashboard
@@ -341,10 +328,7 @@ const Navbar = ({}: NavbarProps) => {
                     className="nav-link text-white"
                     style={navLinkStyle}
                   >
-                    <span
-                      style={iconStyle("/project-status")}
-                      className="material-icons"
-                    >
+                    <span style={iconStyle("/project-status")} className="material-icons">
                       format_list_bulleted
                     </span>
                     Proyectos registrados
@@ -356,10 +340,7 @@ const Navbar = ({}: NavbarProps) => {
                     className="nav-link text-white"
                     style={navLinkStyle}
                   >
-                    <span
-                      style={iconStyle("/user-management")}
-                      className="material-icons"
-                    >
+                    <span style={iconStyle("/user-management")} className="material-icons">
                       person
                     </span>
                     Usuarios
@@ -371,10 +352,7 @@ const Navbar = ({}: NavbarProps) => {
                     className="nav-link text-white"
                     style={navLinkStyle}
                   >
-                    <span
-                      style={iconStyle("/administration")}
-                      className="material-icons"
-                    >
+                    <span style={iconStyle("/administration")} className="material-icons">
                       build
                     </span>
                     Parámetros

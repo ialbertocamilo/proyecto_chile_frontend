@@ -185,7 +185,7 @@ const TopBar = ({}: TopBarProps) => {
               {/* Rol en un "badge" más grande */}
               <span
                 style={{
-                  fontSize: "14px",
+                  fontSize: "12px",
                   backgroundColor: "var(--primary-color)",
                   color: "white",
                   padding: "5px 10px",

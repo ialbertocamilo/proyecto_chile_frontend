@@ -258,7 +258,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       });
 
       setFormData(initialFormData);
-      router.push(`/project-workflow-part3?project_id=${project_id}`);
+      router.push(`/workflow-part2-create?project_id=${project_id}`);
     } catch (error: unknown) {
       console.error("Error al enviar el proyecto:", error);
       let errorMessage: string | object = "Error desconocido";

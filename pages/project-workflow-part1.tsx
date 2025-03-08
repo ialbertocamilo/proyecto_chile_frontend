@@ -115,8 +115,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const { data: projectData } = await axios.get(
-          `${constantUrlApiEndpoint}/projects/${projectIdStr}`,
+        const { data: projectData } = await axios.get(`${constantUrlApiEndpoint}/projects/${projectIdStr}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setFormData({
@@ -225,12 +224,11 @@ const ProjectWorkflowPart1: React.FC = () => {
   };
 
   // Función para verificar si ya existe un proyecto con el mismo nombre
-  // Se utiliza el endpoint proporcionado: http://ceela-backend.svgdev.tech/user/projects/
   const checkProjectNameExists = async (): Promise<boolean> => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return false;
-      const response = await axios.get("http://ceela-backend.svgdev.tech/user/projects/", {
+      const response = await axios.get(`${constantUrlApiEndpoint}/user/projects/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const projects: Project[] = response.data.projects || [];

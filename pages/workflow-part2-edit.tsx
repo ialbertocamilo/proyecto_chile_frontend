@@ -15,6 +15,7 @@ import { Tooltip } from "react-tooltip";
 import Modal from "../src/components/common/Modal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Title from "../src/components/Title";
 
 interface Detail {
   id_detail: number;
@@ -74,7 +75,13 @@ interface Constant {
   is_deleted: boolean;
 }
 
-type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
+type TabStep4 =
+  | "detalles"
+  | "muros"
+  | "techumbre"
+  | "pisos"
+  | "ventanas"
+  | "puertas";
 
 interface Ventana {
   name_element: string;
@@ -145,12 +152,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const currentStep = activeStep !== undefined ? activeStep : stepNumber;
 
   return (
-    <li className="nav-item" style={{ cursor: "pointer" }} onClick={onClickAction}>
+    <li
+      className="nav-item"
+      style={{ cursor: "pointer" }}
+      onClick={onClickAction}
+    >
       <div
         style={{
           width: "100%",
           height: "100px",
-          border: `1px solid ${currentStep === stepNumber ? primaryColor : inactiveColor}`,
+          border: `1px solid ${
+            currentStep === stepNumber ? primaryColor : inactiveColor
+          }`,
           borderRadius: "8px",
           marginBottom: "16px",
           display: "flex",
@@ -209,17 +222,21 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // Estados para edición en Muros y Techumbre
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
-  const [editingColors, setEditingColors] = useState<{ interior: string; exterior: string }>({
+  const [editingColors, setEditingColors] = useState<{
+    interior: string;
+    exterior: string;
+  }>({
     interior: "Intermedio",
     exterior: "Intermedio",
   });
   const [editingTechRowId, setEditingTechRowId] = useState<number | null>(null);
-  const [editingTechColors, setEditingTechColors] = useState<{ interior: string; exterior: string }>(
-    {
-      interior: "Intermedio",
-      exterior: "Intermedio",
-    }
-  );
+  const [editingTechColors, setEditingTechColors] = useState<{
+    interior: string;
+    exterior: string;
+  }>({
+    interior: "Intermedio",
+    exterior: "Intermedio",
+  });
 
   // Inicialización de projectId y primaryColor
   useEffect(() => {
@@ -299,7 +316,7 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   const fetchMurosDetails = useCallback(() => {
     fetchData<TabItem[]>(
-      `http://ceela-backend.svgdev.tech/project/${projectId}/details/Muro`,
+      `${constantUrlApiEndpoint}/project/${projectId}/details/Muro`,
       (data) => {
         if (data && data.length > 0) setMurosTabList(data);
       }
@@ -308,14 +325,14 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   const fetchTechumbreDetails = useCallback(() => {
     fetchData<TabItem[]>(
-      `http://ceela-backend.svgdev.tech/project/${projectId}/details/Techo`,
+      `${constantUrlApiEndpoint}/project/${projectId}/details/Techo`,
       setTechumbreTabList
     );
   }, [projectId, fetchData]);
 
   const fetchPisosDetails = useCallback(() => {
     fetchData<TabItem[]>(
-      `http://ceela-backend.svgdev.tech/project/${projectId}/details/Piso`,
+      `${constantUrlApiEndpoint}/project/${projectId}/details/Piso`,
       setPisosTabList
     );
   }, [projectId, fetchData]);
@@ -324,7 +341,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     axios
-      .get(`http://ceela-backend.svgdev.tech/elements/?type=window`, {
+      .get(`${constantUrlApiEndpoint}/elements/?type=window`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => setVentanasTabList(response.data))
@@ -338,7 +355,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     axios
-      .get(`http://ceela-backend.svgdev.tech/elements/?type=door`, {
+      .get(`${constantUrlApiEndpoint}/elements/?type=door`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => setPuertasTabList(response.data))
@@ -412,7 +429,10 @@ const WorkFlowpar2editPage: React.FC = () => {
       });
       if (!projectId) return;
       const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-      const detailIds = [...fetchedDetails.map((det) => det.id_detail), newDetailId];
+      const detailIds = [
+        ...fetchedDetails.map((det) => det.id_detail),
+        newDetailId,
+      ];
       await axios.post(selectUrl, detailIds, { headers });
       fetchFetchedDetails();
       setNewDetailForm({
@@ -423,7 +443,10 @@ const WorkFlowpar2editPage: React.FC = () => {
       });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error("Error en la creación del detalle:", error.response?.data);
+        console.error(
+          "Error en la creación del detalle:",
+          error.response?.data
+        );
         toast.error(error.response?.data?.detail || error.message, {
           toastId: "material-warning",
         });
@@ -454,7 +477,10 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
     const detailIds = fetchedDetails.map((det) => det.id_detail);
     const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
     try {
       await axios.post(url, detailIds, { headers });
       setShowTabsInStep4(true);
@@ -478,7 +504,10 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
     const detailIds = fetchedDetails.map((det) => det.id_detail);
     const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
     try {
       await axios.post(url, detailIds, { headers });
     } catch (error) {
@@ -501,7 +530,10 @@ const WorkFlowpar2editPage: React.FC = () => {
       const response = await axios.get(url, { headers });
       const allConstants: Constant[] = response.data.constants || [];
       const materialsList: Material[] = allConstants
-        .filter((c: Constant) => c.name === "materials" && c.type === "definition materials")
+        .filter(
+          (c: Constant) =>
+            c.name === "materials" && c.type === "definition materials"
+        )
         .map((c: Constant) => ({
           id: c.id,
           name: c.atributs.name,
@@ -509,7 +541,9 @@ const WorkFlowpar2editPage: React.FC = () => {
       setMaterials(materialsList);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
-      toast.error("Error al obtener materiales.", { toastId: "material-warning" });
+      toast.error("Error al obtener materiales.", {
+        toastId: "material-warning",
+      });
     }
   };
 
@@ -535,8 +569,11 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     try {
-      const url = `http://ceela-backend.svgdev.tech/project/${projectId}/update_details/Muro/${detail.id}`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Muro/${detail.id}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
       const payload = {
         info: {
           surface_color: {
@@ -546,7 +583,9 @@ const WorkFlowpar2editPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      toast.success("Detalle tipo Muro actualizado con éxito", { toastId: "material-sucess" });
+      toast.success("Detalle tipo Muro actualizado con éxito", {
+        toastId: "material-sucess",
+      });
       setMurosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -592,8 +631,11 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     try {
-      const url = `http://ceela-backend.svgdev.tech/project/${projectId}/update_details/Techo/${detail.id}`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Techo/${detail.id}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
       const payload = {
         info: {
           surface_color: {
@@ -603,7 +645,9 @@ const WorkFlowpar2editPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      toast.success("Detalle tipo Techo actualizado con éxito", { toastId: "material-success" });
+      toast.success("Detalle tipo Techo actualizado con éxito", {
+        toastId: "material-success",
+      });
       setTechumbreTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -629,26 +673,8 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // Renderizado de encabezado principal
   const renderMainHeader = () => (
-    <div className="mb-3" style={{ padding: "20px" }}>
-      <h2
-        style={{
-          fontSize: "2em",
-          margin: "0 0 20px 0",
-          fontWeight: "normal",
-          fontFamily: "var(--font-family-base)",
-        }}
-      >
-        Edicion de Desarrollo de proyecto
-      </h2>
-      <div className="d-flex align-items-center gap-4">
-        <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-          Proyecto:
-        </span>
-        <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
-          {`Edificación Nº ${projectId ?? "xxxxx"}`}
-        </CustomButton>
-      </div>
-    </div>
+      <Title text="Edicion de Desarrollo de proyecto"></Title>
+    
   );
 
   // Componente SidebarItem reutilizable
@@ -704,10 +730,16 @@ const WorkFlowpar2editPage: React.FC = () => {
                   width: "100%",
                   padding: "10px",
                   backgroundColor: "#fff",
-                  color: tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
+                  color:
+                    tabStep4 === item.key
+                      ? primaryColor
+                      : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
-                  borderBottom: tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
+                  borderBottom:
+                    tabStep4 === item.key
+                      ? `3px solid ${primaryColor}`
+                      : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -718,17 +750,32 @@ const WorkFlowpar2editPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
+        <div
+          style={{ height: "400px", overflowY: "auto", position: "relative" }}
+        >
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>
-              <table className="table table-bordered table-striped" style={{ width: "100%", minWidth: "600px" }}>
+              <table
+                className="table table-bordered table-striped"
+                style={{ width: "100%", minWidth: "600px" }}
+              >
                 <thead>
                   <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Valor U (W/m²K)</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Exterior</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Interior</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Acciones</th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Nombre Abreviado
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Valor U (W/m²K)
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Color Exterior
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Color Interior
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -753,7 +800,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                               <option value="Intermedio">Intermedio</option>
                             </select>
                           ) : (
-                            item.info?.surface_color?.exterior?.name || "Desconocido"
+                            item.info?.surface_color?.exterior?.name ||
+                            "Desconocido"
                           )}
                         </td>
                         <td>
@@ -772,7 +820,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                               <option value="Intermedio">Intermedio</option>
                             </select>
                           ) : (
-                            item.info?.surface_color?.interior?.name || "Desconocido"
+                            item.info?.surface_color?.interior?.name ||
+                            "Desconocido"
                           )}
                         </td>
                         <td>
@@ -783,7 +832,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                                 onClick={() => handleConfirmEdit(item)}
                                 style={{
                                   fontSize: "clamp(0.5rem, 1vw, 0.8rem)",
-                                  padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
+                                  padding:
+                                    "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
                                 }}
                               >
                                 <span className="material-icons">check</span>
@@ -793,7 +843,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                                 onClick={() => handleCancelEdit(item)}
                                 style={{
                                   fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                  padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
+                                  padding:
+                                    "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
                                   marginLeft: "clamp(5px, 1vw, 10px)",
                                 }}
                               >
@@ -806,7 +857,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                               onClick={() => handleEditClick(item)}
                               style={{
                                 fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
+                                padding:
+                                  "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
                               }}
                             >
                               Editar
@@ -826,14 +878,27 @@ const WorkFlowpar2editPage: React.FC = () => {
           )}
           {tabStep4 === "techumbre" && (
             <div style={{ overflowX: "auto" }}>
-              <table className="table table-bordered table-striped" style={{ width: "100%", minWidth: "600px" }}>
+              <table
+                className="table table-bordered table-striped"
+                style={{ width: "100%", minWidth: "600px" }}
+              >
                 <thead>
                   <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Valor U (W/m²K)</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Exterior</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Interior</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Acciones</th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Nombre Abreviado
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Valor U (W/m²K)
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Color Exterior
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Color Interior
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -858,7 +923,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                               <option value="Intermedio">Intermedio</option>
                             </select>
                           ) : (
-                            item.info?.surface_color?.exterior?.name || "Desconocido"
+                            item.info?.surface_color?.exterior?.name ||
+                            "Desconocido"
                           )}
                         </td>
                         <td>
@@ -877,7 +943,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                               <option value="Intermedio">Intermedio</option>
                             </select>
                           ) : (
-                            item.info?.surface_color?.interior?.name || "Desconocido"
+                            item.info?.surface_color?.interior?.name ||
+                            "Desconocido"
                           )}
                         </td>
                         <td>
@@ -888,7 +955,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                                 onClick={() => handleConfirmTechEdit(item)}
                                 style={{
                                   fontSize: "clamp(0.5rem, 1vw, 0.8rem)",
-                                  padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
+                                  padding:
+                                    "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
                                 }}
                               >
                                 <span className="material-icons">check</span>
@@ -898,7 +966,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                                 onClick={() => handleCancelTechEdit(item)}
                                 style={{
                                   fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                  padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
+                                  padding:
+                                    "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
                                   marginLeft: "clamp(5px, 1vw, 10px)",
                                 }}
                               >
@@ -911,7 +980,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                               onClick={() => handleEditTechClick(item)}
                               style={{
                                 fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
+                                padding:
+                                  "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
                               }}
                             >
                               Editar
@@ -933,31 +1003,62 @@ const WorkFlowpar2editPage: React.FC = () => {
             <table className="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                  <th
+                    rowSpan={2}
+                    style={{ ...stickyHeaderStyle1, color: primaryColor }}
+                  >
                     Nombre
                   </th>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                  <th
+                    rowSpan={2}
+                    style={{ ...stickyHeaderStyle1, color: primaryColor }}
+                  >
                     U [W/m²K]
                   </th>
-                  <th colSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                  <th
+                    colSpan={2}
+                    style={{ ...stickyHeaderStyle1, color: primaryColor }}
+                  >
                     Aislamiento bajo piso
                   </th>
-                  <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                  <th
+                    colSpan={3}
+                    style={{ ...stickyHeaderStyle1, color: primaryColor }}
+                  >
                     Ref Aisl Vert.
                   </th>
-                  <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                  <th
+                    colSpan={3}
+                    style={{ ...stickyHeaderStyle1, color: primaryColor }}
+                  >
                     Ref Aisl Horiz.
                   </th>
                 </tr>
                 <tr>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
+                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
+                    I [W/mK]
+                  </th>
+                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
+                    e Aisl [cm]
+                  </th>
+                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
+                    I [W/mK]
+                  </th>
+                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
+                    e Aisl [cm]
+                  </th>
+                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
+                    D [cm]
+                  </th>
+                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
+                    I [W/mK]
+                  </th>
+                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
+                    e Aisl [cm]
+                  </th>
+                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
+                    D [cm]
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -968,7 +1069,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                     const horiz = item.info?.ref_aisl_horizontal || {};
                     return (
                       <tr key={item.id || item.id_detail}>
-                        <td style={{ textAlign: "center" }}>{item.name_detail}</td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.name_detail}
+                        </td>
                         <td style={{ textAlign: "center" }}>
                           {item.value_u?.toFixed(3) ?? "--"}
                         </td>
@@ -1019,7 +1122,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
                     U Vidrio [W/m²K]
                   </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>FS Vidrio []</th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                    FS Vidrio []
+                  </th>
                   <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
                     Tipo Marco
                   </th>
@@ -1029,14 +1134,18 @@ const WorkFlowpar2editPage: React.FC = () => {
                   <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
                     U Marco [W/m²K]
                   </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>FV [%]</th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                    FV [%]
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {ventanasTabList.length > 0 ? (
                   ventanasTabList.map((item, idx) => (
                     <tr key={item.name_element + idx}>
-                      <td style={{ textAlign: "center" }}>{item.name_element}</td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.name_element}
+                      </td>
                       <td style={{ textAlign: "center" }}>
                         {item.atributs?.u_vidrio?.toFixed(3) ?? "--"}
                       </td>
@@ -1075,19 +1184,27 @@ const WorkFlowpar2editPage: React.FC = () => {
                   <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
                     U puerta opaca [W/m²K]
                   </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Vidrio []</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>% vidrio</th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                    Vidrio []
+                  </th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                    % vidrio
+                  </th>
                   <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
                     U Marco [W/m²K]
                   </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>FM [%]</th>
+                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                    FM [%]
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {puertasTabList.length > 0 ? (
                   puertasTabList.map((item, idx) => (
                     <tr key={item.name_element + idx}>
-                      <td style={{ textAlign: "center" }}>{item.name_element}</td>
+                      <td style={{ textAlign: "center" }}>
+                        {item.name_element}
+                      </td>
                       <td style={{ textAlign: "center" }}>
                         {item.atributs?.u_puerta_opaca?.toFixed(3) ?? "--"}
                       </td>
@@ -1114,7 +1231,13 @@ const WorkFlowpar2editPage: React.FC = () => {
             </table>
           )}
         </div>
-        <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-start",
+            marginTop: "10px",
+          }}
+        >
           <CustomButton
             variant="save"
             onClick={() => setShowTabsInStep4(false)}
@@ -1155,24 +1278,53 @@ const WorkFlowpar2editPage: React.FC = () => {
             />
           </div>
           <div style={{ height: "50px" }}>
-            <CustomButton variant="save" onClick={handleNewButtonClick} style={{ height: "100%" }}>
+            <CustomButton
+              variant="save"
+              onClick={handleNewButtonClick}
+              style={{ height: "100%" }}
+            >
               <span className="material-icons">add</span> Nuevo
             </CustomButton>
           </div>
         </div>
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
-            <table className="table table-bordered table-striped" style={{ textAlign: "center" }}>
+            <table
+              className="table table-bordered table-striped"
+              style={{ textAlign: "center" }}
+            >
               <thead>
                 <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: "var(--primary-color)",
+                    }}
+                  >
                     Ubicación Detalle
                   </th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: "var(--primary-color)",
+                    }}
+                  >
                     Nombre Detalle
                   </th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Material</th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: "var(--primary-color)",
+                    }}
+                  >
+                    Material
+                  </th>
+                  <th
+                    style={{
+                      ...stickyHeaderStyle1,
+                      color: "var(--primary-color)",
+                    }}
+                  >
                     Espesor capa (cm)
                   </th>
                 </tr>
@@ -1184,9 +1336,22 @@ const WorkFlowpar2editPage: React.FC = () => {
                     onClose={() => setShowNewDetailRow(false)}
                     title="Agregar Nuevo Detalle Constructivo"
                   >
-                    <div style={{ display: "flex", flexDirection: "column", gap: "15px", padding: "20px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "15px",
+                        padding: "20px",
+                      }}
+                    >
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ textAlign: "left", fontWeight: "normal", marginBottom: "5px" }}>
+                        <label
+                          style={{
+                            textAlign: "left",
+                            fontWeight: "normal",
+                            marginBottom: "5px",
+                          }}
+                        >
                           Ubicación del Detalle
                         </label>
                         <select
@@ -1206,7 +1371,13 @@ const WorkFlowpar2editPage: React.FC = () => {
                         </select>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ textAlign: "left", fontWeight: "normal", marginBottom: "5px" }}>
+                        <label
+                          style={{
+                            textAlign: "left",
+                            fontWeight: "normal",
+                            marginBottom: "5px",
+                          }}
+                        >
                           Nombre del Detalle
                         </label>
                         <input
@@ -1223,7 +1394,13 @@ const WorkFlowpar2editPage: React.FC = () => {
                         />
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ textAlign: "left", fontWeight: "normal", marginBottom: "5px" }}>
+                        <label
+                          style={{
+                            textAlign: "left",
+                            fontWeight: "normal",
+                            marginBottom: "5px",
+                          }}
+                        >
                           Material
                         </label>
                         <select
@@ -1245,7 +1422,13 @@ const WorkFlowpar2editPage: React.FC = () => {
                         </select>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ textAlign: "left", fontWeight: "normal", marginBottom: "5px" }}>
+                        <label
+                          style={{
+                            textAlign: "left",
+                            fontWeight: "normal",
+                            marginBottom: "5px",
+                          }}
+                        >
                           Espesor de la Capa (cm)
                         </label>
                         <input
@@ -1253,15 +1436,24 @@ const WorkFlowpar2editPage: React.FC = () => {
                           inputMode="decimal"
                           className="form-control"
                           placeholder="Espesor (cm)"
-                          value={newDetailForm.layer_thickness === null ? "" : newDetailForm.layer_thickness}
+                          value={
+                            newDetailForm.layer_thickness === null
+                              ? ""
+                              : newDetailForm.layer_thickness
+                          }
                           onKeyDown={(e) => {
                             if (e.key === "-" || e.key === "e") {
                               e.preventDefault();
                             }
                           }}
                           onChange={(e) => {
-                            const inputValue = e.target.value.replace(/[^0-9.]/g, "");
-                            const value = inputValue ? parseFloat(inputValue) : null;
+                            const inputValue = e.target.value.replace(
+                              /[^0-9.]/g,
+                              ""
+                            );
+                            const value = inputValue
+                              ? parseFloat(inputValue)
+                              : null;
                             if (value === null || value >= 0) {
                               setNewDetailForm((prev) => ({
                                 ...prev,
@@ -1314,7 +1506,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   .filter((det) => {
                     const searchLower = searchQuery.toLowerCase();
                     return (
-                      det.scantilon_location.toLowerCase().includes(searchLower) ||
+                      det.scantilon_location
+                        .toLowerCase()
+                        .includes(searchLower) ||
                       det.name_detail.toLowerCase().includes(searchLower) ||
                       det.material.toLowerCase().includes(searchLower) ||
                       det.layer_thickness.toString().includes(searchLower)
@@ -1342,7 +1536,14 @@ const WorkFlowpar2editPage: React.FC = () => {
             marginBottom: "10px",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+          >
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <CustomButton
                 id="mostrar-datos-btn"
@@ -1374,7 +1575,13 @@ const WorkFlowpar2editPage: React.FC = () => {
   const renderRecinto = () => {
     return (
       <>
-        <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
+        <h5
+          style={{
+            fontWeight: "normal",
+            fontFamily: "var(--font-family-base)",
+          }}
+          className="mb-3"
+        >
           Recinto (Espacio aún en desarrollo, no funcional)
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
@@ -1396,7 +1603,13 @@ const WorkFlowpar2editPage: React.FC = () => {
             <tbody>{/* Lógica para mostrar los recintos */}</tbody>
           </table>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}></div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "10px",
+          }}
+        ></div>
       </>
     );
   };
@@ -1417,11 +1630,47 @@ const WorkFlowpar2editPage: React.FC = () => {
           fontFamily: "var(--font-family-base)",
         }}
       >
-        <Card style={{ marginLeft: "0.1rem", width: "100%" }}>{renderMainHeader()}</Card>
-        <Card style={{ marginTop: "clamp(0.5rem, 2vw, 1rem)", marginLeft: "0.1rem", width: "100%" }}>
+        <div>
+          {renderMainHeader()}
+        </div>
+        <Card style={{height: "10vh"}}>
+        <div className="d-flex align-items-center gap-4">
+        <span
+          style={{
+            fontWeight: "normal",
+            fontFamily: "var(--font-family-base)",
+          }}
+        >
+          Proyecto:
+        </span>
+        <CustomButton
+          variant="save"
+          className="no-hover"
+          style={{ padding: "0.8rem 3rem" }}
+        >
+          {`Edificación Nº ${projectId ?? "xxxxx"}`}
+        </CustomButton>
+      </div>
+        </Card>
+        <Card
+          style={{
+            marginTop: "clamp(0.5rem, 2vw, 1rem)",
+            marginLeft: "0.1rem",
+            width: "100%",
+          }}
+          
+        >
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
-              <div style={{ padding: "20px", boxSizing: "border-box", borderRight: "1px solid #ccc" }} className="mb-3 mb-lg-0">
+              <div
+                style={{
+                  padding: "20px",
+                  boxSizing: "border-box",
+                  borderRight: "1px solid #ccc",
+                }}
+                className="mb-3 mb-lg-0"
+              >
+                
                 <ul className="nav flex-column" style={{ height: "100%" }}>
                   {/* Nuevas opciones agregadas arriba de los existentes */}
                   <SidebarItemComponent
@@ -1460,7 +1709,9 @@ const WorkFlowpar2editPage: React.FC = () => {
               <div style={{ padding: "20px" }}>
                 {step === 4 && (
                   <>
-                    {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+                    {showTabsInStep4
+                      ? renderStep4Tabs()
+                      : renderInitialDetails()}
                   </>
                 )}
                 {step === 7 && renderRecinto()}

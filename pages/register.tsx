@@ -1,109 +1,90 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import "../public/assets/css/globals.css";
 import CustomButton from "../src/components/common/CustomButton";
 
+interface FormData {
+  name: string;
+  lastname: string;
+  email: string;
+  number_phone: string;
+  country: string;
+  direccion: string;
+  proffesion: string;
+  password: string;
+  confirm_password: string;
+  birthdate: string;
+  ubigeo: string;
+}
+
 const Register = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     lastname: "",
     email: "",
     number_phone: "",
-    birthdate: "",
     country: "",
-    ubigeo: "",
+    direccion: "",
     proffesion: "",
     password: "",
     confirm_password: "",
-    acceptTerms: false,
+    birthdate: "",
+    ubigeo: "",
   });
 
-  // Estado para saber si un campo obligatorio ha sido tocado
-  const [touched, setTouched] = useState<Record<keyof typeof formData, boolean>>({
-    name: false,
-    lastname: false,
-    email: false,
-    number_phone: false,
-    birthdate: false,
-    country: false,
-    ubigeo: false,
-    proffesion: false,
-    password: false,
-    confirm_password: false,
-    acceptTerms: false,
-  });
-
+  const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
-  };
-
-  // Se actualiza el estado "touched" cuando un campo pierde el foco
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Validación de campos obligatorios
+    setFormSubmitted(true);
     if (
       !formData.name ||
       !formData.lastname ||
       !formData.email ||
       !formData.number_phone ||
-      !formData.birthdate ||
       !formData.country ||
-      !formData.ubigeo ||
+      !formData.direccion ||
       !formData.proffesion ||
+      !formData.birthdate ||
+      !formData.ubigeo ||
       !formData.password ||
       !formData.confirm_password
     ) {
-      // Aquí podrías manejar un error global, pero se opta por la validación inline
       return;
     }
-    // Validación de la longitud de la contraseña
     if (formData.password.length < 8 || formData.password.length > 20) {
       return;
     }
-    // Validación de coincidencia de contraseñas
     if (formData.password !== formData.confirm_password) {
       return;
     }
-
     setLoading(true);
-    const requestBody = {
-      name: formData.name,
-      lastname: formData.lastname,
-      email: formData.email,
-      number_phone: formData.number_phone,
-      birthdate: formData.birthdate,
-      country: formData.country,
-      ubigeo: formData.ubigeo,
-      proffesion: formData.proffesion,
-      password: formData.password,
-      confirm_password: formData.confirm_password,
-    };
-
     try {
+      const requestBody = { ...formData };
       const response = await fetch(`${constantUrlApiEndpoint}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || "Error al registrar usuario.");
       }
@@ -112,27 +93,37 @@ const Register = () => {
         router.push("/login");
       }, 500);
     } catch (err) {
-      // Aquí se podría manejar el error de forma global o dejarlo en consola
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Estilos
-  const leftSpacingStyle = { marginBottom: "0.5rem" };
-  const rightSpacingStyle = { marginBottom: "0.5rem" };
+  const isError = (field: keyof FormData) => formSubmitted && !formData[field];
+  const isInvalidPassword =
+    formSubmitted &&
+    (formData.password.length < 8 || formData.password.length > 20);
+  const isMismatchPassword =
+    formSubmitted && formData.password !== formData.confirm_password;
+
+  const baseFontSize = "0.875rem"; // ~14px
   const labelStyle = {
     marginBottom: "0.1rem",
     fontFamily: "var(--font-family-base)",
-  };
+    fontWeight: 400,
+    fontSize: baseFontSize,
+    color: "#000",
+  } as React.CSSProperties;
+
   const inputStyle = {
-    border: "2px solid var(--muted-text)",
-    borderRadius: "0.5rem",
+    border: "1px solid #eee",
+    borderRadius: "8px",
     margin: 0,
-    padding: "0.5rem",
+    padding: "0.45rem 0.75rem",
     fontFamily: "var(--font-family-base)",
+    fontSize: baseFontSize,
   };
+
   const toggleStyle = {
     position: "absolute" as const,
     right: "10px",
@@ -140,119 +131,120 @@ const Register = () => {
     transform: "translateY(-50%)",
     cursor: "pointer",
     color: "var(--primary-color)",
-    fontWeight: "bold" as const,
-    fontSize: "0.9rem",
-    fontFamily: "var(--font-family-base)",
-  };
-  const borderedContainerStyle = {
-    border: "2px solid var(--muted-text)",
-    borderRadius: "0.5rem",
-    padding: "0.75rem",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "0.1rem",
+    fontWeight: 600 as const,
+    fontSize: baseFontSize,
     fontFamily: "var(--font-family-base)",
   };
 
-  // Función para determinar si un campo obligatorio está vacío y ha sido tocado
-  const isError = (field: keyof typeof formData) => touched[field] && !formData[field];
+  const fieldContainerStyle = {
+    marginBottom: "1rem",
+  };
+
+  const borderedContainerStyle = {
+    border: "1px solid #eee",
+    borderRadius: "8px",
+    padding: "0.75rem",
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "0.5rem",
+    fontFamily: "var(--font-family-base)",
+  };
 
   return (
     <div
       className="register-container d-flex justify-content-center align-items-center"
       style={{
-        height: "100vh",
-        background: "url('/assets/images/background.jpg') no-repeat center center/cover",
+        minHeight: "100vh",
+        background:
+          "url('/assets/images/background.jpg') no-repeat center center/cover",
         fontFamily: "var(--font-family-base)",
       }}
     >
       <div
-        className="card p-5 shadow-lg"
+        className="card p-4"
         style={{
-          width: "100%",
-          maxWidth: "1200px",
-          borderRadius: "20px",
+          width: "90%",
+          minHeight: "55vh",
+          maxWidth: "1400px",
+          borderRadius: "8px",
           backgroundColor: "#fff",
-          maxHeight: "80vh",
-          overflowY: "auto",
+          border: "1px solid #eee",
+          boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
+          fontSize: baseFontSize,
         }}
       >
         <h4
-          className="text-start fw-bold mb-3"
-          style={{ color: "#6dbdc9", fontFamily: "var(--font-family-base)" }}
+          className="text-start mb-4"
+          style={{
+            color: "#6dbdc9",
+            fontFamily: "var(--font-family-base)",
+            fontWeight: 400,
+            fontSize: "1rem",
+            margin: 0,
+          }}
         >
           Crear perfil nuevo
         </h4>
+
         {successMessage && (
           <div
             className="alert alert-success"
-            style={{ marginBottom: "1rem", fontFamily: "var(--font-family-base)" }}
+            style={{
+              marginBottom: "1rem",
+              fontFamily: "var(--font-family-base)",
+            }}
           >
             {successMessage}
           </div>
         )}
+
         <form onSubmit={handleSubmit}>
-          <div className="row align-items-stretch">
-            {/* Sección Mi perfil (lado izquierdo) */}
-            <div className="col-md-5 border-end pe-3" style={{ display: "flex" }}>
-              <div style={borderedContainerStyle} className="w-100">
-                <div>
-                  <label className="form-label fw-bold" style={{ color: "#000", ...labelStyle }}>
-                    Mi perfil
-                  </label>
+          <div className="row g-3">
+            {/* Columna Izquierda */}
+            <div className="col-md-5">
+              <div style={borderedContainerStyle}>
+                <label style={labelStyle}>Mi perfil</label>
+                <div
+                  className="d-flex align-items-center"
+                  style={{ gap: "1rem", marginBottom: "1rem" }}
+                >
+                  {/* Se reemplaza el ícono por la imagen de usuario */}
                   <div
-                    className="d-flex align-items-center"
                     style={{
-                      gap: "1rem",
-                      marginBottom: "0.1rem",
-                      textAlign: "left",
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
                   >
-                    <div
+                    <Image
+                      src="/assets/images/profile-placeholder.png"
+                      alt="Profile"
+                      width={60}
+                      height={60}
                       style={{
-                        width: "70px",
-                        height: "70px",
-                        borderRadius: "50%",
-                        backgroundColor: "#e0e0e0",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        fontSize: "2.5rem",
-                        color: "var(--primary-color)",
-                        fontFamily: "var(--font-family-base)",
+                        objectFit: "cover",
                       }}
-                    >
-                      <i className="bi bi-person-fill"></i>
+                    />
+                  </div>
+
+                  <div style={{ fontSize: baseFontSize }}>
+                    <div style={{ fontSize: "1.2rem", marginBottom: "0.2rem" }}>
+                      {formData.name || "NOMBRES"}{" "}
+                      {formData.lastname || "APELLIDOS"}
                     </div>
-                    <div style={{ textAlign: "left" }}>
-                      <div
-                        style={{
-                          fontWeight: "bold",
-                          color: "#000",
-                          ...labelStyle,
-                          marginBottom: "0.2rem",
-                        }}
-                      >
-                        {formData.name || "Nombre"} {formData.lastname || "Apellido"}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "0.85rem",
-                          color: "#000",
-                          fontFamily: "var(--font-family-base)",
-                        }}
-                      >
-                        {formData.proffesion || "Profesión"}
-                      </div>
-                    </div>
+                    <div>{formData.proffesion || "Profesión u oficio"}</div>
                   </div>
                 </div>
-                <div style={leftSpacingStyle}>
+
+                <div style={fieldContainerStyle}>
                   <label
-                    className="form-label fw-bold"
                     style={{
-                      color: isError("email") ? "red" : "#000",
                       ...labelStyle,
+                      color: isError("email") ? "red" : "#000",
                     }}
                   >
                     Dirección de Email {isError("email") && <span>*</span>}
@@ -261,23 +253,21 @@ const Register = () => {
                     type="email"
                     className="form-control"
                     name="email"
-                    placeholder="Example@gmail.com"
+                    placeholder="ejemplo@gmail.com"
                     value={formData.email}
                     onChange={handleChange}
-                    onBlur={handleBlur}
-                    required
                     style={inputStyle}
                   />
                 </div>
-                <div style={leftSpacingStyle}>
+
+                <div style={fieldContainerStyle}>
                   <label
-                    className="form-label fw-bold"
                     style={{
-                      color: isError("password") ? "red" : "#000",
                       ...labelStyle,
+                      color: isInvalidPassword ? "red" : "#000",
                     }}
                   >
-                    Crear contraseña {isError("password") && <span>*</span>}
+                    Crear contraseña {isInvalidPassword && <span>*</span>}
                   </label>
                   <div style={{ position: "relative" }}>
                     <input
@@ -287,34 +277,38 @@ const Register = () => {
                       placeholder="••••••••"
                       value={formData.password}
                       onChange={handleChange}
-                      onBlur={handleBlur}
-                      required
                       style={{ ...inputStyle, paddingRight: "4rem" }}
                     />
-                    <span style={toggleStyle} onClick={() => setShowPassword(!showPassword)}>
+                    <span
+                      style={toggleStyle}
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
                       {showPassword ? "Ocultar" : "Mostrar"}
                     </span>
                   </div>
-                  <small
-                    style={{
-                      display: "block",
-                      fontSize: "0.8rem",
-                      marginTop: "0.25rem",
-                      color: "#6dbdc9",
-                    }}
-                  >
-                    La contraseña debe tener mínimo 8 y máximo 20 caracteres.
-                  </small>
+                  {isInvalidPassword && (
+                    <small
+                      style={{
+                        display: "block",
+                        fontSize: "0.75rem",
+                        marginTop: "0.25rem",
+                        color: "red",
+                      }}
+                    >
+                      La contraseña debe tener entre 8 y 20 caracteres.
+                    </small>
+                  )}
                 </div>
-                <div style={leftSpacingStyle}>
+
+                <div style={fieldContainerStyle}>
                   <label
-                    className="form-label fw-bold"
                     style={{
-                      color: isError("confirm_password") ? "red" : "#000",
                       ...labelStyle,
+                      color: isMismatchPassword ? "red" : "#000",
+                      paddingBottom: "0.9em",
                     }}
                   >
-                    Confirmar contraseña {isError("confirm_password") && <span>*</span>}
+                    Confirmar contraseña {isMismatchPassword && <span>*</span>}
                   </label>
                   <div style={{ position: "relative" }}>
                     <input
@@ -324,214 +318,219 @@ const Register = () => {
                       placeholder="••••••••"
                       value={formData.confirm_password}
                       onChange={handleChange}
-                      onBlur={handleBlur}
-                      required
                       style={{ ...inputStyle, paddingRight: "4rem" }}
                     />
                     <span
                       style={toggleStyle}
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                     >
                       {showConfirmPassword ? "Ocultar" : "Mostrar"}
                     </span>
                   </div>
+                  {isMismatchPassword && (
+                    <small style={{ color: "red", fontSize: "0.75rem" }}>
+                      Las contraseñas no coinciden.
+                    </small>
+                  )}
+                  <div style={{ paddingBottom: "1.5em" }}></div>
                 </div>
               </div>
             </div>
-            {/* Sección formulario (lado derecho) */}
-            <div className="col-md-7 d-flex flex-column">
-              <div style={borderedContainerStyle} className="w-100 flex-grow-1">
-                <div className="row">
-                  <div className="col-md-6">
-                    <div style={rightSpacingStyle}>
-                      <label
-                        className="form-label fw-bold"
-                        style={{
-                          color: isError("name") ? "red" : "#000",
-                          marginBottom: "0.25rem",
-                          fontFamily: "var(--font-family-base)",
-                        }}
-                      >
-                        Nombres {isError("name") && <span>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                        style={inputStyle}
-                      />
-                    </div>
-                    <div style={rightSpacingStyle}>
-                      <label
-                        className="form-label fw-bold"
-                        style={{
-                          color: isError("lastname") ? "red" : "#000",
-                          marginBottom: "0.25rem",
-                          fontFamily: "var(--font-family-base)",
-                        }}
-                      >
-                        Apellidos {isError("lastname") && <span>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="lastname"
-                        value={formData.lastname}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                        style={inputStyle}
-                      />
-                    </div>
-                    <div style={rightSpacingStyle}>
-                      <label
-                        className="form-label fw-bold"
-                        style={{
-                          color: isError("birthdate") ? "red" : "#000",
-                          marginBottom: "0.25rem",
-                          fontFamily: "var(--font-family-base)",
-                        }}
-                      >
-                        Fecha de Nacimiento {isError("birthdate") && <span>*</span>}
-                      </label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        name="birthdate"
-                        value={formData.birthdate}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                        style={inputStyle}
-                      />
-                    </div>
+
+            {/* Columna Derecha */}
+            <div className="col-md-7">
+              <div style={borderedContainerStyle}>
+                <div className="row g-2">
+                  <div className="col-md-6" style={fieldContainerStyle}>
+                    <label
+                      style={{
+                        ...labelStyle,
+                        color: isError("name") ? "red" : "#000",
+                      }}
+                    >
+                      Nombres {isError("name") && <span>*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      style={inputStyle}
+                    />
                   </div>
-                  <div className="col-md-6">
-                    <div style={rightSpacingStyle}>
-                      <label
-                        className="form-label fw-bold"
-                        style={{
-                          color: isError("number_phone") ? "red" : "#000",
-                          marginBottom: "0.25rem",
-                          fontFamily: "var(--font-family-base)",
-                        }}
-                      >
-                        Teléfono {isError("number_phone") && <span>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="number_phone"
-                        value={formData.number_phone}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                        style={inputStyle}
-                      />
-                    </div>
-                    <div style={rightSpacingStyle}>
-                      <label
-                        className="form-label fw-bold"
-                        style={{
-                          color: isError("country") ? "red" : "#000",
-                          marginBottom: "0.25rem",
-                          fontFamily: "var(--font-family-base)",
-                        }}
-                      >
-                        País {isError("country") && <span>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="country"
-                        value={formData.country}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                        style={inputStyle}
-                      />
-                    </div>
-                    <div style={rightSpacingStyle}>
-                      <label
-                        className="form-label fw-bold"
-                        style={{
-                          color: isError("ubigeo") ? "red" : "#000",
-                          marginBottom: "0.25rem",
-                          fontFamily: "var(--font-family-base)",
-                        }}
-                      >
-                        Ubigeo {isError("ubigeo") && <span>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="ubigeo"
-                        value={formData.ubigeo}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                        style={inputStyle}
-                      />
-                    </div>
-                    <div style={rightSpacingStyle}>
-                      <label
-                        className="form-label fw-bold"
-                        style={{
-                          color: isError("proffesion") ? "red" : "#000",
-                          marginBottom: "0.25rem",
-                          fontFamily: "var(--font-family-base)",
-                        }}
-                      >
-                        Profesión {isError("proffesion") && <span>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="proffesion"
-                        value={formData.proffesion}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        placeholder="Ej. Ingeniero Civil"
-                        required
-                        style={inputStyle}
-                      />
-                    </div>
+                  <div className="col-md-6" style={fieldContainerStyle}>
+                    <label
+                      style={{
+                        ...labelStyle,
+                        color: isError("lastname") ? "red" : "#000",
+                      }}
+                    >
+                      Apellidos {isError("lastname") && <span>*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="lastname"
+                      value={formData.lastname}
+                      onChange={handleChange}
+                      style={inputStyle}
+                    />
                   </div>
                 </div>
-                <div className="d-flex justify-content-between" style={{ marginTop: "0.5rem" }}>
+
+                <div className="row g-2">
+                  <div className="col-md-6" style={fieldContainerStyle}>
+                    <label
+                      style={{
+                        ...labelStyle,
+                        color: isError("proffesion") ? "red" : "#000",
+                      }}
+                    >
+                      Profesión u oficio{" "}
+                      {isError("proffesion") && <span>*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="proffesion"
+                      placeholder="Ej. Ingeniero Civil"
+                      value={formData.proffesion}
+                      onChange={handleChange}
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div className="col-md-6" style={fieldContainerStyle}>
+                    <label
+                      style={{
+                        ...labelStyle,
+                        color: isError("country") ? "red" : "#000",
+                      }}
+                    >
+                      País {isError("country") && <span>*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleChange}
+                      style={inputStyle}
+                    />
+                  </div>
+                </div>
+
+                <div className="row g-2">
+                  <div className="col-md-6" style={fieldContainerStyle}>
+                    <label
+                      style={{
+                        ...labelStyle,
+                        color: isError("direccion") ? "red" : "#000",
+                      }}
+                    >
+                      Dirección {isError("direccion") && <span>*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="direccion"
+                      value={formData.direccion}
+                      onChange={handleChange}
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div className="col-md-6" style={fieldContainerStyle}>
+                    <label
+                      style={{
+                        ...labelStyle,
+                        color: isError("number_phone") ? "red" : "#000",
+                      }}
+                    >
+                      Teléfono {isError("number_phone") && <span>*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="number_phone"
+                      value={formData.number_phone}
+                      onChange={handleChange}
+                      style={inputStyle}
+                    />
+                  </div>
+                </div>
+
+                <div className="row g-2">
+                  <div className="col-md-6" style={fieldContainerStyle}>
+                    <label
+                      style={{
+                        ...labelStyle,
+                        color: isError("birthdate") ? "red" : "#000",
+                      }}
+                    >
+                      Fecha de nacimiento{" "}
+                      {isError("birthdate") && <span>*</span>}
+                    </label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      name="birthdate"
+                      value={formData.birthdate}
+                      onChange={handleChange}
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div className="col-md-6" style={fieldContainerStyle}>
+                    <label
+                      style={{
+                        ...labelStyle,
+                        color: isError("ubigeo") ? "red" : "#000",
+                      }}
+                    >
+                      Ubigeo {isError("ubigeo") && <span>*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="ubigeo"
+                      placeholder="Ej. 150101"
+                      value={formData.ubigeo}
+                      onChange={handleChange}
+                      style={inputStyle}
+                    />
+                  </div>
+                </div>
+
+                <div
+                  className="d-flex justify-content-between align-items-center"
+                  style={{ marginTop: "1rem" }}
+                >
                   <CustomButton
                     type="button"
-                    variant="backIcon"
-                    onClick={() => router.push("/login")}
+                    variant="back"
+                    onClick={() => router.back()}
                     style={{
-                      borderRadius: "0.5rem",
+                      borderRadius: "8px",
+                      minWidth: "auto",
                       fontFamily: "var(--font-family-base)",
+                      fontSize: baseFontSize,
                     }}
                   >
-                    Regresar
+                    <i className="bi bi-arrow-left"></i>
                   </CustomButton>
                   <CustomButton
                     type="submit"
                     variant="save"
                     disabled={loading}
                     style={{
-                      borderRadius: "0.5rem",
+                      borderRadius: "8px",
                       minWidth: "auto",
                       fontFamily: "var(--font-family-base)",
+                      fontSize: baseFontSize,
                     }}
                   >
-                    {loading ? (
-                      "Registrando..."
-                    ) : (
-                      <>
-                        <i className="bi bi-save me-2"></i>
-                        Crear y guardar datos
-                      </>
-                    )}
+                    {loading ? "Registrando..." : "Crear y guardar datos"}
                   </CustomButton>
                 </div>
               </div>
@@ -539,14 +538,23 @@ const Register = () => {
           </div>
         </form>
       </div>
+
       <style jsx>{`
         .register-container {
-          height: 100vh;
+          min-height: 100vh;
           display: flex;
           justify-content: center;
           align-items: center;
-          background: url('/assets/images/background.jpg') no-repeat center center/cover;
+          background: url("/assets/images/background.jpg") no-repeat center
+            center/cover;
           position: relative;
+          input::placeholder {
+            color: rgba(0, 0, 0, 0.3);
+          }
+          ,
+          input::placeholder {
+            color: rgba(0, 0, 0, 0.3);
+          }
         }
       `}</style>
     </div>

@@ -8,13 +8,14 @@ import {
   PointElement,
   ArcElement,
   RadialLinearScale,
-  Title,
+  Title as ChartTitle,
   Tooltip,
   Legend,
 } from "chart.js";
 import { Line, Bar, Pie, Doughnut, Radar } from "react-chartjs-2";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
+import Title from "../src/components/Title"; // Componente creado para mostrar títulos
 import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
 
@@ -26,7 +27,7 @@ ChartJS.register(
   PointElement,
   ArcElement,
   RadialLinearScale,
-  Title,
+  ChartTitle,
   Tooltip,
   Legend
 );
@@ -40,8 +41,10 @@ function hexToRgba(hex: string, alpha: number) {
 }
 
 function getCssVarValue(varName: string, fallback: string) {
-  if (typeof window === "undefined") return fallback; // En SSR no hay window
-  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  if (typeof window === "undefined") return fallback;
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(varName)
+    .trim();
   return value || fallback;
 }
 
@@ -49,24 +52,31 @@ const DashboardPage: React.FC = () => {
   useAuth();
   console.log("[DashboardPage] Página cargada y sesión validada.");
 
-  // Manejamos dinámicamente el ancho de la barra lateral
-  const [sidebarWidth,] = useState("300px");
-
-  // 1. Leemos las variables CSS al montar el componente (o cada vez que quieras refrescar).
+  const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
-  // Eliminamos secondaryColor si no se va a usar
+
+  // Ajuste dinámico del ancho del sidebar según el tamaño de la ventana
+  useEffect(() => {
+    const updateSidebarWidth = () => {
+      if (window.innerWidth < 768) {
+        setSidebarWidth("0px");
+      } else {
+        setSidebarWidth("300px");
+      }
+    };
+    updateSidebarWidth();
+    window.addEventListener("resize", updateSidebarWidth);
+    return () => window.removeEventListener("resize", updateSidebarWidth);
+  }, []);
 
   useEffect(() => {
-    // Al montar el componente, leemos las variables
     const pColor = getCssVarValue("--primary-color", "#3ca7b7");
-    // Eliminamos la lectura de secondaryColor
     setPrimaryColor(pColor);
   }, []);
 
-  // 2. Creamos colores con alpha para usar en gráficas
   const primaryColorAlpha = hexToRgba(primaryColor, 0.2);
 
-  // 3. Definimos los datos de las gráficas usando las variables
+  // Datos de los gráficos
   const lineData = {
     labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"],
     datasets: [
@@ -127,131 +137,170 @@ const DashboardPage: React.FC = () => {
     ],
   };
 
-  // Estilos para contenedores y títulos
-  const chartContainerStyle: React.CSSProperties = {
-    backgroundColor: "#fff",
-    padding: "10px",
-    borderRadius: "8px",
-    boxShadow: "0 0 5px rgba(0,0,0,0.1)",
-    boxSizing: "border-box",
-    height: "350px",
-    display: "flex",
-    flexDirection: "column",
-  };
-
-  const chartTitleStyle: React.CSSProperties = {
-    textAlign: "center",
-    color: primaryColor,
-    margin: "0 0 10px 0",
-    fontWeight: "normal",
-    fontSize: "1.1rem",
-  };
-
-  const chartContentStyle: React.CSSProperties = {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-  };
-
   return (
-    <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      <Navbar setActiveView={() => { }} />
-      <div
-        className="d-flex flex-column flex-grow-1"
-        style={{
-          marginLeft: "110px",
-          width: "100%",
-        }}
-      >
-        <TopBar sidebarWidth={sidebarWidth} />
-        <div
-          style={{
-            padding: "20px",
-            marginTop: "90px",
-            marginRight: "50px",
-            fontFamily: "var(--font-family-base)",
-          }}
-        >
-          <h1 style={{ color: primaryColor, marginBottom: "20px" }}>Dashboard</h1>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "30px",
-            }}
-          >
-            <div style={chartContainerStyle}>
-              <h3 style={chartTitleStyle}>Proyectos Nuevos</h3>
-              <div style={chartContentStyle}>
-                <Line data={lineData} options={{ maintainAspectRatio: false }} />
+    <div className="d-flex flex-column flex-grow-1 font-base">
+      <Navbar setActiveView={() => {}} />
+      <TopBar sidebarWidth={sidebarWidth} />
+
+      {/* Contenedor fluido que envuelve el custom-container */}
+      <div className="container-fluid" style={{paddingLeft: "1rem"}}>
+        <div className="custom-container">
+          <Title text="Dashboard" />
+
+          <div className="row gy-4">
+            {/* Proyectos Nuevos */}
+            <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+              <div className="card shadow-sm h-100">
+                <div className="card-body chart-container">
+                  <h3 className="text-center mb-3 title-chart text-primary">
+                    Proyectos Nuevos
+                  </h3>
+                  <div className="chart-content">
+                    <Line
+                      data={lineData}
+                      options={{ maintainAspectRatio: false, responsive: true }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div style={chartContainerStyle}>
-              <h3 style={chartTitleStyle}>Reportes de Usuario</h3>
-              <div style={chartContentStyle}>
-                <Bar data={barData} options={{ maintainAspectRatio: false }} />
+            {/* Reportes de Usuario */}
+            <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+              <div className="card shadow-sm h-100">
+                <div className="card-body chart-container">
+                  <h3 className="text-center mb-3 title-chart text-primary">
+                    Reportes de Usuario
+                  </h3>
+                  <div className="chart-content">
+                    <Bar
+                      data={barData}
+                      options={{ maintainAspectRatio: false, responsive: true }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div style={chartContainerStyle}>
-              <h3 style={chartTitleStyle}>Distribución de Proyectos</h3>
-              <div style={chartContentStyle}>
-                <Pie data={pieData} options={{ maintainAspectRatio: false }} />
+            {/* Distribución de Proyectos */}
+            <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+              <div className="card shadow-sm h-100">
+                <div className="card-body chart-container">
+                  <h3 className="text-center mb-3 title-chart text-primary">
+                    Distribución de Proyectos
+                  </h3>
+                  <div className="chart-content">
+                    <Pie
+                      data={pieData}
+                      options={{ maintainAspectRatio: false, responsive: true }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div style={chartContainerStyle}>
-              <h3 style={chartTitleStyle}>Estado de Proyectos</h3>
-              <div style={chartContentStyle}>
-                <Doughnut data={doughnutData} options={{ maintainAspectRatio: false }} />
+            {/* Estado de Proyectos */}
+            <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+              <div className="card shadow-sm h-100">
+                <div className="card-body chart-container">
+                  <h3 className="text-center mb-3 title-chart text-primary">
+                    Estado de Proyectos
+                  </h3>
+                  <div className="chart-content">
+                    <Doughnut
+                      data={doughnutData}
+                      options={{ maintainAspectRatio: false, responsive: true }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div style={chartContainerStyle}>
-              <h3 style={chartTitleStyle}>Evaluación de Usuario</h3>
-              <div style={chartContentStyle}>
-                <Radar data={radarData} options={{ maintainAspectRatio: false }} />
+            {/* Evaluación de Usuario */}
+            <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+              <div className="card shadow-sm h-100">
+                <div className="card-body chart-container">
+                  <h3 className="text-center mb-3 title-chart text-primary">
+                    Evaluación de Usuario
+                  </h3>
+                  <div className="chart-content">
+                    <Radar
+                      data={radarData}
+                      options={{ maintainAspectRatio: false, responsive: true }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div style={chartContainerStyle}>
-              <h3 style={chartTitleStyle}>Reporte Extra 1</h3>
-              <div style={chartContentStyle}>
-                <Bar data={barData} options={{ maintainAspectRatio: false }} />
+            {/* Reporte Extra 1 */}
+            <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+              <div className="card shadow-sm h-100">
+                <div className="card-body chart-container">
+                  <h3 className="text-center mb-3 title-chart text-primary">
+                    Reporte Extra 1
+                  </h3>
+                  <div className="chart-content">
+                    <Bar
+                      data={barData}
+                      options={{ maintainAspectRatio: false, responsive: true }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <style jsx>{`
-        table {
-          width: 100%;
-          background-color: #fff;
-          border-collapse: separate;
-          border-spacing: 1px;
-        }
-        .table th,
-        .table td {
-          border: 2px solid #ccc;
-          border-radius: 4px;
-          padding: 6px;
-          text-align: center;
-          background-color: #fff;
-          font-weight: normal;
-        }
-        @media (max-width: 1200px) {
-        .chart-container {
-          grid-template-columns: repeat(2, 1fr); // 2 columnas en pantallas medianas
-        }
 
-        @media (max-width: 768px) {
+      <style jsx>{`
+        .custom-container {
+          max-width: 1700px;
+          margin: 0 auto 50px auto;
+          padding: 0 20px;
+          color: var(--primary-color) !important;
+        }
+        .container-fluid {
+          width: 100%;
+          padding-right: var(--bs-gutter-x, 15px);
+          padding-left: var(--bs-gutter-x, 15px);
+          margin-right: auto;
+          margin-left: auto;
+        }
+        /* Uso de aspect-ratio para mantener la proporción sin altura fija */
         .chart-container {
-          grid-template-columns: 1fr; // 1 columna en pantallas pequeñas
-          height: 250px;
+          background-color: #fff;
+          padding: 10px;
+          border-radius: 8px;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+          box-sizing: border-box;
+          aspect-ratio: 16 / 9;
+          display: flex;
+          flex-direction: column;
+          min-height: 200px;
+        }
+        .chart-content {
+          flex-grow: 1;
+        }
+        @media (max-width: 992px) {
+          .chart-container {
+            aspect-ratio: 16 / 9;
+            padding: 8px;
+          }
         }
         @media (max-width: 768px) {
-        .dashboard-content {
-          padding: 10px;
-          margin-right: 10px;
-          margin-top: 70px;
+          .chart-container {
+            aspect-ratio: 4 / 3;
+            padding: 6px;
+          }
+        }
+        @media (max-width: 576px) {
+          .chart-container {
+            aspect-ratio: 1 / 1;
+            padding: 4px;
+          }
+        }
+        .text-primary {
+          color: var(--primary-color) !important;
+        }
+        .title-chart {
+          font-size: 1.1rem;
+          font-weight: normal;
         }
       `}</style>
     </div>

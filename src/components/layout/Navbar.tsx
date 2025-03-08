@@ -11,11 +11,14 @@ interface NavbarProps {
   setActiveView: (view: string) => void;
 }
 
-const Navbar = ({ setActiveView }: NavbarProps) => {
+const Navbar = ({}: NavbarProps) => {
   const router = useRouter();
   const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
   const [roleId, setRoleId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [animateIcon, setAnimateIcon] = useState(false);
 
   useEffect(() => {
     const storedLogo = localStorage.getItem("logoUrl");
@@ -38,9 +41,32 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
     }
   }, []);
 
+  // Detecta si estamos en modo móvil y ajusta el estado inicial
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 1024;
+      setIsMobile(mobile);
+      if (mobile) {
+        setIsNavbarVisible(false);
+      } else {
+        setIsNavbarVisible(true);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
+  };
+
+  const toggleNavbar = () => {
+    // Activa la animación al presionar el ícono
+    setAnimateIcon(true);
+    setIsNavbarVisible(!isNavbarVisible);
+    setTimeout(() => setAnimateIcon(false), 300);
   };
 
   const navLinkStyle: React.CSSProperties = {
@@ -59,23 +85,31 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
     lineHeight: "1.2",
     whiteSpace: "normal",
     wordWrap: "break-word",
-    transition: "none",
+    transition: "color 0.3s ease, background-color 0.3s ease",
     color: "#fff",
+    fontWeight: "normal",
   };
 
   const iconStyle = (path: string): React.CSSProperties => ({
     fontSize: "1.5rem",
     marginBottom: "1px",
     color: "#fff",
-    backgroundColor: router.pathname === path ? "rgba(50, 50, 50, 0.3)" : "transparent",
+    backgroundColor:
+      router.pathname === path ? "rgba(50, 50, 50, 0.3)" : "transparent",
     borderRadius: "50%",
-    padding: "8px",
-    transition: "background-color 0.3s ease",
+    padding: "0.5rem",
+    transition: "background-color 0.5s ease",
+    width: "40px",
+    height: "40px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
   });
 
   const logoContainerStyle: React.CSSProperties = {
     display: "flex",
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
@@ -84,41 +118,119 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
     padding: "0 0.5rem",
     marginBottom: "1rem",
     color: "#fff",
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
+    paddingBottom: "2.6rem" 
   };
 
   const logoSize = 80;
 
+  // Estilo para el botón toggle en desktop (commented out so you won't see the icon in desktop)
+  /*
+  const toggleStyle: React.CSSProperties = isNavbarVisible
+    ? {
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        transition: "all 0.3s ease",
+        backgroundColor: "transparent",
+        padding: "8px",
+      }
+    : {
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "fixed",
+        left: "0",
+        top: isMobile ? "10px" : "80px",
+        transition: "all 0.3s ease",
+        backgroundColor: "var(--primary-color)",
+        borderRadius: "0 8px 8px 0",
+        padding: "8px",
+        zIndex: 1300,
+      };
+  */
+
+  // Estilo para el toggle en móviles: contenedor circular con animación al presionar
+  const mobileToggleContainerStyle: React.CSSProperties = {
+    position: "fixed",
+    top: isNavbarVisible ? "20px" : "20px",
+    left: isNavbarVisible ? "10px" : "30px",
+    width: "48px",
+    height: "48px",
+    borderRadius: "50%",
+    border: `1px solid ${isNavbarVisible ? "#fff" : "#000"}`,
+    backgroundColor: isNavbarVisible ? "var(--primary-color)" : "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1400,
+    transition: "all 0.3s ease",
+    cursor: "pointer",
+    transform: animateIcon ? "translateY(-10px)" : "translateY(0)",
+  };
+
   return (
     <>
       <GoogleIcons />
+
+      {/* Ícono de menú flotante en móviles, envuelto en un contenedor circular con animación */}
+      {isMobile && (
+        <div
+          className="navbar-toggle"
+          onClick={toggleNavbar}
+          style={mobileToggleContainerStyle}
+        >
+          <span
+            className="material-icons"
+            style={{
+              color: isNavbarVisible ? "#fff" : "#000",
+              fontSize: "1.5rem",
+            }}
+          >
+            menu
+          </span>
+        </div>
+      )}
+
       <nav
         className="sidebar d-flex flex-column"
         style={{
           position: "fixed",
-          top: 0,
+          top: isMobile ? "0" : 0,
           bottom: 0,
-          left: 0,
+          left: isNavbarVisible ? 0 : isMobile ? "-50%" : "-6.5em",
           zIndex: 1200,
-          width: "100px",
+          width: isMobile ? "30%" : "6.5em",
           backgroundColor: "var(--primary-color)",
           fontFamily: "var(--font-family-base)",
-          display: "flex",
+          display: isMobile && !isNavbarVisible ? "none" : "flex",
           flexDirection: "column",
           justifyContent: "space-between",
+          transition: "left 0.3s ease",
         }}
       >
         <div style={logoContainerStyle}>
-          <Link href="/dashboard">
-            <div style={{ cursor: "pointer" }} onClick={() => setActiveView("dashboard")}>
-              <Image
-                src={logoUrl}
-                alt="Proyecto Ceela"
-                width={logoSize}
-                height={logoSize}
-                style={{ borderRadius: "50%" }}
-              />
+          <Image
+            src={logoUrl}
+            alt="Proyecto Ceela"
+            width={logoSize}
+            height={logoSize}
+            style={{ borderRadius: "50%" }}
+          />
+
+          {/* Botón toggle dentro del sidebar en desktop - COMENTADO */}
+          {/*
+          {!isMobile && (
+            <div className="navbar-toggle" onClick={toggleNavbar} style={toggleStyle}>
+              <span className="material-icons" style={{ color: "#fff", fontSize: "1.5rem" }}>
+                menu
+              </span>
             </div>
-          </Link>
+          )}
+          */}
         </div>
 
         <div
@@ -133,7 +245,11 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
           <ul className="nav flex-column">
             {roleId !== "1" && (
               <li className="nav-item">
-                <Link href="/project-list" className="nav-link text-white" style={navLinkStyle}>
+                <Link
+                  href="/project-list"
+                  className="nav-link text-white"
+                  style={navLinkStyle}
+                >
                   <span style={iconStyle("/project-list")} className="material-icons">
                     dns
                   </span>
@@ -143,30 +259,46 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
             )}
             {roleId !== "1" && (
               <li className="nav-item">
-                <Link href="/project-workflow-part1" className="nav-link text-white" style={navLinkStyle}>
-                  <span style={iconStyle("/project-workflow-part1")} className="material-icons">
+                <Link
+                  href="/workflow-part1-create"
+                  className="nav-link text-white"
+                  style={navLinkStyle}
+                >
+                  <span
+                    style={iconStyle("/workflow-part1-create")}
+                    className="material-icons"
+                  >
                     note_add
                   </span>
                   Proyecto Nuevo
                 </Link>
               </li>
             )}
-            {/* La opción "Desarrollo de proyecto" sigue siendo condicional */}
             {projectId && roleId === "2" && (
               <li className="nav-item">
-                <Link href="/project-workflow-part3" className="nav-link text-white" style={navLinkStyle}>
-                  <span style={iconStyle("/project-workflow-part3")} className="material-icons">
+                <Link
+                  href="/workflow-part2-create"
+                  className="nav-link text-white"
+                  style={navLinkStyle}
+                >
+                  <span
+                    style={iconStyle("/workflow-part2-create")}
+                    className="material-icons"
+                  >
                     ballot
                   </span>
                   Desarrollo de proyecto
                 </Link>
               </li>
             )}
-            {/* Mostrar "Ingreso de Datos de entrada" solo cuando roleId no es "1" */}
             {roleId !== "1" && (
               <li className="nav-item">
-                <Link href="/project-workflow-part2" className="nav-link text-white" style={navLinkStyle}>
-                  <span style={iconStyle("/project-workflow-part2")} className="material-icons">
+                <Link
+                  href="/data-entry"
+                  className="nav-link text-white"
+                  style={navLinkStyle}
+                >
+                  <span style={iconStyle("/data-entry")} className="material-icons">
                     input
                   </span>
                   Ingreso de Datos de entrada
@@ -179,7 +311,11 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
             {roleId !== "2" && (
               <>
                 <li className="nav-item">
-                  <Link href="/dashboard" className="nav-link text-white" style={navLinkStyle}>
+                  <Link
+                    href="/dashboard"
+                    className="nav-link text-white"
+                    style={navLinkStyle}
+                  >
                     <span style={iconStyle("/dashboard")} className="material-icons">
                       dashboard
                     </span>
@@ -187,7 +323,11 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link href="/project-status" className="nav-link text-white" style={navLinkStyle}>
+                  <Link
+                    href="/project-status"
+                    className="nav-link text-white"
+                    style={navLinkStyle}
+                  >
                     <span style={iconStyle("/project-status")} className="material-icons">
                       format_list_bulleted
                     </span>
@@ -195,7 +335,11 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link href="/user-management" className="nav-link text-white" style={navLinkStyle}>
+                  <Link
+                    href="/user-management"
+                    className="nav-link text-white"
+                    style={navLinkStyle}
+                  >
                     <span style={iconStyle("/user-management")} className="material-icons">
                       person
                     </span>
@@ -203,7 +347,11 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link href="/administration" className="nav-link text-white" style={navLinkStyle}>
+                  <Link
+                    href="/administration"
+                    className="nav-link text-white"
+                    style={navLinkStyle}
+                  >
                     <span style={iconStyle("/administration")} className="material-icons">
                       build
                     </span>
@@ -213,7 +361,11 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
               </>
             )}
             <li className="nav-item">
-              <div className="nav-link text-white" style={navLinkStyle} onClick={handleLogout}>
+              <div
+                className="nav-link text-white"
+                style={navLinkStyle}
+                onClick={handleLogout}
+              >
                 <span style={iconStyle("/logout")} className="material-icons">
                   logout
                 </span>
@@ -233,11 +385,9 @@ const Navbar = ({ setActiveView }: NavbarProps) => {
             background-color: var(--primary-color);
             padding: 0;
           }
-
-          /* Ocultar texto en pantallas pequeñas (ejemplo) */
-          @media (max-width: 768px) {
+          @media (max-width: 1024px) {
             .sidebar {
-              width: 60px;
+              width: 50%;
             }
             .sidebar .nav-link {
               font-size: 0.7rem;

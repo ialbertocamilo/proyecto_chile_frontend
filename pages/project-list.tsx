@@ -10,6 +10,8 @@ import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
+import Title from "../src/components/Title";
+import Card from "../src/components/common/Card";
 
 interface Divisions {
   department?: string;
@@ -51,26 +53,6 @@ const ProjectListPage = () => {
   const [search, setSearch] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-
-  // ===========================
-  //   ESTILOS "CARD" SIMILARES
-  // ===========================
-  const CARD_WIDTH = "100%";
-  const CARD_MARGIN_TOP = "20px";
-  const CARD_MARGIN_BOTTOM = "20px";
-  const CARD_BORDER_RADIUS = "16px";
-  const CARD_BOX_SHADOW = "0 2px 10px rgba(0, 0, 0, 0.2)";
-  const CARD_BORDER_COLOR = "#ccc";
-
-  const cardStyle = {
-    width: CARD_WIDTH,
-    marginTop: CARD_MARGIN_TOP,
-    marginBottom: CARD_MARGIN_BOTTOM,
-    borderRadius: CARD_BORDER_RADIUS,
-    boxShadow: CARD_BOX_SHADOW,
-    border: `1px solid ${CARD_BORDER_COLOR}`,
-    overflow: "hidden",
-  };
 
   useEffect(() => {
     fetchProjects();
@@ -117,7 +99,8 @@ const ProjectListPage = () => {
     const query: string = e.target.value.toLowerCase();
     setSearch(query);
     const filtered = projects.filter((project: Project) => {
-      const values: Array<string | number | boolean | null | undefined> = Object.values(project);
+      const values: Array<string | number | boolean | null | undefined> =
+        Object.values(project);
       const combined: string = values
         .map((val: string | number | boolean | null | undefined): string => {
           if (val === undefined || val === null) return "";
@@ -134,14 +117,17 @@ const ProjectListPage = () => {
   const handleGoToWorkflow = (project_edit: Project): void => {
     console.log("[handleGoToWorkflow] Navegando al workflow para el proyecto:", project_edit.id);
     localStorage.setItem("project_id_edit", String(project_edit.id));
-    localStorage.setItem("project_department_edit", project_edit.divisions?.department || "");
-    // Se añade el query parameter 'mode=edit' para que la página se cargue en modo edición
+    localStorage.setItem(
+      "project_department_edit",
+      project_edit.divisions?.department || ""
+    );
     router.push(`/workflow-part1-edit?id=${project_edit.id}`);
   };
-  
-  
 
-  const handleDelete = async (projectId: number, projectName: string): Promise<void> => {
+  const handleDelete = async (
+    projectId: number,
+    projectName: string
+  ): Promise<void> => {
     const result: SweetAlertResult = await Swal.fire({
       title: "¿Estás seguro de eliminar este proyecto?",
       text: `ID: ${projectId} - Nombre: ${projectName}\nEsta acción no se puede deshacer.`,
@@ -160,7 +146,7 @@ const ProjectListPage = () => {
       return;
     }
     try {
-      const url = `${constantUrlApiEndpoint}/projects/${projectId}/delete`;
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/delete`;
       await axios.delete<void>(url, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -192,71 +178,93 @@ const ProjectListPage = () => {
 
   return (
     <>
-      {/* Navbar y TopBar */}
       <Navbar setActiveView={() => {}} />
       <TopBar sidebarWidth="80px" />
 
-      {/* Contenedor principal */}
+      {/* Contenedor principfdsfdsfal */}
       <div
         className="container custom-container"
         style={{
           maxWidth: "1780px",
-          marginTop: "120px",
-          marginLeft: "103px", // Ajusta según necesites
+          marginLeft: "103px",
           marginRight: "0px",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
         }}
       >
-        {/* Card: Título y búsqueda */}
-        <div className="card" style={cardStyle}>
-          <div className="card-body">
-            <h4 className="page-title" style={{ fontSize: "25px" }}>
-              Listado de proyectos
-            </h4>
-            <div
-              className="search-wrapper"
-              style={{ marginTop: "20px", position: "relative" }}
-            >
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Buscar..."
-                value={search}
-                onChange={handleSearch}
-                style={{
-                  height: "50px",
-                  borderRadius: "12px",
-                  paddingLeft: "2rem",
-                  paddingRight: "150px",
-                  fontSize: "16px",
-                  border: "1px solid #ddd",
-                  boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
-                }}
-              />
-              <CustomButton
-                variant="save"
-                onClick={() => router.push("/workflow-part1-create")}
-                className="new-project-btn"
-                style={{
-                  position: "absolute",
-                  right: "30px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  height: "36px",
-                  fontSize: "14px",
-                  padding: "0 15px",
-                  borderRadius: "8px",
-                }}
-              >
-                + Proyecto Nuevo
-              </CustomButton>
-            </div>
-          </div>
-        </div>
+        {/* Título en componente Title */}
+        <Title text="Listado de Proyectos" />
 
-        {/* Card: Tabla de proyectos */}
-        <div className="card" style={cardStyle}>
+        {/* Card para la búsqueda (manteniendo height: 10vh) */}
+        <Card
+  style={{
+    height: "10vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    padding: "0 2rem",
+  }}
+>
+  {/* Eliminé maxWidth para ocupar el 100% real */}
+  <div
+    style={{
+      position: "relative",
+      width: "100%", 
+      display: "flex",
+      alignItems: "center",
+    }}
+  >
+    {/* Input expandido completamente */}
+    <input
+      type="text"
+      className="form-control"
+      placeholder="Buscar..."
+      value={search}
+      onChange={handleSearch}
+      style={{
+        flexGrow: 1,
+        height: "50px",
+        borderRadius: "12px",
+        fontSize: "16px",
+        border: "1px solid #ddd",
+        boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+        paddingLeft: "1rem",
+        paddingRight: "4rem", // Espacio para el botón
+        width: "100%", // explícito para mayor claridad
+      }}
+    />
+
+    {/* Botón posicionado dentro del input */}
+    <CustomButton
+      variant="save"
+      onClick={() => router.push("/workflow-part1-create")}
+      className="new-project-btn"
+      style={{
+        position: "absolute",
+        right: "5px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        height: "40px",
+        fontSize: "14px",
+        padding: "0 15px",
+        borderRadius: "8px",
+      }}
+    >
+      + Proyecto Nuevo
+    </CustomButton>
+  </div>
+</Card>
+
+
+
+
+
+
+
+
+        {/* Card para la tabla de proyectos */}
+        <Card style={{ height: "auto" }}>
           <div className="card-body">
             {error && <p className="text-danger">{error}</p>}
             {loading ? (
@@ -355,7 +363,8 @@ const ProjectListPage = () => {
                     ) : (
                       <tr>
                         <td colSpan={9} className="text-center text-muted">
-                          No hay proyectos disponibles o no coinciden con la búsqueda.
+                          No hay proyectos disponibles o no coinciden con la
+                          búsqueda.
                         </td>
                       </tr>
                     )}
@@ -364,7 +373,7 @@ const ProjectListPage = () => {
               </div>
             )}
           </div>
-        </div>
+        </Card>
       </div>
 
       <ToastContainer
@@ -406,14 +415,7 @@ const ProjectListPage = () => {
           background-color: #fff;
           overflow: hidden;
         }
-        .custom-table tbody tr td:first-child {
-          border-top-left-radius: ${CARD_BORDER_RADIUS};
-          border-bottom-left-radius: ${CARD_BORDER_RADIUS};
-        }
-        .custom-table tbody tr td:last-child {
-          border-top-right-radius: ${CARD_BORDER_RADIUS};
-          border-bottom-right-radius: ${CARD_BORDER_RADIUS};
-        }
+        .search-wwraper
         .table-header {
           color: #f5f5f5;
           font-size: 13px;
@@ -467,26 +469,38 @@ const ProjectListPage = () => {
             margin-left: 10px;
             margin-right: 10px;
           }
-          .search-wrapper .form-control {
+          input.form-control {
+            height: 40px !important;
             font-size: 14px;
-            padding-left: 1rem;
-            padding-right: 90px;
-            height: 40px;
+            padding-right: 110px !important;
+          }
+          .new-project-btn {
+            height: 36px !important;
+            font-size: 13px !important;
+            right: 1rem !important;
           }
           .page-title {
             font-size: 20px !important;
           }
         }
         @media (max-width: 480px) {
-          .search-wrapper .form-control {
-            height: 36px;
-            font-size: 14px;
-            padding-left: 0.8rem;
-            padding-right: 80px;
-          }
           .custom-container {
             margin-left: 10px;
             margin-right: 10px;
+          }
+          /* Ajustamos el card y la barra de búsqueda */
+          .card {
+            height: auto !important;
+          }
+          .new-project-btn {
+            position: static !important;
+            width: 100% !important;
+            margin-top: 0.5rem !important;
+          }
+          input.form-control {
+            width: 100% !important;
+            margin-bottom: 0.5rem;
+            padding-right: 1rem !important;
           }
         }
       `}</style>

@@ -8,6 +8,7 @@ import "../public/assets/css/globals.css";
 import Swal from "sweetalert2";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
+import Title from "../src/components/Title";
 
 interface User {
   id: number;
@@ -194,28 +195,16 @@ const UserManagement = () => {
       <Navbar setActiveView={() => {}} />
       <div className="d-flex flex-column flex-grow-1">
         <TopBar sidebarWidth={sidebarWidth} />
-        <div
-          className="container p-4 custom-container"
-          style={{ marginTop: "100px" }}
-        >
-          <Card style={{ marginTop: "-25px", width: "100%", marginLeft: "80px" }}>
-            <div>
-              <h2 className="fw-normal" style={{ color: "var(--text-color)" }}>
-                Listado de Usuarios
-              </h2>
-              <div
-                className="input-group"
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                  height: "70px",
-                  position: "relative",
-                }}
-              >
+
+        {/* Contenedor fluid para respetar el diseño del primer código */}
+        <div className="container-fluid">
+          {/* custom-container centrado y con max-width */}
+          <div className="custom-container" style={{paddingLeft: "2em"}}>
+            <Title text="Listado de Usuarios" />
+
+            {/* Card para la barra de búsqueda */}
+            <Card className="search-card" style={{ height: "auto", padding: "10px" }}>
+              <div className="input-group mb-3 search-input-group">
                 <input
                   type="text"
                   placeholder="Buscar..."
@@ -226,20 +215,12 @@ const UserManagement = () => {
                     flexGrow: 1,
                     fontFamily: "var(--font-family-base)",
                     fontSize: "var(--font-size-base)",
-                    height: "100%",
                     boxShadow: "none",
                     paddingLeft: "1rem",
                     borderRadius: "8px",
                   }}
                 />
-                <div
-                  style={{
-                    position: "absolute",
-                    right: "10px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                  }}
-                >
+                <div className="search-btn">
                   <CustomButton
                     type="button"
                     variant="save"
@@ -256,83 +237,158 @@ const UserManagement = () => {
                   </CustomButton>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card style={{ marginTop: "10px", width: "100%", marginLeft: "80px" }}>
-            <div
-              className="table-responsive scrollable-table"
-              style={{ maxHeight: "600px", overflowY: "auto" }}
-            >
-              <table className="custom-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Apellidos</th>
-                    <th>Email</th>
-                    <th>Teléfono</th>
-                    <th>País</th>
-                    <th>Ubigeo</th>
-                    <th>Rol</th>
-                    <th>Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.length > 0 ? (
-                    users.map((u) => (
-                      <tr key={u.id}>
-                        <td>{u.id}</td>
-                        <td>{u.name}</td>
-                        <td>{u.lastname}</td>
-                        <td>{u.email}</td>
-                        <td>{u.number_phone}</td>
-                        <td>{u.country}</td>
-                        <td>{u.ubigeo}</td>
-                        <td>
-                          <select
-                            value={u.role_id}
-                            onChange={(e) => handleRoleChange(e, u.id)}
-                            style={{
-                              padding: "0.3rem",
-                              border: "none",
-                              outline: "none",
-                              background: "transparent",
-                            }}
-                          >
-                            <option value="1">Administrador</option>
-                            <option value="2">Operador</option>
-                          </select>
-                        </td>
-                        <td className="text-center">
-                          <label className="switch">
-                            <input
-                              type="checkbox"
-                              checked={u.active}
-                              onChange={(e) =>
-                                handleActiveChange(e, u.id, u.role_id)
-                              }
-                            />
-                            <span className="slider"></span>
-                          </label>
+            {/* Card que contiene la tabla de usuarios */}
+            <Card style={{ marginTop: "20px" }}>
+              <div className="table-responsive scrollable-table">
+                <table className="custom-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nombre</th>
+                      <th>Apellidos</th>
+                      <th>Email</th>
+                      <th>Teléfono</th>
+                      <th>País</th>
+                      <th>Ubigeo</th>
+                      <th>Rol</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.length > 0 ? (
+                      users.map((u) => (
+                        <tr key={u.id}>
+                          <td>{u.id}</td>
+                          <td>{u.name}</td>
+                          <td>{u.lastname}</td>
+                          <td>{u.email}</td>
+                          <td>{u.number_phone}</td>
+                          <td>{u.country}</td>
+                          <td>{u.ubigeo}</td>
+                          <td>
+                            <select
+                              value={u.role_id}
+                              onChange={(e) => handleRoleChange(e, u.id)}
+                              style={{
+                                padding: "0.3rem",
+                                border: "none",
+                                outline: "none",
+                                background: "transparent",
+                              }}
+                            >
+                              <option value="1">Administrador</option>
+                              <option value="2">Operador</option>
+                            </select>
+                          </td>
+                          <td className="text-center">
+                            <label className="switch">
+                              <input
+                                type="checkbox"
+                                checked={u.active}
+                                onChange={(e) =>
+                                  handleActiveChange(e, u.id, u.role_id)
+                                }
+                              />
+                              <span className="slider"></span>
+                            </label>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={9} className="text-center text-muted">
+                          No hay usuarios o no coinciden con la búsqueda.
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={9} className="text-center text-muted">
-                        No hay usuarios o no coinciden con la búsqueda.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
 
       <style jsx>{`
+        /* Similares al primer código (ProjectListStatusEditPage) */
+
+        .container-fluid {
+          width: 100%;
+          padding: 0 15px;
+          margin: 0 auto;
+          box-sizing: border-box;
+        }
+
+        .custom-container {
+          width: 100%;
+          max-width: 1700px;
+          margin: 80px auto 50px;
+          padding: 0 15px;
+          box-sizing: border-box;
+        }
+
+        /* Card para la barra de búsqueda */
+        .search-card {
+          margin-bottom: 20px !important;
+          width: 100% !important;
+        }
+        .search-input-group {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          width: 100%;
+        }
+        .search-btn {
+          flex-shrink: 0;
+        }
+
+        /* Tabla con espacios y sombra */
+        .custom-table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0 12px;
+          background-color: #fff;
+          font-family: var(--font-family-base);
+        }
+        .custom-table thead th {
+          background-color: #ffff;
+          color: #666;
+          font-weight: normal;
+          position: sticky;
+          top: 0;
+          z-index: 1;
+          text-align: center;
+          font-size: 0.9rem;
+          padding: 8px;
+        }
+        .custom-table tbody tr {
+          background-color: #fff;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          border-radius: 16px;
+          overflow: hidden;
+        }
+        .custom-table tbody tr td:first-child {
+          border-top-left-radius: 16px;
+          border-bottom-left-radius: 16px;
+        }
+        .custom-table tbody tr td:last-child {
+          border-top-right-radius: 16px;
+          border-bottom-right-radius: 16px;
+        }
+        .custom-table td {
+          padding: 8px;
+          text-align: center;
+          vertical-align: middle;
+          border: none;
+        }
+
+        /* Scroll */
+        .scrollable-table {
+          max-height: 550px;
+          overflow-y: auto;
+        }
         .scrollable-table::-webkit-scrollbar {
           width: 10px;
         }
@@ -347,38 +403,8 @@ const UserManagement = () => {
         .scrollable-table::-webkit-scrollbar-thumb:hover {
           background: #a8a8a8;
         }
-        .custom-table {
-          width: 100%;
-          border-collapse: collapse;
-          background-color: #fff;
-          border-radius: 8px;
-          overflow: hidden;
-          font-family: var(--font-family-base);
-        }
-        .custom-table th,
-        .custom-table td {
-          padding: 15px;
-          text-align: center;
-        }
-        .custom-table th {
-          background-color: #fff;
-          color: #666;
-          font-weight: normal;
-          font-size: 0.9rem;
-        }
-        .custom-table tbody tr {
-          border-bottom: none;
-        }
-        .action-btn-group {
-          display: flex;
-          gap: 0.5rem;
-        }
-        .action-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0;
-        }
+
+        /* Switch */
         .switch {
           position: relative;
           display: inline-block;
@@ -411,12 +437,6 @@ const UserManagement = () => {
           background-color: white;
           border-radius: 50%;
           transition: 0.2s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: bold;
-          font-size: 14px;
-          color: black;
         }
         input:checked + .slider {
           background-color: #89e790;
@@ -425,80 +445,58 @@ const UserManagement = () => {
           transform: translateX(25px);
         }
 
-        @media (max-width: 1024px) {
+        /* Responsivo */
+        @media (max-width: 992px) {
           .custom-container {
-            margin-left: 20px;
-            margin-right: 20px;
+            margin: 60px auto 30px;
           }
-          .card {
-            width: 100%;
-            margin: 10px auto;
-            padding: 15px;
-          }
-          .custom-table th,
+          .custom-table thead th,
           .custom-table td {
-            padding: 10px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            padding: 6px;
           }
         }
         @media (max-width: 768px) {
           .custom-container {
-            margin-left: 10px;
-            margin-right: 10px;
+            margin: 40px auto 20px;
           }
-          .card {
-            width: 100%;
-            margin: 5px auto;
-            padding: 10px;
-          }
-          .custom-table th,
+          .custom-table thead th,
           .custom-table td {
-            padding: 8px;
-            font-size: 0.75rem;
-          }
-          .input-group {
-            height: 60px;
+            font-size: 0.8rem;
+            padding: 6px;
           }
           .switch {
             width: 45px;
             height: 25px;
           }
           .slider::before {
-            height: 21px;
             width: 21px;
+            height: 21px;
           }
           input:checked + .slider::before {
-            transform: translateX(20px);
+            transform: translateX(18px);
           }
         }
         @media (max-width: 480px) {
           .custom-container {
-            margin-left: 5px;
-            margin-right: 5px;
+            margin: 30px auto 20px;
+            padding: 0 10px;
           }
-          .card {
-            width: 100%;
-            margin: 5px auto;
-            padding: 5px;
-          }
-          .custom-table th,
+          .custom-table thead th,
           .custom-table td {
+            font-size: 0.75rem;
             padding: 5px;
-            font-size: 0.7rem;
-          }
-          .input-group {
-            height: 50px;
           }
           .switch {
             width: 40px;
             height: 20px;
           }
           .slider::before {
-            height: 18px;
             width: 18px;
+            height: 18px;
           }
           input:checked + .slider::before {
-            transform: translateX(18px);
+            transform: translateX(16px);
           }
         }
       `}</style>

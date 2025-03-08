@@ -518,6 +518,11 @@ const AdministrationPage: React.FC = () => {
               <div className="content-area" style={{ flex: 1, padding: "20px" }}>
                 {step === 3 && (
                   <>
+                    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                      <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
+                        <span className="material-icons">add</span> Nuevo
+                      </CustomButton>
+                    </div>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
                       <div style={{ maxHeight: "400px", overflowY: "auto" }}>
                         <table className="table table-bordered table-striped">
@@ -541,16 +546,16 @@ const AdministrationPage: React.FC = () => {
                           </tbody>
                         </table>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                        <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
-                          <span className="material-icons">add</span> Nuevo
-                        </CustomButton>
-                      </div>
                     </div>
                   </>
                 )}
                 {step === 4 && (
                   <>
+                    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                      <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
+                        <span className="material-icons">add</span> Nuevo
+                      </CustomButton>
+                    </div>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
                       <div style={{ maxHeight: "500px", overflowY: "auto" }}>
                         <table className="table table-bordered table-striped">
@@ -576,16 +581,22 @@ const AdministrationPage: React.FC = () => {
                           </tbody>
                         </table>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                        <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
-                          <span className="material-icons">add</span> Nuevo
-                        </CustomButton>
-                      </div>
                     </div>
                   </>
                 )}
                 {step === 5 && (
                   <>
+                    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                      {tabElementosOperables === "ventanas" ? (
+                        <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
+                          <span className="material-icons">add</span> Nuevo
+                        </CustomButton>
+                      ) : (
+                        <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
+                          <span className="material-icons">add</span> Nuevo
+                        </CustomButton>
+                      )}
+                    </div>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
                       <div className="d-flex justify-content-between align-items-center mb-2" style={{ padding: "10px" }}>
                         <ul className="nav" style={{ display: "flex", padding: 0, listStyle: "none", margin: 0, flex: 1, gap: "10px" }}>
@@ -668,17 +679,6 @@ const AdministrationPage: React.FC = () => {
                               })}
                           </tbody>
                         </table>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                        {tabElementosOperables === "ventanas" ? (
-                          <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
-                            <span className="material-icons">add</span> Nuevo
-                          </CustomButton>
-                        ) : (
-                          <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
-                            <span className="material-icons">add</span> Nuevo
-                          </CustomButton>
-                        )}
                       </div>
                     </div>
                   </>
@@ -929,11 +929,11 @@ const AdministrationPage: React.FC = () => {
                       value={newWindow.u_vidrio}
                       onChange={(e) => {
                         const value = parseFloat(e.target.value);
-                        if (value >= 0) { // Solo actualiza el estado si el valor es positivo
+                        if (value >= 0) {
                           setNewWindow((prev) => ({ ...prev, u_vidrio: value }));
                         }
                       }}
-                      min="0" // Restringe la entrada a valores no negativos
+                      min="0"
                     />
                   </div>
                 </div>
@@ -947,11 +947,11 @@ const AdministrationPage: React.FC = () => {
                       value={newWindow.fs_vidrio}
                       onChange={(e) => {
                         const value = parseFloat(e.target.value);
-                        if (value >= 0) { // Solo actualiza el estado si el valor es positivo
+                        if (value >= 0) {
                           setNewWindow((prev) => ({ ...prev, fs_vidrio: value }));
                         }
                       }}
-                      min="0" // Restringe la entrada a valores no negativos
+                      min="0"
                     />
                   </div>
                 </div>
@@ -1000,30 +1000,32 @@ const AdministrationPage: React.FC = () => {
                       value={newWindow.u_marco}
                       onChange={(e) => {
                         const value = parseFloat(e.target.value);
-                        if (value >= 0) { // Solo actualiza el estado si el valor es positivo
+                        if (value >= 0) {
                           setNewWindow((prev) => ({ ...prev, u_marco: value }));
                         }
                       }}
-                      min="0" // Restringe la entrada a valores no negativos
+                      min="0"
                     />
                   </div>
                 </div>
-                <div className="form-group">
-                  <label>FM [%]</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="FM (%)"
-                    value={newWindow.fm}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      if (value >= 0 && value <= 100) { // Solo actualiza el estado si el valor está entre 0 y 100
-                        setNewWindow((prev) => ({ ...prev, fm: value }));
-                      }
-                    }}
-                    min="0" // Restringe la entrada a valores no negativos
-                    max="100" // Limita el valor máximo a 100
-                  />
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label>FM [%]</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      placeholder="FM (%)"
+                      value={newWindow.fm}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        if (value >= 0 && value <= 100) {
+                          setNewWindow((prev) => ({ ...prev, fm: value }));
+                        }
+                      }}
+                      min="0"
+                      max="100"
+                    />
+                  </div>
                 </div>
               </div>
 

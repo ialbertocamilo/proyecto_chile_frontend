@@ -226,7 +226,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return;
     }
     try {
-      const url = `http://ceela-backend.svgdev.tech/project/${projectId}/details/Muro`;
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/details/Muro`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setMurosTabList(response.data);
@@ -243,7 +243,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return;
     }
     try {
-      const url = `http://ceela-backend.svgdev.tech/project/${projectId}/details/Techo`;
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/details/Techo`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setTechumbreTabList(response.data);
@@ -260,7 +260,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return;
     }
     try {
-      const url = `http://ceela-backend.svgdev.tech/project/${projectId}/details/Piso`;
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/details/Piso`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setPisosTabList(response.data);
@@ -276,7 +276,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return;
     }
     try {
-      const url = `http://ceela-backend.svgdev.tech/elements/?type=window`;
+      const url = `${constantUrlApiEndpoint}/elements/?type=window`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setVentanasTabList(response.data);
@@ -293,7 +293,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return;
     }
     try {
-      const url = `http://ceela-backend.svgdev.tech/elements/?type=door`;
+      const url = `${constantUrlApiEndpoint}/elements/?type=door`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setPuertasTabList(response.data);

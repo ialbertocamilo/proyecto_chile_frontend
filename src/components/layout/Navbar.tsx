@@ -20,6 +20,7 @@ const Navbar = ({}: NavbarProps) => {
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [animateIcon, setAnimateIcon] = useState(false);
 
   useEffect(() => {
     const storedLogo = localStorage.getItem("logoUrl");
@@ -45,7 +46,7 @@ const Navbar = ({}: NavbarProps) => {
   // Detecta si estamos en modo móvil y ajusta el estado inicial
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth <= 768;
+      const mobile = window.innerWidth <= 1024;
       setIsMobile(mobile);
       if (mobile) {
         setIsNavbarVisible(false);
@@ -64,7 +65,10 @@ const Navbar = ({}: NavbarProps) => {
   };
 
   const toggleNavbar = () => {
+    // Activa la animación al presionar el ícono
+    setAnimateIcon(true);
     setIsNavbarVisible(!isNavbarVisible);
+    setTimeout(() => setAnimateIcon(false), 300);
   };
 
   const navLinkStyle: React.CSSProperties = {
@@ -96,7 +100,7 @@ const Navbar = ({}: NavbarProps) => {
       router.pathname === path ? "rgba(50, 50, 50, 0.3)" : "transparent",
     borderRadius: "50%",
     padding: "0.5rem",
-    transition: "background-color 0.3s ease",
+    transition: "background-color 0.5s ease",
     width: "40px",
     height: "40px",
     display: "flex",
@@ -121,7 +125,7 @@ const Navbar = ({}: NavbarProps) => {
 
   const logoSize = 80;
 
-  // Estilo para el botón toggle dentro del sidebar
+  // Estilo para el botón toggle en desktop
   const toggleStyle: React.CSSProperties = isNavbarVisible
     ? {
         cursor: "pointer",
@@ -148,27 +152,46 @@ const Navbar = ({}: NavbarProps) => {
         zIndex: 1300,
       };
 
+  // Estilo para el toggle en móviles: contenedor circular con animación al presionar
+  const mobileToggleContainerStyle: React.CSSProperties = {
+    position: "fixed",
+    top: isNavbarVisible ? "20px" : "20px",
+    left: isNavbarVisible ? "10px" : "30px",
+    width: "48px",
+    height: "48px",
+    borderRadius: "50%",
+    border: `1px solid ${isNavbarVisible ? "#fff" : "#000"}`,
+    backgroundColor: isNavbarVisible ? "var(--primary-color)" : "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1400,
+    transition: "all 0.3s ease",
+    cursor: "pointer",
+    transform: animateIcon ? "translateY(-10px)" : "translateY(0)",
+  };
+
   return (
     <>
       <GoogleIcons />
 
-      {/* Ícono de menú flotante en móviles */}
+      {/* Ícono de menú flotante en móviles, envuelto en un contenedor circular con animación */}
       {isMobile && (
-        <span
-          className="material-icons"
+        <div
+          className="navbar-toggle"
           onClick={toggleNavbar}
-          style={{
-            position: "fixed",
-            top: "20px",
-            left: "30px",
-            color: "#000",
-            fontSize: "1.5rem", // Se reduce de 2rem a 1.5rem
-            cursor: "pointer",
-            zIndex: 1400,
-          }}
+          style={mobileToggleContainerStyle}
         >
-          menu
-        </span>
+          <span
+            className="material-icons"
+            style={{
+              color: isNavbarVisible ? "#fff" : "#000",
+              fontSize: "1.5rem",
+            }}
+          >
+            menu
+          </span>
+        </div>
       )}
 
       <nav
@@ -206,7 +229,7 @@ const Navbar = ({}: NavbarProps) => {
             >
               <span
                 className="material-icons"
-                style={{ color: "#fff", fontSize: "1.5rem" }} // Se reduce de 1.7rem a 1.5rem
+                style={{ color: "#fff", fontSize: "1.5rem" }}
               >
                 menu
               </span>
@@ -244,12 +267,12 @@ const Navbar = ({}: NavbarProps) => {
             {roleId !== "1" && (
               <li className="nav-item">
                 <Link
-                  href="/project-workflow-part1"
+                  href="/workflow-part1-create"
                   className="nav-link text-white"
                   style={navLinkStyle}
                 >
                   <span
-                    style={iconStyle("/project-workflow-part1")}
+                    style={iconStyle("/workflow-part1-create")}
                     className="material-icons"
                   >
                     note_add
@@ -261,12 +284,12 @@ const Navbar = ({}: NavbarProps) => {
             {projectId && roleId === "2" && (
               <li className="nav-item">
                 <Link
-                  href="/project-workflow-part3"
+                  href="/workflow-part2-create"
                   className="nav-link text-white"
                   style={navLinkStyle}
                 >
                   <span
-                    style={iconStyle("/project-workflow-part3")}
+                    style={iconStyle("/workflow-part2-create")}
                     className="material-icons"
                   >
                     ballot
@@ -278,12 +301,12 @@ const Navbar = ({}: NavbarProps) => {
             {roleId !== "1" && (
               <li className="nav-item">
                 <Link
-                  href="/project-workflow-part2"
+                  href="/data-entry"
                   className="nav-link text-white"
                   style={navLinkStyle}
                 >
                   <span
-                    style={iconStyle("/project-workflow-part2")}
+                    style={iconStyle("/data-entry")}
                     className="material-icons"
                   >
                     input
@@ -384,7 +407,7 @@ const Navbar = ({}: NavbarProps) => {
             background-color: var(--primary-color);
             padding: 0;
           }
-          @media (max-width: 768px) {
+          @media (max-width: 1024px) {
             .sidebar {
               width: 50%;
             }

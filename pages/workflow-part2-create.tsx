@@ -15,6 +15,7 @@ import { Tooltip } from "react-tooltip";
 import Modal from "../src/components/common/Modal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Title from "../src/components/Title";
 
 interface Detail {
   id_detail: number;
@@ -74,7 +75,13 @@ interface Constant {
   is_deleted: boolean;
 }
 
-type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
+type TabStep4 =
+  | "detalles"
+  | "muros"
+  | "techumbre"
+  | "pisos"
+  | "ventanas"
+  | "puertas";
 
 interface Ventana {
   name_element: string;
@@ -108,7 +115,7 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-// Constantes de estilos
+// Constantes de estilos para headers sticky de tablas
 const stickyHeaderStyle1 = {
   position: "sticky" as const,
   top: 0,
@@ -145,12 +152,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const currentStep = activeStep !== undefined ? activeStep : stepNumber;
 
   return (
-    <li className="nav-item" style={{ cursor: "pointer" }} onClick={onClickAction}>
+    <li
+      className="nav-item"
+      style={{ cursor: "pointer" }}
+      onClick={onClickAction}
+    >
       <div
         style={{
           width: "100%",
           height: "100px",
-          border: `1px solid ${currentStep === stepNumber ? primaryColor : inactiveColor}`,
+          border: `1px solid ${
+            currentStep === stepNumber ? primaryColor : inactiveColor
+          }`,
           borderRadius: "8px",
           marginBottom: "16px",
           display: "flex",
@@ -209,17 +222,21 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   // Estados para edición en Muros y Techumbre
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
-  const [editingColors, setEditingColors] = useState<{ interior: string; exterior: string }>({
+  const [editingColors, setEditingColors] = useState<{
+    interior: string;
+    exterior: string;
+  }>({
     interior: "Intermedio",
     exterior: "Intermedio",
   });
   const [editingTechRowId, setEditingTechRowId] = useState<number | null>(null);
-  const [editingTechColors, setEditingTechColors] = useState<{ interior: string; exterior: string }>(
-    {
-      interior: "Intermedio",
-      exterior: "Intermedio",
-    }
-  );
+  const [editingTechColors, setEditingTechColors] = useState<{
+    interior: string;
+    exterior: string;
+  }>({
+    interior: "Intermedio",
+    exterior: "Intermedio",
+  });
 
   // Inicialización de projectId y primaryColor
   useEffect(() => {
@@ -295,7 +312,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       console.error("Error al obtener detalles:", error);
       Swal.fire("Error", "Error al obtener detalles. Ver consola.");
     }
-  }, []); // Se eliminó projectId de las dependencias ya que no se usa
+  }, []);
 
   const fetchMurosDetails = useCallback(() => {
     fetchData<TabItem[]>(
@@ -412,7 +429,10 @@ const WorkFlowpar2createPage: React.FC = () => {
       });
       if (!projectId) return;
       const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-      const detailIds = [...fetchedDetails.map((det) => det.id_detail), newDetailId];
+      const detailIds = [
+        ...fetchedDetails.map((det) => det.id_detail),
+        newDetailId,
+      ];
       await axios.post(selectUrl, detailIds, { headers });
       fetchFetchedDetails();
       setNewDetailForm({
@@ -423,7 +443,10 @@ const WorkFlowpar2createPage: React.FC = () => {
       });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error("Error en la creación del detalle:", error.response?.data);
+        console.error(
+          "Error en la creación del detalle:",
+          error.response?.data
+        );
         toast.error(error.response?.data?.detail || error.message, {
           toastId: "material-warning",
         });
@@ -454,7 +477,10 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
     const detailIds = fetchedDetails.map((det) => det.id_detail);
     const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
     try {
       await axios.post(url, detailIds, { headers });
       setShowTabsInStep4(true);
@@ -478,7 +504,10 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
     const detailIds = fetchedDetails.map((det) => det.id_detail);
     const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
     try {
       await axios.post(url, detailIds, { headers });
     } catch (error) {
@@ -501,7 +530,10 @@ const WorkFlowpar2createPage: React.FC = () => {
       const response = await axios.get(url, { headers });
       const allConstants: Constant[] = response.data.constants || [];
       const materialsList: Material[] = allConstants
-        .filter((c: Constant) => c.name === "materials" && c.type === "definition materials")
+        .filter(
+          (c: Constant) =>
+            c.name === "materials" && c.type === "definition materials"
+        )
         .map((c: Constant) => ({
           id: c.id,
           name: c.atributs.name,
@@ -509,7 +541,9 @@ const WorkFlowpar2createPage: React.FC = () => {
       setMaterials(materialsList);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
-      toast.error("Error al obtener materiales.", { toastId: "material-warning" });
+      toast.error("Error al obtener materiales.", {
+        toastId: "material-warning",
+      });
     }
   };
 
@@ -536,7 +570,10 @@ const WorkFlowpar2createPage: React.FC = () => {
     if (!token) return;
     try {
       const url = `http://ceela-backend.svgdev.tech/project/${projectId}/update_details/Muro/${detail.id}`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
       const payload = {
         info: {
           surface_color: {
@@ -546,7 +583,9 @@ const WorkFlowpar2createPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      toast.success("Detalle tipo Muro actualizado con éxito", { toastId: "material-sucess" });
+      toast.success("Detalle tipo Muro actualizado con éxito", {
+        toastId: "material-sucess",
+      });
       setMurosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -593,7 +632,10 @@ const WorkFlowpar2createPage: React.FC = () => {
     if (!token) return;
     try {
       const url = `http://ceela-backend.svgdev.tech/project/${projectId}/update_details/Techo/${detail.id}`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
       const payload = {
         info: {
           surface_color: {
@@ -603,7 +645,9 @@ const WorkFlowpar2createPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      toast.success("Detalle tipo Techo actualizado con éxito", { toastId: "material-success" });
+      toast.success("Detalle tipo Techo actualizado con éxito", {
+        toastId: "material-success",
+      });
       setTechumbreTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -628,28 +672,7 @@ const WorkFlowpar2createPage: React.FC = () => {
   };
 
   // Renderizado de encabezado principal
-  const renderMainHeader = () => (
-    <div className="mb-3" style={{ padding: "20px" }}>
-      <h2
-        style={{
-          fontSize: "2em",
-          margin: "0 0 20px 0",
-          fontWeight: "normal",
-          fontFamily: "var(--font-family-base)",
-        }}
-      >
-        Desarrollo de proyecto
-      </h2>
-      <div className="d-flex align-items-center gap-4">
-        <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-          Proyecto:
-        </span>
-        <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
-          {`Edificación Nº ${projectId ?? "xxxxx"}`}
-        </CustomButton>
-      </div>
-    </div>
-  );
+  const renderMainHeader = () => <Title text="Desarrollo de proyecto" />;
 
   // Componente SidebarItem reutilizable
   const SidebarItemComponent = ({
@@ -704,10 +727,16 @@ const WorkFlowpar2createPage: React.FC = () => {
                   width: "100%",
                   padding: "10px",
                   backgroundColor: "#fff",
-                  color: tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
+                  color:
+                    tabStep4 === item.key
+                      ? primaryColor
+                      : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
-                  borderBottom: tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
+                  borderBottom:
+                    tabStep4 === item.key
+                      ? `3px solid ${primaryColor}`
+                      : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -718,10 +747,11 @@ const WorkFlowpar2createPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
+        {/* Contenedor con overflow horizontal para controlar la anchura */}
+        <div style={{ height: "400px", overflowY: "auto", overflowX: "auto", position: "relative" }}>
           {tabStep4 === "muros" && (
-            <div style={{ overflowX: "auto" }}>
-              <table className="table table-bordered table-striped" style={{ width: "100%", minWidth: "600px" }}>
+            <div style={{ minWidth: "600px" }}>
+              <table className="table table-bordered table-striped" style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
@@ -825,8 +855,8 @@ const WorkFlowpar2createPage: React.FC = () => {
             </div>
           )}
           {tabStep4 === "techumbre" && (
-            <div style={{ overflowX: "auto" }}>
-              <table className="table table-bordered table-striped" style={{ width: "100%", minWidth: "600px" }}>
+            <div style={{ minWidth: "600px" }}>
+              <table className="table table-bordered table-striped" style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
@@ -930,191 +960,211 @@ const WorkFlowpar2createPage: React.FC = () => {
             </div>
           )}
           {tabStep4 === "pisos" && (
-            <table className="table table-bordered table-striped">
-              <thead>
-                <tr>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Nombre
-                  </th>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    U [W/m²K]
-                  </th>
-                  <th colSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Aislamiento bajo piso
-                  </th>
-                  <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Ref Aisl Vert.
-                  </th>
-                  <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Ref Aisl Horiz.
-                  </th>
-                </tr>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pisosTabList.length > 0 ? (
-                  pisosTabList.map((item) => {
-                    const bajoPiso = item.info?.aislacion_bajo_piso || {};
-                    const vert = item.info?.ref_aisl_vertical || {};
-                    const horiz = item.info?.ref_aisl_horizontal || {};
-                    return (
-                      <tr key={item.id || item.id_detail}>
-                        <td style={{ textAlign: "center" }}>{item.name_detail}</td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.value_u?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {bajoPiso.e_aisl ? bajoPiso.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.lambda ? vert.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.e_aisl ? vert.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.d ? vert.d : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.e_aisl ? horiz.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.d ? horiz.d : "N/A"}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
+            <div style={{ minWidth: "600px" }}>
+              <table className="table table-bordered table-striped" style={{ width: "100%" }}>
+                <thead>
                   <tr>
-                    <td colSpan={9} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
+                    <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Nombre
+                    </th>
+                    <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      U [W/m²K]
+                    </th>
+                    <th colSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Aislamiento bajo piso
+                    </th>
+                    <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Ref Aisl Vert.
+                    </th>
+                    <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Ref Aisl Horiz.
+                    </th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                  <tr>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
+                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pisosTabList.length > 0 ? (
+                    pisosTabList.map((item) => {
+                      const bajoPiso = item.info?.aislacion_bajo_piso || {};
+                      const vert = item.info?.ref_aisl_vertical || {};
+                      const horiz = item.info?.ref_aisl_horizontal || {};
+                      return (
+                        <tr key={item.id || item.id_detail}>
+                          <td style={{ textAlign: "center" }}>{item.name_detail}</td>
+                          <td style={{ textAlign: "center" }}>{item.value_u?.toFixed(3) ?? "--"}</td>
+                          <td style={{ textAlign: "center" }}>
+                            {bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            {bajoPiso.e_aisl ? bajoPiso.e_aisl : "N/A"}
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            {vert.lambda ? vert.lambda.toFixed(3) : "N/A"}
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            {vert.e_aisl ? vert.e_aisl : "N/A"}
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            {vert.d ? vert.d : "N/A"}
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            {horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            {horiz.e_aisl ? horiz.e_aisl : "N/A"}
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            {horiz.d ? horiz.d : "N/A"}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={9} style={{ textAlign: "center" }}>
+                        No hay datos
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
           {tabStep4 === "ventanas" && (
-            <table className="table table-bordered table-striped">
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Nombre Elemento
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    U Vidrio [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>FS Vidrio []</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Tipo Marco
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Tipo Cierre
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    U Marco [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>FV [%]</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ventanasTabList.length > 0 ? (
-                  ventanasTabList.map((item, idx) => (
-                    <tr key={item.name_element + idx}>
-                      <td style={{ textAlign: "center" }}>{item.name_element}</td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.u_vidrio?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.fs_vidrio ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.frame_type ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.clousure_type ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.u_marco?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
-                    </tr>
-                  ))
-                ) : (
+            <div style={{ minWidth: "600px" }}>
+              <table className="table table-bordered table-striped" style={{ width: "100%" }}>
+                <thead>
                   <tr>
-                    <td colSpan={7} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Nombre Elemento
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      U Vidrio [W/m²K]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      FS Vidrio []
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Tipo Marco
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Tipo Cierre
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      U Marco [W/m²K]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      FV [%]
+                    </th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {ventanasTabList.length > 0 ? (
+                    ventanasTabList.map((item, idx) => (
+                      <tr key={item.name_element + idx}>
+                        <td style={{ textAlign: "center" }}>{item.name_element}</td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.atributs?.u_vidrio?.toFixed(3) ?? "--"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.atributs?.fs_vidrio ?? "--"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.atributs?.frame_type ?? "--"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.atributs?.clousure_type ?? "--"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.u_marco?.toFixed(3) ?? "--"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} style={{ textAlign: "center" }}>
+                        No hay datos
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
           {tabStep4 === "puertas" && (
-            <table className="table table-bordered table-striped">
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Nombre Elemento
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    U puerta opaca [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Vidrio []</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>% vidrio</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    U Marco [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>FM [%]</th>
-                </tr>
-              </thead>
-              <tbody>
-                {puertasTabList.length > 0 ? (
-                  puertasTabList.map((item, idx) => (
-                    <tr key={item.name_element + idx}>
-                      <td style={{ textAlign: "center" }}>{item.name_element}</td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.u_puerta_opaca?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.name_ventana ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.porcentaje_vidrio ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.u_marco?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
-                    </tr>
-                  ))
-                ) : (
+            <div style={{ minWidth: "600px" }}>
+              <table className="table table-bordered table-striped" style={{ width: "100%" }}>
+                <thead>
                   <tr>
-                    <td colSpan={6} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Nombre Elemento
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      U puerta opaca [W/m²K]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      Vidrio []
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      % vidrio
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      U Marco [W/m²K]
+                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
+                      FM [%]
+                    </th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {puertasTabList.length > 0 ? (
+                    puertasTabList.map((item, idx) => (
+                      <tr key={item.name_element + idx}>
+                        <td style={{ textAlign: "center" }}>{item.name_element}</td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.atributs?.u_puerta_opaca?.toFixed(3) ?? "--"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.atributs?.name_ventana ?? "--"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.atributs?.porcentaje_vidrio ?? "--"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.u_marco?.toFixed(3) ?? "--"}
+                        </td>
+                        <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: "center" }}>
+                        No hay datos
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
-        <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-start",
+            marginTop: "10px",
+          }}
+        >
           <CustomButton
             variant="save"
             onClick={() => setShowTabsInStep4(false)}
@@ -1155,14 +1205,18 @@ const WorkFlowpar2createPage: React.FC = () => {
             />
           </div>
           <div style={{ height: "50px" }}>
-            <CustomButton variant="save" onClick={handleNewButtonClick} style={{ height: "100%" }}>
+            <CustomButton
+              variant="save"
+              onClick={handleNewButtonClick}
+              style={{ height: "100%" }}
+            >
               <span className="material-icons">add</span> Nuevo
             </CustomButton>
           </div>
         </div>
         <div className="mb-3">
-          <div style={{ height: "400px", overflowY: "scroll" }}>
-            <table className="table table-bordered table-striped" style={{ textAlign: "center" }}>
+          <div style={{ height: "400px", overflowY: "scroll", overflowX: "auto" }}>
+            <table className="table table-bordered table-striped" style={{ width: "80%", minWidth: "600px", textAlign: "center", margin: "auto" }}>
               <thead>
                 <tr>
                   <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
@@ -1171,7 +1225,9 @@ const WorkFlowpar2createPage: React.FC = () => {
                   <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
                     Nombre Detalle
                   </th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Material</th>
+                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
+                    Material
+                  </th>
                   <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
                     Espesor capa (cm)
                   </th>
@@ -1184,9 +1240,22 @@ const WorkFlowpar2createPage: React.FC = () => {
                     onClose={() => setShowNewDetailRow(false)}
                     title="Agregar Nuevo Detalle Constructivo"
                   >
-                    <div style={{ display: "flex", flexDirection: "column", gap: "15px", padding: "20px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "15px",
+                        padding: "20px",
+                      }}
+                    >
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ textAlign: "left", fontWeight: "normal", marginBottom: "5px" }}>
+                        <label
+                          style={{
+                            textAlign: "left",
+                            fontWeight: "normal",
+                            marginBottom: "5px",
+                          }}
+                        >
                           Ubicación del Detalle
                         </label>
                         <select
@@ -1206,7 +1275,13 @@ const WorkFlowpar2createPage: React.FC = () => {
                         </select>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ textAlign: "left", fontWeight: "normal", marginBottom: "5px" }}>
+                        <label
+                          style={{
+                            textAlign: "left",
+                            fontWeight: "normal",
+                            marginBottom: "5px",
+                          }}
+                        >
                           Nombre del Detalle
                         </label>
                         <input
@@ -1223,7 +1298,13 @@ const WorkFlowpar2createPage: React.FC = () => {
                         />
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ textAlign: "left", fontWeight: "normal", marginBottom: "5px" }}>
+                        <label
+                          style={{
+                            textAlign: "left",
+                            fontWeight: "normal",
+                            marginBottom: "5px",
+                          }}
+                        >
                           Material
                         </label>
                         <select
@@ -1245,7 +1326,13 @@ const WorkFlowpar2createPage: React.FC = () => {
                         </select>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ textAlign: "left", fontWeight: "normal", marginBottom: "5px" }}>
+                        <label
+                          style={{
+                            textAlign: "left",
+                            fontWeight: "normal",
+                            marginBottom: "5px",
+                          }}
+                        >
                           Espesor de la Capa (cm)
                         </label>
                         <input
@@ -1253,7 +1340,11 @@ const WorkFlowpar2createPage: React.FC = () => {
                           inputMode="decimal"
                           className="form-control"
                           placeholder="Espesor (cm)"
-                          value={newDetailForm.layer_thickness === null ? "" : newDetailForm.layer_thickness}
+                          value={
+                            newDetailForm.layer_thickness === null
+                              ? ""
+                              : newDetailForm.layer_thickness
+                          }
                           onKeyDown={(e) => {
                             if (e.key === "-" || e.key === "e") {
                               e.preventDefault();
@@ -1314,7 +1405,9 @@ const WorkFlowpar2createPage: React.FC = () => {
                   .filter((det) => {
                     const searchLower = searchQuery.toLowerCase();
                     return (
-                      det.scantilon_location.toLowerCase().includes(searchLower) ||
+                      det.scantilon_location
+                        .toLowerCase()
+                        .includes(searchLower) ||
                       det.name_detail.toLowerCase().includes(searchLower) ||
                       det.material.toLowerCase().includes(searchLower) ||
                       det.layer_thickness.toString().includes(searchLower)
@@ -1342,7 +1435,14 @@ const WorkFlowpar2createPage: React.FC = () => {
             marginBottom: "10px",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+          >
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <CustomButton
                 id="mostrar-datos-btn"
@@ -1374,14 +1474,20 @@ const WorkFlowpar2createPage: React.FC = () => {
   const renderRecinto = () => {
     return (
       <>
-        <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
+        <h5
+          style={{
+            fontWeight: "normal",
+            fontFamily: "var(--font-family-base)",
+          }}
+          className="mb-3"
+        >
           Recinto (Espacio aún en desarrollo, no funcional)
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>
         </div>
-        <div style={{ height: "390px", overflowY: "scroll" }}>
-          <table className="table table-bordered table-striped">
+        <div style={{ height: "390px", overflowY: "scroll", overflowX: "auto" }}>
+          <table className="table table-bordered table-striped" style={{ width: "100%", minWidth: "600px" }}>
             <thead>
               <tr>
                 <th style={stickyHeaderStyle1}>ID</th>
@@ -1396,7 +1502,13 @@ const WorkFlowpar2createPage: React.FC = () => {
             <tbody>{/* Lógica para mostrar los recintos */}</tbody>
           </table>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}></div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "10px",
+          }}
+        ></div>
       </>
     );
   };
@@ -1417,11 +1529,49 @@ const WorkFlowpar2createPage: React.FC = () => {
           fontFamily: "var(--font-family-base)",
         }}
       >
-        <Card style={{ marginLeft: "0.1rem", width: "100%" }}>{renderMainHeader()}</Card>
-        <Card style={{ marginTop: "clamp(0.5rem, 2vw, 1rem)", marginLeft: "0.1rem", width: "100%" }}>
+        <h3 style={{ marginLeft: "0.1rem", width: "100%" }}>
+          {renderMainHeader()}
+        </h3>
+        <Card
+          style={{
+            height: "10vh",
+            padding: 0,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <div className="d-flex align-items-center gap-4">
+            <span
+              style={{
+                fontWeight: "normal",
+                fontFamily: "var(--font-family-base)",
+                paddingLeft: "2rem"
+              }}
+            >
+              Proyecto:
+            </span>
+            <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
+              {`Edificación Nº ${projectId ?? "xxxxx"}`}
+            </CustomButton>
+          </div>
+        </Card>
+        <Card
+          style={{
+            marginTop: "clamp(0.5rem, 2vw, 1rem)",
+            marginLeft: "0.1rem",
+            width: "100%",
+          }}
+        >
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
-              <div style={{ padding: "20px", boxSizing: "border-box", borderRight: "1px solid #ccc" }} className="mb-3 mb-lg-0">
+              <div
+                style={{
+                  padding: "20px",
+                  boxSizing: "border-box",
+                  borderRight: "1px solid #ccc",
+                }}
+                className="mb-3 mb-lg-0"
+              >
                 <ul className="nav flex-column" style={{ height: "100%" }}>
                   <SidebarItemComponent
                     stepNumber={4}
@@ -1451,7 +1601,35 @@ const WorkFlowpar2createPage: React.FC = () => {
           </div>
         </Card>
       </div>
+      {/* Estilos globales adicionales para tablas */}
       <style jsx global>{`
+        /* Estilos generales para las tablas */
+        .table {
+          border-collapse: collapse;
+          font-size: 0.85rem;
+          width: 100%;
+        }
+        .table th,
+        .table td {
+          border: none;
+          text-align: center;
+          vertical-align: middle;
+          padding: 0.5em 1.5em;
+        }
+        .table thead th {
+          background-color: #fff;
+          color: var(--primary-color);
+          position: sticky;
+          top: 0;
+          z-index: 2;
+        }
+        .table-striped tbody tr:nth-child(odd) {
+          background-color: #f8f8f8 !important;
+        }
+        .table-striped tbody tr:nth-child(even) {
+          background-color: #f8f8f8 !important;
+        }
+        /* Ajustes responsive */
         @media (max-width: 992px) {
           .container-fluid {
             margin-left: 10px;

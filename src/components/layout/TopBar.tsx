@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
-import "../../../public/assets/css/globals.css"; 
+import "../../../public/assets/css/globals.css";
 
 interface TopBarProps {
   sidebarWidth: string;
@@ -19,8 +19,12 @@ const getUserTypeText = (roleId: string): string => {
   }
 };
 
-const TopBar = ({ }: TopBarProps) => {
-  const [user, setUser] = useState({ name: "Usuario", email: "", userType: "Tipo de Usuario" });
+const TopBar = ({}: TopBarProps) => {
+  const [user, setUser] = useState({
+    name: "Usuario",
+    email: "",
+    userType: "Tipo de Usuario",
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
@@ -34,34 +38,57 @@ const TopBar = ({ }: TopBarProps) => {
       if (storedProfile) {
         try {
           const parsedProfile = JSON.parse(storedProfile);
-          const emailFromProfile = parsedProfile.email ? parsedProfile.email : localStorage.getItem("email") || "";
-          const nameFromProfile = parsedProfile.name ? parsedProfile.name : localStorage.getItem("user_name") || "Usuario";
-          const userTypeFromProfile = parsedProfile.userType ? parsedProfile.userType : localStorage.getItem("role_id") || "Tipo de Usuario";
-          setUser({ name: nameFromProfile, email: emailFromProfile, userType: userTypeFromProfile });
+          const emailFromProfile = parsedProfile.email
+            ? parsedProfile.email
+            : localStorage.getItem("email") || "";
+          const nameFromProfile = parsedProfile.name
+            ? parsedProfile.name
+            : localStorage.getItem("user_name") || "Usuario";
+          const userTypeFromProfile = parsedProfile.userType
+            ? parsedProfile.userType
+            : localStorage.getItem("role_id") || "Tipo de Usuario";
+
+          setUser({
+            name: nameFromProfile,
+            email: emailFromProfile,
+            userType: userTypeFromProfile,
+          });
         } catch (err) {
           console.error("Error al parsear el perfil desde localStorage:", err);
           const storedName = localStorage.getItem("user_name") || "Usuario";
           const storedEmail = localStorage.getItem("email") || "";
-          const storedUserType = localStorage.getItem("role_id") || "Tipo de Usuario";
-          setUser({ name: storedName, email: storedEmail, userType: storedUserType });
+          const storedUserType =
+            localStorage.getItem("role_id") || "Tipo de Usuario";
+          setUser({
+            name: storedName,
+            email: storedEmail,
+            userType: storedUserType,
+          });
         }
       } else {
         const storedName = localStorage.getItem("user_name") || "Usuario";
         const storedEmail = localStorage.getItem("email") || "";
-        const storedUserType = localStorage.getItem("role_id") || "Tipo de Usuario";
-        setUser({ name: storedName, email: storedEmail, userType: storedUserType });
+        const storedUserType =
+          localStorage.getItem("role_id") || "Tipo de Usuario";
+        setUser({
+          name: storedName,
+          email: storedEmail,
+          userType: storedUserType,
+        });
       }
     }
   }, []);
 
-  // Escucha los clics fuera del dropdown para cerrarlo
+  // Cerrar el menú dropdown si se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setMenuOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -83,24 +110,29 @@ const TopBar = ({ }: TopBarProps) => {
       style={{
         position: "fixed",
         top: 0,
-        left: 0, 
+        left: 0,
         right: 0,
         zIndex: 1100,
         fontFamily: "var(--font-family-base)",
-        minHeight: "60px", // Altura mínima para dispositivos móviles y de escritorio
-        padding: "10px 20px", // Padding para evitar que el contenido se pegue a los bordes
-        backgroundColor: "rgba(255, 255, 255, 0.2)", 
-        backdropFilter: "blur(7px)", 
-        boxShadow: "0px 12px 16px rgba(0, 0, 0, 0.3)", 
+        minHeight: "120px",
+        padding: "10px 20px",
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        backdropFilter: "blur(7px)",
+        boxShadow: "0px 12px 16px rgba(0, 0, 0, 0.3)",
         width: "100%",
-        overflow: "visible", // Se cambia a visible para evitar recortes
+        overflow: "visible",
       }}
     >
       <div
         className="container-fluid d-flex justify-content-end align-items-center"
-        style={{ fontFamily: "var(--font-family-base)", flexWrap: "wrap" }} // Permite que el contenido se ajuste en pantallas pequeñas
+        style={{ flexWrap: "wrap" }}
       >
-        <div className="dropdown" style={{ position: "relative", fontFamily: "var(--font-family-base)" }} ref={dropdownRef}>
+        <div
+          className="dropdown"
+          style={{ position: "relative", fontFamily: "var(--font-family-base)" }}
+          ref={dropdownRef}
+        >
+          {/* Botón del usuario */}
           <button
             className="btn d-flex align-items-center"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -110,70 +142,116 @@ const TopBar = ({ }: TopBarProps) => {
               padding: 0,
               display: "flex",
               alignItems: "center",
-              fontFamily: "var(--font-family-base)",
+              cursor: "pointer",
             }}
           >
+            {/* Ícono más grande (50x50) */}
             <Image
               src="/assets/images/user_icon.png"
               alt="User"
-              width={40}
-              height={40}
+              width={50}
+              height={50}
               className="rounded-circle"
               style={{ marginRight: "8px" }}
             />
-            <div className="d-flex flex-column align-items-start" style={{ fontFamily: "var(--font-family-base)" }}>
+
+            {/* Vista extendida (Desktop) */}
+            <div className="d-none d-md-flex flex-column align-items-start">
+              {/* Email en fuente más grande */}
               <span
-                className="fw-normal"
                 style={{
-                  fontSize: "14px",
+                  fontSize: "16px",
                   color: "var(--primary-color)",
-                  fontFamily: "var(--font-family-base)",
+                  fontWeight: 500,
                 }}
               >
                 {user.email}
               </span>
+              {/* Nombre y caret */}
               <span
                 style={{
-                  fontSize: "12px",
+                  fontSize: "16px",
                   color: "var(--secondary-color)",
                   display: "flex",
                   alignItems: "center",
-                  fontFamily: "var(--font-family-base)",
                 }}
               >
                 {user.name}{" "}
-                <i className="bi bi-caret-down-fill ms-1" style={{ fontSize: "10px", fontFamily: "var(--font-family-base)" }}></i>
+                <i
+                  className="bi bi-caret-down-fill ms-1"
+                  style={{ fontSize: "14px" }}
+                />
               </span>
+              {/* Rol en un "badge" más grande */}
               <span
                 style={{
-                  fontSize: "10px",
+                  fontSize: "14px",
                   backgroundColor: "var(--primary-color)",
                   color: "white",
-                  padding: "4px 8px",
-                  borderRadius: "12px",
-                  fontWeight: "normal",
-                  display: "inline-block",
-                  marginTop: "4px",
-                  fontFamily: "var(--font-family-base)",
+                  padding: "5px 10px",
+                  borderRadius: "5px",
+                  marginTop: "6px",
                 }}
               >
                 {getUserTypeText(user.userType)}
               </span>
             </div>
+
+            {/* Vista reducida (Mobile): solo el ícono */}
+            <div className="d-flex d-md-none">
+              {/* No mostramos email ni nombre, solo el icono */}
+            </div>
           </button>
+
+          {/* Dropdown */}
           {menuOpen && (
             <div
               className="dropdown-menu dropdown-menu-end show mt-2 shadow-sm"
-              style={{ right: 0, fontFamily: "var(--font-family-base)" }}
+              style={{ right: 0 }}
             >
-              <Link href="/edit-profile" className="dropdown-item" style={{ fontFamily: "var(--font-family-base)" }}>
+              {/* En móviles, mostrar la info extendida dentro del dropdown */}
+              <div className="d-md-none p-2 border-bottom">
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "15px",
+                    color: "var(--primary-color)",
+                    fontWeight: 500,
+                  }}
+                >
+                  {user.email}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "15px",
+                    color: "var(--secondary-color)",
+                  }}
+                >
+                  {user.name}
+                </span>
+                <span
+                  style={{
+                    display: "inline-block",
+                    marginTop: "6px",
+                    fontSize: "13px",
+                    backgroundColor: "var(--primary-color)",
+                    color: "white",
+                    padding: "4px 8px",
+                    borderRadius: "5px",
+                  }}
+                >
+                  {getUserTypeText(user.userType)}
+                </span>
+              </div>
+
+              <Link href="/edit-profile" className="dropdown-item">
                 <i className="bi bi-person me-2"></i> Perfil
               </Link>
               <div className="dropdown-divider"></div>
               <button
                 className="dropdown-item text-danger"
                 onClick={handleLogout}
-                style={{ fontFamily: "var(--font-family-base)" }}
               >
                 <i className="bi bi-box-arrow-right me-2"></i> Cerrar sesión
               </button>

@@ -9,13 +9,14 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ children, className = "", style, marginTop }) => {
   const cardStyle: React.CSSProperties = {
-    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.05)", // Sombra sutil
-    border: "1px solid rgba(0, 0, 0, 0.1)", // Borde tenue
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.01)", // Sombra sutil
+    border: "1px solid rgba(0, 0, 0, 0.01)", // Borde muy sutil
     backgroundColor: "#ffffff", // Fondo blanco
     overflow: "hidden",
     marginTop,
-    borderRadius: "10px", // Bordes redondeados
+    borderRadius: "15px", // Bordes suaves
     padding: "15px", // Espaciado interno
+    height: "75vh", // Altura fija
     ...style,
   };
 
@@ -32,7 +33,7 @@ const Card: React.FC<CardProps> = ({ children, className = "", style, marginTop 
           </div>
         </div>
       </div>
-      <div className="card-body">
+      <div className="card-body" style={{ width: "100%", padding: 0, margin: 0 }}>
         {children}
       </div>
     </div>

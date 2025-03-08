@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import axios from "axios";
+import axios, {  } from "axios";
 import CustomButton from "../src/components/common/CustomButton";
 import Modal from "../src/components/common/Modal";
 import "../public/assets/css/globals.css";
@@ -11,7 +11,7 @@ import useAuth from "../src/hooks/useAuth";
 import GooIcons from "../public/GoogleIcons";
 import Card from "../src/components/common/Card";
 import { useRouter } from "next/router";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 /** Tipos e interfaces necesarias **/
@@ -66,7 +66,27 @@ const validatePercentage = (value: number) => {
   return value;
 };
 
-const ProjectWorkflowPart2: React.FC = () => {
+// Componente auxiliar para renderizar el label con asterisco si el campo está vacío
+interface LabelWithAsteriskProps {
+  label: string;
+  value: string;
+  required?: boolean;
+}
+
+const LabelWithAsterisk: React.FC<LabelWithAsteriskProps> = ({ label, value, required = true }) => {
+  // Se considera “vacío” si no existe o es una cadena vacía (después de quitar espacios)
+  const isEmpty =
+    value === undefined ||
+    value === null ||
+    (typeof value === "string" && value.trim() === "");
+  return (
+    <label>
+      {label} {required && isEmpty && <span style={{ color: "red" }}>*</span>}
+    </label>
+  );
+};
+
+const DataEntryPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
@@ -93,13 +113,14 @@ const ProjectWorkflowPart2: React.FC = () => {
   }, [router.query.step]);
 
   /** Estados para Lista de Materiales (Step 3) **/
+  // Se cambian los campos numéricos a string para detectar si se ha ingresado contenido
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const [newMaterialData, setNewMaterialData] = useState({
     name: "",
-    conductivity: 0,
-    specific_heat: 0,
-    density: 0,
+    conductivity: "",
+    specific_heat: "",
+    density: "",
   });
   // Estado para el buscador de materiales
   const [materialSearch, setMaterialSearch] = useState("");
@@ -108,23 +129,24 @@ const ProjectWorkflowPart2: React.FC = () => {
   const [modalElementType, setModalElementType] = useState<string>("ventanas");
   const [elementsList, setElementsList] = useState<ElementBase[]>([]);
   const [showElementModal, setShowElementModal] = useState(false);
+  // Se cambian los campos numéricos a string para detectar contenido
   const [windowData, setWindowData] = useState({
     name_element: "",
-    u_vidrio: 0,
-    fs_vidrio: 0,
+    u_vidrio: "",
+    fs_vidrio: "",
     clousure_type: "Corredera",
     frame_type: "",
-    u_marco: 0,
-    fm: 0,
+    u_marco: "",
+    fm: "",
   });
   const [doorData, setDoorData] = useState({
     name_element: "",
-    ventana_id: 0,
+    ventana_id: "",
     name_ventana: "",
-    u_puerta_opaca: 0,
-    porcentaje_vidrio: 0,
-    u_marco: 0,
-    fm: 0,
+    u_puerta_opaca: "",
+    porcentaje_vidrio: "",
+    u_marco: "",
+    fm: "",
   });
   const [allWindowsForDoor, setAllWindowsForDoor] = useState<ElementBase[]>([]);
   // Estado para el buscador de elementos
@@ -138,6 +160,32 @@ const ProjectWorkflowPart2: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
   const headerCardHeight = "30px";
+
+  /** Función para evitar ingresar caracteres no numéricos y números negativos */
+  const handleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const allowedKeys = [
+      "Backspace",
+      "Tab",
+      "ArrowLeft",
+      "ArrowRight",
+      "Delete",
+      "Home",
+      "End",
+    ];
+    if (allowedKeys.includes(e.key)) return;
+    // Evitar el signo negativo
+    if (e.key === "-") {
+      e.preventDefault();
+    }
+    // Permitir dígitos y un solo punto decimal
+    if (!/^\d$/.test(e.key) && e.key !== ".") {
+      e.preventDefault();
+    }
+    // Evitar más de un punto decimal
+    if (e.key === "." && e.currentTarget.value.includes(".")) {
+      e.preventDefault();
+    }
+  };
 
   /** Funciones API **/
   const fetchMaterialsList = useCallback(async () => {
@@ -162,7 +210,6 @@ const ProjectWorkflowPart2: React.FC = () => {
       setMaterialsList(allMaterials);
     } catch (error) {
       console.error("Error al obtener materiales:", error);
-      toast.error("Error al obtener materiales");
     }
   }, []);
 
@@ -175,8 +222,10 @@ const ProjectWorkflowPart2: React.FC = () => {
       const response = await axios.get(url, { headers });
       setElementsList(response.data);
     } catch (error) {
-      console.error(`Error al obtener ${type === "window" ? "ventanas" : "puertas"}`, error);
-      toast.error(`Error al obtener ${type === "window" ? "ventanas" : "puertas"}`);
+      console.error(
+        `Error al obtener ${type === "window" ? "ventanas" : "puertas"}`,
+        error
+      );
     }
   }, []);
 
@@ -190,7 +239,6 @@ const ProjectWorkflowPart2: React.FC = () => {
       setAllWindowsForDoor(response.data);
     } catch (error) {
       console.error("Error al obtener ventanas para puerta:", error);
-      toast.error("Error al obtener ventanas para puerta");
     }
   }, []);
 
@@ -198,11 +246,14 @@ const ProjectWorkflowPart2: React.FC = () => {
   const handleCreateMaterial = async (): Promise<boolean> => {
     if (
       newMaterialData.name.trim() === "" ||
-      newMaterialData.conductivity <= 0 ||
-      newMaterialData.specific_heat <= 0 ||
-      newMaterialData.density <= 0
+      !newMaterialData.conductivity ||
+      parseFloat(newMaterialData.conductivity) <= 0 ||
+      !newMaterialData.specific_heat ||
+      parseFloat(newMaterialData.specific_heat) <= 0 ||
+      !newMaterialData.density ||
+      parseFloat(newMaterialData.density) <= 0
     ) {
-      toast.error("Por favor, complete todos los campos correctamente para crear el material");
+      console.error("Complete todos los campos correctamente para crear el material");
       return false;
     }
     try {
@@ -211,9 +262,9 @@ const ProjectWorkflowPart2: React.FC = () => {
       const requestBody = {
         atributs: {
           name: newMaterialData.name,
-          density: newMaterialData.density,
-          conductivity: newMaterialData.conductivity,
-          specific_heat: newMaterialData.specific_heat,
+          density: parseFloat(newMaterialData.density),
+          conductivity: parseFloat(newMaterialData.conductivity),
+          specific_heat: parseFloat(newMaterialData.specific_heat),
         },
         name: "materials",
         type: "definition materials",
@@ -227,14 +278,35 @@ const ProjectWorkflowPart2: React.FC = () => {
       const response = await axios.post(url, requestBody, { headers });
       if (response.status === 200) {
         await fetchMaterialsList();
-        toast.success("Material creado exitosamente");
-        setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+        toast.dismiss("material-success");
+        toast.success("Material creado exitosamente", {
+          toastId: "material-success",
+          autoClose: 2000,
+          pauseOnHover: false,
+          pauseOnFocusLoss: false,
+        });
+        setNewMaterialData({ name: "", conductivity: "", specific_heat: "", density: "" });
         return true;
       }
       return false;
     } catch (error) {
+      toast.dismiss("material-error");
+      if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+        toast.warn("El material ya existe", {
+          toastId: "material-error",
+          autoClose: 2000,
+          pauseOnHover: false,
+          pauseOnFocusLoss: false,
+        });
+      } else {
+        toast.warn("Error al crear el material", {
+          toastId: "material-error",
+          autoClose: 2000,
+          pauseOnHover: false,
+          pauseOnFocusLoss: false,
+        });
+      }
       console.error("Error al crear material:", error);
-      toast.warn("Error al crear material");
       return false;
     }
   };
@@ -242,15 +314,19 @@ const ProjectWorkflowPart2: React.FC = () => {
   const handleCreateWindowElement = async (): Promise<boolean> => {
     if (
       windowData.name_element.trim() === "" ||
-      windowData.u_vidrio <= 0 ||
-      windowData.fs_vidrio <= 0 ||
-      windowData.u_marco <= 0 ||
-      windowData.fm < 0 ||
-      windowData.fm > 100 ||
+      !windowData.u_vidrio ||
+      parseFloat(windowData.u_vidrio) <= 0 ||
+      !windowData.fs_vidrio ||
+      parseFloat(windowData.fs_vidrio) <= 0 ||
+      !windowData.u_marco ||
+      parseFloat(windowData.u_marco) <= 0 ||
+      windowData.fm === "" ||
+      parseFloat(windowData.fm) < 0 ||
+      parseFloat(windowData.fm) > 100 ||
       windowData.clousure_type.trim() === "" ||
       windowData.frame_type.trim() === ""
     ) {
-      toast.error("Por favor, complete todos los campos correctamente para crear la ventana");
+      console.error("Complete todos los campos correctamente para crear la ventana");
       return false;
     }
     try {
@@ -260,13 +336,13 @@ const ProjectWorkflowPart2: React.FC = () => {
         name_element: windowData.name_element,
         type: "window",
         atributs: {
-          u_vidrio: windowData.u_vidrio,
-          fs_vidrio: windowData.fs_vidrio,
+          u_vidrio: parseFloat(windowData.u_vidrio),
+          fs_vidrio: parseFloat(windowData.fs_vidrio),
           clousure_type: windowData.clousure_type,
           frame_type: windowData.frame_type,
         },
-        u_marco: windowData.u_marco,
-        fm: windowData.fm,
+        u_marco: parseFloat(windowData.u_marco),
+        fm: parseFloat(windowData.fm) / 100, // Se espera fm en formato decimal
       };
       const response = await axios.post(`${constantUrlApiEndpoint}/elements/create`, body, {
         headers: {
@@ -277,20 +353,41 @@ const ProjectWorkflowPart2: React.FC = () => {
       });
       setElementsList((prev) => [...prev, response.data.element]);
       setAllWindowsForDoor((prev) => [...prev, response.data.element]);
-      toast.success("Ventana creada exitosamente");
+      toast.dismiss("window-success");
+      toast.success("Ventana creada exitosamente", {
+        toastId: "window-success",
+        autoClose: 2000,
+        pauseOnHover: false,
+        pauseOnFocusLoss: false,
+      });
       setWindowData({
         name_element: "",
-        u_vidrio: 0,
-        fs_vidrio: 0,
+        u_vidrio: "",
+        fs_vidrio: "",
         clousure_type: "Corredera",
         frame_type: "",
-        u_marco: 0,
-        fm: 0,
+        u_marco: "",
+        fm: "",
       });
       return true;
     } catch (error) {
+      toast.dismiss("window-error");
+      if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+        toast.warn("La ventana ya existe", {
+          toastId: "window-error",
+          autoClose: 2000,
+          pauseOnHover: false,
+          pauseOnFocusLoss: false,
+        });
+      } else {
+        toast.warn("Error al crear la ventana", {
+          toastId: "window-error",
+          autoClose: 2000,
+          pauseOnHover: false,
+          pauseOnFocusLoss: false,
+        });
+      }
       console.error("Error al crear ventana:", error);
-      toast.warn("Ese nombre de ventana ya existe");
       return false;
     }
   };
@@ -298,14 +395,19 @@ const ProjectWorkflowPart2: React.FC = () => {
   const handleCreateDoorElement = async (): Promise<boolean> => {
     if (
       doorData.name_element.trim() === "" ||
-      doorData.u_puerta_opaca <= 0 ||
-      doorData.porcentaje_vidrio < 0 ||
-      doorData.porcentaje_vidrio > 100 ||
-      doorData.u_marco <= 0 ||
-      doorData.fm < 0 ||
-      doorData.fm > 100
+      !doorData.u_puerta_opaca ||
+      parseFloat(doorData.u_puerta_opaca) <= 0 ||
+      (doorData.ventana_id &&
+        (!doorData.porcentaje_vidrio ||
+          parseFloat(doorData.porcentaje_vidrio) < 0 ||
+          parseFloat(doorData.porcentaje_vidrio) > 100)) ||
+      !doorData.u_marco ||
+      parseFloat(doorData.u_marco) <= 0 ||
+      doorData.fm === "" ||
+      parseFloat(doorData.fm) < 0 ||
+      parseFloat(doorData.fm) > 100
     ) {
-      toast.error("Por favor, complete todos los campos correctamente para crear la puerta");
+      console.error("Complete todos los campos correctamente para crear la puerta");
       return false;
     }
     try {
@@ -315,13 +417,13 @@ const ProjectWorkflowPart2: React.FC = () => {
         name_element: doorData.name_element,
         type: "door",
         atributs: {
-          ventana_id: doorData.ventana_id,
+          ventana_id: doorData.ventana_id ? parseInt(doorData.ventana_id) : 0,
           name_ventana: doorData.ventana_id ? doorData.name_ventana : "",
-          u_puerta_opaca: doorData.u_puerta_opaca,
-          porcentaje_vidrio: doorData.ventana_id ? doorData.porcentaje_vidrio : 0,
+          u_puerta_opaca: parseFloat(doorData.u_puerta_opaca),
+          porcentaje_vidrio: doorData.ventana_id ? parseFloat(doorData.porcentaje_vidrio) : 0,
         },
-        u_marco: doorData.u_marco,
-        fm: doorData.fm,
+        u_marco: parseFloat(doorData.u_marco),
+        fm: parseFloat(doorData.fm) / 100,
       };
       const response = await axios.post(`${constantUrlApiEndpoint}/elements/create`, body, {
         headers: {
@@ -331,20 +433,41 @@ const ProjectWorkflowPart2: React.FC = () => {
         },
       });
       setElementsList((prev) => [...prev, response.data.element]);
-      toast.success("Puerta creada exitosamente");
+      toast.dismiss("door-success");
+      toast.success("Puerta creada exitosamente", {
+        toastId: "door-success",
+        autoClose: 2000,
+        pauseOnHover: false,
+        pauseOnFocusLoss: false,
+      });
       setDoorData({
         name_element: "",
-        ventana_id: 0,
+        ventana_id: "",
         name_ventana: "",
-        u_puerta_opaca: 0,
-        porcentaje_vidrio: 0,
-        u_marco: 0,
-        fm: 0,
+        u_puerta_opaca: "",
+        porcentaje_vidrio: "",
+        u_marco: "",
+        fm: "",
       });
       return true;
     } catch (error) {
+      toast.dismiss("door-error");
+      if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+        toast.warn("La puerta ya existe", {
+          toastId: "door-error",
+          autoClose: 2000,
+          pauseOnHover: false,
+          pauseOnFocusLoss: false,
+        });
+      } else {
+        toast.warn("Error al crear la puerta", {
+          toastId: "door-error",
+          autoClose: 2000,
+          pauseOnHover: false,
+          pauseOnFocusLoss: false,
+        });
+      }
       console.error("Error al crear puerta:", error);
-      toast.warn("Ese nombre de puerta ya existe");
       return false;
     }
   };
@@ -367,7 +490,6 @@ const ProjectWorkflowPart2: React.FC = () => {
       fetchAllWindowsForDoor();
     }
   }, [step, modalElementType, fetchAllWindowsForDoor]);
-
 
   /** Componente SidebarItem **/
   const SidebarItemComponent = ({
@@ -422,10 +544,48 @@ const ProjectWorkflowPart2: React.FC = () => {
       </div>
     );
 
+  // Variables para determinar si los campos obligatorios están completos en cada modal
+  const materialIsValid =
+    newMaterialData.name.trim() !== "" &&
+    newMaterialData.conductivity !== "" &&
+    parseFloat(newMaterialData.conductivity) > 0 &&
+    newMaterialData.specific_heat !== "" &&
+    parseFloat(newMaterialData.specific_heat) > 0 &&
+    newMaterialData.density !== "" &&
+    parseFloat(newMaterialData.density) > 0;
+
+  const windowIsValid =
+    windowData.name_element.trim() !== "" &&
+    windowData.u_vidrio !== "" &&
+    parseFloat(windowData.u_vidrio) > 0 &&
+    windowData.fs_vidrio !== "" &&
+    parseFloat(windowData.fs_vidrio) > 0 &&
+    windowData.u_marco !== "" &&
+    parseFloat(windowData.u_marco) > 0 &&
+    windowData.fm !== "" &&
+    parseFloat(windowData.fm) >= 0 &&
+    parseFloat(windowData.fm) <= 100 &&
+    windowData.clousure_type.trim() !== "" &&
+    windowData.frame_type.trim() !== "";
+
+  const doorIsValid =
+    doorData.name_element.trim() !== "" &&
+    doorData.u_puerta_opaca !== "" &&
+    parseFloat(doorData.u_puerta_opaca) > 0 &&
+    doorData.u_marco !== "" &&
+    parseFloat(doorData.u_marco) > 0 &&
+    doorData.fm !== "" &&
+    parseFloat(doorData.fm) >= 0 &&
+    parseFloat(doorData.fm) <= 100 &&
+    (
+      !doorData.ventana_id ||
+      (doorData.ventana_id && doorData.porcentaje_vidrio !== "" && parseFloat(doorData.porcentaje_vidrio) >= 0 && parseFloat(doorData.porcentaje_vidrio) <= 100)
+    );
+
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => { }} />
+      <Navbar setActiveView={() => {}} />
       <TopBar sidebarWidth="300px" />
       <div
         className="container custom-container"
@@ -450,7 +610,7 @@ const ProjectWorkflowPart2: React.FC = () => {
               <div className="content-area">
                 {step === 3 && (
                   <>
-                    {/* Contenedor para el buscador y el botón (botón alineado a la derecha) */}
+                    {/* Buscador y botón para Nuevo */}
                     <div className="d-flex align-items-center p-2">
                       <div style={{ flex: 1, marginRight: "10px" }}>
                         <input
@@ -503,7 +663,7 @@ const ProjectWorkflowPart2: React.FC = () => {
 
                 {step === 5 && (
                   <>
-                    {/* Contenedor para el buscador y el botón (botón alineado a la derecha) */}
+                    {/* Buscador y botón para Nuevo */}
                     <div className="d-flex align-items-center p-2">
                       <div style={{ flex: 1, marginRight: "10px" }}>
                         <input
@@ -659,13 +819,13 @@ const ProjectWorkflowPart2: React.FC = () => {
           isOpen={showMaterialModal}
           onClose={() => {
             setShowMaterialModal(false);
-            setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+            setNewMaterialData({ name: "", conductivity: "", specific_heat: "", density: "" });
           }}
           title="Nuevo Material"
         >
           <div>
             <div className="form-group mb-3">
-              <label>Nombre</label>
+              <LabelWithAsterisk label="Nombre" value={newMaterialData.name} />
               <input
                 type="text"
                 className="form-control"
@@ -675,7 +835,7 @@ const ProjectWorkflowPart2: React.FC = () => {
               />
             </div>
             <div className="form-group mb-3">
-              <label>Conductividad (W/m2K)</label>
+              <LabelWithAsterisk label="Conductividad (W/m2K)" value={newMaterialData.conductivity} />
               <input
                 type="number"
                 min="0"
@@ -683,12 +843,13 @@ const ProjectWorkflowPart2: React.FC = () => {
                 placeholder="Conductividad"
                 value={newMaterialData.conductivity}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({ ...prev, conductivity: parseFloat(e.target.value) }))
+                  setNewMaterialData((prev) => ({ ...prev, conductivity: e.target.value }))
                 }
+                onKeyDown={handleNumberKeyDown}
               />
             </div>
             <div className="form-group mb-3">
-              <label>Calor específico (J/kgK)</label>
+              <LabelWithAsterisk label="Calor específico (J/kgK)" value={newMaterialData.specific_heat} />
               <input
                 type="number"
                 min="0"
@@ -696,12 +857,13 @@ const ProjectWorkflowPart2: React.FC = () => {
                 placeholder="Calor específico"
                 value={newMaterialData.specific_heat}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({ ...prev, specific_heat: parseFloat(e.target.value) }))
+                  setNewMaterialData((prev) => ({ ...prev, specific_heat: e.target.value }))
                 }
+                onKeyDown={handleNumberKeyDown}
               />
             </div>
             <div className="form-group mb-3">
-              <label>Densidad (kg/m3)</label>
+              <LabelWithAsterisk label="Densidad (kg/m3)" value={newMaterialData.density} />
               <input
                 type="number"
                 min="0"
@@ -709,16 +871,25 @@ const ProjectWorkflowPart2: React.FC = () => {
                 placeholder="Densidad"
                 value={newMaterialData.density}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({ ...prev, density: parseFloat(e.target.value) }))
+                  setNewMaterialData((prev) => ({ ...prev, density: e.target.value }))
                 }
+                onKeyDown={handleNumberKeyDown}
               />
             </div>
+            {/* Se muestra el mensaje solo si los campos obligatorios no están completos */}
+            {!materialIsValid && (
+              <div className="mb-3">
+                <p>
+                  (<span style={{ color: "red" }}>*</span>) Campos obligatorios
+                </p>
+              </div>
+            )}
             <div className="text-end">
               <CustomButton
                 variant="save"
                 onClick={() => {
                   setShowMaterialModal(false);
-                  setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+                  setNewMaterialData({ name: "", conductivity: "", specific_heat: "", density: "" });
                 }}
                 style={{ marginRight: "10px" }}
               >
@@ -749,22 +920,22 @@ const ProjectWorkflowPart2: React.FC = () => {
             if (modalElementType === "ventanas") {
               setWindowData({
                 name_element: "",
-                u_vidrio: 0,
-                fs_vidrio: 0,
+                u_vidrio: "",
+                fs_vidrio: "",
                 clousure_type: "Corredera",
                 frame_type: "",
-                u_marco: 0,
-                fm: 0,
+                u_marco: "",
+                fm: "",
               });
             } else {
               setDoorData({
                 name_element: "",
-                ventana_id: 0,
+                ventana_id: "",
                 name_ventana: "",
-                u_puerta_opaca: 0,
-                porcentaje_vidrio: 0,
-                u_marco: 0,
-                fm: 0,
+                u_puerta_opaca: "",
+                porcentaje_vidrio: "",
+                u_marco: "",
+                fm: "",
               });
             }
           }}
@@ -773,7 +944,7 @@ const ProjectWorkflowPart2: React.FC = () => {
           {modalElementType === "ventanas" ? (
             <div>
               <div className="form-group mb-3">
-                <label>Nombre</label>
+                <LabelWithAsterisk label="Nombre" value={windowData.name_element} />
                 <input
                   type="text"
                   className="form-control"
@@ -783,7 +954,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                 />
               </div>
               <div className="form-group mb-3">
-                <label>U Vidrio [W/m2K]</label>
+                <LabelWithAsterisk label="U Vidrio [W/m2K]" value={windowData.u_vidrio} />
                 <input
                   type="number"
                   min="0"
@@ -791,12 +962,13 @@ const ProjectWorkflowPart2: React.FC = () => {
                   placeholder="U Vidrio"
                   value={windowData.u_vidrio}
                   onChange={(e) =>
-                    setWindowData((prev) => ({ ...prev, u_vidrio: parseFloat(e.target.value) }))
+                    setWindowData((prev) => ({ ...prev, u_vidrio: e.target.value }))
                   }
+                  onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <label>FS Vidrio</label>
+                <LabelWithAsterisk label="FS Vidrio" value={windowData.fs_vidrio} />
                 <input
                   type="number"
                   min="0"
@@ -804,12 +976,13 @@ const ProjectWorkflowPart2: React.FC = () => {
                   placeholder="FS Vidrio"
                   value={windowData.fs_vidrio}
                   onChange={(e) =>
-                    setWindowData((prev) => ({ ...prev, fs_vidrio: parseFloat(e.target.value) }))
+                    setWindowData((prev) => ({ ...prev, fs_vidrio: e.target.value }))
                   }
+                  onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <label>Tipo Cierre</label>
+                <LabelWithAsterisk label="Tipo Cierre" value={windowData.clousure_type} />
                 <select
                   className="form-control"
                   value={windowData.clousure_type}
@@ -823,7 +996,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                 </select>
               </div>
               <div className="form-group mb-3">
-                <label>Tipo Marco</label>
+                <LabelWithAsterisk label="Tipo Marco" value={windowData.frame_type} />
                 <select
                   className="form-control"
                   value={windowData.frame_type}
@@ -840,21 +1013,19 @@ const ProjectWorkflowPart2: React.FC = () => {
                 </select>
               </div>
               <div className="form-group mb-3">
-                <label>U Marco [W/m2K]</label>
+                <LabelWithAsterisk label="U Marco [W/m2K]" value={windowData.u_marco} />
                 <input
                   type="number"
                   min="0"
                   className="form-control"
                   placeholder="U Marco"
                   value={windowData.u_marco}
-                  onChange={(e) => {
-                    const value = parseFloat(e.target.value);
-                    setWindowData((prev) => ({ ...prev, u_marco: isNaN(value) ? 0 : value }));
-                  }}
+                  onChange={(e) => setWindowData((prev) => ({ ...prev, u_marco: e.target.value }))}
+                  onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <label>FM [%]</label>
+                <LabelWithAsterisk label="FM [%]" value={windowData.fm} />
                 <input
                   type="number"
                   min="0"
@@ -863,11 +1034,25 @@ const ProjectWorkflowPart2: React.FC = () => {
                   placeholder="FM"
                   value={windowData.fm}
                   onChange={(e) => {
-                    const value = validatePercentage(parseFloat(e.target.value));
-                    setWindowData((prev) => ({ ...prev, fm: value }));
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value)) {
+                      setWindowData((prev) => ({ ...prev, fm: "" }));
+                    } else {
+                      const validated = validatePercentage(value);
+                      setWindowData((prev) => ({ ...prev, fm: validated.toString() }));
+                    }
                   }}
+                  onKeyDown={handleNumberKeyDown}
                 />
               </div>
+              {/* Se muestra el mensaje solo si los campos obligatorios no están completos */}
+              {!windowIsValid && (
+                <div className="mb-3">
+                  <p>
+                    (<span style={{ color: "red" }}>*</span>) Campos obligatorios
+                  </p>
+                </div>
+              )}
               <div className="text-end">
                 <CustomButton
                   variant="save"
@@ -875,12 +1060,12 @@ const ProjectWorkflowPart2: React.FC = () => {
                     setShowElementModal(false);
                     setWindowData({
                       name_element: "",
-                      u_vidrio: 0,
-                      fs_vidrio: 0,
+                      u_vidrio: "",
+                      fs_vidrio: "",
                       clousure_type: "Corredera",
                       frame_type: "",
-                      u_marco: 0,
-                      fm: 0,
+                      u_marco: "",
+                      fm: "",
                     });
                   }}
                 >
@@ -902,7 +1087,7 @@ const ProjectWorkflowPart2: React.FC = () => {
           ) : (
             <div>
               <div className="form-group mb-3">
-                <label>Nombre</label>
+                <LabelWithAsterisk label="Nombre" value={doorData.name_element} />
                 <input
                   type="text"
                   className="form-control"
@@ -912,27 +1097,29 @@ const ProjectWorkflowPart2: React.FC = () => {
                 />
               </div>
               <div className="form-group mb-3">
-                <label>U Puerta opaca [W/m2K]</label>
+                <LabelWithAsterisk label="U Puerta opaca [W/m2K]" value={doorData.u_puerta_opaca} />
                 <input
                   type="number"
                   min="0"
                   className="form-control"
                   placeholder="U Puerta opaca"
                   value={doorData.u_puerta_opaca}
-                  onChange={(e) => setDoorData((prev) => ({ ...prev, u_puerta_opaca: parseFloat(e.target.value) }))}
+                  onChange={(e) => setDoorData((prev) => ({ ...prev, u_puerta_opaca: e.target.value }))}
+                  onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <label>Ventana Asociada</label>
+                <LabelWithAsterisk label="Ventana Asociada" value={doorData.ventana_id} required={false} />
                 <select
                   className="form-control"
-                  value={doorData.ventana_id || ""}
+                  value={doorData.ventana_id}
                   onChange={(e) => {
-                    const winId = parseInt(e.target.value);
+                    const winId = e.target.value;
                     setDoorData((prev) => ({
                       ...prev,
                       ventana_id: winId,
-                      name_ventana: allWindowsForDoor.find((win) => win.id === winId)?.name_element || "",
+                      name_ventana:
+                        allWindowsForDoor.find((win) => win.id === parseInt(winId))?.name_element || "",
                     }));
                   }}
                 >
@@ -945,34 +1132,41 @@ const ProjectWorkflowPart2: React.FC = () => {
                 </select>
               </div>
               <div className="form-group mb-3">
-                <label>% Vidrio</label>
+                <LabelWithAsterisk label="% Vidrio" value={doorData.porcentaje_vidrio} required={false} />
                 <input
                   type="number"
                   min="0"
                   max="100"
                   className="form-control"
                   placeholder="% Vidrio"
-                  value={doorData.ventana_id ? doorData.porcentaje_vidrio : 0}
+                  value={doorData.ventana_id ? doorData.porcentaje_vidrio : ""}
                   onChange={(e) => {
-                    const value = validatePercentage(parseFloat(e.target.value));
-                    setDoorData((prev) => ({ ...prev, porcentaje_vidrio: value }));
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value)) {
+                      setDoorData((prev) => ({ ...prev, porcentaje_vidrio: "" }));
+                    } else {
+                      const validated = validatePercentage(value);
+                      setDoorData((prev) => ({ ...prev, porcentaje_vidrio: validated.toString() }));
+                    }
                   }}
-                  disabled={doorData.ventana_id ? false : true}
+                  onKeyDown={handleNumberKeyDown}
+                  disabled={!doorData.ventana_id}
                 />
               </div>
               <div className="form-group mb-3">
-                <label>U Marco [W/m2K]</label>
+                <LabelWithAsterisk label="U Marco [W/m2K]" value={doorData.u_marco} />
                 <input
                   type="number"
                   min="0"
                   className="form-control"
                   placeholder="U Marco"
                   value={doorData.u_marco}
-                  onChange={(e) => setDoorData((prev) => ({ ...prev, u_marco: parseFloat(e.target.value) }))}
+                  onChange={(e) => setDoorData((prev) => ({ ...prev, u_marco: e.target.value }))}
+                  onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <label>FM [%]</label>
+                <LabelWithAsterisk label="FM [%]" value={doorData.fm} />
                 <input
                   type="number"
                   min="0"
@@ -981,11 +1175,25 @@ const ProjectWorkflowPart2: React.FC = () => {
                   placeholder="FM"
                   value={doorData.fm}
                   onChange={(e) => {
-                    const value = validatePercentage(parseFloat(e.target.value));
-                    setDoorData((prev) => ({ ...prev, fm: value }));
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value)) {
+                      setDoorData((prev) => ({ ...prev, fm: "" }));
+                    } else {
+                      const validated = validatePercentage(value);
+                      setDoorData((prev) => ({ ...prev, fm: validated.toString() }));
+                    }
                   }}
+                  onKeyDown={handleNumberKeyDown}
                 />
               </div>
+              {/* Se muestra el mensaje solo si los campos obligatorios no están completos */}
+              {!doorIsValid && (
+                <div className="mb-3">
+                  <p>
+                    (<span style={{ color: "red" }}>*</span>) Campos obligatorios
+                  </p>
+                </div>
+              )}
               <div className="text-end">
                 <CustomButton
                   variant="save"
@@ -993,12 +1201,12 @@ const ProjectWorkflowPart2: React.FC = () => {
                     setShowElementModal(false);
                     setDoorData({
                       name_element: "",
-                      ventana_id: 0,
+                      ventana_id: "",
                       name_ventana: "",
-                      u_puerta_opaca: 0,
-                      porcentaje_vidrio: 0,
-                      u_marco: 0,
-                      fm: 0,
+                      u_puerta_opaca: "",
+                      porcentaje_vidrio: "",
+                      u_marco: "",
+                      fm: "",
                     });
                   }}
                 >
@@ -1021,19 +1229,15 @@ const ProjectWorkflowPart2: React.FC = () => {
         </Modal>
       )}
 
+      {/* Contenedor de notificaciones */}
       <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
+        limit={1}
+        autoClose={2000}
+        pauseOnHover={false}
+        pauseOnFocusLoss={false}
       />
 
       <style jsx>{`
-        /* Estilos generales para contenedor y layout responsive */
         .custom-container {
           max-width: 1780px;
           margin-left: 103px;
@@ -1079,7 +1283,6 @@ const ProjectWorkflowPart2: React.FC = () => {
             margin-right: 10px;
           }
         }
-        /* Ajustes para la tabla */
         .table {
           border-collapse: collapse;
         }
@@ -1109,4 +1312,4 @@ const ProjectWorkflowPart2: React.FC = () => {
   );
 };
 
-export default ProjectWorkflowPart2;
+export default DataEntryPage;

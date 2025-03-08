@@ -77,6 +77,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [globalError, setGlobalError] = useState<string>("");
 
+  // Actualiza la primary color según la variable CSS
   useEffect(() => {
     const pColor =
       getComputedStyle(document.documentElement)
@@ -85,6 +86,17 @@ const ProjectWorkflowPart1: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
 
+  // Actualiza el step si se pasa en la query
+  useEffect(() => {
+    if (router.query.step) {
+      const queryStep = parseInt(router.query.step as string, 10);
+      if (!isNaN(queryStep)) {
+        setStep(queryStep);
+      }
+    }
+  }, [router.query.step]);
+
+  // Carga datos del proyecto si se está editando
   useEffect(() => {
     if (!router.isReady) return;
     if (!router.query.id || mode === "create") {
@@ -126,7 +138,8 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   const handleFormInputChange = useCallback(
     (field: keyof FormData, value: string | number) => {
-      if ((field === "number_levels" ||
+      if (
+        (field === "number_levels" ||
           field === "number_homes_per_level" ||
           field === "built_surface") &&
         typeof value === "number" &&
@@ -405,6 +418,24 @@ const ProjectWorkflowPart1: React.FC = () => {
                     activeStep={step}
                     onClickAction={() => setStep(2)}
                   />
+                  <SidebarItemComponent
+                    stepNumber={3}
+                    iconName="build"
+                    title="Detalles constructivos"
+                    activeStep={step}
+                    onClickAction={() =>
+                      router.push(`/workflow-part2-edit?id=${router.query.id}&step=4`)
+                    }
+                  />
+                  <SidebarItemComponent
+                    stepNumber={4}
+                    iconName="design_services"
+                    title="Recinto"
+                    activeStep={step}
+                    onClickAction={() =>
+                      router.push(`/workflow-part2-edit?id=${router.query.id}&step=7`)
+                    }
+                  />
                 </ul>
               </div>
               <div style={{ flex: 1, padding: "40px" }}>
@@ -423,7 +454,9 @@ const ProjectWorkflowPart1: React.FC = () => {
                           onChange={(e) =>
                             handleFormInputChange("name_project", e.target.value)
                           }
-                          style={submitted && errors.name_project ? { borderColor: "red" } : undefined}
+                          style={
+                            submitted && errors.name_project ? { borderColor: "red" } : undefined
+                          }
                         />
                         {submitted && errors.name_project && (
                           <small className="text-danger">{errors.name_project}</small>
@@ -700,7 +733,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                           </span>
                           Actualizar Datos
                         </CustomButton>
-                        
                       </div>
                     ) : (
                       <div className="d-flex justify-content-between align-items-center mt-4">
@@ -792,7 +824,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <div className="d-flex">
-                          
                           <CustomButton
                             variant="save"
                             onClick={handleGeolocation}

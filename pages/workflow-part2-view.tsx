@@ -73,13 +73,7 @@ interface Puerta {
   fm?: number;
 }
 
-type TabStep4 =
-  | "detalles"
-  | "muros"
-  | "techumbre"
-  | "pisos"
-  | "ventanas"
-  | "puertas";
+type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
 
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
@@ -134,12 +128,15 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   );
 };
 
-const ProjectWorkflowPart3View: React.FC = () => {
+const WorkFlowpar2viewPage: React.FC = () => {
   useAuth();
   const router = useRouter();
+
+  // Estado para el id del proyecto y paso actual
   const [projectId, setProjectId] = useState<number | null>(null);
-  const [hasLoaded, setHasLoaded] = useState(false);
   const [step, setStep] = useState<number>(4);
+  const [hasLoaded, setHasLoaded] = useState(false);
+
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   // Estado para búsqueda en detalles constructivos
   const [searchQuery, setSearchQuery] = useState("");
@@ -167,13 +164,28 @@ const ProjectWorkflowPart3View: React.FC = () => {
     },
   ];
 
+  // --- Obtención del projectId y step desde la URL o localStorage ---
   useEffect(() => {
-    const storedProjectId = localStorage.getItem("project_id");
-    if (storedProjectId) {
-      setProjectId(Number(storedProjectId));
+    if (router.isReady) {
+      // Si la URL trae un id, lo usamos; de lo contrario, intentamos con localStorage
+      if (router.query.id) {
+        setProjectId(Number(router.query.id));
+      } else {
+        const storedProjectId = localStorage.getItem("project_id_view");
+        if (storedProjectId) {
+          setProjectId(Number(storedProjectId));
+        }
+      }
+      // Si la URL trae el parámetro step, lo usamos
+      if (router.query.step) {
+        const stepQuery = parseInt(router.query.step as string, 10);
+        if (!isNaN(stepQuery)) {
+          setStep(stepQuery);
+        }
+      }
+      setHasLoaded(true);
     }
-    setHasLoaded(true);
-  }, []);
+  }, [router.isReady, router.query.id, router.query.step]);
 
   useEffect(() => {
     if (hasLoaded && projectId === null) {
@@ -182,19 +194,11 @@ const ProjectWorkflowPart3View: React.FC = () => {
         "Serás redirigido a la creación de proyecto",
         "warning"
       ).then(() => {
-        router.push("/project-workflow-part1");
+        router.push("/workflow-part1-view");
       });
     }
   }, [hasLoaded, projectId, router]);
-
-  useEffect(() => {
-    if (router.query.step) {
-      const queryStep = parseInt(router.query.step as string, 10);
-      if (!isNaN(queryStep)) {
-        setStep(queryStep);
-      }
-    }
-  }, [router.query.step]);
+  // --------------------------------------------------------------
 
   const fetchFetchedDetails = async () => {
     try {
@@ -595,7 +599,9 @@ const ProjectWorkflowPart3View: React.FC = () => {
                     return (
                       <tr key={idx}>
                         <td style={{ textAlign: "center" }}>{item.name_detail}</td>
-                        <td style={{ textAlign: "center" }}>{item.value_u?.toFixed(3) ?? "--"}</td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.value_u?.toFixed(3) ?? "--"}
+                        </td>
                         <td style={{ textAlign: "center" }}>
                           {bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}
                         </td>
@@ -855,7 +861,9 @@ const ProjectWorkflowPart3View: React.FC = () => {
             </table>
           </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "30px", marginBottom: "10px" }}>
+        <div
+          style={{ display: "flex", justifyContent: "center", marginTop: "30px", marginBottom: "10px" }}
+        >
           <CustomButton
             id="mostrar-datos-btn"
             variant="save"
@@ -936,7 +944,7 @@ const ProjectWorkflowPart3View: React.FC = () => {
         <Card style={{ marginLeft: "0.1rem", width: "100%" }}>{renderMainHeader()}</Card>
         <Card style={{ marginTop: "clamp(0.5rem, 2vw, 1rem)", marginLeft: "0.1rem", width: "100%" }}>
           <div className="row">
-            {/* Sidebar solo con los elementos necesarios */}
+            {/* Sidebar con los elementos necesarios */}
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div
                 style={{
@@ -950,28 +958,34 @@ const ProjectWorkflowPart3View: React.FC = () => {
                   <SidebarItemComponent
                     stepNumber={1}
                     iconName="assignment_ind"
-                    title="Agregar detalles..."
+                    title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
                     onClickAction={() =>
-                      router.push("/project-workflow-part1?id=" + projectId)
+                      router.push(`/workflow-part1-view?id=${projectId}&step=1`)
                     }
                   />
                   <SidebarItemComponent
                     stepNumber={2}
                     iconName="location_on"
                     title="Ubicación del proyecto"
-                    onClickAction={() => router.push("/project-workflow-part1?step=2")}
+                    onClickAction={() =>
+                      router.push(`/workflow-part1-view?id=${projectId}&step=2`)
+                    }
                   />
                   <SidebarItemComponent
                     stepNumber={4}
                     iconName="build"
                     title="Detalles constructivos"
-                    onClickAction={() => setStep(4)}
+                    onClickAction={() =>
+                      router.push(`/workflow-part2-view?id=${projectId}&step=4`)
+                    }
                   />
                   <SidebarItemComponent
                     stepNumber={7}
                     iconName="design_services"
                     title="Recinto"
-                    onClickAction={() => setStep(7)}
+                    onClickAction={() =>
+                      router.push(`/workflow-part2-view?id=${projectId}&step=7`)
+                    }
                   />
                 </ul>
               </div>
@@ -1044,4 +1058,4 @@ const ProjectWorkflowPart3View: React.FC = () => {
   );
 };
 
-export default ProjectWorkflowPart3View;
+export default WorkFlowpar2viewPage;

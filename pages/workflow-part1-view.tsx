@@ -129,8 +129,6 @@ const ProjectWorkflowPart1: React.FC = () => {
         fetchProjectData();
     }, [router.isReady, router.query.id]);
 
-
-
     // Render del encabezado principal
     const renderMainHeader = () => {
         return (
@@ -146,6 +144,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                 Vista de Proyecto
             </h1>
         );
+    };
+
+    // Función para obtener el id del proyecto desde localStorage
+    const getProjectId = () => {
+        return localStorage.getItem("project_id_view") || "";
     };
 
     return (
@@ -185,36 +188,42 @@ const ProjectWorkflowPart1: React.FC = () => {
                                         iconName="assignment_ind"
                                         title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
                                         activeStep={step}
-                                        onClickAction={() => setStep(1)}
+                                        onClickAction={() => {
+                                            const projectId = getProjectId();
+                                            router.push(`/workflow-part1-view?id=${projectId}&step=1`);
+                                        }}
                                     />
                                     <SidebarItemComponent
                                         stepNumber={2}
                                         iconName="location_on"
                                         title="Ubicación del proyecto"
                                         activeStep={step}
-                                        onClickAction={() => setStep(2)}
+                                        onClickAction={() => {
+                                            const projectId = getProjectId();
+                                            router.push(`/workflow-part1-view?id=${projectId}&step=2`);
+                                        }}
                                     />
                                     {/* Pasos extras en modo vista */}
                                     <>
-
-
                                         <SidebarItemComponent
                                             stepNumber={6}
                                             iconName="build"
                                             title="Detalles constructivos"
                                             activeStep={step}
-                                            onClickAction={() =>
-                                                router.push(`/workflow-part2-view`)
-                                            }
+                                            onClickAction={() => {
+                                                const projectId = getProjectId();
+                                                router.push(`/workflow-part2-view?id=${projectId}&step=4`);
+                                            }}
                                         />
                                         <SidebarItemComponent
                                             stepNumber={7}
                                             iconName="design_services"
                                             title="Recinto"
                                             activeStep={step}
-                                            onClickAction={() =>
-                                                router.push(`/workflow-part2-view`)
-                                            }
+                                            onClickAction={() => {
+                                                const projectId = getProjectId();
+                                                router.push(`/workflow-part2-view?id=${projectId}&step=7`);
+                                            }}
                                         />
                                     </>
                                 </ul>
@@ -255,11 +264,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                                             </div>
                                             <div className="col-12 col-md-6">
                                                 <label className="form-label">País</label>
-                                                <select
-                                                    className="form-control"
-                                                    value={formData.country}
-                                                    disabled={true}
-                                                >
+                                                <select className="form-control" value={formData.country} disabled={true}>
                                                     <option value="">Seleccione un país</option>
                                                     {Object.keys(locationData).map((country) => (
                                                         <option key={country} value={country}>
@@ -272,11 +277,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                                         <div className="row mb-3">
                                             <div className="col-12 col-md-6">
                                                 <label className="form-label">Departamento</label>
-                                                <select
-                                                    className="form-control"
-                                                    value={formData.department}
-                                                    disabled={true}
-                                                >
+                                                <select className="form-control" value={formData.department} disabled={true}>
                                                     <option value="">Seleccione un departamento</option>
                                                     {formData.country &&
                                                         Object.keys(locationData[formData.country]?.departments || {}).map((dept) => (
@@ -288,11 +289,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                                             </div>
                                             <div className="col-12 col-md-6">
                                                 <label className="form-label">Provincia</label>
-                                                <select
-                                                    className="form-control"
-                                                    value={formData.province}
-                                                    disabled={true}
-                                                >
+                                                <select className="form-control" value={formData.province} disabled={true}>
                                                     <option value="">Seleccione una provincia</option>
                                                     {formData.country &&
                                                         formData.department &&
@@ -316,11 +313,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                                             </div>
                                             <div className="col-12 col-md-6">
                                                 <label className="form-label">Tipo de edificación</label>
-                                                <select
-                                                    className="form-control"
-                                                    value={formData.building_type}
-                                                    disabled={true}
-                                                >
+                                                <select className="form-control" value={formData.building_type} disabled={true}>
                                                     <option value="">Seleccione un tipo de edificación</option>
                                                     <option value="Unifamiliar">Unifamiliar</option>
                                                     <option value="Duplex">Duplex</option>
@@ -331,11 +324,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                                         <div className="row mb-3">
                                             <div className="col-12 col-md-6">
                                                 <label className="form-label">Tipo de uso principal</label>
-                                                <select
-                                                    className="form-control"
-                                                    value={formData.main_use_type}
-                                                    disabled={true}
-                                                >
+                                                <select className="form-control" value={formData.main_use_type} disabled={true}>
                                                     <option value="">Seleccione un tipo de uso</option>
                                                     <option value="Viviendas">Viviendas</option>
                                                     <option value="Oficinas">Oficinas</option>
@@ -378,9 +367,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                                         {/* Botones para el paso 1 */}
                                         {step === 1 ? (
                                             <div className="d-flex justify-content-end align-items-center mt-4">
+                                                {/* Aquí podrías colocar botones adicionales si es necesario */}
                                             </div>
                                         ) : (
                                             <div className="d-flex justify-content-between align-items-center mt-4">
+                                                {/* Alternativa si fuera necesario */}
                                             </div>
                                         )}
                                     </>
@@ -459,10 +450,10 @@ const ProjectWorkflowPart1: React.FC = () => {
                                             </div>
                                             <div className="d-flex justify-content-between align-items-center mt-4">
                                                 <div className="d-flex">
-
+                                                    {/* Aquí podrías agregar botones para navegación o acciones */}
                                                 </div>
                                                 <div className="d-flex">
-
+                                                    {/* Alternativa para otros botones */}
                                                 </div>
                                             </div>
                                         </div>

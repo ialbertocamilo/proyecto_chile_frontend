@@ -171,7 +171,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   );
 };
 
-const ProjectWorkflowCreationEdit: React.FC = () => {
+const WorkFlowpar2editPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
@@ -223,7 +223,7 @@ const ProjectWorkflowCreationEdit: React.FC = () => {
 
   // Inicialización de projectId y primaryColor
   useEffect(() => {
-    const storedProjectId = localStorage.getItem("project_id");
+    const storedProjectId = localStorage.getItem("project_id_edit");
     if (storedProjectId) {
       setProjectId(Number(storedProjectId));
     }
@@ -295,7 +295,7 @@ const ProjectWorkflowCreationEdit: React.FC = () => {
       console.error("Error al obtener detalles:", error);
       Swal.fire("Error", "Error al obtener detalles. Ver consola.");
     }
-  }, []); // Se eliminó projectId de las dependencias ya que no se usa
+  }, []);
 
   const fetchMurosDetails = useCallback(() => {
     fetchData<TabItem[]>(
@@ -1423,6 +1423,24 @@ const ProjectWorkflowCreationEdit: React.FC = () => {
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div style={{ padding: "20px", boxSizing: "border-box", borderRight: "1px solid #ccc" }} className="mb-3 mb-lg-0">
                 <ul className="nav flex-column" style={{ height: "100%" }}>
+                  {/* Nuevas opciones agregadas arriba de los existentes */}
+                  <SidebarItemComponent
+                    stepNumber={1}
+                    iconName="assignment_ind"
+                    title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
+                    onClickAction={() =>
+                      router.push(`/workflow-part1-edit?id=${projectId}&step=1`)
+                    }
+                  />
+                  <SidebarItemComponent
+                    stepNumber={2}
+                    iconName="location_on"
+                    title="Ubicación del proyecto"
+                    onClickAction={() =>
+                      router.push(`/workflow-part1-edit?id=${projectId}&step=2`)
+                    }
+                  />
+                  {/* Opciones existentes */}
                   <SidebarItemComponent
                     stepNumber={4}
                     iconName="build"
@@ -1499,4 +1517,4 @@ const ProjectWorkflowCreationEdit: React.FC = () => {
   );
 };
 
-export default ProjectWorkflowCreationEdit;
+export default WorkFlowpar2editPage;

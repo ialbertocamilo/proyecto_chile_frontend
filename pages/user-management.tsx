@@ -1,14 +1,14 @@
-import { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { useRouter } from "next/router";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import "../public/assets/css/globals.css";
+import Card from "../src/components/common/Card";
+import CustomButton from "../src/components/common/CustomButton";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
-import CustomButton from "../src/components/common/CustomButton";
-import Card from "../src/components/common/Card";
-import "../public/assets/css/globals.css";
-import Swal from "sweetalert2";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
 import Title from "../src/components/Title";
+import useAuth from "../src/hooks/useAuth";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 interface User {
   id: number;
@@ -200,134 +200,113 @@ const UserManagement = () => {
         <div className="container-fluid">
           {/* custom-container centrado y con max-width */}
           <div className="custom-container" style={{paddingLeft: "2em"}}>
-            <Title text="Listado de Usuarios" />
 
-            {/* Card para la barra de búsqueda */}
-            <Card className="search-card" style={{ height: "auto", padding: "10px" }}>
-              <div className="input-group mb-3 search-input-group">
-                <input
-                  type="text"
-                  placeholder="Buscar..."
-                  className="form-control"
-                  value={searchQuery}
-                  onChange={handleSearch}
-                  style={{
-                    flexGrow: 1,
-                    fontFamily: "var(--font-family-base)",
-                    fontSize: "var(--font-size-base)",
-                    boxShadow: "none",
-                    paddingLeft: "1rem",
-                    borderRadius: "8px",
-                  }}
-                />
-                <div className="search-btn">
-                  <CustomButton
-                    type="button"
-                    variant="save"
-                    onClick={() => router.push("/user-create")}
-                    style={{
-                      minWidth: "150px",
-                      height: "40px",
-                      fontFamily: "var(--font-family-base)",
-                      fontSize: "var(--font-size-base)",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    Agregar Usuario
-                  </CustomButton>
-                </div>
-              </div>
-            </Card>
-
+    
             {/* Card que contiene la tabla de usuarios */}
-            <Card style={{ marginTop: "20px" }}>
-              <div className="table-responsive scrollable-table">
-                <table className="custom-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Nombre</th>
-                      <th>Apellidos</th>
-                      <th>Email</th>
-                      <th>Teléfono</th>
-                      <th>País</th>
-                      <th>Ubigeo</th>
-                      <th>Rol</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.length > 0 ? (
-                      users.map((u) => (
-                        <tr key={u.id}>
-                          <td>{u.id}</td>
-                          <td>{u.name}</td>
-                          <td>{u.lastname}</td>
-                          <td>{u.email}</td>
-                          <td>{u.number_phone}</td>
-                          <td>{u.country}</td>
-                          <td>{u.ubigeo}</td>
-                          <td>
-                            <select
-                              value={u.role_id}
-                              onChange={(e) => handleRoleChange(e, u.id)}
-                              style={{
-                                padding: "0.3rem",
-                                border: "none",
-                                outline: "none",
-                                background: "transparent",
-                              }}
-                            >
-                              <option value="1">Administrador</option>
-                              <option value="2">Operador</option>
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            <label className="switch">
-                              <input
-                                type="checkbox"
-                                checked={u.active}
-                                onChange={(e) =>
-                                  handleActiveChange(e, u.id, u.role_id)
-                                }
-                              />
-                              <span className="slider"></span>
-                            </label>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={9} className="text-center text-muted">
-                          No hay usuarios o no coinciden con la búsqueda.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+            <div className="container-fluid px-2 px-sm-4">
+              <div className="custom-container" style={{ marginTop: "80px" }}>
+                <Title text="Listado de Usuarios" />
+                <Card style={{ height: "auto", padding: "10px", margin: "0 10px" }}>
+                  <div className="input-group ">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="🔍︎ Buscar..."
+                      value={searchQuery}
+                      onChange={handleSearch}
+                      style={{ fontFamily: "var(--font-family-base)" }}
+                    />
+                    <div className="search-btn">
+                      <CustomButton
+                        type="button"
+                        variant="save"
+                        onClick={() => router.push("/user-create")}
+                        style={{
+                          minWidth: "150px",
+                          height: "40px",
+                          fontFamily: "var(--font-family-base)",
+                          fontSize: "var(--font-size-base)",
+                          borderRadius: "8px",
+                        }}
+                      >
+                        Agregar Usuario
+                      </CustomButton>
+                    </div>
+                  </div>
+                </Card>
+                <Card style={{ marginTop: "20px", margin: "20px 10px",  borderRadius: "8px"}}>
+                  <div className="table-responsive" style={{ margin: "-20px" }}>
+                    <table className="custom-table table-mobile" style={{ fontFamily: "var(--font-family-base)" }}>
+  <thead>
+    <tr>
+      <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>ID</th>
+      <th style={{ backgroundColor: "#f8f9fa" }}>Nombre</th>
+      <th style={{ backgroundColor: "#f8f9fa" }}>Apellidos</th>
+      <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Email</th>
+      <th className="d-none d-lg-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Teléfono</th>
+      <th className="d-none d-lg-table-cell" style={{ backgroundColor: "#f8f9fa" }}>País</th>
+      <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Ubigeo</th>
+      <th style={{ backgroundColor: "#f8f9fa" }}>Rol</th>
+      <th style={{ backgroundColor: "#f8f9fa" }}>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    {users.length > 0 ? (
+      users.map((u) => (
+        <tr key={u.id}>
+          <td className="d-none d-md-table-cell">{u.id}</td>
+          <td>{u.name}</td>
+          <td>{u.lastname}</td>
+          <td className="d-none d-md-table-cell">{u.email}</td>
+          <td className="d-none d-lg-table-cell">{u.number_phone}</td>
+          <td className="d-none d-lg-table-cell">{u.country}</td>
+          <td className="d-none d-xl-table-cell">{u.ubigeo}</td>
+          <td>
+            <select
+              value={u.role_id}
+              onChange={(e) => handleRoleChange(e, u.id)}
+              style={{
+                padding: "0.3rem",
+                border: "none",
+                outline: "none",
+                background: "transparent",
+              }}
+            >
+              <option value="1">Administrador</option>
+              <option value="2">Operador</option>
+            </select>
+          </td>
+          <td className="text-center">
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={u.active}
+                onChange={(e) => handleActiveChange(e, u.id, u.role_id)}
+              />
+              <span className="slider"></span>
+            </label>
+          </td>
+        </tr>
+      ))
+    ) : (
+      <tr>
+        <td colSpan={9} className="text-center text-muted">
+          No hay usuarios o no coinciden con la búsqueda.
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
+                  </div>
+                </Card>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </div>
 
       <style jsx>{`
-        /* Similares al primer código (ProjectListStatusEditPage) */
 
-        .container-fluid {
-          width: 100%;
-          padding: 0 15px;
-          margin: 0 auto;
-          box-sizing: border-box;
-        }
-
-        .custom-container {
-          width: 100%;
-          max-width: 1700px;
-          margin: 80px auto 50px;
-          padding: 0 15px;
-          box-sizing: border-box;
-        }
 
         /* Card para la barra de búsqueda */
         .search-card {
@@ -339,49 +318,6 @@ const UserManagement = () => {
           align-items: center;
           gap: 10px;
           width: 100%;
-        }
-        .search-btn {
-          flex-shrink: 0;
-        }
-
-        /* Tabla con espacios y sombra */
-        .custom-table {
-          width: 100%;
-          border-collapse: separate;
-          border-spacing: 0 12px;
-          background-color: #fff;
-          font-family: var(--font-family-base);
-        }
-        .custom-table thead th {
-          background-color: #ffff;
-          color: #666;
-          font-weight: normal;
-          position: sticky;
-          top: 0;
-          z-index: 1;
-          text-align: center;
-          font-size: 0.9rem;
-          padding: 8px;
-        }
-        .custom-table tbody tr {
-          background-color: #fff;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-          border-radius: 16px;
-          overflow: hidden;
-        }
-        .custom-table tbody tr td:first-child {
-          border-top-left-radius: 16px;
-          border-bottom-left-radius: 16px;
-        }
-        .custom-table tbody tr td:last-child {
-          border-top-right-radius: 16px;
-          border-bottom-right-radius: 16px;
-        }
-        .custom-table td {
-          padding: 8px;
-          text-align: center;
-          vertical-align: middle;
-          border: none;
         }
 
         /* Scroll */
@@ -451,19 +387,10 @@ const UserManagement = () => {
             margin: 60px auto 30px;
           }
           .custom-table thead th,
-          .custom-table td {
-            font-size: 0.85rem;
-            padding: 6px;
-          }
         }
         @media (max-width: 768px) {
           .custom-container {
             margin: 40px auto 20px;
-          }
-          .custom-table thead th,
-          .custom-table td {
-            font-size: 0.8rem;
-            padding: 6px;
           }
           .switch {
             width: 45px;
@@ -481,11 +408,6 @@ const UserManagement = () => {
           .custom-container {
             margin: 30px auto 20px;
             padding: 0 10px;
-          }
-          .custom-table thead th,
-          .custom-table td {
-            font-size: 0.75rem;
-            padding: 5px;
           }
           .switch {
             width: 40px;

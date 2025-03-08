@@ -1,9 +1,8 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React from "react";
-import Image from "next/image";
+import React, { useEffect, useState } from "react";
 import GoogleIcons from "../../../public/GoogleIcons";
 import "../../../public/assets/css/globals.css";
 
@@ -16,59 +15,50 @@ const Navbar = ({}: NavbarProps) => {
   const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
   const [roleId, setRoleId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
-  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [isNavbarVisible, setIsNavbarVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [animateIcon, setAnimateIcon] = useState(false);
-
+  
   useEffect(() => {
     const storedLogo = localStorage.getItem("logoUrl");
     if (storedLogo) {
       setLogoUrl(storedLogo);
     }
   }, []);
-
+  
   useEffect(() => {
     const storedRole = localStorage.getItem("role_id");
     if (storedRole) {
       setRoleId(storedRole);
     }
   }, []);
-
+  
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id");
     if (storedProjectId) {
       setProjectId(storedProjectId);
     }
   }, []);
-
+  
   // Detecta si estamos en modo móvil y ajusta el estado inicial
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth <= 1024;
       setIsMobile(mobile);
-      if (mobile) {
-        setIsNavbarVisible(false);
-      } else {
-        setIsNavbarVisible(true);
-      }
     };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
   };
-
   const toggleNavbar = () => {
-    // Activa la animación al presionar el ícono
     setAnimateIcon(true);
     setIsNavbarVisible(!isNavbarVisible);
     setTimeout(() => setAnimateIcon(false), 300);
   };
-
   const navLinkStyle: React.CSSProperties = {
     cursor: "pointer",
     fontFamily: "var(--font-family-base)",
@@ -89,7 +79,6 @@ const Navbar = ({}: NavbarProps) => {
     color: "#fff",
     fontWeight: "normal",
   };
-
   const iconStyle = (path: string): React.CSSProperties => ({
     fontSize: "1.5rem",
     marginBottom: "1px",
@@ -106,7 +95,6 @@ const Navbar = ({}: NavbarProps) => {
     justifyContent: "center",
     boxSizing: "border-box",
   });
-
   const logoContainerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -121,9 +109,7 @@ const Navbar = ({}: NavbarProps) => {
     backgroundColor: "rgba(0, 0, 0, 0.2)",
     paddingBottom: "2.6rem" 
   };
-
   const logoSize = 80;
-
   // Estilo para el botón toggle en desktop (commented out so you won't see the icon in desktop)
   /*
   const toggleStyle: React.CSSProperties = isNavbarVisible
@@ -153,48 +139,43 @@ const Navbar = ({}: NavbarProps) => {
       };
   */
 
-  // Estilo para el toggle en móviles: contenedor circular con animación al presionar
-  const mobileToggleContainerStyle: React.CSSProperties = {
-    position: "fixed",
-    top: isNavbarVisible ? "20px" : "20px",
-    left: isNavbarVisible ? "10px" : "30px",
-    width: "48px",
-    height: "48px",
-    borderRadius: "50%",
-    border: `1px solid ${isNavbarVisible ? "#fff" : "#000"}`,
-    backgroundColor: isNavbarVisible ? "var(--primary-color)" : "#fff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1400,
-    transition: "all 0.3s ease",
-    cursor: "pointer",
-    transform: animateIcon ? "translateY(-10px)" : "translateY(0)",
-  };
-
   return (
     <>
       <GoogleIcons />
-
-      {/* Ícono de menú flotante en móviles, envuelto en un contenedor circular con animación */}
-      {isMobile && (
-        <div
-          className="navbar-toggle"
-          onClick={toggleNavbar}
-          style={mobileToggleContainerStyle}
+  
+      {/* Toggle button for both mobile and desktop */}
+      <div
+        className="navbar-toggle"
+        onClick={toggleNavbar}
+        style={{
+          position: "fixed",
+          top: "10px",
+          left: isNavbarVisible ? "10px" : "30px",
+          width: "48px",
+          height: "48px",
+          borderRadius: "50%",
+          border: `1px solid ${isNavbarVisible ? "#fff" : "#000"}`,
+          backgroundColor: isNavbarVisible ? "var(--primary-color)" : "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1500,
+          transition: "all 0.3s ease",
+          cursor: "pointer",
+          transform: animateIcon ? "translateY(-10px)" : "translateY(0)"
+        }}
+      >
+        <span
+          className="material-icons"
+          style={{
+            color: isNavbarVisible ? "#fff" : "#000",
+            fontSize: "1.5rem"
+          }}
         >
-          <span
-            className="material-icons"
-            style={{
-              color: isNavbarVisible ? "#fff" : "#000",
-              fontSize: "1.5rem",
-            }}
-          >
-            menu
-          </span>
-        </div>
-      )}
-
+          menu
+        </span>
+      </div>
+  
       <nav
         className="sidebar d-flex flex-column"
         style={{
@@ -218,9 +199,9 @@ const Navbar = ({}: NavbarProps) => {
             alt="Proyecto Ceela"
             width={logoSize}
             height={logoSize}
-            style={{ borderRadius: "50%" }}
+            style={{ borderRadius: "50%", zIndex: 1100 }}
           />
-
+  
           {/* Botón toggle dentro del sidebar en desktop - COMENTADO */}
           {/*
           {!isMobile && (
@@ -232,7 +213,7 @@ const Navbar = ({}: NavbarProps) => {
           )}
           */}
         </div>
-
+  
         <div
           className="menu-container"
           style={{
@@ -306,7 +287,7 @@ const Navbar = ({}: NavbarProps) => {
               </li>
             )}
           </ul>
-
+  
           <ul className="nav flex-column" style={{ marginTop: "auto" }}>
             {roleId !== "2" && (
               <>
@@ -374,7 +355,7 @@ const Navbar = ({}: NavbarProps) => {
             </li>
           </ul>
         </div>
-
+  
         <style jsx>{`
           .sidebar {
             overflow-x: hidden;

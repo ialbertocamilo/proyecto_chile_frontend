@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import "../public/assets/css/globals.css";
+import Card from "../src/components/common/Card";
+import CustomButton from "../src/components/common/CustomButton";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
-import CustomButton from "../src/components/common/CustomButton";
-import Card from "../src/components/common/Card";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import "../public/assets/css/globals.css";
-import useAuth from "../src/hooks/useAuth";
-import { useRouter } from "next/router";
 import Title from "../src/components/Title";
+import useAuth from "../src/hooks/useAuth";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 interface Divisions {
   department?: string;
@@ -64,11 +64,11 @@ const ProjectListStatusEditPage = () => {
     }
     try {
       console.log("[fetchProjects] Obteniendo proyectos...");
+      console.log(constantUrlApiEndpoint)
       const response = await axios.get(`${constantUrlApiEndpoint}/admin/projects`, {
         params: { limit: 999999, num_pag: 1 },
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
       });
       console.log("[fetchProjects] Proyectos recibidos:", response.data);
@@ -110,14 +110,12 @@ const ProjectListStatusEditPage = () => {
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
       <Navbar setActiveView={() => {}} />
-      <div className="d-flex flex-column flex-grow-1" style={{ marginLeft: "100px", width: "100%" }}>
+      <div className="d-flex flex-column flex-grow-1" style={{  width: "100%" }}>
         <TopBar sidebarWidth={sidebarWidth} />
-        {/* Contenedor fluido que envuelve el custom-container */}
-        <div className="container-fluid">
+        <div className="container-fluid px-2 px-sm-4">
           <div className="custom-container" style={{ marginTop: "80px" }}>
             <Title text="Administrar proyectos" />
-            {/* Card del buscador: se sobrescribe el height para que no use 75vh */}
-            <Card style={{ height: "auto", padding: "10px" }}>
+            <Card style={{ height: "auto", padding: "10px", margin: "0 10px" }}>
               <div className="input-group mb-3">
                 <input
                   type="text"
@@ -129,11 +127,10 @@ const ProjectListStatusEditPage = () => {
                 />
               </div>
             </Card>
-            {/* Card que contiene la tabla de proyectos */}
-            <Card style={{ marginTop: "20px" }}>
-              <div>
+            <Card style={{ marginTop: "20px", margin: "20px 10px", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+              <div className="table-responsive" style={{ margin: "-20px" }}>
                 {error && (
-                  <p className="text-danger" style={{ fontWeight: "normal" }}>
+                  <p className="text-danger px-4 pt-4" style={{ fontWeight: "normal" }}>
                     {error}
                   </p>
                 )}
@@ -143,52 +140,42 @@ const ProjectListStatusEditPage = () => {
                     <div className="loading-text">Cargando...</div>
                   </div>
                 ) : (
-                  <div className="table-responsive scrollable-table">
-                    <table
-                      className="custom-table"
-                      style={{ fontFamily: "var(--font-family-base)" }}
-                    >
+                  <div className="table-responsive">
+                    <table className="custom-table table-mobile" style={{ fontFamily: "var(--font-family-base)" }}>
                       <thead>
                         <tr>
-                          <th>ID</th>
-                          <th></th>
-                          <th>Nombre del Proyecto</th>
-                          <th>Propietario</th>
-                          <th>Tipo de edificación</th>
-                          <th>Tipo de uso principal</th>
-                          <th>Número de niveles</th>
-                          <th>Número de viviendas/oficinas x nivel</th>
-                          <th>Superficie construida (m²)</th>
-                          <th>Acciones</th>
+                          <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>ID</th>
+                          <th style={{ backgroundColor: "#f8f9fa" }}></th>
+                          <th style={{ backgroundColor: "#f8f9fa" }}>Nombre del Proyecto</th>
+                          <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Propietario</th>
+                          <th className="d-none d-lg-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Tipo de edificación</th>
+                          <th className="d-none d-lg-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Tipo de uso principal</th>
+                          <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Número de niveles</th>
+                          <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Número de viviendas/oficinas x nivel</th>
+                          <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Superficie construida (m²)</th>
+                          <th style={{ backgroundColor: "#f8f9fa" }}>Acciones</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredProjects.length > 0 ? (
                           filteredProjects.map((project: Project) => (
-                            <tr key={project.id}>
-                              <td>{project.id || "N/D"}</td>
+                            <tr key={project.id} style={{ borderBottom: "1px solid #dee2e6" }}>
+                              <td className="d-none d-md-table-cell">{project.id || "N/D"}</td>
                               <td></td>
-                              <td>{project.name_project || "No disponible"}</td>
-                              <td>{project.owner_name || "No disponible"}</td>
-                              <td>{project.building_type || "N/D"}</td>
-                              <td>{project.main_use_type || "N/D"}</td>
-                              <td>
-                                {project.number_levels !== undefined
-                                  ? project.number_levels
-                                  : "N/D"}
+                              <td data-label="Proyecto:">{project.name_project || "No disponible"}</td>
+                              <td className="d-none d-md-table-cell">{project.owner_name || "No disponible"}</td>
+                              <td className="d-none d-lg-table-cell">{project.building_type || "N/D"}</td>
+                              <td className="d-none d-lg-table-cell">{project.main_use_type || "N/D"}</td>
+                              <td className="d-none d-xl-table-cell">
+                                {project.number_levels !== undefined ? project.number_levels : "N/D"}
                               </td>
-                              <td>
-                                {project.number_homes_per_level !== undefined
-                                  ? project.number_homes_per_level
-                                  : "N/D"}
+                              <td className="d-none d-xl-table-cell">
+                                {project.number_homes_per_level !== undefined ? project.number_homes_per_level : "N/D"}
                               </td>
-                              <td>
-                                {project.built_surface !== undefined
-                                  ? project.built_surface
-                                  : "N/D"}
+                              <td className="d-none d-xl-table-cell">
+                                {project.built_surface !== undefined ? project.built_surface : "N/D"}
                               </td>
-                              <td className="d-flex justify-content-center">
-                                {/* Botón para activar el modo vista */}
+                              <td className="text-center">
                                 <CustomButton
                                   variant="viewIcon"
                                   onClick={() => handleViewProject(project)}
@@ -197,6 +184,7 @@ const ProjectListStatusEditPage = () => {
                                     padding: "0.5rem",
                                     width: "40px",
                                     height: "40px",
+                                    borderRadius: "4px"
                                   }}
                                 />
                               </td>
@@ -204,7 +192,7 @@ const ProjectListStatusEditPage = () => {
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={10} className="text-center text-muted">
+                            <td colSpan={10} className="text-center text-muted p-4">
                               No hay proyectos disponibles o no coinciden con la búsqueda.
                             </td>
                           </tr>
@@ -219,105 +207,6 @@ const ProjectListStatusEditPage = () => {
         </div>
       </div>
 
-      <style jsx>{`
-        .custom-table {
-          width: 100%;
-          border-collapse: separate;
-          border-spacing: 0 12px;
-        }
-        .custom-table th,
-        .custom-table td {
-          padding: 8px;
-          text-align: center;
-          vertical-align: middle;
-          border: none;
-        }
-        .custom-table thead th {
-          background-color: #ffff;
-          color: #666;
-          font-weight: normal;
-          position: sticky;
-          top: 0;
-          z-index: 1;
-        }
-        .custom-table tbody tr {
-          background-color: #fff;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-          border-radius: 16px;
-          overflow: hidden;
-        }
-        .custom-table tbody tr td:first-child {
-          border-top-left-radius: 16px;
-          border-bottom-left-radius: 16px;
-        }
-        .custom-table tbody tr td:last-child {
-          border-top-right-radius: 16px;
-          border-bottom-right-radius: 16px;
-        }
-        .loading-container {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          height: 80vh;
-        }
-        .loading-spinner {
-          border: 8px solid #f3f3f3;
-          border-top: 8px solid var(--primary-color);
-          border-radius: 50%;
-          width: 60px;
-          height: 60px;
-          animation: spin 1s linear infinite;
-          margin-bottom: 15px;
-        }
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-        .loading-text {
-          font-size: 1.5rem;
-          color: var(--primary-color);
-          font-weight: normal;
-        }
-        .scrollable-table {
-          max-height: 550px;
-          overflow-y: auto;
-        }
-        .scrollable-table::-webkit-scrollbar {
-          width: 10px;
-        }
-        .scrollable-table::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        .scrollable-table::-webkit-scrollbar-thumb {
-          background: #c1c1c1;
-          border-radius: 10px;
-        }
-        .scrollable-table::-webkit-scrollbar-thumb:hover {
-          background: #a8a8a8;
-        }
-        /* Estilos actualizados para el custom-container */
-        .custom-container {
-          width: 100%;
-          max-width: 1780px;
-          margin: 80px auto 50px;
-          padding: 0 15px;
-          box-sizing: border-box;
-        }
-        /* Opcional: Puedes ajustar el container-fluid si es necesario */
-        .container-fluid {
-          width: 100%;
-          padding-right: 15px;
-          padding-left: 15px;
-          margin-right: auto;
-          margin-left: auto;
-        }
-      `}</style>
     </div>
   );
 };

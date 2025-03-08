@@ -334,7 +334,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       console.error("Error al obtener datos de muros:", error);
     }
   }, [projectId]);
-
+//s
   const fetchTechumbreDetails = useCallback(async () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");

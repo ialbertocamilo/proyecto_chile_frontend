@@ -68,7 +68,6 @@ const AdministrationPage: React.FC = () => {
   useAuth();
   console.log("[AdministrationPage] Página cargada y sesión validada.");
 
-
   const [step, setStep] = useState<number>(3);
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
   const [details, setDetails] = useState<Detail[]>([]);
@@ -119,10 +118,11 @@ const AdministrationPage: React.FC = () => {
 
   const windowsList = elementsList.filter((el) => el.type === "window");
 
-  const handleLogout = () => {
+  // Memoriza handleLogout para evitar que se re-cree en cada render y para incluirla como dependencia
+  const handleLogout = useCallback(() => {
     localStorage.removeItem("token");
     window.location.href = "/login";
-  };
+  }, []);
 
   const fetchMaterialsList = useCallback(async (page: number): Promise<void> => {
     try {
@@ -149,7 +149,7 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
       });
     }
-  }, []);
+  }, [handleLogout]);
 
   const fetchDetails = useCallback(async (): Promise<void> => {
     try {
@@ -178,7 +178,7 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
       });
     }
-  }, []);
+  }, [handleLogout]);
 
   const fetchElements = useCallback(async (): Promise<void> => {
     try {
@@ -199,7 +199,7 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
       });
     }
-  }, []);
+  }, [handleLogout]);
 
   const handleCreateMaterial = async () => {
     if (
@@ -410,7 +410,6 @@ const AdministrationPage: React.FC = () => {
   useEffect(() => {
     if (step === 4) {
       fetchDetails();
-      console.log("Detalles actuales:", details);
     }
   }, [step, fetchDetails]);
 
@@ -501,7 +500,7 @@ const AdministrationPage: React.FC = () => {
 
                   <div style={{ overflow: "hidden", padding: "10px" }}>
                     <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                      <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%"}}>
+                      <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
                         <thead>
                           <tr>
                             <th>Nombre Material</th>

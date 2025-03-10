@@ -31,8 +31,8 @@ const TablePagination: React.FC<{
     onPageChange: (page: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }> = ({ page, rowsPerPage, totalPages, onPageChange, onRowsPerPageChange }) => (
-    <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-3">
-        <div className="w-100 w-sm-auto mb-2 mb-sm-0">
+    <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 mt-3">
+        <div className="w-100 w-sm-auto mb-2 mb-sm-0 mx-auto mx-sm-0" style={{ maxWidth: "200px" }}>
             <select
                 className="form-select"
                 value={rowsPerPage}
@@ -44,7 +44,7 @@ const TablePagination: React.FC<{
                 <option value={50}>50 por página</option>
             </select>
         </div>
-        <div className="d-flex align-items-center justify-content-center gap-2">
+        <div className="d-flex align-items-center justify-content-center gap-2 w-100 w-sm-auto">
             <IconButton
                 onClick={() => onPageChange(page - 1)}
                 icon={ChevronLeft}
@@ -96,7 +96,7 @@ export default function DataTable<T extends { [key: string]: any }>({
 
     return (
         <Card>
-            <div className="container-fluid p-0">
+            <div className="">
                 <div className="row mb-3 mt-3">
                     <div className="col-12">
                         <div className="d-flex flex-column flex-sm-row gap-2">
@@ -110,15 +110,14 @@ export default function DataTable<T extends { [key: string]: any }>({
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-12">
+                    <div className="col-md-12">
                         <div className="table-responsive">
-                            <table className="table table-hover align-middle mb-0 w-100">
+                            <table className="table table-hover align-middle table-mobile">
                                 <thead className="bg-light border-bottom">
                                     <tr>
                                         {columns.map((column) => (
                                             <th
                                                 key={column.id.toString()}
-                                                className="text-secondary text-center py-3"
                                                 style={{
                                                     minWidth: column.minWidth
                                                 }}
@@ -147,7 +146,7 @@ export default function DataTable<T extends { [key: string]: any }>({
                                             .map((row, index) => (
                                                 <tr key={index} className="align-middle">
                                                     {columns.map((column) => (
-                                                        <td key={column.id.toString()} className="text-center p-3">
+                                                        <td key={column.id.toString()} className="text-center p-2 p-md-3">
                                                             {column.cell ? (
                                                                 column.cell({ row })
                                                             ) : column.format ? (
@@ -166,7 +165,7 @@ export default function DataTable<T extends { [key: string]: any }>({
                     </div>
                 </div>
                 <div className="row mt-3">
-                    <div className="col-12">
+                    <div className="col-md-12">
                         <TablePagination
                             page={page}
                             rowsPerPage={rowsPerPage}

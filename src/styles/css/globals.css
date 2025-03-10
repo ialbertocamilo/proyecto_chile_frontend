@@ -1,9 +1,9 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Encode+Sans:wght@400;700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 :root {
-  --font-family-base: 'Encode Sans', sans-serif;
-  --font-size-base: 16px;
+  --font-family-base: "Noto Sans", sans-serif;
+  --font-size-base: 10px;
   --font-size-heading: 2em;
   --primary-color: #3ca7b7;      /* Color principal, usado en títulos y botones */
   --secondary-color: #bbc4cb;    /* Color secundario, por ejemplo para hover en botones */
@@ -21,7 +21,7 @@
 }
 
 .material-icons {
-  font-size: 2.05rem; /* o el tamaño que desees */
+  font-size: 2.00rem; /* o el tamaño que desees */
 }
 
 html,
@@ -38,34 +38,6 @@ body {
   background-color: var(--background-color);
   margin: 0;
   padding: 0;
-}
-.custom-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-bottom: 1rem;
-}
-
-.custom-table th,
-.custom-table td {
-  padding: 1rem;
-  vertical-align: middle;
-  border-bottom: 1px solid #dee2e6;
-}
-
-.custom-table th {
-  background-color: #f8f9fa;
-  font-weight: 500;
-  color: #495057;
-  border-bottom: 2px solid #dee2e6;
-}
-
-.custom-table tbody tr:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-.custom-table td {
-  color: #495057;
 }
 
 .loading-container {

@@ -16,7 +16,7 @@ export const SearchInput: FC<SearchInputProps> = ({ searchQuery, handleSearch, c
 
     return (
         <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 w-100">
-            <div className="flex-grow-1">
+            <div className="flex-grow-1 mb-2 mb-sm-0">
                 <input
                     type="text"
                     className="form-control w-100"
@@ -26,7 +26,8 @@ export const SearchInput: FC<SearchInputProps> = ({ searchQuery, handleSearch, c
                     style={{
                         height: "42px",
                         border: "none",
-                        outline: "none"
+                        outline: "none",
+                        fontSize: "0.95rem"
                     }}
                 />
             </div>
@@ -36,9 +37,11 @@ export const SearchInput: FC<SearchInputProps> = ({ searchQuery, handleSearch, c
                     variant="save"
                     onClick={() => router.push(createUrl)}
                     className="w-100"
+                    margin="0"
                 >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {createText}
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="d-none d-sm-inline">{createText}</span>
+                    <span className="d-inline d-sm-none">Nuevo</span>
                 </CustomButton>
             </div>
         </div>

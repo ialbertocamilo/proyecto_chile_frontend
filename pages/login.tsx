@@ -1,12 +1,12 @@
-import "../public/assets/css/globals.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+;
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Head from "next/head";
+import { NextPage } from "next";
 
-const Login = () => {
+const Login:NextPage = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<boolean>(false);
@@ -177,5 +177,14 @@ const Login = () => {
     </div>
   );
 };
-
+Login.getLayout = function getLayout(page: React.ReactElement) {
+  return (
+    <>
+      <Head>
+        <title>Login</title>
+      </Head>
+      {page}
+    </>
+  );
+};
 export default Login;

@@ -5,8 +5,16 @@ import { useRouter } from "next/router";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import CustomButton from "../src/components/common/CustomButton";
+import { NextPage } from "next";
+import { ReactElement } from "react";
+import Head from "next/head";
 
-const ForgotPassword = () => {
+type NextPageWithLayout = NextPage & {
+  getLayout?: (page: ReactElement) => ReactElement;
+};
+
+
+const ForgotPassword: NextPageWithLayout = () => {
   const [email, setEmail] = useState<string>("");
   const [sentEmail, setSentEmail] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -18,14 +26,11 @@ const ForgotPassword = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${constantUrlApiEndpoint}/forgot-password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const response = await fetch(`${constantUrlApiEndpoint}/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
       const result = await response.json();
 
@@ -174,7 +179,6 @@ const ForgotPassword = () => {
               disabled={isLoading}
             >
               {isLoading ? (
-                // Indicador de carga: se puede usar un spinner o simplemente texto
                 <span>
                   <i className="bi bi-arrow-repeat spin"></i> Cargando...
                 </span>
@@ -224,6 +228,17 @@ const ForgotPassword = () => {
         }
       `}</style>
     </div>
+  );
+};
+
+ForgotPassword.getLayout = function getLayout(page: ReactElement) {
+  return (
+    <>
+      <Head>
+        <title>Forgot Password</title>
+      </Head>
+      {page}
+    </>
   );
 };
 

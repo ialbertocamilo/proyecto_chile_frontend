@@ -176,7 +176,7 @@
   --tag-pad: .6em 1em;
   --tag-inset-shadow-size: 1.35em;
   --tag-remove-btn-bg--hover: #000;
-  --tagify-dd-color-primary: var(var(--theme-default));
+  --tagify-dd-color-primary: var(--theme-default);
   --tagify-dd-bg-color: var(--course-light-btn);
 }
 
@@ -12034,12 +12034,7 @@ btn-group .dropdown-wrapper .input-group .input-group-text {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
 }
-.tgl::-moz-selection, .tgl:after::-moz-selection, .tgl:before::-moz-selection, .tgl *::-moz-selection, .tgl *:after::-moz-selection, .tgl *:before::-moz-selection, .tgl + .tgl-btn::-moz-selection {
-  background: none;
-}
-.tgl::selection, .tgl:after::selection, .tgl:before::selection, .tgl *::selection, .tgl *:after::selection, .tgl *:before::selection, .tgl + .tgl-btn::selection {
-  background: none;
-}
+
 .tgl + .tgl-btn {
   outline: 0;
   display: block;
@@ -27439,12 +27434,7 @@ footer {
   font-size: 24px;
   color: #fff;
 }
-.landing-page .landing-home {
-  background-image: url("../images/landing/landing-home/home-bg.png");
-  background-repeat: no-repeat;
-  background-size: cover;
-  position: relative;
-}
+
 .landing-page .landing-home .landing-home-contain {
   margin-top: 90px;
   padding-top: 105px;
@@ -27954,9 +27944,6 @@ footer {
 }
 .landing-page .color-light {
   background-color: #c38c81;
-}
-.landing-page .color-theme {
-  background: url("../images/landing/landing-home/home-bg.png");
 }
 .landing-page .color-theme .owl-theme h3 {
   padding: 18px 0;
@@ -30217,9 +30204,7 @@ html {
 /**=====================
     3.37 Social-app CSS start
 ==========================**/
-.user-profile .hovercard .socialheader {
-  background: url(../images/social-app/social-image.png);
-}
+
 .user-profile .hovercard .user-image .share-icons {
   position: absolute;
   right: 100px;
@@ -31390,7 +31375,7 @@ html {
   margin: 30px 0;
 }
 .user-profile .hovercard .cardheader {
-  background: url(../images/other-images/bg-profile.png);
+  /* background: url(../images/other-images/bg-profile.png); */
   background-size: cover;
   background-position: 10%;
   height: 470px;
@@ -38805,7 +38790,7 @@ footer p .footer-icon {
 }
 
 .iti--allow-dropdown .iti__flag {
-  background-image: url("../images/forms/flags.png");
+  /* background-image: url("../images/forms/flags.png"); */
 }
 
 .select-box {
@@ -41482,7 +41467,7 @@ footer p .footer-icon {
   }
 }
 .page-wrapper.material-type .page-body-wrapper {
-  background-image: url(../images/other-images/boxbg.jpg);
+  /* background-image: url(../images/other-images/boxbg.jpg); */
   background-blend-mode: overlay;
   background-color: rgba(255, 255, 255, 0.5);
 }
@@ -43022,12 +43007,7 @@ html[dir=rtl] .social-chat .other-msg {
   margin-right: 40px;
   margin-left: unset;
 }
-html[dir=rtl] .social-chat .flex-grow-1:before {
-  left: 100%;
-  right: unset;
-  border-left: 7px solid var(-semi-dark);
-  border-right: unset;
-}
+
 html[dir=rtl] .social-chat .flex-grow-1:after {
   left: 100%;
   right: unset;
@@ -44925,7 +44905,7 @@ html[dir=rtl] body.dark-only .page-wrapper .page-body-wrapper .page-body .card:n
   5.9 Box-layout CSS start
 ==========================**/
 .box-layout {
-  background-image: url(../images/other-images/boxbg.jpg);
+  /* background-image: url(../images/other-images/boxbg.jpg); */
   background-blend-mode: overlay;
   background-color: rgba(255, 255, 255, 0.5);
 }

@@ -3,18 +3,18 @@ import GoogleIcons from '../../../public/GoogleIcons';
 
 interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?:
-    | 'save'
-    | 'back'
-    | 'delete'
-    | 'editIcon'
-    | 'deleteIcon'
-    | 'backIcon'
-    | 'forwardIcon'
-    | 'addIcon'
-    | 'listIcon'
-    | 'cancelIcon'
-    | 'viewIcon'
-    
+  | 'save'
+  | 'back'
+  | 'delete'
+  | 'editIcon'
+  | 'deleteIcon'
+  | 'backIcon'
+  | 'forwardIcon'
+  | 'addIcon'
+  | 'listIcon'
+  | 'cancelIcon'
+  | 'viewIcon'
+
   isLoading?: boolean;
   margin?: string;
 }
@@ -70,17 +70,15 @@ const CustomButton: FC<CustomButtonProps> = ({
           align-items: center;
           justify-content: center;
           transition: background-color 0.3s ease, transform 0.3s ease;
-          background-color: var(--btn-save-bg) !important; /* Usar la variable CSS */
+          background-color: var(--btn-save-bg) !important; 
           border: none;
-        }
-
-        .btn {
   padding: 10px 20px;
   font-size: 16px;
-  border-radius: 4px;
+  border-radius: 5px;
   border: none;
   cursor: pointer;
-}
+        }
+
 
 .btn-small {
   padding: 5px 10px;

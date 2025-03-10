@@ -40,7 +40,6 @@ const Navbar = ({}: NavbarProps) => {
     }
   }, []);
   
-  // Detecta si estamos en modo móvil y ajusta el estado inicial
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth <= 1024;
@@ -68,16 +67,19 @@ const Navbar = ({}: NavbarProps) => {
     justifyContent: "center",
     textAlign: "center",
     width: "100%",
-    padding: "5px",
-    marginBottom: "10px",
+    padding: "10px 5px",
+    marginBottom: "8px",
     boxSizing: "border-box",
-    fontSize: "0.78rem",
-    lineHeight: "1.2",
+    fontSize: "0.85rem",
+    lineHeight: "1.3",
     whiteSpace: "normal",
     wordWrap: "break-word",
-    transition: "color 0.3s ease, background-color 0.3s ease",
+    transition: "all 0.3s ease",
     color: "#fff",
     fontWeight: "normal",
+    borderRadius: "4px",
+    opacity: 0.9,
+
   };
   const iconStyle = (path: string): React.CSSProperties => ({
     fontSize: "1.5rem",
@@ -101,44 +103,16 @@ const Navbar = ({}: NavbarProps) => {
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
-    minHeight: "80px",
+    minHeight: "100px",
     boxSizing: "border-box",
-    padding: "0 0.5rem",
+    padding: isMobile ? "1rem 0.5rem" : "1rem 0.5rem",
     marginBottom: "1rem",
     color: "#fff",
     backgroundColor: "rgba(0, 0, 0, 0.2)",
-    paddingBottom: "2.6rem" 
+    position: "relative",
+    zIndex: 999
   };
   const logoSize = 80;
-  // Estilo para el botón toggle en desktop (commented out so you won't see the icon in desktop)
-  /*
-  const toggleStyle: React.CSSProperties = isNavbarVisible
-    ? {
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        transition: "all 0.3s ease",
-        backgroundColor: "transparent",
-        padding: "8px",
-      }
-    : {
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "fixed",
-        left: "0",
-        top: isMobile ? "10px" : "80px",
-        transition: "all 0.3s ease",
-        backgroundColor: "var(--primary-color)",
-        borderRadius: "0 8px 8px 0",
-        padding: "8px",
-        zIndex: 1300,
-      };
-  */
-
   return (
     <>
       <GoogleIcons />
@@ -149,20 +123,21 @@ const Navbar = ({}: NavbarProps) => {
         onClick={toggleNavbar}
         style={{
           position: "fixed",
-          top: "10px",
-          left: isNavbarVisible ? "10px" : "30px",
-          width: "48px",
-          height: "48px",
+          top: isMobile ? "1.5rem" : "1.5rem",
+          left: isMobile && isNavbarVisible ? "calc(40% + 1rem)" : isNavbarVisible ? "6.5em" : "1.5rem",
+          width: "40px",
+          height: "40px",
           borderRadius: "50%",
-          border: `1px solid ${isNavbarVisible ? "#fff" : "#000"}`,
+          border: `2px solid ${isNavbarVisible ? "#fff" : "rgba(0, 0, 0, 0.2)"}`,
           backgroundColor: isNavbarVisible ? "var(--primary-color)" : "#fff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 1500,
+          zIndex: 1300,
           transition: "all 0.3s ease",
           cursor: "pointer",
-          transform: animateIcon ? "translateY(-10px)" : "translateY(0)"
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+          transform: animateIcon ? "scale(0.95)" : "scale(1)"
         }}
       >
         <span
@@ -184,13 +159,14 @@ const Navbar = ({}: NavbarProps) => {
           bottom: 0,
           left: isNavbarVisible ? 0 : isMobile ? "-50%" : "-6.5em",
           zIndex: 1200,
-          width: isMobile ? "30%" : "6.5em",
+          width: isMobile ? "40%" : "6.5em",
           backgroundColor: "var(--primary-color)",
           fontFamily: "var(--font-family-base)",
-          display: isMobile && !isNavbarVisible ? "none" : "flex",
+          display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          transition: "left 0.3s ease",
+          transition: "all 0.3s ease",
+          boxShadow: "2px 0 10px rgba(0, 0, 0, 0.1)"
         }}
       >
         <div style={logoContainerStyle}>
@@ -201,17 +177,6 @@ const Navbar = ({}: NavbarProps) => {
             height={logoSize}
             style={{ borderRadius: "50%", zIndex: 1100 }}
           />
-  
-          {/* Botón toggle dentro del sidebar en desktop - COMENTADO */}
-          {/*
-          {!isMobile && (
-            <div className="navbar-toggle" onClick={toggleNavbar} style={toggleStyle}>
-              <span className="material-icons" style={{ color: "#fff", fontSize: "1.5rem" }}>
-                menu
-              </span>
-            </div>
-          )}
-          */}
         </div>
   
         <div

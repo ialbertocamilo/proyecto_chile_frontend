@@ -1,0 +1,68 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Encode+Sans:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+:root {
+  --font-family-base: "Noto Sans", sans-serif;
+  --font-size-base: 10px;
+  --font-size-heading: 2em;
+  --primary-color: #3ca7b7;      /* Color principal, usado en títulos y botones */
+  --secondary-color: #bbc4cb;    /* Color secundario, por ejemplo para hover en botones */
+  --background-color: #ebe6e670;  /* Color de fondo */
+  --text-color: #333;
+  --muted-text: #d3d3d3;
+
+  /* Variables para botones */
+  --btn-save-bg: #3ca7b7;
+  --btn-save-hover-bg: #359ea7;
+  --btn-back-bg: #6b7280;
+  --btn-back-hover-bg: #4b5563;
+  --btn-delete-bg: #ef4444;
+  --btn-delete-hover-bg: #dc2626;
+}
+
+.material-icons {
+  font-size: 2.00rem; /* o el tamaño que desees */
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+/* Estilos base a */
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  color: var(--text-color);
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  margin-top: 1rem;
+  color: #666;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

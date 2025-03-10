@@ -13,8 +13,6 @@ import {
   Legend,
 } from "chart.js";
 import { Line, Bar, Pie, Doughnut, Radar } from "react-chartjs-2";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import Title from "../src/components/Title"; // Componente creado para mostrar títulos
 import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
@@ -31,7 +29,6 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-
 function hexToRgba(hex: string, alpha: number) {
   const cleanHex = hex.replace("#", "");
   const r = parseInt(cleanHex.substring(0, 2), 16);
@@ -50,24 +47,9 @@ function getCssVarValue(varName: string, fallback: string) {
 
 const DashboardPage: React.FC = () => {
   useAuth();
-  console.log("[DashboardPage] Página cargada y sesión validada.");
-
-  const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
 
-  // Ajuste dinámico del ancho del sidebar según el tamaño de la ventana
-  useEffect(() => {
-    const updateSidebarWidth = () => {
-      if (window.innerWidth < 768) {
-        setSidebarWidth("0px");
-      } else {
-        setSidebarWidth("300px");
-      }
-    };
-    updateSidebarWidth();
-    window.addEventListener("resize", updateSidebarWidth);
-    return () => window.removeEventListener("resize", updateSidebarWidth);
-  }, []);
+  
 
   useEffect(() => {
     const pColor = getCssVarValue("--primary-color", "#3ca7b7");
@@ -139,8 +121,6 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="d-flex flex-column flex-grow-1 font-base">
-      <Navbar setActiveView={() => {}} />
-      <TopBar sidebarWidth={sidebarWidth} />
 
       {/* Contenedor fluido que envuelve el custom-container */}
       <div className="container-fluid" style={{paddingLeft: "1rem"}}>

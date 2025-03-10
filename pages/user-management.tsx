@@ -171,7 +171,6 @@ const UserManagement = () => {
 
   return (
     <>
-      <div>
         <Card>
           <Title text="Listado de Usuarios" />
         </Card>
@@ -188,7 +187,6 @@ const UserManagement = () => {
           createText="Crear usuario"
           createUrl="/user-create"
         />
-      </div>
     </>
   );
 };

@@ -4,6 +4,7 @@ import Card from './common/Card';
 import IconButton from './common/IconButton';
 import SearchInput from './inputs/SearchInput';
 
+
 interface DataTableProps<T> {
     data: T[];
     columns: {
@@ -87,7 +88,7 @@ export default function DataTable<T extends { [key: string]: any }>({
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(event.target.value);
-    };
+    };  
 
     const totalPages = Math.ceil(data.length / rowsPerPage);
 
@@ -111,16 +112,14 @@ export default function DataTable<T extends { [key: string]: any }>({
                 </div>
                 <div className="row">
                     <div className="col-md-12">
-                        <div className="table-responsive">
-                            <table className="table table-hover align-middle table-mobile">
+                        <div className="table-responsive" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                            <table className="table table-hover table-mobile" style={{ minWidth: '650px' }}>
                                 <thead className="bg-light border-bottom">
                                     <tr>
                                         {columns.map((column) => (
                                             <th
                                                 key={column.id.toString()}
-                                                style={{
-                                                    minWidth: column.minWidth
-                                                }}
+                                                className="text-center"
                                             >
                                                 {column.label}
                                             </th>
@@ -130,13 +129,13 @@ export default function DataTable<T extends { [key: string]: any }>({
                                 <tbody>
                                     {loading ? (
                                         <tr>
-                                            <td colSpan={columns.length} className="text-center p-4">
+                                            <td colSpan={columns.length} className="text-center">
                                                 <Loader2 className="animate-spin me-2 inline" size={18} />Cargando...
                                             </td>
                                         </tr>
                                     ) : data.length === 0 ? (
                                         <tr>
-                                            <td colSpan={columns.length} className="text-center p-4">
+                                            <td colSpan={columns.length} className="text-center ">
                                                 <Inbox className="me-2 inline" size={18} />No hay datos disponibles
                                             </td>
                                         </tr>

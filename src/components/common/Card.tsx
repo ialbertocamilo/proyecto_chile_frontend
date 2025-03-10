@@ -18,7 +18,7 @@ const Card: React.FC<CardProps> = ({ children, className = "", style }) => {
     ...style,
   };
 
-  return <div className="col-xxl-12 col-xl-12 box-col-12 order-xl-1">
+  return <div className="col-xxl-12 col-xl-12 box-col-12 order-xl-1 col-sm-12 col-md-11">
     <div className={`card news-update  rounded-2 ${className}`} style={cardStyle}>
       <div className={"card-body "}>
         {children}

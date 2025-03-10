@@ -8,7 +8,6 @@ import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 interface Divisions {
   department?: string;
@@ -50,6 +49,7 @@ const ProjectListStatusEditPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+
     fetchProjects();
   }, []);
 
@@ -64,9 +64,8 @@ const ProjectListStatusEditPage = () => {
     }
     try {
       console.log("[fetchProjects] Obteniendo proyectos...");
-      console.log(constantUrlApiEndpoint)
-      const response = await axios.get(`${constantUrlApiEndpoint}/admin/projects`, {
-        params: { limit: 999999, num_pag: 1 },
+
+      const response = await axios.get(`/api/projects`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -95,118 +94,107 @@ const ProjectListStatusEditPage = () => {
     setFilteredProjects(filtered);
   };
 
-  // Función para redirigir al modo vista del workflow del proyecto y guardar en el local storage
   const handleViewProject = (project_view: Project) => {
-    // Guardamos el project id y el departamento en el local storage
     localStorage.setItem("project_id_view", project_view.id.toString());
     localStorage.setItem(
       "project_department_view",
       project_view.divisions?.department || "N/A"
     );
-    // Redirige a la página de workflow en modo "view" con el id del proyecto
     router.push(`/workflow-part1-view?id=${project_view.id}`);
   };
 
   return (
-    <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      <Navbar setActiveView={() => {}} />
-      <div className="d-flex flex-column flex-grow-1" style={{  width: "100%" }}>
-        <TopBar sidebarWidth={sidebarWidth} />
-        <div className="container-fluid px-2 px-sm-4">
-          <div className="custom-container" style={{ marginTop: "80px" }}>
-            <Title text="Administrar proyectos" />
-            <Card style={{ height: "auto", padding: "10px", margin: "0 10px" }}>
-              <div className="input-group mb-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="🔍︎ Buscar..."
-                  value={search}
-                  onChange={handleSearch}
-                  style={{ fontFamily: "var(--font-family-base)" }}
-                />
-              </div>
-            </Card>
-            <Card style={{ marginTop: "20px", margin: "20px 10px", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-              <div className="table-responsive" style={{ margin: "-20px" }}>
-                {error && (
-                  <p className="text-danger px-4 pt-4" style={{ fontWeight: "normal" }}>
-                    {error}
-                  </p>
-                )}
-                {loading ? (
-                  <div className="loading-container">
-                    <div className="loading-spinner"></div>
-                    <div className="loading-text">Cargando...</div>
-                  </div>
-                ) : (
-                  <div className="table-responsive">
-                    <table className="custom-table table-mobile" style={{ fontFamily: "var(--font-family-base)" }}>
-                      <thead>
-                        <tr>
-                          <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>ID</th>
-                          <th style={{ backgroundColor: "#f8f9fa" }}></th>
-                          <th style={{ backgroundColor: "#f8f9fa" }}>Nombre del Proyecto</th>
-                          <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Propietario</th>
-                          <th className="d-none d-lg-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Tipo de edificación</th>
-                          <th className="d-none d-lg-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Tipo de uso principal</th>
-                          <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Número de niveles</th>
-                          <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Número de viviendas/oficinas x nivel</th>
-                          <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Superficie construida (m²)</th>
-                          <th style={{ backgroundColor: "#f8f9fa" }}>Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredProjects.length > 0 ? (
-                          filteredProjects.map((project: Project) => (
-                            <tr key={project.id} style={{ borderBottom: "1px solid #dee2e6" }}>
-                              <td className="d-none d-md-table-cell">{project.id || "N/D"}</td>
-                              <td></td>
-                              <td data-label="Proyecto:">{project.name_project || "No disponible"}</td>
-                              <td className="d-none d-md-table-cell">{project.owner_name || "No disponible"}</td>
-                              <td className="d-none d-lg-table-cell">{project.building_type || "N/D"}</td>
-                              <td className="d-none d-lg-table-cell">{project.main_use_type || "N/D"}</td>
-                              <td className="d-none d-xl-table-cell">
-                                {project.number_levels !== undefined ? project.number_levels : "N/D"}
-                              </td>
-                              <td className="d-none d-xl-table-cell">
-                                {project.number_homes_per_level !== undefined ? project.number_homes_per_level : "N/D"}
-                              </td>
-                              <td className="d-none d-xl-table-cell">
-                                {project.built_surface !== undefined ? project.built_surface : "N/D"}
-                              </td>
-                              <td className="text-center">
-                                <CustomButton
-                                  variant="viewIcon"
-                                  onClick={() => handleViewProject(project)}
-                                  style={{
-                                    backgroundColor: "var(--primary-color)",
-                                    padding: "0.5rem",
-                                    width: "40px",
-                                    height: "40px",
-                                    borderRadius: "4px"
-                                  }}
-                                />
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={10} className="text-center text-muted p-4">
-                              No hay proyectos disponibles o no coinciden con la búsqueda.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </div>
-        </div>
-      </div>
+    <div >
 
+      <Card>
+      <Title text="Administrar proyectos" />
+        <div className="input-group mb-3">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="🔍︎ Buscar..."
+            value={search}
+            onChange={handleSearch}
+            style={{ fontFamily: "var(--font-family-base)" }}
+          />
+        </div>
+      </Card>
+      <Card >
+        <div className="table-responsive" style={{ margin: "-20px" }}>
+          {error && (
+            <p className="text-danger px-4 pt-4" style={{ fontWeight: "normal" }}>
+              {error}
+            </p>
+          )}
+          {loading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <div className="loading-text">Cargando...</div>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="custom-table table-mobile" style={{ fontFamily: "var(--font-family-base)" }}>
+                <thead>
+                  <tr>
+                    <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>ID</th>
+                    <th style={{ backgroundColor: "#f8f9fa" }}></th>
+                    <th style={{ backgroundColor: "#f8f9fa" }}>Nombre del Proyecto</th>
+                    <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Propietario</th>
+                    <th className="d-none d-lg-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Tipo de edificación</th>
+                    <th className="d-none d-lg-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Tipo de uso principal</th>
+                    <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Número de niveles</th>
+                    <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Número de viviendas/oficinas x nivel</th>
+                    <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Superficie construida (m²)</th>
+                    <th style={{ backgroundColor: "#f8f9fa" }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProjects.length > 0 ? (
+                    filteredProjects.map((project: Project) => (
+                      <tr key={project.id} style={{ borderBottom: "1px solid #dee2e6" }}>
+                        <td className="d-none d-md-table-cell">{project.id || "N/D"}</td>
+                        <td></td>
+                        <td data-label="Proyecto:">{project.name_project || "No disponible"}</td>
+                        <td className="d-none d-md-table-cell">{project.owner_name || "No disponible"}</td>
+                        <td className="d-none d-lg-table-cell">{project.building_type || "N/D"}</td>
+                        <td className="d-none d-lg-table-cell">{project.main_use_type || "N/D"}</td>
+                        <td className="d-none d-xl-table-cell">
+                          {project.number_levels !== undefined ? project.number_levels : "N/D"}
+                        </td>
+                        <td className="d-none d-xl-table-cell">
+                          {project.number_homes_per_level !== undefined ? project.number_homes_per_level : "N/D"}
+                        </td>
+                        <td className="d-none d-xl-table-cell">
+                          {project.built_surface !== undefined ? project.built_surface : "N/D"}
+                        </td>
+                        <td className="text-center">
+                          <CustomButton
+                            variant="viewIcon"
+                            onClick={() => handleViewProject(project)}
+                            style={{
+                              backgroundColor: "var(--primary-color)",
+                              padding: "0.5rem",
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "4px"
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={10} className="text-center text-muted p-4">
+                        No hay proyectos disponibles o no coinciden con la búsqueda.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </Card>
     </div>
   );
 };

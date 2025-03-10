@@ -16,6 +16,7 @@ import SidebarItemComponent from "../src/components/common/SidebarItemComponent"
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
+import { useApi } from "@/hooks/useApi";
 
 // Cargamos el mapa sin SSR aa
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -78,7 +79,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [globalError, setGlobalError] = useState<string>("");
 
-  // Actualiza la primary color según la variable CSS
   useEffect(() => {
     const pColor =
       getComputedStyle(document.documentElement)
@@ -212,13 +212,13 @@ const ProjectWorkflowPart1: React.FC = () => {
     return newErrors;
   };
 
+  const {get,post,del } =useApi()
   const checkProjectNameExists = async (): Promise<boolean> => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return false;
-      const response = await axios.get(`${constantUrlApiEndpoint}/user/projects/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+
+      const response = await get(`/user/projects/`);
       const projects: Project[] = response.data.projects || [];
       return projects.some(
         (project: Project) =>

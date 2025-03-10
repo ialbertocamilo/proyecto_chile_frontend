@@ -31,7 +31,6 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-
 function hexToRgba(hex: string, alpha: number) {
   const cleanHex = hex.replace("#", "");
   const r = parseInt(cleanHex.substring(0, 2), 16);
@@ -51,7 +50,6 @@ function getCssVarValue(varName: string, fallback: string) {
 const DashboardPage: React.FC = () => {
   useAuth();
   console.log("[DashboardPage] Página cargada y sesión validada.");
-
   const [sidebarWidth, setSidebarWidth] = useState("300px");
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
 

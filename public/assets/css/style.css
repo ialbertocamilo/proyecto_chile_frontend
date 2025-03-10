@@ -176,7 +176,7 @@
   --tag-pad: .6em 1em;
   --tag-inset-shadow-size: 1.35em;
   --tag-remove-btn-bg--hover: #000;
-  --tagify-dd-color-primary: var(var(--theme-default));
+  --tagify-dd-color-primary: var(--theme-default);
   --tagify-dd-bg-color: var(--course-light-btn);
 }
 

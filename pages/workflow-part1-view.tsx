@@ -15,6 +15,7 @@ import SidebarItemComponent from "../src/components/common/SidebarItemComponent"
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
+import { useApi } from "@/hooks/useApi";
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -68,7 +69,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     const [locationSearch, setLocationSearch] = useState("");
     const [formData, setFormData] = useState<FormData>(initialFormData);
 
-    // Se obtiene el color primario desde CSS o valor por defecto.
     useEffect(() => {
         const pColor =
             getComputedStyle(document.documentElement)
@@ -148,8 +148,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     return (
         <>
             <GooIcons />
-            <Navbar setActiveView={() => { }} />
-            <TopBar sidebarWidth={sidebarWidth} />
             <div
                 className="container"
                 style={{
@@ -160,11 +158,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                     transition: "margin-left 0.1s ease",
                     fontFamily: "var(--font-family-base)",
                     fontWeight: "normal",
-                  }}
+                }}
             >
-               
-                    <div>{renderMainHeader()}</div>
-                
+
+                <div>{renderMainHeader()}</div>
+
                 <Card marginTop="15px">
                     <div style={{ padding: "0" }}>
                         <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>

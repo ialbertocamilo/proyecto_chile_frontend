@@ -40,7 +40,6 @@ const Navbar = ({}: NavbarProps) => {
     }
   }, []);
   
-  // Detecta si estamos en modo móvil y ajusta el estado inicial
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth <= 1024;

@@ -19,6 +19,7 @@ import 'public/assets/css/style.css'
 import 'public/assets/css/color-1.css'
 import 'public/assets/css/responsive.css'
 
+import "../public/assets/css/globals.css";
 import '@/styles/globals.css'
 
 import Script from 'next/script';
@@ -49,31 +50,6 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Script src="public/assets/js/icons/feather-icon/feather.min.js" />
-      <Script src="public/assets/js/icons/feather-icon/feather-icon.js" />
-      <Script src="public/assets/js/scrollbar/simplebar.js" />
-      <Script src="public/assets/js/scrollbar/custom.js" />
-      <Script src="public/assets/js/config.js" />
-      <Script src="public/assets/js/sidebar-menu.js" />
-      <Script src="public/assets/js/slick/slick.min.js" />
-      <Script src="public/assets/js/slick/slick.js" />
-      <Script src="public/assets/js/header-slick.js" />
-      <Script src="public/assets/js/chart/morris-chart/raphael.js" />
-      <Script src="public/assets/js/chart/morris-chart/morris.js" />
-      <Script src="public/assets/js/chart/morris-chart/prettify.min.js" />
-      <Script src="public/assets/js/chart/apex-chart/moment.min.js" />
-      <Script src="public/assets/js/notify/bootstrap-notify.min.js" />
-      <Script src="public/assets/js/notify/index.js" />
-      <Script src="public/assets/js/datatable/datatables/jquery.dataTables.min.js" />
-      <Script src="public/assets/js/datatable/datatables/datatable.custom.js" />
-      <Script src="public/assets/js/datatable/datatables/datatable.custom1.js" />
-      <Script src="public/assets/js/owlcarousel/owl.carousel.js" />
-      <Script src="public/assets/js/owlcarousel/owl-custom.js" />
-      <Script src="public/assets/js/typeahead/handlebars.js" />
-      <Script src="public/assets/js/typeahead/typeahead.bundle.js" />
-      <Script src="public/assets/js/typeahead/typeahead.custom.js" />
-      <Script src="public/assets/js/typeahead-search/handlebars.js" />
-      <Script src="public/assets/js/typeahead-search/typeahead-custom.js" />
-      <Script src="public/assets/js/height-equal.js" />
       <div className="page-wrapper" id="pageWrapper">
         <div className="page-header">
           <div className="header-wrapper row m-0">

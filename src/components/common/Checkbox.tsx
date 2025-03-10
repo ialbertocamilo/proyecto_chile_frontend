@@ -12,7 +12,7 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange, tooltip }
   const tooltipId = `checkbox-tooltip-${label}`;
 
   return (
-    <div className="form-check form-switch mb-3">
+    <div className="form-check form-switch">
       <input
         type="checkbox"
         id={label}
@@ -67,6 +67,12 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange, tooltip }
 
         .form-switch .form-check-input:checked {
           background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+        }
+
+        .form-check.form-switch {
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         :global(.custom-tooltip) {

@@ -465,38 +465,16 @@ const AdministrationPage: React.FC = () => {
 
   return (
     <>
-      <Navbar setActiveView={() => {}} />
-      <TopBar sidebarWidth={sidebarWidth} />
-
       {/* Título afuera del Card */}
       <div
-        className="container custom-container"
-        style={{
-          maxWidth: "1780px",
-          marginTop: "120px",
-          marginLeft: "auto",
-          marginRight: "auto",
-          transition: "margin-left 0.1s ease",
-          fontFamily: "var(--font-family-base)",
-        }}
       >
         <Title text="Administración de Parámetros" />
       </div>
 
       {/* Card con clase adicional */}
       <Card className="bordered-main-card">
-        <div
-          className="container"
-          style={{
-            maxWidth: "1780px",
-            marginLeft: "auto",
-            marginRight: "auto",
-            transition: "margin-left 0.1s ease",
-            fontFamily: "var(--font-family-base)",
-            minHeight: "600px",
-          }}
-        >
-          <div style={{ padding: "20px" }}>
+        <div>
+          <div>
             <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
               <div
                 className="internal-sidebar"
@@ -507,7 +485,7 @@ const AdministrationPage: React.FC = () => {
                   borderRight: "1px solid #ccc",
                 }}
               >
-                <ul className="nav flex-column" style={{ height: "100%" }}>
+                <ul className="nav flex-column">
                   <SidebarItem stepNumber={3} iconClass="bi bi-file-text" title="Materiales" />
                   <SidebarItem stepNumber={4} iconClass="bi bi-tools" title="Detalles constructivos" />
                   <SidebarItem stepNumber={5} iconClass="bi bi-house" title="Elementos operables" />
@@ -1331,32 +1309,6 @@ const AdministrationPage: React.FC = () => {
         }
         .table-striped tbody tr:nth-child(even) {
           background-color: #f2f2f2;
-        }
-
-        /* Media queries para ajustar márgenes y layout en pantallas medianas y móviles */
-        @media (max-width: 1024px) {
-          .custom-container {
-            margin-left: 50px;
-            margin-right: 20px;
-          }
-          .internal-sidebar {
-            width: 100% !important;
-            border-right: none;
-            border-bottom: 1px solid #ccc;
-            padding: 10px;
-          }
-          .content-area {
-            padding: 10px;
-          }
-          .d-flex-responsive {
-            flex-direction: column;
-          }
-        }
-        @media (max-width: 600px) {
-          .custom-container {
-            margin-left: 10px;
-            margin-right: 10px;
-          }
         }
       `}</style>
     </>

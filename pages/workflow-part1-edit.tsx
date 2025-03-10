@@ -5,8 +5,6 @@ import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { useRouter } from "next/router";
 import CustomButton from "../src/components/common/CustomButton";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import Card from "../src/components/common/Card";
 import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
@@ -70,7 +68,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   const mode = (router.query.mode as string) || (router.query.id ? "edit" : "create");
 
   const [, setPrimaryColor] = useState("#3ca7b7");
-  const sidebarWidth = "300px";
   const [step, setStep] = useState<number>(1);
   const [locationSearch, setLocationSearch] = useState("");
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
@@ -212,14 +209,14 @@ const ProjectWorkflowPart1: React.FC = () => {
     return newErrors;
   };
 
-  const {get,post,del } =useApi()
+  const {get} =useApi()
   const checkProjectNameExists = async (): Promise<boolean> => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return false;
 
       const response = await get(`/user/projects/`);
-      const projects: Project[] = response.data.projects || [];
+      const projects: Project[] = (response as { data: { projects: Project[] } }).data.projects || [];
       return projects.some(
         (project: Project) =>
           project.name_project.trim().toLowerCase() ===
@@ -367,22 +364,10 @@ const ProjectWorkflowPart1: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} />
-      <TopBar sidebarWidth={sidebarWidth} />
       <div
-        className="container"
-        style={{
-          maxWidth: "1700px",
-          marginTop: "90px",
-          marginLeft: "110px",
-          marginRight: "50px",
-          transition: "margin-left 0.1s ease",
-          fontFamily: "var(--font-family-base)",
-          fontWeight: "normal",
-        }}
-      >
+>
           <div>{renderMainHeader()}</div>
-        <Card marginTop="15px">
+        <Card>
           <div style={{ padding: "0" }}>
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
               <div

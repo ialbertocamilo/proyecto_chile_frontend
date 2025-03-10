@@ -6,16 +6,20 @@ import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import CustomButton from "../src/components/common/CustomButton";
 import Link from "next/link";
+import Head from "next/head";
+import { ReactElement } from "react";
 
-const TwoFactorAuth = () => {
+// Definición del tipo para páginas con layout propio
+type NextPageWithLayout = {
+  getLayout?: (page: ReactElement) => ReactElement;
+};
+
+const TwoFactorAuth: NextPageWithLayout = () => {
   const [otp, setOtp] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
-
-
-   
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("email");
@@ -133,11 +137,14 @@ const TwoFactorAuth = () => {
 
   return (
     <div
-      className="twofactor-container d-flex justify-content-center align-items-center"
       style={{
-        height: "100vh",
-        background: "url('/assets/images/background.jpg') no-repeat center center/cover",
+        minHeight: "100vh",
+        background:
+          "url('/assets/images/background.jpg') no-repeat center center/cover",
         fontFamily: "var(--font-family-base)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
       <div
@@ -169,7 +176,10 @@ const TwoFactorAuth = () => {
           Ingresa el código de 6 dígitos enviado a tu email.
         </p>
         {error && (
-          <p className="text-danger text-center fw-bold" style={{ fontFamily: "var(--font-family-base)" }}>
+          <p
+            className="text-danger text-center fw-bold"
+            style={{ fontFamily: "var(--font-family-base)" }}
+          >
             {error}
           </p>
         )}
@@ -185,7 +195,12 @@ const TwoFactorAuth = () => {
             pattern="[0-9]{6}"
             inputMode="numeric"
           />
-          <CustomButton type="submit" variant="save" disabled={loading} style={submitButtonOverride}>
+          <CustomButton
+            type="submit"
+            variant="save"
+            disabled={loading}
+            style={submitButtonOverride}
+          >
             {loading ? "Verificando..." : "Confirmar Código"}
           </CustomButton>
         </form>
@@ -195,19 +210,23 @@ const TwoFactorAuth = () => {
           </Link>
         </div>
       </div>
-      <style jsx>{`
-        .twofactor-container {
-          height: 100vh;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          background: url('/assets/images/background.jpg') no-repeat center center/cover;
-        }
+      <style jsx global>{`
         a:hover {
           color: var(--secondary-color);
         }
       `}</style>
     </div>
+  );
+};
+
+TwoFactorAuth.getLayout = function getLayout(page: ReactElement) {
+  return (
+    <>
+      <Head>
+        <title>Two Factor Auth</title>
+      </Head>
+      {page}
+    </>
   );
 };
 

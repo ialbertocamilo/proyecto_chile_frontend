@@ -4,8 +4,6 @@ import axios from "axios";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { useRouter } from "next/router";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import Card from "../src/components/common/Card";
 import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
@@ -15,7 +13,7 @@ import SidebarItemComponent from "../src/components/common/SidebarItemComponent"
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
-import { useApi } from "@/hooks/useApi";
+
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -64,7 +62,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     const isViewOnly = true; // Forzar el modo de vista
 
     const [, setPrimaryColor] = useState("#3ca7b7");
-    const sidebarWidth = "300px";
     const [step, setStep] = useState<number>(1);
     const [locationSearch, setLocationSearch] = useState("");
     const [formData, setFormData] = useState<FormData>(initialFormData);

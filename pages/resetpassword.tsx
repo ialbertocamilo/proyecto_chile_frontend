@@ -5,8 +5,15 @@ import Swal from "sweetalert2";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "../public/assets/css/globals.css";
 import Link from "next/link";
+import Head from "next/head";
+import { ReactElement } from "react";
 
-const ResetPassword = () => {
+// Definición del tipo para páginas con layout propio
+type NextPageWithLayout = {
+  getLayout?: (page: ReactElement) => ReactElement;
+};
+
+const ResetPassword: NextPageWithLayout = () => {
   const [formData, setFormData] = useState({
     email: "",
     code: "",
@@ -139,10 +146,11 @@ const ResetPassword = () => {
 
   return (
     <div
-      className="reset-password-container d-flex justify-content-center align-items-center"
+      className="d-flex justify-content-center align-items-center"
       style={{
         minHeight: "100vh",
-        background: "url('/assets/images/background.jpg') no-repeat center center/cover",
+        background:
+          "url('/assets/images/background.jpg') no-repeat center center/cover",
         fontFamily: "var(--font-family-base)",
       }}
     >
@@ -170,7 +178,7 @@ const ResetPassword = () => {
           Restablecer contraseña
         </h4>
 
-        {/* Texto de instrucciones (alineado a la izquierda) */}
+        {/* Instrucciones */}
         <p
           style={{
             fontFamily: "var(--font-family-base)",
@@ -183,7 +191,7 @@ const ResetPassword = () => {
           Ingresa tu código de verificación y tu nueva contraseña
         </p>
 
-        {/* Contenedor con ligera línea alrededor del correo (centrado) */}
+        {/* Contenedor del correo */}
         <div style={emailBoxStyle}>
           <span style={emailStyle}>{formData.email}</span>
           <p
@@ -213,10 +221,7 @@ const ResetPassword = () => {
               value={formData.code}
               onChange={handleChange}
               required
-              style={{
-                ...inputStyle,
-                paddingRight: "0.5rem", // no necesitamos mostrar toggle
-              }}
+              style={{ ...inputStyle, paddingRight: "0.5rem" }}
             />
           </div>
 
@@ -303,15 +308,6 @@ const ResetPassword = () => {
         </div>
       </div>
 
-      <style jsx>{`
-        .reset-password-container {
-          position: relative;
-        }
-        a:hover {
-          color: var(--secondary-color);
-        }
-      `}</style>
-      {/* Forzamos el color primario en el botón con !important */}
       <style jsx global>{`
         .submit-btn {
           background-color: var(--primary-color) !important;
@@ -321,6 +317,17 @@ const ResetPassword = () => {
         }
       `}</style>
     </div>
+  );
+};
+
+ResetPassword.getLayout = function getLayout(page: ReactElement) {
+  return (
+    <>
+      <Head>
+        <title>Reset Password</title>
+      </Head>
+      {page}
+    </>
   );
 };
 

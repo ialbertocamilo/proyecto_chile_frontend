@@ -27,7 +27,20 @@ import type { ReactElement } from 'react';
 import { useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "../public/assets/css/globals.css";
+import "public/assets/css/globals.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'public/assets/css/globals.css';
+import 'public/assets/css/font-awesome.css';
+import 'public/assets/css/vendors/icofont.css';
+import 'public/assets/css/vendors/themify.css';
+import 'public/assets/css/vendors/flag-icon.css';
+import 'public/assets/css/vendors/feather-icon.css';
+import 'public/assets/css/vendors/sweetalert2.css';
+import 'public/assets/css/vendors/bootstrap.css';
+import 'public/assets/css/style.css';
+import 'public/assets/css/color-1.css';
+import 'public/assets/css/responsive.css';
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactElement;
@@ -71,7 +84,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
         </div>
         <ToastContainer
           position="top-right"
-          autoClose={5000}
+          autoClose={2000}
           hideProgressBar={false}
           newestOnTop={false}
           closeOnClick

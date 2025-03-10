@@ -7,12 +7,10 @@ import CustomButton from "../src/components/common/CustomButton";
 import Modal from "../src/components/common/Modal";
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 import { toast } from "react-toastify";
 import Title from "../src/components/Title";
-import Card from "../src/components/common/Card"; // Your custom Card component
+import Card from "../src/components/common/Card";
 
 interface MaterialAttributes {
   name: string;
@@ -31,7 +29,7 @@ interface Material {
   create_status?: string;
 }
 
-interface Detail {
+export interface Detail {
   id: number;
   scantilon_location: string;
   name_detail: string;
@@ -70,7 +68,6 @@ const AdministrationPage: React.FC = () => {
   useAuth();
   console.log("[AdministrationPage] Página cargada y sesión validada.");
 
-  const [sidebarWidth] = useState("300px");
   const [step, setStep] = useState<number>(3);
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
   const [details, setDetails] = useState<Detail[]>([]);
@@ -121,10 +118,11 @@ const AdministrationPage: React.FC = () => {
 
   const windowsList = elementsList.filter((el) => el.type === "window");
 
-  const handleLogout = () => {
+  // Memoriza handleLogout para evitar que se re-cree en cada render y para incluirla como dependencia
+  const handleLogout = useCallback(() => {
     localStorage.removeItem("token");
     window.location.href = "/login";
-  };
+  }, []);
 
   const fetchMaterialsList = useCallback(async (page: number): Promise<void> => {
     try {
@@ -151,7 +149,7 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
       });
     }
-  }, []);
+  }, [handleLogout]);
 
   const fetchDetails = useCallback(async (): Promise<void> => {
     try {
@@ -161,7 +159,8 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
         return;
       }
-      const url = `${constantUrlApiEndpoint}/details`;
+      // Se utiliza el endpoint interno para detalles
+      const url = `/api/details`;
       const headers = { Authorization: `Bearer ${token}` };
       const response: AxiosResponse<Detail[]> = await axios.get(url, { headers });
       console.log("[fetchDetails] Detalles recibidos:", response.data);
@@ -171,6 +170,7 @@ const AdministrationPage: React.FC = () => {
           material_id: det.id_material || det.material_id,
         })
       );
+      console.log("[fetchDetails] Detalles mapeados:", mappedDetails);
       setDetails(mappedDetails);
     } catch (error: unknown) {
       console.error("[fetchDetails] Error al obtener detalles:", error);
@@ -178,7 +178,7 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
       });
     }
-  }, []);
+  }, [handleLogout]);
 
   const fetchElements = useCallback(async (): Promise<void> => {
     try {
@@ -199,7 +199,7 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
       });
     }
-  }, []);
+  }, [handleLogout]);
 
   const handleCreateMaterial = async () => {
     if (
@@ -275,7 +275,8 @@ const AdministrationPage: React.FC = () => {
         layer_thickness: newDetail.layer_thickness,
       };
 
-      const url = `${constantUrlApiEndpoint}/details/create`;
+      // Se utiliza el endpoint interno para crear detalles
+      const url = `/api/details`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const response = await axios.post(url, payload, { headers });
 
@@ -463,255 +464,227 @@ const AdministrationPage: React.FC = () => {
 
   return (
     <>
-      <Navbar setActiveView={() => {}} />
-      <TopBar sidebarWidth={sidebarWidth} />
-
       {/* Título afuera del Card */}
-      <div
-        className="container custom-container"
-        style={{
-          maxWidth: "1780px",
-          marginTop: "120px",
-          marginLeft: "103px",
-          marginRight: "0px",
-          transition: "margin-left 0.1s ease",
-          fontFamily: "var(--font-family-base)",
-        }}
-      >
+      <Card>
         <Title text="Administración de Parámetros" />
-      </div>
+      </Card>
 
       {/* Card con clase adicional */}
       <Card className="bordered-main-card">
-        <div
-          className="container"
-          style={{
-            maxWidth: "1780px",
-            marginLeft: "103px",
-            marginRight: "0px",
-            transition: "margin-left 0.1s ease",
-            fontFamily: "var(--font-family-base)",
-            minHeight: "600px",
-          }}
-        >
-          <div style={{ padding: "20px" }}>
-            <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
-              <div
-                className="internal-sidebar"
-                style={{
-                  width: `${internalSidebarWidth}px`,
-                  padding: "20px",
-                  boxSizing: "border-box",
-                  borderRight: "1px solid #ccc",
-                }}
-              >
-                <ul className="nav flex-column" style={{ height: "100%" }}>
-                  <SidebarItem stepNumber={3} iconClass="bi bi-file-text" title="Materiales" />
-                  <SidebarItem stepNumber={4} iconClass="bi bi-tools" title="Detalles constructivos" />
-                  <SidebarItem stepNumber={5} iconClass="bi bi-house" title="Elementos operables" />
-                </ul>
-              </div>
+        <div>
+          <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
+            <div
+              className="internal-sidebar"
+              style={{
+                width: `${internalSidebarWidth}px`,
+                padding: "20px",
+                boxSizing: "border-box",
+                borderRight: "1px solid #ccc",
+              }}
+            >
+              <ul className="nav flex-column">
+                <SidebarItem stepNumber={3} iconClass="bi bi-file-text" title="Materiales" />
+                <SidebarItem stepNumber={4} iconClass="bi bi-tools" title="Detalles constructivos" />
+                <SidebarItem stepNumber={5} iconClass="bi bi-house" title="Elementos operables" />
+              </ul>
+            </div>
 
-              <div className="content-area" style={{ flex: 1, padding: "20px" }}>
-                {step === 3 && (
-                  <>
-                    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                      <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
-                        <span className="material-icons">add</span> Nuevo
-                      </CustomButton>
-                    </div>
+            <div className="content-area" style={{ flex: 1, padding: "20px" }}>
+              {step === 3 && (
+                <>
+                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                    <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
+                      <span className="material-icons">add</span> Nuevo
+                    </CustomButton>
+                  </div>
 
-                    {/* Quitar cualquier maxWidth para que la tabla use todo el espacio */}
-                    <div style={{ overflow: "hidden", padding: "10px" }}>
-                      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                        <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
-                          <thead>
-                            <tr>
-                              <th>Nombre Material</th>
-                              <th>Conductividad (W/m2K)</th>
-                              <th>Calor específico (J/kgK)</th>
-                              <th>Densidad (kg/m3)</th>
+                  <div style={{ overflow: "hidden", padding: "10px" }}>
+                    <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+                      <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
+                        <thead>
+                          <tr>
+                            <th>Nombre Material</th>
+                            <th>Conductividad (W/m2K)</th>
+                            <th>Calor específico (J/kgK)</th>
+                            <th>Densidad (kg/m3)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {materialsList.map((mat, idx) => (
+                            <tr key={idx}>
+                              <td>{mat.atributs.name}</td>
+                              <td>{mat.atributs.conductivity}</td>
+                              <td>{mat.atributs.specific_heat}</td>
+                              <td>{mat.atributs.density}</td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {materialsList.map((mat, idx) => (
-                              <tr key={idx}>
-                                <td>{mat.atributs.name}</td>
-                                <td>{mat.atributs.conductivity}</td>
-                                <td>{mat.atributs.specific_heat}</td>
-                                <td>{mat.atributs.density}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {step === 4 && (
-                  <>
-                    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                      <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
-                        <span className="material-icons">add</span> Nuevo
-                      </CustomButton>
-                    </div>
-
-                    <div style={{ overflow: "hidden", padding: "10px" }}>
-                      <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                        <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
-                          <thead>
-                            <tr>
-                              <th>Ubicación Detalle</th>
-                              <th>Nombre Detalle</th>
-                              <th>Material</th>
-                              <th>Espesor capa (cm)</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {details.map((det) => (
-                              <tr key={det.id}>
-                                <td>{det.scantilon_location}</td>
-                                <td>{det.name_detail}</td>
-                                <td>
-                                  {materialsList.find((mat) => mat.material_id === det.material_id)?.atributs.name ||
-                                    "N/A"}
-                                </td>
-                                <td>{det.layer_thickness}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {step === 5 && (
-                  <>
-                    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                      {tabElementosOperables === "ventanas" ? (
-                        <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
-                          <span className="material-icons">add</span> Nuevo
-                        </CustomButton>
-                      ) : (
-                        <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
-                          <span className="material-icons">add</span> Nuevo
-                        </CustomButton>
-                      )}
-                    </div>
-
-                    <div style={{ overflow: "hidden", padding: "10px" }}>
-                      <div
-                        className="d-flex justify-content-between align-items-center mb-2"
-                        style={{ padding: "10px" }}
-                      >
-                        <ul
-                          className="nav"
-                          style={{
-                            display: "flex",
-                            padding: 0,
-                            listStyle: "none",
-                            margin: 0,
-                            flex: 1,
-                            gap: "10px",
-                          }}
-                        >
-                          {["Ventanas", "Puertas"].map((tab) => (
-                            <li key={tab} style={{ flex: 1 }}>
-                              <button
-                                style={{
-                                  width: "100%",
-                                  padding: "0px",
-                                  backgroundColor: "#fff",
-                                  color:
-                                    tabElementosOperables === tab.toLowerCase()
-                                      ? "var(--primary-color)"
-                                      : "var(--secondary-color)",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  borderBottom:
-                                    tabElementosOperables === tab.toLowerCase()
-                                      ? "3px solid var(--primary-color)"
-                                      : "none",
-                                }}
-                                onClick={() => setTabElementosOperables(tab.toLowerCase())}
-                              >
-                                {tab}
-                              </button>
-                            </li>
                           ))}
-                        </ul>
-                      </div>
-
-                      <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
-                        <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
-                          <thead>
-                            {tabElementosOperables === "ventanas" ? (
-                              <tr>
-                                <th>Nombre Elemento</th>
-                                <th>U Vidrio [W/m2K]</th>
-                                <th>FS Vidrio</th>
-                                <th>Tipo Cierre</th>
-                                <th>Tipo Marco</th>
-                                <th>U Marco [W/m2K]</th>
-                                <th>FM [%]</th>
-                              </tr>
-                            ) : (
-                              <tr>
-                                <th>Nombre Elemento</th>
-                                <th>U Puerta opaca [W/m2K]</th>
-                                <th>Nombre Ventana</th>
-                                <th>% Vidrio</th>
-                                <th>U Marco [W/m2K]</th>
-                                <th>FM [%]</th>
-                              </tr>
-                            )}
-                          </thead>
-                          <tbody>
-                            {elementsList
-                              .filter(
-                                (el) => el.type === (tabElementosOperables === "ventanas" ? "window" : "door")
-                              )
-                              .map((el, idx) => {
-                                if (tabElementosOperables === "ventanas") {
-                                  return (
-                                    <tr key={idx}>
-                                      <td>{el.name_element}</td>
-                                      <td>{(el.atributs as ElementAttributesWindow).u_vidrio}</td>
-                                      <td>{(el.atributs as ElementAttributesWindow).fs_vidrio}</td>
-                                      <td>{(el.atributs as ElementAttributesWindow).clousure_type}</td>
-                                      <td>{(el.atributs as ElementAttributesWindow).frame_type}</td>
-                                      <td>{el.u_marco}</td>
-                                      <td>{(el.fm * 100).toFixed(0)}%</td>
-                                    </tr>
-                                  );
-                                } else {
-                                  return (
-                                    <tr key={idx}>
-                                      <td>{el.name_element}</td>
-                                      <td>{(el.atributs as ElementAttributesDoor).u_puerta_opaca}</td>
-                                      <td>{(el.atributs as ElementAttributesDoor).name_ventana}</td>
-                                      <td>
-                                        {(el.atributs as ElementAttributesDoor).porcentaje_vidrio !== undefined
-                                          ? (
-                                              (el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100
-                                            ).toFixed(0) + "%"
-                                          : "0%"}
-                                      </td>
-                                      <td>{el.u_marco}</td>
-                                      <td>{(el.fm * 100).toFixed(0)}%</td>
-                                    </tr>
-                                  );
-                                }
-                              })}
-                          </tbody>
-                        </table>
-                      </div>
+                        </tbody>
+                      </table>
                     </div>
-                  </>
-                )}
-              </div>
+                  </div>
+                </>
+              )}
+
+              {step === 4 && (
+                <>
+                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                    <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
+                      <span className="material-icons">add</span> Nuevo
+                    </CustomButton>
+                  </div>
+
+                  <div style={{ overflow: "hidden", padding: "10px" }}>
+                    <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+                      <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
+                        <thead>
+                          <tr>
+                            <th>Ubicación Detalle</th>
+                            <th>Nombre Detalle</th>
+                            <th>Material</th>
+                            <th>Espesor capa (cm)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {details.map((det) => (
+                            <tr key={det.id}>
+                              <td>{det.scantilon_location}</td>
+                              <td>{det.name_detail}</td>
+                              <td>
+                                {materialsList.find((mat) => mat.material_id === det.material_id)?.atributs.name ||
+                                  "N/A"}
+                              </td>
+                              <td>{det.layer_thickness}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {step === 5 && (
+                <>
+                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                    {tabElementosOperables === "ventanas" ? (
+                      <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
+                        <span className="material-icons">add</span> Nuevo
+                      </CustomButton>
+                    ) : (
+                      <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
+                        <span className="material-icons">add</span> Nuevo
+                      </CustomButton>
+                    )}
+                  </div>
+
+                  <div style={{ overflow: "hidden", padding: "10px" }}>
+                    <div
+                      className="d-flex justify-content-between align-items-center mb-2"
+                      style={{ padding: "10px" }}
+                    >
+                      <ul
+                        className="nav"
+                        style={{
+                          display: "flex",
+                          padding: 0,
+                          listStyle: "none",
+                          margin: 0,
+                          flex: 1,
+                          gap: "10px",
+                        }}
+                      >
+                        {["Ventanas", "Puertas"].map((tab) => (
+                          <li key={tab} style={{ flex: 1 }}>
+                            <button
+                              style={{
+                                width: "100%",
+                                padding: "0px",
+                                backgroundColor: "#fff",
+                                color:
+                                  tabElementosOperables === tab.toLowerCase()
+                                    ? "var(--primary-color)"
+                                    : "var(--secondary-color)",
+                                border: "none",
+                                cursor: "pointer",
+                                borderBottom:
+                                  tabElementosOperables === tab.toLowerCase()
+                                    ? "3px solid var(--primary-color)"
+                                    : "none",
+                              }}
+                              onClick={() => setTabElementosOperables(tab.toLowerCase())}
+                            >
+                              {tab}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
+                      <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
+                        <thead>
+                          {tabElementosOperables === "ventanas" ? (
+                            <tr>
+                              <th>Nombre Elemento</th>
+                              <th>U Vidrio [W/m2K]</th>
+                              <th>FS Vidrio</th>
+                              <th>Tipo Cierre</th>
+                              <th>Tipo Marco</th>
+                              <th>U Marco [W/m2K]</th>
+                              <th>FM [%]</th>
+                            </tr>
+                          ) : (
+                            <tr>
+                              <th>Nombre Elemento</th>
+                              <th>U Puerta opaca [W/m2K]</th>
+                              <th>Nombre Ventana</th>
+                              <th>% Vidrio</th>
+                              <th>U Marco [W/m2K]</th>
+                              <th>FM [%]</th>
+                            </tr>
+                          )}
+                        </thead>
+                        <tbody>
+                          {elementsList
+                            .filter(
+                              (el) => el.type === (tabElementosOperables === "ventanas" ? "window" : "door")
+                            )
+                            .map((el, idx) => {
+                              if (tabElementosOperables === "ventanas") {
+                                return (
+                                  <tr key={idx}>
+                                    <td>{el.name_element}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).u_vidrio}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).fs_vidrio}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).clousure_type}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).frame_type}</td>
+                                    <td>{el.u_marco}</td>
+                                    <td>{(el.fm * 100).toFixed(0)}%</td>
+                                  </tr>
+                                );
+                              } else {
+                                return (
+                                  <tr key={idx}>
+                                    <td>{el.name_element}</td>
+                                    <td>{(el.atributs as ElementAttributesDoor).u_puerta_opaca}</td>
+                                    <td>{(el.atributs as ElementAttributesDoor).name_ventana}</td>
+                                    <td>
+                                      {(el.atributs as ElementAttributesDoor).porcentaje_vidrio !== undefined
+                                        ? ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"
+                                        : "0%"}
+                                    </td>
+                                    <td>{el.u_marco}</td>
+                                    <td>{(el.fm * 100).toFixed(0)}%</td>
+                                  </tr>
+                                );
+                              }
+                            })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -884,7 +857,6 @@ const AdministrationPage: React.FC = () => {
                 value={newDetail.layer_thickness || ""}
                 onChange={(e) => {
                   const inputValue = e.target.value;
-                  // Solo permite números positivos y valores decimales
                   if (/^\d*\.?\d*$/.test(inputValue)) {
                     const value = inputValue === "" ? null : parseFloat(inputValue);
                     setNewDetail((prev) => ({ ...prev, layer_thickness: value }));
@@ -893,7 +865,6 @@ const AdministrationPage: React.FC = () => {
                 min="0"
                 step="0.01"
                 onKeyDown={(e) => {
-                  // Bloquea la entrada del signo negativo
                   if (e.key === "-" || e.key === "e" || e.key === "E") {
                     e.preventDefault();
                   }
@@ -1244,25 +1215,18 @@ const AdministrationPage: React.FC = () => {
       )}
 
       <style jsx>{`
-        /* Ajustes generales */
         .custom-container {
           padding: 0 15px;
         }
-        /* Font más pequeño en las tablas */
         .smaller-font-table {
           font-size: 1rem; 
         }
-        /* 
-          Clase para bordes y separación extra en el card grande. 
-          No sobreescribe estilos internos del Card, solo le añade margen y borde.
-        */
         .bordered-main-card {
-          margin: 2rem; /* Ajusta según quieras separarlo de los bordes */
+          margin: 2rem auto;
           border: 1px solid #ccc;
           border-radius: 8px;
+          width: 100%;
         }
-
-        /* Ajustes para el modal */
         .modal-overlay {
           position: fixed;
           top: 0;
@@ -1310,7 +1274,6 @@ const AdministrationPage: React.FC = () => {
           border: 1px solid #ccc;
           border-radius: 4px;
         }
-
         .table th,
         .table td {
           text-align: center;
@@ -1328,32 +1291,6 @@ const AdministrationPage: React.FC = () => {
         }
         .table-striped tbody tr:nth-child(even) {
           background-color: #f2f2f2;
-        }
-
-        /* Media queries para ajustar márgenes y layout en pantallas medianas y móviles */
-        @media (max-width: 1024px) {
-          .custom-container {
-            margin-left: 50px;
-            margin-right: 20px;
-          }
-          .internal-sidebar {
-            width: 100% !important;
-            border-right: none;
-            border-bottom: 1px solid #ccc;
-            padding: 10px;
-          }
-          .content-area {
-            padding: 10px;
-          }
-          .d-flex-responsive {
-            flex-direction: column;
-          }
-        }
-        @media (max-width: 480px) {
-          .custom-container {
-            margin-left: 10px;
-            margin-right: 10px;
-          }
         }
       `}</style>
     </>

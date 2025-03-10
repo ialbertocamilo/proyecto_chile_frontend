@@ -1,12 +1,17 @@
 ;
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactElement } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import { NextPage } from "next";
 
-const Login:NextPage = () => {
+
+type NextPageWithLayout = NextPage & {
+  getLayout?: (page: ReactElement) => ReactElement;
+};
+
+const Login: NextPageWithLayout = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [remember, setRemember] = useState<boolean>(false);
@@ -70,7 +75,7 @@ const Login:NextPage = () => {
     <div
       className="container-fluid"
       style={{
-        minHeight: "100vh",
+        
         background:
           "url('/assets/images/background.jpg') no-repeat center center/cover",
       }}
@@ -114,12 +119,10 @@ const Login:NextPage = () => {
                       />
                       <div
                         className="show-hide"
-                        style={{ cursor: "pointer" }}
+                        style={{ cursor: "pointer", color: "var(--primary-color)" }}
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        <span className="show">
-                          {showPassword ? "Ocultar" : "Mostrar"}
-                        </span>
+                          {showPassword ? "Ocultar" : "Mostrar"}    
                       </div>
                     </div>
                   </div>

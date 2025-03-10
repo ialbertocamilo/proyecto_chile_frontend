@@ -5,8 +5,6 @@ import CustomButton from "../src/components/common/CustomButton";
 import Modal from "../src/components/common/Modal";
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 import GooIcons from "../public/GoogleIcons";
 import Card from "../src/components/common/Card";
@@ -561,14 +559,12 @@ const DataEntryPage: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} />
-      <TopBar sidebarWidth="300px" />
-      <div className="container custom-container">
+      <div>
         <div>{renderMainHeader()}</div>
 
         <Card>
           <div>
-            <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
+            <div className="d-flex d-flex-responsive">
               {/* Sidebar interno */}
               <div className="internal-sidebar">
                 <ul className="nav flex-column">
@@ -600,7 +596,7 @@ const DataEntryPage: React.FC = () => {
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
                     </div>
-                    {/* Tabla de materiales ocupando el 100% */}
+                    {/* Tabla de materiales */}
                     <div style={{ marginTop: "10px", display: "flex", justifyContent: "center" }}>
                       <div style={{ width: "90%" }}>
                         <div style={{ border: "1px solid #e0e0e0", borderRadius: "8px", overflow: "hidden" }}>
@@ -657,7 +653,7 @@ const DataEntryPage: React.FC = () => {
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
                     </div>
-                    {/* Tabla de elementos ocupando el 100% */}
+                    {/* Tabla de elementos */}
                     <div style={{ marginTop: "10px", display: "flex", justifyContent: "center" }}>
                       <div style={{ width: "100%" }}>
                         <div style={{ border: "1px solid #e0e0e0", borderRadius: "8px", overflow: "hidden" }}>
@@ -1204,12 +1200,6 @@ const DataEntryPage: React.FC = () => {
         />
       </div>
       <style jsx>{`
-        .custom-container {
-          max-width: 1780px;
-          margin-left: 103px;
-          margin-right: 0px;
-          padding: 0 15px;
-        }
         .internal-sidebar {
           width: 380px;
           padding: 20px;

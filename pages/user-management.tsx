@@ -171,10 +171,9 @@ const UserManagement = () => {
 
   return (
     <>
-      <div>
         <Card>
           <Title text="Listado de Usuarios" />
-        
+        </Card>
         <DataTable
           columns={columns.map(col => ({
             ...col,

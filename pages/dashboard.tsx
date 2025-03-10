@@ -123,8 +123,8 @@ const DashboardPage: React.FC = () => {
     <div className="d-flex flex-column flex-grow-1 font-base">
 
       {/* Contenedor fluido que envuelve el custom-container */}
-      <div className="container-fluid" style={{paddingLeft: "1rem"}}>
-        <div className="custom-container">
+      <div>
+        <div>
           <Title text="Dashboard" />
 
           <div className="row gy-4">

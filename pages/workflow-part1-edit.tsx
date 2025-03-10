@@ -219,7 +219,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       if (!token) return false;
 
       const response = await get(`/user/projects/`);
-      const projects: Project[] = response.data.projects || [];
+      const projects: Project[] = (response as { data: { projects: Project[] } }).data.projects || [];
       return projects.some(
         (project: Project) =>
           project.name_project.trim().toLowerCase() ===

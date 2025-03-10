@@ -55,8 +55,8 @@ const CustomButton: FC<CustomButtonProps> = ({
   } else if (variant === 'listIcon') {
     content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>format_list_bulleted</span>;
     tooltipText = 'Ver lista';
-  } else if (variant === 'cancelIcon') {
-    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>close</span>;
+    } else if (variant === 'cancelIcon') {
+    content = <span className="btn-icon-content material-icons " style={{  color: "red" }}>close</span>;
     tooltipText = 'Cancelar';
   } else if (variant === 'viewIcon') {
     content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>visibility</span>;
@@ -93,7 +93,6 @@ const CustomButton: FC<CustomButtonProps> = ({
           transition: background-color 0.3s ease, transform 0.3s ease;
           background-color: var(--btn-save-bg) !important; 
           border: none;
-          padding: 10px 20px;
           font-size: 16px;
           border-radius: 5px;
           border: none;
@@ -102,7 +101,6 @@ const CustomButton: FC<CustomButtonProps> = ({
 
 
 .btn-small {
-  padding: 5px 10px;
   font-size: 12px;
 }
 

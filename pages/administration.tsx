@@ -11,6 +11,7 @@ import useAuth from "../src/hooks/useAuth";
 import { toast } from "react-toastify";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
+import CancelButton from "@/components/common/CancelButton";
 
 interface MaterialAttributes {
   name: string;
@@ -436,14 +437,18 @@ const AdministrationPage: React.FC = () => {
     const isSelected = step === stepNumber;
     const activeColor = "#3ca7b7";
     const inactiveColor = "#ccc";
+
+    const modifiedIconClass = isSelected ? iconClass.replace('bi-', 'bi-') + '-fill' : iconClass;
+
     return (
-      <li className="nav-item" style={{ cursor: "pointer" }} onClick={() => setStep(stepNumber)}>
+      <li className="nav-item sidebar-item" style={{ cursor: "pointer" }} onClick={() => setStep(stepNumber)}>
         <div
+          className={`sidebar-item-content ${isSelected ? 'active' : ''}`}
           style={{
             width: "100%",
             height: `${sidebarItemHeight}px`,
             border: `${sidebarItemBorderSize}px solid ${isSelected ? activeColor : inactiveColor}`,
-            borderRadius: "8px",
+            borderRadius: "4px",
             marginBottom: "16px",
             display: "flex",
             alignItems: "center",
@@ -451,12 +456,15 @@ const AdministrationPage: React.FC = () => {
             paddingLeft: `${leftPadding}px`,
             color: isSelected ? activeColor : inactiveColor,
             fontFamily: "var(--font-family-base)",
+            position: "relative",
+            overflow: "hidden",
+            background: isSelected ? `rgba(60, 167, 183, 0.05)` : "transparent",
           }}
         >
-          <span style={{ marginRight: "8px", fontSize: "1.3rem" }}>
-            <i className={iconClass}></i>
+          <span className="icon-wrapper" style={{ marginRight: "12px", position: "relative" }}>
+            <i className={modifiedIconClass}></i>
           </span>
-          <span style={{ fontWeight: "normal" }}>{title}</span>
+          <span className="title-wrapper">{title}</span>
         </div>
       </li>
     );
@@ -489,7 +497,7 @@ const AdministrationPage: React.FC = () => {
               </ul>
             </div>
 
-            <div className="content-area" style={{ flex: 1, padding: "20px" }}>
+            <div className="content-area" style={{ flex: 1 }}>
               {step === 3 && (
                 <>
                   <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
@@ -764,19 +772,14 @@ const AdministrationPage: React.FC = () => {
                 min="0"
               />
             </div>
-            <div className="mt-4 text-end">
-              <CustomButton
-                variant="save"
-                onClick={() => {
+            <div className="mt-4 d-flex justify-content-between">
+              <CancelButton  onClick={() => {
                   setShowNewMaterialModal(false);
                   setStep(3);
                   setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
-                }}
-              >
-                Cancelar
-              </CustomButton>
+                }} />
               <CustomButton variant="save" type="submit">
-                Crear Material
+                Crear
               </CustomButton>
             </div>
           </form>
@@ -1291,6 +1294,447 @@ const AdministrationPage: React.FC = () => {
         }
         .table-striped tbody tr:nth-child(even) {
           background-color: #f2f2f2;
+        }
+        
+        /* Animaciones y transiciones */
+        .nav-item div {
+          transition: all 0.3s ease;
+        }
+        
+        .nav-item div:hover {
+          transform: translateX(10px);
+          box-shadow: 0 2px 8px rgba(60, 167, 183, 0.1);
+        }
+        
+        .nav-item i {
+          transition: transform 0.3s ease;
+        }
+        
+        .nav-item:hover i {
+          transform: scale(1.2);
+        }
+
+        .table {
+          transition: opacity 0.3s ease;
+        }
+
+        .table tbody tr {
+          transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+          transform: scale(1.01);
+          background-color: rgba(60, 167, 183, 0.05) !important;
+          cursor: pointer;
+        }
+
+        .modal-overlay {
+          animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+          animation: slideIn 0.3s ease;
+        }
+
+        .form-control {
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-control:focus {
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 0.2rem rgba(60, 167, 183, 0.25);
+        }
+
+        button {
+          transition: all 0.3s ease !important;
+        }
+
+        button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes slideIn {
+          from {
+            transform: translateY(-20px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+
+        /* Transición para cambio de tabs */
+        .content-area > div {
+          animation: fadeIn 0.3s ease;
+        }
+
+        /* Transición para elementos de tabla */
+        .table tbody tr {
+          animation: fadeIn 0.5s ease;
+        }
+
+        /* Ajuste para evitar parpadeo en transiciones */
+        * {
+          backface-visibility: hidden;
+          -webkit-font-smoothing: antialiased;
+        }
+
+        /* Transición suave para cambios de color */
+        .bordered-main-card {
+          transition: border-color 0.3s ease;
+        }
+
+        /* Efecto hover para las cards */
+        .card {
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Estilos modernos para cards */
+        .card {
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 16px;
+          padding: 20px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, var(--primary-color), #4fd1c5);
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+          transform: translateY(-5px) scale(1.005);
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+          border-color: rgba(60, 167, 183, 0.3);
+        }
+
+        .card:hover::before {
+          transform: scaleX(1);
+        }
+
+        .bordered-main-card {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(60, 167, 183, 0.1);
+          border-radius: 20px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          margin: 2rem auto;
+          width: 100%;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .bordered-main-card::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 20px;
+          padding: 2px;
+          background: linear-gradient(45deg, rgba(60, 167, 183, 0.3), rgba(79, 209, 197, 0.3));
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+
+        /* Efecto de brillo en hover */
+        .card::after {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+          opacity: 0;
+          transform: scale(0.5);
+          transition: opacity 0.3s, transform 0.3s;
+          pointer-events: none;
+        }
+
+        .card:hover::after {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        /* Mejoras en animaciones para SidebarItem */
+        .sidebar-item {
+          perspective: 1000px;
+          transform-style: preserve-3d;
+          transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-item-content {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          background: linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0.05) 100%
+          );
+          backdrop-filter: blur(10px);
+        }
+
+        .sidebar-item-content::before,
+        .sidebar-item-content::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 12px;
+          transition: all 0.4s ease;
+        }
+
+        .sidebar-item-content::before {
+          z-index: -2;
+          background: linear-gradient(
+            135deg,
+            var(--primary-color) 0%,
+            rgba(79, 209, 197, 0.5) 100%
+          );
+          opacity: 0;
+          transform: translateX(-100%);
+        }
+
+        .sidebar-item-content::after {
+          z-index: -1;
+          background: white;
+          margin: 1px;
+          border-radius: 11px;
+        }
+
+        .sidebar-item-content:hover {
+          transform: translateX(8px) translateZ(10px);
+          box-shadow: 
+            0 4px 25px rgba(60, 167, 183, 0.1),
+            0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-item-content:hover::before {
+          opacity: 1;
+          transform: translateX(0);
+        }
+
+        .sidebar-item-content.active {
+          transform: translateX(8px) translateZ(20px);
+        }
+
+        .icon-wrapper {
+          position: relative;
+          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          transform-origin: center;
+        }
+
+        .sidebar-item-content:hover .icon-wrapper {
+          transform: scale(1.2) rotate(8deg);
+          filter: drop-shadow(0 2px 4px rgba(60, 167, 183, 0.3));
+        }
+
+        .title-wrapper {
+          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          opacity: 0.9;
+          transform-origin: left;
+          position: relative;
+        }
+
+        .title-wrapper::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: -2px;
+          width: 100%;
+          height: 2px;
+          background: var(--primary-color);
+          transform: scaleX(0);
+          transition: transform 0.4s ease;
+          transform-origin: right;
+        }
+
+        .sidebar-item-content:hover .title-wrapper {
+          opacity: 1;
+          transform: translateX(5px) scale(1.02);
+          letter-spacing: 0.2px;
+        }
+
+        .sidebar-item-content:hover .title-wrapper::before {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+
+        .sidebar-item-content.active .title-wrapper {
+          font-weight: 500;
+          letter-spacing: 0.3px;
+          color: var(--primary-color);
+        }
+
+        /* Animación de entrada mejorada */
+        @keyframes sidebarItemAppear {
+          0% {
+            opacity: 0;
+            transform: translateX(-30px) scale(0.9);
+          }
+          60% {
+            transform: translateX(5px) scale(1.02);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        .sidebar-item {
+          animation: sidebarItemAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          animation-delay: calc(var(--item-index, 0) * 0.1s);
+        }
+
+        /* Efecto de pulso en hover */
+        @keyframes softPulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+          100% { transform: scale(1); }
+        }
+
+        .sidebar-item-content:hover {
+          animation: softPulse 2s infinite;
+        }
+
+        /* Mejoras para contenido interno */
+        .card-content {
+          position: relative;
+          z-index: 1;
+        }
+
+        /* Animación para aparecer */
+        @keyframes cardAppear {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .card {
+          animation: cardAppear 0.5s ease-out forwards;
+        }
+
+        /* Efecto de profundidad en hover */
+        .card:hover {
+          transform: translateY(-5px) scale(1.005);
+          box-shadow: 
+            0 8px 30px rgba(0, 0, 0, 0.12),
+            0 4px 8px rgba(60, 167, 183, 0.1);
+        }
+
+        /* Estilos modernos para SidebarItem */
+        .sidebar-item {
+          perspective: 1000px;
+        }
+
+        .sidebar-item-content {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transform-style: preserve-3d;
+        }
+
+        .sidebar-item-content::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 4px;
+          background: linear-gradient(180deg, var(--primary-color), #4fd1c5);
+          transform: scaleY(0);
+          transition: transform 0.3s ease;
+          transform-origin: top;
+        }
+
+        .sidebar-item-content.active::before {
+          transform: scaleY(1);
+        }
+
+        .sidebar-item-content:hover {
+          transform: translateX(8px);
+          box-shadow: 0 4px 15px rgba(60, 167, 183, 0.1);
+        }
+
+        .icon-wrapper {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          transition: all 0.3s ease;
+        }
+
+        .sidebar-item-content:hover .icon-wrapper {
+          transform: scale(1.2) rotate(5deg);
+        }
+
+        .title-wrapper {
+          position: relative;
+          transition: all 0.3s ease;
+          opacity: 0.8;
+        }
+
+        .sidebar-item-content:hover .title-wrapper {
+          opacity: 1;
+          transform: translateX(5px);
+        }
+
+        .sidebar-item-content.active {
+          background: rgba(60, 167, 183, 0.05);
+          border-color: var(--primary-color) !important;
+          box-shadow: 0 4px 15px rgba(60, 167, 183, 0.1);
+        }
+
+        .sidebar-item-content.active .title-wrapper {
+          opacity: 1;
+          font-weight: 500;
+        }
+
+        @keyframes itemAppear {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        .sidebar-item {
+          animation: itemAppear 0.5s ease-out forwards;
+          animation-delay: calc(var(--item-index) * 0.1s);
         }
       `}</style>
     </>

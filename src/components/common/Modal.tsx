@@ -86,7 +86,6 @@ const Modal: React.FC<ModalProps> = ({
             right: '10px',
             background: 'transparent',
             border: 'none',
-            fontSize: '16px',
             cursor: 'pointer',
           }}
           aria-label="Cerrar modal"
@@ -94,7 +93,7 @@ const Modal: React.FC<ModalProps> = ({
           &times;
         </button>
         {title && (
-          <h2 style={{ marginTop: 0, marginBottom: '20px' }}>{title}</h2>
+          <h4>{title}</h4>  
         )}
         {children}
       </div>

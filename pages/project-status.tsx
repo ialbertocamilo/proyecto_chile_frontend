@@ -6,6 +6,7 @@ import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
+import DataTable from "../src/components/DataTable"; // Ajusta la ruta según corresponda
 
 interface Divisions {
   department?: string;
@@ -41,12 +42,10 @@ const ProjectListStatusEditPage = () => {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-
     fetchProjects();
   }, []);
 
@@ -61,7 +60,6 @@ const ProjectListStatusEditPage = () => {
     }
     try {
       console.log("[fetchProjects] Obteniendo proyectos...");
-
       const response = await axios.get(`/api/projects`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -84,7 +82,7 @@ const ProjectListStatusEditPage = () => {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.toLowerCase();
-    setSearch(query);
+    // Filtrar proyectos utilizando todos sus valores
     const filtered = projects.filter((project: Project) =>
       Object.values(project).join(" ").toLowerCase().includes(query)
     );
@@ -100,97 +98,57 @@ const ProjectListStatusEditPage = () => {
     router.push(`/workflow-part1-view?id=${project_view.id}`);
   };
 
-  return (
-    <div >
-      <Card>
-        <Title text="Administrar proyectos" />
-        <div className="input-group mb-3">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="🔍︎ Buscar..."
-            value={search}
-            onChange={handleSearch}
-            style={{ fontFamily: "var(--font-family-base)" }}
+  // Definición de columnas para el DataTable
+  const columns = [
+    { id: "id", label: "ID", minWidth: 50 },
+    { id: "name_project", label: "Nombre del Proyecto", minWidth: 150 },
+    { id: "owner_name", label: "Propietario", minWidth: 100 },
+    { id: "building_type", label: "Tipo de edificación", minWidth: 100 },
+    { id: "main_use_type", label: "Tipo de uso principal", minWidth: 100 },
+    { id: "number_levels", label: "Número de niveles", minWidth: 100 },
+    { id: "number_homes_per_level", label: "N° viviendas/oficinas x nivel", minWidth: 100 },
+    { id: "built_surface", label: "Superficie construida (m²)", minWidth: 100 },
+    {
+      id: "actions",
+      label: "Acciones",
+      minWidth: 100,
+      cell: ({ row }: { row: Project }) => (
+        <div className="text-center">
+          <CustomButton
+            variant="viewIcon"
+            onClick={() => handleViewProject(row)}
+            style={{
+              backgroundColor: "var(--primary-color)",
+              padding: "0.5rem",
+              width: "40px",
+              height: "40px",
+              borderRadius: "4px"
+            }}
           />
         </div>
-      </Card>
-      <Card >
-        <div className="table-responsive" style={{ margin: "-20px" }}>
-          {error && (
-            <p className="text-danger px-4 pt-4" style={{ fontWeight: "normal" }}>
-              {error}
-            </p>
-          )}
-          {loading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
-              <div className="loading-text">Cargando...</div>
-            </div>
-          ) : (
-            <div className="table-responsive">
-              <table className="custom-table" style={{ fontFamily: "var(--font-family-base)" }}>
-                <thead>
-                  <tr>
-                    <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>ID</th>
-                    <th style={{ backgroundColor: "#f8f9fa" }}></th>
-                    <th style={{ backgroundColor: "#f8f9fa" }}>Nombre del Proyecto</th>
-                    <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Propietario</th>
-                    <th className="d-none d-lg-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Tipo de edificación</th>
-                    <th className="d-none d-lg-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Tipo de uso principal</th>
-                    <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Número de niveles</th>
-                    <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Número de viviendas/oficinas x nivel</th>
-                    <th className="d-none d-xl-table-cell" style={{ backgroundColor: "#f8f9fa" }}>Superficie construida (m²)</th>
-                    <th style={{ backgroundColor: "#f8f9fa" }}>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProjects.length > 0 ? (
-                    filteredProjects.map((project: Project) => (
-                      <tr key={project.id} style={{ borderBottom: "1px solid #dee2e6" }}>
-                        <td className="d-none d-md-table-cell">{project.id || "N/D"}</td>
-                        <td></td>
-                        <td data-label="Proyecto:">{project.name_project || "No disponible"}</td>
-                        <td className="d-none d-md-table-cell">{project.owner_name || "No disponible"}</td>
-                        <td className="d-none d-lg-table-cell">{project.building_type || "N/D"}</td>
-                        <td className="d-none d-lg-table-cell">{project.main_use_type || "N/D"}</td>
-                        <td className="d-none d-xl-table-cell">
-                          {project.number_levels !== undefined ? project.number_levels : "N/D"}
-                        </td>
-                        <td className="d-none d-xl-table-cell">
-                          {project.number_homes_per_level !== undefined ? project.number_homes_per_level : "N/D"}
-                        </td>
-                        <td className="d-none d-xl-table-cell">
-                          {project.built_surface !== undefined ? project.built_surface : "N/D"}
-                        </td>
-                        <td className="text-center">
-                          <CustomButton
-                            variant="viewIcon"
-                            onClick={() => handleViewProject(project)}
-                            style={{
-                              backgroundColor: "var(--primary-color)",
-                              padding: "0.5rem",
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "4px"
-                            }}
-                          />
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={10} className="text-center text-muted p-4">
-                        No hay proyectos disponibles o no coinciden con la búsqueda.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </Card>
+      )
+    }
+  ];
+
+  return (
+    <div>
+      <Title text="Administrar proyectos" />
+      {/* El DataTable se encarga de mostrar la búsqueda, paginación y tabla utilizando las clases del componente */}
+      <DataTable
+        data={filteredProjects}
+        columns={columns}
+        loading={loading}
+        createText=""
+        createUrl="/" // Ajusta la URL según corresponda
+        pageSize={10}
+      />
+      {error && (
+        <Card>
+          <p className="text-danger px-4 pt-4" style={{ fontWeight: "normal" }}>
+            {error}
+          </p>
+        </Card>
+      )}
     </div>
   );
 };

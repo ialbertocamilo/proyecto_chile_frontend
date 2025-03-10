@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import Button from "../src/components/common/Button";
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
+import Card from "@/components/common/Card";
+import Title from "@/components/Title";
+import CustomButton from "@/components/common/CustomButton";
+import { ArrowLeft, Backpack, Plus, Save } from "lucide-react";
+import CreateButton from "@/components/CreateButton";
 
 interface UserFormData {
   name: string;
@@ -40,29 +43,8 @@ const UserCreate = () => {
   });
   const [loading, setLoading] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
-  // Se mantiene fieldErrors para otros tipos de error (por ejemplo, contraseñas o duplicación de email)
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
-  const [sidebarWidth] = useState("300px");
 
-  const CARD_WIDTH = "90%";
-  const CARD_MARGIN_LEFT = "20%";
-  const CARD_MARGIN_RIGHT = "auto";
-  const CARD_MARGIN_TOP = "30px";
-  const CARD_MARGIN_BOTTOM = "30px";
-  const CARD_BORDER_RADIUS = "16px";
-  const CARD_BOX_SHADOW = "0 2px 10px rgba(0,0,0,0.1)";
-  const CARD_BORDER_COLOR = "#d3d3d3";
-  const CONTAINER_MARGIN_LEFT = "10px";
-
-  const cardStyle = {
-    width: CARD_WIDTH,
-    margin: `${CARD_MARGIN_TOP} ${CARD_MARGIN_RIGHT} ${CARD_MARGIN_BOTTOM} ${CARD_MARGIN_LEFT}`,
-    borderRadius: CARD_BORDER_RADIUS,
-    boxShadow: CARD_BOX_SHADOW,
-    border: `1px solid ${CARD_BORDER_COLOR}`,
-    padding: "20px",
-    backgroundColor: "#fff",
-  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -192,44 +174,27 @@ const UserCreate = () => {
   };
 
   return (
-    <div className="d-flex">
-      <Navbar setActiveView={() => {}} />
+    <div
+    >
       <div
-        className="d-flex flex-column flex-grow-1"
-        style={{
-          marginLeft: "150px",
-          width: "100%",
-          fontFamily: "var(--font-family-base)",
-        }}
       >
-        <TopBar sidebarWidth={sidebarWidth} />
-        <div
-          className="container p-4"
-          style={{ marginTop: "80px", marginLeft: CONTAINER_MARGIN_LEFT }}
-        >
-          {/* Card para el Título */}
-          <div style={cardStyle}>
-            <h2
-              style={{
-                color: "black",
-                margin: 0,
-                fontFamily: "var(--font-family-base)",
-              }}
-            >
-              Registro de Usuario
-            </h2>
-          </div>
+        {/* Card para el Título */}
+        <Card>
+          <Title text="Creación de usuario" />
+        </Card>
 
-          {/* Card para el Formulario */}
-          <div style={cardStyle}>
-            {generalError && (
-              <p
-                className="text-danger fw-bold"
-                style={{ fontFamily: "var(--font-family-base)" }}
-              >
-                {generalError}
-              </p>
-            )}
+        {/* Card para el Formulario */}
+        <div >
+          {generalError && (
+            <p
+              className="text-danger fw-bold"
+              style={{ fontFamily: "var(--font-family-base)" }}
+            >
+              {generalError}
+            </p>
+          )}
+
+          <Card>
             {loading ? (
               <p
                 className="text-primary"
@@ -372,28 +337,19 @@ const UserCreate = () => {
                   <p style={{ textAlign: "left", margin: 0 }}>
                     (<span style={{ color: "red" }}>*</span>) Campos Obligatorios
                   </p>
-                  <div className="d-flex gap-2">
-                    <Button
-                      text="Volver"
-                      onClick={() => router.push("/user-management")}
-                      className="btn-secondary"
-                    />
-                    <button
-                      type="submit"
-                      form="userCreateForm"
-                      className="btn custom-create-btn"
-                      disabled={loading}
-                    >
-                      {loading ? "Creando..." : "Crear"}
-                    </button>
-                  </div>
+
+                    <CreateButton 
+                      backRoute="/user-management" 
+                      saveTooltip="Guardar Usuario" 
+                      saveText="Guardar"/>
                 </div>
               </form>
             )}
-          </div>
+          </Card>
         </div>
+      </div>
 
-        <style jsx>{`
+      <style jsx>{`
           .card {
             background: #fff;
             border-radius: 12px;
@@ -416,7 +372,6 @@ const UserCreate = () => {
             background-color: var(--secondary-color) !important;
           }
         `}</style>
-      </div>
     </div>
   );
 };

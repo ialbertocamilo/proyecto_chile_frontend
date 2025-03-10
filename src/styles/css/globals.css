@@ -3,7 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 :root {
   --font-family-base: "Noto Sans", sans-serif;
-  --font-size-base: 10px;
+  --font-size-base: 8px;
   --font-size-heading: 2em;
   --primary-color: #3ca7b7;      /* Color principal, usado en títulos y botones */
   --secondary-color: #bbc4cb;    /* Color secundario, por ejemplo para hover en botones */

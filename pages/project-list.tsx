@@ -10,7 +10,7 @@ import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
-import SearchInput from "../src/components/inputs/SearchInput";
+//import SearchInput from "../src/components/inputs/SearchInput";
 import DataTable from "../src/components/DataTable";
 
 interface Divisions {
@@ -69,17 +69,12 @@ const ProjectListPage = () => {
     }
     try {
       console.log("[fetchProjects] 📡 Obteniendo proyectos...");
-      const response = await axios.get<{ projects: Project[] }>(
-        `${constantUrlApiEndpoint}/user/projects`,
-        {
-          params: { limit: 999999, num_pag: 1 },
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log("URL: ", )
+      const response = await axios.get<{ projects: Project[] }>("/api/projects_user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       console.log("[fetchProjects] Proyectos recibidos:", response.data);
       setProjects(response.data.projects);
       setFilteredProjects(response.data.projects);
@@ -279,9 +274,13 @@ const ProjectListPage = () => {
     <>
       <div>
         <Title text="Listado de Proyectos" />
-
         <Card>
-          {error && <p className="text-danger">{error}</p>}
+          {/* {error && <p className="text-danger">{error}</p>}
+          <SearchInput
+            placeholder="Buscar proyectos..."
+            value={search}
+            onChange={handleSearch}
+          /> */}
           <DataTable
             data={filteredProjects}
             columns={tableColumns}

@@ -365,19 +365,9 @@ const ProjectWorkflowPart1: React.FC = () => {
     <>
       <GooIcons />
       <div
-        className="container"
-        style={{
-          maxWidth: "1700px",
-          marginTop: "90px",
-          marginLeft: "110px",
-          marginRight: "50px",
-          transition: "margin-left 0.1s ease",
-          fontFamily: "var(--font-family-base)",
-          fontWeight: "normal",
-        }}
-      >
+>
           <div>{renderMainHeader()}</div>
-        <Card marginTop="15px">
+        <Card>
           <div style={{ padding: "0" }}>
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
               <div

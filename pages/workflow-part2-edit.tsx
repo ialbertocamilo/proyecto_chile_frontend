@@ -1615,17 +1615,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <div
-        className="container custom-container"
-        style={{
-          maxWidth: "1780px",
-          marginTop: "120px",
-          marginLeft: "103px",
-          marginRight: "0px",
-          transition: "margin-left 0.1s ease",
-          fontFamily: "var(--font-family-base)",
-        }}
-      >
+      <div>
         <div>
           {renderMainHeader()}
         </div>

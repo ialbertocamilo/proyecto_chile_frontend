@@ -149,7 +149,7 @@ const Navbar = ({}: NavbarProps) => {
         style={{
           position: "fixed",
           top: "10px",
-          left: isNavbarVisible ? "10px" : "30px",
+          left: isNavbarVisible ? "310px" : "30px",
           width: "48px",
           height: "48px",
           borderRadius: "50%",

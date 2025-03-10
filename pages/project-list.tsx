@@ -304,6 +304,7 @@ const ProjectListPage = () => {
       />
 
       <style jsx>{`
+        /* Estilos personalizados para la tabla, si se necesitan */
         .status-badge {
           font-family: var(--font-family-base);
         }

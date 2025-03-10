@@ -6,8 +6,6 @@ import CustomButton from "../src/components/common/CustomButton";
 import Card from "../src/components/common/Card";
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
@@ -1617,8 +1615,6 @@ const WorkFlowpar2editPage: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} />
-      <TopBar sidebarWidth="300px" />
       <div
         className="container custom-container"
         style={{

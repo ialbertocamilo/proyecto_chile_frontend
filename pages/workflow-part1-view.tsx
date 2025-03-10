@@ -4,8 +4,6 @@ import axios from "axios";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { useRouter } from "next/router";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import Card from "../src/components/common/Card";
 import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";

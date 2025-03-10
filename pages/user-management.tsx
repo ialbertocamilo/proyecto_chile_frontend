@@ -24,7 +24,7 @@ interface User {
 const UserManagement = () => {
   useAuth();
   const [users, setUsers] = useState<User[]>([]);
-  const { put } = useApi();
+  const { put,get } = useApi();
 
   const fetchUsers = useCallback(async () => {
     const token = localStorage.getItem("token");
@@ -35,20 +35,9 @@ const UserManagement = () => {
     try {
       const params = new URLSearchParams();
       params.append("limit", "500");
-      const url = `${constantUrlApiEndpoint}/users/?${params.toString()}`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Error al obtener los usuarios");
-      }
-      const data = await response.json();
-      // Update to handle the nested users array in the response
-      const usersArray = data.users || [];
+      const url = `/users/?${params.toString()}`;
+      const response = await get(url);
+      const usersArray = response?.users || [];
       setUsers(usersArray);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
@@ -142,12 +131,12 @@ const UserManagement = () => {
         <select
           value={row.role_id}
           onChange={(e) => handleRoleChange(row.id, parseInt(e.target.value))}
-          className="w-full px-4 py-2 text-sm text-primary border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400"
+          className="w-full px-4 py-2 text-sm text-muted border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400"
         >
-          <option value={1} className="py-2 hover:bg-gray-100">
+          <option value={1} className="py-2 text-muted">
             Administrador
           </option>
-          <option value={2} className="py-2 hover:bg-gray-100">
+          <option value={2} className="py-2 text-muted">
             Operador
           </option>
         </select>

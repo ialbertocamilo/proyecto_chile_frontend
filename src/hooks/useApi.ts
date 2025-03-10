@@ -27,6 +27,11 @@ export function useApi() {
       });
       return response.data as T;
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return;
+      }
       setError("Error en la petición");
       console.error(err);
       throw err;
@@ -36,11 +41,11 @@ export function useApi() {
   };
 
   return {
-    get: <T>(endpoint: string, config?: AxiosRequestConfig) => request<T>("get", endpoint, null, config),
-    post: <T>(endpoint: string, data: any, config?: AxiosRequestConfig) => request<T>("post", endpoint, data, config),
-    put: <T>(endpoint: string, data: any, config?: AxiosRequestConfig) => request<T>("put", endpoint, data, config),
-    patch: <T>(endpoint: string, data: any, config?: AxiosRequestConfig) => request<T>("patch", endpoint, data, config),
-    del: <T>(endpoint: string, config?: AxiosRequestConfig) => request<T>("delete", endpoint, null, config),
+    get: (endpoint: string, config?: AxiosRequestConfig) => request<any>("get", endpoint, null, config),
+    post: (endpoint: string, data: any, config?: AxiosRequestConfig) => request<any>("post", endpoint, data, config),
+    put: (endpoint: string, data: any, config?: AxiosRequestConfig) => request<any>("put", endpoint, data, config),
+    patch:(endpoint: string, data: any, config?: AxiosRequestConfig) => request<any>("patch", endpoint, data, config),
+    del:(endpoint: string, config?: AxiosRequestConfig) => request<any>("delete", endpoint, null, config),
     loading,
     error,
   };

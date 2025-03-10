@@ -112,14 +112,15 @@ export default function DataTable<T extends { [key: string]: any }>({
                 </div>
                 <div className="row">
                     <div className="col-md-12">
-                        <div className="table-responsive" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                            <table className="table table-hover table-mobile" style={{ minWidth: '650px' }}>
+                        <div className="table-responsive" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '8px' }}>
+                            <table className="table table-hover table-mobile border rounded" style={{ minWidth: '650px', borderColor: '#dee2e6' }}>
                                 <thead className="bg-light border-bottom">
                                     <tr>
                                         {columns.map((column) => (
                                             <th
                                                 key={column.id.toString()}
                                                 className="text-center"
+                                                style={{ color: "var(--primary-color)" }}
                                             >
                                                 {column.label}
                                             </th>

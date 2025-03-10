@@ -15,24 +15,27 @@ export const SearchInput: FC<SearchInputProps> = ({ searchQuery, handleSearch, c
     const router = useRouter();
 
     return (
-        <div className="d-flex align-items-center gap-2 w-100">
-            <input
-                type="text"
-                className="form-control"
-                placeholder="🔍︎ Buscar..."
-                value={searchQuery}
-                onChange={handleSearch}
-                style={{
-                    height: "42px", // Match CustomButton default height
-                    border: "none",
-                    outline: "none"
-                }}
-            />
+        <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 w-100">
+            <div className="flex-grow-1">
+                <input
+                    type="text"
+                    className="form-control w-100"
+                    placeholder="🔍︎ Buscar..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    style={{
+                        height: "42px",
+                        border: "none",
+                        outline: "none"
+                    }}
+                />
+            </div>
             <div className="flex-shrink-0">
                 <CustomButton
                     type="button"
                     variant="save"
                     onClick={() => router.push(createUrl)}
+                    className="w-100"
                 >
                     <Plus className="w-4 h-4 mr-2" />
                     {createText}

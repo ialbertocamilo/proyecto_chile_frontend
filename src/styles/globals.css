@@ -1,7 +1,6 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 
 :root {
-  --font-family-base: 'Roboto', sans-serif;
   --primary-color: #3ca7b7;
   --secondary-color: #6c757d;
 }

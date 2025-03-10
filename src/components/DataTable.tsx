@@ -32,7 +32,7 @@ const TablePagination: React.FC<{
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }> = ({ page, rowsPerPage, totalPages, onPageChange, onRowsPerPageChange }) => (
     <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-3">
-        <div className="w-100 w-sm-auto">
+        <div className="w-100 w-sm-auto mb-2 mb-sm-0">
             <select
                 className="form-select"
                 value={rowsPerPage}
@@ -53,7 +53,6 @@ const TablePagination: React.FC<{
             <span className="text-nowrap">
                 Página {page + 1} de {totalPages}
             </span>
-
             <div className="flex-shrink-0">
                 <IconButton
                     onClick={() => onPageChange(page + 1)}
@@ -100,18 +99,20 @@ export default function DataTable<T extends { [key: string]: any }>({
             <div className="container-fluid p-0">
                 <div className="row mb-3 mt-3">
                     <div className="col-12">
-                        <SearchInput
-                            searchQuery={searchQuery}
-                            handleSearch={handleSearch}
-                            createUrl={createUrl}
-                            createText={createText}
-                        />
+                        <div className="d-flex flex-column flex-sm-row gap-2">
+                            <SearchInput
+                                searchQuery={searchQuery}
+                                handleSearch={handleSearch}
+                                createUrl={createUrl}
+                                createText={createText}
+                            />
+                        </div>
                     </div>
                 </div>
                 <div className="row">
                     <div className="col-12">
                         <div className="table-responsive">
-                            <table className="table table-hover align-middle mb-0">
+                            <table className="table table-hover align-middle mb-0 w-100">
                                 <thead className="bg-light border-bottom">
                                     <tr>
                                         {columns.map((column) => (

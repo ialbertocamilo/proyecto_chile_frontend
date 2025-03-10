@@ -371,12 +371,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           <div style={{ padding: "0" }}>
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
               <div
-                style={{
-                  width: "380px",
-                  padding: "20px",
-                  boxSizing: "border-box",
-                  borderRight: "1px solid #ccc",
-                }}
+                
               >
                 <ul className="nav flex-column" style={{ height: "100%" }}>
                   <SidebarItemComponent

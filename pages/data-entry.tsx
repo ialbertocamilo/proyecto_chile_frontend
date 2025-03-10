@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import { ToastContainer, toast } from "react-toastify";
 import Title from "../src/components/Title";
 import "react-toastify/dist/ReactToastify.css";
-
+import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
   name: string;
@@ -51,12 +51,6 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-interface SidebarItemComponentProps {
-  stepNumber: number;
-  iconName: string;
-  title: string;
-  onClickAction?: () => void;
-}
 
 // Helper para validar porcentajes
 const validatePercentage = (value: number) => {
@@ -473,47 +467,7 @@ const DataEntryPage: React.FC = () => {
     }
   }, [step, modalElementType, fetchAllWindowsForDoor]);
 
-  const SidebarItemComponent = ({
-    stepNumber,
-    iconName,
-    title,
-    onClickAction,
-  }: SidebarItemComponentProps) => {
-    const isSelected = step === stepNumber;
-    const activeColor = primaryColor;
-    const inactiveColor = "#ccc";
-    const handleClick = () => {
-      if (onClickAction) {
-        onClickAction();
-      } else {
-        setStep(stepNumber);
-      }
-    };
-    return (
-      <li className="nav-item" style={{ cursor: "pointer" }} onClick={handleClick}>
-        <div
-          style={{
-            width: "100%",
-            height: "100px",
-            border: `1px solid ${isSelected ? activeColor : inactiveColor}`,
-            borderRadius: "8px",
-            marginBottom: "16px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            paddingLeft: "50px",
-            color: isSelected ? activeColor : inactiveColor,
-            fontFamily: "var(--font-family-base)",
-          }}
-        >
-          <span style={{ marginRight: "15px", fontSize: "2rem" }}>
-            <span className="material-icons">{iconName}</span>
-          </span>
-          <span>{title}</span>
-        </div>
-      </li>
-    );
-  };
+  
 
   const renderMainHeader = () =>
     step >= 3 && <Title text="Datos de entrada" />;
@@ -568,9 +522,12 @@ const DataEntryPage: React.FC = () => {
               {/* Sidebar interno */}
               <div className="internal-sidebar">
                 <ul className="nav flex-column">
-                  <SidebarItemComponent stepNumber={3} iconName="imagesearch_roller" title="Lista de materiales" />
-                  <SidebarItemComponent stepNumber={5} iconName="home" title="Elementos translúcidos" />
-                  <SidebarItemComponent stepNumber={6} iconName="deck" title="Perfil de uso" />
+                  <SidebarItemComponent stepNumber={3} iconName="imagesearch_roller" title="Lista de materiales" activeStep={step}
+                    onClickAction={() => setStep(3)}/>
+                  <SidebarItemComponent stepNumber={5} iconName="home" title="Elementos translúcidos" activeStep={step}
+                    onClickAction={() => setStep(5)}/>
+                  <SidebarItemComponent stepNumber={6} iconName="deck" title="Perfil de uso" activeStep={step}
+                    onClickAction={() => setStep(6)}/>
                 </ul>
               </div>
               {/* Área de contenido */}
@@ -1200,12 +1157,7 @@ const DataEntryPage: React.FC = () => {
         />
       </div>
       <style jsx>{`
-        .internal-sidebar {
-          width: 380px;
-          padding: 20px;
-          box-sizing: border-box;
-          border-right: 1px solid #ccc;
-        }
+
         .content-area {
           flex: 1;
           padding: 20px;
@@ -1220,12 +1172,7 @@ const DataEntryPage: React.FC = () => {
             margin-left: 50px;
             margin-right: 20px;
           }
-          .internal-sidebar {
-            width: 100% !important;
-            border-right: none;
-            border-bottom: 1px solid #ccc;
-            padding: 10px;
-          }
+      
           .content-area {
             padding: 10px;
           }

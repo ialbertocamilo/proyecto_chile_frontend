@@ -14,6 +14,8 @@ import Modal from "../src/components/common/Modal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
+// Importamos el componente SidebarItemComponent del directorio común
+import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
 
 interface Detail {
   id_detail: number;
@@ -107,7 +109,7 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-// Constantes de estilos para headers sticky de tablas
+// Constantes de estilos para encabezados sticky de tablas
 const stickyHeaderStyle1 = {
   position: "sticky" as const,
   top: 0,
@@ -122,52 +124,6 @@ const stickyHeaderStyle2 = {
   backgroundColor: "#fff",
   zIndex: 2,
   textAlign: "center" as const,
-};
-
-interface SidebarItemProps {
-  stepNumber: number;
-  iconName: string;
-  title: string;
-  activeStep?: number;
-  onClickAction?: () => void;
-}
-
-const SidebarItem: React.FC<SidebarItemProps> = ({
-  stepNumber,
-  iconName,
-  title,
-  activeStep,
-  onClickAction,
-}) => {
-  const primaryColor = "#3ca7b7";
-  const inactiveColor = "#ccc";
-  const currentStep = activeStep !== undefined ? activeStep : stepNumber;
-
-  return (
-    <li className="nav-item" style={{ cursor: "pointer" }} onClick={onClickAction}>
-      <div
-        style={{
-          width: "100%",
-          height: "100px",
-          border: `1px solid ${currentStep === stepNumber ? primaryColor : inactiveColor}`,
-          borderRadius: "8px",
-          marginBottom: "16px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          paddingLeft: "50px",
-          color: currentStep === stepNumber ? primaryColor : inactiveColor,
-          fontFamily: "var(--font-family-base)",
-          fontWeight: "normal",
-        }}
-      >
-        <span style={{ marginRight: "15px", fontSize: "2rem" }}>
-          <span className="material-icons">{iconName}</span>
-        </span>
-        <span style={{ fontWeight: "normal" }}>{title}</span>
-      </div>
-    </li>
-  );
 };
 
 const WorkFlowpar2createPage: React.FC = () => {
@@ -240,7 +196,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         "Serás redirigido a la creación de proyecto",
         "warning"
       ).then(() => {
-        router.push("/project-workflow-part1");
+        router.push("/workflow-part1-create");
       });
     }
   }, [hasLoaded, projectId, router]);
@@ -351,7 +307,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       });
   }, []);
 
-  // Función para obtener materiales (Falta por lo que se reincorporó)
+  // Función para obtener materiales
   const fetchMaterials = async () => {
     const token = getToken();
     if (!token) return;
@@ -473,7 +429,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchMaterials();
   };
 
-  // Función unificada para guardar detalles (se usa en dos contextos)
+  // Función unificada para guardar detalles
   const saveDetails = async () => {
     if (!projectId) {
       console.error("No se proporcionó un ID de proyecto.");
@@ -489,7 +445,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       "Content-Type": "application/json",
     };
     try {
-      // Si existen detalles, se realiza el POST; si no, se muestra un warning y se continúa.
       if (detailIds.length > 0) {
         await axios.post(url, detailIds, { headers });
       } else {
@@ -564,7 +519,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
-  // Funciones para edición de Techumbre (similar a Muros)
+  // Funciones para edición de Techumbre
   const handleEditTechClick = (detail: TabItem) => {
     setEditingTechRowId(detail.id || null);
     setEditingTechColors({
@@ -629,30 +584,7 @@ const WorkFlowpar2createPage: React.FC = () => {
   // Renderizado de encabezado principal
   const renderMainHeader = () => <Title text="Desarrollo de proyecto" />;
 
-  // Componente SidebarItem reutilizable
-  const SidebarItemComponent = ({
-    stepNumber,
-    iconName,
-    title,
-    onClickAction,
-  }: {
-    stepNumber: number;
-    iconName: string;
-    title: string;
-    onClickAction?: () => void;
-  }) => {
-    return (
-      <SidebarItem
-        stepNumber={stepNumber}
-        iconName={iconName}
-        title={title}
-        activeStep={step}
-        onClickAction={onClickAction}
-      />
-    );
-  };
-
-  // Renderizado de pestañas en el paso 4
+  // Renderizado de pestañas en el paso 4 (sin cambios)
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
     const tabs = [
@@ -1471,43 +1403,26 @@ const WorkFlowpar2createPage: React.FC = () => {
       <div>
         <h3>{renderMainHeader()}</h3>
         <Card>
-          <div className="d-flex align-items-center gap-4">
-            <span
-              style={{
-                fontWeight: "normal",
-                fontFamily: "var(--font-family-base)",
-                paddingLeft: "2rem",
-              }}
-            >
-              Proyecto:
-            </span>
-            <CustomButton variant="save" className="no-hover">
-              {`Edificación Nº ${projectId ?? "xxxxx"}`}
-            </CustomButton>
-          </div>
-        </Card>
-        <Card>
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div
-                style={{
-                  padding: "20px",
-                  boxSizing: "border-box",
-                  borderRight: "1px solid #ccc",
-                }}
+                
                 className="mb-3 mb-lg-0"
               >
-                <ul className="nav flex-column" style={{ height: "100%" }}>
+                {/* Sidebar usando el componente común */}
+                <ul className="nav flex-column">
                   <SidebarItemComponent
                     stepNumber={4}
                     iconName="build"
                     title="Detalles constructivos"
+                    activeStep={step}
                     onClickAction={() => setStep(4)}
                   />
                   <SidebarItemComponent
                     stepNumber={7}
                     iconName="design_services"
                     title="Recinto"
+                    activeStep={step}
                     onClickAction={() => setStep(7)}
                   />
                 </ul>
@@ -1527,7 +1442,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         </Card>
       </div>
       <style jsx global>{`
-        
+        /* Puedes agregar estilos globales adicionales aquí */
       `}</style>
     </>
   );

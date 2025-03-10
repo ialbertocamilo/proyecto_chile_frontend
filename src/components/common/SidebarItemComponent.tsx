@@ -1,4 +1,3 @@
-// SidebarItemComponent.tsx
 import React from "react";
 
 interface SidebarItemComponentProps {
@@ -21,14 +20,24 @@ const SidebarItemComponent: React.FC<SidebarItemComponentProps> = ({
   const isActive = activeStep === stepNumber;
 
   return (
-    <li className="nav-item" style={{ cursor: "pointer" }} onClick={onClickAction}>
+    <li
+      className="nav-item"
+      style={{
+        cursor: "pointer",
+        width: "400px",
+        padding: "20px",
+        boxSizing: "border-box",
+        borderRight: "1px solid #ccc",
+      }}
+      onClick={onClickAction}
+    >
       <div
         style={{
           width: "100%",
           height: "100px",
           border: `1px solid ${isActive ? primaryColor : inactiveColor}`,
           borderRadius: "8px",
-          marginBottom: "16px",
+          marginBottom: "-7%",
           display: "flex",
           alignItems: "center",
           paddingLeft: "50px",

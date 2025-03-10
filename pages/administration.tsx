@@ -12,7 +12,7 @@ import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 import { toast } from "react-toastify";
 import Title from "../src/components/Title";
-import Card from "../src/components/common/Card"; // Your custom Card component
+import Card from "../src/components/common/Card"; 
 
 interface MaterialAttributes {
   name: string;
@@ -297,7 +297,7 @@ const AdministrationPage: React.FC = () => {
       handleLogout();
     }
   };
-
+//a
   const handleCreateElement = async () => {
     if (tabElementosOperables === "ventanas") {
       if (

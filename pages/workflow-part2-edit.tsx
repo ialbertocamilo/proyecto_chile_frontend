@@ -394,67 +394,96 @@ const WorkFlowpar2editPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // Función para crear un nuevo detalle
-  const handleCreateNewDetail = async () => {
-    if (!showNewDetailRow) return;
-    if (
-      !newDetailForm.scantilon_location ||
-      !newDetailForm.name_detail ||
-      !newDetailForm.material_id
-    ) {
-      toast.warning("Por favor complete todos los campos de detalle", {
-        toastId: "material-warning",
-      });
+// Función para crear un nuevo detalle y añadirlo directamente al proyecto
+const handleCreateNewDetail = async () => {
+  if (!showNewDetailRow) return;
+  if (
+    !newDetailForm.scantilon_location ||
+    !newDetailForm.name_detail ||
+    !newDetailForm.material_id
+  ) {
+    toast.warning("Por favor complete todos los campos de detalle", {
+      toastId: "material-warning",
+    });
+    return;
+  }
+  
+  const token = getToken();
+  if (!token) return;
+  
+  try {
+    // Paso 1: Crear el nuevo detalle
+    const createUrl = `${constantUrlApiEndpoint}/details/create`;
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+    const response = await axios.post(createUrl, newDetailForm, { headers });
+    const newDetailId = response.data.detail.id;
+    
+    if (!newDetailId) {
+      toast.error("El backend no devolvió un ID de detalle válido.");
       return;
     }
-    const token = getToken();
-    if (!token) return;
-    try {
-      const createUrl = `${constantUrlApiEndpoint}/details/create`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-      const response = await axios.post(createUrl, newDetailForm, { headers });
-      setShowNewDetailRow(false);
-      const newDetailId = response.data.detail.id;
-      if (!newDetailId) {
-        toast.error("El backend no devolvió un ID de detalle válido.");
-        return;
-      }
-      toast.success(response.data.success || "Detalle creado exitosamente", {
-        toastId: "material-sucess",
-      });
-      if (!projectId) return;
+    
+    // Paso 2: Añadir el detalle al proyecto directamente
+    if (projectId) {
       const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-      const detailIds = [
-        ...fetchedDetails.map((det) => det.id_detail),
-        newDetailId,
-      ];
-      await axios.post(selectUrl, detailIds, { headers });
-      fetchFetchedDetails();
-      setNewDetailForm({
-        scantilon_location: "",
-        name_detail: "",
-        material_id: 0,
-        layer_thickness: null,
-      });
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        console.error(
-          "Error en la creación del detalle:",
-          error.response?.data
-        );
-        toast.error(error.response?.data?.detail || error.message, {
-          toastId: "material-warning",
+      
+      // Asegurarnos de que estamos enviando un array de IDs
+      const detailIds = [newDetailId];
+      
+      try {
+        await axios.post(selectUrl, detailIds, { headers });
+        toast.success("Detalle creado y añadido al proyecto exitosamente", {
+          toastId: "detail-added-success",
         });
-      } else {
-        toast.error("Error desconocido al crear el detalle", {
-          toastId: "material-warning",
-        });
+      } catch (selectError: unknown) {
+        // Verificar si el error es que el detalle ya está en el proyecto
+        if (axios.isAxiosError(selectError) && 
+            selectError.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
+          // Este no es un error real para nuestro caso de uso
+          toast.success("Detalle creado exitosamente", {
+            toastId: "detail-created-success",
+          });
+        } else {
+          console.error("Error al añadir detalle al proyecto:", selectError);
+          toast.warning("Detalle creado pero no se pudo añadir al proyecto", {
+            toastId: "detail-associated-error",
+          });
+        }
       }
+    } else {
+      toast.warning("No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)", {
+        toastId: "project-id-missing",
+      });
     }
-  };
+    
+    // Actualizar la interfaz
+    fetchFetchedDetails();
+    setShowNewDetailRow(false);
+    setNewDetailForm({
+      scantilon_location: "",
+      name_detail: "",
+      material_id: 0,
+      layer_thickness: null,
+    });
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error(
+        "Error en la creación del detalle:",
+        error.response?.data
+      );
+      toast.error(error.response?.data?.detail || error.message, {
+        toastId: "material-warning",
+      });
+    } else {
+      toast.error("Error desconocido al crear el detalle", {
+        toastId: "material-warning",
+      });
+    }
+  }
+};
 
   const handleNewButtonClick = () => {
     setShowNewDetailRow(true);
@@ -462,56 +491,87 @@ const WorkFlowpar2editPage: React.FC = () => {
   };
 
   // Función unificada para guardar detalles (se usa en dos contextos)
-  const saveDetails = async () => {
-    if (!projectId) {
-      console.error("No se proporcionó un ID de proyecto.");
-      return;
-    }
-    const token = getToken();
-    if (!token) return;
-    if (fetchedDetails.length === 0) {
-      console.error("No se encontraron detalles para enviar.");
-      return;
-    }
-    const detailIds = fetchedDetails.map((det) => det.id_detail);
-    const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-    try {
-      await axios.post(url, detailIds, { headers });
+const saveDetails = async () => {
+  if (!projectId) {
+    console.error("No se proporcionó un ID de proyecto.");
+    return;
+  }
+  const token = getToken();
+  if (!token) return;
+  if (fetchedDetails.length === 0) {
+    console.error("No se encontraron detalles para enviar.");
+    return;
+  }
+  
+  const detailIds = fetchedDetails.map((det) => det.id_detail);
+  const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+  
+  try {
+    await axios.post(url, detailIds, { headers });
+    setShowTabsInStep4(true);
+    setTabStep4("muros");
+  } catch (error: unknown) {
+    // Si el error es que todos los detalles ya estaban en el proyecto, no es un error real
+    if (axios.isAxiosError(error) && 
+        error.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
+      // Este no es un error real, aún podemos mostrar las pestañas
       setShowTabsInStep4(true);
       setTabStep4("muros");
-    } catch (error) {
-      console.error("Error al enviar la solicitud:", error);
+      return;
     }
-  };
+    
+    console.error("Error al enviar la solicitud:", error);
+    if (axios.isAxiosError(error)) {
+      console.error("Detalles de la respuesta:", error.response?.data);
+    }
+  }
+};
 
-  // Guarda detalles en copia (se dispara automáticamente al cambiar fetchedDetails)
-  const handleSaveDetailsCopy = useCallback(async () => {
-    if (!projectId) {
-      console.error("No se proporcionó un ID de proyecto.");
+  // Función corregida para guardar detalles en el proyecto
+const handleSaveDetailsCopy = useCallback(async () => {
+  if (!projectId) {
+    console.error("No se proporcionó un ID de proyecto.");
+    return;
+  }
+  const token = getToken();
+  if (!token) return;
+  if (fetchedDetails.length === 0) {
+    console.error("No se encontraron detalles para enviar.");
+    return;
+  }
+  
+  // Extraer solo los IDs de los detalles
+  const detailIds = fetchedDetails.map((det) => det.id_detail);
+  
+  const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+  
+  try {
+    await axios.post(url, detailIds, { headers });
+    // Éxito silencioso para no molestar al usuario con notificaciones constantes
+  } catch (error: unknown) {
+    // Si el error es que todos los detalles ya estaban en el proyecto, no es un error real
+    if (axios.isAxiosError(error) && 
+        error.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
+      // No es necesario mostrar mensajes o registrar este "error"
       return;
     }
-    const token = getToken();
-    if (!token) return;
-    if (fetchedDetails.length === 0) {
-      console.error("No se encontraron detalles para enviar.");
-      return;
+    
+    // Para otros errores, registrar pero no mostrar toast al usuario
+    console.error("Error al enviar la solicitud:", error);
+    if (axios.isAxiosError(error)) {
+      console.error("Detalles de la respuesta:", error.response?.data);
+      console.error("Status code:", error.response?.status);
     }
-    const detailIds = fetchedDetails.map((det) => det.id_detail);
-    const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-    try {
-      await axios.post(url, detailIds, { headers });
-    } catch (error) {
-      console.error("Error al enviar la solicitud:", error);
-    }
-  }, [projectId, fetchedDetails]);
+  }
+}, [projectId, fetchedDetails]);
 
   useEffect(() => {
     if (fetchedDetails.length > 0) {

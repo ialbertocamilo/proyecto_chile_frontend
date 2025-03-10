@@ -6,6 +6,13 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import "../public/assets/css/globals.css";
 import CustomButton from "../src/components/common/CustomButton";
+import Head from "next/head";
+import { ReactElement } from "react";
+import { NextPage } from "next";
+
+type NextPageWithLayout = NextPage & {
+  getLayout?: (page: ReactElement) => ReactElement;
+};
 
 interface FormData {
   name: string;
@@ -21,7 +28,7 @@ interface FormData {
   ubigeo: string;
 }
 
-const Register = () => {
+const Register: NextPageWithLayout = () => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     lastname: "",
@@ -40,8 +47,7 @@ const Register = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -208,7 +214,6 @@ const Register = () => {
                   className="d-flex align-items-center"
                   style={{ gap: "1rem", marginBottom: "1rem" }}
                 >
-                  {/* Se reemplaza el ícono por la imagen de usuario */}
                   <div
                     style={{
                       width: "60px",
@@ -233,8 +238,7 @@ const Register = () => {
 
                   <div style={{ fontSize: baseFontSize }}>
                     <div style={{ fontSize: "1.2rem", marginBottom: "0.2rem" }}>
-                      {formData.name || "NOMBRES"}{" "}
-                      {formData.lastname || "APELLIDOS"}
+                      {formData.name || "NOMBRES"} {formData.lastname || "APELLIDOS"}
                     </div>
                     <div>{formData.proffesion || "Profesión u oficio"}</div>
                   </div>
@@ -389,8 +393,7 @@ const Register = () => {
                         color: isError("proffesion") ? "red" : "#000",
                       }}
                     >
-                      Profesión u oficio{" "}
-                      {isError("proffesion") && <span>*</span>}
+                      Profesión u oficio {isError("proffesion") && <span>*</span>}
                     </label>
                     <input
                       type="text"
@@ -469,8 +472,7 @@ const Register = () => {
                         color: isError("birthdate") ? "red" : "#000",
                       }}
                     >
-                      Fecha de nacimiento{" "}
-                      {isError("birthdate") && <span>*</span>}
+                      Fecha de nacimiento {isError("birthdate") && <span>*</span>}
                     </label>
                     <input
                       type="date"
@@ -558,6 +560,17 @@ const Register = () => {
         }
       `}</style>
     </div>
+  );
+};
+
+Register.getLayout = function getLayout(page: ReactElement) {
+  return (
+    <>
+      <Head>
+        <title>Register</title>
+      </Head>
+      {page}
+    </>
   );
 };
 

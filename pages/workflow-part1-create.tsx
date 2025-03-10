@@ -5,8 +5,6 @@ import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { useRouter } from "next/router";
 import CustomButton from "../src/components/common/CustomButton";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import Card from "../src/components/common/Card";
 import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
@@ -69,7 +67,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   const router = useRouter();
 
   const [, setPrimaryColor] = useState("#3ca7b7");
-  const sidebarWidth = "300px";
   const [step, setStep] = useState<number>(1);
   const [locationSearch, setLocationSearch] = useState("");
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
@@ -320,9 +317,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} />
-      <TopBar sidebarWidth={sidebarWidth} />
-      <div className="container custom-container">
+      <div >
         <div>{renderMainHeader()}</div>
         <Card>
           <div>

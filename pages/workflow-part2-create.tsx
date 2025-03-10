@@ -6,8 +6,6 @@ import CustomButton from "../src/components/common/CustomButton";
 import Card from "../src/components/common/Card";
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
@@ -1470,21 +1468,9 @@ const WorkFlowpar2createPage: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} />
-      <TopBar sidebarWidth="300px" />
-      <div
-        className="container custom-container"
-        style={{
-          maxWidth: "1780px",
-          marginTop: "120px",
-          marginLeft: "103px",
-          marginRight: "0px",
-          transition: "margin-left 0.1s ease",
-          fontFamily: "var(--font-family-base)",
-        }}
-      >
-        <h3 style={{ marginLeft: "0.1rem", width: "100%" }}>{renderMainHeader()}</h3>
-        <Card style={{ height: "10vh", padding: 0, display: "flex", justifyContent: "center" }}>
+      <div>
+        <h3>{renderMainHeader()}</h3>
+        <Card>
           <div className="d-flex align-items-center gap-4">
             <span
               style={{
@@ -1495,12 +1481,12 @@ const WorkFlowpar2createPage: React.FC = () => {
             >
               Proyecto:
             </span>
-            <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
+            <CustomButton variant="save" className="no-hover">
               {`Edificación Nº ${projectId ?? "xxxxx"}`}
             </CustomButton>
           </div>
         </Card>
-        <Card style={{ marginTop: "clamp(0.5rem, 2vw, 1rem)", marginLeft: "0.1rem", width: "100%" }}>
+        <Card>
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div
@@ -1541,75 +1527,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         </Card>
       </div>
       <style jsx global>{`
-        /* Estilos generales para las tablas */
-        .table {
-          border-collapse: collapse;
-          font-size: 0.85rem;
-          width: 100%;
-        }
-        .table th,
-        .table td {
-          border: none;
-          text-align: center;
-          vertical-align: middle;
-          padding: 0.5em 1.5em;
-        }
-        .table thead th {
-          background-color: #fff;
-          color: var(--primary-color);
-          position: sticky;
-          top: 0;
-          z-index: 2;
-        }
-        .table-striped tbody tr:nth-child(odd) {
-          background-color: #f8f8f8 !important;
-        }
-        .table-striped tbody tr:nth-child(even) {
-          background-color: #f8f8f8 !important;
-        }
-        /* Ajustes responsive */
-        @media (max-width: 992px) {
-          .container-fluid {
-            margin-left: 10px;
-            margin-right: 10px;
-            padding: 0 5px;
-          }
-          .col-lg-3 {
-            border-right: none;
-            border-bottom: 1px solid #ccc;
-          }
-          .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-          }
-          .mb-3.mb-lg-0 {
-            margin-bottom: 1rem;
-          }
-          [style*="padding: 20px"] {
-            padding: 15px;
-          }
-        }
-        @media (max-width: 768px) {
-          .table {
-            font-size: 12px;
-          }
-          th,
-          td {
-            padding: 8px;
-          }
-          [style*="height: 390px"] {
-            height: 300px;
-          }
-        }
-        .no-hover {
-          transition: none !important;
-          cursor: default !important;
-          pointer-events: none !important;
-        }
-        .no-hover:hover {
-          box-shadow: none !important;
-          transform: none !important;
-        }
+        
       `}</style>
     </>
   );

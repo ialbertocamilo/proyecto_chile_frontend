@@ -1,0 +1,48 @@
+
+
+:root {
+  --font-family-base: 'Roboto', sans-serif;
+  --primary-color: #3ca7b7;
+  --secondary-color: #6c757d;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: var(--font-family-base);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-body-wrapper {
+  flex: 1;
+  display: flex;
+}
+
+.sidebar-wrapper {
+  position: fixed;
+  height: 100%;
+  z-index: 1000;
+}
+
+.page-body {
+  flex: 1;
+  margin-left: 6.5em;
+  padding: 20px;
+}

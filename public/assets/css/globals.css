@@ -3,8 +3,6 @@
 
 :root {
   --font-family-base: 'Encode Sans', sans-serif;
-  --font-size-base: 16px;
-  --font-size-heading: 2em;
   --primary-color: #3ca7b7;      /* Color principal, usado en títulos y botones */
   --secondary-color: #bbc4cb;    /* Color secundario, por ejemplo para hover en botones */
   --background-color: #ebe6e670;  /* Color de fondo */
@@ -21,19 +19,15 @@
 }
 
 .material-icons {
-  font-size: 2.05rem; /* o el tamaño que desees */
 }
 
 html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
 }
 /* Estilos base a */
 body {
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
   color: var(--text-color);
   background-color: var(--background-color);
   margin: 0;
@@ -55,7 +49,6 @@ body {
 
 .custom-table th {
   background-color: #f8f9fa;
-  font-weight: 500;
   color: #495057;
   border-bottom: 2px solid #dee2e6;
 }
@@ -106,7 +99,6 @@ body {
   
   .table-mobile td[data-label]:before {
     content: attr(data-label);
-    font-weight: bold;
     margin-right: 10px;
   }
   

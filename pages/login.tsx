@@ -119,12 +119,10 @@ const Login: NextPageWithLayout = () => {
                       />
                       <div
                         className="show-hide"
-                        style={{ cursor: "pointer" }}
+                        style={{ cursor: "pointer", color: "var(--primary-color)" }}
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        <span className="show">
-                          {showPassword ? "Ocultar" : "Mostrar"}
-                        </span>
+                          {showPassword ? "Ocultar" : "Mostrar"}    
                       </div>
                     </div>
                   </div>

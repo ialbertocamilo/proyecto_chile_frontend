@@ -171,6 +171,7 @@ const AdministrationPage: React.FC = () => {
           material_id: det.id_material || det.material_id,
         })
       );
+      console.log("[fetchDetails] Detalles mapeados:", mappedDetails);
       setDetails(mappedDetails);
     } catch (error: unknown) {
       console.error("[fetchDetails] Error al obtener detalles:", error);
@@ -409,6 +410,7 @@ const AdministrationPage: React.FC = () => {
   useEffect(() => {
     if (step === 4) {
       fetchDetails();
+      console.log("Detalles actuales:", details);
     }
   }, [step, fetchDetails]);
 
@@ -472,8 +474,8 @@ const AdministrationPage: React.FC = () => {
         style={{
           maxWidth: "1780px",
           marginTop: "120px",
-          marginLeft: "103px",
-          marginRight: "0px",
+          marginLeft: "auto",
+          marginRight: "auto",
           transition: "margin-left 0.1s ease",
           fontFamily: "var(--font-family-base)",
         }}
@@ -487,8 +489,8 @@ const AdministrationPage: React.FC = () => {
           className="container"
           style={{
             maxWidth: "1780px",
-            marginLeft: "103px",
-            marginRight: "0px",
+            marginLeft: "auto",
+            marginRight: "auto",
             transition: "margin-left 0.1s ease",
             fontFamily: "var(--font-family-base)",
             minHeight: "600px",
@@ -524,7 +526,7 @@ const AdministrationPage: React.FC = () => {
                     {/* Quitar cualquier maxWidth para que la tabla use todo el espacio */}
                     <div style={{ overflow: "hidden", padding: "10px" }}>
                       <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                        <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
+                        <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%"}}>
                           <thead>
                             <tr>
                               <th>Nombre Material</th>
@@ -1257,9 +1259,10 @@ const AdministrationPage: React.FC = () => {
           No sobreescribe estilos internos del Card, solo le añade margen y borde.
         */
         .bordered-main-card {
-          margin: 2rem; /* Ajusta según quieras separarlo de los bordes */
+          margin: 2rem auto; /* Ajusta según quieras separarlo de los bordes */
           border: 1px solid #ccc;
           border-radius: 8px;
+          width: 100%;
         }
 
         /* Ajustes para el modal */
@@ -1349,7 +1352,7 @@ const AdministrationPage: React.FC = () => {
             flex-direction: column;
           }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 600px) {
           .custom-container {
             margin-left: 10px;
             margin-right: 10px;

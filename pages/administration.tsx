@@ -7,8 +7,6 @@ import CustomButton from "../src/components/common/CustomButton";
 import Modal from "../src/components/common/Modal";
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 import { toast } from "react-toastify";
 import Title from "../src/components/Title";
@@ -161,7 +159,7 @@ const AdministrationPage: React.FC = () => {
         handleLogout();
         return;
       }
-      const url = `${constantUrlApiEndpoint}/details`;
+      const url = `${constantUrlApiEndpoint}/details/`;
       const headers = { Authorization: `Bearer ${token}` };
       const response: AxiosResponse<Detail[]> = await axios.get(url, { headers });
       console.log("[fetchDetails] Detalles recibidos:", response.data);
@@ -297,7 +295,7 @@ const AdministrationPage: React.FC = () => {
       handleLogout();
     }
   };
-//a
+
   const handleCreateElement = async () => {
     if (tabElementosOperables === "ventanas") {
       if (

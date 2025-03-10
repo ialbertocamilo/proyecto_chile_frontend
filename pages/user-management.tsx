@@ -7,6 +7,8 @@ import Card from "../src/components/common/Card";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import { notify } from "@/utils/notify";
+import { toast } from "react-toastify";
 
 interface User {
   id: number;
@@ -60,7 +62,7 @@ const UserManagement = () => {
       return;
     }
     try {
-      const response = await fetch(`${constantUrlApiEndpoint}/user/${userId}/update`, {
+      await fetch(`${constantUrlApiEndpoint}/user/${userId}/update`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -68,11 +70,8 @@ const UserManagement = () => {
         },
         body: JSON.stringify({ role_id: newRoleId }),
       });
-      if (!response.ok) {
-        throw new Error("Error al actualizar el rol del usuario");
-      }
-      await response.json();
-      Swal.fire("Actualizado", `Usuario actualizado al rol de ${getRoleText(newRoleId)}`, "success");
+      toast.success(`Usuario actualizado al rol de ${getRoleText(newRoleId)}`);
+      notify(`Usuario actualizado al rol de ${getRoleText(newRoleId)}`, "success");
       fetchUsers();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";

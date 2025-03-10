@@ -465,9 +465,9 @@ const AdministrationPage: React.FC = () => {
   return (
     <>
       {/* Título afuera del Card */}
-      <div>
+      <Card>
         <Title text="Administración de Parámetros" />
-      </div>
+      </Card>
 
       {/* Card con clase adicional */}
       <Card className="bordered-main-card">

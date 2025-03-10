@@ -35,7 +35,6 @@ export const SearchInput: FC<SearchInputProps> = ({ searchQuery, handleSearch, c
           type="button"
           variant="save"
           onClick={() => router.push(createUrl)}
-          className="w-100"
           margin="0"
         >
           <Plus className="w-4 h-4 mr-1" />

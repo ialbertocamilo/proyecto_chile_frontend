@@ -7,6 +7,8 @@ import useAuth from "../src/hooks/useAuth";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Card from "@/components/common/Card";
+import CreateButton from "@/components/CreateButton";
+import { notify } from "@/utils/notify";
 
 interface ProfileData {
   name: string;
@@ -114,7 +116,6 @@ const EditProfile = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("[EditProfile] Error actualizando perfil:", errorData);
         throw new Error(errorData.detail || errorData.message || "No se pudo actualizar el perfil");
       }
 
@@ -123,17 +124,7 @@ const EditProfile = () => {
 
       console.log("[EditProfile] Perfil actualizado correctamente:", resData);
 
-      toast.success(resData.message || "Tu perfil se actualizó correctamente.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        toastId: "success"
-      });
-      router.push("/dashboard");
+      notify("Tu perfil se actualizó correctamente.");
     } catch (err: unknown) {
       console.error("[EditProfile] Error actualizando perfil:", err);
       const message = err instanceof Error ? err.message : "Error al actualizar el perfil";
@@ -189,18 +180,16 @@ const EditProfile = () => {
                 <label>País</label>
                 <input type="text" name="country" className="form-control" value={profile.country} onChange={handleChange} />
               </div>
-              <div className="mb-3">
-                <label>Tipo de Usuario</label>
-                <input type="text" name="userType" className="form-control" value={profile.userType} readOnly />
-              </div>
+                <div className="mb-3 d-flex align-items-center">
+                <label className="me-2 mb-0">Tipo de Usuario:</label>
+                <span>{profile.userType}</span>
+                </div>
               {/* Botones de acción */}
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <CustomButton variant="back" onClick={() => router.push("/dashboard")}>
-                  ← Regresar
-                </CustomButton>
-                <CustomButton variant="save" type="submit" form="editProfileForm" disabled={loading}>
-                  {loading ? "Actualizando..." : "Actualizar Perfil"}
-                </CustomButton>
+                <CreateButton 
+                      backRoute="/dashboard" 
+                      saveTooltip="Guardar" 
+                      saveText="Guardar"/>
               </div>
             </form>
           )}

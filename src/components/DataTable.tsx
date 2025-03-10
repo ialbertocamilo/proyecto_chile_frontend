@@ -106,6 +106,7 @@ export default function DataTable<T extends { [key: string]: any }>({
                                 handleSearch={handleSearch}
                                 createUrl={createUrl}
                                 createText={createText}
+                                buttonSize="sm"  
                             />
                         </div>
                     </div>

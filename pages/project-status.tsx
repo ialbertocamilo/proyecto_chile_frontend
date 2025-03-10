@@ -132,13 +132,15 @@ const ProjectListStatusEditPage = () => {
 
   return (
     <div>
+      <Card>
       <Title text="Administrar proyectos" />
+      </Card>
       {/* El DataTable se encarga de mostrar la búsqueda, paginación y tabla utilizando las clases del componente */}
       <DataTable
         data={filteredProjects}
         columns={columns}
         loading={loading}
-        createText=""
+        createText="Nuevo"
         createUrl="/" // Ajusta la URL según corresponda
         pageSize={10}
       />

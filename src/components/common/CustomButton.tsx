@@ -74,7 +74,7 @@ const CustomButton: FC<CustomButtonProps> = ({
         disabled={disabled || isLoading}
         aria-busy={isLoading}
         style={{ margin }}
-        className={`button col-sm btn btn-primary ${variantClass} ${className} ${disabledClass}`}
+        className={`button btn-small px-4 btn btn-primary ${variantClass} ${className} ${disabledClass}`}
         title={tooltipText}
         {...rest}
       >
@@ -93,17 +93,17 @@ const CustomButton: FC<CustomButtonProps> = ({
           transition: background-color 0.3s ease, transform 0.3s ease;
           background-color: var(--btn-save-bg) !important; 
           border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
+          padding: 10px 20px;
+          font-size: 16px;
+          border-radius: 5px;
+          border: none;
+          cursor: pointer;
         }
 
 
 .btn-small {
   padding: 5px 10px;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .btn-large {

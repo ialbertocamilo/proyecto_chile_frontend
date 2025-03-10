@@ -4,8 +4,6 @@ import React, { useEffect, useState } from "react";
 import "../public/assets/css/globals.css";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 
@@ -41,7 +39,6 @@ const ProjectListStatusEditPage = () => {
   const router = useRouter();
   console.log("[ProjectListStatusEditPage] Página cargada y sesión validada.");
 
-  const [sidebarWidth] = useState("300px");
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState("");
@@ -105,9 +102,8 @@ const ProjectListStatusEditPage = () => {
 
   return (
     <div >
-
       <Card>
-      <Title text="Administrar proyectos" />
+        <Title text="Administrar proyectos" />
         <div className="input-group mb-3">
           <input
             type="text"
@@ -133,7 +129,7 @@ const ProjectListStatusEditPage = () => {
             </div>
           ) : (
             <div className="table-responsive">
-              <table className="custom-table table-mobile" style={{ fontFamily: "var(--font-family-base)" }}>
+              <table className="custom-table" style={{ fontFamily: "var(--font-family-base)" }}>
                 <thead>
                   <tr>
                     <th className="d-none d-md-table-cell" style={{ backgroundColor: "#f8f9fa" }}>ID</th>

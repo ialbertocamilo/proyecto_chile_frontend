@@ -197,9 +197,7 @@ const TopBar = ({}: TopBarProps) => {
               </span>
             </div>
 
-            {/* Vista reducida (Mobile): solo el ícono */}
             <div className="d-flex d-md-none">
-              {/* No mostramos email ni nombre, solo el icono */}
             </div>
           </button>
 
@@ -212,34 +210,14 @@ const TopBar = ({}: TopBarProps) => {
               {/* En móviles, mostrar la info extendida dentro del dropdown */}
               <div className="d-md-none p-2 border-bottom">
                 <span
-                  style={{
-                    display: "block",
-                    fontSize: "15px",
-                    color: "var(--primary-color)",
-                    fontWeight: 500,
-                  }}
                 >
                   {user.email}
                 </span>
                 <span
-                  style={{
-                    display: "block",
-                    fontSize: "15px",
-                    color: "var(--secondary-color)",
-                  }}
                 >
                   {user.name}
                 </span>
                 <span
-                  style={{
-                    display: "inline-block",
-                    marginTop: "6px",
-                    fontSize: "13px",
-                    backgroundColor: "var(--primary-color)",
-                    color: "white",
-                    padding: "4px 8px",
-                    borderRadius: "5px",
-                  }}
                 >
                   {getUserTypeText(user.userType)}
                 </span>

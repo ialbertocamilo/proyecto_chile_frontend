@@ -67,7 +67,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   const router = useRouter();
 
   const [, setPrimaryColor] = useState("#3ca7b7");
-  const sidebarWidth = "300px";
   const [step, setStep] = useState<number>(1);
   const [locationSearch, setLocationSearch] = useState("");
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});

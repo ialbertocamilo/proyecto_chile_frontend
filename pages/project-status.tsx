@@ -40,7 +40,7 @@ const ProjectListStatusEditPage = () => {
   const router = useRouter();
   console.log("[ProjectListStatusEditPage] Página cargada y sesión validada.");
 
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -80,14 +80,14 @@ const ProjectListStatusEditPage = () => {
     }
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value.toLowerCase();
-    // Filtrar proyectos utilizando todos sus valores
-    const filtered = projects.filter((project: Project) =>
-      Object.values(project).join(" ").toLowerCase().includes(query)
-    );
-    setFilteredProjects(filtered);
-  };
+  // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const query = e.target.value.toLowerCase();
+  //   // Filtrar proyectos utilizando todos sus valores
+  //   const filtered = projects.filter((project: Project) =>
+  //     Object.values(project).join(" ").toLowerCase().includes(query)
+  //   );
+  //   setFilteredProjects(filtered);
+  // };
 
   const handleViewProject = (project_view: Project) => {
     localStorage.setItem("project_id_view", project_view.id.toString());

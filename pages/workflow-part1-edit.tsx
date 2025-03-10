@@ -68,7 +68,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   const mode = (router.query.mode as string) || (router.query.id ? "edit" : "create");
 
   const [, setPrimaryColor] = useState("#3ca7b7");
-  const sidebarWidth = "300px";
   const [step, setStep] = useState<number>(1);
   const [locationSearch, setLocationSearch] = useState("");
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
@@ -210,7 +209,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     return newErrors;
   };
 
-  const {get,post,del } =useApi()
+  const {get} =useApi()
   const checkProjectNameExists = async (): Promise<boolean> => {
     try {
       const token = localStorage.getItem("token");

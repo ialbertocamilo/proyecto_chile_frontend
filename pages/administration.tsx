@@ -7,8 +7,6 @@ import CustomButton from "../src/components/common/CustomButton";
 import Modal from "../src/components/common/Modal";
 import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 import { toast } from "react-toastify";
 import Title from "../src/components/Title";
@@ -70,7 +68,7 @@ const AdministrationPage: React.FC = () => {
   useAuth();
   console.log("[AdministrationPage] Página cargada y sesión validada.");
 
-  const [sidebarWidth] = useState("300px");
+
   const [step, setStep] = useState<number>(3);
   const [materialsList, setMaterialsList] = useState<Material[]>([]);
   const [details, setDetails] = useState<Detail[]>([]);

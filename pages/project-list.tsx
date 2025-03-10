@@ -48,10 +48,10 @@ const ProjectListPage = () => {
   console.log("[ProjectListPage] Página cargada y sesión validada.");
 
   const router = useRouter();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  const [search, setSearch] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+  // const [, setSearch] = useState<string>("");
+  const [, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -91,24 +91,24 @@ const ProjectListPage = () => {
     }
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const query: string = e.target.value.toLowerCase();
-    setSearch(query);
-    const filtered = projects.filter((project: Project) => {
-      const values: Array<string | number | boolean | null | undefined> =
-        Object.values(project);
-      const combined: string = values
-        .map((val: string | number | boolean | null | undefined): string => {
-          if (val === undefined || val === null) return "";
-          if (typeof val === "object") return JSON.stringify(val);
-          return String(val);
-        })
-        .join(" ")
-        .toLowerCase();
-      return combined.includes(query);
-    });
-    setFilteredProjects(filtered);
-  };
+  // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  //   const query: string = e.target.value.toLowerCase();
+  //   setSearch(query);
+  //   const filtered = projects.filter((project: Project) => {
+  //     const values: Array<string | number | boolean | null | undefined> =
+  //       Object.values(project);
+  //     const combined: string = values
+  //       .map((val: string | number | boolean | null | undefined): string => {
+  //         if (val === undefined || val === null) return "";
+  //         if (typeof val === "object") return JSON.stringify(val);
+  //         return String(val);
+  //       })
+  //       .join(" ")
+  //       .toLowerCase();
+  //     return combined.includes(query);
+  //   });
+  //   setFilteredProjects(filtered);
+  // };
 
   const handleGoToWorkflow = (project_edit: Project): void => {
     console.log(

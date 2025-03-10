@@ -445,15 +445,14 @@ const AdministrationPage: React.FC = () => {
         <div
           className={`sidebar-item-content ${isSelected ? 'active' : ''}`}
           style={{
-            width: "100%",
-            height: `${sidebarItemHeight}px`,
+            height: `${sidebarItemHeight * 0.7}px`, // Reduced height
             border: `${sidebarItemBorderSize}px solid ${isSelected ? activeColor : inactiveColor}`,
             borderRadius: "4px",
-            marginBottom: "16px",
+            marginBottom: "12px", // Reduced margin
             display: "flex",
             alignItems: "center",
             justifyContent: "flex-start",
-            paddingLeft: `${leftPadding}px`,
+            paddingLeft: `${leftPadding * 0.8}px`, // Reduced padding
             color: isSelected ? activeColor : inactiveColor,
             fontFamily: "var(--font-family-base)",
             position: "relative",
@@ -461,10 +460,10 @@ const AdministrationPage: React.FC = () => {
             background: isSelected ? `rgba(60, 167, 183, 0.05)` : "transparent",
           }}
         >
-          <span className="icon-wrapper" style={{ marginRight: "12px", position: "relative" }}>
+          <span className="icon-wrapper" style={{ marginRight: "10px", position: "relative", fontSize: "0.8rem" }}>
             <i className={modifiedIconClass}></i>
           </span>
-          <span className="title-wrapper">{title}</span>
+          <span className="title-wrapper" style={{ fontSize: "0.75rem" }}>{title}</span>
         </div>
       </li>
     );
@@ -616,7 +615,7 @@ const AdministrationPage: React.FC = () => {
                                 cursor: "pointer",
                                 borderBottom:
                                   tabElementosOperables === tab.toLowerCase()
-                                    ? "3px solid var(--primary-color)"
+                                    ? "solid var(--primary-color)"
                                     : "none",
                               }}
                               onClick={() => setTabElementosOperables(tab.toLowerCase())}
@@ -629,7 +628,7 @@ const AdministrationPage: React.FC = () => {
                     </div>
 
                     <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
-                      <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
+                      <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%", fontSize: "0.85rem" }}>
                         <thead>
                           {tabElementosOperables === "ventanas" ? (
                             <tr>
@@ -652,7 +651,7 @@ const AdministrationPage: React.FC = () => {
                             </tr>
                           )}
                         </thead>
-                        <tbody>
+                        <tbody className="small-text">
                           {elementsList
                             .filter(
                               (el) => el.type === (tabElementosOperables === "ventanas" ? "window" : "door")
@@ -1222,7 +1221,6 @@ const AdministrationPage: React.FC = () => {
           padding: 0 15px;
         }
         .smaller-font-table {
-          font-size: 1rem; 
         }
         .bordered-main-card {
           margin: 2rem auto;
@@ -1259,7 +1257,6 @@ const AdministrationPage: React.FC = () => {
           right: 10px;
           background: transparent;
           border: none;
-          font-size: 1.5rem;
           cursor: pointer;
           color: #333;
         }

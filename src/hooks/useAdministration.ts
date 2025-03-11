@@ -49,7 +49,9 @@ export const useAdministration = () => {
         handleLogout();
         return;
       }
-      const url = `/api/details`;
+      
+      // Cambiar esta URL para que coincida con la estructura usada en DetallesConstructivosTab
+      const url = `${constantUrlApiEndpoint}/details/`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       console.log("[fetchDetails] Detalles recibidos:", response.data);

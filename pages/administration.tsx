@@ -10,6 +10,7 @@ import Modal from "../src/components/common/Modal";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { toast } from "react-toastify";
 import CancelButton from "@/components/common/CancelButton";
+import DetallesConstructivosTab from "../src/components/DetallesConstructivosTab";
 
 interface MaterialAttributes {
   name: string;
@@ -148,6 +149,7 @@ const AdministrationPage: React.FC = () => {
       toast.error("No se pudo crear el material", { toastId: "material-error" });
     }
   };
+  const [detailsRefreshCounter, setDetailsRefreshCounter] = useState(0);
 
   const handleCreateDetail = async () => {
     if (
@@ -160,28 +162,29 @@ const AdministrationPage: React.FC = () => {
       toast.warning("Por favor complete todos los campos de detalle", { toastId: "detail-warning" });
       return;
     }
-
+  
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.warning("Token no encontrado. Inicia sesión.", { toastId: "token-warning" });
         return;
       }
-
+  
       const payload = {
         scantilon_location: newDetail.scantilon_location,
         name_detail: newDetail.name_detail,
         material_id: newDetail.material_id,
         layer_thickness: newDetail.layer_thickness,
       };
-
-      // Se utiliza el endpoint interno para crear detalles
+  
       const url = `/api/details`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const response = await axios.post(url, payload, { headers });
-
+  
       if (response.status === 200) {
         toast.success("El detalle fue creado correctamente", { toastId: "detail-success" });
+        
+        // Cerrar modal y resetear formulario
         setShowNewDetailModal(false);
         setNewDetail({
           scantilon_location: "",
@@ -189,11 +192,23 @@ const AdministrationPage: React.FC = () => {
           material_id: 0,
           layer_thickness: null,
         });
+        
+        // Incrementar el contador para activar la actualización
+        setDetailsRefreshCounter(prev => prev + 1);
+        
+        // Asegurarse de recargar los detalles
         await fetchDetails();
       }
     } catch (error: unknown) {
       console.error("[handleCreateDetail] Error:", error);
-      toast.error("No se pudo crear el detalle", { toastId: "detail-error" });
+      
+      // Manejo de error más específico
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data?.message || "No se pudo crear el detalle";
+        toast.error(errorMessage, { toastId: "detail-error" });
+      } else {
+        toast.error("No se pudo crear el detalle", { toastId: "detail-error" });
+      }
     }
   };
 
@@ -358,43 +373,16 @@ const AdministrationPage: React.FC = () => {
                 </>
               )}
 
-              {step === 4 && (
-                <>
-
-                  <div style={{ overflow: "hidden", padding: "10px" }}>
-                    <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                      <table className="table " >
-                        <thead>
-                          <tr>
-                            <th>Ubicación Detalle</th>
-                            <th>Nombre Detalle</th>
-                            <th>Material</th>
-                            <th>Espesor capa (cm)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {details.map((det) => (
-                            <tr key={det.id}>
-                              <td>{det.scantilon_location}</td>
-                              <td>{det.name_detail}</td>
-                              <td>
-                                {materialsList.find((mat) => mat.material_id === det.material_id)?.atributs.name ||
-                                  "N/A"}
-                              </td>
-                              <td>{det.layer_thickness}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                    <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
-                      <span className="material-icons">add</span> Nuevo
-                    </CustomButton>
-                  </div>
-                </>
-              )}
+{step === 4 && (
+  <>
+    <DetallesConstructivosTab refreshTrigger={detailsRefreshCounter} />
+    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+      <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
+        <span className="material-icons">add</span> Nuevo
+      </CustomButton>
+    </div>
+  </>
+)}
 
               {step === 5 && (
                 <>

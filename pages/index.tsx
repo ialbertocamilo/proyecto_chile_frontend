@@ -1,8 +1,7 @@
 import { GetServerSideProps } from "next";
 import "react-toastify/dist/ReactToastify.css";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async () => {
   return {
     redirect: {
       destination: "/login",

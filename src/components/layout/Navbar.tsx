@@ -1,3 +1,4 @@
+'use client'
 import "bootstrap/dist/css/bootstrap.min.css";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,10 +7,10 @@ import React, { useEffect, useState } from "react";
 import GoogleIcons from "../../../public/GoogleIcons";
 
 interface NavbarProps {
-  setActiveView: (view: string) => void;
+  setActiveView?: (view: string) => void;  // Make it optional since it's not being used
 }
 
-const Navbar = ({}: NavbarProps) => {
+const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declaration
   const router = useRouter();
   const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
   const [roleId, setRoleId] = useState<string | null>(null);
@@ -48,10 +49,12 @@ const Navbar = ({}: NavbarProps) => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
   };
+
   const toggleNavbar = () => {
     setAnimateIcon(true);
     setIsNavbarVisible(!isNavbarVisible);

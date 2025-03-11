@@ -1,14 +1,13 @@
 import Checkbox from "@/components/common/Checkbox";
 import DataTable from "@/components/DataTable";
 import { useApi } from "@/hooks/useApi";
+import { notify } from "@/utils/notify";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import Card from "../src/components/common/Card";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import { notify } from "@/utils/notify";
-import { toast } from "react-toastify";
 
 interface User {
   id: number;
@@ -26,7 +25,7 @@ interface User {
 const UserManagement = () => {
   useAuth();
   const [users, setUsers] = useState<User[]>([]);
-  const { put,get } = useApi();
+  const { put, get } = useApi();
 
   const fetchUsers = useCallback(async () => {
     const token = localStorage.getItem("token");
@@ -45,7 +44,7 @@ const UserManagement = () => {
       const message = err instanceof Error ? err.message : "Error desconocido";
       console.error("[fetchUsers] Error:", message);
     }
-  }, []);
+  }, [get]);
 
   useEffect(() => {
     fetchUsers();
@@ -56,26 +55,15 @@ const UserManagement = () => {
   };
 
   const handleRoleChange = async (userId: number, newRoleId: number) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      Swal.fire("Error", "No se encontró token", "error");
-      return;
-    }
     try {
-      await fetch(`${constantUrlApiEndpoint}/user/${userId}/update`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ role_id: newRoleId }),
-      });
-      toast.success(`Usuario actualizado al rol de ${getRoleText(newRoleId)}`);
-      notify(`Usuario actualizado al rol de ${getRoleText(newRoleId)}`, "success");
-      fetchUsers();
+      const response = await put(`/user/${userId}/update`, { role_id: newRoleId });
+      if (response) {
+        notify(`Usuario actualizado al rol de ${getRoleText(newRoleId)}`, "success");
+        fetchUsers();
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
-      Swal.fire("Error", message, "error");
+      toast.error(message);
     }
   };
 

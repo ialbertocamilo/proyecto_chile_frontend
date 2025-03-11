@@ -1,3 +1,4 @@
+'use client'
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -54,25 +55,17 @@ const TopBar = ({}: TopBarProps) => {
           });
         } catch (err) {
           console.error("Error al parsear el perfil desde localStorage:", err);
-          const storedName = localStorage.getItem("user_name") || "Usuario";
-          const storedEmail = localStorage.getItem("email") || "";
-          const storedUserType =
-            localStorage.getItem("role_id") || "Tipo de Usuario";
           setUser({
-            name: storedName,
-            email: storedEmail,
-            userType: storedUserType,
+            name: localStorage.getItem("user_name") || "Usuario",
+            email: localStorage.getItem("email") || "",
+            userType: localStorage.getItem("role_id") || "Tipo de Usuario",
           });
         }
       } else {
-        const storedName = localStorage.getItem("user_name") || "Usuario";
-        const storedEmail = localStorage.getItem("email") || "";
-        const storedUserType =
-          localStorage.getItem("role_id") || "Tipo de Usuario";
         setUser({
-          name: storedName,
-          email: storedEmail,
-          userType: storedUserType,
+          name: localStorage.getItem("user_name") || "Usuario",
+          email: localStorage.getItem("email") || "",
+          userType: localStorage.getItem("role_id") || "Tipo de Usuario",
         });
       }
     }

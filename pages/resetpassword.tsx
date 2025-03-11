@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Swal from "sweetalert2";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import "../public/assets/css/globals.css";
 import Link from "next/link";
 import Head from "next/head";
 import { ReactElement } from "react";

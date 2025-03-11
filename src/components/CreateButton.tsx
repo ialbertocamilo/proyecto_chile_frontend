@@ -37,8 +37,6 @@ const CreateButton: React.FC<CreateButtonProps> = ({
             <div data-tip={backTooltip}>
                 <CustomButton
                     type="button"
-                    variant="secondary"
-                    size="sm"
                     onClick={() => router.push(backRoute)}
                 >
                     <ArrowLeft className="w-4 h-4 mr-1" />
@@ -49,7 +47,6 @@ const CreateButton: React.FC<CreateButtonProps> = ({
                 <CustomButton
                     type={submitType ? "submit" : "button"}
                     variant="save"
-                    size="sm"
                     onClick={!submitType ? handleSaveClick : undefined}
                 >
                     <Save className="w-4 h-4 mr-1" />

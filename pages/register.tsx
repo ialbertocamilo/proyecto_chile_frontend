@@ -4,7 +4,6 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import "../public/assets/css/globals.css";
 import CustomButton from "../src/components/common/CustomButton";
 import Head from "next/head";
 import { ReactElement } from "react";

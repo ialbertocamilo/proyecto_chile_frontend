@@ -75,7 +75,9 @@ const AdministrationPage: React.FC = () => {
     elementsList,
     fetchMaterialsList,
     fetchDetails,
-    fetchElements
+    fetchElements,
+    handleLogout
+    
   } = useAdministration();
 
   const [showNewMaterialModal, setShowNewMaterialModal] = useState(false);

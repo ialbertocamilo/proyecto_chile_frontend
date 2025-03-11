@@ -1074,7 +1074,7 @@
 }
 @media only screen and (max-width: 991.98px) {
   .todo-list-wrapper #todo-list li .task-container .task-label {
-    min-width: 460px;
+    min-width: 400px;
   }
   .project-cards .tab-content {
     margin-bottom: -20px;

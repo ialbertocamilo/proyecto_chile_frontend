@@ -6,9 +6,8 @@ import "leaflet/dist/leaflet.css";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Importa el componente dinámico de la sidebar
 import Card from "../src/components/common/Card";
@@ -16,7 +15,6 @@ import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap").then(mod => {
-  // Wrap the component with React.memo to prevent unnecessary re-renders
   return { default: React.memo(mod.default) };
 }), {
   ssr: false,
@@ -222,10 +220,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   const { post, get } = useApi()
 
 
-  // useEffect(()=>{
-  //   get('/validation-token')
-  // },[])
-
   const enviarProyecto = async () => {
     setLoading(true);
     setGlobalError("");
@@ -341,9 +335,6 @@ const ProjectWorkflowPart1: React.FC = () => {
         const { data } = response;
         console.log('Response location', data.results.ResultItems)
         setCompletionList(data.results.ResultItems);
-        // const { lat, lng } = data ;
-        // handleFormInputChange("latitude", lat);
-        // handleFormInputChange("longitude", lng);
       }).catch((error) => {
         console.error('Error searching for location:', error);
       })
@@ -353,13 +344,9 @@ const ProjectWorkflowPart1: React.FC = () => {
   }, [locationSearch]);
   return (
     <>
-      <GooIcons />
-      <div>
-        <Card>
         <div>{renderMainHeader()}</div>
         </Card>
         <Card>
-          <div>
             <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
               {/* Sidebar dinámico con el arreglo de pasos */}
               <AdminSidebar activeStep={step} onStepChange={setStep} steps={steps} />
@@ -718,12 +705,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         <div className="col-12 col-md-4">
                           <label
                             className="form-label"
-                            style={{
-                              width: "100%",
-                              height: "20px",
-                              marginLeft: "-80px",
-                              marginTop: "20px",
-                            }}
+                     
                           >
                             Datos de ubicaciones encontradas
                           </label>
@@ -732,29 +714,17 @@ const ProjectWorkflowPart1: React.FC = () => {
                             rows={5}
                             value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
                             readOnly
-                            style={{
-                              width: "90%",
-                              height: "100px",
-                              marginLeft: "-80px",
-                              marginTop: "0px",
-                            }}
                           />
                         </div>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center mt-4">
+                      <div className="d-flex justify-content-between align-items-center ">
                         <div className="d-flex">
                           <CustomButton
                             variant="save"
                             onClick={handleGeolocation}
-                            style={{
-                              marginLeft: "10px",
-                              height: "50px",
-                              width: "200px",
-                            }}
                           >
                             <span
                               className="material-icons"
-                              style={{ marginRight: "5px" }}
                             >
                               location_on
                             </span>
@@ -765,7 +735,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                           <CustomButton
                             variant="save"
                             onClick={enviarProyecto}
-                            style={{ height: "50px" }}
                             disabled={loading}
                           >
                             <span
@@ -783,46 +752,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
         </Card>
-      </div>
-      <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
-      <style jsx>{`
-        .container {
-          font-family: var(--font-family-base);
-          font-weight: normal;
-          padding: 0 15px;
-        }
-        .custom-container {
-          max-width: 1780px;
-          margin-left: 103px;
-          margin-right: 0;
-        }
-        /* Ajustes responsive para el contenedor y márgenes */
-        @media (max-width: 1024px) {
-          .custom-container {
-            margin-left: 50px;
-            margin-right: 20px;
-          }
-        }
-        @media (max-width: 768px) {
-          .custom-container {
-            margin-left: 10px;
-            margin-right: 10px;
-            padding: 0 5px;
-          }
-          /* Aumenta el ancho de la sidebar en mobile */
-          .sidebar {
-            width: 100%;
-            border-right: none;
-            border-bottom: 1px solid #ccc;
-            padding: 10px;
-          }
-          .content {
-            padding: 10px;
-          }
-        }
-      `}</style>
     </>
   );
 };

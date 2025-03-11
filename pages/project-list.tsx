@@ -213,12 +213,6 @@ const ProjectListPage = () => {
       minWidth: 100,
       cell: ({ row }: { row: Project }) => (
         <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "0.5rem",
-          }}
         >
           <CustomButton
             variant="editIcon"
@@ -251,8 +245,8 @@ const ProjectListPage = () => {
       <div>
         <Card>
         <Title text="Listado de Proyectos" />
+
         </Card>
-        <Card>
           <DataTable
             data={projects}
             columns={tableColumns}
@@ -262,19 +256,7 @@ const ProjectListPage = () => {
             pageSize={10}
             showButton={true}
           />
-        </Card>
       </div>
-
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
 
       <style jsx>{`
         /* Estilos personalizados para la tabla, si se necesitan */

@@ -1,4 +1,3 @@
-import "../public/assets/css/globals.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";

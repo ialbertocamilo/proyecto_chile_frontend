@@ -4,7 +4,6 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
 import Card from "../src/components/common/Card";
-import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
@@ -501,48 +500,6 @@ const saveDetails = async () => {
     }
   }
 };
-
-// Función corregida para guardar detalles en el proyecto
-const handleSaveDetailsCopy = useCallback(async () => {
-  if (!projectId) {
-    console.error("No se proporcionó un ID de proyecto.");
-    return;
-  }
-  const token = getToken();
-  if (!token) return;
-  if (fetchedDetails.length === 0) {
-    console.error("No se encontraron detalles para enviar.");
-    return;
-  }
-  
-  // Extraer solo los IDs de los detalles
-  const detailIds = fetchedDetails.map((det) => det.id_detail);
-  
-  const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
-  
-  try {
-    await axios.post(url, detailIds, { headers });
-    // Éxito silencioso para no molestar al usuario con notificaciones constantes
-  } catch (error: unknown) {
-    // Si el error es que todos los detalles ya estaban en el proyecto, no es un error real
-    if (axios.isAxiosError(error) && 
-        error.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
-      // No es necesario mostrar mensajes o registrar este "error"
-      return;
-    }
-    
-    // Para otros errores, registrar pero no mostrar toast al usuario
-    console.error("Error al enviar la solicitud:", error);
-    if (axios.isAxiosError(error)) {
-      console.error("Detalles de la respuesta:", error.response?.data);
-      console.error("Status code:", error.response?.status);
-    }
-  }
-}, [projectId, fetchedDetails]);
 
   // Funciones para edición de Muros
   const handleEditClick = (detail: TabItem) => {

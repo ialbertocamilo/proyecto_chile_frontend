@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -33,7 +30,6 @@ const EditProfile = () => {
   useAuth();
   console.log("[EditProfile] Página cargada y sesión validada.");
 
-  const router = useRouter();
   const [profile, setProfile] = useState<ProfileData>({
     name: "",
     lastname: "",

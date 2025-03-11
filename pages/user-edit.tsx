@@ -5,7 +5,6 @@ import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
 
 type User = {

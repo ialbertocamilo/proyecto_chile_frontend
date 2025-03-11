@@ -570,12 +570,14 @@ const DataEntryPage: React.FC = () => {
     },
   ];
 
+
+
   return (
     <>
       <GooIcons />
       <div>
         <Card>
-        <div>{renderMainHeader()}</div>
+          <div>{renderMainHeader()}</div>
         </Card>
         <Card>
           <div>
@@ -788,10 +790,10 @@ const DataEntryPage: React.FC = () => {
                                         <td>
                                           {el.atributs.porcentaje_vidrio !== undefined
                                             ? (
-                                                (el.atributs
-                                                  .porcentaje_vidrio as number) *
-                                                100
-                                              ).toFixed(0) + "%"
+                                              (el.atributs
+                                                .porcentaje_vidrio as number) *
+                                              100
+                                            ).toFixed(0) + "%"
                                             : "0%"}
                                         </td>
                                         <td>{el.u_marco}</td>
@@ -807,19 +809,10 @@ const DataEntryPage: React.FC = () => {
                     </div>
                   </>
                 )}
-
                 {step === 6 && (
                   <>
-                    <h5 className="mb-3" style={{ fontWeight: "normal" }}>
-                      Perfil de uso (Espacio en desarrollo)
-                    </h5>
                     <ul
                       className="nav mb-3"
-                      style={{
-                        display: "flex",
-                        listStyle: "none",
-                        padding: 0,
-                      }}
                     >
                       {[
                         { key: "ventilacion", label: "Ventilación y caudales" },
@@ -851,9 +844,327 @@ const DataEntryPage: React.FC = () => {
                         </li>
                       ))}
                     </ul>
-                    <div className="tab-content border border-top-0 p-3">
-                      <p>Contenido para &apos;{tabTipologiaRecinto}&apos;</p>
-                    </div>
+                    {tabTipologiaRecinto === "ventilacion" && (
+                      <div className="tab-content border border-top-0 p-3">
+                        <table className="table table-striped">
+                          <thead>
+                            <tr>
+                              <th style={{ textAlign: "center" }}></th>
+                              <th style={{ textAlign: "center" }}></th>
+                              <th style={{ textAlign: "center" }}></th>
+                              <th style={{ textAlign: "center" }}>Caudal Min Salubridad</th>
+                              <th style={{ textAlign: "center" }}></th>
+                              <th style={{ textAlign: "center" }}>Caudal Impuesto</th>
+                              <th style={{ textAlign: "center" }}></th>
+                            </tr>
+                            <tr>
+                              <th style={{ textAlign: "center" }}>Código de Recinto</th>
+                              <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
+                              <th style={{ textAlign: "center" }}>R-pers [L/s]</th>
+                              <th style={{ textAlign: "center" }}>IDA</th>
+                              <th style={{ textAlign: "center" }}>Ocupación</th>
+                              <th style={{ textAlign: "center" }}>Vent Noct [1/h]</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {/* Ejemplo de datos estáticos */}
+                            <tr>
+                              <td>ES</td>
+                              <td>Espera</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>AU</td>
+                              <td>Auditorio</td>
+                              <td>5.28</td>
+                              <td>IDA3 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>BA</td>
+                              <td>Baño</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>BD</td>
+                              <td>Bodega</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>KI</td>
+                              <td>Cafetería</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>CO</td>
+                              <td>Comedores</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>PA</td>
+                              <td>Pasillos</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+                        {/* Botón para agregar nuevo registro */}
+                        <div className="text-end mt-3">
+                          <CustomButton
+                            variant="save"
+                            onClick={() => {
+                              // Lógica para abrir un modal o formulario para agregar un nuevo registro
+                              console.log("Agregar nuevo registro");
+                            }}
+                          >
+                            + Nuevo
+                          </CustomButton>
+                        </div>
+                      </div>
+                    )}
+
+                    {
+                      tabTipologiaRecinto === "iluminacion" && (
+                        <div className="tab-content border border-top-0 p-3">
+                          <table className="table table-striped">
+                            <thead>
+                              <tr>
+                                <th style={{ textAlign: "center" }}>Código de Recinto</th>
+                                <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
+                                <th style={{ textAlign: "center" }}>Potencia Base [W/m2]</th>
+                                <th style={{ textAlign: "center" }}>Estrategia</th>
+                                <th style={{ textAlign: "center" }}>Potencia Propuesta [W/m2]</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Ejemplo de datos estáticos */}
+                              <tr>
+                                <td>ES</td>
+                                <td>Espera</td>
+                                <td>8.80</td>
+                                <td>Sedentario ✔</td>
+                                <td>12.0</td>
+                              </tr>
+                              <tr>
+                                <td>AU</td>
+                                <td>Auditorio</td>
+                                <td>5.28</td>
+                                <td>Sedentario ✔</td>
+                                <td>15.0</td>
+                              </tr>
+                              <tr>
+                                <td>BA</td>
+                                <td>Baño</td>
+                                <td>8.80</td>
+                                <td>Sedentario ✔</td>
+                                <td>10.0</td>
+                              </tr>
+                              <tr>
+                                <td>BD</td>
+                                <td>Bodega</td>
+                                <td>8.80</td>
+                                <td>Sedentario ✔</td>
+                                <td>10.0</td>
+                              </tr>
+                              <tr>
+                                <td>KI</td>
+                                <td>Cafetería</td>
+                                <td>8.80</td>
+                                <td>Sedentario ✔</td>
+                                <td>15.0</td>
+                              </tr>
+                              <tr>
+                                <td>CO</td>
+                                <td>Comedores</td>
+                                <td>8.80</td>
+                                <td>Sedentario ✔</td>
+                                <td>10.0</td>
+                              </tr>
+                              <tr>
+                                <td>PA</td>
+                                <td>Pasillos</td>
+                                <td>8.80</td>
+                                <td>Sedentario ✔</td>
+                                <td>11.0</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      )
+                    }
+
+                    {
+                      tabTipologiaRecinto === "cargas" && (
+                        <div className="tab-content border border-top-0 p-3">
+                          <table className="table table-striped">
+                            <thead>
+                              <tr>
+                                <th style={{ textAlign: "center" }}>Código de Recinto</th>
+                                <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
+                                <th style={{ textAlign: "center" }}>Usuarios [m2/pers]</th>
+                                <th style={{ textAlign: "center" }}>Calor Latente [W/pers]</th>
+                                <th style={{ textAlign: "center" }}>Calor Sensible [W/pers]</th>
+                                <th style={{ textAlign: "center" }}>Equipos [W/m2]</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Ejemplo de datos estáticos */}
+                              <tr>
+                                <td>ES</td>
+                                <td>Espera</td>
+                                <td>4.0</td>
+                                <td>164.0</td>
+                                <td>12.0</td>
+                                <td>-</td>
+                                <td>12.0</td>
+                              </tr>
+                              <tr>
+                                <td>AU</td>
+                                <td>Auditorio</td>
+                                <td>0.5</td>
+                                <td>82.0</td>
+                                <td>15.0</td>
+                                <td>-</td>
+                                <td>12.0</td>
+                              </tr>
+                              <tr>
+                                <td>BA</td>
+                                <td>Baño</td>
+                                <td>-</td>
+                                <td></td>
+                                <td>10.0</td>
+                                <td>-</td>
+                                <td>12.0</td>
+                              </tr>
+                              <tr>
+                                <td>BD</td>
+                                <td>Bodega</td>
+                                <td></td>
+                                <td></td>
+                                <td>10.0</td>
+                                <td>1.5</td>
+                                <td>12.0</td>
+                              </tr>
+                              <tr>
+                                <td>KI</td>
+                                <td>Cafetería</td>
+                                <td>10.0</td>
+                                <td>147.6</td>
+                                <td>15.0</td>
+                                <td>50.0</td>
+                                <td>12.0</td>
+                              </tr>
+                              <tr>
+                                <td>CO</td>
+                                <td>Comedores</td>
+                                <td>0.9</td>
+                                <td>131.2</td>
+                                <td>10.0</td>
+                                <td>-</td>
+                                <td>12.0</td>
+                              </tr>
+                              <tr>
+                                <td>PA</td>
+                                <td>Pasillos</td>
+                                <td>4.0</td>
+                                <td>-</td>
+                                <td>11.0</td>
+                                <td>-</td>
+                                <td>12.0</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      )
+                    }
+
+                    {
+                      tabTipologiaRecinto === "horario" && (
+                        <div className="tab-content border border-top-0 p-3">
+                          <table className="table table-striped">
+                            <thead>
+                              <tr>
+                                <th style={{ textAlign: "center" }}></th>
+                                <th style={{ textAlign: "center" }}></th>
+                                <th style={{ textAlign: "center" }}></th>
+                                <th style={{ textAlign: "center" }}>Recinto</th>
+                                <th style={{ textAlign: "center" }}></th>
+                              </tr>
+                              <tr>
+                                <th style={{ textAlign: "center" }}>Código de Recinto</th>
+                                <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
+                                <th style={{ textAlign: "center" }}>Climatizado Si/No</th>
+                                <th style={{ textAlign: "center" }}>Hrs Desface Clima (Inv)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Ejemplo de datos estáticos */}
+                              <tr>
+                                <td>ES</td>
+                                <td>Espera</td>
+                                <td>Si✔</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td>AU</td>
+                                <td>Auditorio</td>
+                                <td>Si✔</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td>BA</td>
+                                <td>Baño</td>
+                                <td>No✔</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td>BD</td>
+                                <td>Bodega</td>
+                                <td>No✔</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td>KI</td>
+                                <td>Cafetería</td>
+                                <td>Si✔</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td>CO</td>
+                                <td>Comedores</td>
+                                <td>Si✔</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td>PA</td>
+                                <td>Pasillos</td>
+                                <td>No✔</td>
+                                <td></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      )
+                    }
                   </>
                 )}
               </div>

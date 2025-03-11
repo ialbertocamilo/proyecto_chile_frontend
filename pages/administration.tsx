@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useCallback } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import React, { useState, useEffect } from "react";
+import useAuth from "../src/hooks/useAuth";
+import { useAdministration } from "../src/hooks/useAdministration";
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
+import Title from "../src/components/Title";
+import Card from "../src/components/common/Card";
 import Swal from "sweetalert2";
 import axios, { AxiosResponse } from "axios";
 import CustomButton from "../src/components/common/CustomButton";
 import Modal from "../src/components/common/Modal";
-import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
 import { toast } from "react-toastify";
-import Title from "../src/components/Title";
-import Card from "../src/components/common/Card";
 import CancelButton from "@/components/common/CancelButton";
 
 interface MaterialAttributes {
@@ -67,13 +66,17 @@ interface Element {
 
 const AdministrationPage: React.FC = () => {
   useAuth();
-  console.log("[AdministrationPage] Página cargada y sesión validada.");
-
   const [step, setStep] = useState<number>(3);
-  const [materialsList, setMaterialsList] = useState<Material[]>([]);
-  const [details, setDetails] = useState<Detail[]>([]);
-  const [elementsList, setElementsList] = useState<Element[]>([]);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
+  
+  const {
+    materialsList,
+    details,
+    elementsList,
+    fetchMaterialsList,
+    fetchDetails,
+    fetchElements
+  } = useAdministration();
 
   const [showNewMaterialModal, setShowNewMaterialModal] = useState(false);
   const [newMaterialData, setNewMaterialData] = useState<MaterialAttributes>({
@@ -118,89 +121,6 @@ const AdministrationPage: React.FC = () => {
   });
 
   const windowsList = elementsList.filter((el) => el.type === "window");
-
-  // Memoriza handleLogout para evitar que se re-cree en cada render y para incluirla como dependencia
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-  }, []);
-
-  const fetchMaterialsList = useCallback(async (page: number): Promise<void> => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
-        handleLogout();
-        return;
-      }
-      const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=500`;
-      const headers = { Authorization: `Bearer ${token}` };
-      const response: AxiosResponse<{ constants: Material[] }> = await axios.get(url, { headers });
-      console.log("[fetchMaterialsList] Materiales recibidos:", response.data);
-      const mappedMaterials = (response.data.constants || []).map(
-        (mat: Material & { id_material?: number }) => ({
-          ...mat,
-          material_id: mat.id_material || mat.id,
-        })
-      );
-      setMaterialsList(mappedMaterials);
-    } catch (error: unknown) {
-      console.error("[fetchMaterialsList] Error al obtener lista de materiales:", error);
-      Swal.fire("Error", "Error al obtener materiales. Ver consola.", "error").then(() => {
-        handleLogout();
-      });
-    }
-  }, [handleLogout]);
-
-  const fetchDetails = useCallback(async (): Promise<void> => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
-        handleLogout();
-        return;
-      }
-      // Se utiliza el endpoint interno para detalles
-      const url = `/api/details`;
-      const headers = { Authorization: `Bearer ${token}` };
-      const response: AxiosResponse<Detail[]> = await axios.get(url, { headers });
-      console.log("[fetchDetails] Detalles recibidos:", response.data);
-      const mappedDetails = (response.data || []).map(
-        (det: Detail & { id_material?: number }) => ({
-          ...det,
-          material_id: det.id_material || det.material_id,
-        })
-      );
-      console.log("[fetchDetails] Detalles mapeados:", mappedDetails);
-      setDetails(mappedDetails);
-    } catch (error: unknown) {
-      console.error("[fetchDetails] Error al obtener detalles:", error);
-      Swal.fire("Error", "Error al obtener detalles. Ver consola.", "error").then(() => {
-        handleLogout();
-      });
-    }
-  }, [handleLogout]);
-
-  const fetchElements = useCallback(async (): Promise<void> => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.", "warning");
-        handleLogout();
-        return;
-      }
-      const url = `${constantUrlApiEndpoint}/elements/`;
-      const headers = { Authorization: `Bearer ${token}`, Accept: "application/json" };
-      const response: AxiosResponse<Element[]> = await axios.get(url, { headers });
-      console.log("[fetchElements] Elementos recibidos:", response.data);
-      setElementsList(response.data || []);
-    } catch (error: unknown) {
-      console.error("[fetchElements] Error al obtener elementos:", error);
-      Swal.fire("Error", "Error al obtener elementos. Ver consola.", "error").then(() => {
-        handleLogout();
-      });
-    }
-  }, [handleLogout]);
 
   const handleCreateMaterial = async () => {
     if (
@@ -403,71 +323,10 @@ const AdministrationPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (step === 3) {
-      fetchMaterialsList(1);
-    }
-  }, [step, fetchMaterialsList]);
-
-  useEffect(() => {
-    if (step === 4) {
-      fetchDetails();
-    }
-  }, [step, fetchDetails]);
-
-  useEffect(() => {
-    if (step === 5) {
-      fetchElements();
-    }
-  }, [step, fetchElements]);
-
-  const internalSidebarWidth = 380;
-  const sidebarItemHeight = 100;
-  const sidebarItemBorderSize = 1;
-  const leftPadding = 50;
-
-  const SidebarItem = ({
-    stepNumber,
-    iconClass,
-    title,
-  }: {
-    stepNumber: number;
-    iconClass: string;
-    title: string;
-  }) => {
-    const isSelected = step === stepNumber;
-    const activeColor = "#3ca7b7";
-    const inactiveColor = "#ccc";
-
-    const modifiedIconClass = isSelected ? iconClass.replace('bi-', 'bi-') + '-fill' : iconClass;
-
-    return (
-      <li className="nav-item sidebar-item" style={{ cursor: "pointer" }} onClick={() => setStep(stepNumber)}>
-        <div
-          className={`sidebar-item-content ${isSelected ? 'active' : ''}`}
-          style={{
-            height: `${sidebarItemHeight * 0.7}px`, // Reduced height
-            border: `${sidebarItemBorderSize}px solid ${isSelected ? activeColor : inactiveColor}`,
-            borderRadius: "4px",
-            marginBottom: "12px", // Reduced margin
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            paddingLeft: `${leftPadding * 0.8}px`, // Reduced padding
-            color: isSelected ? activeColor : inactiveColor,
-            fontFamily: "var(--font-family-base)",
-            position: "relative",
-            overflow: "hidden",
-            background: isSelected ? `rgba(60, 167, 183, 0.05)` : "transparent",
-          }}
-        >
-          <span className="icon-wrapper" style={{ marginRight: "10px", position: "relative", fontSize: "0.8rem" }}>
-            <i className={modifiedIconClass}></i>
-          </span>
-          <span className="title-wrapper" style={{ fontSize: "0.75rem" }}>{title}</span>
-        </div>
-      </li>
-    );
-  };
+    if (step === 3) fetchMaterialsList(1);
+    if (step === 4) fetchDetails();
+    if (step === 5) fetchElements();
+  }, [step, fetchMaterialsList, fetchDetails, fetchElements]);
 
   return (
     <>
@@ -480,34 +339,14 @@ const AdministrationPage: React.FC = () => {
       <Card className="bordered-main-card">
         <div>
           <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
-            <div
-              className="internal-sidebar"
-              style={{
-                width: `${internalSidebarWidth}px`,
-                padding: "20px",
-                boxSizing: "border-box",
-                borderRight: "1px solid #ccc",
-              }}
-            >
-              <ul className="nav flex-column">
-                <SidebarItem stepNumber={3} iconClass="bi bi-file-text" title="Materiales" />
-                <SidebarItem stepNumber={4} iconClass="bi bi-tools" title="Detalles constructivos" />
-                <SidebarItem stepNumber={5} iconClass="bi bi-house" title="Elementos operables" />
-              </ul>
-            </div>
+            <AdminSidebar currentStep={step} onStepChange={setStep} />
 
             <div className="content-area" style={{ flex: 1 }}>
               {step === 3 && (
                 <>
-                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                    <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
-                      <span className="material-icons">add</span> Nuevo
-                    </CustomButton>
-                  </div>
-
                   <div style={{ overflow: "hidden", padding: "10px" }}>
                     <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                      <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
+                      <table className="table">
                         <thead>
                           <tr>
                             <th>Nombre Material</th>
@@ -529,20 +368,20 @@ const AdministrationPage: React.FC = () => {
                       </table>
                     </div>
                   </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                    <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
+                      <span className="material-icons">add</span> Nuevo
+                    </CustomButton>
+                  </div>
                 </>
               )}
 
               {step === 4 && (
                 <>
-                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                    <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
-                      <span className="material-icons">add</span> Nuevo
-                    </CustomButton>
-                  </div>
 
                   <div style={{ overflow: "hidden", padding: "10px" }}>
                     <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                      <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%" }}>
+                      <table className="table " >
                         <thead>
                           <tr>
                             <th>Ubicación Detalle</th>
@@ -567,22 +406,16 @@ const AdministrationPage: React.FC = () => {
                       </table>
                     </div>
                   </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                    <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
+                      <span className="material-icons">add</span> Nuevo
+                    </CustomButton>
+                  </div>
                 </>
               )}
 
               {step === 5 && (
                 <>
-                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                    {tabElementosOperables === "ventanas" ? (
-                      <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
-                        <span className="material-icons">add</span> Nuevo
-                      </CustomButton>
-                    ) : (
-                      <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
-                        <span className="material-icons">add</span> Nuevo
-                      </CustomButton>
-                    )}
-                  </div>
 
                   <div style={{ overflow: "hidden", padding: "10px" }}>
                     <div
@@ -628,7 +461,7 @@ const AdministrationPage: React.FC = () => {
                     </div>
 
                     <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
-                      <table className="table table-bordered table-striped smaller-font-table" style={{ width: "100%", fontSize: "0.85rem" }}>
+                      <table className="table">
                         <thead>
                           {tabElementosOperables === "ventanas" ? (
                             <tr>
@@ -689,6 +522,17 @@ const AdministrationPage: React.FC = () => {
                         </tbody>
                       </table>
                     </div>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                    {tabElementosOperables === "ventanas" ? (
+                      <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
+                        <span className="material-icons">add</span> Nuevo
+                      </CustomButton>
+                    ) : (
+                      <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
+                        <span className="material-icons">add</span> Nuevo
+                      </CustomButton>
+                    )}
                   </div>
                 </>
               )}
@@ -1286,11 +1130,14 @@ const AdministrationPage: React.FC = () => {
           color: var(--primary-color);
           z-index: 2;
         }
-        .table-striped tbody tr:nth-child(odd) {
+        .table-striped tbody tr:nth-child(odd),
+        .table-striped tbody tr:nth-child(even) {
           background-color: #ffffff;
         }
-        .table-striped tbody tr:nth-child(even) {
-          background-color: #f2f2f2;
+        .table tbody tr:hover {
+          transform: scale(1.01);
+          background-color: rgba(60, 167, 183, 0.05) !important;
+          cursor: pointer;
         }
         
         /* Animaciones y transiciones */
@@ -1387,11 +1234,6 @@ const AdministrationPage: React.FC = () => {
           -webkit-font-smoothing: antialiased;
         }
 
-        /* Transición suave para cambios de color */
-        .bordered-main-card {
-          transition: border-color 0.3s ease;
-        }
-
         /* Efecto hover para las cards */
         .card {
           transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -1447,19 +1289,6 @@ const AdministrationPage: React.FC = () => {
           width: 100%;
           overflow: hidden;
           position: relative;
-        }
-
-        .bordered-main-card::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 20px;
-          padding: 2px;
-          background: linear-gradient(45deg, rgba(60, 167, 183, 0.3), rgba(79, 209, 197, 0.3));
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          pointer-events: none;
         }
 
         /* Efecto de brillo en hover */

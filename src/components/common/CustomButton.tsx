@@ -14,7 +14,8 @@ interface CustomButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>
   | 'addIcon'
   | 'listIcon'
   | 'cancelIcon'
-  | 'viewIcon';
+  | 'viewIcon'
+  | 'borderless';
   type?: 'button' | 'submit';
   isLoading?: boolean;
   margin?: string;
@@ -63,7 +64,7 @@ const CustomButton: FC<CustomButtonProps> = ({
     tooltipText = 'Ver detalles';
   }
 
-  const variantClass = `btn-${variant}`;
+  const variantClass = variant === 'borderless' ? 'btn-borderless' : `btn-${variant}`;
   const disabledClass = disabled || isLoading ? 'disabled' : '';
 
   return (
@@ -91,7 +92,7 @@ const CustomButton: FC<CustomButtonProps> = ({
           align-items: center;
           justify-content: center;
           transition: background-color 0.3s ease, transform 0.3s ease;
-          background-color: var(--btn-save-bg) !important; 
+          background-color: var(--primary-color) !important; 
           border: none;
           font-size: 16px;
           border-radius: 5px;
@@ -99,15 +100,25 @@ const CustomButton: FC<CustomButtonProps> = ({
           cursor: pointer;
         }
 
+        .btn-borderless {
+          background-color: transparent !important;
+          padding: 0;
+          color: var(--btn-save-bg);
+        }
 
-.btn-small {
-  font-size: 12px;
-}
+        .btn-borderless:hover {
+          background-color: transparent !important;
+          color: var(--btn-save-hover-bg);
+        }
 
-.btn-large {
-  padding: 15px 30px;
-  font-size: 18px;
-}
+        .btn-small {
+          font-size: 12px;
+        }
+
+        .btn-large {
+          padding: 15px 30px;
+          font-size: 18px;
+        }
   
         .btn:hover {
           background-color: var(--btn-save-hover-bg) !important;

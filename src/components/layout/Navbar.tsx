@@ -1,15 +1,17 @@
+'use client'
 import "bootstrap/dist/css/bootstrap.min.css";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import GoogleIcons from "../../../public/GoogleIcons";
+import useIsClient from "../../utils/useIsClient";
 
 interface NavbarProps {
-  setActiveView: (view: string) => void;
+  setActiveView?: (view: string) => void;  // Make it optional since it's not being used
 }
 
-const Navbar = ({}: NavbarProps) => {
+const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declaration
   const router = useRouter();
   const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
   const [roleId, setRoleId] = useState<string | null>(null);
@@ -17,41 +19,49 @@ const Navbar = ({}: NavbarProps) => {
   const [isNavbarVisible, setIsNavbarVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [animateIcon, setAnimateIcon] = useState(false);
+  const isClient = useIsClient();
   
   useEffect(() => {
+    if (!isClient) return;
     const storedLogo = localStorage.getItem("logoUrl");
     if (storedLogo) {
       setLogoUrl(storedLogo);
     }
-  }, []);
+  }, [isClient]);
   
   useEffect(() => {
+    if (!isClient) return;
     const storedRole = localStorage.getItem("role_id");
     if (storedRole) {
       setRoleId(storedRole);
     }
-  }, []);
+  }, [isClient]);
   
   useEffect(() => {
+    if (!isClient) return;
     const storedProjectId = localStorage.getItem("project_id");
     if (storedProjectId) {
       setProjectId(storedProjectId);
     }
-  }, []);
+  }, [isClient]);
   
   useEffect(() => {
+    if (!isClient) return;
     const handleResize = () => {
-      const mobile = window.innerWidth <= 1024;
+      const mobile = isClient && window.innerWidth <= 1024;
       setIsMobile(mobile);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isClient]);
+
   const handleLogout = () => {
+    if (!isClient) return;
     localStorage.clear();
     router.push("/login");
   };
+
   const toggleNavbar = () => {
     setAnimateIcon(true);
     setIsNavbarVisible(!isNavbarVisible);

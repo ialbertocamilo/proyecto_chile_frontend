@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 import { toast } from "react-toastify";
@@ -117,8 +118,6 @@ const EditProfile = () => {
 
       const resData = await response.json();
       localStorage.setItem("userProfile", JSON.stringify(payload));
-
-      console.log("[EditProfile] Perfil actualizado correctamente:", resData);
 
       notify("Tu perfil se actualizó correctamente.");
     } catch (err: unknown) {

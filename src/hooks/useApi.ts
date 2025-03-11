@@ -27,6 +27,7 @@ export function useApi() {
       });
       return response.data as T;
     } catch (err) {
+      console.log( "Err ", err);
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         localStorage.removeItem('token');
         window.location.href = '/login';

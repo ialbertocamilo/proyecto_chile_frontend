@@ -4,7 +4,6 @@ import {Tooltip} from 'react-tooltip';
 import CustomButton from './common/CustomButton';
 import { ArrowLeft, Save } from 'lucide-react';
 
-// You may need to adjust the CustomButton import path
 
 interface CreateButtonProps {
     backRoute: string;
@@ -37,7 +36,6 @@ const CreateButton: React.FC<CreateButtonProps> = ({
             <div data-tip={backTooltip}>
                 <CustomButton
                     type="button"
-                    variant="back"
                     onClick={() => router.push(backRoute)}
                 >
                     <ArrowLeft className="w-4 h-4 mr-1" />

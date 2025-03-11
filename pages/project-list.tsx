@@ -9,7 +9,6 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
-//import SearchInput from "../src/components/inputs/SearchInput";
 import DataTable from "../src/components/DataTable";
 
 interface Divisions {

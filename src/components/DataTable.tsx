@@ -95,104 +95,87 @@ export default function DataTable<T extends { [key: string]: any }>({
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
 
-  return (
-    <Card>
-      <div className="">
-        <div className="row mb-3 mt-3">
-          <div className="col-12">
-            <div className="d-flex flex-column flex-sm-row gap-2">
-              <SearchInput
-                searchQuery={searchQuery}
-                handleSearch={handleSearch}
-                // Se pasan las props del botón solo si están definidas o si se indica explícitamente
-                createUrl={createUrl}
-                createText={createText}
-                showButton={showButton ?? Boolean(createUrl && createText)}
-              />
+    return (
+        <Card>
+            <div className="">
+                <div className="row mb-3 mt-3">
+                    <div className="col-12">
+                        <div className="d-flex flex-column flex-sm-row gap-2">
+                            <SearchInput
+                                searchQuery={searchQuery}
+                                handleSearch={handleSearch}
+                                createUrl={createUrl}
+                                createText={createText}
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-12">
+                        <div className="table-responsive" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '8px' }}>
+                            <table className="table table-hover table-mobile border rounded" style={{ minWidth: '650px', borderColor: '#dee2e6' }}>
+                                <thead className="bg-light border-bottom">
+                                    <tr>
+                                        {columns.map((column) => (
+                                            <th
+                                                key={column.id.toString()}
+                                                className="text-center"
+                                                style={{ color: "var(--primary-color)" }}
+                                            >
+                                                {column.label}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan={columns.length} className="text-center">
+                                                <Loader2 className="animate-spin me-2 inline" size={18} />Cargando...
+                                            </td>
+                                        </tr>
+                                    ) : data.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={columns.length} className="text-center ">
+                                                <Inbox className="me-2 inline" size={18} />No hay datos disponibles
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        data
+                                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                            .map((row, index) => (
+                                                <tr key={index} className="align-middle">
+                                                    {columns.map((column) => (
+                                                        <td key={column.id.toString()} className="text-center p-2 p-md-3">
+                                                            {column.cell ? (
+                                                                column.cell({ row })
+                                                            ) : column.format ? (
+                                                                column.format(row[column.id], row)
+                                                            ) : (
+                                                                row[column.id]
+                                                            )}
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div className="row mt-3">
+                    <div className="col-md-12">
+                        <TablePagination
+                            page={page}
+                            rowsPerPage={rowsPerPage}
+                            totalPages={totalPages}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-md-12">
-            <div
-              className="table-responsive"
-              style={{
-                overflowX: 'auto',
-                WebkitOverflowScrolling: 'touch',
-                borderRadius: '8px'
-              }}
-            >
-              <table
-                className="table table-hover table-mobile border rounded"
-                style={{ minWidth: '650px', borderColor: '#dee2e6' }}
-              >
-                <thead className="bg-light border-bottom">
-                  <tr>
-                    {columns.map((column) => (
-                      <th
-                        key={column.id.toString()}
-                        className="text-center"
-                        style={{ color: "var(--primary-color)" }}
-                      >
-                        {column.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={columns.length} className="text-center">
-                        <Loader2 className="animate-spin me-2 inline" size={18} />
-                        Cargando...
-                      </td>
-                    </tr>
-                  ) : data.length === 0 ? (
-                    <tr>
-                      <td colSpan={columns.length} className="text-center">
-                        <Inbox className="me-2 inline" size={18} />
-                        No hay datos disponibles
-                      </td>
-                    </tr>
-                  ) : (
-                    data
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((row, index) => (
-                        <tr key={index} className="align-middle">
-                          {columns.map((column) => (
-                            <td
-                              key={column.id.toString()}
-                              className="text-center p-2 p-md-3"
-                            >
-                              {column.cell ? (
-                                column.cell({ row })
-                              ) : column.format ? (
-                                column.format(row[column.id], row)
-                              ) : (
-                                row[column.id]
-                              )}
-                            </td>
-                          ))}
-                        </tr>
-                      ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <TablePagination
-              page={page}
-              rowsPerPage={rowsPerPage}
-              totalPages={totalPages}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
+        </Card>
+    );
 }

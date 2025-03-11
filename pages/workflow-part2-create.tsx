@@ -729,27 +729,19 @@ const saveDetails = async () => {
                             item.info?.surface_color?.interior?.name || "Desconocido"
                           )}
                         </td>
-                        <td>
+                        <td style={{ display: "flex", justifyContent: "center"}}> 
                           {editingRowId === item.id ? (
                             <>
                               <CustomButton
                                 variant="save"
                                 onClick={() => handleConfirmEdit(item)}
-                                style={{
-                                  fontSize: "clamp(0.5rem, 1vw, 0.8rem)",
-                                  padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                                }}
+                                
                               >
                                 <span className="material-icons">check</span>
                               </CustomButton>
                               <CustomButton
                                 variant="cancelIcon"
                                 onClick={() => handleCancelEdit(item)}
-                                style={{
-                                  fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                  padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                                  marginLeft: "clamp(5px, 1vw, 10px)",
-                                }}
                               >
                                 Deshacer
                               </CustomButton>
@@ -758,10 +750,7 @@ const saveDetails = async () => {
                             <CustomButton
                               variant="editIcon"
                               onClick={() => handleEditClick(item)}
-                              style={{
-                                fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                              }}
+                              
                             >
                               Editar
                             </CustomButton>

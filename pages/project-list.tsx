@@ -249,7 +249,9 @@ const ProjectListPage = () => {
   return (
     <>
       <div>
+        <Card>
         <Title text="Listado de Proyectos" />
+        </Card>
         <Card>
           <DataTable
             data={projects}

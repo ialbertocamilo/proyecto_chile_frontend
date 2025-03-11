@@ -400,7 +400,9 @@ const ProjectWorkflowPart1: React.FC = () => {
     <>
       <GooIcons />
       <div>
+        <Card>
         <div>{renderMainHeader()}</div>
+        </Card>
         <Card>
           <div style={{ padding: "0" }}>
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>

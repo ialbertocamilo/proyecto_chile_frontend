@@ -871,8 +871,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
       <GooIcons />
       <div
       >
-        <div>{renderMainHeader()}</div>
         <Card >
+        <h3 style={{paddingBottom: "2rem"}}>{renderMainHeader()}</h3>
         <div className="d-flex align-items-center gap-4">
           <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
             Proyecto: 
@@ -887,11 +887,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
             {/* Sidebar con los elementos necesarios */}
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div
-                style={{
-                  padding: "20px",
-                  boxSizing: "border-box",
-                  borderRight: "1px solid #ccc",
-                }}
                 className="mb-3 mb-lg-0"
               >
                 <ul className="nav flex-column" style={{ height: "100%" }}>

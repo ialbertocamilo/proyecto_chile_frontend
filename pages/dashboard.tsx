@@ -16,6 +16,7 @@ import {
 import { Line, Bar, Pie, Doughnut, Radar } from "react-chartjs-2";
 import Title from "../src/components/Title"; // Componente creado para mostrar títulos
 import useAuth from "../src/hooks/useAuth";
+import Card from "../src/components/common/Card";
 
 ChartJS.register(
   CategoryScale,
@@ -125,8 +126,9 @@ const DashboardPage: React.FC = () => {
       {/* Contenedor fluido que envuelve el custom-container */}
       <div>
         <div>
+          <Card>
           <Title text="Dashboard" />
-
+          </Card>
           <div className="row gy-4">
             {/* Proyectos Nuevos */}
             <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12">

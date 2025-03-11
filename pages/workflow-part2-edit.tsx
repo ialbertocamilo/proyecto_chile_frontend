@@ -13,8 +13,9 @@ import Modal from "../src/components/common/Modal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
-// Importamos el nuevo componente AdminSidebar
-import { AdminSidebar }  from "../src/components/administration/AdminSidebar";
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
+// Importamos el componente SearchParameters
+import SearchParameters from "../src/components/inputs/SearchParameters";
 
 interface Detail {
   id_detail: number;
@@ -724,12 +725,12 @@ const WorkFlowpar2editPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
+        <div style={{ height: "400px", position: "relative" }}>
           {tabStep4 === "muros" && (
-            <div style={{ overflowX: "auto" }}>
+            <div>
               <table
                 className="table table-bordered table-striped"
-                style={{ width: "100%", minWidth: "600px" }}
+                style={{ width: "100%" }}
               >
                 <thead>
                   <tr>
@@ -1233,31 +1234,20 @@ const WorkFlowpar2editPage: React.FC = () => {
     );
   };
 
-  // Renderizado de la vista inicial de detalles
+  // Renderizado de la vista inicial de detalles utilizando SearchParameters
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
     return (
       <>
-        <div className="mb-3 d-flex justify-content-between align-items-stretch">
-          <div style={{ flex: 1, marginRight: "10px" }}>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Buscar..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ height: "50px" }}
-            />
-          </div>
-          <div style={{ height: "50px" }}>
-            <CustomButton
-              variant="save"
-              onClick={handleNewButtonClick}
-              style={{ height: "100%" }}
-            >
-              <span className="material-icons">add</span> Nuevo
-            </CustomButton>
-          </div>
+        <div className="mb-3">
+          {/* Se reemplaza el input de búsqueda por el componente SearchParameters */}
+          <SearchParameters
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Buscar..."
+            onNew={handleNewButtonClick}
+            style={{ height: "50px" }}
+          />
         </div>
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
@@ -1493,47 +1483,6 @@ const WorkFlowpar2editPage: React.FC = () => {
             </table>
           </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "10px",
-            marginTop: "30px",
-            marginBottom: "10px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
-          >
-            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <CustomButton
-                id="mostrar-datos-btn"
-                variant="save"
-                onClick={() => {
-                  setTimeout(() => {
-                    saveDetails();
-                  }, 600);
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
-                  height: "min(3rem, 8vh)",
-                  minWidth: "6rem",
-                }}
-              >
-                <span className="material-icons">visibility</span> Mostrar datos
-              </CustomButton>
-            </div>
-          </div>
-        </div>
       </>
     );
   };
@@ -1622,8 +1571,8 @@ const WorkFlowpar2editPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
-        <div>{renderMainHeader()}</div>
         <Card style={{ height: "10vh" }}>
+        <h3 style={{paddingBottom: "2rem"}}>{renderMainHeader()}</h3>
           <div className="d-flex align-items-center gap-4">
             <span
               style={{
@@ -1652,7 +1601,6 @@ const WorkFlowpar2editPage: React.FC = () => {
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div className="mb-3 mb-lg-0">
-                {/* Se reemplaza la lista antigua por el nuevo AdminSidebar */}
                 <AdminSidebar
                   activeStep={step}
                   onStepChange={handleSidebarStepChange}
@@ -1676,39 +1624,6 @@ const WorkFlowpar2editPage: React.FC = () => {
         </Card>
       </div>
       <style jsx global>{`
-        @media (max-width: 992px) {
-          .container-fluid {
-            margin-left: 10px;
-            margin-right: 10px;
-            padding: 0 5px;
-          }
-          .col-lg-3 {
-            border-right: none;
-            border-bottom: 1px solid #ccc;
-          }
-          .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-          }
-          .mb-3.mb-lg-0 {
-            margin-bottom: 1rem;
-          }
-          [style*="padding: 20px"] {
-            padding: 15px;
-          }
-        }
-        @media (max-width: 768px) {
-          .table {
-            font-size: 12px;
-          }
-          th,
-          td {
-            padding: 8px;
-          }
-          [style*="height: 390px"] {
-            height: 300px;
-          }
-        }
         .no-hover {
           transition: none !important;
           cursor: default !important;

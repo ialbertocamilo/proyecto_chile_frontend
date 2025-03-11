@@ -1446,8 +1446,8 @@ const saveDetails = async () => {
     <>
       <GooIcons />
       <div>
-        <h3>{renderMainHeader()}</h3>
         <Card>
+        <h3 style={{paddingBottom: "2rem"}}>{renderMainHeader()}</h3>
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div

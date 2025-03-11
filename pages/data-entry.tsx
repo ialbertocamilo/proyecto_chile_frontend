@@ -12,7 +12,9 @@ import { ToastContainer, toast } from "react-toastify";
 import Title from "../src/components/Title";
 import "react-toastify/dist/ReactToastify.css";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-/** Tipos e interfaces necesarias fdsfd**/
+import SearchParameters from "../src/components/inputs/SearchParameters"; // Importa el componente creado
+
+/** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
   name: string;
   conductivity: number;
@@ -572,38 +574,31 @@ const DataEntryPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
+        <Card>
         <div>{renderMainHeader()}</div>
-
+        </Card>
         <Card>
           <div>
             <div className="d-flex d-flex-responsive">
               {/* Sidebar interno */}
               <div className="internal-sidebar">
-                <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
+                <AdminSidebar
+                  activeStep={step}
+                  onStepChange={setStep}
+                  steps={sidebarSteps}
+                />
               </div>
               {/* Área de contenido */}
               <div className="content-area">
                 {step === 3 && (
                   <>
-                    <div className="d-flex align-items-center p-2">
-                      <div style={{ flex: 1, marginRight: "10px" }}>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Buscar material..."
-                          value={materialSearch}
-                          onChange={(e) => setMaterialSearch(e.target.value)}
-                          style={{ height: "40px" }}
-                        />
-                      </div>
-                      <CustomButton
-                        variant="save"
-                        onClick={() => setShowMaterialModal(true)}
-                        style={{ height: "40px" }}
-                      >
-                        <span className="material-icons">add</span> Nuevo
-                      </CustomButton>
-                    </div>
+                    {/* Utilizando SearchParameters para la búsqueda de materiales */}
+                    <SearchParameters
+                      value={materialSearch}
+                      onChange={setMaterialSearch}
+                      placeholder="Buscar material..."
+                      onNew={() => setShowMaterialModal(true)}
+                    />
                     {/* Tabla de materiales */}
                     <div
                       style={{
@@ -620,9 +615,7 @@ const DataEntryPage: React.FC = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <div
-                            style={{ maxHeight: "500px", overflowY: "auto" }}
-                          >
+                          <div style={{ maxHeight: "500px", overflowY: "auto" }}>
                             <table className="table table-striped">
                               <thead>
                                 <tr>
@@ -666,25 +659,13 @@ const DataEntryPage: React.FC = () => {
 
                 {step === 5 && (
                   <>
-                    <div className="d-flex align-items-center p-2">
-                      <div style={{ flex: 1, marginRight: "10px" }}>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Buscar elemento..."
-                          value={elementSearch}
-                          onChange={(e) => setElementSearch(e.target.value)}
-                          style={{ height: "40px" }}
-                        />
-                      </div>
-                      <CustomButton
-                        variant="save"
-                        onClick={() => setShowElementModal(true)}
-                        style={{ height: "40px" }}
-                      >
-                        <span className="material-icons">add</span> Nuevo
-                      </CustomButton>
-                    </div>
+                    {/* Utilizando SearchParameters para la búsqueda de elementos */}
+                    <SearchParameters
+                      value={elementSearch}
+                      onChange={setElementSearch}
+                      placeholder="Buscar elemento..."
+                      onNew={() => setShowElementModal(true)}
+                    />
                     {/* Tabla de elementos */}
                     <div
                       style={{
@@ -731,9 +712,7 @@ const DataEntryPage: React.FC = () => {
                               </button>
                             ))}
                           </div>
-                          <div
-                            style={{ maxHeight: "500px", overflowY: "auto" }}
-                          >
+                          <div style={{ maxHeight: "500px", overflowY: "auto" }}>
                             <table className="table table-striped">
                               <thead>
                                 {modalElementType === "ventanas" ? (
@@ -807,8 +786,7 @@ const DataEntryPage: React.FC = () => {
                                         <td>{el.atributs.u_puerta_opaca}</td>
                                         <td>{el.atributs.name_ventana}</td>
                                         <td>
-                                          {el.atributs.porcentaje_vidrio !==
-                                          undefined
+                                          {el.atributs.porcentaje_vidrio !== undefined
                                             ? (
                                                 (el.atributs
                                                   .porcentaje_vidrio as number) *
@@ -837,7 +815,11 @@ const DataEntryPage: React.FC = () => {
                     </h5>
                     <ul
                       className="nav mb-3"
-                      style={{ display: "flex", listStyle: "none", padding: 0 }}
+                      style={{
+                        display: "flex",
+                        listStyle: "none",
+                        padding: 0,
+                      }}
                     >
                       {[
                         { key: "ventilacion", label: "Ventilación y caudales" },
@@ -975,8 +957,7 @@ const DataEntryPage: React.FC = () => {
               {!materialIsValid && (
                 <div className="mb-3">
                   <p>
-                    (<span style={{ color: "red" }}>*</span>) Campos
-                    obligatorios
+                    (<span style={{ color: "red" }}>*</span>) Campos obligatorios
                   </p>
                 </div>
               )}
@@ -1198,8 +1179,7 @@ const DataEntryPage: React.FC = () => {
                 {!windowIsValid && (
                   <div className="mb-3">
                     <p>
-                      (<span style={{ color: "red" }}>*</span>) Campos
-                      obligatorios
+                      (<span style={{ color: "red" }}>*</span>) Campos obligatorios
                     </p>
                   </div>
                 )}
@@ -1315,9 +1295,7 @@ const DataEntryPage: React.FC = () => {
                     max="100"
                     className="form-control"
                     placeholder="% Vidrio"
-                    value={
-                      doorData.ventana_id ? doorData.porcentaje_vidrio : ""
-                    }
+                    value={doorData.ventana_id ? doorData.porcentaje_vidrio : ""}
                     onChange={(e) => {
                       const value = parseFloat(e.target.value);
                       if (isNaN(value)) {
@@ -1384,8 +1362,7 @@ const DataEntryPage: React.FC = () => {
                 {!doorIsValid && (
                   <div className="mb-3">
                     <p>
-                      (<span style={{ color: "red" }}>*</span>) Campos
-                      obligatorios
+                      (<span style={{ color: "red" }}>*</span>) Campos obligatorios
                     </p>
                   </div>
                 )}
@@ -1446,7 +1423,6 @@ const DataEntryPage: React.FC = () => {
             margin-left: 50px;
             margin-right: 20px;
           }
-
           .content-area {
             padding: 10px;
           }

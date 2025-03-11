@@ -355,7 +355,9 @@ const ProjectWorkflowPart1: React.FC = () => {
     <>
       <GooIcons />
       <div>
+        <Card>
         <div>{renderMainHeader()}</div>
+        </Card>
         <Card>
           <div>
             <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>

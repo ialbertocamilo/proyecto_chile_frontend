@@ -1571,7 +1571,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
-        <Card style={{ height: "10vh" }}>
+        <Card>
         <h3 style={{paddingBottom: "2rem"}}>{renderMainHeader()}</h3>
           <div className="d-flex align-items-center gap-4">
             <span

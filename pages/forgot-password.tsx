@@ -156,12 +156,7 @@ const ForgotPassword: NextPageWithLayout = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                style={{
-                  borderRadius: "8px",
-                  border: "2px solid var(--muted-text)",
-                  fontFamily: "var(--font-family-base)",
-                  fontSize: "var(--font-size-base)",
-                }}
+                style={{height: "3rem"}}
               />
             </div>
 
@@ -173,7 +168,7 @@ const ForgotPassword: NextPageWithLayout = () => {
                 borderRadius: "8px",
                 marginBottom: "1rem",
                 fontFamily: "var(--font-family-base)",
-                fontSize: "var(--font-size-base)",
+                height: "2.5rem"
               }}
               disabled={isLoading}
             >

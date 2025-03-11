@@ -8,6 +8,7 @@ import CustomButton from "../src/components/common/CustomButton";
 import Head from "next/head";
 import { ReactElement } from "react";
 import { NextPage } from "next";
+import CreateButton from "../src/components/CreateButton";
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactElement;
@@ -503,36 +504,15 @@ const Register: NextPageWithLayout = () => {
                   </div>
                 </div>
 
-                <div
-                  className="d-flex justify-content-between align-items-center"
-                  style={{ marginTop: "1rem" }}
-                >
-                  <CustomButton
-                    type="button"
-                    variant="back"
-                    onClick={() => router.back()}
-                    style={{
-                      borderRadius: "8px",
-                      minWidth: "auto",
-                      fontFamily: "var(--font-family-base)",
-                      fontSize: baseFontSize,
-                    }}
-                  >
-                    <i className="bi bi-arrow-left"></i>
-                  </CustomButton>
-                  <CustomButton
-                    type="submit"
-                    variant="save"
-                    disabled={loading}
-                    style={{
-                      borderRadius: "8px",
-                      minWidth: "auto",
-                      fontFamily: "var(--font-family-base)",
-                      fontSize: baseFontSize,
-                    }}
-                  >
-                    {loading ? "Registrando..." : "Crear y guardar datos"}
-                  </CustomButton>
+                {/* Reemplazamos el bloque de botones por el componente CreateButton */}
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.7rem" }}>
+                  <CreateButton
+                    backRoute="/login" // Redirige al login (puedes ajustar la ruta según lo necesites)
+                    submitType={true}
+                    saveText={loading ? "Registrando..." : "Crear y guardar datos"}
+                    backTooltip="Volver"
+                    saveTooltip="Guardar"
+                  />
                 </div>
               </div>
             </div>
@@ -549,10 +529,6 @@ const Register: NextPageWithLayout = () => {
           background: url("/assets/images/background.jpg") no-repeat center
             center/cover;
           position: relative;
-          input::placeholder {
-            color: rgba(0, 0, 0, 0.3);
-          }
-          ,
           input::placeholder {
             color: rgba(0, 0, 0, 0.3);
           }

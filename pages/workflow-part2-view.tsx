@@ -12,6 +12,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title"; 
 import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
+// Importamos el componente SearchParameters
+import SearchParameters from "../src/components/inputs/SearchParameters";
 
 interface Detail {
   id_detail: number;
@@ -82,7 +84,6 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-
 const WorkFlowpar2viewPage: React.FC = () => {
   useAuth();
   const router = useRouter();
@@ -119,7 +120,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     },
   ];
 
-  // --- Obtención del projectId y step desde la URL o localStorage ---
+  // --- Obtención del projectId y step desde la URL o localStorage ---  
   useEffect(() => {
     if (router.isReady) {
       // Si la URL trae un id, lo usamos; de lo contrario, intentamos con localStorage
@@ -296,12 +297,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   // Render del encabezado principal
   const renderMainHeader = () =>
-    step >= 4 && (
-        <Title text="Vista de Desarrollo de proyecto">
-        </Title>
-        
-    );
-
+    step >= 4 && <Title text="Vista de Desarrollo de proyecto" />;
 
   const stickyHeaderStyle1 = {
     position: "sticky" as const,
@@ -686,9 +682,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
               marginTop: "30px",
             }}
           >
-            <span className="material-icons" >
-              arrow_back
-            </span>
+            <span className="material-icons">arrow_back</span>
           </CustomButton>
         </div>
       </div>
@@ -710,57 +704,31 @@ const WorkFlowpar2viewPage: React.FC = () => {
     });
     return (
       <>
-        <div className="mb-3 d-flex justify-content-between align-items-stretch">
-          <div style={{ flex: 1, marginRight: "10px" }}>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Buscar..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ height: "50px" }}
-            />
-          </div>
-        </div>
+        {/* Se reemplaza el input de búsqueda por el componente SearchParameters */}
+        <SearchParameters
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Buscar..."
+          // En esta vista, el botón "Nuevo" no tiene acción, por lo que se pasa una función vacía
+          onNew={() => {}}
+          style={{ marginBottom: "1rem" }}
+          showNewButton={false}
+        />
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
             <table className="table table-bordered table-striped" style={{ textAlign: "center" }}>
               <thead>
                 <tr>
-                  <th
-                    style={{
-                      ...stickyHeaderStyle1,
-                      color: "var(--primary-color)",
-                      textAlign: "center",
-                    }}
-                  >
+                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
                     Ubicación Detalle
                   </th>
-                  <th
-                    style={{
-                      ...stickyHeaderStyle1,
-                      color: "var(--primary-color)",
-                      textAlign: "center",
-                    }}
-                  >
+                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
                     Nombre Detalle
                   </th>
-                  <th
-                    style={{
-                      ...stickyHeaderStyle1,
-                      color: "var(--primary-color)",
-                      textAlign: "center",
-                    }}
-                  >
+                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
                     Material
                   </th>
-                  <th
-                    style={{
-                      ...stickyHeaderStyle1,
-                      color: "var(--primary-color)",
-                      textAlign: "center",
-                    }}
-                  >
+                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
                     Espesor capa (cm)
                   </th>
                 </tr>
@@ -778,9 +746,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
             </table>
           </div>
         </div>
-        <div
-          style={{ display: "flex", justifyContent: "center", marginTop: "30px", marginBottom: "10px" }}
-        >
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "30px", marginBottom: "10px" }}>
           <CustomButton
             id="mostrar-datos-btn"
             variant="save"
@@ -848,47 +814,49 @@ const WorkFlowpar2viewPage: React.FC = () => {
       iconName: "assignment_ind",
       title:
         "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+      route: `/workflow-part1-view?id=${projectId}&step=1`,
     },
     {
       stepNumber: 2,
       iconName: "location_on",
       title: "Ubicación del proyecto",
+      route: `/workflow-part1-view?id=${projectId}&step=2`,
     },
     {
       stepNumber: 4,
       iconName: "build",
       title: "Detalles constructivos",
+      route: `/workflow-part2-view?id=${projectId}&step=4`,
     },
     {
       stepNumber: 7,
       iconName: "design_services",
       title: "Recinto",
+      route: `/workflow-part2-view?id=${projectId}&step=7`,
     },
   ];
+
 
   return (
     <>
       <GooIcons />
-      <div
-      >
-        <Card >
-        <h3 style={{paddingBottom: "2rem"}}>{renderMainHeader()}</h3>
-        <div className="d-flex align-items-center gap-4">
-          <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-            Proyecto: 
-          </span>
-          <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
-            {`Edificación Nº ${projectId ?? "xxxxx"}`}
-          </CustomButton>
-        </div>
+      <div>
+        <Card>
+          <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
+          <div className="d-flex align-items-center gap-4">
+            <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
+              Proyecto: 
+            </span>
+            <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
+              {`Edificación Nº ${projectId ?? "xxxxx"}`}
+            </CustomButton>
+          </div>
         </Card>
         <Card style={{ marginTop: "clamp(0.5rem, 2vw, 1rem)", marginLeft: "0.1rem", width: "100%" }}>
           <div className="row">
             {/* Sidebar con los elementos necesarios */}
             <div className="col-lg-3 col-12 order-lg-first order-first">
-              <div
-                className="mb-3 mb-lg-0"
-              >
+              <div className="mb-3 mb-lg-0">
                 <ul className="nav flex-column" style={{ height: "100%" }}>
                   <SidebarItemComponent
                     stepNumber={1}
@@ -943,7 +911,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
           </div>
         </Card>
       </div>
-
     </>
   );
 };

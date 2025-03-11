@@ -15,6 +15,8 @@ import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
 // Importamos el componente SidebarItemComponent del directorio común
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
+// Importamos el componente SearchParameters
+import SearchParameters from "../src/components/inputs/SearchParameters";
 
 interface Detail {
   id_detail: number;
@@ -364,142 +366,142 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
- // Función para crear un nuevo detalle y añadirlo directamente al proyecto
-const handleCreateNewDetail = async () => {
-  if (!showNewDetailRow) return;
-  if (
-    !newDetailForm.scantilon_location ||
-    !newDetailForm.name_detail ||
-    !newDetailForm.material_id
-  ) {
-    toast.warning("Por favor complete todos los campos de detalle", {
-      toastId: "material-warning",
-    });
-    return;
-  }
-  
-  const token = getToken();
-  if (!token) return;
-  
-  try {
-    // Paso 1: Crear el nuevo detalle
-    const createUrl = `${constantUrlApiEndpoint}/details/create`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-    const response = await axios.post(createUrl, newDetailForm, { headers });
-    const newDetailId = response.data.detail.id;
-    
-    if (!newDetailId) {
-      toast.error("El backend no devolvió un ID de detalle válido.");
+  // Función para crear un nuevo detalle y añadirlo directamente al proyecto
+  const handleCreateNewDetail = async () => {
+    if (!showNewDetailRow) return;
+    if (
+      !newDetailForm.scantilon_location ||
+      !newDetailForm.name_detail ||
+      !newDetailForm.material_id
+    ) {
+      toast.warning("Por favor complete todos los campos de detalle", {
+        toastId: "material-warning",
+      });
       return;
     }
     
-    // Paso 2: Añadir el detalle al proyecto directamente
-    if (projectId) {
-      const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-      
-      // Asegurarnos de que estamos enviando un array de IDs
-      const detailIds = [newDetailId];
-      
-      try {
-        await axios.post(selectUrl, detailIds, { headers });
-        toast.success("Detalle creado y añadido al proyecto exitosamente", {
-          toastId: "detail-added-success",
-        });
-      } catch (selectError: unknown) {
-        // Verificar si el error es que el detalle ya está en el proyecto
-        if (axios.isAxiosError(selectError) && 
-            selectError.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
-          // Este no es un error real para nuestro caso de uso
-          toast.success("Detalle creado exitosamente", {
-            toastId: "detail-created-success",
-          });
-        } else {
-          console.error("Error al añadir detalle al proyecto:", selectError);
-          toast.warning("Detalle creado pero no se pudo añadir al proyecto", {
-            toastId: "detail-associated-error",
-          });
-        }
-      }
-    } else {
-      toast.warning("No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)", {
-        toastId: "project-id-missing",
-      });
-    }
+    const token = getToken();
+    if (!token) return;
     
-    // Actualizar la interfaz
-    fetchFetchedDetails();
-    setShowNewDetailRow(false);
-    setNewDetailForm({
-      scantilon_location: "",
-      name_detail: "",
-      material_id: 0,
-      layer_thickness: null,
-    });
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error(
-        "Error en la creación del detalle:",
-        error.response?.data
-      );
-      toast.error(error.response?.data?.detail || error.message, {
-        toastId: "material-warning",
+    try {
+      // Paso 1: Crear el nuevo detalle
+      const createUrl = `${constantUrlApiEndpoint}/details/create`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+      const response = await axios.post(createUrl, newDetailForm, { headers });
+      const newDetailId = response.data.detail.id;
+      
+      if (!newDetailId) {
+        toast.error("El backend no devolvió un ID de detalle válido.");
+        return;
+      }
+      
+      // Paso 2: Añadir el detalle al proyecto directamente
+      if (projectId) {
+        const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
+        
+        // Asegurarnos de que estamos enviando un array de IDs
+        const detailIds = [newDetailId];
+        
+        try {
+          await axios.post(selectUrl, detailIds, { headers });
+          toast.success("Detalle creado y añadido al proyecto exitosamente", {
+            toastId: "detail-added-success",
+          });
+        } catch (selectError: unknown) {
+          // Verificar si el error es que el detalle ya está en el proyecto
+          if (axios.isAxiosError(selectError) && 
+              selectError.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
+            // Este no es un error real para nuestro caso de uso
+            toast.success("Detalle creado exitosamente", {
+              toastId: "detail-created-success",
+            });
+          } else {
+            console.error("Error al añadir detalle al proyecto:", selectError);
+            toast.warning("Detalle creado pero no se pudo añadir al proyecto", {
+              toastId: "detail-associated-error",
+            });
+          }
+        }
+      } else {
+        toast.warning("No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)", {
+          toastId: "project-id-missing",
+        });
+      }
+      
+      // Actualizar la interfaz
+      fetchFetchedDetails();
+      setShowNewDetailRow(false);
+      setNewDetailForm({
+        scantilon_location: "",
+        name_detail: "",
+        material_id: 0,
+        layer_thickness: null,
       });
-    } else {
-      toast.error("Error desconocido al crear el detalle", {
-        toastId: "material-warning",
-      });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Error en la creación del detalle:",
+          error.response?.data
+        );
+        toast.error(error.response?.data?.detail || error.message, {
+          toastId: "material-warning",
+        });
+      } else {
+        toast.error("Error desconocido al crear el detalle", {
+          toastId: "material-warning",
+        });
+      }
     }
-  }
-};
+  };
 
   const handleNewButtonClick = () => {
     setShowNewDetailRow(true);
     fetchMaterials();
   };
 
-   // Función unificada para guardar detalles (se usa en dos contextos)
-const saveDetails = async () => {
-  if (!projectId) {
-    console.error("No se proporcionó un ID de proyecto.");
-    return;
-  }
-  const token = getToken();
-  if (!token) return;
-  if (fetchedDetails.length === 0) {
-    console.error("No se encontraron detalles para enviar.");
-    return;
-  }
-  
-  const detailIds = fetchedDetails.map((det) => det.id_detail);
-  const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
-  
-  try {
-    await axios.post(url, detailIds, { headers });
-    setShowTabsInStep4(true);
-    setTabStep4("muros");
-  } catch (error: unknown) {
-    // Si el error es que todos los detalles ya estaban en el proyecto, no es un error real
-    if (axios.isAxiosError(error) && 
-        error.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
-      // Este no es un error real, aún podemos mostrar las pestañas
-      setShowTabsInStep4(true);
-      setTabStep4("muros");
+  // Función unificada para guardar detalles (se usa en dos contextos)
+  const saveDetails = async () => {
+    if (!projectId) {
+      console.error("No se proporcionó un ID de proyecto.");
+      return;
+    }
+    const token = getToken();
+    if (!token) return;
+    if (fetchedDetails.length === 0) {
+      console.error("No se encontraron detalles para enviar.");
       return;
     }
     
-    console.error("Error al enviar la solicitud:", error);
-    if (axios.isAxiosError(error)) {
-      console.error("Detalles de la respuesta:", error.response?.data);
+    const detailIds = fetchedDetails.map((det) => det.id_detail);
+    const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+    
+    try {
+      await axios.post(url, detailIds, { headers });
+      setShowTabsInStep4(true);
+      setTabStep4("muros");
+    } catch (error: unknown) {
+      // Si el error es que todos los detalles ya estaban en el proyecto, no es un error real
+      if (axios.isAxiosError(error) && 
+          error.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
+        // Este no es un error real, aún podemos mostrar las pestañas
+        setShowTabsInStep4(true);
+        setTabStep4("muros");
+        return;
+      }
+      
+      console.error("Error al enviar la solicitud:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Detalles de la respuesta:", error.response?.data);
+      }
     }
-  }
-};
+  };
 
   // Funciones para edición de Muros
   const handleEditClick = (detail: TabItem) => {
@@ -729,13 +731,12 @@ const saveDetails = async () => {
                             item.info?.surface_color?.interior?.name || "Desconocido"
                           )}
                         </td>
-                        <td style={{ display: "flex", justifyContent: "center"}}> 
+                        <td style={{ display: "flex", justifyContent: "center" }}> 
                           {editingRowId === item.id ? (
                             <>
                               <CustomButton
                                 variant="save"
                                 onClick={() => handleConfirmEdit(item)}
-                                
                               >
                                 <span className="material-icons">check</span>
                               </CustomButton>
@@ -750,7 +751,6 @@ const saveDetails = async () => {
                             <CustomButton
                               variant="editIcon"
                               onClick={() => handleEditClick(item)}
-                              
                             >
                               Editar
                             </CustomButton>
@@ -1106,23 +1106,14 @@ const saveDetails = async () => {
     if (showTabsInStep4) return null;
     return (
       <>
-        <div className="mb-3 d-flex justify-content-between align-items-stretch">
-          <div style={{ flex: 1, marginRight: "10px" }}>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Buscar..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ height: "50px" }}
-            />
-          </div>
-          <div style={{ height: "50px" }}>
-            <CustomButton variant="save" onClick={handleNewButtonClick} style={{ height: "100%" }}>
-              <span className="material-icons">add</span> Nuevo
-            </CustomButton>
-          </div>
-        </div>
+        <SearchParameters
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Buscar..."
+          onNew={handleNewButtonClick}
+          newButtonText="Nuevo"
+          style={{ marginBottom: "1rem" }}
+        />
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll", overflowX: "auto" }}>
             <table
@@ -1447,13 +1438,10 @@ const saveDetails = async () => {
       <GooIcons />
       <div>
         <Card>
-        <h3 style={{paddingBottom: "2rem"}}>{renderMainHeader()}</h3>
+          <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
-              <div
-                
-                className="mb-3 mb-lg-0"
-              >
+              <div className="mb-3 mb-lg-0">
                 {/* Sidebar usando el componente común */}
                 <AdminSidebar
                   activeStep={step}

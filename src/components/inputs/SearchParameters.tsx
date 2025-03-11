@@ -8,6 +8,7 @@ interface SearchParametersProps {
   onNew: () => void;
   newButtonText?: string;
   style?: React.CSSProperties;
+  showNewButton?: boolean;
 }
 
 const SearchParameters: React.FC<SearchParametersProps> = ({
@@ -17,6 +18,7 @@ const SearchParameters: React.FC<SearchParametersProps> = ({
   onNew,
   newButtonText = "Nuevo",
   style,
+  showNewButton = true,
 }) => {
   return (
     <div className="d-flex align-items-center p-2" style={style}>
@@ -30,9 +32,11 @@ const SearchParameters: React.FC<SearchParametersProps> = ({
           style={{ height: "40px" }}
         />
       </div>
-      <CustomButton variant="save" onClick={onNew} style={{ height: "40px" }}>
-        <span className="material-icons">add</span> {newButtonText}
-      </CustomButton>
+      {showNewButton && (
+        <CustomButton variant="save" onClick={onNew} style={{ height: "40px" }}>
+          <span className="material-icons">add</span> {newButtonText}
+        </CustomButton>
+      )}
     </div>
   );
 };

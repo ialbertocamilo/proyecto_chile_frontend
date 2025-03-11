@@ -13,7 +13,7 @@ import Modal from "../src/components/common/Modal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
-
+// commit for deploid
 interface Detail {
   id_detail: number;
   scantilon_location: string;

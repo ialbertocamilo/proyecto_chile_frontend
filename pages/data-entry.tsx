@@ -12,7 +12,7 @@ import { ToastContainer, toast } from "react-toastify";
 import Title from "../src/components/Title";
 import "react-toastify/dist/ReactToastify.css";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-/** Tipos e interfaces necesarias **/
+/** Tipos e interfaces necesarias fdsfd**/
 interface MaterialAtributs {
   name: string;
   conductivity: number;

@@ -22,7 +22,7 @@ import 'public/assets/css/vendors/owlcarousel.css';
 import 'public/assets/css/vendors/scrollbar.css';
 import 'public/assets/css/vendors/sweetalert2.css';
 import 'public/assets/css/vendors/themify.css';
-import 'public/assets/js/jquery.min.js';
+// jQuery import moved to clientSideImports utility
 import type { ReactElement } from 'react';
 import { useEffect } from "react";
 import { ToastContainer } from "react-toastify";
@@ -95,16 +95,12 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const loadApexCharts = async () => {
-        try {
-          await import('public/assets/js/jquery.min.js')
-        } catch (error) {
-          console.error('Error loading ApexCharts:', error);
-        }
-      };
-      loadApexCharts();
-    }
+    const loadClientSideLibraries = async () => {
+      const { loadJQuery } = await import('@/utils/clientSideImports');
+      await loadJQuery();
+    };
+    
+    loadClientSideLibraries();
   }, []);
 
   return getLayout(<Component {...pageProps} />);

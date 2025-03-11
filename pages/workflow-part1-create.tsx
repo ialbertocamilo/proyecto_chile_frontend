@@ -344,6 +344,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   }, [locationSearch]);
   return (
     <>
+    <Card>
         <div>{renderMainHeader()}</div>
         </Card>
         <Card>

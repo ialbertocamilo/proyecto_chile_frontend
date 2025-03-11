@@ -13,7 +13,9 @@ import Modal from "../src/components/common/Modal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
-// commit for deploid
+// Importamos el nuevo componente AdminSidebar
+import { AdminSidebar }  from "../src/components/administration/AdminSidebar";
+
 interface Detail {
   id_detail: number;
   scantilon_location: string;
@@ -127,58 +129,6 @@ const stickyHeaderStyle2 = {
   backgroundColor: "#fff",
   zIndex: 2,
   textAlign: "center" as const,
-};
-
-interface SidebarItemProps {
-  stepNumber: number;
-  iconName: string;
-  title: string;
-  activeStep?: number;
-  onClickAction?: () => void;
-}
-
-const SidebarItem: React.FC<SidebarItemProps> = ({
-  stepNumber,
-  iconName,
-  title,
-  activeStep,
-  onClickAction,
-}) => {
-  const primaryColor = "#3ca7b7";
-  const inactiveColor = "#ccc";
-  const currentStep = activeStep !== undefined ? activeStep : stepNumber;
-
-  return (
-    <li
-      className="nav-item"
-      style={{ cursor: "pointer" }}
-      onClick={onClickAction}
-    >
-      <div
-        style={{
-          width: "100%",
-          height: "100px",
-          border: `1px solid ${
-            currentStep === stepNumber ? primaryColor : inactiveColor
-          }`,
-          borderRadius: "8px",
-          marginBottom: "16px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          paddingLeft: "50px",
-          color: currentStep === stepNumber ? primaryColor : inactiveColor,
-          fontFamily: "var(--font-family-base)",
-          fontWeight: "normal",
-        }}
-      >
-        <span style={{ marginRight: "15px", fontSize: "2rem" }}>
-          <span className="material-icons">{iconName}</span>
-        </span>
-        <span style={{ fontWeight: "normal" }}>{title}</span>
-      </div>
-    </li>
-  );
 };
 
 const WorkFlowpar2editPage: React.FC = () => {
@@ -393,7 +343,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // Función para crear un nuevo detalle
+  // Función para crear un nuevo detalle y añadirlo directamente al proyecto
   const handleCreateNewDetail = async () => {
     if (!showNewDetailRow) return;
     if (
@@ -406,32 +356,62 @@ const WorkFlowpar2editPage: React.FC = () => {
       });
       return;
     }
+
     const token = getToken();
     if (!token) return;
+
     try {
+      // Paso 1: Crear el nuevo detalle
       const createUrl = `${constantUrlApiEndpoint}/details/create`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
       const response = await axios.post(createUrl, newDetailForm, { headers });
-      setShowNewDetailRow(false);
       const newDetailId = response.data.detail.id;
+
       if (!newDetailId) {
         toast.error("El backend no devolvió un ID de detalle válido.");
         return;
       }
-      toast.success(response.data.success || "Detalle creado exitosamente", {
-        toastId: "material-sucess",
-      });
-      if (!projectId) return;
-      const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-      const detailIds = [
-        ...fetchedDetails.map((det) => det.id_detail),
-        newDetailId,
-      ];
-      await axios.post(selectUrl, detailIds, { headers });
+
+      // Paso 2: Añadir el detalle al proyecto directamente
+      if (projectId) {
+        const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
+        // Asegurarnos de que estamos enviando un array de IDs
+        const detailIds = [newDetailId];
+
+        try {
+          await axios.post(selectUrl, detailIds, { headers });
+          toast.success("Detalle creado y añadido al proyecto exitosamente", {
+            toastId: "detail-added-success",
+          });
+        } catch (selectError: unknown) {
+          if (
+            axios.isAxiosError(selectError) &&
+            selectError.response?.data?.detail ===
+              "Todos los detalles ya estaban en el proyecto"
+          ) {
+            toast.success("Detalle creado exitosamente", {
+              toastId: "detail-created-success",
+            });
+          } else {
+            console.error("Error al añadir detalle al proyecto:", selectError);
+            toast.warning("Detalle creado pero no se pudo añadir al proyecto", {
+              toastId: "detail-associated-error",
+            });
+          }
+        }
+      } else {
+        toast.warning(
+          "No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)",
+          { toastId: "project-id-missing" }
+        );
+      }
+
+      // Actualizar la interfaz
       fetchFetchedDetails();
+      setShowNewDetailRow(false);
       setNewDetailForm({
         scantilon_location: "",
         name_detail: "",
@@ -440,10 +420,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          "Error en la creación del detalle:",
-          error.response?.data
-        );
+        console.error("Error en la creación del detalle:", error.response?.data);
         toast.error(error.response?.data?.detail || error.message, {
           toastId: "material-warning",
         });
@@ -472,22 +449,35 @@ const WorkFlowpar2editPage: React.FC = () => {
       console.error("No se encontraron detalles para enviar.");
       return;
     }
+
     const detailIds = fetchedDetails.map((det) => det.id_detail);
     const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
     const headers = {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     };
+
     try {
       await axios.post(url, detailIds, { headers });
       setShowTabsInStep4(true);
       setTabStep4("muros");
-    } catch (error) {
+    } catch (error: unknown) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response?.data?.detail === "Todos los detalles ya estaban en el proyecto"
+      ) {
+        setShowTabsInStep4(true);
+        setTabStep4("muros");
+        return;
+      }
       console.error("Error al enviar la solicitud:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Detalles de la respuesta:", error.response?.data);
+      }
     }
   };
 
-  // Guarda detalles en copia (se dispara automáticamente al cambiar fetchedDetails)
+  // Función corregida para guardar detalles en el proyecto
   const handleSaveDetailsCopy = useCallback(async () => {
     if (!projectId) {
       console.error("No se proporcionó un ID de proyecto.");
@@ -505,10 +495,21 @@ const WorkFlowpar2editPage: React.FC = () => {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     };
+
     try {
       await axios.post(url, detailIds, { headers });
-    } catch (error) {
+    } catch (error: unknown) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response?.data?.detail === "Todos los detalles ya estaban en el proyecto"
+      ) {
+        return;
+      }
       console.error("Error al enviar la solicitud:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Detalles de la respuesta:", error.response?.data);
+        console.error("Status code:", error.response?.status);
+      }
     }
   }, [projectId, fetchedDetails]);
 
@@ -670,32 +671,8 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // Renderizado de encabezado principal
   const renderMainHeader = () => (
-      <Title text="Edicion de Desarrollo de proyecto"></Title>
-    
+    <Title text="Edicion de Desarrollo de proyecto" />
   );
-
-  // Componente SidebarItem reutilizable
-  const SidebarItemComponent = ({
-    stepNumber,
-    iconName,
-    title,
-    onClickAction,
-  }: {
-    stepNumber: number;
-    iconName: string;
-    title: string;
-    onClickAction?: () => void;
-  }) => {
-    return (
-      <SidebarItem
-        stepNumber={stepNumber}
-        iconName={iconName}
-        title={title}
-        activeStep={step}
-        onClickAction={onClickAction}
-      />
-    );
-  };
 
   // Renderizado de pestañas en el paso 4
   const renderStep4Tabs = () => {
@@ -747,9 +724,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div
-          style={{ height: "400px", overflowY: "auto", position: "relative" }}
-        >
+        <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>
               <table
@@ -1444,13 +1419,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                             }
                           }}
                           onChange={(e) => {
-                            const inputValue = e.target.value.replace(
-                              /[^0-9.]/g,
-                              ""
-                            );
-                            const value = inputValue
-                              ? parseFloat(inputValue)
-                              : null;
+                            const inputValue = e.target.value.replace(/[^0-9.]/g, "");
+                            const value = inputValue ? parseFloat(inputValue) : null;
                             if (value === null || value >= 0) {
                               setNewDetailForm((prev) => ({
                                 ...prev,
@@ -1611,31 +1581,66 @@ const WorkFlowpar2editPage: React.FC = () => {
     );
   };
 
+  // Función para manejar el cambio de paso en la barra lateral.
+  // Para los pasos 1 y 2 se redirige vía router, para los demás se actualiza el estado local.
+  const handleSidebarStepChange = (newStep: number) => {
+    if (newStep === 1) {
+      router.push(`/workflow-part1-edit?id=${projectId}&step=1`);
+    } else if (newStep === 2) {
+      router.push(`/workflow-part1-edit?id=${projectId}&step=2`);
+    } else {
+      setStep(newStep);
+    }
+  };
+
+  // Definición de los pasos para el sidebar
+  const sidebarSteps = [
+    {
+      stepNumber: 1,
+      iconName: "assignment_ind",
+      title:
+        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+    },
+    {
+      stepNumber: 2,
+      iconName: "location_on",
+      title: "Ubicación del proyecto",
+    },
+    {
+      stepNumber: 4,
+      iconName: "build",
+      title: "Detalles constructivos",
+    },
+    {
+      stepNumber: 7,
+      iconName: "design_services",
+      title: "Recinto",
+    },
+  ];
+
   return (
     <>
       <GooIcons />
       <div>
-        <div>
-          {renderMainHeader()}
-        </div>
-        <Card style={{height: "10vh"}}>
-        <div className="d-flex align-items-center gap-4">
-        <span
-          style={{
-            fontWeight: "normal",
-            fontFamily: "var(--font-family-base)",
-          }}
-        >
-          Proyecto:
-        </span>
-        <CustomButton
-          variant="save"
-          className="no-hover"
-          style={{ padding: "0.8rem 3rem" }}
-        >
-          {`Edificación Nº ${projectId ?? "xxxxx"}`}
-        </CustomButton>
-      </div>
+        <div>{renderMainHeader()}</div>
+        <Card style={{ height: "10vh" }}>
+          <div className="d-flex align-items-center gap-4">
+            <span
+              style={{
+                fontWeight: "normal",
+                fontFamily: "var(--font-family-base)",
+              }}
+            >
+              Proyecto:
+            </span>
+            <CustomButton
+              variant="save"
+              className="no-hover"
+              style={{ padding: "0.8rem 3rem" }}
+            >
+              {`Edificación Nº ${projectId ?? "xxxxx"}`}
+            </CustomButton>
+          </div>
         </Card>
         <Card
           style={{
@@ -1643,51 +1648,16 @@ const WorkFlowpar2editPage: React.FC = () => {
             marginLeft: "0.1rem",
             width: "100%",
           }}
-          
         >
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
-              <div
-                style={{
-                  padding: "20px",
-                  boxSizing: "border-box",
-                  borderRight: "1px solid #ccc",
-                }}
-                className="mb-3 mb-lg-0"
-              >
-                
-                <ul className="nav flex-column" style={{ height: "100%" }}>
-                  {/* Nuevas opciones agregadas arriba de los existentes */}
-                  <SidebarItemComponent
-                    stepNumber={1}
-                    iconName="assignment_ind"
-                    title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
-                    onClickAction={() =>
-                      router.push(`/workflow-part1-edit?id=${projectId}&step=1`)
-                    }
-                  />
-                  <SidebarItemComponent
-                    stepNumber={2}
-                    iconName="location_on"
-                    title="Ubicación del proyecto"
-                    onClickAction={() =>
-                      router.push(`/workflow-part1-edit?id=${projectId}&step=2`)
-                    }
-                  />
-                  {/* Opciones existentes */}
-                  <SidebarItemComponent
-                    stepNumber={4}
-                    iconName="build"
-                    title="Detalles constructivos"
-                    onClickAction={() => setStep(4)}
-                  />
-                  <SidebarItemComponent
-                    stepNumber={7}
-                    iconName="design_services"
-                    title="Recinto"
-                    onClickAction={() => setStep(7)}
-                  />
-                </ul>
+              <div className="mb-3 mb-lg-0">
+                {/* Se reemplaza la lista antigua por el nuevo AdminSidebar */}
+                <AdminSidebar
+                  activeStep={step}
+                  onStepChange={handleSidebarStepChange}
+                  steps={sidebarSteps}
+                />
               </div>
             </div>
             <div className="col-lg-9 col-12 order-last">

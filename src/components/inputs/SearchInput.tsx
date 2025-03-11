@@ -6,11 +6,18 @@ import { Plus } from 'lucide-react';
 interface SearchInputProps {
   searchQuery: string;
   handleSearch: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  createUrl: string;
-  createText: string;
+  createUrl?: string;
+  createText?: string;
+  showButton?: boolean; // Prop opcional para mostrar/ocultar el botón
 }
 
-export const SearchInput: FC<SearchInputProps> = ({ searchQuery, handleSearch, createUrl, createText }) => {
+export const SearchInput: FC<SearchInputProps> = ({ 
+  searchQuery, 
+  handleSearch, 
+  createUrl, 
+  createText, 
+  showButton = false 
+}) => {
   const router = useRouter();
 
   return (
@@ -30,18 +37,20 @@ export const SearchInput: FC<SearchInputProps> = ({ searchQuery, handleSearch, c
           }}
         />
       </div>
-      <div className="flex-shrink-0">
-        <CustomButton
-          type="button"
-          variant="save"
-          onClick={() => router.push(createUrl)}
-          margin="0"
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          <span className="d-none d-sm-inline">{createText}</span>
-          <span className="d-inline d-sm-none">Nuevo</span>
-        </CustomButton>
-      </div>
+      {showButton && createUrl && createText && (
+        <div className="flex-shrink-0">
+          <CustomButton
+            type="button"
+            variant="save"
+            onClick={() => router.push(createUrl)}
+            margin="0"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            <span className="d-none d-sm-inline">{createText}</span>
+            <span className="d-inline d-sm-none">Nuevo</span>
+          </CustomButton>
+        </div>
+      )}
     </div>
   );
 };

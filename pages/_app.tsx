@@ -9,6 +9,7 @@ import type { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import { useRouter } from "next/router";
 import Script from 'next/script';
+import "../src/styles/css/globals.css";
 import 'public/assets/css/color-1.css';
 import 'public/assets/css/font-awesome.css';
 import 'public/assets/css/responsive.css';

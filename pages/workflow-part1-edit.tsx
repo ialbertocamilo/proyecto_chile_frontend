@@ -10,13 +10,13 @@ import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
-import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
 import { useApi } from "@/hooks/useApi";
+import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Componente de sidebar dinámico
 
-// Cargamos el mapa sin SSR aa
+// Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
   ssr: false,
 });
@@ -209,7 +209,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     return newErrors;
   };
 
-  const {get} =useApi()
+  const { get } = useApi();
   const checkProjectNameExists = async (): Promise<boolean> => {
     try {
       const token = localStorage.getItem("token");
@@ -359,63 +359,61 @@ const ProjectWorkflowPart1: React.FC = () => {
       <Title text={router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"} />
     );
   };
-  
+
+  // Definición de los pasos para la sidebar
+  const steps = [
+    {
+      stepNumber: 1,
+      iconName: "assignment_ind",
+      title: "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+    },
+    {
+      stepNumber: 2,
+      iconName: "location_on",
+      title: "Ubicación del proyecto",
+    },
+    {
+      stepNumber: 3,
+      iconName: "build",
+      title: "Detalles constructivos",
+    },
+    {
+      stepNumber: 4,
+      iconName: "design_services",
+      title: "Recinto",
+    },
+  ];
+
+  // Función para manejar el cambio de paso en la sidebar
+  const handleSidebarStepChange = (newStep: number) => {
+    if (newStep === 1 || newStep === 2) {
+      setStep(newStep);
+    } else if (newStep === 3) {
+      // Para el paso 3 redirigimos a otra ruta de edición
+      router.push(`/workflow-part2-edit?id=${router.query.id}&step=4`);
+    } else if (newStep === 4) {
+      router.push(`/workflow-part2-edit?id=${router.query.id}&step=7`);
+    }
+  };
 
   return (
     <>
       <GooIcons />
-      <div
->
-          <div>{renderMainHeader()}</div>
+      <div>
+        <div>{renderMainHeader()}</div>
         <Card>
           <div style={{ padding: "0" }}>
             <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
-              <div
-                style={{
-                  width: "380px",
-                  padding: "20px",
-                  boxSizing: "border-box",
-                  borderRight: "1px solid #ccc",
-                }}
-              >
-                <ul className="nav flex-column" style={{ height: "100%" }}>
-                  <SidebarItemComponent
-                    stepNumber={1}
-                    iconName="assignment_ind"
-                    title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
-                    activeStep={step}
-                    onClickAction={() => setStep(1)}
-                  />
-                  <SidebarItemComponent
-                    stepNumber={2}
-                    iconName="location_on"
-                    title="Ubicación del proyecto"
-                    activeStep={step}
-                    onClickAction={() => setStep(2)}
-                  />
-                  <SidebarItemComponent
-                    stepNumber={3}
-                    iconName="build"
-                    title="Detalles constructivos"
-                    activeStep={step}
-                    onClickAction={() =>
-                      router.push(`/workflow-part2-edit?id=${router.query.id}&step=4`)
-                    }
-                  />
-                  <SidebarItemComponent
-                    stepNumber={4}
-                    iconName="design_services"
-                    title="Recinto"
-                    activeStep={step}
-                    onClickAction={() =>
-                      router.push(`/workflow-part2-edit?id=${router.query.id}&step=7`)
-                    }
-                  />
-                </ul>
-              </div>
+              {/* Se reemplaza la lista de SidebarItemComponent por el AdminSidebar */}
+              <AdminSidebar
+                activeStep={step}
+                onStepChange={handleSidebarStepChange}
+                steps={steps}
+              />
               <div style={{ flex: 1, padding: "40px" }}>
                 {step === 1 && (
                   <>
+                    {/* Paso 1: Datos generales */}
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -729,6 +727,7 @@ const ProjectWorkflowPart1: React.FC = () => {
 
                 {step === 2 && (
                   <>
+                    {/* Paso 2: Ubicación */}
                     <div
                       style={{
                         border: "1px solid #ccc",
@@ -812,18 +811,16 @@ const ProjectWorkflowPart1: React.FC = () => {
                         </div>
                         <div className="d-flex">
                           {router.query.id ? (
-                            <>
-                              <CustomButton
-                                variant="save"
-                                onClick={enviarProyecto}
-                                style={{ height: "50px" }}
-                              >
-                                <span className="material-icons" style={{ marginRight: "5px" }}>
-                                  save_as
-                                </span>
-                                Actualizar Datos
-                              </CustomButton>
-                            </>
+                            <CustomButton
+                              variant="save"
+                              onClick={enviarProyecto}
+                              style={{ height: "50px" }}
+                            >
+                              <span className="material-icons" style={{ marginRight: "5px" }}>
+                                save_as
+                              </span>
+                              Actualizar Datos
+                            </CustomButton>
                           ) : (
                             <CustomButton
                               variant="save"

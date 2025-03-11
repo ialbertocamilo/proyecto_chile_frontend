@@ -10,11 +10,11 @@ import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
-import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
 import { useApi } from "@/hooks/useApi";
+import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Importa el componente dinámico de la sidebar
 
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
   ssr: false,
@@ -74,6 +74,20 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState<boolean>(false);
   const [globalError, setGlobalError] = useState<string>("");
+
+  // Definición de los pasos para la sidebar
+  const steps = [
+    {
+      stepNumber: 1,
+      iconName: "assignment_ind",
+      title: "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+    },
+    {
+      stepNumber: 2,
+      iconName: "location_on",
+      title: "Ubicación del proyecto",
+    },
+  ];
 
   useEffect(() => {
     const pColor =
@@ -200,12 +214,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     );
   };
 
-  const {post,get } = useApi()
-
-
-  // useEffect(()=>{
-  //   get('/validation-token')
-  // },[])
+  const { post, get } = useApi();
 
   const enviarProyecto = async () => {
     setLoading(true);
@@ -237,11 +246,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         longitude: formData.longitude,
       };
 
-      const data = await post(
-        `/projects/create`,
-        requestBody,
-      );
-
+      const data = await post(`/projects/create`, requestBody);
       const { project_id } = data;
       localStorage.setItem("project_id", project_id.toString());
       localStorage.setItem("project_department", formData.department);
@@ -316,37 +321,13 @@ const ProjectWorkflowPart1: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <div >
+      <div>
         <div>{renderMainHeader()}</div>
         <Card>
           <div>
             <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
-              <div
-                className="sidebar"
-                style={{
-                  width: "380px",
-                  padding: "20px",
-                  boxSizing: "border-box",
-                  borderRight: "1px solid #ccc",
-                }}
-              >
-                <ul className="nav flex-column h-100">
-                  <SidebarItemComponent
-                    stepNumber={1}
-                    iconName="assignment_ind"
-                    title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
-                    activeStep={step}
-                    onClickAction={() => setStep(1)}
-                  />
-                  <SidebarItemComponent
-                    stepNumber={2}
-                    iconName="location_on"
-                    title="Ubicación del proyecto"
-                    activeStep={step}
-                    onClickAction={() => setStep(2)}
-                  />
-                </ul>
-              </div>
+              {/* Sidebar dinámico con el arreglo de pasos */}
+              <AdminSidebar activeStep={step} onStepChange={setStep} steps={steps} />
               <div className="content p-4" style={{ flex: 1 }}>
                 {step === 1 && (
                   <>

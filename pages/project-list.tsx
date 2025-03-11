@@ -286,6 +286,7 @@ const ProjectListPage = () => {
             createText="Proyecto Nuevo"
             createUrl="/workflow-part1-create"
             pageSize={10}
+            showButton={true} 
           />
         </Card>
       </div>

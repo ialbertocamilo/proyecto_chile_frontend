@@ -6,7 +6,6 @@ import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import DataTable from "../src/components/DataTable"; // Ajusta la ruta según corresponda
-import { ViewIcon } from "lucide-react";
 
 interface Divisions {
   department?: string;
@@ -131,8 +130,6 @@ const ProjectListStatusEditPage = () => {
         data={filteredProjects}
         columns={columns}
         loading={loading}
-        createText="Nuevo"
-        createUrl="/" // Ajusta la URL según corresponda
         pageSize={10}
       />
       {error && (

@@ -31,7 +31,6 @@ const EditProfile = () => {
   useAuth();
   console.log("[EditProfile] Página cargada y sesión validada.");
 
-  const router = useRouter();
   const [profile, setProfile] = useState<ProfileData>({
     name: "",
     lastname: "",

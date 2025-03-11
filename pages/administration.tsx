@@ -4,8 +4,7 @@ import { useAdministration } from "../src/hooks/useAdministration";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
-import Swal from "sweetalert2";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
 import Modal from "../src/components/common/Modal";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
@@ -19,15 +18,6 @@ interface MaterialAttributes {
   density: number;
 }
 
-interface Material {
-  id: number;
-  atributs: MaterialAttributes;
-  material_id?: number;
-  name?: string;
-  type?: string;
-  is_deleted?: boolean;
-  create_status?: string;
-}
 
 export interface Detail {
   id: number;
@@ -53,16 +43,6 @@ interface ElementAttributesWindow {
   clousure_type: string;
 }
 
-type ElementAttributes = ElementAttributesDoor | ElementAttributesWindow;
-
-interface Element {
-  id: number;
-  type: "door" | "window";
-  name_element: string;
-  u_marco: number;
-  fm: number;
-  atributs: ElementAttributes;
-}
 
 const AdministrationPage: React.FC = () => {
   useAuth();
@@ -138,7 +118,6 @@ const AdministrationPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.warning("Token no encontrado. Inicia sesión.", { toastId: "token-warning" });
-        handleLogout();
         return;
       }
       const payload = {
@@ -167,7 +146,6 @@ const AdministrationPage: React.FC = () => {
     } catch (error: unknown) {
       console.error("[handleCreateMaterial] Error:", error);
       toast.error("No se pudo crear el material", { toastId: "material-error" });
-      handleLogout();
     }
   };
 
@@ -187,7 +165,6 @@ const AdministrationPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.warning("Token no encontrado. Inicia sesión.", { toastId: "token-warning" });
-        handleLogout();
         return;
       }
 
@@ -217,7 +194,6 @@ const AdministrationPage: React.FC = () => {
     } catch (error: unknown) {
       console.error("[handleCreateDetail] Error:", error);
       toast.error("No se pudo crear el detalle", { toastId: "detail-error" });
-      handleLogout();
     }
   };
 
@@ -253,7 +229,6 @@ const AdministrationPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.warning("Token no encontrado. Inicia sesión.", { toastId: "token-warning" });
-        handleLogout();
         return;
       }
 
@@ -320,7 +295,6 @@ const AdministrationPage: React.FC = () => {
     } catch (error: unknown) {
       console.error("[handleCreateElement] Error:", error);
       toast.error("No se pudo crear el elemento", { toastId: "element-error" });
-      handleLogout();
     }
   };
 
@@ -329,6 +303,12 @@ const AdministrationPage: React.FC = () => {
     if (step === 4) fetchDetails();
     if (step === 5) fetchElements();
   }, [step, fetchMaterialsList, fetchDetails, fetchElements]);
+
+  const sidebarSteps = [
+    { stepNumber: 3, iconName: "assignment_ind", title: "Materiales"},
+    { stepNumber: 4, iconName: "build", title: "Detalles"},
+    { stepNumber: 5, iconName: "home", title: "Elementos"},
+  ];
 
   return (
     <>
@@ -341,7 +321,7 @@ const AdministrationPage: React.FC = () => {
       <Card className="bordered-main-card">
         <div>
           <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
-            <AdminSidebar currentStep={step} onStepChange={setStep} />
+            <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
 
             <div className="content-area" style={{ flex: 1 }}>
               {step === 3 && (

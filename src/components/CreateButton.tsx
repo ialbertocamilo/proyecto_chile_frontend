@@ -4,7 +4,6 @@ import {Tooltip} from 'react-tooltip';
 import CustomButton from './common/CustomButton';
 import { ArrowLeft, Save } from 'lucide-react';
 
-// You may need to adjust the CustomButton import path
 
 interface CreateButtonProps {
     backRoute: string;

@@ -120,8 +120,6 @@ const EditProfile = () => {
       const resData = await response.json();
       localStorage.setItem("userProfile", JSON.stringify(payload));
 
-      console.log("[EditProfile] Perfil actualizado correctamente:", resData);
-
       notify("Tu perfil se actualizó correctamente.");
     } catch (err: unknown) {
       console.error("[EditProfile] Error actualizando perfil:", err);

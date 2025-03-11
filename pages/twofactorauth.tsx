@@ -8,7 +8,7 @@ import Link from "next/link";
 import Head from "next/head";
 import { ReactElement } from "react";
 
-// Definición del tipo para páginas con layout propio
+// Definición del tipao para páginas con layout propio
 type NextPageWithLayout = {
   getLayout?: (page: ReactElement) => ReactElement;
 };

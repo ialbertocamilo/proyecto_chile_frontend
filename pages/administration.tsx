@@ -304,6 +304,12 @@ const AdministrationPage: React.FC = () => {
     if (step === 5) fetchElements();
   }, [step, fetchMaterialsList, fetchDetails, fetchElements]);
 
+  const sidebarSteps = [
+    { stepNumber: 3, iconName: "assignment_ind", title: "Materiales"},
+    { stepNumber: 4, iconName: "build", title: "Detalles"},
+    { stepNumber: 5, iconName: "home", title: "Elementos"},
+  ];
+
   return (
     <>
       {/* Título afuera del Card */}
@@ -315,7 +321,7 @@ const AdministrationPage: React.FC = () => {
       <Card className="bordered-main-card">
         <div>
           <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
-            <AdminSidebar currentStep={step} onStepChange={setStep} />
+            <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
 
             <div className="content-area" style={{ flex: 1 }}>
               {step === 3 && (

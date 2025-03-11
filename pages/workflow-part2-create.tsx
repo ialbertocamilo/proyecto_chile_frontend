@@ -14,7 +14,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
 // Importamos el componente SidebarItemComponent del directorio común
-import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 
 interface Detail {
   id_detail: number;
@@ -1441,6 +1441,18 @@ const saveDetails = async () => {
     );
   };
 
+  const sidebarSteps = [
+    {
+      stepNumber: 4,
+      iconName: "build",
+      title: "Detalles constructivos",
+    },
+    {
+      stepNumber: 7,
+      iconName: "design_services",
+      title: "Recinto",
+    },
+  ];
   return (
     <>
       <GooIcons />
@@ -1454,22 +1466,11 @@ const saveDetails = async () => {
                 className="mb-3 mb-lg-0"
               >
                 {/* Sidebar usando el componente común */}
-                <ul className="nav flex-column">
-                  <SidebarItemComponent
-                    stepNumber={4}
-                    iconName="build"
-                    title="Detalles constructivos"
-                    activeStep={step}
-                    onClickAction={() => setStep(4)}
-                  />
-                  <SidebarItemComponent
-                    stepNumber={7}
-                    iconName="design_services"
-                    title="Recinto"
-                    activeStep={step}
-                    onClickAction={() => setStep(7)}
-                  />
-                </ul>
+                <AdminSidebar
+                  activeStep={step}
+                  onStepChange={setStep}
+                  steps={sidebarSteps}
+                />
               </div>
             </div>
             <div className="col-lg-9 col-12 order-last">

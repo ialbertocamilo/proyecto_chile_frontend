@@ -11,6 +11,7 @@ import GooIcons from "../public/GoogleIcons";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title"; 
+import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
 
 interface Detail {
   id_detail: number;
@@ -81,50 +82,6 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-interface SidebarItemProps {
-  stepNumber: number;
-  iconName: string;
-  title: string;
-  activeStep?: number;
-  onClickAction?: () => void;
-}
-
-const SidebarItem: React.FC<SidebarItemProps> = ({
-  stepNumber,
-  iconName,
-  title,
-  activeStep,
-  onClickAction,
-}) => {
-  const primaryColor = "#3ca7b7";
-  const inactiveColor = "#ccc";
-  const currentStep = activeStep !== undefined ? activeStep : stepNumber;
-  return (
-    <li className="nav-item" style={{ cursor: "pointer" }} onClick={onClickAction}>
-      <div
-        style={{
-          width: "100%",
-          height: "100px",
-          border: `1px solid ${currentStep === stepNumber ? primaryColor : inactiveColor}`,
-          borderRadius: "8px",
-          marginBottom: "16px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          paddingLeft: "50px",
-          color: currentStep === stepNumber ? primaryColor : inactiveColor,
-          fontFamily: "var(--font-family-base)",
-          fontWeight: "normal",
-        }}
-      >
-        <span style={{ marginRight: "15px" }}>
-          <span className="material-icons">{iconName}</span>
-        </span>
-        <span style={{ fontWeight: "normal" }}>{title}</span>
-      </div>
-    </li>
-  );
-};
 
 const WorkFlowpar2viewPage: React.FC = () => {
   useAuth();
@@ -345,27 +302,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
         
     );
 
-  const SidebarItemComponent = ({
-    stepNumber,
-    iconName,
-    title,
-    onClickAction,
-  }: {
-    stepNumber: number;
-    iconName: string;
-    title: string;
-    onClickAction?: () => void;
-  }) => {
-    return (
-      <SidebarItem
-        stepNumber={stepNumber}
-        iconName={iconName}
-        title={title}
-        activeStep={step}
-        onClickAction={onClickAction}
-      />
-    );
-  };
 
   const stickyHeaderStyle1 = {
     position: "sticky" as const,
@@ -906,6 +842,30 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
+  const sidebarSteps = [
+    {
+      stepNumber: 1,
+      iconName: "assignment_ind",
+      title:
+        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+    },
+    {
+      stepNumber: 2,
+      iconName: "location_on",
+      title: "Ubicación del proyecto",
+    },
+    {
+      stepNumber: 4,
+      iconName: "build",
+      title: "Detalles constructivos",
+    },
+    {
+      stepNumber: 7,
+      iconName: "design_services",
+      title: "Recinto",
+    },
+  ];
+
   return (
     <>
       <GooIcons />
@@ -938,6 +898,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
                   <SidebarItemComponent
                     stepNumber={1}
                     iconName="assignment_ind"
+                    activeStep={step}
                     title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
                     onClickAction={() =>
                       router.push(`/workflow-part1-view?id=${projectId}&step=1`)
@@ -946,6 +907,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
                   <SidebarItemComponent
                     stepNumber={2}
                     iconName="location_on"
+                    activeStep={step}
                     title="Ubicación del proyecto"
                     onClickAction={() =>
                       router.push(`/workflow-part1-view?id=${projectId}&step=2`)
@@ -954,6 +916,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
                   <SidebarItemComponent
                     stepNumber={4}
                     iconName="build"
+                    activeStep={step}
                     title="Detalles constructivos"
                     onClickAction={() =>
                       router.push(`/workflow-part2-view?id=${projectId}&step=4`)
@@ -962,6 +925,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
                   <SidebarItemComponent
                     stepNumber={7}
                     iconName="design_services"
+                    activeStep={step}
                     title="Recinto"
                     onClickAction={() =>
                       router.push(`/workflow-part2-view?id=${projectId}&step=7`)

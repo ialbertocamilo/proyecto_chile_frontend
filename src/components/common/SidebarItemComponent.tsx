@@ -64,7 +64,10 @@ const SidebarItemComponent: React.FC<SidebarItemComponentProps> = ({
             fontWeight: "normal",
           }}
         >
-          <span className="icon-wrapper" style={{ marginRight: "15px", fontSize: "2rem" }}>
+          <span
+            className="icon-wrapper"
+            style={{ marginRight: "15px", fontSize: "2rem" }}
+          >
             <span className="material-icons">{iconName}</span>
           </span>
           <span className="title-wrapper">{title}</span>
@@ -112,17 +115,13 @@ const SidebarItemComponent: React.FC<SidebarItemComponentProps> = ({
         }
 
         /* -- Cuando está activo, le damos el borde circular al ícono -- */
+        /* -- Cuando está activo, le damos el borde circular y fondo relleno al ícono -- */
         .sidebar-item-content.active .icon-wrapper {
-          /* Borde circular vacío */
           border: 2px solid ${primaryColor};
           border-radius: 50%;
-          /* Ajusta el padding para que se vea bien el círculo alrededor del ícono */
           padding: 5px;
-          /* Si prefieres que el ícono sea blanco con círculo relleno, 
-             usa background: ${primaryColor} y color: #fff. 
-             En este caso, lo mantenemos "vacío" y el ícono es del color primario. */
-          background: none;
-          color: ${primaryColor};
+          background: ${primaryColor}; /* Fondo relleno del color primario */
+          color: #fff; /* Ícono en color blanco */
         }
 
         .icon-wrapper {

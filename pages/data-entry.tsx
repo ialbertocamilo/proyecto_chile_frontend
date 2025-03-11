@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import { ToastContainer, toast } from "react-toastify";
 import Title from "../src/components/Title";
 import "react-toastify/dist/ReactToastify.css";
-import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
   name: string;
@@ -46,10 +46,11 @@ export interface ElementBase {
 // Función para obtener el valor de una variable CSS con un valor por defecto
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
-  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(varName)
+    .trim();
   return value || fallback;
 }
-
 
 // Helper para validar porcentajes
 const validatePercentage = (value: number) => {
@@ -66,7 +67,11 @@ interface LabelWithAsteriskProps {
   required?: boolean;
 }
 
-const LabelWithAsterisk: React.FC<LabelWithAsteriskProps> = ({ label, value, required = true }) => {
+const LabelWithAsterisk: React.FC<LabelWithAsteriskProps> = ({
+  label,
+  value,
+  required = true,
+}) => {
   const isEmpty =
     value === undefined ||
     value === null ||
@@ -199,7 +204,10 @@ const DataEntryPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
       const url = `${constantUrlApiEndpoint}/elements/?type=${type}`;
-      const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        accept: "application/json",
+      };
       const response = await axios.get(url, { headers });
       setElementsList(response.data);
     } catch (error) {
@@ -215,7 +223,10 @@ const DataEntryPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
       const url = `${constantUrlApiEndpoint}/elements/?type=window`;
-      const headers = { Authorization: `Bearer ${token}`, accept: "application/json" };
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        accept: "application/json",
+      };
       const response = await axios.get(url, { headers });
       setAllWindowsForDoor(response.data);
     } catch (error) {
@@ -233,7 +244,9 @@ const DataEntryPage: React.FC = () => {
       !newMaterialData.density ||
       parseFloat(newMaterialData.density) <= 0
     ) {
-      console.error("Complete todos los campos correctamente para crear el material");
+      console.error(
+        "Complete todos los campos correctamente para crear el material"
+      );
       return false;
     }
     try {
@@ -265,13 +278,22 @@ const DataEntryPage: React.FC = () => {
           pauseOnHover: false,
           pauseOnFocusLoss: false,
         });
-        setNewMaterialData({ name: "", conductivity: "", specific_heat: "", density: "" });
+        setNewMaterialData({
+          name: "",
+          conductivity: "",
+          specific_heat: "",
+          density: "",
+        });
         return true;
       }
       return false;
     } catch (error) {
       toast.dismiss("material-error");
-      if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response &&
+        error.response.status === 400
+      ) {
         toast.warn("El material ya existe", {
           toastId: "material-error",
           autoClose: 2000,
@@ -306,7 +328,9 @@ const DataEntryPage: React.FC = () => {
       windowData.clousure_type.trim() === "" ||
       windowData.frame_type.trim() === ""
     ) {
-      console.error("Complete todos los campos correctamente para crear la ventana");
+      console.error(
+        "Complete todos los campos correctamente para crear la ventana"
+      );
       return false;
     }
     try {
@@ -324,13 +348,17 @@ const DataEntryPage: React.FC = () => {
         u_marco: parseFloat(windowData.u_marco),
         fm: parseFloat(windowData.fm) / 100,
       };
-      const response = await axios.post(`${constantUrlApiEndpoint}/elements/create`, body, {
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        `${constantUrlApiEndpoint}/elements/create`,
+        body,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setElementsList((prev) => [...prev, response.data.element]);
       setAllWindowsForDoor((prev) => [...prev, response.data.element]);
       toast.dismiss("window-success");
@@ -352,7 +380,11 @@ const DataEntryPage: React.FC = () => {
       return true;
     } catch (error) {
       toast.dismiss("window-error");
-      if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response &&
+        error.response.status === 400
+      ) {
         toast.warn("La ventana ya existe", {
           toastId: "window-error",
           autoClose: 2000,
@@ -383,7 +415,9 @@ const DataEntryPage: React.FC = () => {
       parseFloat(doorData.fm) < 0 ||
       parseFloat(doorData.fm) > 100
     ) {
-      console.error("Complete todos los campos correctamente para crear la puerta");
+      console.error(
+        "Complete todos los campos correctamente para crear la puerta"
+      );
       return false;
     }
     try {
@@ -396,18 +430,24 @@ const DataEntryPage: React.FC = () => {
           ventana_id: doorData.ventana_id ? parseInt(doorData.ventana_id) : 0,
           name_ventana: doorData.ventana_id ? doorData.name_ventana : "",
           u_puerta_opaca: parseFloat(doorData.u_puerta_opaca),
-          porcentaje_vidrio: doorData.ventana_id ? parseFloat(doorData.porcentaje_vidrio) : 0,
+          porcentaje_vidrio: doorData.ventana_id
+            ? parseFloat(doorData.porcentaje_vidrio)
+            : 0,
         },
         u_marco: parseFloat(doorData.u_marco),
         fm: parseFloat(doorData.fm) / 100,
       };
-      const response = await axios.post(`${constantUrlApiEndpoint}/elements/create`, body, {
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        `${constantUrlApiEndpoint}/elements/create`,
+        body,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setElementsList((prev) => [...prev, response.data.element]);
       toast.dismiss("door-success");
       toast.success("Puerta creada exitosamente", {
@@ -428,7 +468,11 @@ const DataEntryPage: React.FC = () => {
       return true;
     } catch (error) {
       toast.dismiss("door-error");
-      if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response &&
+        error.response.status === 400
+      ) {
         toast.warn("La puerta ya existe", {
           toastId: "door-error",
           autoClose: 2000,
@@ -466,10 +510,7 @@ const DataEntryPage: React.FC = () => {
     }
   }, [step, modalElementType, fetchAllWindowsForDoor]);
 
-  
-
-  const renderMainHeader = () =>
-    step >= 3 && <Title text="Datos de entrada" />;
+  const renderMainHeader = () => step >= 3 && <Title text="Datos de entrada" />;
 
   const materialIsValid =
     newMaterialData.name.trim() !== "" &&
@@ -509,6 +550,24 @@ const DataEntryPage: React.FC = () => {
         parseFloat(doorData.porcentaje_vidrio) >= 0 &&
         parseFloat(doorData.porcentaje_vidrio) <= 100));
 
+  const sidebarSteps = [
+    {
+      stepNumber: 3,
+      iconName: "imagesearch_roller",
+      title: "Lista de materiales",
+    },
+    {
+      stepNumber: 5,
+      iconName: "home",
+      title: "Elementos translúcidos",
+    },
+    {
+      stepNumber: 6,
+      iconName: "deck",
+      title: "Perfil de uso",
+    },
+  ];
+
   return (
     <>
       <GooIcons />
@@ -520,14 +579,7 @@ const DataEntryPage: React.FC = () => {
             <div className="d-flex d-flex-responsive">
               {/* Sidebar interno */}
               <div className="internal-sidebar">
-                <ul className="nav flex-column">
-                  <SidebarItemComponent stepNumber={3} iconName="imagesearch_roller" title="Lista de materiales" activeStep={step}
-                    onClickAction={() => setStep(3)}/>
-                  <SidebarItemComponent stepNumber={5} iconName="home" title="Elementos translúcidos" activeStep={step}
-                    onClickAction={() => setStep(5)}/>
-                  <SidebarItemComponent stepNumber={6} iconName="deck" title="Perfil de uso" activeStep={step}
-                    onClickAction={() => setStep(6)}/>
-                </ul>
+                <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
               </div>
               {/* Área de contenido */}
               <div className="content-area">
@@ -553,23 +605,47 @@ const DataEntryPage: React.FC = () => {
                       </CustomButton>
                     </div>
                     {/* Tabla de materiales */}
-                    <div style={{ marginTop: "10px", display: "flex", justifyContent: "center" }}>
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        display: "flex",
+                        justifyContent: "center",
+                      }}
+                    >
                       <div style={{ width: "90%" }}>
-                        <div style={{ border: "1px solid #e0e0e0", borderRadius: "8px", overflow: "hidden" }}>
-                          <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+                        <div
+                          style={{
+                            border: "1px solid #e0e0e0",
+                            borderRadius: "8px",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{ maxHeight: "500px", overflowY: "auto" }}
+                          >
                             <table className="table table-striped">
                               <thead>
                                 <tr>
-                                  <th style={{ textAlign: "center" }}>Nombre Material</th>
-                                  <th style={{ textAlign: "center" }}>Conductividad (W/m2K)</th>
-                                  <th style={{ textAlign: "center" }}>Calor específico (J/kgK)</th>
-                                  <th style={{ textAlign: "center" }}>Densidad (kg/m3)</th>
+                                  <th style={{ textAlign: "center" }}>
+                                    Nombre Material
+                                  </th>
+                                  <th style={{ textAlign: "center" }}>
+                                    Conductividad (W/m2K)
+                                  </th>
+                                  <th style={{ textAlign: "center" }}>
+                                    Calor específico (J/kgK)
+                                  </th>
+                                  <th style={{ textAlign: "center" }}>
+                                    Densidad (kg/m3)
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {materialsList
                                   .filter((mat) =>
-                                    mat.atributs.name.toLowerCase().includes(materialSearch.toLowerCase())
+                                    mat.atributs.name
+                                      .toLowerCase()
+                                      .includes(materialSearch.toLowerCase())
                                   )
                                   .map((mat, idx) => (
                                     <tr key={idx}>
@@ -610,10 +686,25 @@ const DataEntryPage: React.FC = () => {
                       </CustomButton>
                     </div>
                     {/* Tabla de elementos */}
-                    <div style={{ marginTop: "10px", display: "flex", justifyContent: "center" }}>
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        display: "flex",
+                        justifyContent: "center",
+                      }}
+                    >
                       <div style={{ width: "100%" }}>
-                        <div style={{ border: "1px solid #e0e0e0", borderRadius: "8px", overflow: "hidden" }}>
-                          <div className="d-flex justify-content-start align-items-center mb-2" style={{ padding: "10px" }}>
+                        <div
+                          style={{
+                            border: "1px solid #e0e0e0",
+                            borderRadius: "8px",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            className="d-flex justify-content-start align-items-center mb-2"
+                            style={{ padding: "10px" }}
+                          >
                             {["Ventanas", "Puertas"].map((tab) => (
                               <button
                                 key={tab}
@@ -621,45 +712,83 @@ const DataEntryPage: React.FC = () => {
                                   flex: 1,
                                   padding: "10px",
                                   backgroundColor: "#fff",
-                                  color: modalElementType === tab.toLowerCase() ? primaryColor : "var(--secondary-color)",
+                                  color:
+                                    modalElementType === tab.toLowerCase()
+                                      ? primaryColor
+                                      : "var(--secondary-color)",
                                   border: "none",
                                   cursor: "pointer",
-                                  borderBottom: modalElementType === tab.toLowerCase() ? "3px solid " + primaryColor : "none",
+                                  borderBottom:
+                                    modalElementType === tab.toLowerCase()
+                                      ? "3px solid " + primaryColor
+                                      : "none",
                                 }}
-                                onClick={() => setModalElementType(tab.toLowerCase())}
+                                onClick={() =>
+                                  setModalElementType(tab.toLowerCase())
+                                }
                               >
                                 {tab}
                               </button>
                             ))}
                           </div>
-                          <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+                          <div
+                            style={{ maxHeight: "500px", overflowY: "auto" }}
+                          >
                             <table className="table table-striped">
                               <thead>
                                 {modalElementType === "ventanas" ? (
                                   <tr>
-                                    <th style={{ textAlign: "center" }}>Nombre Elemento</th>
-                                    <th style={{ textAlign: "center" }}>U Vidrio [W/m2K]</th>
-                                    <th style={{ textAlign: "center" }}>FS Vidrio</th>
-                                    <th style={{ textAlign: "center" }}>Tipo Cierre</th>
-                                    <th style={{ textAlign: "center" }}>Tipo Marco</th>
-                                    <th style={{ textAlign: "center" }}>U Marco [W/m2K]</th>
-                                    <th style={{ textAlign: "center" }}>FM [%]</th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Nombre Elemento
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      U Vidrio [W/m2K]
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      FS Vidrio
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Tipo Cierre
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Tipo Marco
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      U Marco [W/m2K]
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      FM [%]
+                                    </th>
                                   </tr>
                                 ) : (
                                   <tr>
-                                    <th style={{ textAlign: "center" }}>Nombre Elemento</th>
-                                    <th style={{ textAlign: "center" }}>U Puerta opaca [W/m2K]</th>
-                                    <th style={{ textAlign: "center" }}>Nombre Ventana</th>
-                                    <th style={{ textAlign: "center" }}>% Vidrio</th>
-                                    <th style={{ textAlign: "center" }}>U Marco [W/m2K]</th>
-                                    <th style={{ textAlign: "center" }}>FM [%]</th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Nombre Elemento
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      U Puerta opaca [W/m2K]
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Nombre Ventana
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      % Vidrio
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      U Marco [W/m2K]
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      FM [%]
+                                    </th>
                                   </tr>
                                 )}
                               </thead>
                               <tbody>
                                 {elementsList
                                   .filter((el) =>
-                                    el.name_element.toLowerCase().includes(elementSearch.toLowerCase())
+                                    el.name_element
+                                      .toLowerCase()
+                                      .includes(elementSearch.toLowerCase())
                                   )
                                   .map((el, idx) =>
                                     modalElementType === "ventanas" ? (
@@ -678,8 +807,13 @@ const DataEntryPage: React.FC = () => {
                                         <td>{el.atributs.u_puerta_opaca}</td>
                                         <td>{el.atributs.name_ventana}</td>
                                         <td>
-                                          {el.atributs.porcentaje_vidrio !== undefined
-                                            ? ((el.atributs.porcentaje_vidrio as number) * 100).toFixed(0) + "%"
+                                          {el.atributs.porcentaje_vidrio !==
+                                          undefined
+                                            ? (
+                                                (el.atributs
+                                                  .porcentaje_vidrio as number) *
+                                                100
+                                              ).toFixed(0) + "%"
                                             : "0%"}
                                         </td>
                                         <td>{el.u_marco}</td>
@@ -701,7 +835,10 @@ const DataEntryPage: React.FC = () => {
                     <h5 className="mb-3" style={{ fontWeight: "normal" }}>
                       Perfil de uso (Espacio en desarrollo)
                     </h5>
-                    <ul className="nav mb-3" style={{ display: "flex", listStyle: "none", padding: 0 }}>
+                    <ul
+                      className="nav mb-3"
+                      style={{ display: "flex", listStyle: "none", padding: 0 }}
+                    >
                       {[
                         { key: "ventilacion", label: "Ventilación y caudales" },
                         { key: "iluminacion", label: "Iluminación" },
@@ -714,10 +851,16 @@ const DataEntryPage: React.FC = () => {
                               width: "100%",
                               padding: "10px",
                               backgroundColor: "#fff",
-                              color: tabTipologiaRecinto === tab.key ? primaryColor : "var(--secondary-color)",
+                              color:
+                                tabTipologiaRecinto === tab.key
+                                  ? primaryColor
+                                  : "var(--secondary-color)",
                               border: "none",
                               cursor: "pointer",
-                              borderBottom: tabTipologiaRecinto === tab.key ? "3px solid " + primaryColor : "none",
+                              borderBottom:
+                                tabTipologiaRecinto === tab.key
+                                  ? "3px solid " + primaryColor
+                                  : "none",
                             }}
                             onClick={() => setTabTipologiaRecinto(tab.key)}
                           >
@@ -741,23 +884,39 @@ const DataEntryPage: React.FC = () => {
             isOpen={showMaterialModal}
             onClose={() => {
               setShowMaterialModal(false);
-              setNewMaterialData({ name: "", conductivity: "", specific_heat: "", density: "" });
+              setNewMaterialData({
+                name: "",
+                conductivity: "",
+                specific_heat: "",
+                density: "",
+              });
             }}
             title="Nuevo Material"
           >
             <div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk label="Nombre" value={newMaterialData.name} />
+                <LabelWithAsterisk
+                  label="Nombre"
+                  value={newMaterialData.name}
+                />
                 <input
                   type="text"
                   className="form-control"
                   placeholder="Nombre"
                   value={newMaterialData.name}
-                  onChange={(e) => setNewMaterialData((prev) => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setNewMaterialData((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk label="Conductividad (W/m2K)" value={newMaterialData.conductivity} />
+                <LabelWithAsterisk
+                  label="Conductividad (W/m2K)"
+                  value={newMaterialData.conductivity}
+                />
                 <input
                   type="number"
                   min="0"
@@ -765,13 +924,19 @@ const DataEntryPage: React.FC = () => {
                   placeholder="Conductividad"
                   value={newMaterialData.conductivity}
                   onChange={(e) =>
-                    setNewMaterialData((prev) => ({ ...prev, conductivity: e.target.value }))
+                    setNewMaterialData((prev) => ({
+                      ...prev,
+                      conductivity: e.target.value,
+                    }))
                   }
                   onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk label="Calor específico (J/kgK)" value={newMaterialData.specific_heat} />
+                <LabelWithAsterisk
+                  label="Calor específico (J/kgK)"
+                  value={newMaterialData.specific_heat}
+                />
                 <input
                   type="number"
                   min="0"
@@ -779,13 +944,19 @@ const DataEntryPage: React.FC = () => {
                   placeholder="Calor específico"
                   value={newMaterialData.specific_heat}
                   onChange={(e) =>
-                    setNewMaterialData((prev) => ({ ...prev, specific_heat: e.target.value }))
+                    setNewMaterialData((prev) => ({
+                      ...prev,
+                      specific_heat: e.target.value,
+                    }))
                   }
                   onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk label="Densidad (kg/m3)" value={newMaterialData.density} />
+                <LabelWithAsterisk
+                  label="Densidad (kg/m3)"
+                  value={newMaterialData.density}
+                />
                 <input
                   type="number"
                   min="0"
@@ -793,7 +964,10 @@ const DataEntryPage: React.FC = () => {
                   placeholder="Densidad"
                   value={newMaterialData.density}
                   onChange={(e) =>
-                    setNewMaterialData((prev) => ({ ...prev, density: e.target.value }))
+                    setNewMaterialData((prev) => ({
+                      ...prev,
+                      density: e.target.value,
+                    }))
                   }
                   onKeyDown={handleNumberKeyDown}
                 />
@@ -801,7 +975,8 @@ const DataEntryPage: React.FC = () => {
               {!materialIsValid && (
                 <div className="mb-3">
                   <p>
-                    (<span style={{ color: "red" }}>*</span>) Campos obligatorios
+                    (<span style={{ color: "red" }}>*</span>) Campos
+                    obligatorios
                   </p>
                 </div>
               )}
@@ -810,7 +985,12 @@ const DataEntryPage: React.FC = () => {
                   variant="save"
                   onClick={() => {
                     setShowMaterialModal(false);
-                    setNewMaterialData({ name: "", conductivity: "", specific_heat: "", density: "" });
+                    setNewMaterialData({
+                      name: "",
+                      conductivity: "",
+                      specific_heat: "",
+                      density: "",
+                    });
                   }}
                   style={{ marginRight: "10px" }}
                 >
@@ -860,22 +1040,35 @@ const DataEntryPage: React.FC = () => {
                 });
               }
             }}
-            title={modalElementType === "ventanas" ? "Nueva Ventana" : "Nueva Puerta"}
+            title={
+              modalElementType === "ventanas" ? "Nueva Ventana" : "Nueva Puerta"
+            }
           >
             {modalElementType === "ventanas" ? (
               <div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="Nombre" value={windowData.name_element} />
+                  <LabelWithAsterisk
+                    label="Nombre"
+                    value={windowData.name_element}
+                  />
                   <input
                     type="text"
                     className="form-control"
                     placeholder="Nombre"
                     value={windowData.name_element}
-                    onChange={(e) => setWindowData((prev) => ({ ...prev, name_element: e.target.value }))}
+                    onChange={(e) =>
+                      setWindowData((prev) => ({
+                        ...prev,
+                        name_element: e.target.value,
+                      }))
+                    }
                   />
                 </div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="U Vidrio [W/m2K]" value={windowData.u_vidrio} />
+                  <LabelWithAsterisk
+                    label="U Vidrio [W/m2K]"
+                    value={windowData.u_vidrio}
+                  />
                   <input
                     type="number"
                     min="0"
@@ -883,13 +1076,19 @@ const DataEntryPage: React.FC = () => {
                     placeholder="U Vidrio"
                     value={windowData.u_vidrio}
                     onChange={(e) =>
-                      setWindowData((prev) => ({ ...prev, u_vidrio: e.target.value }))
+                      setWindowData((prev) => ({
+                        ...prev,
+                        u_vidrio: e.target.value,
+                      }))
                     }
                     onKeyDown={handleNumberKeyDown}
                   />
                 </div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="FS Vidrio" value={windowData.fs_vidrio} />
+                  <LabelWithAsterisk
+                    label="FS Vidrio"
+                    value={windowData.fs_vidrio}
+                  />
                   <input
                     type="number"
                     min="0"
@@ -897,17 +1096,28 @@ const DataEntryPage: React.FC = () => {
                     placeholder="FS Vidrio"
                     value={windowData.fs_vidrio}
                     onChange={(e) =>
-                      setWindowData((prev) => ({ ...prev, fs_vidrio: e.target.value }))
+                      setWindowData((prev) => ({
+                        ...prev,
+                        fs_vidrio: e.target.value,
+                      }))
                     }
                     onKeyDown={handleNumberKeyDown}
                   />
                 </div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="Tipo Cierre" value={windowData.clousure_type} />
+                  <LabelWithAsterisk
+                    label="Tipo Cierre"
+                    value={windowData.clousure_type}
+                  />
                   <select
                     className="form-control"
                     value={windowData.clousure_type}
-                    onChange={(e) => setWindowData((prev) => ({ ...prev, clousure_type: e.target.value }))}
+                    onChange={(e) =>
+                      setWindowData((prev) => ({
+                        ...prev,
+                        clousure_type: e.target.value,
+                      }))
+                    }
                   >
                     <option value="Abatir">Abatir</option>
                     <option value="Corredera">Corredera</option>
@@ -917,11 +1127,19 @@ const DataEntryPage: React.FC = () => {
                   </select>
                 </div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="Tipo Marco" value={windowData.frame_type} />
+                  <LabelWithAsterisk
+                    label="Tipo Marco"
+                    value={windowData.frame_type}
+                  />
                   <select
                     className="form-control"
                     value={windowData.frame_type}
-                    onChange={(e) => setWindowData((prev) => ({ ...prev, frame_type: e.target.value }))}
+                    onChange={(e) =>
+                      setWindowData((prev) => ({
+                        ...prev,
+                        frame_type: e.target.value,
+                      }))
+                    }
                   >
                     <option value="">Seleccione</option>
                     <option value="Fierro">Fierro</option>
@@ -934,14 +1152,22 @@ const DataEntryPage: React.FC = () => {
                   </select>
                 </div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="U Marco [W/m2K]" value={windowData.u_marco} />
+                  <LabelWithAsterisk
+                    label="U Marco [W/m2K]"
+                    value={windowData.u_marco}
+                  />
                   <input
                     type="number"
                     min="0"
                     className="form-control"
                     placeholder="U Marco"
                     value={windowData.u_marco}
-                    onChange={(e) => setWindowData((prev) => ({ ...prev, u_marco: e.target.value }))}
+                    onChange={(e) =>
+                      setWindowData((prev) => ({
+                        ...prev,
+                        u_marco: e.target.value,
+                      }))
+                    }
                     onKeyDown={handleNumberKeyDown}
                   />
                 </div>
@@ -960,7 +1186,10 @@ const DataEntryPage: React.FC = () => {
                         setWindowData((prev) => ({ ...prev, fm: "" }));
                       } else {
                         const validated = validatePercentage(value);
-                        setWindowData((prev) => ({ ...prev, fm: validated.toString() }));
+                        setWindowData((prev) => ({
+                          ...prev,
+                          fm: validated.toString(),
+                        }));
                       }
                     }}
                     onKeyDown={handleNumberKeyDown}
@@ -969,7 +1198,8 @@ const DataEntryPage: React.FC = () => {
                 {!windowIsValid && (
                   <div className="mb-3">
                     <p>
-                      (<span style={{ color: "red" }}>*</span>) Campos obligatorios
+                      (<span style={{ color: "red" }}>*</span>) Campos
+                      obligatorios
                     </p>
                   </div>
                 )}
@@ -1007,29 +1237,49 @@ const DataEntryPage: React.FC = () => {
             ) : (
               <div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="Nombre" value={doorData.name_element} />
+                  <LabelWithAsterisk
+                    label="Nombre"
+                    value={doorData.name_element}
+                  />
                   <input
                     type="text"
                     className="form-control"
                     placeholder="Nombre"
                     value={doorData.name_element}
-                    onChange={(e) => setDoorData((prev) => ({ ...prev, name_element: e.target.value }))}
+                    onChange={(e) =>
+                      setDoorData((prev) => ({
+                        ...prev,
+                        name_element: e.target.value,
+                      }))
+                    }
                   />
                 </div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="U Puerta opaca [W/m2K]" value={doorData.u_puerta_opaca} />
+                  <LabelWithAsterisk
+                    label="U Puerta opaca [W/m2K]"
+                    value={doorData.u_puerta_opaca}
+                  />
                   <input
                     type="number"
                     min="0"
                     className="form-control"
                     placeholder="U Puerta opaca"
                     value={doorData.u_puerta_opaca}
-                    onChange={(e) => setDoorData((prev) => ({ ...prev, u_puerta_opaca: e.target.value }))}
+                    onChange={(e) =>
+                      setDoorData((prev) => ({
+                        ...prev,
+                        u_puerta_opaca: e.target.value,
+                      }))
+                    }
                     onKeyDown={handleNumberKeyDown}
                   />
                 </div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="Ventana Asociada" value={doorData.ventana_id} required={false} />
+                  <LabelWithAsterisk
+                    label="Ventana Asociada"
+                    value={doorData.ventana_id}
+                    required={false}
+                  />
                   <select
                     className="form-control"
                     value={doorData.ventana_id}
@@ -1039,7 +1289,9 @@ const DataEntryPage: React.FC = () => {
                         ...prev,
                         ventana_id: winId,
                         name_ventana:
-                          allWindowsForDoor.find((win) => win.id === parseInt(winId))?.name_element || "",
+                          allWindowsForDoor.find(
+                            (win) => win.id === parseInt(winId)
+                          )?.name_element || "",
                       }));
                     }}
                   >
@@ -1052,21 +1304,33 @@ const DataEntryPage: React.FC = () => {
                   </select>
                 </div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="% Vidrio" value={doorData.porcentaje_vidrio} required={false} />
+                  <LabelWithAsterisk
+                    label="% Vidrio"
+                    value={doorData.porcentaje_vidrio}
+                    required={false}
+                  />
                   <input
                     type="number"
                     min="0"
                     max="100"
                     className="form-control"
                     placeholder="% Vidrio"
-                    value={doorData.ventana_id ? doorData.porcentaje_vidrio : ""}
+                    value={
+                      doorData.ventana_id ? doorData.porcentaje_vidrio : ""
+                    }
                     onChange={(e) => {
                       const value = parseFloat(e.target.value);
                       if (isNaN(value)) {
-                        setDoorData((prev) => ({ ...prev, porcentaje_vidrio: "" }));
+                        setDoorData((prev) => ({
+                          ...prev,
+                          porcentaje_vidrio: "",
+                        }));
                       } else {
                         const validated = validatePercentage(value);
-                        setDoorData((prev) => ({ ...prev, porcentaje_vidrio: validated.toString() }));
+                        setDoorData((prev) => ({
+                          ...prev,
+                          porcentaje_vidrio: validated.toString(),
+                        }));
                       }
                     }}
                     onKeyDown={handleNumberKeyDown}
@@ -1074,14 +1338,22 @@ const DataEntryPage: React.FC = () => {
                   />
                 </div>
                 <div className="form-group mb-3">
-                  <LabelWithAsterisk label="U Marco [W/m2K]" value={doorData.u_marco} />
+                  <LabelWithAsterisk
+                    label="U Marco [W/m2K]"
+                    value={doorData.u_marco}
+                  />
                   <input
                     type="number"
                     min="0"
                     className="form-control"
                     placeholder="U Marco"
                     value={doorData.u_marco}
-                    onChange={(e) => setDoorData((prev) => ({ ...prev, u_marco: e.target.value }))}
+                    onChange={(e) =>
+                      setDoorData((prev) => ({
+                        ...prev,
+                        u_marco: e.target.value,
+                      }))
+                    }
                     onKeyDown={handleNumberKeyDown}
                   />
                 </div>
@@ -1100,7 +1372,10 @@ const DataEntryPage: React.FC = () => {
                         setDoorData((prev) => ({ ...prev, fm: "" }));
                       } else {
                         const validated = validatePercentage(value);
-                        setDoorData((prev) => ({ ...prev, fm: validated.toString() }));
+                        setDoorData((prev) => ({
+                          ...prev,
+                          fm: validated.toString(),
+                        }));
                       }
                     }}
                     onKeyDown={handleNumberKeyDown}
@@ -1109,7 +1384,8 @@ const DataEntryPage: React.FC = () => {
                 {!doorIsValid && (
                   <div className="mb-3">
                     <p>
-                      (<span style={{ color: "red" }}>*</span>) Campos obligatorios
+                      (<span style={{ color: "red" }}>*</span>) Campos
+                      obligatorios
                     </p>
                   </div>
                 )}
@@ -1156,7 +1432,6 @@ const DataEntryPage: React.FC = () => {
         />
       </div>
       <style jsx>{`
-
         .content-area {
           flex: 1;
           padding: 20px;
@@ -1171,7 +1446,7 @@ const DataEntryPage: React.FC = () => {
             margin-left: 50px;
             margin-right: 20px;
           }
-      
+
           .content-area {
             padding: 10px;
           }

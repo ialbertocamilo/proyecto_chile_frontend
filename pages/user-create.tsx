@@ -1,13 +1,9 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import Button from "../src/components/common/Button";
-import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 import Card from "@/components/common/Card";
 import Title from "@/components/Title";
-import CustomButton from "@/components/common/CustomButton";
-import { ArrowLeft, Backpack, Plus, Save } from "lucide-react";
 import CreateButton from "@/components/CreateButton";
 
 interface UserFormData {

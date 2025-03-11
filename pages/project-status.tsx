@@ -1,12 +1,12 @@
 import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import "../public/assets/css/globals.css";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import DataTable from "../src/components/DataTable"; // Ajusta la ruta según corresponda
+import { ViewIcon } from "lucide-react";
 
 interface Divisions {
   department?: string;
@@ -79,15 +79,6 @@ const ProjectListStatusEditPage = () => {
       setLoading(false);
     }
   };
-
-  // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const query = e.target.value.toLowerCase();
-  //   // Filtrar proyectos utilizando todos sus valores
-  //   const filtered = projects.filter((project: Project) =>
-  //     Object.values(project).join(" ").toLowerCase().includes(query)
-  //   );
-  //   setFilteredProjects(filtered);
-  // };
 
   const handleViewProject = (project_view: Project) => {
     localStorage.setItem("project_id_view", project_view.id.toString());

@@ -5,7 +5,6 @@ import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
 
 interface CustomizationData {
@@ -44,17 +43,6 @@ const SettingsPage = () => {
   const [sidebarWidth, ] = useState("300px");
 
 
-  const updateCSSVariables = () => {
-    document.documentElement.style.setProperty("--primary-color", customization.primary_color);
-    document.documentElement.style.setProperty("--secondary-color", customization.secondary_color);
-    document.documentElement.style.setProperty("--background-color", customization.background_color);
-    document.documentElement.style.setProperty("--btn-save-bg", customization.btn_save_bg);
-    document.documentElement.style.setProperty("--btn-save-hover-bg", customization.btn_save_hover_bg);
-    document.documentElement.style.setProperty("--btn-back-bg", customization.btn_back_bg);
-    document.documentElement.style.setProperty("--btn-back-hover-bg", customization.btn_back_hover_bg);
-    document.documentElement.style.setProperty("--btn-delete-bg", customization.btn_delete_bg);
-    document.documentElement.style.setProperty("--btn-delete-hover-bg", customization.btn_delete_hover_bg);
-  };
 
   useEffect(() => {
     const fetchCustomization = async () => {
@@ -237,7 +225,6 @@ const SettingsPage = () => {
       const resData = await response.json();
       console.log("[handleSubmit] Configuración actualizada:", resData);
 
-      updateCSSVariables();
 
       await Swal.fire({
         title: "Configuración actualizada",

@@ -22,15 +22,13 @@ import 'public/assets/css/vendors/owlcarousel.css';
 import 'public/assets/css/vendors/scrollbar.css';
 import 'public/assets/css/vendors/sweetalert2.css';
 import 'public/assets/css/vendors/themify.css';
-import 'public/assets/js/jquery.min.js';
+// jQuery import moved to clientSideImports utility
 import type { ReactElement } from 'react';
 import { useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "public/assets/css/globals.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import 'public/assets/css/globals.css';
 import 'public/assets/css/font-awesome.css';
 import 'public/assets/css/vendors/icofont.css';
 import 'public/assets/css/vendors/themify.css';
@@ -56,7 +54,6 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const showNav = !hideNavRoutes.includes(router.pathname);
   const sidebarWidth = "300px";
 
-  // Use the layout defined at the page level, if available
   const getLayout = Component.getLayout ?? ((page) => {
     return (
       <>
@@ -98,19 +95,12 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const loadApexCharts = async () => {
-        try {
-          await import('public/assets/js/jquery.min.js')
-          await import('public/assets/js/bootstrap/bootstrap.bundle.min.js')
-          await import('apexcharts');
-          await import('public/assets/js/chart/apex-chart/apex-chart.js');
-        } catch (error) {
-          console.error('Error loading ApexCharts:', error);
-        }
-      };
-      loadApexCharts();
-    }
+    const loadClientSideLibraries = async () => {
+      const { loadJQuery } = await import('@/utils/clientSideImports');
+      await loadJQuery();
+    };
+    
+    loadClientSideLibraries();
   }, []);
 
   return getLayout(<Component {...pageProps} />);

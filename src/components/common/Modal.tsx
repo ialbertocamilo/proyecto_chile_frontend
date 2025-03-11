@@ -1,4 +1,5 @@
-import React from 'react';
+import useIsClient from '@/utils/useIsClient';
+import React, { useState, useEffect } from 'react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -20,13 +21,19 @@ const Modal: React.FC<ModalProps> = ({
   modalStyle,
   overlayStyle,
 }) => {
-  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
+  const isClient = useIsClient();
+  const [windowWidth, setWindowWidth] = useState(isClient ? window.innerWidth : 0);
 
-  React.useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
+  useEffect(() => {
+    if (!isClient) return;
+
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isClient]);
 
   if (!isOpen) return null;
 
@@ -56,7 +63,7 @@ const Modal: React.FC<ModalProps> = ({
 
   // Estilos responsive que se aplican cuando el ancho de la ventana es menor a 600px
   const responsiveModalStyle: React.CSSProperties =
-    windowWidth < 600
+    isClient && windowWidth < 600
       ? {
           width: '95%',
           borderRadius: '0px',
@@ -86,7 +93,6 @@ const Modal: React.FC<ModalProps> = ({
             right: '10px',
             background: 'transparent',
             border: 'none',
-            fontSize: '16px',
             cursor: 'pointer',
           }}
           aria-label="Cerrar modal"
@@ -94,7 +100,7 @@ const Modal: React.FC<ModalProps> = ({
           &times;
         </button>
         {title && (
-          <h2 style={{ marginTop: 0, marginBottom: '20px' }}>{title}</h2>
+          <h4>{title}</h4>  
         )}
         {children}
       </div>

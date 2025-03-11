@@ -3,7 +3,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
 import Modal from "../src/components/common/Modal";
-import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 import GooIcons from "../public/GoogleIcons";

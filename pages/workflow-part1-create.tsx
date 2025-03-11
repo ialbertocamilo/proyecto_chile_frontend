@@ -14,8 +14,8 @@ import SidebarItemComponent from "../src/components/common/SidebarItemComponent"
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
+import { useApi } from "@/hooks/useApi";
 
-// Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
   ssr: false,
 });
@@ -169,10 +169,8 @@ const ProjectWorkflowPart1: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return false;
-      const response = await axios.get(`${constantUrlApiEndpoint}/user/projects/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const projects: Project[] = response.data.projects || [];
+      const response = await get(`/user/projects/`);
+      const projects: Project[] = response.projects || [];
       return projects.some(
         (project: Project) =>
           project.name_project.trim().toLowerCase() ===
@@ -201,6 +199,13 @@ const ProjectWorkflowPart1: React.FC = () => {
       }
     );
   };
+
+  const {post,get } = useApi()
+
+
+  // useEffect(()=>{
+  //   get('/validation-token')
+  // },[])
 
   const enviarProyecto = async () => {
     setLoading(true);
@@ -232,15 +237,9 @@ const ProjectWorkflowPart1: React.FC = () => {
         longitude: formData.longitude,
       };
 
-      const { data } = await axios.post(
-        `${constantUrlApiEndpoint}/projects/create`,
+      const data = await post(
+        `/projects/create`,
         requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
       );
 
       const { project_id } = data;

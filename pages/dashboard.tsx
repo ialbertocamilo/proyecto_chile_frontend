@@ -1,3 +1,4 @@
+'use client'
 import React, { useState, useEffect } from "react";
 import {
   Chart as ChartJS,
@@ -14,7 +15,6 @@ import {
 } from "chart.js";
 import { Line, Bar, Pie, Doughnut, Radar } from "react-chartjs-2";
 import Title from "../src/components/Title"; // Componente creado para mostrar títulos
-import "../public/assets/css/globals.css";
 import useAuth from "../src/hooks/useAuth";
 
 ChartJS.register(

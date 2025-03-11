@@ -1,8 +1,8 @@
+'use client'
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
-import "../../../public/assets/css/globals.css";
 
 interface TopBarProps {
   sidebarWidth: string;
@@ -55,25 +55,17 @@ const TopBar = ({}: TopBarProps) => {
           });
         } catch (err) {
           console.error("Error al parsear el perfil desde localStorage:", err);
-          const storedName = localStorage.getItem("user_name") || "Usuario";
-          const storedEmail = localStorage.getItem("email") || "";
-          const storedUserType =
-            localStorage.getItem("role_id") || "Tipo de Usuario";
           setUser({
-            name: storedName,
-            email: storedEmail,
-            userType: storedUserType,
+            name: localStorage.getItem("user_name") || "Usuario",
+            email: localStorage.getItem("email") || "",
+            userType: localStorage.getItem("role_id") || "Tipo de Usuario",
           });
         }
       } else {
-        const storedName = localStorage.getItem("user_name") || "Usuario";
-        const storedEmail = localStorage.getItem("email") || "";
-        const storedUserType =
-          localStorage.getItem("role_id") || "Tipo de Usuario";
         setUser({
-          name: storedName,
-          email: storedEmail,
-          userType: storedUserType,
+          name: localStorage.getItem("user_name") || "Usuario",
+          email: localStorage.getItem("email") || "",
+          userType: localStorage.getItem("role_id") || "Tipo de Usuario",
         });
       }
     }
@@ -113,7 +105,6 @@ const TopBar = ({}: TopBarProps) => {
         left: 0,
         right: 0,
         zIndex: 1100,
-        fontFamily: "var(--font-family-base)",
         minHeight: "120px",
         padding: "10px 20px",
         backgroundColor: "rgba(255, 255, 255, 0.2)",
@@ -160,9 +151,7 @@ const TopBar = ({}: TopBarProps) => {
               {/* Email en fuente más grande */}
               <span
                 style={{
-                  fontSize: "16px",
                   color: "var(--primary-color)",
-                  fontWeight: 500,
                 }}
               >
                 {user.email}
@@ -170,8 +159,6 @@ const TopBar = ({}: TopBarProps) => {
               {/* Nombre y caret */}
               <span
                 style={{
-                  fontSize: "16px",
-                  color: "var(--secondary-color)",
                   display: "flex",
                   alignItems: "center",
                 }}

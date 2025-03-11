@@ -64,7 +64,7 @@ const ForgotPassword: NextPageWithLayout = () => {
         fontFamily: "var(--font-family-base)",
       }}
     >
-      {/* Tarjeta blanca centrada */}
+      {/* Tarjeta blanca centradfdsa */}
       <div
         className="shadow"
         style={{

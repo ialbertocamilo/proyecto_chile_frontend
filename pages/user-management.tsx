@@ -44,7 +44,7 @@ const UserManagement = () => {
       const message = err instanceof Error ? err.message : "Error desconocido";
       console.error("[fetchUsers] Error:", message);
     }
-  }, [get]);
+  }, []);
 
   useEffect(() => {
     fetchUsers();

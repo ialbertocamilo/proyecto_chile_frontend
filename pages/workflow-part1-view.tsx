@@ -130,10 +130,11 @@ const ProjectWorkflowPart1: React.FC = () => {
     // Render del encabezado principal
     const renderMainHeader = () => {
         return (
+            <Card>
             <Title
                 text="Vista de Proyecto"
             >
-            </Title>
+            </Title></Card>
         );
     };
 
@@ -146,16 +147,6 @@ const ProjectWorkflowPart1: React.FC = () => {
         <>
             <GooIcons />
             <div
-                className="container"
-                style={{
-                    maxWidth: "1700px",
-                    marginTop: "90px",
-                    marginLeft: "110px",
-                    marginRight: "50px",
-                    transition: "margin-left 0.1s ease",
-                    fontFamily: "var(--font-family-base)",
-                    fontWeight: "normal",
-                }}
             >
 
                 <div>{renderMainHeader()}</div>

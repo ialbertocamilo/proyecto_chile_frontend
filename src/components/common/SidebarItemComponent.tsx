@@ -43,10 +43,9 @@ const SidebarItemComponent: React.FC<SidebarItemComponentProps> = ({
           paddingLeft: "50px",
           color: isActive ? primaryColor : inactiveColor,
           fontFamily: "var(--font-family-base)",
-          fontWeight: "normal",
         }}
       >
-        <span style={{ marginRight: "15px", fontSize: "2rem" }}>
+        <span style={{ marginRight: "15px", fontSize: "1.5rem" }}>
           <span className="material-icons">{iconName}</span>
         </span>
         <span>{title}</span>

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import GoogleIcons from "../../../public/GoogleIcons";
-import "../../../public/assets/css/globals.css";
 
 interface NavbarProps {
   setActiveView: (view: string) => void;

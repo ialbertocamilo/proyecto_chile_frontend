@@ -4,10 +4,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
 import Card from "../src/components/common/Card";
-import "../public/assets/css/globals.css";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import Navbar from "../src/components/layout/Navbar";
-import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
@@ -120,7 +117,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           fontWeight: "normal",
         }}
       >
-        <span style={{ marginRight: "15px", fontSize: "2rem" }}>
+        <span style={{ marginRight: "15px" }}>
           <span className="material-icons">{iconName}</span>
         </span>
         <span style={{ fontWeight: "normal" }}>{title}</span>
@@ -753,7 +750,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
               marginTop: "30px",
             }}
           >
-            <span className="material-icons" style={{ fontSize: "24px" }}>
+            <span className="material-icons" >
               arrow_back
             </span>
           </CustomButton>
@@ -912,22 +909,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Navbar setActiveView={() => {}} />
-      <TopBar sidebarWidth="300px" />
       <div
-        className="container custom-container"
-        style={{
-          maxWidth: "1700px",
-          marginTop: "90px",
-          marginLeft: "110px",
-          marginRight: "50px",
-          transition: "margin-left 0.1s ease",
-          fontFamily: "var(--font-family-base)",
-          fontWeight: "normal",
-        }}
       >
         <div>{renderMainHeader()}</div>
-        <Card style={{height: "10vh"}}>
+        <Card >
         <div className="d-flex align-items-center gap-4">
           <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
             Proyecto: 
@@ -999,56 +984,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           </div>
         </Card>
       </div>
-      <style jsx global>{`
-        @media (max-width: 992px) {
-          .container-fluid {
-            margin-left: 10px;
-            margin-right: 10px;
-            padding: 0 5px;
-          }
-          .col-lg-3 {
-            border-right: none;
-            border-bottom: 1px solid #ccc;
-          }
-          .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-          }
-          .mb-3.mb-lg-0 {
-            margin-bottom: 1rem;
-          }
-          [style*="padding: 20px"] {
-            padding: 15px;
-          }
-        }
-        @media (max-width: 768px) {
-          .table {
-            font-size: 12px;
-          }
-          th,
-          td {
-            padding: 8px;
-          }
-          [style*="height: 390px"] {
-            height: 300px;
-          }
-        }
-        [style*="stickyHeaderStyle1"] {
-          position: sticky;
-          top: 0;
-          z-index: 2;
-          background: white;
-        }
-        .no-hover {
-          transition: none !important;
-          cursor: default !important;
-          pointer-events: none !important;
-        }
-        .no-hover:hover {
-          box-shadow: none !important;
-          transform: none !important;
-        }
-      `}</style>
+
     </>
   );
 };

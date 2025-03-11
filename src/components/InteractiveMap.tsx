@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -10,39 +10,57 @@ interface InteractiveMapProps {
 
 const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect, initialLat, initialLng }) => {
   L.Icon.Default.imagePath = 'https://unpkg.com/leaflet@1.7.1/dist/images/';
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
   useEffect(() => {
-    // Inicializar el mapa
-    const leafletMap = L.map("map").setView(
-      initialLat && initialLng ? [initialLat, initialLng] : [0, 0],
-      13
-    );
+    // Inicializar el mapa solo si no existe
+    if (!mapRef.current) {
+      mapRef.current = L.map("map").setView(
+        initialLat && initialLng ? [initialLat, initialLng] : [0, 0],
+        13
+      );
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '© OpenStreetMap contributors',
-    }).addTo(leafletMap);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '© OpenStreetMap contributors',
+      }).addTo(mapRef.current);
 
-    // Agregar un marcador si hay una ubicación inicial
-    if (initialLat && initialLng) {
-      L.marker([initialLat, initialLng]).addTo(leafletMap);
+      // Manejar clics en el mapa
+      mapRef.current.on("click", (e: L.LeafletMouseEvent) => {
+        const { lat, lng } = e.latlng;
+        onLocationSelect({ lat, lng });
+
+        // Eliminar marcador anterior si existe
+        if (markerRef.current) {
+          markerRef.current.remove();
+        }
+
+        // Agregar un nuevo marcador en la ubicación seleccionada
+        markerRef.current = L.marker([lat, lng]).addTo(mapRef.current!);
+      });
     }
 
-    // Manejar clics en el mapa
-    leafletMap.on("click", (e: L.LeafletMouseEvent) => {
-      const { lat, lng } = e.latlng;
-      onLocationSelect({ lat, lng });
-
-      // Agregar un marcador en la ubicación seleccionada
-      L.marker([lat, lng]).addTo(leafletMap);
-    });
-
-    
+    // Actualizar la vista y el marcador si cambian las coordenadas iniciales
+    if (mapRef.current && initialLat && initialLng) {
+      mapRef.current.setView([initialLat, initialLng], 13);
+      
+      // Eliminar marcador anterior si existe
+      if (markerRef.current) {
+        markerRef.current.remove();
+      }
+      
+      // Agregar un nuevo marcador
+      markerRef.current = L.marker([initialLat, initialLng]).addTo(mapRef.current);
+    }
 
     // Limpiar el mapa al desmontar el componente
     return () => {
-      leafletMap.remove();
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
-  }, [onLocationSelect, initialLat, initialLng]);
+  }, [initialLat, initialLng]); // Dependencias reducidas
 
   return (
     <div

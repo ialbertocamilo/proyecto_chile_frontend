@@ -1,22 +1,24 @@
-import React, { useState, useEffect, useCallback } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { Autocompletion } from "@/components/maps/Autocompletion";
+import { useApi } from "@/hooks/useApi";
 import axios from "axios";
-import dynamic from "next/dynamic";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import CustomButton from "../src/components/common/CustomButton";
-import Card from "../src/components/common/Card";
-import GooIcons from "../public/GoogleIcons";
-import locationData from "../public/locationData";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
+import React, { useCallback, useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Title from "../src/components/Title";
-import { useApi } from "@/hooks/useApi";
+import GooIcons from "../public/GoogleIcons";
+import locationData from "../public/locationData";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Importa el componente dinámico de la sidebar
-
-const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
+import Card from "../src/components/common/Card";
+import CustomButton from "../src/components/common/CustomButton";
+import Title from "../src/components/Title";
+import useAuth from "../src/hooks/useAuth";
+const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap").then(mod => {
+  // Wrap the component with React.memo to prevent unnecessary re-renders
+  return { default: React.memo(mod.default) };
+}), {
   ssr: false,
 });
 
@@ -195,7 +197,8 @@ const ProjectWorkflowPart1: React.FC = () => {
       return false;
     }
   };
-
+  const [latitude, setLatitude] = useState<number>(0);
+  const [longitude, setLongitude] = useState<number>(0);
   const handleGeolocation = () => {
     if (!navigator.geolocation) {
       console.error("Geolocalización no soportada.");
@@ -204,6 +207,8 @@ const ProjectWorkflowPart1: React.FC = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        setLatitude(latitude)
+        setLongitude(longitude);
         handleFormInputChange("latitude", latitude);
         handleFormInputChange("longitude", longitude);
         console.log(`Lat: ${latitude}, Lon: ${longitude}`);
@@ -214,7 +219,12 @@ const ProjectWorkflowPart1: React.FC = () => {
     );
   };
 
-  const { post, get } = useApi();
+  const { post, get } = useApi()
+
+
+  // useEffect(()=>{
+  //   get('/validation-token')
+  // },[])
 
   const enviarProyecto = async () => {
     setLoading(true);
@@ -318,6 +328,29 @@ const ProjectWorkflowPart1: React.FC = () => {
     return <Title text="Proyecto nuevo" />;
   };
 
+  const [completionList, setCompletionList] = useState<{
+    Title: string;
+    Position: [number, number]
+  }[]>([]);
+  useEffect(() => {
+    if (!locationSearch.trim()) return;
+
+    const delaySearch = setTimeout(() => {
+      console.log('Searching for location:', locationSearch);
+      axios.get(`/api/map?q=${locationSearch}&lat=${latitude}&long=${longitude}`).then((response) => {
+        const { data } = response;
+        console.log('Response location', data.results.ResultItems)
+        setCompletionList(data.results.ResultItems);
+        // const { lat, lng } = data ;
+        // handleFormInputChange("latitude", lat);
+        // handleFormInputChange("longitude", lng);
+      }).catch((error) => {
+        console.error('Error searching for location:', error);
+      })
+    }, 500);
+
+    return () => clearTimeout(delaySearch);
+  }, [locationSearch]);
   return (
     <>
       <GooIcons />
@@ -661,27 +694,14 @@ const ProjectWorkflowPart1: React.FC = () => {
                     >
                       <div className="row">
                         <div className="col-12 mb-3">
-                          <div style={{ position: "relative" }}>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={locationSearch}
-                              onChange={(e) => setLocationSearch(e.target.value)}
-                              style={{ paddingLeft: "40px" }}
-                            />
-                            <span
-                              className="material-icons"
-                              style={{
-                                position: "absolute",
-                                left: "10px",
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                color: "#ccc",
-                              }}
-                            >
-                              search
-                            </span>
-                          </div>
+
+                          <Autocompletion
+                            locationSearch={locationSearch}
+                            setLocationSearch={setLocationSearch}
+                            completionList={completionList}
+                            handleFormInputChange={handleFormInputChange}
+                            setCompletionList={setCompletionList}
+                          />
                         </div>
                         <div className="col-12 col-md-8 mb-3">
                           <NoSSRInteractiveMap

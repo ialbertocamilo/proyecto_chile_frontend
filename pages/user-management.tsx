@@ -44,7 +44,7 @@ const UserManagement = () => {
       const message = err instanceof Error ? err.message : "Error desconocido";
       console.error("[fetchUsers] Error:", message);
     }
-  }, []);
+  }, [get]);
 
   useEffect(() => {
     fetchUsers();
@@ -76,7 +76,6 @@ const UserManagement = () => {
       );
       return;
     }
-
     try {
       const response = await put(`/user/${userId}/update-status`, { active: isActive });
       if (response) {
@@ -96,19 +95,20 @@ const UserManagement = () => {
       id: "birthdate",
       label: "Fecha de Nacimiento",
       minWidth: "2em",
-      format: (value: string) => value ? new Date(value).toLocaleDateString('es-ES') : 'No disponible'
+      format: (value: string) =>
+        value ? new Date(value).toLocaleDateString("es-ES") : "No disponible"
     },
     {
       id: "ubigeo",
       label: "Ubigeo",
       minWidth: "2em",
-      format: (value: string) => value || 'No disponible'
+      format: (value: string) => value || "No disponible"
     },
     {
       id: "direccion",
       label: "Dirección",
       minWidth: "2em",
-      format: (value: string) => value || 'No disponible'
+      format: (value: string) => value || "No disponible"
     },
     {
       id: "role_id",
@@ -133,37 +133,36 @@ const UserManagement = () => {
       id: "active",
       label: "Estado",
       minWidth: "2em",
-      cell: ({ row }: { row: User }) => {
-        return <Checkbox
+      cell: ({ row }: { row: User }) => (
+        <Checkbox
           checked={row.active}
           onChange={() => handleActiveChange(row.id, row.role_id, !row.active)}
           label={""}
           tooltip="Modificar el estado del usuario"
         />
-      }
-
+      )
     }
   ];
 
   return (
     <>
-        <Card>
-          <Title text="Listado de Usuarios" />
-        </Card>
-        <DataTable
-          columns={columns.map(col => ({
-            ...col,
-            minWidth: parseInt(col.minWidth) || undefined
-          }))}
-          data={users}
-          pageSize={10}
-          enableSorting
-          enableFiltering
-          enableColumnVisibility
-          showButton={true} 
-          createText="Crear usuario"
-          createUrl="/user-create"
-        />
+      <Card>
+        <Title text="Listado de Usuarios" />
+      </Card>
+      <DataTable
+        columns={columns.map((col) => ({
+          ...col,
+          minWidth: parseInt(col.minWidth) || undefined
+        }))}
+        data={users}
+        pageSize={10}
+        enableSorting
+        enableFiltering
+        enableColumnVisibility
+        showButton={true}
+        createText="Crear usuario"
+        createUrl="/user-create"
+      />
     </>
   );
 };

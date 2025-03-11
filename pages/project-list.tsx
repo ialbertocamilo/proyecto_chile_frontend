@@ -46,9 +46,7 @@ const ProjectListPage = () => {
   console.log("[ProjectListPage] Página cargada y sesión validada.");
 
   const router = useRouter();
-  const [, setProjects] = useState<Project[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  // const [, setSearch] = useState<string>("");
+  const [projects, setProjects] = useState<Project[]>([]);
   const [, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -75,7 +73,6 @@ const ProjectListPage = () => {
       });
       console.log("[fetchProjects] Proyectos recibidos:", response.data);
       setProjects(response.data.projects);
-      setFilteredProjects(response.data.projects);
     } catch (err: unknown) {
       console.error("[fetchProjects] Error al obtener los proyectos:", err);
       if (axios.isAxiosError(err) && err.response) {
@@ -88,25 +85,6 @@ const ProjectListPage = () => {
       setLoading(false);
     }
   };
-
-  // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
-  //   const query: string = e.target.value.toLowerCase();
-  //   setSearch(query);
-  //   const filtered = projects.filter((project: Project) => {
-  //     const values: Array<string | number | boolean | null | undefined> =
-  //       Object.values(project);
-  //     const combined: string = values
-  //       .map((val: string | number | boolean | null | undefined): string => {
-  //         if (val === undefined || val === null) return "";
-  //         if (typeof val === "object") return JSON.stringify(val);
-  //         return String(val);
-  //       })
-  //       .join(" ")
-  //       .toLowerCase();
-  //     return combined.includes(query);
-  //   });
-  //   setFilteredProjects(filtered);
-  // };
 
   const handleGoToWorkflow = (project_edit: Project): void => {
     console.log(
@@ -273,20 +251,14 @@ const ProjectListPage = () => {
       <div>
         <Title text="Listado de Proyectos" />
         <Card>
-          {/* {error && <p className="text-danger">{error}</p>}
-          <SearchInput
-            placeholder="Buscar proyectos..."
-            value={search}
-            onChange={handleSearch}
-          /> */}
           <DataTable
-            data={filteredProjects}
+            data={projects}
             columns={tableColumns}
             loading={loading}
             createText="Proyecto Nuevo"
             createUrl="/workflow-part1-create"
             pageSize={10}
-            showButton={true} 
+            showButton={true}
           />
         </Card>
       </div>

@@ -81,7 +81,7 @@ export default function DataTable<T extends { [key: string]: any }>({
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleChangePage = (newPage: number) => {
-    if (newPage >= 0 && newPage < Math.ceil(data.length / rowsPerPage)) {
+    if (newPage >= 0 && newPage < Math.ceil(filteredData.length / rowsPerPage)) {
       setPage(newPage);
     }
   };
@@ -93,11 +93,28 @@ export default function DataTable<T extends { [key: string]: any }>({
     setPage(0);
   };
 
+  // Actualiza el searchQuery
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
+    setPage(0); // Reinicia a la primera página al buscar
   };
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
+  // Filtrado global: se recorre cada fila y se combinan todas sus propiedades para realizar la búsqueda
+  const filteredData = searchQuery.trim()
+    ? data.filter((row) => {
+        const combined = Object.values(row)
+          .map((val) => {
+            if (val === undefined || val === null) return "";
+            if (typeof val === "object") return JSON.stringify(val);
+            return String(val);
+          })
+          .join(" ")
+          .toLowerCase();
+        return combined.includes(searchQuery.toLowerCase());
+      })
+    : data;
+
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
   return (
     <Card>
@@ -153,7 +170,7 @@ export default function DataTable<T extends { [key: string]: any }>({
                         Cargando...
                       </td>
                     </tr>
-                  ) : data.length === 0 ? (
+                  ) : filteredData.length === 0 ? (
                     <tr>
                       <td colSpan={columns.length} className="text-center ">
                         <Inbox className="me-2 inline" size={18} />
@@ -161,7 +178,7 @@ export default function DataTable<T extends { [key: string]: any }>({
                       </td>
                     </tr>
                   ) : (
-                    data
+                    filteredData
                       .slice(
                         page * rowsPerPage,
                         page * rowsPerPage + rowsPerPage

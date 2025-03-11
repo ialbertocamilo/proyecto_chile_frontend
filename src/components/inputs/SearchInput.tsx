@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 interface SearchInputProps {
   searchQuery: string;
   handleSearch: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onSearch?: (searchTerm: string) => void; // Callback opcional para búsqueda global
   createUrl?: string;
   createText?: string;
   showButton?: boolean; // Prop opcional para mostrar/ocultar el botón
@@ -14,11 +15,19 @@ interface SearchInputProps {
 export const SearchInput: FC<SearchInputProps> = ({ 
   searchQuery, 
   handleSearch, 
+  onSearch,
   createUrl, 
   createText, 
   showButton = false 
 }) => {
   const router = useRouter();
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleSearch(event);
+    if (onSearch) {
+      onSearch(event.target.value);
+    }
+  };
 
   return (
     <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 w-100">
@@ -28,7 +37,7 @@ export const SearchInput: FC<SearchInputProps> = ({
           className="form-control w-100"
           placeholder="🔍︎ Buscar..."
           value={searchQuery}
-          onChange={handleSearch}
+          onChange={handleInputChange}
           style={{
             height: "42px",
             border: "none",

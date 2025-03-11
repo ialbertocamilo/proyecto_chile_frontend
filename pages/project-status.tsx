@@ -39,8 +39,7 @@ const ProjectListStatusEditPage = () => {
   const router = useRouter();
   console.log("[ProjectListStatusEditPage] Página cargada y sesión validada.");
 
-  const [, setProjects] = useState<Project[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -66,7 +65,6 @@ const ProjectListStatusEditPage = () => {
       });
       console.log("[fetchProjects] Proyectos recibidos:", response.data);
       setProjects(response.data.projects);
-      setFilteredProjects(response.data.projects);
     } catch (err: unknown) {
       console.error("[fetchProjects] Error al obtener los proyectos:", err);
       if (axios.isAxiosError(err) && err.response) {
@@ -123,11 +121,11 @@ const ProjectListStatusEditPage = () => {
   return (
     <div>
       <Card>
-      <Title text="Administrar proyectos" />
+        <Title text="Administrar proyectos" />
       </Card>
-      {/* El DataTable se encarga de mostrar la búsqueda, paginación y tabla utilizando las clases del componente */}
+      {/* El DataTable se encarga de mostrar la búsqueda, paginación y tabla */}
       <DataTable
-        data={filteredProjects}
+        data={projects}
         columns={columns}
         loading={loading}
         pageSize={10}

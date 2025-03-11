@@ -35,10 +35,10 @@ const TablePagination: React.FC<{
   <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 mt-3">
     <div
       className="w-100 w-sm-auto mb-2 mb-sm-0 mx-auto mx-sm-0"
-      style={{ maxWidth: "200px" }}
+      style={{ maxWidth: "180px" }}
     >
       <select
-        className="form-select"
+        className="form-select form-select-sm"
         value={rowsPerPage}
         onChange={onRowsPerPageChange}
       >
@@ -48,7 +48,7 @@ const TablePagination: React.FC<{
         <option value={50}>50 por página</option>
       </select>
     </div>
-    <div className="d-flex align-items-center justify-content-center gap-2 w-100 w-sm-auto">
+    <div className="d-flex align-items-center justify-content-center gap-1 gap-sm-2 w-100 w-sm-auto">
       <IconButton
         onClick={() => onPageChange(page - 1)}
         icon={ChevronLeft}
@@ -68,14 +68,16 @@ const TablePagination: React.FC<{
   </div>
 );
 
-export default function DataTable<T extends { [key: string]: any }>({
-  data,
-  columns,
-  loading = false,
-  pageSize = 10,
-  createText,
-  createUrl,
-}: DataTableProps<T>) {
+export default function DataTable<T extends { [key: string]: any }>(
+  {
+    data,
+    columns,
+    loading = false,
+    pageSize = 10,
+    createText,
+    createUrl,
+  }: DataTableProps<T>
+) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
   const [searchQuery, setSearchQuery] = useState("");
@@ -140,11 +142,15 @@ export default function DataTable<T extends { [key: string]: any }>({
                 overflowX: "auto",
                 WebkitOverflowScrolling: "touch",
                 borderRadius: "8px",
+                display: "block",
+                width: "100%",
+                maxWidth: "100%",
+                position: "relative" // Added for the :after pseudo-element
               }}
             >
               <table
                 className="table table-hover table-mobile border rounded"
-                style={{ minWidth: "650px", borderColor: "#dee2e6" }}
+                style={{ minWidth: "100%", borderColor: "#dee2e6" }}
               >
                 <thead className="bg-light border-bottom">
                   <tr>

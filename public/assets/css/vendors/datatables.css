@@ -138,7 +138,7 @@ div.dataTables_scrollFoot > .dataTables_scrollFootInner > table {
   border-top: none;
 }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 400px) {
   div.dataTables_wrapper div.dataTables_length,
   div.dataTables_wrapper div.dataTables_filter,
   div.dataTables_wrapper div.dataTables_info,
@@ -340,7 +340,7 @@ div.dataTables_scrollFoot > .dataTables_scrollFootInner > table {
   border-top: none;
 }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 400px) {
   div.dataTables_wrapper div.dataTables_length,
   div.dataTables_wrapper div.dataTables_filter,
   div.dataTables_wrapper div.dataTables_info,
@@ -755,7 +755,6 @@ table.dataTable td {
 .dataTables_wrapper {
   position: relative;
   clear: both;
-  *zoom: 1;
   zoom: 1;
 }
 .dataTables_wrapper .dataTables_length {
@@ -1564,7 +1563,6 @@ table.dataTable td {
 .dataTables_wrapper {
   position: relative;
   clear: both;
-  *zoom: 1;
   zoom: 1;
 }
 .dataTables_wrapper .dataTables_length {

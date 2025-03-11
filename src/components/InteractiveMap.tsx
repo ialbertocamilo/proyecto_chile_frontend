@@ -67,10 +67,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect, initi
       id="map"
       style={{
         height: "400px", // Ajusta la altura del mapa
-        width: "80%",   // Ajusta el ancho del mapa
-        borderRadius: "20px", // Bordes circulares
-        overflow: "hidden", // Asegura que el contenido del mapa no sobresalga de los bordes
-        marginTop: "20px"
+        width: "100%",   
       }}
     ></div>
   );

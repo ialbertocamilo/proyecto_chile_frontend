@@ -1,22 +1,21 @@
-import React, { useState, useEffect, useCallback } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import axios from "axios";
-import CustomButton from "../src/components/common/CustomButton";
-import Modal from "../src/components/common/Modal";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
-import GooIcons from "../public/GoogleIcons";
-import Card from "../src/components/common/Card";
-import { useRouter } from "next/router";
-import Title from "../src/components/Title";
-import { notify } from "@/utils/notify";
-import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-import SearchParameters from "../src/components/inputs/SearchParameters"; // Importa el componente creado
-import CreateButton from "@/components/CreateButton";
+import ButtonTab from "@/components/common/ButtonTab";
 import CancelButton from "@/components/common/CancelButton";
 import VerticalDivider from "@/components/ui/HorizontalDivider";
-import ButtonTab from "@/components/common/ButtonTab";
-import GenericTable from "@/components/tables/GenericTable";
+import { notify } from "@/utils/notify";
+import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useRouter } from "next/router";
+import React, { useCallback, useEffect, useState } from "react";
+import GooIcons from "../public/GoogleIcons";
+import Title from "../src/components/Title";
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
+import Card from "../src/components/common/Card";
+import CustomButton from "../src/components/common/CustomButton";
+import Modal from "../src/components/common/Modal";
+import SearchParameters from "../src/components/inputs/SearchParameters"; // Importa el componente creado
+import useAuth from "../src/hooks/useAuth";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
@@ -531,322 +530,326 @@ const DataEntryPage: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <div>
         <Card>
-          <Title text={"Ingreso de datos de entrada"} />
+
+
+        <div className="d-flex align-items-center w-100">
+          <Title text="Ingreso de datos de entrada" />
+          <Breadcrumb items={[{ title: 'Datos de entrada', href: '/data-entry', active: true }]} />
+        </div>
         </Card>
         <Card>
-        <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
-                    <AdminSidebar
-                      activeStep={step}
-                      onStepChange={setStep}
-                      steps={sidebarSteps}
+          <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
+            <AdminSidebar
+              activeStep={step}
+              onStepChange={setStep}
+              steps={sidebarSteps}
+            />
+            <VerticalDivider />
+            <div className="content p-4" style={{ flex: 1 }}>
+              {step === 3 && (
+                <div className="px-3">
+                  <div className="mb-4">
+                    <SearchParameters
+                      value={materialSearch}
+                      onChange={setMaterialSearch}
+                      placeholder="Buscar material..."
+                      onNew={() => setShowMaterialModal(true)}
                     />
-                <VerticalDivider />
-                <div className="content p-4" style={{ flex: 1 }}>
-                  {step === 3 && (
-                    <div className="px-3">
-                      <div className="mb-4">
-                        <SearchParameters
-                          value={materialSearch}
-                          onChange={setMaterialSearch}
-                          placeholder="Buscar material..."
-                          onNew={() => setShowMaterialModal(true)}
-                        />
-                      </div>
-                      <div className="table-responsive">
-                        <div className="border rounded overflow-hidden">
-                          <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                            <table className="table table-hover mb-0">
-                              <thead>
-                                <tr>
-                                  <th style={{ textAlign: "center" }}>
-                                    Nombre Material
-                                  </th>
-                                  <th style={{ textAlign: "center" }}>
-                                    Conductividad (W/m2K)
-                                  </th>
-                                  <th style={{ textAlign: "center" }}>
-                                    Calor específico (J/kgK)
-                                  </th>
-                                  <th style={{ textAlign: "center" }}>
-                                    Densidad (kg/m3)
-                                  </th>
+                  </div>
+                  <div className="table-responsive">
+                    <div className="border rounded overflow-hidden">
+                      <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                        <table className="table table-hover mb-0">
+                          <thead>
+                            <tr>
+                              <th style={{ textAlign: "center" }}>
+                                Nombre Material
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                Conductividad (W/m2K)
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                Calor específico (J/kgK)
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                Densidad (kg/m3)
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {materialsList
+                              .filter((mat) =>
+                                mat.atributs.name
+                                  .toLowerCase()
+                                  .includes(materialSearch.toLowerCase())
+                              )
+                              .map((mat, idx) => (
+                                <tr key={idx}>
+                                  <td style={{ textAlign: "center" }}>{mat.atributs.name}</td>
+                                  <td style={{ textAlign: "center" }}>{mat.atributs.conductivity}</td>
+                                  <td style={{ textAlign: "center" }}>{mat.atributs.specific_heat}</td>
+                                  <td style={{ textAlign: "center" }}>{mat.atributs.density}</td>
                                 </tr>
-                              </thead>
-                                <tbody>
-                                {materialsList
-                                  .filter((mat) =>
-                                  mat.atributs.name
-                                    .toLowerCase()
-                                    .includes(materialSearch.toLowerCase())
-                                  )
-                                  .map((mat, idx) => (
-                                  <tr key={idx}>
-                                    <td style={{ textAlign: "center" }}>{mat.atributs.name}</td>
-                                    <td style={{ textAlign: "center" }}>{mat.atributs.conductivity}</td>
-                                    <td style={{ textAlign: "center" }}>{mat.atributs.specific_heat}</td>
-                                    <td style={{ textAlign: "center" }}>{mat.atributs.density}</td>
-                                  </tr>
-                                  ))}
-                                </tbody>
-                            </table>
-                          </div>
-                        </div>
+                              ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
-                  )}
+                  </div>
+                </div>
+              )}
 
-                  {step === 5 && (
-                    <div className="px-3">
-                      <div className="mb-4">
-                        <SearchParameters
-                          value={elementSearch}
-                          onChange={setElementSearch}
-                          placeholder="Buscar elemento..."
-                          onNew={() => setShowElementModal(true)}
-                        />
+              {step === 5 && (
+                <div className="px-3">
+                  <div className="mb-4">
+                    <SearchParameters
+                      value={elementSearch}
+                      onChange={setElementSearch}
+                      placeholder="Buscar elemento..."
+                      onNew={() => setShowElementModal(true)}
+                    />
+                  </div>
+
+
+                  <div className="table-responsive">
+                    <div className="border rounded overflow-hidden">
+                      <div className="bg-white border-bottom">
+                        <div className="row g-0">
+                          {["Ventanas", "Puertas"].map((tab) => (
+                            <div key={tab} className="col-6">
+                              <ButtonTab
+                                label={tab}
+                                active={modalElementType === tab.toLowerCase()}
+                                onClick={() => setModalElementType(tab.toLowerCase())}
+                                primaryColor={primaryColor} />
+                            </div>
+                          ))}
+                        </div>
                       </div>
 
 
-                      <div className="table-responsive">
-                        <div className="border rounded overflow-hidden">
-                          <div className="bg-white border-bottom">
-                            <div className="row g-0">
-                              {["Ventanas", "Puertas"].map((tab) => (
-                                <div key={tab} className="col-6">
-                                  <ButtonTab
-                                    label={tab}
-                                    active={modalElementType === tab.toLowerCase()}
-                                    onClick={() => setModalElementType(tab.toLowerCase())}
-                                    primaryColor={primaryColor}/>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-
-                          <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                            <table className="table table-hover mb-0">
-                              <thead>
-                                {modalElementType === "ventanas" ? (
-                                  <tr>
-                                    <th style={{ textAlign: "center" }}>
-                                      Nombre Elemento
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      U Vidrio [W/m2K]
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      FS Vidrio
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      Tipo Cierre
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      Tipo Marco
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      U Marco [W/m2K]
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      FM [%]
-                                    </th>
+                      <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                        <table className="table table-hover mb-0">
+                          <thead>
+                            {modalElementType === "ventanas" ? (
+                              <tr>
+                                <th style={{ textAlign: "center" }}>
+                                  Nombre Elemento
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  U Vidrio [W/m2K]
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  FS Vidrio
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  Tipo Cierre
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  Tipo Marco
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  U Marco [W/m2K]
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  FM [%]
+                                </th>
+                              </tr>
+                            ) : (
+                              <tr>
+                                <th style={{ textAlign: "center" }}>
+                                  Nombre Elemento
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  U Puerta opaca [W/m2K]
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  Nombre Ventana
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  % Vidrio
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  U Marco [W/m2K]
+                                </th>
+                                <th style={{ textAlign: "center" }}>
+                                  FM [%]
+                                </th>
+                              </tr>
+                            )}
+                          </thead>
+                          <tbody>
+                            {elementsList
+                              .filter((el) =>
+                                el.name_element
+                                  .toLowerCase()
+                                  .includes(elementSearch.toLowerCase())
+                              )
+                              .map((el, idx) =>
+                                modalElementType === "ventanas" ? (
+                                  <tr key={idx}>
+                                    <td>{el.name_element}</td>
+                                    <td>{el.atributs.u_vidrio}</td>
+                                    <td>{el.atributs.fs_vidrio}</td>
+                                    <td>{el.atributs.clousure_type}</td>
+                                    <td>{el.atributs.frame_type}</td>
+                                    <td>{el.u_marco}</td>
+                                    <td>{(el.fm * 100).toFixed(0)}%</td>
                                   </tr>
                                 ) : (
-                                  <tr>
-                                    <th style={{ textAlign: "center" }}>
-                                      Nombre Elemento
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      U Puerta opaca [W/m2K]
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      Nombre Ventana
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      % Vidrio
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      U Marco [W/m2K]
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      FM [%]
-                                    </th>
+                                  <tr key={idx}>
+                                    <td>{el.name_element}</td>
+                                    <td>{el.atributs.u_puerta_opaca}</td>
+                                    <td>{el.atributs.name_ventana}</td>
+                                    <td>
+                                      {el.atributs.porcentaje_vidrio !== undefined
+                                        ? (
+                                          (el.atributs
+                                            .porcentaje_vidrio as number) *
+                                          100
+                                        ).toFixed(0) + "%"
+                                        : "0%"}
+                                    </td>
+                                    <td>{el.u_marco}</td>
+                                    <td>{(el.fm * 100).toFixed(0)}%</td>
                                   </tr>
-                                )}
-                              </thead>
-                              <tbody>
-                                {elementsList
-                                  .filter((el) =>
-                                    el.name_element
-                                      .toLowerCase()
-                                      .includes(elementSearch.toLowerCase())
-                                  )
-                                  .map((el, idx) =>
-                                    modalElementType === "ventanas" ? (
-                                      <tr key={idx}>
-                                        <td>{el.name_element}</td>
-                                        <td>{el.atributs.u_vidrio}</td>
-                                        <td>{el.atributs.fs_vidrio}</td>
-                                        <td>{el.atributs.clousure_type}</td>
-                                        <td>{el.atributs.frame_type}</td>
-                                        <td>{el.u_marco}</td>
-                                        <td>{(el.fm * 100).toFixed(0)}%</td>
-                                      </tr>
-                                    ) : (
-                                      <tr key={idx}>
-                                        <td>{el.name_element}</td>
-                                        <td>{el.atributs.u_puerta_opaca}</td>
-                                        <td>{el.atributs.name_ventana}</td>
-                                        <td>
-                                          {el.atributs.porcentaje_vidrio !== undefined
-                                            ? (
-                                              (el.atributs
-                                                .porcentaje_vidrio as number) *
-                                              100
-                                            ).toFixed(0) + "%"
-                                            : "0%"}
-                                        </td>
-                                        <td>{el.u_marco}</td>
-                                        <td>{(el.fm * 100).toFixed(0)}%</td>
-                                      </tr>
-                                    )
-                                  )}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
+                                )
+                              )}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
-                  )}
+                  </div>
+                </div>
+              )}
 
-                  {step === 6 && (
-                    <div className="px-3">
-                      <div className="nav nav-tabs mb-3 flex-nowrap overflow-auto">
-                        {[
-                          { key: "ventilacion", label: "Ventilación y caudales" },
-                          { key: "iluminacion", label: "Iluminación" },
-                          { key: "cargas", label: "Cargas internas" },
-                          { key: "horario", label: "Horario y Clima" },
-                        ].map((tab) => (
-                          <button
-                            key={tab.key}
-                            className={`nav-link flex-shrink-0 ${tabTipologiaRecinto === tab.key ? 'active' : ''}`}
-                            style={{
-                              color: tabTipologiaRecinto === tab.key ? primaryColor : "var(--secondary-color)",
-                              borderBottom: tabTipologiaRecinto === tab.key ? `3px solid ${primaryColor}` : "none",
-                              whiteSpace: "nowrap"
+              {step === 6 && (
+                <div className="px-3">
+                  <div className="nav nav-tabs mb-3 flex-nowrap overflow-auto">
+                    {[
+                      { key: "ventilacion", label: "Ventilación y caudales" },
+                      { key: "iluminacion", label: "Iluminación" },
+                      { key: "cargas", label: "Cargas internas" },
+                      { key: "horario", label: "Horario y Clima" },
+                    ].map((tab) => (
+                      <button
+                        key={tab.key}
+                        className={`nav-link flex-shrink-0 ${tabTipologiaRecinto === tab.key ? 'active' : ''}`}
+                        style={{
+                          color: tabTipologiaRecinto === tab.key ? primaryColor : "var(--secondary-color)",
+                          borderBottom: tabTipologiaRecinto === tab.key ? `3px solid ${primaryColor}` : "none",
+                          whiteSpace: "nowrap"
+                        }}
+                        onClick={() => setTabTipologiaRecinto(tab.key)}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="table-responsive">
+                    <div className="border rounded overflow-hidden">
+                      <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                        <table className="table  table-hover mb-0">
+                          <thead>
+                            <tr>
+                              <th style={{ textAlign: "center" }}></th>
+                              <th style={{ textAlign: "center" }}></th>
+                              <th style={{ textAlign: "center" }}></th>
+                              <th style={{ textAlign: "center" }}>Caudal Min Salubridad</th>
+                              <th style={{ textAlign: "center" }}></th>
+                              <th style={{ textAlign: "center" }}>Caudal Impuesto</th>
+                              <th style={{ textAlign: "center" }}></th>
+                            </tr>
+                            <tr>
+                              <th style={{ textAlign: "center" }}>Código de Recinto</th>
+                              <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
+                              <th style={{ textAlign: "center" }}>R-pers [L/s]</th>
+                              <th style={{ textAlign: "center" }}>IDA</th>
+                              <th style={{ textAlign: "center" }}>Ocupación</th>
+                              <th style={{ textAlign: "center" }}>Vent Noct [1/h]</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {/* Ejemplo de datos estáticos */}
+                            <tr>
+                              <td>ES</td>
+                              <td>Espera</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>AU</td>
+                              <td>Auditorio</td>
+                              <td>5.28</td>
+                              <td>IDA3 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>BA</td>
+                              <td>Baño</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>BD</td>
+                              <td>Bodega</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>KI</td>
+                              <td>Cafetería</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>CO</td>
+                              <td>Comedores</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                            <tr>
+                              <td>PA</td>
+                              <td>Pasillos</td>
+                              <td>8.80</td>
+                              <td>IDA2 ✔</td>
+                              <td>Sedentario ✔</td>
+                              <td>-</td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+                        {/* Botón para agregar nuevo registro */}
+                        <div className="text-end mt-3">
+                          <CustomButton
+                            variant="save"
+                            onClick={() => {
+                              // Lógica para abrir un modal o formulario para agregar un nuevo registro
+                              console.log("Agregar nuevo registro");
                             }}
-                            onClick={() => setTabTipologiaRecinto(tab.key)}
                           >
-                            {tab.label}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="table-responsive">
-                        <div className="border rounded overflow-hidden">
-                          <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                            <table className="table  table-hover mb-0">
-                              <thead>
-                                <tr>
-                                  <th style={{ textAlign: "center" }}></th>
-                                  <th style={{ textAlign: "center" }}></th>
-                                  <th style={{ textAlign: "center" }}></th>
-                                  <th style={{ textAlign: "center" }}>Caudal Min Salubridad</th>
-                                  <th style={{ textAlign: "center" }}></th>
-                                  <th style={{ textAlign: "center" }}>Caudal Impuesto</th>
-                                  <th style={{ textAlign: "center" }}></th>
-                                </tr>
-                                <tr>
-                                  <th style={{ textAlign: "center" }}>Código de Recinto</th>
-                                  <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
-                                  <th style={{ textAlign: "center" }}>R-pers [L/s]</th>
-                                  <th style={{ textAlign: "center" }}>IDA</th>
-                                  <th style={{ textAlign: "center" }}>Ocupación</th>
-                                  <th style={{ textAlign: "center" }}>Vent Noct [1/h]</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {/* Ejemplo de datos estáticos */}
-                                <tr>
-                                  <td>ES</td>
-                                  <td>Espera</td>
-                                  <td>8.80</td>
-                                  <td>IDA2 ✔</td>
-                                  <td>Sedentario ✔</td>
-                                  <td>-</td>
-                                </tr>
-                                <tr>
-                                  <td>AU</td>
-                                  <td>Auditorio</td>
-                                  <td>5.28</td>
-                                  <td>IDA3 ✔</td>
-                                  <td>Sedentario ✔</td>
-                                  <td>-</td>
-                                </tr>
-                                <tr>
-                                  <td>BA</td>
-                                  <td>Baño</td>
-                                  <td>8.80</td>
-                                  <td>IDA2 ✔</td>
-                                  <td>Sedentario ✔</td>
-                                  <td>-</td>
-                                </tr>
-                                <tr>
-                                  <td>BD</td>
-                                  <td>Bodega</td>
-                                  <td>8.80</td>
-                                  <td>IDA2 ✔</td>
-                                  <td>Sedentario ✔</td>
-                                  <td>-</td>
-                                </tr>
-                                <tr>
-                                  <td>KI</td>
-                                  <td>Cafetería</td>
-                                  <td>8.80</td>
-                                  <td>IDA2 ✔</td>
-                                  <td>Sedentario ✔</td>
-                                  <td>-</td>
-                                </tr>
-                                <tr>
-                                  <td>CO</td>
-                                  <td>Comedores</td>
-                                  <td>8.80</td>
-                                  <td>IDA2 ✔</td>
-                                  <td>Sedentario ✔</td>
-                                  <td>-</td>
-                                </tr>
-                                <tr>
-                                  <td>PA</td>
-                                  <td>Pasillos</td>
-                                  <td>8.80</td>
-                                  <td>IDA2 ✔</td>
-                                  <td>Sedentario ✔</td>
-                                  <td>-</td>
-                                </tr>
-                              </tbody>
-                            </table>
-
-                            {/* Botón para agregar nuevo registro */}
-                            <div className="text-end mt-3">
-                              <CustomButton
-                                variant="save"
-                                onClick={() => {
-                                  // Lógica para abrir un modal o formulario para agregar un nuevo registro
-                                  console.log("Agregar nuevo registro");
-                                }}
-                              >
-                                + Nuevo
-                              </CustomButton>
-                            </div>
-                          </div>
+                            + Nuevo
+                          </CustomButton>
                         </div>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-                </div>
+              )}
+            </div>
+          </div>
         </Card>
         {showMaterialModal && (
           <Modal
@@ -1378,9 +1381,6 @@ const DataEntryPage: React.FC = () => {
             )}
           </Modal>
         )}
-
-
-      </div>
     </>
   );
 };

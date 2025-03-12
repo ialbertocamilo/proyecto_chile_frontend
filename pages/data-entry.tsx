@@ -12,6 +12,11 @@ import Title from "../src/components/Title";
 import { notify } from "@/utils/notify";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import SearchParameters from "../src/components/inputs/SearchParameters"; // Importa el componente creado
+import CreateButton from "@/components/CreateButton";
+import CancelButton from "@/components/common/CancelButton";
+import VerticalDivider from "@/components/ui/HorizontalDivider";
+import ButtonTab from "@/components/common/ButtonTab";
+import GenericTable from "@/components/tables/GenericTable";
 
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
@@ -346,7 +351,7 @@ const DataEntryPage: React.FC = () => {
       );
       setElementsList((prev) => [...prev, response.data.element]);
       setAllWindowsForDoor((prev) => [...prev, response.data.element]);
-     
+
       notify("Ventana creada exitosamente");
       setWindowData({
         name_element: "",
@@ -418,7 +423,7 @@ const DataEntryPage: React.FC = () => {
         }
       );
       setElementsList((prev) => [...prev, response.data.element]);
-      
+
       notify("Puerta creada exitosamente");
       setDoorData({
         name_element: "",
@@ -528,48 +533,31 @@ const DataEntryPage: React.FC = () => {
       <GooIcons />
       <div>
         <Card>
-          <div>{renderMainHeader()}</div>
+          <Title text={"Ingreso de datos de entrada"} />
         </Card>
         <Card>
-          <div>
-            <div className="d-flex d-flex-responsive">
-              {/* Sidebar interno */}
-              <div className="internal-sidebar">
-                <AdminSidebar
-                  activeStep={step}
-                  onStepChange={setStep}
-                  steps={sidebarSteps}
-                />
-              </div>
-              {/* Área de contenido */}
-              <div className="content-area">
-                {step === 3 && (
-                  <>
-                    {/* Utilizando SearchParameters para la búsqueda de materiales */}
-                    <SearchParameters
-                      value={materialSearch}
-                      onChange={setMaterialSearch}
-                      placeholder="Buscar material..."
-                      onNew={() => setShowMaterialModal(true)}
+        <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
+                    <AdminSidebar
+                      activeStep={step}
+                      onStepChange={setStep}
+                      steps={sidebarSteps}
                     />
-                    {/* Tabla de materiales */}
-                    <div
-                      style={{
-                        marginTop: "10px",
-                        display: "flex",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <div style={{ width: "90%" }}>
-                        <div
-                          style={{
-                            border: "1px solid #e0e0e0",
-                            borderRadius: "8px",
-                            overflow: "hidden",
-                          }}
-                        >
-                          <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                            <table className="table table-striped">
+                <VerticalDivider />
+                <div className="content p-4" style={{ flex: 1 }}>
+                  {step === 3 && (
+                    <div className="px-3">
+                      <div className="mb-4">
+                        <SearchParameters
+                          value={materialSearch}
+                          onChange={setMaterialSearch}
+                          placeholder="Buscar material..."
+                          onNew={() => setShowMaterialModal(true)}
+                        />
+                      </div>
+                      <div className="table-responsive">
+                        <div className="border rounded overflow-hidden">
+                          <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                            <table className="table table-hover mb-0">
                               <thead>
                                 <tr>
                                   <th style={{ textAlign: "center" }}>
@@ -586,87 +574,60 @@ const DataEntryPage: React.FC = () => {
                                   </th>
                                 </tr>
                               </thead>
-                              <tbody>
+                                <tbody>
                                 {materialsList
                                   .filter((mat) =>
-                                    mat.atributs.name
-                                      .toLowerCase()
-                                      .includes(materialSearch.toLowerCase())
+                                  mat.atributs.name
+                                    .toLowerCase()
+                                    .includes(materialSearch.toLowerCase())
                                   )
                                   .map((mat, idx) => (
-                                    <tr key={idx}>
-                                      <td>{mat.atributs.name}</td>
-                                      <td>{mat.atributs.conductivity}</td>
-                                      <td>{mat.atributs.specific_heat}</td>
-                                      <td>{mat.atributs.density}</td>
-                                    </tr>
+                                  <tr key={idx}>
+                                    <td style={{ textAlign: "center" }}>{mat.atributs.name}</td>
+                                    <td style={{ textAlign: "center" }}>{mat.atributs.conductivity}</td>
+                                    <td style={{ textAlign: "center" }}>{mat.atributs.specific_heat}</td>
+                                    <td style={{ textAlign: "center" }}>{mat.atributs.density}</td>
+                                  </tr>
                                   ))}
-                              </tbody>
+                                </tbody>
                             </table>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </>
-                )}
+                  )}
 
-                {step === 5 && (
-                  <>
-                    {/* Utilizando SearchParameters para la búsqueda de elementos */}
-                    <SearchParameters
-                      value={elementSearch}
-                      onChange={setElementSearch}
-                      placeholder="Buscar elemento..."
-                      onNew={() => setShowElementModal(true)}
-                    />
-                    {/* Tabla de elementos */}
-                    <div
-                      style={{
-                        marginTop: "10px",
-                        display: "flex",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <div style={{ width: "100%" }}>
-                        <div
-                          style={{
-                            border: "1px solid #e0e0e0",
-                            borderRadius: "8px",
-                            overflow: "hidden",
-                          }}
-                        >
-                          <div
-                            className="d-flex justify-content-start align-items-center mb-2"
-                            style={{ padding: "10px" }}
-                          >
-                            {["Ventanas", "Puertas"].map((tab) => (
-                              <button
-                                key={tab}
-                                style={{
-                                  flex: 1,
-                                  padding: "10px",
-                                  backgroundColor: "#fff",
-                                  color:
-                                    modalElementType === tab.toLowerCase()
-                                      ? primaryColor
-                                      : "var(--secondary-color)",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  borderBottom:
-                                    modalElementType === tab.toLowerCase()
-                                      ? "3px solid " + primaryColor
-                                      : "none",
-                                }}
-                                onClick={() =>
-                                  setModalElementType(tab.toLowerCase())
-                                }
-                              >
-                                {tab}
-                              </button>
-                            ))}
+                  {step === 5 && (
+                    <div className="px-3">
+                      <div className="mb-4">
+                        <SearchParameters
+                          value={elementSearch}
+                          onChange={setElementSearch}
+                          placeholder="Buscar elemento..."
+                          onNew={() => setShowElementModal(true)}
+                        />
+                      </div>
+
+
+                      <div className="table-responsive">
+                        <div className="border rounded overflow-hidden">
+                          <div className="bg-white border-bottom">
+                            <div className="row g-0">
+                              {["Ventanas", "Puertas"].map((tab) => (
+                                <div key={tab} className="col-6">
+                                  <ButtonTab
+                                    label={tab}
+                                    active={modalElementType === tab.toLowerCase()}
+                                    onClick={() => setModalElementType(tab.toLowerCase())}
+                                    primaryColor={primaryColor}/>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                          <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                            <table className="table table-striped">
+
+
+                          <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                            <table className="table table-hover mb-0">
                               <thead>
                                 {modalElementType === "ventanas" ? (
                                   <tr>
@@ -758,371 +719,135 @@ const DataEntryPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  </>
-                )}
-                {step === 6 && (
-                  <>
-                    <ul
-                      className="nav mb-3"
-                    >
-                      {[
-                        { key: "ventilacion", label: "Ventilación y caudales" },
-                        { key: "iluminacion", label: "Iluminación" },
-                        { key: "cargas", label: "Cargas internas" },
-                        { key: "horario", label: "Horario y Clima" },
-                      ].map((tab) => (
-                        <li key={tab.key} style={{ flex: 1 }}>
+                  )}
+
+                  {step === 6 && (
+                    <div className="px-3">
+                      <div className="nav nav-tabs mb-3 flex-nowrap overflow-auto">
+                        {[
+                          { key: "ventilacion", label: "Ventilación y caudales" },
+                          { key: "iluminacion", label: "Iluminación" },
+                          { key: "cargas", label: "Cargas internas" },
+                          { key: "horario", label: "Horario y Clima" },
+                        ].map((tab) => (
                           <button
+                            key={tab.key}
+                            className={`nav-link flex-shrink-0 ${tabTipologiaRecinto === tab.key ? 'active' : ''}`}
                             style={{
-                              width: "100%",
-                              padding: "10px",
-                              backgroundColor: "#fff",
-                              color:
-                                tabTipologiaRecinto === tab.key
-                                  ? primaryColor
-                                  : "var(--secondary-color)",
-                              border: "none",
-                              cursor: "pointer",
-                              borderBottom:
-                                tabTipologiaRecinto === tab.key
-                                  ? "3px solid " + primaryColor
-                                  : "none",
+                              color: tabTipologiaRecinto === tab.key ? primaryColor : "var(--secondary-color)",
+                              borderBottom: tabTipologiaRecinto === tab.key ? `3px solid ${primaryColor}` : "none",
+                              whiteSpace: "nowrap"
                             }}
                             onClick={() => setTabTipologiaRecinto(tab.key)}
                           >
                             {tab.label}
                           </button>
-                        </li>
-                      ))}
-                    </ul>
-                    {tabTipologiaRecinto === "ventilacion" && (
-                      <div className="tab-content border border-top-0 p-3">
-                        <table className="table table-striped">
-                          <thead>
-                            <tr>
-                              <th style={{ textAlign: "center" }}></th>
-                              <th style={{ textAlign: "center" }}></th>
-                              <th style={{ textAlign: "center" }}></th>
-                              <th style={{ textAlign: "center" }}>Caudal Min Salubridad</th>
-                              <th style={{ textAlign: "center" }}></th>
-                              <th style={{ textAlign: "center" }}>Caudal Impuesto</th>
-                              <th style={{ textAlign: "center" }}></th>
-                            </tr>
-                            <tr>
-                              <th style={{ textAlign: "center" }}>Código de Recinto</th>
-                              <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
-                              <th style={{ textAlign: "center" }}>R-pers [L/s]</th>
-                              <th style={{ textAlign: "center" }}>IDA</th>
-                              <th style={{ textAlign: "center" }}>Ocupación</th>
-                              <th style={{ textAlign: "center" }}>Vent Noct [1/h]</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {/* Ejemplo de datos estáticos */}
-                            <tr>
-                              <td>ES</td>
-                              <td>Espera</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>AU</td>
-                              <td>Auditorio</td>
-                              <td>5.28</td>
-                              <td>IDA3 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>BA</td>
-                              <td>Baño</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>BD</td>
-                              <td>Bodega</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>KI</td>
-                              <td>Cafetería</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>CO</td>
-                              <td>Comedores</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>PA</td>
-                              <td>Pasillos</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                          </tbody>
-                        </table>
+                        ))}
+                      </div>
+                      <div className="table-responsive">
+                        <div className="border rounded overflow-hidden">
+                          <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                            <table className="table  table-hover mb-0">
+                              <thead>
+                                <tr>
+                                  <th style={{ textAlign: "center" }}></th>
+                                  <th style={{ textAlign: "center" }}></th>
+                                  <th style={{ textAlign: "center" }}></th>
+                                  <th style={{ textAlign: "center" }}>Caudal Min Salubridad</th>
+                                  <th style={{ textAlign: "center" }}></th>
+                                  <th style={{ textAlign: "center" }}>Caudal Impuesto</th>
+                                  <th style={{ textAlign: "center" }}></th>
+                                </tr>
+                                <tr>
+                                  <th style={{ textAlign: "center" }}>Código de Recinto</th>
+                                  <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
+                                  <th style={{ textAlign: "center" }}>R-pers [L/s]</th>
+                                  <th style={{ textAlign: "center" }}>IDA</th>
+                                  <th style={{ textAlign: "center" }}>Ocupación</th>
+                                  <th style={{ textAlign: "center" }}>Vent Noct [1/h]</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {/* Ejemplo de datos estáticos */}
+                                <tr>
+                                  <td>ES</td>
+                                  <td>Espera</td>
+                                  <td>8.80</td>
+                                  <td>IDA2 ✔</td>
+                                  <td>Sedentario ✔</td>
+                                  <td>-</td>
+                                </tr>
+                                <tr>
+                                  <td>AU</td>
+                                  <td>Auditorio</td>
+                                  <td>5.28</td>
+                                  <td>IDA3 ✔</td>
+                                  <td>Sedentario ✔</td>
+                                  <td>-</td>
+                                </tr>
+                                <tr>
+                                  <td>BA</td>
+                                  <td>Baño</td>
+                                  <td>8.80</td>
+                                  <td>IDA2 ✔</td>
+                                  <td>Sedentario ✔</td>
+                                  <td>-</td>
+                                </tr>
+                                <tr>
+                                  <td>BD</td>
+                                  <td>Bodega</td>
+                                  <td>8.80</td>
+                                  <td>IDA2 ✔</td>
+                                  <td>Sedentario ✔</td>
+                                  <td>-</td>
+                                </tr>
+                                <tr>
+                                  <td>KI</td>
+                                  <td>Cafetería</td>
+                                  <td>8.80</td>
+                                  <td>IDA2 ✔</td>
+                                  <td>Sedentario ✔</td>
+                                  <td>-</td>
+                                </tr>
+                                <tr>
+                                  <td>CO</td>
+                                  <td>Comedores</td>
+                                  <td>8.80</td>
+                                  <td>IDA2 ✔</td>
+                                  <td>Sedentario ✔</td>
+                                  <td>-</td>
+                                </tr>
+                                <tr>
+                                  <td>PA</td>
+                                  <td>Pasillos</td>
+                                  <td>8.80</td>
+                                  <td>IDA2 ✔</td>
+                                  <td>Sedentario ✔</td>
+                                  <td>-</td>
+                                </tr>
+                              </tbody>
+                            </table>
 
-                        {/* Botón para agregar nuevo registro */}
-                        <div className="text-end mt-3">
-                          <CustomButton
-                            variant="save"
-                            onClick={() => {
-                              // Lógica para abrir un modal o formulario para agregar un nuevo registro
-                              console.log("Agregar nuevo registro");
-                            }}
-                          >
-                            + Nuevo
-                          </CustomButton>
+                            {/* Botón para agregar nuevo registro */}
+                            <div className="text-end mt-3">
+                              <CustomButton
+                                variant="save"
+                                onClick={() => {
+                                  // Lógica para abrir un modal o formulario para agregar un nuevo registro
+                                  console.log("Agregar nuevo registro");
+                                }}
+                              >
+                                + Nuevo
+                              </CustomButton>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    )}
-
-                    {
-                      tabTipologiaRecinto === "iluminacion" && (
-                        <div className="tab-content border border-top-0 p-3">
-                          <table className="table table-striped">
-                            <thead>
-                              <tr>
-                                <th style={{ textAlign: "center" }}>Código de Recinto</th>
-                                <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
-                                <th style={{ textAlign: "center" }}>Potencia Base [W/m2]</th>
-                                <th style={{ textAlign: "center" }}>Estrategia</th>
-                                <th style={{ textAlign: "center" }}>Potencia Propuesta [W/m2]</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {/* Ejemplo de datos estáticos */}
-                              <tr>
-                                <td>ES</td>
-                                <td>Espera</td>
-                                <td>8.80</td>
-                                <td>Sedentario ✔</td>
-                                <td>12.0</td>
-                              </tr>
-                              <tr>
-                                <td>AU</td>
-                                <td>Auditorio</td>
-                                <td>5.28</td>
-                                <td>Sedentario ✔</td>
-                                <td>15.0</td>
-                              </tr>
-                              <tr>
-                                <td>BA</td>
-                                <td>Baño</td>
-                                <td>8.80</td>
-                                <td>Sedentario ✔</td>
-                                <td>10.0</td>
-                              </tr>
-                              <tr>
-                                <td>BD</td>
-                                <td>Bodega</td>
-                                <td>8.80</td>
-                                <td>Sedentario ✔</td>
-                                <td>10.0</td>
-                              </tr>
-                              <tr>
-                                <td>KI</td>
-                                <td>Cafetería</td>
-                                <td>8.80</td>
-                                <td>Sedentario ✔</td>
-                                <td>15.0</td>
-                              </tr>
-                              <tr>
-                                <td>CO</td>
-                                <td>Comedores</td>
-                                <td>8.80</td>
-                                <td>Sedentario ✔</td>
-                                <td>10.0</td>
-                              </tr>
-                              <tr>
-                                <td>PA</td>
-                                <td>Pasillos</td>
-                                <td>8.80</td>
-                                <td>Sedentario ✔</td>
-                                <td>11.0</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      )
-                    }
-
-                    {
-                      tabTipologiaRecinto === "cargas" && (
-                        <div className="tab-content border border-top-0 p-3">
-                          <table className="table table-striped">
-                            <thead>
-                              <tr>
-                                <th style={{ textAlign: "center" }}>Código de Recinto</th>
-                                <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
-                                <th style={{ textAlign: "center" }}>Usuarios [m2/pers]</th>
-                                <th style={{ textAlign: "center" }}>Calor Latente [W/pers]</th>
-                                <th style={{ textAlign: "center" }}>Calor Sensible [W/pers]</th>
-                                <th style={{ textAlign: "center" }}>Equipos [W/m2]</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {/* Ejemplo de datos estáticos */}
-                              <tr>
-                                <td>ES</td>
-                                <td>Espera</td>
-                                <td>4.0</td>
-                                <td>164.0</td>
-                                <td>12.0</td>
-                                <td>-</td>
-                                <td>12.0</td>
-                              </tr>
-                              <tr>
-                                <td>AU</td>
-                                <td>Auditorio</td>
-                                <td>0.5</td>
-                                <td>82.0</td>
-                                <td>15.0</td>
-                                <td>-</td>
-                                <td>12.0</td>
-                              </tr>
-                              <tr>
-                                <td>BA</td>
-                                <td>Baño</td>
-                                <td>-</td>
-                                <td></td>
-                                <td>10.0</td>
-                                <td>-</td>
-                                <td>12.0</td>
-                              </tr>
-                              <tr>
-                                <td>BD</td>
-                                <td>Bodega</td>
-                                <td></td>
-                                <td></td>
-                                <td>10.0</td>
-                                <td>1.5</td>
-                                <td>12.0</td>
-                              </tr>
-                              <tr>
-                                <td>KI</td>
-                                <td>Cafetería</td>
-                                <td>10.0</td>
-                                <td>147.6</td>
-                                <td>15.0</td>
-                                <td>50.0</td>
-                                <td>12.0</td>
-                              </tr>
-                              <tr>
-                                <td>CO</td>
-                                <td>Comedores</td>
-                                <td>0.9</td>
-                                <td>131.2</td>
-                                <td>10.0</td>
-                                <td>-</td>
-                                <td>12.0</td>
-                              </tr>
-                              <tr>
-                                <td>PA</td>
-                                <td>Pasillos</td>
-                                <td>4.0</td>
-                                <td>-</td>
-                                <td>11.0</td>
-                                <td>-</td>
-                                <td>12.0</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      )
-                    }
-
-                    {
-                      tabTipologiaRecinto === "horario" && (
-                        <div className="tab-content border border-top-0 p-3">
-                          <table className="table table-striped">
-                            <thead>
-                              <tr>
-                                <th style={{ textAlign: "center" }}></th>
-                                <th style={{ textAlign: "center" }}></th>
-                                <th style={{ textAlign: "center" }}></th>
-                                <th style={{ textAlign: "center" }}>Recinto</th>
-                                <th style={{ textAlign: "center" }}></th>
-                              </tr>
-                              <tr>
-                                <th style={{ textAlign: "center" }}>Código de Recinto</th>
-                                <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
-                                <th style={{ textAlign: "center" }}>Climatizado Si/No</th>
-                                <th style={{ textAlign: "center" }}>Hrs Desface Clima (Inv)</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {/* Ejemplo de datos estáticos */}
-                              <tr>
-                                <td>ES</td>
-                                <td>Espera</td>
-                                <td>Si✔</td>
-                                <td></td>
-                              </tr>
-                              <tr>
-                                <td>AU</td>
-                                <td>Auditorio</td>
-                                <td>Si✔</td>
-                                <td></td>
-                              </tr>
-                              <tr>
-                                <td>BA</td>
-                                <td>Baño</td>
-                                <td>No✔</td>
-                                <td></td>
-                              </tr>
-                              <tr>
-                                <td>BD</td>
-                                <td>Bodega</td>
-                                <td>No✔</td>
-                                <td></td>
-                              </tr>
-                              <tr>
-                                <td>KI</td>
-                                <td>Cafetería</td>
-                                <td>Si✔</td>
-                                <td></td>
-                              </tr>
-                              <tr>
-                                <td>CO</td>
-                                <td>Comedores</td>
-                                <td>Si✔</td>
-                                <td></td>
-                              </tr>
-                              <tr>
-                                <td>PA</td>
-                                <td>Pasillos</td>
-                                <td>No✔</td>
-                                <td></td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      )
-                    }
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+                    </div>
+                  )}
+                </div>
+                </div>
         </Card>
-        {/* Modal para crear Material */}
         {showMaterialModal && (
           <Modal
             isOpen={showMaterialModal}
@@ -1223,9 +948,8 @@ const DataEntryPage: React.FC = () => {
                   </p>
                 </div>
               )}
-              <div className="text-end">
-                <CustomButton
-                  variant="save"
+              <div className="d-flex justify-content-end mt-3">
+                <CancelButton
                   onClick={() => {
                     setShowMaterialModal(false);
                     setNewMaterialData({
@@ -1235,10 +959,7 @@ const DataEntryPage: React.FC = () => {
                       density: "",
                     });
                   }}
-                  style={{ marginRight: "10px" }}
-                >
-                  Cancelar
-                </CustomButton>
+                />
                 <CustomButton
                   variant="save"
                   onClick={async () => {
@@ -1445,24 +1166,19 @@ const DataEntryPage: React.FC = () => {
                     </p>
                   </div>
                 )}
-                <div className="text-end">
-                  <CustomButton
-                    variant="save"
+
+                <div className="d-flex justify-content-end mt-3">
+                  <CancelButton
                     onClick={() => {
-                      setShowElementModal(false);
-                      setWindowData({
-                        name_element: "",
-                        u_vidrio: "",
-                        fs_vidrio: "",
-                        clousure_type: "Corredera",
-                        frame_type: "",
-                        u_marco: "",
-                        fm: "",
+                      setShowMaterialModal(false);
+                      setNewMaterialData({
+                        name: "",
+                        conductivity: "",
+                        specific_heat: "",
+                        density: "",
                       });
                     }}
-                  >
-                    Cancelar
-                  </CustomButton>
+                  />
                   <CustomButton
                     variant="save"
                     onClick={async () => {
@@ -1663,62 +1379,8 @@ const DataEntryPage: React.FC = () => {
           </Modal>
         )}
 
-       
+
       </div>
-      <style jsx>{`
-        .content-area {
-          flex: 1;
-          padding: 20px;
-        }
-        .d-flex-responsive {
-          display: flex;
-          align-items: stretch;
-          gap: 0;
-        }
-        @media (max-width: 1024px) {
-          .custom-container {
-            margin-left: 50px;
-            margin-right: 20px;
-          }
-          .content-area {
-            padding: 10px;
-          }
-          .d-flex-responsive {
-            flex-direction: column;
-          }
-        }
-        @media (max-width: 480px) {
-          .custom-container {
-            margin-left: 10px;
-            margin-right: 10px;
-          }
-        }
-        .table {
-          border-collapse: collapse;
-          font-size: 0.9rem;
-          width: 100%;
-        }
-        .table th,
-        .table td {
-          border: none;
-          text-align: center;
-          vertical-align: middle;
-          padding: 0.65em 1.8em;
-        }
-        .table thead th {
-          background-color: #fff;
-          color: var(--primary-color);
-          position: sticky;
-          top: 0;
-          z-index: 2;
-        }
-        .table-striped tbody tr:nth-child(odd) {
-          background-color: #f8f8f8 !important;
-        }
-        .table-striped tbody tr:nth-child(even) {
-          background-color: #f8f8f8 !important;
-        }
-      `}</style>
     </>
   );
 };

@@ -13,6 +13,7 @@ import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { notify } from "@/utils/notify";
+import SaveButton from "@/components/common/SaveButton";
 
 
 
@@ -642,7 +643,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                       <CustomButton
                         variant="save"
                         onClick={handleStep1Action}
-                        style={{ height: "50px" }}
                         disabled={loading}
                       >
                         Continuar

@@ -6,9 +6,10 @@ interface IconButtonProps {
   icon: LucideIcon;
   disabled?: boolean;
   className?: string;
+  text?:string
 }
 
-const IconButton: React.FC<IconButtonProps> = ({ onClick, icon: Icon, disabled = false, className}) => {
+const IconButton: React.FC<IconButtonProps> = ({ onClick, icon: Icon, disabled = false, className,text}) => {
   return (
     <button
       style={{
@@ -20,7 +21,7 @@ const IconButton: React.FC<IconButtonProps> = ({ onClick, icon: Icon, disabled =
       onClick={onClick}
       disabled={disabled}
     >
-      <Icon size={16} />
+      <Icon size={16} />{text}
     </button>
   );
 };

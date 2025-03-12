@@ -10,11 +10,11 @@ import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { Tooltip } from "react-tooltip";
 import Modal from "../src/components/common/Modal";
-import { notify } from "@/utils/notify";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
-import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-// Importamos el componente SearchParameters
-import SearchParameters from "../src/components/inputs/SearchParameters";
+// Importamos el nuevo componente AdminSidebar
+import { AdminSidebar }  from "../src/components/administration/AdminSidebar";
 
 interface Detail {
   id_detail: number;
@@ -294,7 +294,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       .then((response) => setVentanasTabList(response.data))
       .catch((error) => {
         console.error("Error al obtener datos de ventanas:", error);
-        notify("Error al obtener datos de ventanas. Ver consola.");
+        toast.error("Error al obtener datos de ventanas. Ver consola.");
       });
   }, []);
 
@@ -308,7 +308,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       .then((response) => setPuertasTabList(response.data))
       .catch((error) => {
         console.error("Error al obtener datos de puertas:", error);
-        notify("Error al obtener datos de puertas. Ver consola.");
+        toast.error("Error al obtener datos de puertas. Ver consola.");
       });
   }, []);
 
@@ -351,7 +351,9 @@ const WorkFlowpar2editPage: React.FC = () => {
       !newDetailForm.name_detail ||
       !newDetailForm.material_id
     ) {
-      notify("Por favor complete todos los campos de detalle");
+      toast.warning("Por favor complete todos los campos de detalle", {
+        toastId: "material-warning",
+      });
       return;
     }
 
@@ -369,7 +371,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       const newDetailId = response.data.detail.id;
 
       if (!newDetailId) {
-        notify("El backend no devolvió un ID de detalle válido.");
+        toast.error("El backend no devolvió un ID de detalle válido.");
         return;
       }
 
@@ -381,22 +383,29 @@ const WorkFlowpar2editPage: React.FC = () => {
 
         try {
           await axios.post(selectUrl, detailIds, { headers });
-          notify("Detalle creado y añadido al proyecto exitosamente");
+          toast.success("Detalle creado y añadido al proyecto exitosamente", {
+            toastId: "detail-added-success",
+          });
         } catch (selectError: unknown) {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
               "Todos los detalles ya estaban en el proyecto"
           ) {
-            notify("Detalle creado exitosamente");
+            toast.success("Detalle creado exitosamente", {
+              toastId: "detail-created-success",
+            });
           } else {
             console.error("Error al añadir detalle al proyecto:", selectError);
-            notify("Detalle creado pero no se pudo añadir al proyecto");
+            toast.warning("Detalle creado pero no se pudo añadir al proyecto", {
+              toastId: "detail-associated-error",
+            });
           }
         }
       } else {
-        notify(
-          "No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)"
+        toast.warning(
+          "No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)",
+          { toastId: "project-id-missing" }
         );
       }
 
@@ -412,9 +421,13 @@ const WorkFlowpar2editPage: React.FC = () => {
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error("Error en la creación del detalle:", error.response?.data);
-        notify("Error en la creación del detalle");
+        toast.error(error.response?.data?.detail || error.message, {
+          toastId: "material-warning",
+        });
       } else {
-        notify("Error desconocido al crear el detalle");
+        toast.error("Error desconocido al crear el detalle", {
+          toastId: "material-warning",
+        });
       }
     }
   };
@@ -526,7 +539,9 @@ const WorkFlowpar2editPage: React.FC = () => {
       setMaterials(materialsList);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
-      notify("Error al obtener materiales.");
+      toast.error("Error al obtener materiales.", {
+        toastId: "material-warning",
+      });
     }
   };
 
@@ -566,7 +581,9 @@ const WorkFlowpar2editPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify("Detalle tipo Muro actualizado con éxito");
+      toast.success("Detalle tipo Muro actualizado con éxito", {
+        toastId: "material-sucess",
+      });
       setMurosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -586,7 +603,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       setEditingRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      notify("Error al actualizar detalle. Ver consola.");
+      toast.error("Error al actualizar detalle. Ver consola.");
     }
   };
 
@@ -626,7 +643,9 @@ const WorkFlowpar2editPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify("Detalle tipo Techo actualizado con éxito");
+      toast.success("Detalle tipo Techo actualizado con éxito", {
+        toastId: "material-success",
+      });
       setTechumbreTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -646,7 +665,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       setEditingTechRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      notify("Error al actualizar detalle. Ver consola.");
+      toast.error("Error al actualizar detalle. Ver consola.");
     }
   };
 
@@ -705,12 +724,12 @@ const WorkFlowpar2editPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div style={{ height: "400px", position: "relative" }}>
+        <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
           {tabStep4 === "muros" && (
-            <div>
+            <div style={{ overflowX: "auto" }}>
               <table
                 className="table table-bordered table-striped"
-                style={{ width: "100%" }}
+                style={{ width: "100%", minWidth: "600px" }}
               >
                 <thead>
                   <tr>
@@ -1214,20 +1233,31 @@ const WorkFlowpar2editPage: React.FC = () => {
     );
   };
 
-  // Renderizado de la vista inicial de detalles utilizando SearchParameters
+  // Renderizado de la vista inicial de detalles
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
     return (
       <>
-        <div className="mb-3">
-          {/* Se reemplaza el input de búsqueda por el componente SearchParameters */}
-          <SearchParameters
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Buscar..."
-            onNew={handleNewButtonClick}
-            style={{ height: "50px" }}
-          />
+        <div className="mb-3 d-flex justify-content-between align-items-stretch">
+          <div style={{ flex: 1, marginRight: "10px" }}>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Buscar..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ height: "50px" }}
+            />
+          </div>
+          <div style={{ height: "50px" }}>
+            <CustomButton
+              variant="save"
+              onClick={handleNewButtonClick}
+              style={{ height: "100%" }}
+            >
+              <span className="material-icons">add</span> Nuevo
+            </CustomButton>
+          </div>
         </div>
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
@@ -1463,6 +1493,47 @@ const WorkFlowpar2editPage: React.FC = () => {
             </table>
           </div>
         </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "10px",
+            marginTop: "30px",
+            marginBottom: "10px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+          >
+            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+              <CustomButton
+                id="mostrar-datos-btn"
+                variant="save"
+                onClick={() => {
+                  setTimeout(() => {
+                    saveDetails();
+                  }, 600);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
+                  height: "min(3rem, 8vh)",
+                  minWidth: "6rem",
+                }}
+              >
+                <span className="material-icons">visibility</span> Mostrar datos
+              </CustomButton>
+            </div>
+          </div>
+        </div>
       </>
     );
   };
@@ -1551,8 +1622,8 @@ const WorkFlowpar2editPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
-        <Card>
-        <h3 style={{paddingBottom: "2rem"}}>{renderMainHeader()}</h3>
+        <div>{renderMainHeader()}</div>
+        <Card style={{ height: "10vh" }}>
           <div className="d-flex align-items-center gap-4">
             <span
               style={{
@@ -1581,6 +1652,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div className="mb-3 mb-lg-0">
+                {/* Se reemplaza la lista antigua por el nuevo AdminSidebar */}
                 <AdminSidebar
                   activeStep={step}
                   onStepChange={handleSidebarStepChange}
@@ -1604,6 +1676,39 @@ const WorkFlowpar2editPage: React.FC = () => {
         </Card>
       </div>
       <style jsx global>{`
+        @media (max-width: 992px) {
+          .container-fluid {
+            margin-left: 10px;
+            margin-right: 10px;
+            padding: 0 5px;
+          }
+          .col-lg-3 {
+            border-right: none;
+            border-bottom: 1px solid #ccc;
+          }
+          .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+          .mb-3.mb-lg-0 {
+            margin-bottom: 1rem;
+          }
+          [style*="padding: 20px"] {
+            padding: 15px;
+          }
+        }
+        @media (max-width: 768px) {
+          .table {
+            font-size: 12px;
+          }
+          th,
+          td {
+            padding: 8px;
+          }
+          [style*="height: 390px"] {
+            height: 300px;
+          }
+        }
         .no-hover {
           transition: none !important;
           cursor: default !important;

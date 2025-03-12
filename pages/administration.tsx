@@ -328,10 +328,12 @@ const AdministrationPage: React.FC = () => {
   return (
     <>
       {/* Título afuera del Card */}
-      <Card>
-        <Title text="Administración de Parámetros" />
-        <div className="container-fluid page-title row">
-          
+      <Card className="header-card">
+        <div className="d-flex align-items-center w-100">
+          <Title text="Administración de Parametros" />
+          <Breadcrumb items={[
+            { title: 'Dashboard', href: '/dashboard', active: true },
+          ]} />
         </div>
       </Card>
 

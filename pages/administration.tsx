@@ -331,7 +331,7 @@ const AdministrationPage: React.FC = () => {
       <Card>
         <Title text="Administración de Parámetros" />
         <div className="container-fluid page-title row">
-          <Breadcrumb />
+          
         </div>
       </Card>
 

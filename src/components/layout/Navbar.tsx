@@ -9,7 +9,7 @@ import useIsClient from "../../utils/useIsClient";
 
 interface NavbarProps {
   setActiveView?: (view: string) => void;
-  onNavbarToggle?: (isOpen: boolean) => void; // New prop to inform parent about navbar state
+  onNavbarToggle?: (isOpen: boolean) => void; // Para notificar al componente padre sobre el estado de la navbar
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
@@ -49,7 +49,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   useEffect(() => {
     if (!isClient) return;
     const handleResize = () => {
-      const mobile = isClient && window.innerWidth <= 1024;
+      const mobile = window.innerWidth <= 1024;
       setIsMobile(mobile);
     };
     handleResize();
@@ -67,7 +67,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     setAnimateIcon(true);
     const newState = !isNavbarVisible;
     setIsNavbarVisible(newState);
-    // Notify parent component about navbar state change
+    // Notifica al componente padre sobre el cambio de estado
     if (onNavbarToggle) {
       onNavbarToggle(newState);
     }
@@ -132,46 +132,48 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   
   const logoSize = 80;
   
-  // Calculate width based on device type
+  // Calcula el ancho basado en el tipo de dispositivo
   const navbarWidth = isMobile ? "40%" : "6.5em";
   
   return (
     <>
       <GoogleIcons />
-  
-      {/* Toggle button for both mobile and desktop */}
-      <div
-        className="navbar-toggle"
-        onClick={toggleNavbar}
-        style={{
-          position: "fixed",
-          top: isMobile ? "1.5rem" : "1.5rem",
-          left: isMobile && isNavbarVisible ? "calc(40% + 1rem)" : isNavbarVisible ? "6.5em" : "1.5rem",
-          width: "40px",
-          height: "40px",
-          borderRadius: "50%",
-          border: `2px solid ${isNavbarVisible ? "#fff" : "rgba(0, 0, 0, 0.2)"}`,
-          backgroundColor: isNavbarVisible ? "var(--primary-color)" : "#fff",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1300,
-          transition: "all 0.3s ease",
-          cursor: "pointer",
-          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-          transform: animateIcon ? "scale(0.95)" : "scale(1)"
-        }}
-      >
-        <span
-          className="material-icons"
+      
+      {/* Botón flotante para expandir la navbar (solo se muestra cuando está comprimida) */}
+      {!isNavbarVisible && (
+        <div
+          className="navbar-toggle"
+          onClick={toggleNavbar}
           style={{
-            color: isNavbarVisible ? "#fff" : "#000",
-            fontSize: "1.5rem"
+            position: "fixed",
+            top: isMobile ? "1.5rem" : "1.5rem",
+            left: "1.5rem",
+            width: "40px",
+            height: "40px",
+            borderRadius: "50%",
+            border: `2px solid rgba(0, 0, 0, 0.2)`,
+            backgroundColor: "#fff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1300,
+            transition: "all 0.3s ease",
+            cursor: "pointer",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+            transform: animateIcon ? "scale(0.95)" : "scale(1)"
           }}
         >
-          menu
-        </span>
-      </div>
+          <span
+            className="material-icons"
+            style={{
+              color: "#000",
+              fontSize: "1.5rem"
+            }}
+          >
+            menu
+          </span>
+        </div>
+      )}
   
       <nav
         className="sidebar d-flex flex-column"
@@ -201,6 +203,32 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
               style={{ borderRadius: "50%", zIndex: 1100 }}
             />
           </Link>
+          {/* Botón para colapsar la navbar: solo muestra el icono sin bordes ni fondo */}
+          {isNavbarVisible && (
+            <div
+              className="navbar-toggle-inside"
+              onClick={toggleNavbar}
+              style={{
+                marginTop: "0.5rem",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "40px",
+                height: "40px",
+                // Elimina el borde y fondo para que se "camufle"
+                border: "none",
+                backgroundColor: "transparent"
+              }}
+            >
+              <span
+                className="material-icons"
+                style={{ color: "#fff", fontSize: "1.5rem" }}
+              >
+                menu
+              </span>
+            </div>
+          )}
         </div>
   
         <div

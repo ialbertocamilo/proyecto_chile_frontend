@@ -6,6 +6,7 @@ import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import DataTable from "../src/components/DataTable"; // Ajusta la ruta según corresponda
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 interface Divisions {
   department?: string;
@@ -122,6 +123,9 @@ const ProjectListStatusEditPage = () => {
     <div>
       <Card>
         <Title text="Administrar proyectos" />
+        <div className="container-fluid page-title row ">
+        <Breadcrumb />
+        </div>
       </Card>
       {/* El DataTable se encarga de mostrar la búsqueda, paginación y tabla */}
       <DataTable

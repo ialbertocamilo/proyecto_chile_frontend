@@ -115,9 +115,26 @@ const TopBar = ({}: TopBarProps) => {
       }}
     >
       <div
-        className="container-fluid d-flex justify-content-end align-items-center"
+        className="container-fluid d-flex justify-content-center align-items-center"
         style={{ flexWrap: "wrap" }}
       >
+        {/* Contenedor de la imagen centrada */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flex: 1,
+          }}
+        >
+          <Image
+            src="/assets/images/ceela.png" // Cambia la ruta a la imagen que desees subir
+            alt="Logo"
+            width={200} // Ajusta el tamaño según necesites
+            height={100}
+          />
+        </div>
+
         <div
           className="dropdown"
           style={{ position: "relative", fontFamily: "var(--font-family-base)" }}

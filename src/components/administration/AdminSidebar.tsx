@@ -28,7 +28,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   return (
     <>
       <li
-        className="list-unstyled py-2 py-md-3 px-2 px-md-3 border-end border-light"
+        // Se agregó la clase "sidebar-item" para aplicar margen y hover.
+        className="sidebar-item list-unstyled py-2 py-md-3 px-2 px-md-3 border-end border-light"
         onClick={onStepChange}
       >
         <div
@@ -48,6 +49,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         </div>
       </li>
       <style jsx>{`
+        /* Estilo para cada item del sidebar */
         .sidebar-item {
           width: 100%;
           max-width: 380px;
@@ -56,6 +58,13 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           transform-style: preserve-3d;
           animation: sidebarItemAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
           animation-delay: calc(var(--item-index, 0) * 0.1s);
+          margin: 10px 0; /* Margen arriba y abajo. Modifícalo a tu gusto */
+          transition: background-color 0.3s ease; /* Transición para el hover */
+        }
+
+        /* Efecto hover para el sidebar completo */
+        .sidebar-item:hover {
+          background-color: #f7f7f7; /* Cambia el color de fondo al hacer hover */
         }
 
         @media (max-width: 768px) {
@@ -165,7 +174,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             key={step.stepNumber}
             step={step}
             activeStep={activeStep}
-            onStepChange={() => {if (handleClick) handleClick(step)}}
+            onStepChange={() => {
+              if (handleClick) handleClick(step);
+            }}
           />
         ))}
       </ul>

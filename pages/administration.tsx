@@ -332,7 +332,7 @@ const AdministrationPage: React.FC = () => {
         <div className="d-flex align-items-center w-100">
           <Title text="Administración de Parametros" />
           <Breadcrumb items={[
-            { title: 'Dashboard', href: '/dashboard', active: true },
+            { title: 'Administracion de Parametros', href: '/', active: true },
           ]} />
         </div>
       </Card>

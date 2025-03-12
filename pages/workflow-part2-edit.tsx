@@ -798,42 +798,30 @@ const WorkFlowpar2editPage: React.FC = () => {
                             "Desconocido"
                           )}
                         </td>
-                        <td>
+                        <td className="container-table-buttons">
                           {editingRowId === item.id ? (
                             <>
                               <CustomButton
+                                className="btn-table"
                                 variant="save"
                                 onClick={() => handleConfirmEdit(item)}
-                                style={{
-                                  fontSize: "clamp(0.5rem, 1vw, 0.8rem)",
-                                  padding:
-                                    "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                                }}
                               >
                                 <span className="material-icons">check</span>
                               </CustomButton>
                               <CustomButton
+                                className="btn-table"
                                 variant="cancelIcon"
                                 onClick={() => handleCancelEdit(item)}
-                                style={{
-                                  fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                  padding:
-                                    "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                                  marginLeft: "clamp(5px, 1vw, 10px)",
-                                }}
+                                
                               >
                                 Deshacer
                               </CustomButton>
                             </>
                           ) : (
                             <CustomButton
+                              className="btn-table"
                               variant="editIcon"
                               onClick={() => handleEditClick(item)}
-                              style={{
-                                fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                padding:
-                                  "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                              }}
                             >
                               Editar
                             </CustomButton>
@@ -850,8 +838,9 @@ const WorkFlowpar2editPage: React.FC = () => {
               </table>
             </div>
           )}
+          <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
           {tabStep4 === "techumbre" && (
-            <div style={{ overflowX: "auto" }}>
+            <div>
               <table
                 className="table table-bordered table-striped"
                 style={{ width: "100%", minWidth: "600px" }}
@@ -921,42 +910,30 @@ const WorkFlowpar2editPage: React.FC = () => {
                             "Desconocido"
                           )}
                         </td>
-                        <td>
+                        <td className="container-table-buttons">
                           {editingTechRowId === item.id ? (
                             <>
                               <CustomButton
+                                className="btn-table"
                                 variant="save"
                                 onClick={() => handleConfirmTechEdit(item)}
-                                style={{
-                                  fontSize: "clamp(0.5rem, 1vw, 0.8rem)",
-                                  padding:
-                                    "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                                }}
+
                               >
                                 <span className="material-icons">check</span>
                               </CustomButton>
                               <CustomButton
+                                className="btn-table"
                                 variant="cancelIcon"
                                 onClick={() => handleCancelTechEdit(item)}
-                                style={{
-                                  fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                  padding:
-                                    "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                                  marginLeft: "clamp(5px, 1vw, 10px)",
-                                }}
                               >
                                 Deshacer
                               </CustomButton>
                             </>
                           ) : (
                             <CustomButton
+                              className="btn-table"
                               variant="editIcon"
                               onClick={() => handleEditTechClick(item)}
-                              style={{
-                                fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                padding:
-                                  "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                              }}
                             >
                               Editar
                             </CustomButton>
@@ -970,7 +947,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                     </tr>
                   )}
                 </tbody>
+
               </table>
+              
             </div>
           )}
           {tabStep4 === "pisos" && (
@@ -1231,6 +1210,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             &nbsp;Regresar
           </CustomButton>
         </div>
+      </div>
       </div>
     );
   };

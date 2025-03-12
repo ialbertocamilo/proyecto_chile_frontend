@@ -57,7 +57,7 @@ const CustomButton: FC<CustomButtonProps> = ({
     content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>format_list_bulleted</span>;
     tooltipText = 'Ver lista';
     } else if (variant === 'cancelIcon') {
-    content = <span className="btn-icon-content material-icons " style={{  color: "red" }}>close</span>;
+    content = <span className="btn-icon-content material-icons " style={{  fontSize: "1.5rem" }}>close</span>;
     tooltipText = 'Cancelar';
   } else if (variant === 'viewIcon') {
     content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>visibility</span>;

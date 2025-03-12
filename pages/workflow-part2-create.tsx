@@ -622,7 +622,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     ] as { key: TabStep4; label: string }[];
 
     return (
-      <div className="mt-4">
+      <div >
         <ul
           className="nav"
           style={{
@@ -654,17 +654,18 @@ const WorkFlowpar2createPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div style={{ height: "400px", overflowY: "auto", overflowX: "auto", position: "relative" }}>
+        <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
           {tabStep4 === "muros" && (
-            <div style={{ minWidth: "600px" }}>
-              <table className="table table-bordered table-striped" style={{ width: "100%" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table 
+                className="table table-bordered table-striped" style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Valor U (W/m²K)</th>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Exterior</th>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Interior</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Acciones</th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor}}>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -711,16 +712,18 @@ const WorkFlowpar2createPage: React.FC = () => {
                             item.info?.surface_color?.interior?.name || "Desconocido"
                           )}
                         </td>
-                        <td style={{ display: "flex", justifyContent: "center" }}> 
+                        <td className="container-table-buttons "> 
                           {editingRowId === item.id ? (
                             <>
                               <CustomButton
+                                className="btn-table"
                                 variant="save"
                                 onClick={() => handleConfirmEdit(item)}
                               >
                                 <span className="material-icons">check</span>
                               </CustomButton>
                               <CustomButton
+                                className="btn-table"
                                 variant="cancelIcon"
                                 onClick={() => handleCancelEdit(item)}
                               >
@@ -729,6 +732,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                             </>
                           ) : (
                             <CustomButton
+                              className="btn-table"
                               variant="editIcon"
                               onClick={() => handleEditClick(item)}
                             >
@@ -803,27 +807,22 @@ const WorkFlowpar2createPage: React.FC = () => {
                             item.info?.surface_color?.interior?.name || "Desconocido"
                           )}
                         </td>
-                        <td>
+                        <td className="container-table-buttons">
                           {editingTechRowId === item.id ? (
                             <>
                               <CustomButton
+                                className="btn-table"
                                 variant="save"
                                 onClick={() => handleConfirmTechEdit(item)}
-                                style={{
-                                  fontSize: "clamp(0.5rem, 1vw, 0.8rem)",
-                                  padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                                }}
+
                               >
                                 <span className="material-icons">check</span>
                               </CustomButton>
                               <CustomButton
+                                className="btn-table"
                                 variant="cancelIcon"
                                 onClick={() => handleCancelTechEdit(item)}
-                                style={{
-                                  fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                  padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                                  marginLeft: "clamp(5px, 1vw, 10px)",
-                                }}
+                               
                               >
                                 Deshacer
                               </CustomButton>
@@ -831,11 +830,9 @@ const WorkFlowpar2createPage: React.FC = () => {
                           ) : (
                             <CustomButton
                               variant="editIcon"
+                              className="btn-table"
                               onClick={() => handleEditTechClick(item)}
-                              style={{
-                                fontSize: "clamp(0.6rem, 1vw, 0.9rem)",
-                                padding: "clamp(3px, 0.5vw, 6px) clamp(8px, 1vw, 12px)",
-                              }}
+                              
                             >
                               Editar
                             </CustomButton>

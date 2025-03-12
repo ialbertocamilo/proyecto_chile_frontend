@@ -212,27 +212,22 @@ const ProjectListPage = () => {
       minWidth: 100,
       cell: ({ row }: { row: Project }) => (
         <div
+        className="buttons-container"
         >
           <CustomButton
             variant="editIcon"
+            className="btn-table "
             onClick={() => handleGoToWorkflow(row)}
             title="Editar en Workflow"
-            style={{
-              width: "36px",
-              height: "36px",
-              padding: "0.5rem",
-            }}
+            
           />
           <CustomButton
             variant="deleteIcon"
+            className="btn-table"
             onClick={() =>
               handleDelete(row.id, row.name_project || "N/D")
             }
-            style={{
-              width: "36px",
-              height: "36px",
-              padding: "0.5rem",
-            }}
+            
           />
         </div>
       ),

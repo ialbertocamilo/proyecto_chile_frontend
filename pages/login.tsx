@@ -1,10 +1,10 @@
 ;
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import { useRouter } from "next/router";
-import { useState, useEffect, ReactElement } from "react";
-import Link from "next/link";
-import Head from "next/head";
 import { NextPage } from "next";
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { ReactElement, useEffect, useState } from "react";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 
 type NextPageWithLayout = NextPage & {
@@ -51,13 +51,11 @@ const Login: NextPageWithLayout = () => {
         throw new Error(data.message || "Credenciales incorrectas.");
       }
 
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("User", data.token);
       localStorage.setItem("email", email);
       localStorage.setItem("user_name", data.name || "Usuario");
 
-      console.log("Token guardado:", data.token);
-      console.log("Email guardado para 2FA:", email);
-      console.log("Nombre del usuario guardado:", data.name);
+      console.log("User data:", data);
 
       setTimeout(() => {
         push("/twofactorauth");
@@ -75,16 +73,27 @@ const Login: NextPageWithLayout = () => {
     <div
       className="container-fluid"
       style={{
-        
         background:
           "url('/assets/images/background.jpg') no-repeat center center/cover",
       }}
     >
       <div className="row">
+
         <div className="col-12 p-0">
           <div className="login-card login-dark">
             <div>
+
               <div className="login-main">
+                <div className="col-12 p-0 d-flex justify-content-center">
+                  <img
+                    src="/assets/images/ceela.png"
+                    alt="Ceela Logo"
+                    className="img-fluid mt-4 mb-3"
+                    style={{ maxHeight: "120px" }}
+                  />
+                </div>
+                <br />
+                <hr />
                 <form className="theme-form" onSubmit={handleSubmit}>
                   <h4 style={{ color: "var(--primary-color)" }}>
                     Ingresa a tu cuenta
@@ -122,7 +131,7 @@ const Login: NextPageWithLayout = () => {
                         style={{ cursor: "pointer", color: "var(--primary-color)" }}
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                          {showPassword ? "Ocultar" : "Mostrar"}    
+                        {showPassword ? "Ocultar" : "Mostrar"}
                       </div>
                     </div>
                   </div>

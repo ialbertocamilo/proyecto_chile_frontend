@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import axios from "axios";
-import Swal, { SweetAlertResult } from "sweetalert2";
+import Breadcrumb from "@/components/common/Breadcrumb";
 import { notify } from "@/utils/notify";
-import CustomButton from "../src/components/common/CustomButton";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
-import Title from "../src/components/Title";
+import axios from "axios";
+import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import Swal, { SweetAlertResult } from "sweetalert2";
 import Card from "../src/components/common/Card";
+import CustomButton from "../src/components/common/CustomButton";
 import DataTable from "../src/components/DataTable";
-import Breadcrumb from "../src/components/common/Breadcrumb";
+import Title from "../src/components/Title";
+import useAuth from "../src/hooks/useAuth";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 interface Divisions {
   department?: string;
@@ -213,14 +213,14 @@ const ProjectListPage = () => {
       minWidth: 100,
       cell: ({ row }: { row: Project }) => (
         <div
-        className="buttons-container"
+          className="buttons-container"
         >
           <CustomButton
             variant="editIcon"
             className="btn-table "
             onClick={() => handleGoToWorkflow(row)}
             title="Editar en Workflow"
-            
+
           />
           <CustomButton
             variant="deleteIcon"
@@ -228,7 +228,7 @@ const ProjectListPage = () => {
             onClick={() =>
               handleDelete(row.id, row.name_project || "N/D")
             }
-            
+
           />
         </div>
       ),
@@ -238,21 +238,21 @@ const ProjectListPage = () => {
   return (
     <>
       <div>
-      <Card>
-        <Title text="Listado de Proyectos" />
-        <div className="container-fluid page-title row">
-          <Breadcrumb />
-        </div>
-      </Card>
-          <DataTable
-            data={projects}
-            columns={tableColumns}
-            loading={loading}
-            createText="Proyecto Nuevo"
-            createUrl="/workflow-part1-create"
-            pageSize={10}
-            showButton={true}
-          />
+        <Card>
+
+          <div className="d-flex align-items-center w-100">
+            <Title text="Listado de Proyectos" />
+            <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: true }]} /></div>
+        </Card>
+        <DataTable
+          data={projects}
+          columns={tableColumns}
+          loading={loading}
+          createText="Proyecto Nuevo"
+          createUrl="/workflow-part1-create"
+          pageSize={10}
+          showButton={true}
+        />
       </div>
 
       <style jsx>{`

@@ -1,5 +1,7 @@
+import Breadcrumb from "@/components/common/Breadcrumb";
 import { Autocompletion } from "@/components/maps/Autocompletion";
 import { useApi } from "@/hooks/useApi";
+import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
@@ -12,9 +14,6 @@ import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
-import { notify } from "@/utils/notify";
-import SaveButton from "@/components/common/SaveButton";
-import Breadcrumb from "../src/components/common/Breadcrumb";
 
 
 
@@ -326,418 +325,418 @@ const ProjectWorkflowPart1: React.FC = () => {
   }, [locationSearch]);
   return (
     <>
-    <Card>
-        <div>{renderMainHeader()}</div>
-        <div className="container-fluid page-title row">
-          <Breadcrumb />
+      <Card>
+        <div className="d-flex align-items-center w-100">
+          {renderMainHeader()}
+          <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: false }, { title: 'Nuevo proyecto', active: true }]} />
         </div>
-        </Card>
-        <Card>
-            <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
-              {/* Sidebar dinámico con el arreglo de pasos */}
-              <AdminSidebar activeStep={step} onStepChange={setStep} steps={steps} />
-              <div className="content p-4" style={{ flex: 1 }}>
-                {step === 1 && (
-                  <>
-                    {/* Paso 1: Datos generales */}
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Nombre del proyecto{" "}
-                          {isFieldEmpty("name_project") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.name_project}
-                          onChange={(e) =>
-                            handleFormInputChange("name_project", e.target.value)
-                          }
-                          style={
-                            submitted && errors.name_project
-                              ? { borderColor: "red" }
-                              : undefined
-                          }
-                        />
-                        {submitted && errors.name_project && (
-                          <small className="text-danger">{errors.name_project}</small>
-                        )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Nombre del propietario{" "}
-                          {isFieldEmpty("owner_name") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.owner_name}
-                          onChange={(e) =>
-                            handleFormInputChange("owner_name", e.target.value)
-                          }
-                        />
-                        {submitted && errors.owner_name && (
-                          <small className="text-danger">{errors.owner_name}</small>
-                        )}
-                      </div>
-                    </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Apellido del propietario{" "}
-                          {isFieldEmpty("owner_lastname") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.owner_lastname}
-                          onChange={(e) =>
-                            handleFormInputChange("owner_lastname", e.target.value)
-                          }
-                        />
-                        {submitted && errors.owner_lastname && (
-                          <small className="text-danger">{errors.owner_lastname}</small>
-                        )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          País{" "}
-                          {isFieldEmpty("country") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.country}
-                          onChange={(e) =>
-                            handleCountryChange(e.target.value as Country)
-                          }
-                        >
-                          <option value="">Seleccione un país</option>
-                          {Object.keys(locationData).map((country) => (
-                            <option key={country} value={country}>
-                              {country}
-                            </option>
-                          ))}
-                        </select>
-                        {submitted && errors.country && (
-                          <small className="text-danger">{errors.country}</small>
-                        )}
-                      </div>
-                    </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Departamento{" "}
-                          {isFieldEmpty("department") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.department}
-                          onChange={(e) =>
-                            handleDepartmentChange(e.target.value)
-                          }
-                          disabled={!formData.country}
-                        >
-                          <option value="">Seleccione un departamento</option>
-                          {formData.country &&
-                            Object.keys(locationData[formData.country]?.departments || {}).map(
-                              (dept) => (
-                                <option key={dept} value={dept}>
-                                  {dept}
-                                </option>
-                              )
-                            )}
-                        </select>
-                        {submitted && errors.department && (
-                          <small className="text-danger">{errors.department}</small>
-                        )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Provincia{" "}
-                          {isFieldEmpty("province") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.province}
-                          onChange={(e) =>
-                            handleFormInputChange("province", e.target.value)
-                          }
-                          disabled={!formData.department}
-                        >
-                          <option value="">Seleccione una provincia</option>
-                          {formData.country &&
-                            formData.department &&
-                            (locationData[formData.country]?.departments?.[formData.department] || []).map(
-                              (prov) => (
-                                <option key={prov} value={prov}>
-                                  {prov}
-                                </option>
-                              )
-                            )}
-                        </select>
-                        {submitted && errors.province && (
-                          <small className="text-danger">{errors.province}</small>
-                        )}
-                      </div>
-                    </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Distrito{" "}
-                          {isFieldEmpty("district") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.district}
-                          onChange={(e) =>
-                            handleFormInputChange("district", e.target.value)
-                          }
-                        />
-                        {submitted && errors.district && (
-                          <small className="text-danger">{errors.district}</small>
-                        )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Tipo de edificación{" "}
-                          {isFieldEmpty("building_type") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.building_type}
-                          onChange={(e) =>
-                            handleFormInputChange("building_type", e.target.value)
-                          }
-                        >
-                          <option value="">Seleccione un tipo de edificación</option>
-                          <option value="Unifamiliar">Unifamiliar</option>
-                          <option value="Duplex">Duplex</option>
-                          <option value="Vertical / Departamentos">
-                            Vertical / Departamentos
-                          </option>
-                        </select>
-                        {submitted && errors.building_type && (
-                          <small className="text-danger">{errors.building_type}</small>
-                        )}
-                      </div>
-                    </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Tipo de uso principal{" "}
-                          {isFieldEmpty("main_use_type") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.main_use_type}
-                          onChange={(e) =>
-                            handleFormInputChange("main_use_type", e.target.value)
-                          }
-                        >
-                          <option value="">Seleccione un tipo de uso</option>
-                          <option value="Viviendas">Viviendas</option>
-                          <option value="Oficinas">Oficinas</option>
-                          <option value="Terciarios">Terciarios</option>
-                        </select>
-                        {submitted && errors.main_use_type && (
-                          <small className="text-danger">{errors.main_use_type}</small>
-                        )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Número de niveles{" "}
-                          {isFieldEmpty("number_levels") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.number_levels}
-                          onChange={(e) =>
-                            handleFormInputChange(
-                              "number_levels",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                        />
-                        {submitted && errors.number_levels && (
-                          <small className="text-danger">{errors.number_levels}</small>
-                        )}
-                      </div>
-                    </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Número de viviendas / oficinas x nivel{" "}
-                          {isFieldEmpty("number_homes_per_level") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.number_homes_per_level}
-                          onChange={(e) =>
-                            handleFormInputChange(
-                              "number_homes_per_level",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                        />
-                        {submitted && errors.number_homes_per_level && (
-                          <small className="text-danger">
-                            {errors.number_homes_per_level}
-                          </small>
-                        )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Superficie construida (m²){" "}
-                          {isFieldEmpty("built_surface") && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.built_surface}
-                          onChange={(e) =>
-                            handleFormInputChange(
-                              "built_surface",
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
-                        />
-                        {submitted && errors.built_surface && (
-                          <small className="text-danger">{errors.built_surface}</small>
-                        )}
-                      </div>
-                    </div>
-                    {globalError && (
-                      <div className="alert alert-danger" role="alert">
-                        {globalError}
-                      </div>
+      </Card>
+      <Card>
+        <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
+          {/* Sidebar dinámico con el arreglo de pasos */}
+          <AdminSidebar activeStep={step} onStepChange={setStep} steps={steps} />
+          <div className="content p-4" style={{ flex: 1 }}>
+            {step === 1 && (
+              <>
+                {/* Paso 1: Datos generales */}
+                <div className="row mb-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Nombre del proyecto{" "}
+                      {isFieldEmpty("name_project") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.name_project}
+                      onChange={(e) =>
+                        handleFormInputChange("name_project", e.target.value)
+                      }
+                      style={
+                        submitted && errors.name_project
+                          ? { borderColor: "red" }
+                          : undefined
+                      }
+                    />
+                    {submitted && errors.name_project && (
+                      <small className="text-danger">{errors.name_project}</small>
                     )}
-                    <div className="d-flex justify-content-between align-items-center mt-4">
-                      <div>
-                        (<span style={{ color: "red" }}>*</span>) Campos Obligatorios
-                      </div>
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Nombre del propietario{" "}
+                      {isFieldEmpty("owner_name") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.owner_name}
+                      onChange={(e) =>
+                        handleFormInputChange("owner_name", e.target.value)
+                      }
+                    />
+                    {submitted && errors.owner_name && (
+                      <small className="text-danger">{errors.owner_name}</small>
+                    )}
+                  </div>
+                </div>
+                <div className="row mb-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Apellido del propietario{" "}
+                      {isFieldEmpty("owner_lastname") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.owner_lastname}
+                      onChange={(e) =>
+                        handleFormInputChange("owner_lastname", e.target.value)
+                      }
+                    />
+                    {submitted && errors.owner_lastname && (
+                      <small className="text-danger">{errors.owner_lastname}</small>
+                    )}
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      País{" "}
+                      {isFieldEmpty("country") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <select
+                      className="form-control"
+                      value={formData.country}
+                      onChange={(e) =>
+                        handleCountryChange(e.target.value as Country)
+                      }
+                    >
+                      <option value="">Seleccione un país</option>
+                      {Object.keys(locationData).map((country) => (
+                        <option key={country} value={country}>
+                          {country}
+                        </option>
+                      ))}
+                    </select>
+                    {submitted && errors.country && (
+                      <small className="text-danger">{errors.country}</small>
+                    )}
+                  </div>
+                </div>
+                <div className="row mb-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Departamento{" "}
+                      {isFieldEmpty("department") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <select
+                      className="form-control"
+                      value={formData.department}
+                      onChange={(e) =>
+                        handleDepartmentChange(e.target.value)
+                      }
+                      disabled={!formData.country}
+                    >
+                      <option value="">Seleccione un departamento</option>
+                      {formData.country &&
+                        Object.keys(locationData[formData.country]?.departments || {}).map(
+                          (dept) => (
+                            <option key={dept} value={dept}>
+                              {dept}
+                            </option>
+                          )
+                        )}
+                    </select>
+                    {submitted && errors.department && (
+                      <small className="text-danger">{errors.department}</small>
+                    )}
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Provincia{" "}
+                      {isFieldEmpty("province") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <select
+                      className="form-control"
+                      value={formData.province}
+                      onChange={(e) =>
+                        handleFormInputChange("province", e.target.value)
+                      }
+                      disabled={!formData.department}
+                    >
+                      <option value="">Seleccione una provincia</option>
+                      {formData.country &&
+                        formData.department &&
+                        (locationData[formData.country]?.departments?.[formData.department] || []).map(
+                          (prov) => (
+                            <option key={prov} value={prov}>
+                              {prov}
+                            </option>
+                          )
+                        )}
+                    </select>
+                    {submitted && errors.province && (
+                      <small className="text-danger">{errors.province}</small>
+                    )}
+                  </div>
+                </div>
+                <div className="row mb-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Distrito{" "}
+                      {isFieldEmpty("district") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.district}
+                      onChange={(e) =>
+                        handleFormInputChange("district", e.target.value)
+                      }
+                    />
+                    {submitted && errors.district && (
+                      <small className="text-danger">{errors.district}</small>
+                    )}
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Tipo de edificación{" "}
+                      {isFieldEmpty("building_type") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <select
+                      className="form-control"
+                      value={formData.building_type}
+                      onChange={(e) =>
+                        handleFormInputChange("building_type", e.target.value)
+                      }
+                    >
+                      <option value="">Seleccione un tipo de edificación</option>
+                      <option value="Unifamiliar">Unifamiliar</option>
+                      <option value="Duplex">Duplex</option>
+                      <option value="Vertical / Departamentos">
+                        Vertical / Departamentos
+                      </option>
+                    </select>
+                    {submitted && errors.building_type && (
+                      <small className="text-danger">{errors.building_type}</small>
+                    )}
+                  </div>
+                </div>
+                <div className="row mb-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Tipo de uso principal{" "}
+                      {isFieldEmpty("main_use_type") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <select
+                      className="form-control"
+                      value={formData.main_use_type}
+                      onChange={(e) =>
+                        handleFormInputChange("main_use_type", e.target.value)
+                      }
+                    >
+                      <option value="">Seleccione un tipo de uso</option>
+                      <option value="Viviendas">Viviendas</option>
+                      <option value="Oficinas">Oficinas</option>
+                      <option value="Terciarios">Terciarios</option>
+                    </select>
+                    {submitted && errors.main_use_type && (
+                      <small className="text-danger">{errors.main_use_type}</small>
+                    )}
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Número de niveles{" "}
+                      {isFieldEmpty("number_levels") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="form-control"
+                      value={formData.number_levels}
+                      onChange={(e) =>
+                        handleFormInputChange(
+                          "number_levels",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
+                    />
+                    {submitted && errors.number_levels && (
+                      <small className="text-danger">{errors.number_levels}</small>
+                    )}
+                  </div>
+                </div>
+                <div className="row mb-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Número de viviendas / oficinas x nivel{" "}
+                      {isFieldEmpty("number_homes_per_level") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="form-control"
+                      value={formData.number_homes_per_level}
+                      onChange={(e) =>
+                        handleFormInputChange(
+                          "number_homes_per_level",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
+                    />
+                    {submitted && errors.number_homes_per_level && (
+                      <small className="text-danger">
+                        {errors.number_homes_per_level}
+                      </small>
+                    )}
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Superficie construida (m²){" "}
+                      {isFieldEmpty("built_surface") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="form-control"
+                      value={formData.built_surface}
+                      onChange={(e) =>
+                        handleFormInputChange(
+                          "built_surface",
+                          parseFloat(e.target.value) || 0
+                        )
+                      }
+                    />
+                    {submitted && errors.built_surface && (
+                      <small className="text-danger">{errors.built_surface}</small>
+                    )}
+                  </div>
+                </div>
+                {globalError && (
+                  <div className="alert alert-danger" role="alert">
+                    {globalError}
+                  </div>
+                )}
+                <div className="d-flex justify-content-between align-items-center mt-4">
+                  <div>
+                    (<span style={{ color: "red" }}>*</span>) Campos Obligatorios
+                  </div>
+                  <CustomButton
+                    variant="save"
+                    onClick={handleStep1Action}
+                    disabled={loading}
+                  >
+                    Continuar
+                  </CustomButton>
+                </div>
+              </>
+            )}
+            {step === 2 && (
+              <>
+                {/* Paso 2: Ubicación */}
+                <div
+                  style={{
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    padding: "30px",
+                    marginBottom: "20px",
+                  }}
+                >
+                  <div className="row">
+                    <div className="col-12 mb-3">
+
+                      <Autocompletion
+                        locationSearch={locationSearch}
+                        setLocationSearch={setLocationSearch}
+                        completionList={completionList}
+                        handleFormInputChange={handleFormInputChange}
+                        setCompletionList={setCompletionList}
+                      />
+                    </div>
+                    <div className="col-12 col-md-8 mb-3">
+                      <NoSSRInteractiveMap
+                        onLocationSelect={(latlng) => {
+                          handleFormInputChange("latitude", latlng.lat);
+                          handleFormInputChange("longitude", latlng.lng);
+                        }}
+                        initialLat={formData.latitude}
+                        initialLng={formData.longitude}
+                      />
+                    </div>
+                    <div className="col-12 col-md-4">
+                      <label
+                        className="form-label"
+
+                      >
+                        Datos de ubicaciones encontradas
+                      </label>
+                      <textarea
+                        className="form-control mb-2"
+                        rows={5}
+                        value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center ">
+                    <div className="d-flex">
                       <CustomButton
                         variant="save"
-                        onClick={handleStep1Action}
-                        disabled={loading}
+                        onClick={handleGeolocation}
                       >
-                        Continuar
+                        <span
+                          className="material-icons"
+                        >
+                          location_on
+                        </span>
+                        Ubicación actual
                       </CustomButton>
                     </div>
-                  </>
-                )}
-                {step === 2 && (
-                  <>
-                    {/* Paso 2: Ubicación */}
-                    <div
-                      style={{
-                        border: "1px solid #ccc",
-                        borderRadius: "8px",
-                        padding: "30px",
-                        marginBottom: "20px",
-                      }}
-                    >
-                      <div className="row">
-                        <div className="col-12 mb-3">
-
-                          <Autocompletion
-                            locationSearch={locationSearch}
-                            setLocationSearch={setLocationSearch}
-                            completionList={completionList}
-                            handleFormInputChange={handleFormInputChange}
-                            setCompletionList={setCompletionList}
-                          />
-                        </div>
-                        <div className="col-12 col-md-8 mb-3">
-                          <NoSSRInteractiveMap
-                            onLocationSelect={(latlng) => {
-                              handleFormInputChange("latitude", latlng.lat);
-                              handleFormInputChange("longitude", latlng.lng);
-                            }}
-                            initialLat={formData.latitude}
-                            initialLng={formData.longitude}
-                          />
-                        </div>
-                        <div className="col-12 col-md-4">
-                          <label
-                            className="form-label"
-                     
-                          >
-                            Datos de ubicaciones encontradas
-                          </label>
-                          <textarea
-                            className="form-control mb-2"
-                            rows={5}
-                            value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                      <div className="d-flex justify-content-between align-items-center ">
-                        <div className="d-flex">
-                          <CustomButton
-                            variant="save"
-                            onClick={handleGeolocation}
-                          >
-                            <span
-                              className="material-icons"
-                            >
-                              location_on
-                            </span>
-                            Ubicación actual
-                          </CustomButton>
-                        </div>
-                        <div className="d-flex">
-                          <CustomButton
-                            variant="save"
-                            onClick={enviarProyecto}
-                            disabled={loading}
-                          >
-                            <span
-                              className="material-icons"
-                              style={{ marginRight: "5px" }}
-                            >
-                              sd_card
-                            </span>
-                            Grabar Datos
-                          </CustomButton>
-                        </div>
-                      </div>
+                    <div className="d-flex">
+                      <CustomButton
+                        variant="save"
+                        onClick={enviarProyecto}
+                        disabled={loading}
+                      >
+                        <span
+                          className="material-icons"
+                          style={{ marginRight: "5px" }}
+                        >
+                          sd_card
+                        </span>
+                        Grabar Datos
+                      </CustomButton>
                     </div>
-                  </>
-                )}
-              </div>
-            </div>
-        </Card>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </Card>
     </>
   );
 };

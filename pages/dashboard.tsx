@@ -32,6 +32,7 @@ ChartJS.register(
     Legend
 )
 function hexToRgba(hex: string, alpha: number) {
+    
     const cleanHex = hex.replace("#", "")
     const r = parseInt(cleanHex.substring(0, 2), 16)
     const g = parseInt(cleanHex.substring(2, 4), 16)
@@ -58,7 +59,6 @@ const DashboardPage: React.FC = () => {
 
     const primaryColorAlpha = hexToRgba(primaryColor, 0.2)
 
-    // Datos de los gráficos
     const lineData = {
         labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"],
         datasets: [
@@ -118,6 +118,7 @@ const DashboardPage: React.FC = () => {
             },
         ],
     }
+
     return (
         <div className="dashboard-container">
             <Card className="header-card">

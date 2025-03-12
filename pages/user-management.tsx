@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import Card from "../src/components/common/Card";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 interface User {
   id: number;
@@ -143,8 +144,11 @@ const UserManagement = () => {
   return (
     <>
       <Card>
-        <Title text="Listado de Usuarios" />
-      </Card>
+          <Title text="Listado de usuarios" />
+          <div className="container-fluid page-title row">
+          <Breadcrumb />
+          </div>
+          </Card>
       <DataTable
         columns={columns.map((col) => ({
           ...col,

@@ -17,6 +17,7 @@ import { Line, Bar, Pie, Doughnut, Radar } from "react-chartjs-2";
 import Title from "../src/components/Title"; // Componente creado para mostrar títulos
 import useAuth from "../src/hooks/useAuth";
 import Card from "../src/components/common/Card";
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 ChartJS.register(
   CategoryScale,
@@ -119,15 +120,17 @@ const DashboardPage: React.FC = () => {
       },
     ],
   };
-
   return (
-    <div className="d-flex flex-column flex-grow-1 font-base">
+    <div className="container-fluid d-flex align-items-center justify-content-between p-0">
 
       {/* Contenedor fluido que envuelve el custom-container */}
       <div>
         <div>
           <Card>
           <Title text="Dashboard" />
+          <div className="container-fluid page-title row col-sm-6 p-0">
+          <Breadcrumb />
+          </div>
           </Card>
           <div className="row gy-4">
             {/* Proyectos Nuevos */}
@@ -280,10 +283,7 @@ const DashboardPage: React.FC = () => {
         .text-primary {
           color: var(--primary-color) !important;
         }
-        .title-chart {
-          font-size: 1.1rem;
-          font-weight: normal;
-        }
+        
       `}</style>
     </div>
   );

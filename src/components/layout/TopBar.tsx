@@ -8,8 +8,10 @@ interface TopBarProps {
   sidebarWidth: string;
 }
 
-const getUserTypeText = (roleId: string): string => {
-  switch (roleId) {
+// Modificamos la función para que si el valor ya es "Administrador" o "Operador", lo retorne directamente
+const getUserTypeText = (role: string): string => {
+  if (role === "Administrador" || role === "Operador") return role;
+  switch (role) {
     case "1":
       return "Administrador";
     case "2":
@@ -44,6 +46,7 @@ const TopBar = ({}: TopBarProps) => {
           const nameFromProfile = parsedProfile.name
             ? parsedProfile.name
             : localStorage.getItem("user_name") || "Usuario";
+          // Si en el perfil ya está el texto (por ejemplo, "Administrador"), lo usamos así.
           const userTypeFromProfile = parsedProfile.userType
             ? parsedProfile.userType
             : localStorage.getItem("role_id") || "Tipo de Usuario";
@@ -128,9 +131,9 @@ const TopBar = ({}: TopBarProps) => {
           }}
         >
           <Image
-            src="/assets/images/ceela.png" // Cambia la ruta a la imagen que desees subir
+            src="/assets/images/ceela.png"
             alt="Logo"
-            width={200} // Ajusta el tamaño según necesites
+            width={200}
             height={100}
           />
         </div>
@@ -153,7 +156,6 @@ const TopBar = ({}: TopBarProps) => {
               cursor: "pointer",
             }}
           >
-            {/* Ícono más grande (50x50) */}
             <Image
               src="/assets/images/user_icon.png"
               alt="User"
@@ -163,9 +165,7 @@ const TopBar = ({}: TopBarProps) => {
               style={{ marginRight: "8px" }}
             />
 
-            {/* Vista extendida (Desktop) */}
             <div className="d-none d-md-flex flex-column align-items-start">
-              {/* Email en fuente más grande */}
               <span
                 style={{
                   color: "var(--primary-color)",
@@ -173,7 +173,6 @@ const TopBar = ({}: TopBarProps) => {
               >
                 {user.email}
               </span>
-              {/* Nombre y caret */}
               <span
                 style={{
                   display: "flex",
@@ -186,7 +185,7 @@ const TopBar = ({}: TopBarProps) => {
                   style={{ fontSize: "14px" }}
                 />
               </span>
-              {/* Rol en un "badge" más grande */}
+              {/* Ahora se muestra directamente el texto correcto */}
               <span
                 style={{
                   fontSize: "12px",
@@ -201,30 +200,18 @@ const TopBar = ({}: TopBarProps) => {
               </span>
             </div>
 
-            <div className="d-flex d-md-none">
-            </div>
+            <div className="d-flex d-md-none"></div>
           </button>
 
-          {/* Dropdown */}
           {menuOpen && (
             <div
               className="dropdown-menu dropdown-menu-end show mt-2 shadow-sm"
               style={{ right: 0 }}
             >
-              {/* En móviles, mostrar la info extendida dentro del dropdown */}
               <div className="d-md-none p-2 border-bottom">
-                <span
-                >
-                  {user.email}
-                </span>
-                <span
-                >
-                  {user.name}
-                </span>
-                <span
-                >
-                  {getUserTypeText(user.userType)}
-                </span>
+                <span>{user.email}</span>
+                <span>{user.name}</span>
+                <span>{getUserTypeText(user.userType)}</span>
               </div>
 
               <Link href="/edit-profile" className="dropdown-item">

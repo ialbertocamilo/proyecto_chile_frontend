@@ -16,12 +16,13 @@ interface ProfileData {
   number_phone: string;
   country: string;
   ubigeo: string;
-  proffesion?: string; // Nuevo campo para la profesión
-  userType?: string;
+  proffesion?: string; // Campo opcional
+  userType?: string;  // Aquí se almacenará el ID del rol (ej. "1" o "2")
   email?: string;
 }
 
-const mapRoleIdToText = (roleId: string | null): string => {
+// Función para convertir el ID de rol a texto (solo para mostrar en este componente)
+const getUserTypeText = (roleId: string): string => {
   if (roleId === "1") return "Administrador";
   if (roleId === "2") return "Operador";
   return "Desconocido";
@@ -37,8 +38,8 @@ const EditProfile = () => {
     number_phone: "",
     country: "",
     ubigeo: "",
-    proffesion: "", // Inicializamos el campo de profesión
-    userType: "",
+    proffesion: "",
+    userType: "", // Se guardará el ID del rol
     email: "",
   });
   const [loading, setLoading] = useState(false);
@@ -46,7 +47,8 @@ const EditProfile = () => {
 
   useEffect(() => {
     const storedProfile = localStorage.getItem("userProfile");
-    const roleId = localStorage.getItem("role_id");
+    // Obtenemos el ID del rol desde localStorage
+    const roleId = localStorage.getItem("role_id") || "";
     if (storedProfile) {
       try {
         const parsedProfile: ProfileData = JSON.parse(storedProfile);
@@ -56,8 +58,8 @@ const EditProfile = () => {
           number_phone: parsedProfile.number_phone || "",
           country: parsedProfile.country || "",
           ubigeo: parsedProfile.ubigeo || "",
-          proffesion: parsedProfile.proffesion || "", // Cargamos la profesión existente
-          userType: mapRoleIdToText(roleId),
+          proffesion: parsedProfile.proffesion || "",
+          userType: roleId, // Guardamos el ID del rol
           email: parsedProfile.email || "",
         });
         console.log("[EditProfile] Perfil cargado desde localStorage:", parsedProfile);
@@ -112,6 +114,7 @@ const EditProfile = () => {
       }
 
       await response.json();
+      // Se guarda el perfil actualizado sin modificar el ID de rol
       localStorage.setItem("userProfile", JSON.stringify({ ...profile }));
       notify("Tu perfil se actualizó correctamente.");
     } catch (err: unknown) {
@@ -167,9 +170,8 @@ const EditProfile = () => {
 
       <div className="container-fluid p-0">
         <Card>
-          {/* Estructura responsive con la columna izquierda más angosta */}
-          <div className="row g-3" style={{marginBottom: "6rem"}}>
-            {/* Columna Izquierda (Perfil) - ocupa 4 columnas en md */}
+          <div className="row g-3" style={{ marginBottom: "6rem" }}>
+            {/* Columna Izquierda (Perfil) */}
             <div className="col-md-4">
               <div style={boxStyle}>
                 <h5
@@ -205,20 +207,24 @@ const EditProfile = () => {
                       {profile.name.toUpperCase() || "NOMBRES"} {profile.lastname.toUpperCase() || "APELLIDOS"}
                     </div>
                     <div style={{ fontSize: baseFontSize, color: "#666", marginBottom: "2rem" }}>
-                      {profile.userType}
+                      {getUserTypeText(profile.userType || "")}
                     </div>
                   </div>
                 </div>
-
+ 
                 <div style={{ marginBottom: "2rem" }}>
-                  <label style={labelStyle}>Email Address</label>
+                  <label style={labelStyle}>
+                    Email Address <span style={{ color: "red" }}></span>
+                  </label>
                   <div style={{ fontSize: baseFontSize, color: "#666" }}>
                     {profile.email || "your-email@domain.com"}
                   </div>
                 </div>
 
                 <div style={{ marginBottom: "2rem" }}>
-                  <label style={labelStyle}>Password</label>
+                  <label style={labelStyle}>
+                    Password <span style={{ color: "red" }}></span>
+                  </label>
                   <div style={{ fontSize: baseFontSize, color: "#666", marginBottom: "3.5rem" }}>
                     ********
                   </div>
@@ -254,7 +260,9 @@ const EditProfile = () => {
                     {/* Fila 1: Nombre - Apellidos */}
                     <div className="row g-2">
                       <div className="col-md-6" style={fieldContainerStyle}>
-                        <label style={labelStyle}>Nombre</label>
+                        <label style={labelStyle}>
+                          Nombre <span style={{ color: "red" }}>*</span>
+                        </label>
                         <input
                           type="text"
                           name="name"
@@ -265,7 +273,9 @@ const EditProfile = () => {
                         />
                       </div>
                       <div className="col-md-6" style={fieldContainerStyle}>
-                        <label style={labelStyle}>Apellidos</label>
+                        <label style={labelStyle}>
+                          Apellidos <span style={{ color: "red" }}>*</span>
+                        </label>
                         <input
                           type="text"
                           name="lastname"
@@ -280,7 +290,9 @@ const EditProfile = () => {
                     {/* Fila 2: Teléfono - País */}
                     <div className="row">
                       <div className="col-md-6" style={fieldContainerStyle}>
-                        <label style={labelStyle}>Teléfono</label>
+                        <label style={labelStyle}>
+                          Teléfono <span style={{ color: "red" }}>*</span>
+                        </label>
                         <input
                           type="text"
                           name="number_phone"
@@ -291,7 +303,9 @@ const EditProfile = () => {
                         />
                       </div>
                       <div className="col-md-6" style={fieldContainerStyle}>
-                        <label style={labelStyle}>País</label>
+                        <label style={labelStyle}>
+                          País <span style={{ color: "red" }}>*</span>
+                        </label>
                         <input
                           type="text"
                           name="country"
@@ -303,10 +317,12 @@ const EditProfile = () => {
                       </div>
                     </div>
 
-                    {/* Fila 3: Ubigeo y Profesión en la misma fila */}
+                    {/* Fila 3: Ubigeo y Profesión */}
                     <div className="row">
                       <div className="col-md-6" style={fieldContainerStyle}>
-                        <label style={labelStyle}>Ubigeo</label>
+                        <label style={labelStyle}>
+                          Ubigeo <span style={{ color: "red" }}>*</span>
+                        </label>
                         <input
                           type="text"
                           name="ubigeo"
@@ -318,7 +334,9 @@ const EditProfile = () => {
                         />
                       </div>
                       <div className="col-md-6" style={fieldContainerStyle}>
-                        <label style={labelStyle}>Profesión</label>
+                        <label style={labelStyle}>
+                          Profesión
+                        </label>
                         <input
                           type="text"
                           name="proffesion"
@@ -329,6 +347,11 @@ const EditProfile = () => {
                           placeholder="Ej. Ingeniero"
                         />
                       </div>
+                    </div>
+
+                    {/* Mensaje de campos obligatorios */}
+                    <div style={{ fontSize: baseFontSize, marginBottom: "1rem" }}>
+                      <span style={{ color: "red" }}>*</span> Campos obligatorios
                     </div>
 
                     <div className="mt-auto d-flex justify-content-end">

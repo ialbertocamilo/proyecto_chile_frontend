@@ -14,9 +14,9 @@ interface BreadcrumbProps {
 const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
   return (
     <div className="container-fluid row col-sm-6 p-0 page-title">
-      <ol className="breadcrumb">
+      <ol className="breadcrumb" style={{ textDecoration: 'none' }}>
         <li className="breadcrumb-item">
-          <Link href="/">
+          <Link href="/" style={{ textDecoration: 'none' }}>
             <svg className="stroke-icon">
               <use href="../assets/svg/icon-sprite.svg#stroke-home"></use>
             </svg>
@@ -28,7 +28,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
             className={`breadcrumb-item ${item.active ? 'active' : ''}`}
           >
             {item.href ? (
-              <Link href={item.href}>{item.title}</Link>
+              <Link href={item.href} style={{ textDecoration: 'none' }}>{item.title}</Link>
             ) : (
               item.title
             )}

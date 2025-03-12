@@ -12,12 +12,8 @@ const getUserTypeText = (roleId: string): string => {
   switch (roleId) {
     case "1":
       return "Administrador";
-    case 1:
-      return 'Administrador'
     case "2":
       return "Operador";
-    case 2:
-      return 'Operador'
     default:
       return "Operador";
   }

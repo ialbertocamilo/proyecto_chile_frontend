@@ -122,9 +122,11 @@ const ProjectListStatusEditPage = () => {
   return (
     <div>
       <Card>
+      <div className="d-flex align-items-center w-100">
         <Title text="Administrar proyectos" />
-        <div className="container-fluid page-title row ">
-        <Breadcrumb />
+          <Breadcrumb items={[
+            { title: 'Administrar proyectos', href: '/project-status', active: true }
+          ]} />
         </div>
       </Card>
       {/* El DataTable se encarga de mostrar la búsqueda, paginación y tabla */}

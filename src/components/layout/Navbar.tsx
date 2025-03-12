@@ -8,10 +8,11 @@ import GoogleIcons from "../../../public/GoogleIcons";
 import useIsClient from "../../utils/useIsClient";
 
 interface NavbarProps {
-  setActiveView?: (view: string) => void;  // Make it optional since it's not being used
+  setActiveView?: (view: string) => void;
+  onNavbarToggle?: (isOpen: boolean) => void; // New prop to inform parent about navbar state
 }
 
-const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declaration
+const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   const router = useRouter();
   const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
   const [roleId, setRoleId] = useState<string | null>(null);
@@ -64,9 +65,15 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
 
   const toggleNavbar = () => {
     setAnimateIcon(true);
-    setIsNavbarVisible(!isNavbarVisible);
+    const newState = !isNavbarVisible;
+    setIsNavbarVisible(newState);
+    // Notify parent component about navbar state change
+    if (onNavbarToggle) {
+      onNavbarToggle(newState);
+    }
     setTimeout(() => setAnimateIcon(false), 300);
   };
+  
   const navLinkStyle: React.CSSProperties = {
     cursor: "pointer",
     fontFamily: "var(--font-family-base)",
@@ -88,8 +95,8 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
     fontWeight: "normal",
     borderRadius: "4px",
     opacity: 0.9,
-
   };
+  
   const iconStyle = (path: string): React.CSSProperties => ({
     fontSize: "1.5rem",
     marginBottom: "1px",
@@ -106,6 +113,7 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
     justifyContent: "center",
     boxSizing: "border-box",
   });
+  
   const logoContainerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -121,7 +129,12 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
     position: "relative",
     zIndex: 999
   };
+  
   const logoSize = 80;
+  
+  // Calculate width based on device type
+  const navbarWidth = isMobile ? "40%" : "6.5em";
+  
   return (
     <>
       <GoogleIcons />
@@ -168,7 +181,7 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
           bottom: 0,
           left: isNavbarVisible ? 0 : isMobile ? "-50%" : "-6.5em",
           zIndex: 1200,
-          width: isMobile ? "40%" : "6.5em",
+          width: navbarWidth,
           backgroundColor: "var(--primary-color)",
           fontFamily: "var(--font-family-base)",
           display: "flex",

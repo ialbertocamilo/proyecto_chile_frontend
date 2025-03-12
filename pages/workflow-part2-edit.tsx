@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react"; 
 import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -15,6 +15,8 @@ import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
 // Importamos el nuevo componente AdminSidebar
 import { AdminSidebar }  from "../src/components/administration/AdminSidebar";
+// Importamos el nuevo componente SearchParameters
+import SearchParameters from "../src/components/inputs/SearchParameters";
 
 interface Detail {
   id_detail: number;
@@ -1238,27 +1240,14 @@ const WorkFlowpar2editPage: React.FC = () => {
     if (showTabsInStep4) return null;
     return (
       <>
-        <div className="mb-3 d-flex justify-content-between align-items-stretch">
-          <div style={{ flex: 1, marginRight: "10px" }}>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Buscar..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ height: "50px" }}
-            />
-          </div>
-          <div style={{ height: "50px" }}>
-            <CustomButton
-              variant="save"
-              onClick={handleNewButtonClick}
-              style={{ height: "100%" }}
-            >
-              <span className="material-icons">add</span> Nuevo
-            </CustomButton>
-          </div>
-        </div>
+        {/* Se reemplaza la sección de búsqueda por el componente SearchParameters */}
+        <SearchParameters
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Buscar..."
+          onNew={handleNewButtonClick}
+          style={{ marginBottom: "1rem" }}
+        />
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
             <table

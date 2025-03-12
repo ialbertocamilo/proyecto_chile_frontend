@@ -777,7 +777,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                             style={{
                               width: "100%",
                               height: "20px",
-                              marginLeft: "-80px",
                               marginTop: "20px",
                             }}
                           >
@@ -789,9 +788,8 @@ const ProjectWorkflowPart1: React.FC = () => {
                             value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
                             readOnly
                             style={{
-                              width: "90%",
+                              width: "100%",
                               height: "100px",
-                              marginLeft: "-80px",
                               marginTop: "0px",
                             }}
                           />

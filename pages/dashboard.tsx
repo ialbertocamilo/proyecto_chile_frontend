@@ -122,7 +122,7 @@ const DashboardPage: React.FC = () => {
         <div className="dashboard-container">
             <Card className="header-card">
                 <div className="d-flex align-items-center w-100">
-                    <Title text="Dashboard" className="dashboard-title" />
+                    <Title text="Dashboard"  />
                     <Breadcrumb items={[
                         { title: 'Dashboard', href: '/dashboard', active: true },
                     ]} />

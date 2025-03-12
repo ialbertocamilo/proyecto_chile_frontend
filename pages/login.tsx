@@ -1,10 +1,10 @@
 ;
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import { useRouter } from "next/router";
-import { useState, useEffect, ReactElement } from "react";
-import Link from "next/link";
-import Head from "next/head";
 import { NextPage } from "next";
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { ReactElement, useEffect, useState } from "react";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 
 type NextPageWithLayout = NextPage & {
@@ -51,13 +51,11 @@ const Login: NextPageWithLayout = () => {
         throw new Error(data.message || "Credenciales incorrectas.");
       }
 
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("User", data.token);
       localStorage.setItem("email", email);
       localStorage.setItem("user_name", data.name || "Usuario");
 
-      console.log("Token guardado:", data.token);
-      console.log("Email guardado para 2FA:", email);
-      console.log("Nombre del usuario guardado:", data.name);
+      console.log("User data:", data);
 
       setTimeout(() => {
         push("/twofactorauth");

@@ -730,7 +730,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>
               <table
-                className="table table-bordered table-striped"
+                className="table table-bordered "
                 style={{ width: "100%", minWidth: "600px" }}
               >
                 <thead>
@@ -842,7 +842,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           {tabStep4 === "techumbre" && (
             <div>
               <table
-                className="table table-bordered table-striped"
+                className="table table-bordered "
                 style={{ width: "100%", minWidth: "600px" }}
               >
                 <thead>
@@ -953,7 +953,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             </div>
           )}
           {tabStep4 === "pisos" && (
-            <table className="table table-bordered table-striped">
+            <table className="table table-bordered ">
               <thead>
                 <tr>
                   <th
@@ -1066,7 +1066,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             </table>
           )}
           {tabStep4 === "ventanas" && (
-            <table className="table table-bordered table-striped">
+            <table className="table table-bordered ">
               <thead>
                 <tr>
                   <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
@@ -1128,7 +1128,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             </table>
           )}
           {tabStep4 === "puertas" && (
-            <table className="table table-bordered table-striped">
+            <table className="table table-bordered ">
               <thead>
                 <tr>
                   <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
@@ -1231,7 +1231,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
             <table
-              className="table table-bordered table-striped"
+              className="table table-bordered "
               style={{ textAlign: "center" }}
             >
               <thead>
@@ -1518,13 +1518,12 @@ const WorkFlowpar2editPage: React.FC = () => {
           }}
           className="mb-3"
         >
-          Recinto (Espacio aún en desarrollo, no funcional)
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>
         </div>
         <div style={{ height: "390px", overflowY: "scroll" }}>
-          <table className="table table-bordered table-striped">
+          <table className="table table-bordered">
             <thead>
               <tr>
                 <th style={stickyHeaderStyle1}>ID</th>

@@ -468,7 +468,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                     </div>
                     <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
                       <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                        <table className="table table-bordered table-striped">
+                        <table className="table table-bordered ">
                           <thead>
                             <tr>
                               <th style={{ textAlign: "center" }}>Nombre Material</th>
@@ -544,7 +544,7 @@ const ProjectWorkflowPart2: React.FC = () => {
                         ))}
                       </div>
                       <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                        <table className="table table-bordered table-striped">
+                        <table className="table table-bordered ">
                           <thead>
                             {modalElementType === "ventanas" ? (
                               <tr>

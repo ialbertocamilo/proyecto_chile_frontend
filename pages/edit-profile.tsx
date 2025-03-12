@@ -180,7 +180,7 @@ const EditProfile = () => {
                     fontWeight: 600,
                   }}
                 >
-                  My Profile
+                  Mi perfil
                 </h5>
 
                 <div className="d-flex align-items-center" style={{ gap: "1rem", marginBottom: "1rem" }}>

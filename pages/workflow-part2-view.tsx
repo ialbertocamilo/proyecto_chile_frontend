@@ -359,7 +359,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>
               <table
-                className="table table-bordered table-striped"
+                className="table table-bordered "
                 style={{ width: "100%", minWidth: "600px" }}
               >
                 <thead>
@@ -406,7 +406,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           {tabStep4 === "techumbre" && (
             <div style={{ overflowX: "auto" }}>
               <table
-                className="table table-bordered table-striped"
+                className="table table-bordered "
                 style={{ width: "100%", minWidth: "600px" }}
               >
                 <thead>
@@ -453,7 +453,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
             </div>
           )}
           {tabStep4 === "pisos" && (
-            <table className="table table-bordered table-striped">
+            <table className="table table-bordered ">
               <thead>
                 <tr>
                   <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
@@ -549,7 +549,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
             </table>
           )}
           {tabStep4 === "ventanas" && (
-            <table className="table table-bordered table-striped">
+            <table className="table table-bordered ">
               <thead>
                 <tr>
                   <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
@@ -609,7 +609,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
             </table>
           )}
           {tabStep4 === "puertas" && (
-            <table className="table table-bordered table-striped">
+            <table className="table table-bordered ">
               <thead>
                 <tr>
                   <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
@@ -707,7 +707,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         />
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
-            <table className="table table-bordered table-striped" style={{ textAlign: "center" }}>
+            <table className="table table-bordered " style={{ textAlign: "center" }}>
               <thead>
                 <tr>
                   <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
@@ -762,13 +762,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
     return (
       <>
         <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
-          Recinto (Espacio aún en desarrollo, no funcional)
+          Recinto 
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>
         </div>
         <div style={{ height: "390px", overflowY: "scroll" }}>
-          <table className="table table-bordered table-striped">
+          <table className="table table-bordered ">
             <thead>
               <tr>
                 <th style={{ ...stickyHeaderStyle1 }}>ID</th>

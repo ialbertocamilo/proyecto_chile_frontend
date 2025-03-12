@@ -124,12 +124,14 @@ const DashboardPage: React.FC = () => {
     <div className="container-fluid d-flex align-items-center justify-content-between p-0">
       <div>
         <div>
-            <Card>
-            <div className="d-flex justify-content-between align-items-center w-100">
+          <Card>
+            <div className="d-flex align-items-center w-100">
               <Title text="Dashboard" />
-              <Breadcrumb />
+              <Breadcrumb items={[
+                { title: 'Dashboard', href: '/dashboard',active:true },
+              ]} />
             </div>
-            </Card>
+          </Card>
           <div className="row gy-4">
             {/* Proyectos Nuevos */}
             <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12">

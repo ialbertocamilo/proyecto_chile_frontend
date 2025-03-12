@@ -144,10 +144,13 @@ const UserManagement = () => {
   return (
     <>
       <Card>
+      <div className="d-flex align-items-center w-100">
           <Title text="Listado de usuarios" />
-          <div className="container-fluid page-title row">
-          <Breadcrumb />
-          </div>
+            <Breadcrumb items={[
+              { title: 'Dashboard', href: '/dashboard', active: false },
+              { title: 'Gestión de usuarios', href: '/user-management' }
+            ]} />
+            </div>
           </Card>
       <DataTable
         columns={columns.map((col) => ({

@@ -51,7 +51,7 @@ const DashboardPage: React.FC = () => {
   useAuth();
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
 
-  
+
 
   useEffect(() => {
     const pColor = getCssVarValue("--primary-color", "#3ca7b7");
@@ -122,16 +122,14 @@ const DashboardPage: React.FC = () => {
   };
   return (
     <div className="container-fluid d-flex align-items-center justify-content-between p-0">
-
-      {/* Contenedor fluido que envuelve el custom-container */}
       <div>
         <div>
-          <Card>
-          <Title text="Dashboard" />
-          <div className="container-fluid page-title row col-sm-6 p-0">
-          <Breadcrumb />
-          </div>
-          </Card>
+            <Card>
+            <div className="d-flex justify-content-between align-items-center w-100">
+              <Title text="Dashboard" />
+              <Breadcrumb />
+            </div>
+            </Card>
           <div className="row gy-4">
             {/* Proyectos Nuevos */}
             <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12">
@@ -247,43 +245,73 @@ const DashboardPage: React.FC = () => {
           margin-right: auto;
           margin-left: auto;
         }
-        /* Uso de aspect-ratio para mantener la proporción sin altura fija */
         .chart-container {
           background-color: #fff;
-          padding: 10px;
-          border-radius: 8px;
-          box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
           box-sizing: border-box;
           aspect-ratio: 16 / 9;
           display: flex;
           flex-direction: column;
           min-height: 200px;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .chart-container:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         }
         .chart-content {
           flex-grow: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .title-chart {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin-bottom: 1.5rem;
+          position: relative;
+          padding-bottom: 0.5rem;
+        }
+        .title-chart:after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 50px;
+          height: 3px;
+          background-color: var(--primary-color);
+          border-radius: 2px;
         }
         @media (max-width: 992px) {
           .chart-container {
             aspect-ratio: 16 / 9;
-            padding: 8px;
+            padding: 15px;
           }
         }
         @media (max-width: 768px) {
           .chart-container {
             aspect-ratio: 4 / 3;
-            padding: 6px;
+            padding: 12px;
+          }
+          .title-chart {
+            font-size: 1.1rem;
           }
         }
         @media (max-width: 576px) {
           .chart-container {
             aspect-ratio: 1 / 1;
-            padding: 4px;
+            padding: 10px;
+          }
+          .title-chart {
+            font-size: 1rem;
           }
         }
         .text-primary {
           color: var(--primary-color) !important;
         }
-        
       `}</style>
     </div>
   );

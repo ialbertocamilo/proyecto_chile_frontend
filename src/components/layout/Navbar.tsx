@@ -179,13 +179,15 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
         }}
       >
         <div style={logoContainerStyle}>
-          <Image
-            src={logoUrl}
-            alt="Proyecto Ceela"
-            width={logoSize}
-            height={logoSize}
-            style={{ borderRadius: "50%", zIndex: 1100 }}
-          />
+          <Link href="/dashboard" style={{ cursor: "pointer" }}>
+            <Image
+              src={logoUrl}
+              alt="Proyecto Ceela"
+              width={logoSize}
+              height={logoSize}
+              style={{ borderRadius: "50%", zIndex: 1100 }}
+            />
+          </Link>
         </div>
   
         <div

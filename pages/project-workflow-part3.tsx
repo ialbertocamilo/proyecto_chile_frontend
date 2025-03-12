@@ -2071,7 +2071,7 @@ const ProjectWorkflowPart3: React.FC = () => {
           }}
           className="mb-3"
         >
-          Recinto (Espacio aún en desarrollo, no funcional)
+          Recinto 
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>

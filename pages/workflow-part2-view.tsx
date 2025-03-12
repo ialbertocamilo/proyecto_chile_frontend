@@ -762,7 +762,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     return (
       <>
         <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
-          Recinto (Espacio aún en desarrollo, no funcional)
+          Recinto 
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>

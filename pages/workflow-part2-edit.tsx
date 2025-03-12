@@ -1518,7 +1518,6 @@ const WorkFlowpar2editPage: React.FC = () => {
           }}
           className="mb-3"
         >
-          Recinto (Espacio aún en desarrollo, no funcional)
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>

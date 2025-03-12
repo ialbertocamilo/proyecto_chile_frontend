@@ -1360,15 +1360,6 @@ const WorkFlowpar2createPage: React.FC = () => {
   const renderRecinto = () => {
     return (
       <>
-        <h5
-          style={{
-            fontWeight: "normal",
-            fontFamily: "var(--font-family-base)",
-          }}
-          className="mb-3"
-        >
-          Recinto
-        </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>
         </div>

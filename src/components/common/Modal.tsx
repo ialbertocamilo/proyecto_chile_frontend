@@ -113,14 +113,6 @@ const Modal: React.FC<ModalProps> = ({
             borderRadius: '50%',
             transition: 'all 0.2s ease',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            ':hover': {
-              background: '#e0e0e0',
-              color: '#333',
-              transform: 'scale(1.1)',
-            },
-            ':active': {
-              transform: 'scale(0.95)',
-            }
           }}
           aria-label="Cerrar modal"
         >

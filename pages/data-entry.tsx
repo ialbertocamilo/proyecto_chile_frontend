@@ -959,7 +959,6 @@ const DataEntryPage: React.FC = () => {
                       density: "",
                     });
                   }}
-                  className="me-2"
                 />
                 <CustomButton
                   variant="save"
@@ -1179,7 +1178,6 @@ const DataEntryPage: React.FC = () => {
                         density: "",
                       });
                     }}
-                    className="me-2"
                   />
                   <CustomButton
                     variant="save"

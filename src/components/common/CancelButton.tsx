@@ -12,7 +12,7 @@ const CancelButton: React.FC<CancelButtonProps> = ({
 }) => {
     return (
         <button 
-            className="btn btn-sm btn-danger mt-2 hover:opacity-80 transition-opacity duration-200" 
+            className="btn btn-sm btn-danger mt-2 m-2 hover:opacity-80 transition-opacity duration-200" 
             onClick={onClick}
             title={title}
             aria-label={title}

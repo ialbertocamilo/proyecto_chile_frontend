@@ -25,59 +25,63 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const inactiveColor = "#ccc";
   const isActive = activeStep === step.stepNumber;
 
-  // Constantes de dimensiones
-  const internalSidebarWidth = 380;
-  const sidebarItemHeight = 100;
-  const sidebarItemBorderSize = 1;
-  const leftPadding = 50;
-
   return (
     <>
       <li
-        className="sidebar-item"
-        style={{
-          cursor: "pointer",
-          width: `${internalSidebarWidth}px`,
-          padding: "20px",
-          boxSizing: "border-box",
-          borderRight: `1px solid ${inactiveColor}`,
-          fontSize: "0.9rem",
-        }}
+        className="list-unstyled py-2 py-md-3 px-2 px-md-3 border-end border-light"
         onClick={onStepChange}
       >
         <div
-          className={`sidebar-item-content ${isActive ? "active" : ""}`}
+          className={`sidebar-item-content d-flex align-items-center ps-2 ps-md-4 ${
+            isActive ? "active" : ""
+          }`}
           style={{
-            width: "100%",
-            height: `${sidebarItemHeight * 0.7}px`,
-            border: `${sidebarItemBorderSize}px solid ${
-              isActive ? primaryColor : inactiveColor
-            }`,
-            borderRadius: "4px",
-            marginBottom: "-1.8rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            paddingLeft: `${leftPadding * 0.8}px`,
+            height: "60px",
+            border: `1px solid ${isActive ? primaryColor : inactiveColor}`,
             color: isActive ? primaryColor : inactiveColor,
-            fontFamily: "var(--font-family-base)",
-            position: "relative",
-            overflow: "hidden",
-            fontSize: "0.8rem",
-            fontWeight: "normal",
           }}
         >
-          <span
-            className="icon-wrapper"
-            style={{ marginRight: "15px", fontSize: "2rem" }}
-          >
+          <span className="icon-wrapper me-2 me-md-3 fs-5 fs-md-4">
             <span className="material-icons">{step.iconName}</span>
           </span>
-          <span className="title-wrapper">{step.title}</span>
+          <span className="title-wrapper fs-7 fs-md-6">{step.title}</span>
         </div>
       </li>
-      <style jsx global>{`
-        /* Animación de aparición */
+      <style jsx>{`
+        .sidebar-item {
+          width: 100%;
+          max-width: 380px;
+          cursor: pointer;
+          perspective: 1000px;
+          transform-style: preserve-3d;
+          animation: sidebarItemAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          animation-delay: calc(var(--item-index, 0) * 0.1s);
+        }
+
+        @media (max-width: 768px) {
+          .sidebar-item {
+            max-width: 300px;
+          }
+
+          .sidebar-item-content:hover {
+            transform: none;
+            box-shadow: none;
+          }
+
+          .sidebar-item:active .sidebar-item-content {
+            transform: translateX(4px);
+          }
+        }
+
+        .sidebar-item-content {
+          border-radius: 4px;
+          margin-bottom: -1.8rem;
+          position: relative;
+          overflow: hidden;
+          transform: translateX(0) translateZ(0);
+          transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+        }
+
         @keyframes sidebarItemAppear {
           0% {
             opacity: 0;
@@ -90,19 +94,6 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             opacity: 1;
             transform: translateX(0) scale(1);
           }
-        }
-
-        .sidebar-item {
-          perspective: 1000px;
-          transform-style: preserve-3d;
-          animation: sidebarItemAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)
-            forwards;
-          animation-delay: calc(var(--item-index, 0) * 0.1s);
-        }
-
-        .sidebar-item-content {
-          transform: translateX(0) translateZ(0);
-          transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
         }
 
         .sidebar-item-content:hover {
@@ -124,42 +115,22 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         }
 
         .icon-wrapper {
-          transition: transform 0.3s ease-out, filter 0.3s ease-out;
+          transition: transform 0.3s ease-out;
           transform-origin: center;
         }
 
         .sidebar-item-content:hover .icon-wrapper {
           transform: scale(1.2) rotate(8deg);
-          filter: drop-shadow(0 2px 4px rgba(60, 167, 183, 0.3));
         }
 
         .title-wrapper {
-          transition: transform 0.3s ease-out, letter-spacing 0.3s ease-out;
-          transform-origin: left;
           position: relative;
-        }
-
-        .title-wrapper::before {
-          content: "";
-          position: absolute;
-          left: 0;
-          bottom: -2px;
-          width: 100%;
-          height: 2px;
-          background: ${primaryColor};
-          transform: scaleX(0);
-          transition: transform 0.3s ease;
-          transform-origin: right;
+          transition: transform 0.3s ease-out, letter-spacing 0.3s ease-out;
         }
 
         .sidebar-item-content:hover .title-wrapper {
           transform: translateX(5px) scale(1.02);
           letter-spacing: 0.2px;
-        }
-
-        .sidebar-item-content:hover .title-wrapper::before {
-          transform: scaleX(1);
-          transform-origin: left;
         }
       `}</style>
     </>
@@ -170,7 +141,6 @@ interface AdminSidebarProps {
   activeStep: number;
   onStepChange: (step: number) => void;
   steps: SidebarStep[];
-  // Propiedad opcional para manejar la acción de navegación
   onClickAction?: (route: string) => void;
 }
 
@@ -180,31 +150,69 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   steps,
   onClickAction,
 }) => {
-  const router = useRouter();
-
   const handleClick = (step: SidebarStep) => {
     if (onClickAction && step.route) {
-      // Se utiliza la función pasada en AdminSidebar para la navegación.
       onClickAction(step.route);
-      // Alternativamente, si prefieres hacer el push directamente aquí, podrías usar:
-      // router.push(step.route);
     } else {
       onStepChange(step.stepNumber);
     }
   };
-
   return (
     <div className="internal-sidebar">
-      <ul className="nav flex-column">
+      <ul className="nav flex-column w-100">
         {steps.map((step) => (
           <SidebarItem
             key={step.stepNumber}
             step={step}
             activeStep={activeStep}
-            onStepChange={() => handleClick(step)}
+            onStepChange={() => {if (handleClick) handleClick(step)}}
           />
         ))}
       </ul>
+      <style jsx>{`
+        .internal-sidebar {
+          width: 100%;
+          max-width: 380px;
+        }
+
+        @media (max-width: 768px) {
+          .internal-sidebar {
+            max-width: 100%;
+            padding: 0 1rem;
+          }
+
+          .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+          }
+
+          :global(.sidebar-item) {
+            max-width: 100%;
+            margin-bottom: 0.5rem;
+          }
+
+          :global(.sidebar-item-content) {
+            margin-bottom: -0.5rem;
+          }
+        }
+
+        @media (orientation: portrait) {
+          .internal-sidebar {
+            padding: 0.5rem;
+          }
+
+          :global(.sidebar-item) {
+            width: 100%;
+            max-width: none;
+          }
+
+          :global(.sidebar-item-content) {
+            height: 55px !important;
+            padding: 0.5rem !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

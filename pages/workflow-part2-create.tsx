@@ -17,6 +17,7 @@ import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 // Importamos el componente SearchParameters
 import SearchParameters from "../src/components/inputs/SearchParameters";
+import VerticalDivider from "@/components/ui/HorizontalDivider";
 
 interface Detail {
   id_detail: number;
@@ -375,10 +376,10 @@ const WorkFlowpar2createPage: React.FC = () => {
       notify("Por favor complete todos los campos de detalle");
       return;
     }
-    
+
     const token = getToken();
     if (!token) return;
-    
+
     try {
       // Paso 1: Crear el nuevo detalle
       const createUrl = `${constantUrlApiEndpoint}/details/create`;
@@ -388,26 +389,26 @@ const WorkFlowpar2createPage: React.FC = () => {
       };
       const response = await axios.post(createUrl, newDetailForm, { headers });
       const newDetailId = response.data.detail.id;
-      
+
       if (!newDetailId) {
         notify("El backend no devolvió un ID de detalle válido.");
         return;
       }
-      
+
       // Paso 2: Añadir el detalle al proyecto directamente
       if (projectId) {
         const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-        
+
         // Asegurarnos de que estamos enviando un array de IDs
         const detailIds = [newDetailId];
-        
+
         try {
           await axios.post(selectUrl, detailIds, { headers });
           notify("Detalle creado y añadido al proyecto exitosamente");
         } catch (selectError: unknown) {
           // Verificar si el error es que el detalle ya está en el proyecto
-          if (axios.isAxiosError(selectError) && 
-              selectError.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
+          if (axios.isAxiosError(selectError) &&
+            selectError.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
             // Este no es un error real para nuestro caso de uso
             notify("Detalle creado exitosamente");
           } else {
@@ -418,7 +419,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       } else {
         notify("No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)");
       }
-      
+
       // Actualizar la interfaz
       fetchFetchedDetails();
       setShowNewDetailRow(false);
@@ -434,7 +435,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           "Error en la creación del detalle:",
           error.response?.data
         );
-        notify( "Error en la creación del detalle");
+        notify("Error en la creación del detalle");
       } else {
         notify("Error desconocido al crear el detalle");
       }
@@ -458,28 +459,28 @@ const WorkFlowpar2createPage: React.FC = () => {
       console.error("No se encontraron detalles para enviar.");
       return;
     }
-    
+
     const detailIds = fetchedDetails.map((det) => det.id_detail);
     const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
     const headers = {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     };
-    
+
     try {
       await axios.post(url, detailIds, { headers });
       setShowTabsInStep4(true);
       setTabStep4("muros");
     } catch (error: unknown) {
       // Si el error es que todos los detalles ya estaban en el proyecto, no es un error real
-      if (axios.isAxiosError(error) && 
-          error.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
+      if (axios.isAxiosError(error) &&
+        error.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
         // Este no es un error real, aún podemos mostrar las pestañas
         setShowTabsInStep4(true);
         setTabStep4("muros");
         return;
       }
-      
+
       console.error("Error al enviar la solicitud:", error);
       if (axios.isAxiosError(error)) {
         console.error("Detalles de la respuesta:", error.response?.data);
@@ -528,15 +529,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingColors.interior },
-                    exterior: { name: editingColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingColors.interior },
+                  exterior: { name: editingColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -588,15 +589,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingTechColors.interior },
-                    exterior: { name: editingTechColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingTechColors.interior },
+                  exterior: { name: editingTechColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -657,15 +658,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>
-              <table 
-                className="table table-bordered table-striped" style={{ width: "100%" }}>
+              <table
+                className="table table-bordered " style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Valor U (W/m²K)</th>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Exterior</th>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Interior</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor}}>Acciones</th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -712,7 +713,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                             item.info?.surface_color?.interior?.name || "Desconocido"
                           )}
                         </td>
-                        <td className="container-table-buttons "> 
+                        <td className="container-table-buttons ">
                           {editingRowId === item.id ? (
                             <>
                               <CustomButton
@@ -753,7 +754,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           )}
           {tabStep4 === "techumbre" && (
             <div style={{ minWidth: "600px" }}>
-              <table className="table table-bordered table-striped" style={{ width: "100%" }}>
+              <table className="table table-bordered " style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
@@ -822,7 +823,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                                 className="btn-table"
                                 variant="cancelIcon"
                                 onClick={() => handleCancelTechEdit(item)}
-                               
+
                               >
                                 Deshacer
                               </CustomButton>
@@ -832,7 +833,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                               variant="editIcon"
                               className="btn-table"
                               onClick={() => handleEditTechClick(item)}
-                              
+
                             >
                               Editar
                             </CustomButton>
@@ -851,7 +852,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           )}
           {tabStep4 === "pisos" && (
             <div style={{ minWidth: "600px" }}>
-              <table className="table table-bordered table-striped" style={{ width: "100%" }}>
+              <table className="table table-bordered " style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
@@ -931,7 +932,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           )}
           {tabStep4 === "ventanas" && (
             <div style={{ minWidth: "600px" }}>
-              <table className="table table-bordered table-striped" style={{ width: "100%" }}>
+              <table className="table table-bordered " style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
@@ -993,7 +994,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           )}
           {tabStep4 === "puertas" && (
             <div style={{ minWidth: "600px" }}>
-              <table className="table table-bordered table-striped" style={{ width: "100%" }}>
+              <table className="table table-bordered " style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
@@ -1094,7 +1095,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll", overflowX: "auto" }}>
             <table
-              className="table table-bordered table-striped"
+              className="table table-bordered "
               style={{
                 width: "80%",
                 minWidth: "600px",
@@ -1366,22 +1367,22 @@ const WorkFlowpar2createPage: React.FC = () => {
           }}
           className="mb-3"
         >
-          Recinto (Espacio aún en desarrollo, no funcional)
+          Recinto
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>
         </div>
         <div style={{ height: "390px", overflowY: "scroll", overflowX: "auto" }}>
-          <table className="table table-bordered table-striped" style={{ width: "100%", minWidth: "600px" }}>
+          <table className="table table-bordered " style={{ width: "100%", minWidth: "600px" }}>
             <thead>
               <tr>
-                <th style={stickyHeaderStyle1}>ID</th>
-                <th style={stickyHeaderStyle1}>Estado</th>
-                <th style={stickyHeaderStyle1}>Nombre del Recinto</th>
-                <th style={stickyHeaderStyle1}>Perfil de Ocupación</th>
-                <th style={stickyHeaderStyle1}>Sensor CO2</th>
-                <th style={stickyHeaderStyle1}>Altura Promedio</th>
-                <th style={stickyHeaderStyle1}>Área</th>
+                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>ID</th>
+                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Estado</th>
+                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Nombre del Recinto</th>
+                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Perfil de Ocupación</th>
+                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Sensor CO2</th>
+                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Altura Promedio</th>
+                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Área</th>
               </tr>
             </thead>
             <tbody>{/* Lógica para mostrar los recintos */}</tbody>
@@ -1413,36 +1414,34 @@ const WorkFlowpar2createPage: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <div>
-        <Card>
-          <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
-          <div className="row">
-            <div className="col-lg-3 col-12 order-lg-first order-first">
-              <div className="mb-3 mb-lg-0">
-                {/* Sidebar usando el componente común */}
-                <AdminSidebar
-                  activeStep={step}
-                  onStepChange={setStep}
-                  steps={sidebarSteps}
-                />
-              </div>
-            </div>
-            <div className="col-lg-9 col-12 order-last">
-              <div style={{ padding: "20px" }}>
-                {step === 4 && (
-                  <>
-                    {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
-                  </>
-                )}
-                {step === 7 && renderRecinto()}
-              </div>
+      <Card>
+        {renderMainHeader()}
+      </Card>
+      <Card>
+        <div className="row">
+          <div className="col-lg-3 col-12 order-lg-first order-first">
+            <div className="mb-3 mb-lg-0">
+              {/* Sidebar usando el componente común */}
+              <AdminSidebar
+                activeStep={step}
+                onStepChange={setStep}
+                steps={sidebarSteps}
+              />
+          </div>
+          <VerticalDivider />
+          </div>
+          <div className="col-lg-9 col-12 order-last">
+            <div style={{ padding: "20px" }}>
+              {step === 4 && (
+                <>
+                  {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+                </>
+              )}
+              {step === 7 && renderRecinto()}
             </div>
           </div>
-        </Card>
-      </div>
-      <style jsx global>{`
-        /* Puedes agregar estilos globales adicionales aquí */
-      `}</style>
+        </div>
+      </Card>
     </>
   );
 };

@@ -44,33 +44,42 @@ const Modal: React.FC<ModalProps> = ({
     left: 0,
     width: '100%',
     height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1200, // Valor mayor al de la top bar (1100)
+    zIndex: 1200,
+    backdropFilter: 'blur(3px)',
+    transition: 'all 0.3s ease-in-out',
   };
 
   // Estilos por defecto para el modal (con bordes redondeados)
   const defaultModalStyle: React.CSSProperties = {
     backgroundColor: '#fff',
-    borderRadius: '8px',
-    padding: '20px',
+    borderRadius: '12px',
+    padding: '24px',
     position: 'relative',
     minWidth: '300px',
-    maxWidth: '90%',
+    maxWidth: '500px', // Reducido de 85% a un valor fijo más pequeño
+    width: '100%',
+    boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+    transform: 'translateY(0)',
+    transition: 'all 0.3s ease-in-out',
   };
 
-  // Estilos responsive que se aplican cuando el ancho de la ventana es menor a 600px
-  const responsiveModalStyle: React.CSSProperties =
-    isClient && windowWidth < 600
-      ? {
-          width: '95%',
-          borderRadius: '0px',
-          padding: '15px',
-          margin: '0 10px',
-        }
-      : {};
+  const responsiveModalStyle: React.CSSProperties = 
+    isClient ? {
+      ...(windowWidth < 1200 && {
+      }),
+      ...(windowWidth < 768 && {
+        padding: '20px',
+      }),
+      ...(windowWidth < 480 && {
+        margin: '10px',
+        padding: '16px',
+        borderRadius: '8px',
+      })
+    } : {};
 
   return (
     <div
@@ -89,15 +98,33 @@ const Modal: React.FC<ModalProps> = ({
           onClick={onClose}
           style={{
             position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: 'transparent',
+            top: '16px',
+            right: '16px',
+            background: '#f0f0f0',
             border: 'none',
             cursor: 'pointer',
+            fontSize: '18px',
+            color: '#666',
+            width: '32px',
+            height: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '50%',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            ':hover': {
+              background: '#e0e0e0',
+              color: '#333',
+              transform: 'scale(1.1)',
+            },
+            ':active': {
+              transform: 'scale(0.95)',
+            }
           }}
           aria-label="Cerrar modal"
         >
-          &times;
+          ✕
         </button>
         {title && (
           <h4>{title}</h4>  

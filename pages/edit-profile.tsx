@@ -1,9 +1,14 @@
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import { useState, useEffect } from "react";
+import Head from "next/head";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import Image from "next/image";
 import useAuth from "../src/hooks/useAuth";
-import Card from "@/components/common/Card";
 import CreateButton from "@/components/CreateButton";
+import Card from "../src/components/common/Card";
 import { notify } from "@/utils/notify";
+import Title from "../src/components/Title";
 
 interface ProfileData {
   name: string;
@@ -11,20 +16,18 @@ interface ProfileData {
   number_phone: string;
   country: string;
   ubigeo: string;
-  userType: string;
+  proffesion?: string; // Nuevo campo para la profesión
+  userType?: string;
+  email?: string;
 }
 
 const mapRoleIdToText = (roleId: string | null): string => {
-  if (roleId === "1") {
-    return "Administrador";
-  } else if (roleId === "2") {
-    return "Operador";
-  }
-  return "Desconocido"; // En caso de que el role_id no sea 1 ni 2
+  if (roleId === "1") return "Administrador";
+  if (roleId === "2") return "Operador";
+  return "Desconocido";
 };
 
 const EditProfile = () => {
-  // Validación de sesión
   useAuth();
   console.log("[EditProfile] Página cargada y sesión validada.");
 
@@ -34,11 +37,12 @@ const EditProfile = () => {
     number_phone: "",
     country: "",
     ubigeo: "",
+    proffesion: "", // Inicializamos el campo de profesión
     userType: "",
+    email: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
 
   useEffect(() => {
     const storedProfile = localStorage.getItem("userProfile");
@@ -52,7 +56,9 @@ const EditProfile = () => {
           number_phone: parsedProfile.number_phone || "",
           country: parsedProfile.country || "",
           ubigeo: parsedProfile.ubigeo || "",
-          userType: mapRoleIdToText(roleId), // Asegurar que userType se mantengaaaa
+          proffesion: parsedProfile.proffesion || "", // Cargamos la profesión existente
+          userType: mapRoleIdToText(roleId),
+          email: parsedProfile.email || "",
         });
         console.log("[EditProfile] Perfil cargado desde localStorage:", parsedProfile);
       } catch (err) {
@@ -70,8 +76,8 @@ const EditProfile = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const { name, lastname, number_phone, country, ubigeo } = profile;
 
+    const { name, lastname, number_phone, country, ubigeo } = profile;
     if (!name.trim() || !lastname.trim() || !number_phone.trim() || !country.trim() || !ubigeo.trim()) {
       notify("Por favor, complete todos los campos.");
       return;
@@ -80,13 +86,12 @@ const EditProfile = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No estás autenticado. Inicia sesión.");
-      }
+      if (!token) throw new Error("No estás autenticado. Inicia sesión.");
 
-      // Crear el payload sin `userTypea`
-      const payload = { ...profile } as Partial<typeof profile>;
+      // No enviamos userType ni email al backend
+      const payload = { ...profile };
       delete payload.userType;
+      delete payload.email;
 
       console.log("[EditProfile] Enviando actualización del perfil:", payload);
 
@@ -101,12 +106,13 @@ const EditProfile = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || errorData.message || "No se pudo actualizar el perfil");
+        throw new Error(
+          errorData.detail || errorData.message || "No se pudo actualizar el perfil"
+        );
       }
 
-      const resData = await response.json();
-      localStorage.setItem("userProfile", JSON.stringify(payload));
-
+      await response.json();
+      localStorage.setItem("userProfile", JSON.stringify({ ...profile }));
       notify("Tu perfil se actualizó correctamente.");
     } catch (err: unknown) {
       console.error("[EditProfile] Error actualizando perfil:", err);
@@ -116,59 +122,231 @@ const EditProfile = () => {
     }
   };
 
+  /** --- ESTILOS --- **/
+  const baseFontSize = "1rem";
+
+  const labelStyle = {
+    marginBottom: "0.3rem",
+    fontFamily: "var(--font-family-base)",
+    fontWeight: 400,
+    fontSize: baseFontSize,
+    color: "#000",
+  } as React.CSSProperties;
+
+  const inputStyle = {
+    width: "100%",
+    border: "1px solid #eee",
+    borderRadius: "8px",
+    padding: "0.75rem 1rem",
+    fontFamily: "var(--font-family-base)",
+    fontSize: baseFontSize,
+  };
+
+  const fieldContainerStyle = {
+    marginBottom: "1rem",
+  };
+
+  const boxStyle = {
+    border: "1px solid #eee",
+    borderRadius: "8px",
+    padding: "1.2rem",
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "0.5rem",
+    flex: 1,
+  };
+
   return (
-    <Card>
-      <div className="mb-4 shadow-sm">
-        <div className="card-body">
-          <h2 style={{ color: "black", margin: 0 }}>
-            Perfil
-          </h2>
-        </div>
-      </div>
-      <div >
-        <div >
-          {error && (
-            <p className="text-danger fw-bold">
-              {error}
-            </p>
-          )}
-          {loading ? (
-            <p className="text-primary">Cargando...</p>
-          ) : (
-            <form id="editProfileForm" onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label>Nombre</label>
-                <input type="text" name="name" className="form-control" value={profile.name} onChange={handleChange} />
-              </div>
-              <div className="mb-3">
-                <label>Apellidos</label>
-                <input type="text" name="lastname" className="form-control" value={profile.lastname} onChange={handleChange} />
-              </div>
-              <div className="mb-3">
-                <label>Teléfono</label>
-                <input type="text" name="number_phone" className="form-control" value={profile.number_phone} onChange={handleChange} />
-              </div>
-              <div className="mb-3">
-                <label>País</label>
-                <input type="text" name="country" className="form-control" value={profile.country} onChange={handleChange} />
-              </div>
-                <div className="mb-3 d-flex align-items-center">
-                <label className="me-2 mb-0">Tipo de Usuario:</label>
-                <span>{profile.userType}</span>
+    <>
+      <Card>
+        <Title text="Editar Perfil" />
+      </Card>
+      <Head>
+        <title>Editar Perfil</title>
+      </Head>
+
+      <div className="container-fluid p-0">
+        <Card>
+          {/* Estructura responsive con la columna izquierda más angosta */}
+          <div className="row g-3" style={{marginBottom: "6rem"}}>
+            {/* Columna Izquierda (Perfil) - ocupa 4 columnas en md */}
+            <div className="col-md-4">
+              <div style={boxStyle}>
+                <h5
+                  style={{
+                    fontFamily: "var(--font-family-base)",
+                    fontSize: "1.2rem",
+                    marginBottom: "3rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  My Profile
+                </h5>
+
+                <div className="d-flex align-items-center" style={{ gap: "1rem", marginBottom: "1rem" }}>
+                  <div>
+                    <Image
+                      className="img-65 rounded-circle"
+                      src="/assets/images/profile-placeholder.png"
+                      alt="Profile"
+                      width={60}
+                      height={60}
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
+                  <div style={{ fontSize: baseFontSize }}>
+                    <div
+                      style={{
+                        fontSize: "1.5rem",
+                        marginBottom: "0.2rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {profile.name.toUpperCase() || "NOMBRES"} {profile.lastname.toUpperCase() || "APELLIDOS"}
+                    </div>
+                    <div style={{ fontSize: baseFontSize, color: "#666", marginBottom: "2rem" }}>
+                      {profile.userType}
+                    </div>
+                  </div>
                 </div>
-              {/* Botones de acción */}
-              <div className="d-flex justify-content-end gap-2 mt-4">
-                <CreateButton 
-                      backRoute="/dashboard" 
-                      saveTooltip="Guardar" 
-                      saveText="Guardar"/>
+
+                <div style={{ marginBottom: "2rem" }}>
+                  <label style={labelStyle}>Email Address</label>
+                  <div style={{ fontSize: baseFontSize, color: "#666" }}>
+                    {profile.email || "your-email@domain.com"}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: "2rem" }}>
+                  <label style={labelStyle}>Password</label>
+                  <div style={{ fontSize: baseFontSize, color: "#666", marginBottom: "3.5rem" }}>
+                    ********
+                  </div>
+                </div>
               </div>
-            </form>
-          )}
-        </div>
+            </div>
+
+            {/* Columna Derecha (Formulario) */}
+            <div className="col-md-8">
+              <div style={boxStyle}>
+                <h5
+                  style={{
+                    color: "#6dbdc9",
+                    fontFamily: "var(--font-family-base)",
+                    fontWeight: 600,
+                    fontSize: "1.2rem",
+                    marginBottom: "3.4rem",
+                  }}
+                >
+                  Editar Perfil
+                </h5>
+
+                {error && (
+                  <div className="alert alert-danger" style={{ marginBottom: "1rem", fontFamily: "var(--font-family-base)" }}>
+                    {error}
+                  </div>
+                )}
+
+                {loading ? (
+                  <p className="text-primary">Cargando...</p>
+                ) : (
+                  <form onSubmit={handleSubmit} style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+                    {/* Fila 1: Nombre - Apellidos */}
+                    <div className="row g-2">
+                      <div className="col-md-6" style={fieldContainerStyle}>
+                        <label style={labelStyle}>Nombre</label>
+                        <input
+                          type="text"
+                          name="name"
+                          className="form-control"
+                          value={profile.name}
+                          onChange={handleChange}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div className="col-md-6" style={fieldContainerStyle}>
+                        <label style={labelStyle}>Apellidos</label>
+                        <input
+                          type="text"
+                          name="lastname"
+                          className="form-control"
+                          value={profile.lastname}
+                          onChange={handleChange}
+                          style={inputStyle}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Fila 2: Teléfono - País */}
+                    <div className="row">
+                      <div className="col-md-6" style={fieldContainerStyle}>
+                        <label style={labelStyle}>Teléfono</label>
+                        <input
+                          type="text"
+                          name="number_phone"
+                          className="form-control"
+                          value={profile.number_phone}
+                          onChange={handleChange}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div className="col-md-6" style={fieldContainerStyle}>
+                        <label style={labelStyle}>País</label>
+                        <input
+                          type="text"
+                          name="country"
+                          className="form-control"
+                          value={profile.country}
+                          onChange={handleChange}
+                          style={inputStyle}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Fila 3: Ubigeo y Profesión en la misma fila */}
+                    <div className="row">
+                      <div className="col-md-6" style={fieldContainerStyle}>
+                        <label style={labelStyle}>Ubigeo</label>
+                        <input
+                          type="text"
+                          name="ubigeo"
+                          className="form-control"
+                          value={profile.ubigeo}
+                          onChange={handleChange}
+                          style={inputStyle}
+                          placeholder="Ej. 150101"
+                        />
+                      </div>
+                      <div className="col-md-6" style={fieldContainerStyle}>
+                        <label style={labelStyle}>Profesión</label>
+                        <input
+                          type="text"
+                          name="proffesion"
+                          className="form-control"
+                          value={profile.proffesion}
+                          onChange={handleChange}
+                          style={inputStyle}
+                          placeholder="Ej. Ingeniero"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-auto d-flex justify-content-end">
+                      <CreateButton
+                        backRoute="/dashboard"
+                        saveTooltip="Guardar"
+                        saveText={loading ? "Guardando..." : "Guardar"}
+                      />
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
       </div>
-    </Card>
+    </>
   );
-}
+};
 
 export default EditProfile;

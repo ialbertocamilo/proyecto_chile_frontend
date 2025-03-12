@@ -12,9 +12,7 @@ import router, { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { Tooltip } from "react-tooltip";
 import Modal from "../src/components/common/Modal";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
+import { notify } from "@/utils/notify";
 interface Detail {
   id_detail: number;
   scantilon_location: string;
@@ -173,7 +171,7 @@ const handleOwnerDetailsRedirect = () => {
   if (storedProjectId) {
     router.push(`/project-workflow-part1?mode=view&id=${storedProjectId}&step=1`);
   } else {
-    toast.error("No se encontró el ID del proyecto en el local storage.");
+    notify("No se encontró el ID del proyecto en el local storage.");
   }
 };
 const ProjectWorkflowPart3: React.FC = () => {
@@ -381,7 +379,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setVentanasTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de ventanas:", error);
-      toast.error("Error al obtener datos de ventanas. Ver consola.");
+      notify("Error al obtener datos de ventanas. Ver consola.");
     }
   }, []);
 
@@ -398,7 +396,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setPuertasTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de puertas:", error);
-      toast.error("Error al obtener datos de puertas. Ver consola.");
+      notify("Error al obtener datos de puertas. Ver consola.");
     }
   }, []);
 
@@ -447,16 +445,14 @@ const ProjectWorkflowPart3: React.FC = () => {
       !newDetailForm.name_detail ||
       !newDetailForm.material_id
     ) {
-      toast.warning("Por favor complete todos los campos de detalle", {
-        toastId: "material-warning",
-      });
+      notify("Por favor complete todos los campos de detalle");
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Token no encontrado. Inicia sesión.");
+        notify("Token no encontrado. Inicia sesión.");
         return;
       }
 
@@ -474,13 +470,11 @@ const ProjectWorkflowPart3: React.FC = () => {
       const newDetailId = response.data.detail.id; // Accede correctamente al ID dentrfdfso de detail
 
       if (!newDetailId) {
-        toast.error("El backend no devolvió un ID de detalle válido.");
+        notify("El backend no devolvió un ID de detalle válido.");
         return;
       }
 
-      toast.success(response.data.success || "Detalle creado exitosamente", {
-        toastId: "material-sucess",
-      });
+      notify("Detalle creado exitosamente");
 
       // Agregar el nuevo detalle a la lista de detalles seleccionados del proyecto
       if (!projectId) return;
@@ -508,13 +502,9 @@ const ProjectWorkflowPart3: React.FC = () => {
           "Error en la creación del detalle:",
           error.response?.data
         );
-        toast.error(error.response?.data?.detail || error.message, {
-          toastId: "material-warning",
-        });
+        notify("Error en la creación del detalle:");
       } else {
-        toast.error("Error desconocido al crear el detalle", {
-          toastId: "material-warning",
-        });
+        notify("Error desconocido al crear el detalle");
       }
     }
   };
@@ -653,9 +643,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setMaterials(materialsList);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
-      toast.error("Error al obtener materiales.", {
-        toastId: "material-warning ",
-      });
+      notify("Error al obtener materiales.");
     }
   };
 
@@ -682,7 +670,7 @@ const ProjectWorkflowPart3: React.FC = () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Token no encontrado. Inicia sesión.");
+      notify("Token no encontrado. Inicia sesión.");
       return;
     }
     try {
@@ -701,9 +689,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       };
       const response = await axios.put(url, payload, { headers });
       console.log("Respuesta API: ", response);
-      toast.success("Detalle tipo Muro actualizado con éxito", {
-        toastId: "material-sucess",
-      });
+      notify("Detalle tipo Muro actualizado con éxito");
 
       setMurosTabList((prev) =>
         prev.map((item) =>
@@ -725,7 +711,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setEditingRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      toast.error("Error al actualizar detalle. Ver consola.");
+      notify("Error al actualizar detalle. Ver consola.");
     }
   };
 
@@ -750,7 +736,7 @@ const ProjectWorkflowPart3: React.FC = () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Token no encontrado. Inicia sesión.");
+      notify("Token no encontrado. Inicia sesión.");
       return;
     }
     try {
@@ -770,9 +756,7 @@ const ProjectWorkflowPart3: React.FC = () => {
 
       const response = await axios.put(url, payload, { headers });
       console.log("Respuesta API: ", response);
-      toast.success("Detalle tipo Techo actualizado con éxito", {
-        toastId: "material-success",
-      });
+      notify("Detalle tipo Techo actualizado con éxito");
 
       setTechumbreTabList((prev) =>
         prev.map((item) =>
@@ -794,7 +778,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       setEditingTechRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      toast.error("Error al actualizar detalle. Ver consola.");
+      notify("Error al actualizar detalle. Ver consola.");
     }
   };
 

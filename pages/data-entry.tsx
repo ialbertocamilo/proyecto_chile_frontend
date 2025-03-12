@@ -8,9 +8,8 @@ import useAuth from "../src/hooks/useAuth";
 import GooIcons from "../public/GoogleIcons";
 import Card from "../src/components/common/Card";
 import { useRouter } from "next/router";
-import { ToastContainer, toast } from "react-toastify";
 import Title from "../src/components/Title";
-import "react-toastify/dist/ReactToastify.css";
+import { notify } from "@/utils/notify";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import SearchParameters from "../src/components/inputs/SearchParameters"; // Importa el componente creado
 
@@ -273,13 +272,7 @@ const DataEntryPage: React.FC = () => {
       const response = await axios.post(url, requestBody, { headers });
       if (response.status === 200) {
         await fetchMaterialsList();
-        toast.dismiss("material-success");
-        toast.success("Material creado exitosamente", {
-          toastId: "material-success",
-          autoClose: 2000,
-          pauseOnHover: false,
-          pauseOnFocusLoss: false,
-        });
+        notify("Material creado exitosamente");
         setNewMaterialData({
           name: "",
           conductivity: "",
@@ -290,25 +283,15 @@ const DataEntryPage: React.FC = () => {
       }
       return false;
     } catch (error) {
-      toast.dismiss("material-error");
+      notify("material-error");
       if (
         axios.isAxiosError(error) &&
         error.response &&
         error.response.status === 400
       ) {
-        toast.warn("El material ya existe", {
-          toastId: "material-error",
-          autoClose: 2000,
-          pauseOnHover: false,
-          pauseOnFocusLoss: false,
-        });
+        notify("El material ya existe");
       } else {
-        toast.warn("Error al crear el material", {
-          toastId: "material-error",
-          autoClose: 2000,
-          pauseOnHover: false,
-          pauseOnFocusLoss: false,
-        });
+        notify("Error al crear el material");
       }
       console.error("Error al crear material:", error);
       return false;
@@ -363,13 +346,8 @@ const DataEntryPage: React.FC = () => {
       );
       setElementsList((prev) => [...prev, response.data.element]);
       setAllWindowsForDoor((prev) => [...prev, response.data.element]);
-      toast.dismiss("window-success");
-      toast.success("Ventana creada exitosamente", {
-        toastId: "window-success",
-        autoClose: 2000,
-        pauseOnHover: false,
-        pauseOnFocusLoss: false,
-      });
+     
+      notify("Ventana creada exitosamente");
       setWindowData({
         name_element: "",
         u_vidrio: "",
@@ -381,25 +359,14 @@ const DataEntryPage: React.FC = () => {
       });
       return true;
     } catch (error) {
-      toast.dismiss("window-error");
       if (
         axios.isAxiosError(error) &&
         error.response &&
         error.response.status === 400
       ) {
-        toast.warn("La ventana ya existe", {
-          toastId: "window-error",
-          autoClose: 2000,
-          pauseOnHover: false,
-          pauseOnFocusLoss: false,
-        });
+        notify("La ventana ya existe");
       } else {
-        toast.warn("Error al crear la ventana", {
-          toastId: "window-error",
-          autoClose: 2000,
-          pauseOnHover: false,
-          pauseOnFocusLoss: false,
-        });
+        notify("Error al crear la ventana");
       }
       console.error("Error al crear ventana:", error);
       return false;
@@ -451,13 +418,8 @@ const DataEntryPage: React.FC = () => {
         }
       );
       setElementsList((prev) => [...prev, response.data.element]);
-      toast.dismiss("door-success");
-      toast.success("Puerta creada exitosamente", {
-        toastId: "door-success",
-        autoClose: 2000,
-        pauseOnHover: false,
-        pauseOnFocusLoss: false,
-      });
+      
+      notify("Puerta creada exitosamente");
       setDoorData({
         name_element: "",
         ventana_id: "",
@@ -469,25 +431,14 @@ const DataEntryPage: React.FC = () => {
       });
       return true;
     } catch (error) {
-      toast.dismiss("door-error");
       if (
         axios.isAxiosError(error) &&
         error.response &&
         error.response.status === 400
       ) {
-        toast.warn("La puerta ya existe", {
-          toastId: "door-error",
-          autoClose: 2000,
-          pauseOnHover: false,
-          pauseOnFocusLoss: false,
-        });
+        notify("La puerta ya existe");
       } else {
-        toast.warn("Error al crear la puerta", {
-          toastId: "door-error",
-          autoClose: 2000,
-          pauseOnHover: false,
-          pauseOnFocusLoss: false,
-        });
+        notify("Error al crear la puerta");
       }
       console.error("Error al crear puerta:", error);
       return false;
@@ -1712,12 +1663,7 @@ const DataEntryPage: React.FC = () => {
           </Modal>
         )}
 
-        <ToastContainer
-          limit={1}
-          autoClose={2000}
-          pauseOnHover={false}
-          pauseOnFocusLoss={false}
-        />
+       
       </div>
       <style jsx>{`
         .content-area {

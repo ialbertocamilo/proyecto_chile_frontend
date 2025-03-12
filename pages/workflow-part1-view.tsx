@@ -9,8 +9,6 @@ import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Nuevo componente de sidebar
 
@@ -419,7 +417,6 @@ const ProjectWorkflowPart1: React.FC = () => {
           </div>
         </Card>
       </div>
-      <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
       <style jsx>{`
         .container {
           font-family: var(--font-family-base);

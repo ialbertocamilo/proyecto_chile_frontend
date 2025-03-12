@@ -3,8 +3,6 @@ import DataTable from "@/components/DataTable";
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import Swal from "sweetalert2";
 import Card from "../src/components/common/Card";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
@@ -63,16 +61,14 @@ const UserManagement = () => {
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
-      toast.error(message);
+      notify(message);
     }
   };
 
   const handleActiveChange = async (userId: number, roleId: number, isActive: boolean) => {
     if (roleId === 1) {
-      Swal.fire(
-        "Acción no permitida",
-        "No se puede modificar el estado de un administrador",
-        "warning"
+      notify(
+        "Acción no permitida, No se puede modificar el estado de un administrador"
       );
       return;
     }
@@ -84,7 +80,7 @@ const UserManagement = () => {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
       console.error("[handleActiveChange] Error:", message);
-      Swal.fire("Error", message, "error");
+      notify("Error");
     }
   };
 

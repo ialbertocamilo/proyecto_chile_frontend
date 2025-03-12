@@ -8,8 +8,8 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { notify } from "@/utils/notify";
+
 import Title from "../src/components/Title"; 
 import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
 // Importamos el componente SearchParameters
@@ -237,7 +237,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       setVentanasTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de ventanas:", error);
-      toast.error("Error al obtener datos de ventanas. Ver consola.");
+      notify("Error al obtener datos de ventanas. Ver consola.");
     }
   }, []);
 
@@ -254,7 +254,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       setPuertasTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de puertas:", error);
-      toast.error("Error al obtener datos de puertas. Ver consola.");
+      notify("Error al obtener datos de puertas. Ver consola.");
     }
   }, []);
 

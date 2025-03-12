@@ -10,8 +10,7 @@ import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { Tooltip } from "react-tooltip";
 import Modal from "../src/components/common/Modal";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { notify } from "@/utils/notify";
 import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 // Importamos el componente SearchParameters
@@ -295,7 +294,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       .then((response) => setVentanasTabList(response.data))
       .catch((error) => {
         console.error("Error al obtener datos de ventanas:", error);
-        toast.error("Error al obtener datos de ventanas. Ver consola.");
+        notify("Error al obtener datos de ventanas. Ver consola.");
       });
   }, []);
 
@@ -309,7 +308,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       .then((response) => setPuertasTabList(response.data))
       .catch((error) => {
         console.error("Error al obtener datos de puertas:", error);
-        toast.error("Error al obtener datos de puertas. Ver consola.");
+        notify("Error al obtener datos de puertas. Ver consola.");
       });
   }, []);
 
@@ -352,9 +351,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       !newDetailForm.name_detail ||
       !newDetailForm.material_id
     ) {
-      toast.warning("Por favor complete todos los campos de detalle", {
-        toastId: "material-warning",
-      });
+      notify("Por favor complete todos los campos de detalle");
       return;
     }
 
@@ -372,7 +369,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       const newDetailId = response.data.detail.id;
 
       if (!newDetailId) {
-        toast.error("El backend no devolvió un ID de detalle válido.");
+        notify("El backend no devolvió un ID de detalle válido.");
         return;
       }
 
@@ -384,29 +381,22 @@ const WorkFlowpar2editPage: React.FC = () => {
 
         try {
           await axios.post(selectUrl, detailIds, { headers });
-          toast.success("Detalle creado y añadido al proyecto exitosamente", {
-            toastId: "detail-added-success",
-          });
+          notify("Detalle creado y añadido al proyecto exitosamente");
         } catch (selectError: unknown) {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
               "Todos los detalles ya estaban en el proyecto"
           ) {
-            toast.success("Detalle creado exitosamente", {
-              toastId: "detail-created-success",
-            });
+            notify("Detalle creado exitosamente");
           } else {
             console.error("Error al añadir detalle al proyecto:", selectError);
-            toast.warning("Detalle creado pero no se pudo añadir al proyecto", {
-              toastId: "detail-associated-error",
-            });
+            notify("Detalle creado pero no se pudo añadir al proyecto");
           }
         }
       } else {
-        toast.warning(
-          "No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)",
-          { toastId: "project-id-missing" }
+        notify(
+          "No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)"
         );
       }
 
@@ -422,13 +412,9 @@ const WorkFlowpar2editPage: React.FC = () => {
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error("Error en la creación del detalle:", error.response?.data);
-        toast.error(error.response?.data?.detail || error.message, {
-          toastId: "material-warning",
-        });
+        notify("Error en la creación del detalle");
       } else {
-        toast.error("Error desconocido al crear el detalle", {
-          toastId: "material-warning",
-        });
+        notify("Error desconocido al crear el detalle");
       }
     }
   };
@@ -540,9 +526,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       setMaterials(materialsList);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
-      toast.error("Error al obtener materiales.", {
-        toastId: "material-warning",
-      });
+      notify("Error al obtener materiales.");
     }
   };
 
@@ -582,9 +566,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      toast.success("Detalle tipo Muro actualizado con éxito", {
-        toastId: "material-sucess",
-      });
+      notify("Detalle tipo Muro actualizado con éxito");
       setMurosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -604,7 +586,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       setEditingRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      toast.error("Error al actualizar detalle. Ver consola.");
+      notify("Error al actualizar detalle. Ver consola.");
     }
   };
 
@@ -644,9 +626,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      toast.success("Detalle tipo Techo actualizado con éxito", {
-        toastId: "material-success",
-      });
+      notify("Detalle tipo Techo actualizado con éxito");
       setTechumbreTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -666,7 +646,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       setEditingTechRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      toast.error("Error al actualizar detalle. Ver consola.");
+      notify("Error al actualizar detalle. Ver consola.");
     }
   };
 

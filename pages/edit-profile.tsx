@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import Card from "@/components/common/Card";
 import CreateButton from "@/components/CreateButton";
 import { notify } from "@/utils/notify";
@@ -76,16 +73,7 @@ const EditProfile = () => {
     const { name, lastname, number_phone, country, ubigeo } = profile;
 
     if (!name.trim() || !lastname.trim() || !number_phone.trim() || !country.trim() || !ubigeo.trim()) {
-      toast.warning("Por favor, complete todos los campos.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        toastId: "warning"
-      });
+      notify("Por favor, complete todos los campos.");
       return;
     }
 
@@ -122,18 +110,7 @@ const EditProfile = () => {
       notify("Tu perfil se actualizó correctamente.");
     } catch (err: unknown) {
       console.error("[EditProfile] Error actualizando perfil:", err);
-      const message = err instanceof Error ? err.message : "Error al actualizar el perfil";
-      toast.error(message, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        toastId: "warning"
-      });
-      setError(message);
+      notify("Error al actualizar el perfil");
     } finally {
       setLoading(false);
     }

@@ -10,9 +10,7 @@ import useAuth from "../src/hooks/useAuth";
 import GooIcons from "../public/GoogleIcons";
 import Card from "../src/components/common/Card";
 import { useRouter } from "next/router";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
+import { notify } from "@/utils/notify";
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
   name: string;
@@ -161,7 +159,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       setMaterialsList(allMaterials);
     } catch (error) {
       console.error("Error al obtener materiales:", error);
-      toast.error("Error al obtener materiales");
+      notify("Error al obtener materiales");
     }
   }, []);
 
@@ -174,8 +172,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       const response = await axios.get(url, { headers });
       setElementsList(response.data);
     } catch (error) {
-      console.error(`Error al obtener ${type === "window" ? "ventanas" : "puertas"}`, error);
-      toast.error(`Error al obtener ${type === "window" ? "ventanas" : "puertas"}`);
+      notify(`Error al obtener ${type === "window" ? "ventanas" : "puertas"}`);
     }
   }, []);
 
@@ -189,7 +186,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       setAllWindowsForDoor(response.data);
     } catch (error) {
       console.error("Error al obtener ventanas para puerta:", error);
-      toast.error("Error al obtener ventanas para puerta");
+      notify("Error al obtener ventanas para puerta");
     }
   }, []);
 
@@ -201,7 +198,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       newMaterialData.specific_heat <= 0 ||
       newMaterialData.density <= 0
     ) {
-      toast.error("Por favor, complete todos los campos correctamente para crear el material");
+      notify("Por favor, complete todos los campos correctamente para crear el material");
       return false;
     }
     try {
@@ -226,14 +223,14 @@ const ProjectWorkflowPart2: React.FC = () => {
       const response = await axios.post(url, requestBody, { headers });
       if (response.status === 200) {
         await fetchMaterialsList();
-        toast.success("Material creado exitosamente");
+        notify("Material creado exitosamente");
         setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
         return true;
       }
       return false;
     } catch (error) {
       console.error("Error al crear material:", error);
-      toast.warn("Error al crear material");
+      notify("Error al crear material");
       return false;
     }
   };
@@ -249,7 +246,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       windowData.clousure_type.trim() === "" ||
       windowData.frame_type.trim() === ""
     ) {
-      toast.error("Por favor, complete todos los campos correctamente para crear la ventana");
+      notify("Por favor, complete todos los campos correctamente para crear la ventana");
       return false;
     }
     try {
@@ -276,7 +273,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       });
       setElementsList((prev) => [...prev, response.data.element]);
       setAllWindowsForDoor((prev) => [...prev, response.data.element]);
-      toast.success("Ventana creada exitosamente");
+      notify("Ventana creada exitosamente");
       setWindowData({
         name_element: "",
         u_vidrio: 0,
@@ -289,7 +286,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       return true;
     } catch (error) {
       console.error("Error al crear ventana:", error);
-      toast.warn("Ese nombre de ventana ya existe");
+      notify("Ese nombre de ventana ya existe");
       return false;
     }
   };
@@ -304,7 +301,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       doorData.fm < 0 ||
       doorData.fm > 100
     ) {
-      toast.error("Por favor, complete todos los campos correctamente para crear la puerta");
+      notify("Por favor, complete todos los campos correctamente para crear la puerta");
       return false;
     }
     try {
@@ -330,7 +327,7 @@ const ProjectWorkflowPart2: React.FC = () => {
         },
       });
       setElementsList((prev) => [...prev, response.data.element]);
-      toast.success("Puerta creada exitosamente");
+      notify("Puerta creada exitosamente");
       setDoorData({
         name_element: "",
         ventana_id: 0,
@@ -343,7 +340,7 @@ const ProjectWorkflowPart2: React.FC = () => {
       return true;
     } catch (error) {
       console.error("Error al crear puerta:", error);
-      toast.warn("Ese nombre de puerta ya existe");
+      notify("Ese nombre de puerta ya existe");
       return false;
     }
   };
@@ -1020,16 +1017,7 @@ const ProjectWorkflowPart2: React.FC = () => {
         </Modal>
       )}
 
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+     
 
       <style jsx>{`
         /* Estilos generales para contenedor y layout responsive */

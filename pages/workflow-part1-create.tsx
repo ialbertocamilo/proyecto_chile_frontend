@@ -6,14 +6,17 @@ import "leaflet/dist/leaflet.css";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import locationData from "../public/locationData";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Importa el componente dinámico de la sidebar
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
+import { notify } from "@/utils/notify";
+
+
+
+
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap").then(mod => {
   return { default: React.memo(mod.default) };
 }), {
@@ -60,7 +63,6 @@ const initialFormData: FormData = {
   longitude: -70.6703553846175,
 };
 
-const TOAST_ID = "unique-toast-id";
 
 const ProjectWorkflowPart1: React.FC = () => {
   useAuth();
@@ -223,7 +225,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   const enviarProyecto = async () => {
     setLoading(true);
     setGlobalError("");
-    toast.dismiss();
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -255,12 +256,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       localStorage.setItem("project_id", project_id.toString());
       localStorage.setItem("project_department", formData.department);
 
-      toast.success("Proyecto creado con éxito.", {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: true,
-        toastId: TOAST_ID,
-      });
+      notify("Proyecto creado con éxito.");
 
       setFormData(initialFormData);
       router.push(`/workflow-part2-create?project_id=${project_id}`);
@@ -276,12 +272,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         errorMessage = JSON.stringify(errorMessage);
       }
       setGlobalError(errorMessage as string);
-      toast.error(errorMessage as string, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: true,
-        toastId: TOAST_ID,
-      });
+      notify("Error al enviar el proyecto");
     }
     setLoading(false);
   };
@@ -291,13 +282,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
-      toast.dismiss();
-      toast.error("Llenar los campos obligatorios", {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: true,
-        toastId: TOAST_ID,
-      });
+      notify("Llenar los campos obligatorios");
       return;
     }
     const nameExists = await checkProjectNameExists();
@@ -306,13 +291,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         ...prev,
         name_project: "Este nombre ya existe. Use otro nombre.",
       }));
-      toast.dismiss();
-      toast.error("Este nombre ya existe. Use otro nombre.", {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: true,
-        toastId: TOAST_ID,
-      });
+      notify("Este nombre ya existe. Use otro nombre.");
       return;
     }
     setStep(2);

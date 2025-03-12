@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Swal, { SweetAlertResult } from "sweetalert2";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { notify } from "@/utils/notify";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
@@ -128,12 +127,12 @@ const ProjectListPage = () => {
           "Content-Type": "application/json",
         },
       });
-      toast.success("¡Proyecto eliminado exitosamente!");
+      notify("¡Proyecto eliminado exitosamente!");
       fetchProjects();
     } catch (err: unknown) {
       console.error("[handleDelete] Error al eliminar proyecto:", err);
       setError("No se pudo eliminar el proyecto.");
-      toast.error("No se pudo eliminar el proyecto.");
+      notify("No se pudo eliminar el proyecto.");
     }
   };
 

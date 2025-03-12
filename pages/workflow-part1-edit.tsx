@@ -10,8 +10,7 @@ import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { notify } from "@/utils/notify";
 import Title from "../src/components/Title";
 import { useApi } from "@/hooks/useApi";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Componente de sidebar dinámico
@@ -292,7 +291,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           }
         );
         console.log(data.message || "Proyecto actualizado con éxito.");
-        toast.success("Proyecto actualizado con éxito.");
+        notify("Proyecto actualizado con éxito.");
       } else {
         const { data } = await axios.post(
           `${constantUrlApiEndpoint}/projects/create`,
@@ -308,7 +307,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         localStorage.setItem("project_id", project_id.toString());
         localStorage.setItem("project_department", formData.department);
         console.log(`Proyecto creado con éxito. ID: ${project_id}`);
-        toast.success("Proyecto creado con éxito.");
+        notify("Proyecto creado con éxito.");
         setFormData(initialFormData);
         router.push(`/project-workflow-part3?project_id=${project_id}`);
       }
@@ -324,7 +323,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         errorMessage = JSON.stringify(errorMessage);
       }
       setGlobalError(errorMessage as string);
-      toast.error(errorMessage as string);
+      notify(errorMessage as string);
     }
     setLoading(false);
   };
@@ -846,7 +845,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           </div>
         </Card>
       </div>
-      <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
+      
       <style jsx>{`
         .container {
           font-family: var(--font-family-base);

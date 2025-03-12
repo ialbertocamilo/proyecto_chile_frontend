@@ -9,6 +9,7 @@ import useAuth from "../src/hooks/useAuth";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
 import DataTable from "../src/components/DataTable";
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 interface Divisions {
   department?: string;
@@ -237,10 +238,12 @@ const ProjectListPage = () => {
   return (
     <>
       <div>
-        <Card>
+      <Card>
         <Title text="Listado de Proyectos" />
-
-        </Card>
+        <div className="container-fluid page-title row">
+          <Breadcrumb />
+        </div>
+      </Card>
           <DataTable
             data={projects}
             columns={tableColumns}

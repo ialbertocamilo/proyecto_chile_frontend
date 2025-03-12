@@ -11,6 +11,7 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import CancelButton from "@/components/common/CancelButton";
 import DetallesConstructivosTab from "../src/components/DetallesConstructivosTab";
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 interface MaterialAttributes {
   name: string;
@@ -49,7 +50,7 @@ const AdministrationPage: React.FC = () => {
   useAuth();
   const [step, setStep] = useState<number>(3);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
-  
+
   const {
     materialsList,
     details,
@@ -58,7 +59,7 @@ const AdministrationPage: React.FC = () => {
     fetchDetails,
     fetchElements,
     handleLogout
-    
+
   } = useAdministration();
 
   const [showNewMaterialModal, setShowNewMaterialModal] = useState(false);
@@ -162,28 +163,28 @@ const AdministrationPage: React.FC = () => {
       notify("Por favor complete todos los campos de detalle");
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         notify("Token no encontrado. Inicia sesión.");
         return;
       }
-  
+
       const payload = {
         scantilon_location: newDetail.scantilon_location,
         name_detail: newDetail.name_detail,
         material_id: newDetail.material_id,
         layer_thickness: newDetail.layer_thickness,
       };
-  
+
       const url = `/api/details`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const response = await axios.post(url, payload, { headers });
-  
+
       if (response.status === 200) {
         notify("El detalle fue creado correctamente");
-        
+
         // Cerrar modal y resetear formulario
         setShowNewDetailModal(false);
         setNewDetail({
@@ -192,16 +193,16 @@ const AdministrationPage: React.FC = () => {
           material_id: 0,
           layer_thickness: null,
         });
-        
+
         // Incrementar el contador para activar la actualización
         setDetailsRefreshCounter(prev => prev + 1);
-        
+
         // Asegurarse de recargar los detalles
         await fetchDetails();
       }
     } catch (error: unknown) {
       console.error("[handleCreateDetail] Error:", error);
-      
+
       // Manejo de error más específico
       if (axios.isAxiosError(error)) {
         notify("No se pudo crear el detalle");
@@ -319,9 +320,9 @@ const AdministrationPage: React.FC = () => {
   }, [step, fetchMaterialsList, fetchDetails, fetchElements]);
 
   const sidebarSteps = [
-    { stepNumber: 3, iconName: "assignment_ind", title: "Materiales"},
-    { stepNumber: 4, iconName: "build", title: "Detalles"},
-    { stepNumber: 5, iconName: "home", title: "Elementos"},
+    { stepNumber: 3, iconName: "assignment_ind", title: "Materiales" },
+    { stepNumber: 4, iconName: "build", title: "Detalles" },
+    { stepNumber: 5, iconName: "home", title: "Elementos" },
   ];
 
   return (
@@ -329,6 +330,9 @@ const AdministrationPage: React.FC = () => {
       {/* Título afuera del Card */}
       <Card>
         <Title text="Administración de Parámetros" />
+        <div className="container-fluid page-title row">
+          <Breadcrumb />
+        </div>
       </Card>
 
       {/* Card con clase adicional */}
@@ -372,16 +376,16 @@ const AdministrationPage: React.FC = () => {
                 </>
               )}
 
-{step === 4 && (
-  <>
-    <DetallesConstructivosTab refreshTrigger={detailsRefreshCounter} />
-    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-      <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
-        <span className="material-icons">add</span> Nuevo
-      </CustomButton>
-    </div>
-  </>
-)}
+              {step === 4 && (
+                <>
+                  <DetallesConstructivosTab refreshTrigger={detailsRefreshCounter} />
+                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                    <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
+                      <span className="material-icons">add</span> Nuevo
+                    </CustomButton>
+                  </div>
+                </>
+              )}
 
               {step === 5 && (
                 <>
@@ -585,11 +589,11 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="mt-4 d-flex justify-content-between">
-              <CancelButton  onClick={() => {
-                  setShowNewMaterialModal(false);
-                  setStep(3);
-                  setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
-                }} />
+              <CancelButton onClick={() => {
+                setShowNewMaterialModal(false);
+                setStep(3);
+                setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+              }} />
               <CustomButton variant="save" type="submit">
                 Crear
               </CustomButton>

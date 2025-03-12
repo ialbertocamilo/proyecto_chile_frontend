@@ -14,6 +14,7 @@ import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { notify } from "@/utils/notify";
 import SaveButton from "@/components/common/SaveButton";
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 
 
@@ -300,6 +301,7 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   const renderMainHeader = () => {
     return <Title text="Proyecto nuevo" />;
+    
   };
 
   const [completionList, setCompletionList] = useState<{
@@ -326,6 +328,9 @@ const ProjectWorkflowPart1: React.FC = () => {
     <>
     <Card>
         <div>{renderMainHeader()}</div>
+        <div className="container-fluid page-title row">
+          <Breadcrumb />
+        </div>
         </Card>
         <Card>
             <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>

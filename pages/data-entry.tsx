@@ -17,6 +17,7 @@ import CancelButton from "@/components/common/CancelButton";
 import VerticalDivider from "@/components/ui/HorizontalDivider";
 import ButtonTab from "@/components/common/ButtonTab";
 import GenericTable from "@/components/tables/GenericTable";
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
@@ -534,6 +535,9 @@ const DataEntryPage: React.FC = () => {
       <div>
         <Card>
           <Title text={"Ingreso de datos de entrada"} />
+          <div className="container-fluid page-title row">
+          <Breadcrumb />
+        </div>
         </Card>
         <Card>
         <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>

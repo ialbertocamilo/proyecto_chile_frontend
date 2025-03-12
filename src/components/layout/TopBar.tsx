@@ -185,7 +185,7 @@ const TopBar = ({}: TopBarProps) => {
                   style={{ fontSize: "14px" }}
                 />
               </span>
-              {/* Ahora se muestra directamente el texto correcto */}
+              {/* Ahora se muestra direcfftamente el texto correcto */}
               <span
                 style={{
                   fontSize: "12px",

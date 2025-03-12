@@ -11,7 +11,8 @@ import GooIcons from "../public/GoogleIcons";
 import { notify } from "@/utils/notify";
 
 import Title from "../src/components/Title"; 
-import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
+// Se importa el componente AdminSidebar en vez de SidebarItemComponent
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 // Importamos el componente SearchParameters
 import SearchParameters from "../src/components/inputs/SearchParameters";
 
@@ -123,7 +124,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
   // --- Obtención del projectId y step desde la URL o localStorage ---  
   useEffect(() => {
     if (router.isReady) {
-      // Si la URL trae un id, lo usamos; de lo contrario, intentamos con localStorage
       if (router.query.id) {
         setProjectId(Number(router.query.id));
       } else {
@@ -132,7 +132,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
           setProjectId(Number(storedProjectId));
         }
       }
-      // Si la URL trae el parámetro step, lo usamos
       if (router.query.step) {
         const stepQuery = parseInt(router.query.step as string, 10);
         if (!isNaN(stepQuery)) {
@@ -154,7 +153,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
       });
     }
   }, [hasLoaded, projectId, router]);
-  // --------------------------------------------------------------
 
   const fetchFetchedDetails = async () => {
     try {
@@ -295,7 +293,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // Render del encabezado principal
   const renderMainHeader = () =>
     step >= 4 && <Title text="Vista de Desarrollo de proyecto" />;
 
@@ -313,7 +310,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
     zIndex: 2,
   };
 
-  // Render de las pestañas para mostrar datos detallados
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
     const tabs = [
@@ -667,7 +663,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
             </table>
           )}
         </div>
-        {/* Botón "Regresar" para volver a la vista inicial */}
         <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "10px" }}>
           <CustomButton
             variant="save"
@@ -689,10 +684,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // Render de la tabla inicial con la lista de detalles y barra de búsqueda funcional
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
-    // Filtramos los detalles según la búsqueda (por ubicación, nombre, material o espesor)
     const filteredDetails = fetchedDetails.filter((det) => {
       const searchLower = searchQuery.toLowerCase();
       return (
@@ -704,12 +697,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
     });
     return (
       <>
-        {/* Se reemplaza el input de búsqueda por el componente SearchParameters */}
         <SearchParameters
           value={searchQuery}
           onChange={setSearchQuery}
           placeholder="Buscar..."
-          // En esta vista, el botón "Nuevo" no tiene acción, por lo que se pasa una función vacía
           onNew={() => {}}
           style={{ marginBottom: "1rem" }}
           showNewButton={false}
@@ -808,12 +799,12 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
+  // Definición de los pasos para la navegación del sidebar
   const sidebarSteps = [
     {
       stepNumber: 1,
       iconName: "assignment_ind",
-      title:
-        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+      title: "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
       route: `/workflow-part1-view?id=${projectId}&step=1`,
     },
     {
@@ -836,7 +827,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
     },
   ];
 
-
   return (
     <>
       <GooIcons />
@@ -845,7 +835,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
           <div className="d-flex align-items-center gap-4">
             <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-              Proyecto: 
+              Proyecto:
             </span>
             <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
               {`Edificación Nº ${projectId ?? "xxxxx"}`}
@@ -854,47 +844,16 @@ const WorkFlowpar2viewPage: React.FC = () => {
         </Card>
         <Card style={{ marginTop: "clamp(0.5rem, 2vw, 1rem)", marginLeft: "0.1rem", width: "100%" }}>
           <div className="row">
-            {/* Sidebar con los elementos necesarios */}
+            {/* Sidebar utilizando el componente AdminSidebar */}
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div className="mb-3 mb-lg-0">
-                <ul className="nav flex-column" style={{ height: "100%" }}>
-                  <SidebarItemComponent
-                    stepNumber={1}
-                    iconName="assignment_ind"
-                    activeStep={step}
-                    title="Agregar detalles de propietario / proyecto y clasificación de edificaciones"
-                    onClickAction={() =>
-                      router.push(`/workflow-part1-view?id=${projectId}&step=1`)
-                    }
-                  />
-                  <SidebarItemComponent
-                    stepNumber={2}
-                    iconName="location_on"
-                    activeStep={step}
-                    title="Ubicación del proyecto"
-                    onClickAction={() =>
-                      router.push(`/workflow-part1-view?id=${projectId}&step=2`)
-                    }
-                  />
-                  <SidebarItemComponent
-                    stepNumber={4}
-                    iconName="build"
-                    activeStep={step}
-                    title="Detalles constructivos"
-                    onClickAction={() =>
-                      router.push(`/workflow-part2-view?id=${projectId}&step=4`)
-                    }
-                  />
-                  <SidebarItemComponent
-                    stepNumber={7}
-                    iconName="design_services"
-                    activeStep={step}
-                    title="Recinto"
-                    onClickAction={() =>
-                      router.push(`/workflow-part2-view?id=${projectId}&step=7`)
-                    }
-                  />
-                </ul>
+                <AdminSidebar
+                  activeStep={step}
+                  steps={sidebarSteps}
+                  onClickAction={(route: string) => router.push(route)}
+                  // La función onStepChange se puede utilizar para casos en que no se requiera navegación directa
+                  onStepChange={(stepNumber: number) => setStep(stepNumber)}
+                />
               </div>
             </div>
             {/* Contenido principal */}

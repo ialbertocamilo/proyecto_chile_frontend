@@ -15,7 +15,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar autenticación directamente en
+    // Verificar autenticación dairectamente en
     const token = localStorage.getItem("token");
     if (!token) {
       router.push('/login');

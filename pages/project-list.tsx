@@ -214,13 +214,13 @@ const ProjectListPage = () => {
         <div className="buttons-container">
           <CustomButton
             variant="editIcon"
-            className="btn-table"
+            className="btn-table-list"
             onClick={() => handleGoToWorkflow(row)}
             title="Editar en Workflow"
           />
           <CustomButton
             variant="deleteIcon"
-            className="btn-table"
+            className="btn-table-list"
             onClick={() => handleDelete(row.id, row.name_project || "N/D")}
           />
         </div>

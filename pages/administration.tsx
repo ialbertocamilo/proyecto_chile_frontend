@@ -1,4 +1,3 @@
-// AdministrationPage.tsx
 import React, { useState, useEffect } from "react";
 import useAuth from "../src/hooks/useAuth";
 import { useAdministration } from "../src/hooks/useAdministration";
@@ -13,6 +12,9 @@ import { notify } from "@/utils/notify";
 import DetallesConstructivosTab from "../src/components/DetallesConstructivosTab";
 import Breadcrumb from "../src/components/common/Breadcrumb";
 import "bootstrap/dist/css/bootstrap.min.css";
+
+// 1. Importa tu componente de tabla
+import TablesParameters from "../src/components/tables/TablesParameters";
 
 interface MaterialAttributes {
   name: string;
@@ -62,6 +64,7 @@ const LabelWithAsterisk: React.FC<LabelWithAsteriskProps> = ({
     value === null ||
     (typeof value === "string" && value.trim() === "") ||
     (typeof value === "number" && value === 0);
+
   return (
     <label>
       {label} {required && isEmpty && <span style={{ color: "red" }}>*</span>}
@@ -71,6 +74,7 @@ const LabelWithAsterisk: React.FC<LabelWithAsteriskProps> = ({
 
 const AdministrationPage: React.FC = () => {
   useAuth();
+
   const [step, setStep] = useState<number>(3);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
   const [showGeneralDetails, setShowGeneralDetails] = useState(false);
@@ -130,9 +134,99 @@ const AdministrationPage: React.FC = () => {
 
   const windowsList = elementsList.filter((el) => el.type === "window");
 
-  // Función para crear un nuevo material
+  // 2. Define columnas y mapea datos para cada tabla
+  //    ---------------------------------------------
+  //
+  //    A) Para materiales (Step 3)
+  //
+  const materialsColumns = [
+    { headerName: "Nombre Material", field: "name" },
+    { headerName: "Conductividad (W/m2K)", field: "conductivity" },
+    { headerName: "Calor específico (J/kgK)", field: "specific_heat" },
+    { headerName: "Densidad (kg/m3)", field: "density" },
+  ];
+
+  const materialsData = materialsList.map((mat: any) => ({
+    name: mat.atributs.name,
+    conductivity: mat.atributs.conductivity,
+    specific_heat: mat.atributs.specific_heat,
+    density: mat.atributs.density,
+  }));
+
+  //    B) Para detalles (Step 4)
+  //
+  const detailsColumns = [
+    { headerName: "Ubicación", field: "scantilon_location" },
+    { headerName: "Nombre Detalle", field: "name_detail" },
+    { headerName: "Material", field: "material_name" },
+    { headerName: "Espesor (cm)", field: "layer_thickness" },
+  ];
+
+  const detailsData = details.map((detail) => ({
+    scantilon_location: detail.scantilon_location,
+    name_detail: detail.name_detail,
+    material_name: getMaterialName(detail.material_id),
+    layer_thickness: detail.layer_thickness,
+  }));
+
+  //    C) Para ventanas (Step 5)
+  //
+  const windowsColumns = [
+    { headerName: "Nombre Elemento", field: "name_element" },
+    { headerName: "U Vidrio [W/m2K]", field: "u_vidrio" },
+    { headerName: "FS Vidrio", field: "fs_vidrio" },
+    { headerName: "Tipo Cierre", field: "clousure_type" },
+    { headerName: "Tipo Marco", field: "frame_type" },
+    { headerName: "U Marco [W/m2K]", field: "u_marco" },
+    { headerName: "FM [%]", field: "fm" },
+  ];
+
+  const windowsData = elementsList
+    .filter((el) => el.type === "window")
+    .map((el) => ({
+      name_element: el.name_element,
+      u_vidrio: (el.atributs as ElementAttributesWindow).u_vidrio,
+      fs_vidrio: (el.atributs as ElementAttributesWindow).fs_vidrio,
+      clousure_type: (el.atributs as ElementAttributesWindow).clousure_type,
+      frame_type: (el.atributs as ElementAttributesWindow).frame_type,
+      u_marco: el.u_marco,
+      fm: (el.fm * 100).toFixed(0) + "%",
+    }));
+
+  //    D) Para puertas (Step 5)
+  //
+  const doorsColumns = [
+    { headerName: "Nombre Elemento", field: "name_element" },
+    { headerName: "U Puerta opaca [W/m2K]", field: "u_puerta_opaca" },
+    { headerName: "Nombre Ventana", field: "name_ventana" },
+    { headerName: "% Vidrio", field: "porcentaje_vidrio" },
+    { headerName: "U Marco [W/m2K]", field: "u_marco" },
+    { headerName: "FM [%]", field: "fm" },
+  ];
+
+  const doorsData = elementsList
+    .filter((el) => el.type === "door")
+    .map((el) => ({
+      name_element: el.name_element,
+      u_puerta_opaca: (el.atributs as ElementAttributesDoor).u_puerta_opaca,
+      name_ventana: (el.atributs as ElementAttributesDoor).name_ventana,
+      porcentaje_vidrio:
+        ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%",
+      u_marco: el.u_marco,
+      fm: (el.fm * 100).toFixed(0) + "%",
+    }));
+
+  // 3. Función para obtener el nombre del material a partir de su ID
+  function getMaterialName(materialId: number) {
+    const mat = materialsList.find(
+      (m) => m.id === materialId || m.material_id === materialId
+    );
+    return mat ? mat.atributs.name : "Desconocido";
+  }
+
+  // 4. Funciones para crear Material, Detalle, Ventana y Puerta
+  //    (mantenemos la lógica que ya tenías)
   const handleCreateMaterial = async () => {
-    // Verifica que todos los campos estén completos
     if (
       newMaterialData.name.trim() === "" ||
       newMaterialData.conductivity <= 0 ||
@@ -142,7 +236,7 @@ const AdministrationPage: React.FC = () => {
       notify("Por favor complete todos los campos de material");
       return;
     }
-    // Validación: si el material ya existe (se asume que 'materialsList' contiene la lista de materiales existentes)
+    // Validación si el material ya existe
     const materialExists = materialsList.some(
       (mat: any) =>
         (mat.atributs.name as string).trim().toLowerCase() ===
@@ -152,6 +246,7 @@ const AdministrationPage: React.FC = () => {
       notify(`El Nombre del Material ya existe`);
       return;
     }
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -191,9 +286,7 @@ const AdministrationPage: React.FC = () => {
       notify("No se pudo crear el material");
     }
   };
-  
 
-  // Función para crear un nuevo detalle
   const handleCreateDetail = async () => {
     if (
       newDetail.scantilon_location.trim() === "" ||
@@ -240,7 +333,6 @@ const AdministrationPage: React.FC = () => {
     }
   };
 
-  // Función para crear un nuevo elemento (ventana o puerta)
   const handleCreateElement = async () => {
     if (tabElementosOperables === "ventanas") {
       if (
@@ -256,7 +348,7 @@ const AdministrationPage: React.FC = () => {
         notify("Por favor complete todos los campos de la ventana correctamente");
         return;
       }
-      // Validamos si la ventana ya existe (ignorando mayúsculas y espacios)
+      // Validación si la ventana ya existe
       const windowExists = elementsList
         .filter((el) => el.type === "window")
         .some(
@@ -269,7 +361,7 @@ const AdministrationPage: React.FC = () => {
         return;
       }
     } else {
-      // Validaciones para puertas
+      // Puertas
       if (
         newDoor.name_element.trim() === "" ||
         newDoor.u_puerta_opaca <= 0 ||
@@ -280,17 +372,16 @@ const AdministrationPage: React.FC = () => {
         notify("Por favor complete todos los campos de la puerta correctamente");
         return;
       }
-      // Validación para % de vidrio si se ha seleccionado una ventana asociada
+      // % vidrio si hay ventana asociada
       if (newDoor.ventana_id !== 0) {
         if (newDoor.porcentaje_vidrio < 0 || newDoor.porcentaje_vidrio > 100) {
           notify("Asegúrese de que el % de vidrio esté entre 0 y 100");
           return;
         }
       } else {
-        // Si no se selecciona ventana asociada, forzamos el % de vidrio a 0
         newDoor.porcentaje_vidrio = 0;
       }
-      // Validamos si la puerta ya existe
+      // Validación si la puerta ya existe
       const doorExists = elementsList
         .filter((el) => el.type === "door")
         .some(
@@ -303,6 +394,7 @@ const AdministrationPage: React.FC = () => {
         return;
       }
     }
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -314,6 +406,7 @@ const AdministrationPage: React.FC = () => {
         "Content-Type": "application/json",
       };
       const url = `${constantUrlApiEndpoint}/elements/create`;
+
       let payload;
       if (tabElementosOperables === "ventanas") {
         payload = {
@@ -348,6 +441,7 @@ const AdministrationPage: React.FC = () => {
         };
       }
       await axios.post(url, payload, { headers });
+
       if (tabElementosOperables === "ventanas") {
         notify(`La ventana "${newWindow.name_element}" fue creada correctamente`);
         setShowNewWindowModal(false);
@@ -378,18 +472,8 @@ const AdministrationPage: React.FC = () => {
       notify("No se pudo crear el elemento");
     }
   };
-  
-  
 
-  // Función para obtener el nombre del material a partir de su ID
-  const getMaterialName = (materialId: number) => {
-    const mat = materialsList.find(
-      (m) => m.id === materialId || m.material_id === materialId
-    );
-    return mat ? mat.atributs.name : "Desconocido";
-  };
-
-  // Actualizamos la data al cambiar de step
+  // 5. Actualizar data al cambiar de step
   useEffect(() => {
     if (step === 3) fetchMaterialsList(1);
     if (step === 4) fetchDetails();
@@ -422,232 +506,155 @@ const AdministrationPage: React.FC = () => {
 
       {/* Card principal */}
       <Card>
-          <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
-            <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
-            <div className="content p-4" style={{ flex: 1 }}>
-              {step === 3 && (
-                <>
-                  <div style={{ overflow: "hidden", padding: "10px" }}>
-                    <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                      <table className="table">
-                        <thead>
-                          <tr>
-                            <th>Nombre Material</th>
-                            <th>Conductividad (W/m2K)</th>
-                            <th>Calor específico (J/kgK)</th>
-                            <th>Densidad (kg/m3)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {materialsList.map((mat, idx) => (
-                            <tr key={idx}>
-                              <td>{mat.atributs.name}</td>
-                              <td>{mat.atributs.conductivity}</td>
-                              <td>{mat.atributs.specific_heat}</td>
-                              <td>{mat.atributs.density}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+        <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
+          <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
+          <div className="content p-4" style={{ flex: 1 }}>
+            {/* Step 3: Tabla de Materiales */}
+            {step === 3 && (
+              <>
+                <div style={{ overflow: "hidden", padding: "10px" }}>
+                  <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+                    {/* Uso de TablesParameters en lugar de <table> */}
+                    <TablesParameters columns={materialsColumns} data={materialsData} />
                   </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                    <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
-                      <span className="material-icons">add</span> Nuevo
-                    </CustomButton>
-                  </div>
-                </>
-              )}
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                  <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
+                    <span className="material-icons">add</span> Nuevo
+                  </CustomButton>
+                </div>
+              </>
+            )}
 
-              {step === 4 && (
-                <>
-                  {showGeneralDetails ? (
-                    <div>
-                      <div className="tabs-container">
-                        <div className="tab active" style={{ flex: 1, textAlign: "center" }}>
-                          Detalles Generales
-                        </div>
-                      </div>
-                      <div style={{ overflow: "hidden", padding: "10px" }}>
-                        <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                          <table className="table">
-                            <thead>
-                              <tr>
-                                <th>Ubicación</th>
-                                <th>Nombre Detalle</th>
-                                <th>Material</th>
-                                <th>Espesor (cm)</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {details.map((detail, idx) => (
-                                <tr key={idx}>
-                                  <td>{detail.scantilon_location}</td>
-                                  <td>{detail.name_detail}</td>
-                                  <td>{getMaterialName(detail.material_id)}</td>
-                                  <td>{detail.layer_thickness}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", padding: "10px" }}>
-                        <CustomButton variant="save" onClick={() => setShowGeneralDetails(false)}>
-                          <span className="material-icons">arrow_back</span> Volver
-                        </CustomButton>
-                        <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
-                          <span className="material-icons">add</span> Nuevo
-                        </CustomButton>
+            {/* Step 4: Detalles Constructivos */}
+            {step === 4 && (
+              <>
+                {showGeneralDetails ? (
+                  <div>
+                    <div className="tabs-container">
+                      <div className="tab active" style={{ flex: 1, textAlign: "center" }}>
+                        Detalles Generales
                       </div>
                     </div>
-                  ) : (
-                    <>
-                      <DetallesConstructivosTab />
-                      <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                        <CustomButton
-                          variant="save"
-                          onClick={() => {
-                            fetchDetails();
-                            setShowGeneralDetails(true);
-                          }}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                            padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
-                            height: "min(3rem, 8vh)",
-                            minWidth: "6rem",
-                            marginLeft: "10px",
-                            marginTop: "2rem",
-                          }}
-                        >
-                          <span className="material-icons">visibility</span> Ver detalles generales
-                        </CustomButton>
+                    <div style={{ overflow: "hidden", padding: "10px" }}>
+                      <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+                        {/* Uso de TablesParameters para Detalles */}
+                        <TablesParameters columns={detailsColumns} data={detailsData} />
                       </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {step === 5 && (
-                <>
-                  <div style={{ overflow: "hidden", padding: "10px" }}>
+                    </div>
                     <div
-                      className="d-flex justify-content-between align-items-center mb-2"
-                      style={{ padding: "10px" }}
+                      style={{ display: "flex", justifyContent: "space-between", padding: "10px" }}
                     >
-                      <ul
-                        className="nav"
+                      <CustomButton variant="save" onClick={() => setShowGeneralDetails(false)}>
+                        <span className="material-icons">arrow_back</span> Volver
+                      </CustomButton>
+                      <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
+                        <span className="material-icons">add</span> Nuevo
+                      </CustomButton>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <DetallesConstructivosTab />
+                    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                      <CustomButton
+                        variant="save"
+                        onClick={() => {
+                          fetchDetails();
+                          setShowGeneralDetails(true);
+                        }}
                         style={{
                           display: "flex",
-                          padding: 0,
-                          listStyle: "none",
-                          margin: 0,
-                          flex: 1,
-                          gap: "10px",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                          padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
+                          height: "min(3rem, 8vh)",
+                          minWidth: "6rem",
+                          marginLeft: "10px",
+                          marginTop: "2rem",
                         }}
                       >
-                        {["Ventanas", "Puertas"].map((tab) => (
-                          <li key={tab} style={{ flex: 1 }}>
-                            <button
-                              style={{
-                                width: "100%",
-                                padding: "0px",
-                                backgroundColor: "#fff",
-                                color: tabElementosOperables === tab.toLowerCase() ? "var(--primary-color)" : "var(--secondary-color)",
-                                border: "none",
-                                cursor: "pointer",
-                                borderBottom: tabElementosOperables === tab.toLowerCase() ? "solid var(--primary-color)" : "none",
-                              }}
-                              onClick={() => setTabElementosOperables(tab.toLowerCase())}
-                            >
-                              {tab}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
-                      <table className="table">
-                        <thead>
-                          {tabElementosOperables === "ventanas" ? (
-                            <tr>
-                              <th>Nombre Elemento</th>
-                              <th>U Vidrio [W/m2K]</th>
-                              <th>FS Vidrio</th>
-                              <th>Tipo Cierre</th>
-                              <th>Tipo Marco</th>
-                              <th>U Marco [W/m2K]</th>
-                              <th>FM [%]</th>
-                            </tr>
-                          ) : (
-                            <tr>
-                              <th>Nombre Elemento</th>
-                              <th>U Puerta opaca [W/m2K]</th>
-                              <th>Nombre Ventana</th>
-                              <th>% Vidrio</th>
-                              <th>U Marco [W/m2K]</th>
-                              <th>FM [%]</th>
-                            </tr>
-                          )}
-                        </thead>
-                        <tbody className="small-text">
-                          {elementsList
-                            .filter(
-                              (el) =>
-                                el.type === (tabElementosOperables === "ventanas" ? "window" : "door")
-                            )
-                            .map((el, idx) => {
-                              if (tabElementosOperables === "ventanas") {
-                                return (
-                                  <tr key={idx}>
-                                    <td>{el.name_element}</td>
-                                    <td>{(el.atributs as ElementAttributesWindow).u_vidrio}</td>
-                                    <td>{(el.atributs as ElementAttributesWindow).fs_vidrio}</td>
-                                    <td>{(el.atributs as ElementAttributesWindow).clousure_type}</td>
-                                    <td>{(el.atributs as ElementAttributesWindow).frame_type}</td>
-                                    <td>{el.u_marco}</td>
-                                    <td>{(el.fm * 100).toFixed(0)}%</td>
-                                  </tr>
-                                );
-                              } else {
-                                return (
-                                  <tr key={idx}>
-                                    <td>{el.name_element}</td>
-                                    <td>{(el.atributs as ElementAttributesDoor).u_puerta_opaca}</td>
-                                    <td>{(el.atributs as ElementAttributesDoor).name_ventana}</td>
-                                    <td>
-                                      {((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0)}%
-                                    </td>
-                                    <td>{el.u_marco}</td>
-                                    <td>{(el.fm * 100).toFixed(0)}%</td>
-                                  </tr>
-                                );
-                              }
-                            })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                    {tabElementosOperables === "ventanas" ? (
-                      <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
-                        <span className="material-icons">add</span> Nuevo
+                        <span className="material-icons">visibility</span> Ver detalles generales
                       </CustomButton>
-                    ) : (
-                      <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
-                        <span className="material-icons">add</span> Nuevo
-                      </CustomButton>
-                    )}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Step 5: Elementos Translúcidos */}
+            {step === 5 && (
+              <>
+                <div style={{ overflow: "hidden", padding: "10px" }}>
+                  <div
+                    className="d-flex justify-content-between align-items-center mb-2"
+                    style={{ padding: "10px" }}
+                  >
+                    <ul
+                      className="nav"
+                      style={{
+                        display: "flex",
+                        padding: 0,
+                        listStyle: "none",
+                        margin: 0,
+                        flex: 1,
+                        gap: "10px",
+                      }}
+                    >
+                      {["Ventanas", "Puertas"].map((tab) => (
+                        <li key={tab} style={{ flex: 1 }}>
+                          <button
+                            style={{
+                              width: "100%",
+                              padding: "0px",
+                              backgroundColor: "#fff",
+                              color:
+                                tabElementosOperables === tab.toLowerCase()
+                                  ? "var(--primary-color)"
+                                  : "var(--secondary-color)",
+                              border: "none",
+                              cursor: "pointer",
+                              borderBottom:
+                                tabElementosOperables === tab.toLowerCase()
+                                  ? "solid var(--primary-color)"
+                                  : "none",
+                            }}
+                            onClick={() => setTabElementosOperables(tab.toLowerCase())}
+                          >
+                            {tab}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </>
-              )}
-            </div>
+                  <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
+                    {/* Uso condicional de las columnas y datos para ventanas o puertas */}
+                    <TablesParameters
+                      columns={
+                        tabElementosOperables === "ventanas" ? windowsColumns : doorsColumns
+                      }
+                      data={tabElementosOperables === "ventanas" ? windowsData : doorsData}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                  {tabElementosOperables === "ventanas" ? (
+                    <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
+                      <span className="material-icons">add</span> Nuevo
+                    </CustomButton>
+                  ) : (
+                    <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
+                      <span className="material-icons">add</span> Nuevo
+                    </CustomButton>
+                  )}
+                </div>
+              </>
+            )}
           </div>
+        </div>
       </Card>
 
-      {/* Modales */}
+      {/* Modales para Material, Detalle, Ventana y Puerta */}
       {showNewMaterialModal && (
         <ModalCreate
           isOpen={showNewMaterialModal}
@@ -688,7 +695,10 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk label="Conductividad (W/m2K)" value={newMaterialData.conductivity} />
+              <LabelWithAsterisk
+                label="Conductividad (W/m2K)"
+                value={newMaterialData.conductivity}
+              />
               <input
                 type="number"
                 className="form-control"
@@ -705,7 +715,10 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk label="Calor específico (J/kgK)" value={newMaterialData.specific_heat} />
+              <LabelWithAsterisk
+                label="Calor específico (J/kgK)"
+                value={newMaterialData.specific_heat}
+              />
               <input
                 type="number"
                 className="form-control"
@@ -767,7 +780,10 @@ const AdministrationPage: React.FC = () => {
             }}
           >
             <div className="form-group">
-              <LabelWithAsterisk label="Ubicación del Detalle" value={newDetail.scantilon_location} />
+              <LabelWithAsterisk
+                label="Ubicación del Detalle"
+                value={newDetail.scantilon_location}
+              />
               <select
                 className="form-control"
                 value={newDetail.scantilon_location}
@@ -812,7 +828,7 @@ const AdministrationPage: React.FC = () => {
                 }
               >
                 <option value={0}>Seleccione un material</option>
-                {materialsList.map((mat) => (
+                {materialsList.map((mat: any) => (
                   <option key={mat.material_id} value={mat.material_id}>
                     {mat.atributs.name}
                   </option>
@@ -820,7 +836,10 @@ const AdministrationPage: React.FC = () => {
               </select>
             </div>
             <div className="form-group">
-              <LabelWithAsterisk label="Espesor de la Capa (cm)" value={newDetail.layer_thickness ?? ""} />
+              <LabelWithAsterisk
+                label="Espesor de la Capa (cm)"
+                value={newDetail.layer_thickness ?? ""}
+              />
               <input
                 type="number"
                 className="form-control"
@@ -877,7 +896,10 @@ const AdministrationPage: React.FC = () => {
             <div className="row">
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk label="Nombre del Elemento" value={newWindow.name_element} />
+                  <LabelWithAsterisk
+                    label="Nombre del Elemento"
+                    value={newWindow.name_element}
+                  />
                   <input
                     type="text"
                     className="form-control"
@@ -894,7 +916,10 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk label="U Vidrio [W/m2K]" value={newWindow.u_vidrio} />
+                  <LabelWithAsterisk
+                    label="U Vidrio [W/m2K]"
+                    value={newWindow.u_vidrio}
+                  />
                   <input
                     type="number"
                     className="form-control"
@@ -932,7 +957,10 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk label="Tipo de Cierre" value={newWindow.clousure_type} />
+                  <LabelWithAsterisk
+                    label="Tipo de Cierre"
+                    value={newWindow.clousure_type}
+                  />
                   <select
                     className="form-control"
                     value={newWindow.clousure_type}
@@ -977,7 +1005,10 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk label="U Marco [W/m2K]" value={newWindow.u_marco} />
+                  <LabelWithAsterisk
+                    label="U Marco [W/m2K]"
+                    value={newWindow.u_marco}
+                  />
                   <input
                     type="number"
                     className="form-control"
@@ -1061,7 +1092,10 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk label="U Puerta opaca [W/m2K]" value={newDoor.u_puerta_opaca} />
+              <LabelWithAsterisk
+                label="U Puerta opaca [W/m2K]"
+                value={newDoor.u_puerta_opaca}
+              />
               <input
                 type="number"
                 className="form-control"
@@ -1078,13 +1112,17 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk label="Ventana Asociada" value={newDoor.ventana_id} required={false} />
+              <LabelWithAsterisk
+                label="Ventana Asociada"
+                value={newDoor.ventana_id}
+                required={false}
+              />
               <select
                 className="form-control"
                 value={newDoor.ventana_id}
                 onChange={(e) => {
                   const value = parseInt(e.target.value);
-                  // Si se selecciona "Seleccione una ventana" se reinicia % Vidrio a 0
+                  // Si no se selecciona ventana, se resetea el % de vidrio a 0
                   setNewDoor((prev) => ({
                     ...prev,
                     ventana_id: value,
@@ -1101,7 +1139,11 @@ const AdministrationPage: React.FC = () => {
               </select>
             </div>
             <div className="form-group">
-              <LabelWithAsterisk label="% Vidrio" value={newDoor.porcentaje_vidrio} required={false} />
+              <LabelWithAsterisk
+                label="% Vidrio"
+                value={newDoor.porcentaje_vidrio}
+                required={false}
+              />
               <input
                 type="number"
                 className="form-control"

@@ -1,5 +1,4 @@
 import ButtonTab from "@/components/common/ButtonTab";
-import VerticalDivider from "@/components/ui/HorizontalDivider";
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -507,24 +506,6 @@ const DataEntryPage: React.FC = () => {
         parseFloat(doorData.porcentaje_vidrio) >= 0 &&
         parseFloat(doorData.porcentaje_vidrio) <= 100));
 
-  const sidebarSteps = [
-    {
-      stepNumber: 3,
-      iconName: "imagesearch_roller",
-      title: "Lista de materiales",
-    },
-    {
-      stepNumber: 5,
-      iconName: "home",
-      title: "Elementos translúcidos",
-    },
-    {
-      stepNumber: 6,
-      iconName: "deck",
-      title: "Perfil de uso",
-    },
-  ];
-
   // === RENDER DE STEP 3: Lista de Materiales (SIN multiheader)
   const renderStep3Materials = () => {
     // Definimos columnas
@@ -817,7 +798,7 @@ const DataEntryPage: React.FC = () => {
               { stepNumber: 6, iconName: "deck", title: "Perfil de uso" },
             ]}
           />
-          <VerticalDivider />
+          
           <div className="content p-4" style={{ flex: 1 }}>
             {step === 3 && (
               <div className="px-3">{renderStep3Materials()}</div>

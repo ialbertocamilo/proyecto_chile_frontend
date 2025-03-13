@@ -1,5 +1,4 @@
 import ButtonTab from "@/components/common/ButtonTab";
-import CancelButton from "@/components/common/CancelButton";
 import VerticalDivider from "@/components/ui/HorizontalDivider";
 import { notify } from "@/utils/notify";
 import axios from "axios";
@@ -11,8 +10,8 @@ import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
-import Modal from "../src/components/common/Modal";
-import SearchParameters from "../src/components/inputs/SearchParameters"; // Importa el componente creado
+import ModalCreate from "../src/components/common/ModalCreate";
+import SearchParameters from "../src/components/inputs/SearchParameters";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Breadcrumb from "@/components/common/Breadcrumb";
@@ -201,6 +200,7 @@ const DataEntryPage: React.FC = () => {
       setMaterialsList(allMaterials);
     } catch (error) {
       console.error("Error al obtener materiales:", error);
+      // Aquí ya NO relanzamos el error, sólo lo registramos
     }
   }, []);
 
@@ -220,6 +220,7 @@ const DataEntryPage: React.FC = () => {
         `Error al obtener ${type === "window" ? "ventanas" : "puertas"}`,
         error
       );
+      // De nuevo, sólo mostramos en consola
     }
   }, []);
 
@@ -287,7 +288,6 @@ const DataEntryPage: React.FC = () => {
       }
       return false;
     } catch (error) {
-      notify("material-error");
       if (
         axios.isAxiosError(error) &&
         error.response &&
@@ -298,7 +298,7 @@ const DataEntryPage: React.FC = () => {
         notify("Error al crear el material");
       }
       console.error("Error al crear material:", error);
-      return false;
+      return false; // No relanzamos el error
     }
   };
 
@@ -373,7 +373,7 @@ const DataEntryPage: React.FC = () => {
         notify("Error al crear la ventana");
       }
       console.error("Error al crear ventana:", error);
-      return false;
+      return false; // No relanzamos el error
     }
   };
 
@@ -445,12 +445,14 @@ const DataEntryPage: React.FC = () => {
         notify("Error al crear la puerta");
       }
       console.error("Error al crear puerta:", error);
-      return false;
+      return false; // No relanzamos el error
     }
   };
 
   useEffect(() => {
     if (step === 3) {
+      // Llamamos a la función con try/catch interno,
+      // sin hacer throw, así evitamos el overlay de Next.js
       fetchMaterialsList();
     }
   }, [step, fetchMaterialsList]);
@@ -525,380 +527,558 @@ const DataEntryPage: React.FC = () => {
     },
   ];
 
-
-
   return (
     <>
       <GooIcons />
-        <Card>
-
-
+      <Card>
         <div className="d-flex align-items-center w-100">
           <Title text="Ingreso de datos de entrada" />
-          <Breadcrumb items={[{ title: 'Datos de entrada', href: '/data-entry', active: true }]} />
+          <Breadcrumb
+            items={[
+              { title: "Datos de entrada", href: "/data-entry", active: true },
+            ]}
+          />
         </div>
-        </Card>
-        <Card>
-          <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
-            <AdminSidebar
-              activeStep={step}
-              onStepChange={setStep}
-              steps={sidebarSteps}
-            />
-            <VerticalDivider />
-            <div className="content p-4" style={{ flex: 1 }}>
-              {step === 3 && (
-                <div className="px-3">
-                  <div className="mb-4">
-                    <SearchParameters
-                      value={materialSearch}
-                      onChange={setMaterialSearch}
-                      placeholder="Buscar material..."
-                      onNew={() => setShowMaterialModal(true)}
-                    />
+      </Card>
+      <Card>
+        <div
+          className="d-flex flex-wrap"
+          style={{ alignItems: "stretch", gap: 0 }}
+        >
+          <AdminSidebar
+            activeStep={step}
+            onStepChange={setStep}
+            steps={sidebarSteps}
+          />
+          <VerticalDivider />
+          <div className="content p-4" style={{ flex: 1 }}>
+            {step === 3 && (
+              <div className="px-3">
+                <div className="mb-4">
+                  <SearchParameters
+                    value={materialSearch}
+                    onChange={setMaterialSearch}
+                    placeholder="Buscar material..."
+                    onNew={() => setShowMaterialModal(true)}
+                  />
+                </div>
+                <div className="table-responsive">
+                  <div className="border rounded overflow-hidden">
+                    <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                      <table className="table table-hover mb-0">
+                        <thead>
+                          <tr>
+                            <th style={{ textAlign: "center" }}>
+                              Nombre Material
+                            </th>
+                            <th style={{ textAlign: "center" }}>
+                              Conductividad (W/m2K)
+                            </th>
+                            <th style={{ textAlign: "center" }}>
+                              Calor específico (J/kgK)
+                            </th>
+                            <th style={{ textAlign: "center" }}>
+                              Densidad (kg/m3)
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {materialsList
+                            .filter((mat) =>
+                              mat.atributs.name
+                                .toLowerCase()
+                                .includes(materialSearch.toLowerCase())
+                            )
+                            .map((mat, idx) => (
+                              <tr key={idx}>
+                                <td style={{ textAlign: "center" }}>
+                                  {mat.atributs.name}
+                                </td>
+                                <td style={{ textAlign: "center" }}>
+                                  {mat.atributs.conductivity}
+                                </td>
+                                <td style={{ textAlign: "center" }}>
+                                  {mat.atributs.specific_heat}
+                                </td>
+                                <td style={{ textAlign: "center" }}>
+                                  {mat.atributs.density}
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  <div className="table-responsive">
-                    <div className="border rounded overflow-hidden">
-                      <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                        <table className="table table-hover mb-0">
-                          <thead>
+                </div>
+              </div>
+            )}
+
+            {step === 5 && (
+              <div className="px-3">
+                <div className="mb-4">
+                  <SearchParameters
+                    value={elementSearch}
+                    onChange={setElementSearch}
+                    placeholder="Buscar elemento..."
+                    onNew={() => setShowElementModal(true)}
+                  />
+                </div>
+
+                <div className="table-responsive">
+                  <div className="border rounded overflow-hidden">
+                    <div className="bg-white border-bottom">
+                      <div className="row g-0">
+                        {["Ventanas", "Puertas"].map((tab) => (
+                          <div key={tab} className="col-6">
+                            <ButtonTab
+                              label={tab}
+                              active={modalElementType === tab.toLowerCase()}
+                              onClick={() =>
+                                setModalElementType(tab.toLowerCase())
+                              }
+                              primaryColor={primaryColor}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                      <table className="table table-hover mb-0">
+                        <thead>
+                          {modalElementType === "ventanas" ? (
                             <tr>
                               <th style={{ textAlign: "center" }}>
-                                Nombre Material
+                                Nombre Elemento
                               </th>
                               <th style={{ textAlign: "center" }}>
-                                Conductividad (W/m2K)
+                                U Vidrio [W/m2K]
                               </th>
                               <th style={{ textAlign: "center" }}>
-                                Calor específico (J/kgK)
+                                FS Vidrio
                               </th>
                               <th style={{ textAlign: "center" }}>
-                                Densidad (kg/m3)
+                                Tipo Cierre
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                Tipo Marco
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                U Marco [W/m2K]
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                FM [%]
                               </th>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {materialsList
-                              .filter((mat) =>
-                                mat.atributs.name
-                                  .toLowerCase()
-                                  .includes(materialSearch.toLowerCase())
-                              )
-                              .map((mat, idx) => (
+                          ) : (
+                            <tr>
+                              <th style={{ textAlign: "center" }}>
+                                Nombre Elemento
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                U Puerta opaca [W/m2K]
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                Nombre Ventana
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                % Vidrio
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                U Marco [W/m2K]
+                              </th>
+                              <th style={{ textAlign: "center" }}>
+                                FM [%]
+                              </th>
+                            </tr>
+                          )}
+                        </thead>
+                        <tbody>
+                          {elementsList
+                            .filter((el) =>
+                              el.name_element
+                                .toLowerCase()
+                                .includes(elementSearch.toLowerCase())
+                            )
+                            .map((el, idx) =>
+                              modalElementType === "ventanas" ? (
                                 <tr key={idx}>
-                                  <td style={{ textAlign: "center" }}>{mat.atributs.name}</td>
-                                  <td style={{ textAlign: "center" }}>{mat.atributs.conductivity}</td>
-                                  <td style={{ textAlign: "center" }}>{mat.atributs.specific_heat}</td>
-                                  <td style={{ textAlign: "center" }}>{mat.atributs.density}</td>
+                                  <td className="text-center">{el.name_element}</td>
+                                  <td className="text-center">{el.atributs.u_vidrio}</td>
+                                  <td className="text-center">{el.atributs.fs_vidrio}</td>
+                                  <td className="text-center">{el.atributs.clousure_type}</td>
+                                  <td className="text-center">{el.atributs.frame_type}</td>
+                                  <td className="text-center">{el.u_marco}</td>
+                                  <td className="text-center">{(el.fm * 100).toFixed(0)}%</td>
                                 </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {step === 5 && (
-                <div className="px-3">
-                  <div className="mb-4">
-                    <SearchParameters
-                      value={elementSearch}
-                      onChange={setElementSearch}
-                      placeholder="Buscar elemento..."
-                      onNew={() => setShowElementModal(true)}
-                    />
-                  </div>
-
-
-                  <div className="table-responsive">
-                    <div className="border rounded overflow-hidden">
-                      <div className="bg-white border-bottom">
-                        <div className="row g-0">
-                          {["Ventanas", "Puertas"].map((tab) => (
-                            <div key={tab} className="col-6">
-                              <ButtonTab
-                                label={tab}
-                                active={modalElementType === tab.toLowerCase()}
-                                onClick={() => setModalElementType(tab.toLowerCase())}
-                                primaryColor={primaryColor} />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-
-                      <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                        <table className="table table-hover mb-0">
-                          <thead>
-                            {modalElementType === "ventanas" ? (
-                              <tr>
-                                <th style={{ textAlign: "center" }}>
-                                  Nombre Elemento
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  U Vidrio [W/m2K]
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  FS Vidrio
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  Tipo Cierre
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  Tipo Marco
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  U Marco [W/m2K]
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  FM [%]
-                                </th>
-                              </tr>
-                            ) : (
-                              <tr>
-                                <th style={{ textAlign: "center" }}>
-                                  Nombre Elemento
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  U Puerta opaca [W/m2K]
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  Nombre Ventana
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  % Vidrio
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  U Marco [W/m2K]
-                                </th>
-                                <th style={{ textAlign: "center" }}>
-                                  FM [%]
-                                </th>
-                              </tr>
-                            )}
-                          </thead>
-                          <tbody>
-                            {elementsList
-                              .filter((el) =>
-                                el.name_element
-                                  .toLowerCase()
-                                  .includes(elementSearch.toLowerCase())
-                              )
-                              .map((el, idx) =>
-                                modalElementType === "ventanas" ? (
-                                  <tr key={idx}>
-                                    <td>{el.name_element}</td>
-                                    <td>{el.atributs.u_vidrio}</td>
-                                    <td>{el.atributs.fs_vidrio}</td>
-                                    <td>{el.atributs.clousure_type}</td>
-                                    <td>{el.atributs.frame_type}</td>
-                                    <td>{el.u_marco}</td>
-                                    <td>{(el.fm * 100).toFixed(0)}%</td>
-                                  </tr>
-                                ) : (
-                                  <tr key={idx}>
-                                    <td>{el.name_element}</td>
-                                    <td>{el.atributs.u_puerta_opaca}</td>
-                                    <td>{el.atributs.name_ventana}</td>
-                                    <td>
-                                      {el.atributs.porcentaje_vidrio !== undefined
-                                        ? (
+                              ) : (
+                                <tr key={idx}>
+                                  <td className="text-center">{el.name_element}</td>
+                                  <td className="text-center">{el.atributs.u_puerta_opaca}</td>
+                                  <td className="text-center">{el.atributs.name_ventana}</td>
+                                  <td className="text-center">
+                                    {el.atributs.porcentaje_vidrio !==
+                                    undefined
+                                      ? (
                                           (el.atributs
-                                            .porcentaje_vidrio as number) *
-                                          100
+                                            .porcentaje_vidrio as number) * 100
                                         ).toFixed(0) + "%"
-                                        : "0%"}
-                                    </td>
-                                    <td>{el.u_marco}</td>
-                                    <td>{(el.fm * 100).toFixed(0)}%</td>
-                                  </tr>
-                                )
-                              )}
-                          </tbody>
-                        </table>
+                                      : "0%"}
+                                  </td>
+                                  <td className="text-center">{el.u_marco}</td>
+                                  <td className="text-center">{(el.fm * 100).toFixed(0)}%</td>
+                                </tr>
+                              )
+                            )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 6 && (
+              <div className="px-3">
+                <div className="nav nav-tabs mb-3 flex-nowrap overflow-auto">
+                  {[
+                    { key: "ventilacion", label: "Ventilación y caudales" },
+                    { key: "iluminacion", label: "Iluminación" },
+                    { key: "cargas", label: "Cargas internas" },
+                    { key: "horario", label: "Horario y Clima" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      className={`nav-link flex-shrink-0 ${
+                        tabTipologiaRecinto === tab.key ? "active" : ""
+                      }`}
+                      style={{
+                        color:
+                          tabTipologiaRecinto === tab.key
+                            ? primaryColor
+                            : "var(--secondary-color)",
+                        borderBottom:
+                          tabTipologiaRecinto === tab.key
+                            ? `3px solid ${primaryColor}`
+                            : "none",
+                        whiteSpace: "nowrap",
+                      }}
+                      onClick={() => setTabTipologiaRecinto(tab.key)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="table-responsive">
+                  <div className="border rounded overflow-hidden">
+                    <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                      <table className="table  table-hover mb-0">
+                        <thead>
+                          <tr>
+                            <th style={{ textAlign: "center" }}></th>
+                            <th style={{ textAlign: "center" }}></th>
+                            <th style={{ textAlign: "center" }}></th>
+                            <th style={{ textAlign: "center" }}>
+                              Caudal Min Salubridad
+                            </th>
+                            <th style={{ textAlign: "center" }}></th>
+                            <th style={{ textAlign: "center" }}>
+                              Caudal Impuesto
+                            </th>
+                            <th style={{ textAlign: "center" }}></th>
+                          </tr>
+                          <tr>
+                            <th style={{ textAlign: "center" }}>
+                              Código de Recinto
+                            </th>
+                            <th style={{ textAlign: "center" }}>
+                              Tipología de Recinto
+                            </th>
+                            <th style={{ textAlign: "center" }}>
+                              R-pers [L/s]
+                            </th>
+                            <th style={{ textAlign: "center" }}>IDA</th>
+                            <th style={{ textAlign: "center" }}>
+                              Ocupación
+                            </th>
+                            <th style={{ textAlign: "center" }}>
+                              Vent Noct [1/h]
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {/* Ejemplo de datos estáticos */}
+                          <tr>
+                            <td className="text-center">ES</td>
+                            <td className="text-center">Espera</td>
+                            <td className="text-center">8.80</td>
+                            <td className="text-center">IDA2 ✔</td>
+                            <td className="text-center">Sedentario ✔</td>
+                            <td className="text-center">-</td>
+                          </tr>
+                          <tr>
+                            <td className="text-center">AU</td>
+                            <td className="text-center">Auditorio</td>
+                            <td className="text-center">5.28</td>
+                            <td className="text-center">IDA3 ✔</td>
+                            <td className="text-center">Sedentario ✔</td>
+                            <td className="text-center">-</td>
+                          </tr>
+                          <tr>
+                            <td className="text-center">BA</td>
+                            <td className="text-center">Baño</td>
+                            <td className="text-center">8.80</td>
+                            <td className="text-center">IDA2 ✔</td>
+                            <td className="text-center">Sedentario ✔</td>
+                            <td className="text-center">-</td>
+                          </tr>
+                          <tr>
+                            <td className="text-center">BD</td>
+                            <td className="text-center">Bodega</td>
+                            <td className="text-center">8.80</td>
+                            <td className="text-center">IDA2 ✔</td>
+                            <td className="text-center">Sedentario ✔</td>
+                            <td className="text-center">-</td>
+                          </tr>
+                          <tr>
+                            <td className="text-center">KI</td>
+                            <td className="text-center">Cafetería</td>
+                            <td className="text-center">8.80</td>
+                            <td className="text-center">IDA2 ✔</td>
+                            <td className="text-center">Sedentario ✔</td>
+                            <td className="text-center">-</td>
+                          </tr>
+                          <tr>
+                            <td className="text-center">CO</td>
+                            <td className="text-center">Comedores</td>
+                            <td className="text-center">8.80</td>
+                            <td className="text-center">IDA2 ✔</td>
+                            <td className="text-center">Sedentario ✔</td>
+                            <td className="text-center">-</td>
+                          </tr>
+                          <tr>
+                            <td className="text-center">PA</td>
+                            <td className="text-center">Pasillos</td>
+                            <td className="text-center">8.80</td>
+                            <td className="text-center">IDA2 ✔</td>
+                            <td className="text-center">Sedentario ✔</td>
+                            <td className="text-center">-</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      {/* Botón para agregar nuevo registro */}
+                      <div className="text-end mt-3">
+                        <CustomButton
+                          variant="save"
+                          onClick={() => {
+                            // Lógica para abrir un modal o formulario para agregar un nuevo registro
+                            console.log("Agregar nuevo registro");
+                          }}
+                        >
+                          + Nuevo
+                        </CustomButton>
                       </div>
                     </div>
                   </div>
                 </div>
-              )}
-
-              {step === 6 && (
-                <div className="px-3">
-                  <div className="nav nav-tabs mb-3 flex-nowrap overflow-auto">
-                    {[
-                      { key: "ventilacion", label: "Ventilación y caudales" },
-                      { key: "iluminacion", label: "Iluminación" },
-                      { key: "cargas", label: "Cargas internas" },
-                      { key: "horario", label: "Horario y Clima" },
-                    ].map((tab) => (
-                      <button
-                        key={tab.key}
-                        className={`nav-link flex-shrink-0 ${tabTipologiaRecinto === tab.key ? 'active' : ''}`}
-                        style={{
-                          color: tabTipologiaRecinto === tab.key ? primaryColor : "var(--secondary-color)",
-                          borderBottom: tabTipologiaRecinto === tab.key ? `3px solid ${primaryColor}` : "none",
-                          whiteSpace: "nowrap"
-                        }}
-                        onClick={() => setTabTipologiaRecinto(tab.key)}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="table-responsive">
-                    <div className="border rounded overflow-hidden">
-                      <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                        <table className="table  table-hover mb-0">
-                          <thead>
-                            <tr>
-                              <th style={{ textAlign: "center" }}></th>
-                              <th style={{ textAlign: "center" }}></th>
-                              <th style={{ textAlign: "center" }}></th>
-                              <th style={{ textAlign: "center" }}>Caudal Min Salubridad</th>
-                              <th style={{ textAlign: "center" }}></th>
-                              <th style={{ textAlign: "center" }}>Caudal Impuesto</th>
-                              <th style={{ textAlign: "center" }}></th>
-                            </tr>
-                            <tr>
-                              <th style={{ textAlign: "center" }}>Código de Recinto</th>
-                              <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
-                              <th style={{ textAlign: "center" }}>R-pers [L/s]</th>
-                              <th style={{ textAlign: "center" }}>IDA</th>
-                              <th style={{ textAlign: "center" }}>Ocupación</th>
-                              <th style={{ textAlign: "center" }}>Vent Noct [1/h]</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {/* Ejemplo de datos estáticos */}
-                            <tr>
-                              <td>ES</td>
-                              <td>Espera</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>AU</td>
-                              <td>Auditorio</td>
-                              <td>5.28</td>
-                              <td>IDA3 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>BA</td>
-                              <td>Baño</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>BD</td>
-                              <td>Bodega</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>KI</td>
-                              <td>Cafetería</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>CO</td>
-                              <td>Comedores</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                            <tr>
-                              <td>PA</td>
-                              <td>Pasillos</td>
-                              <td>8.80</td>
-                              <td>IDA2 ✔</td>
-                              <td>Sedentario ✔</td>
-                              <td>-</td>
-                            </tr>
-                          </tbody>
-                        </table>
-
-                        {/* Botón para agregar nuevo registro */}
-                        <div className="text-end mt-3">
-                          <CustomButton
-                            variant="save"
-                            onClick={() => {
-                              // Lógica para abrir un modal o formulario para agregar un nuevo registro
-                              console.log("Agregar nuevo registro");
-                            }}
-                          >
-                            + Nuevo
-                          </CustomButton>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-        </Card>
-        {showMaterialModal && (
-          <Modal
-            isOpen={showMaterialModal}
-            onClose={() => {
+        </div>
+      </Card>
+
+      {/* Modal para crear Material */}
+      {showMaterialModal && (
+        <ModalCreate
+          isOpen={showMaterialModal}
+          onClose={() => {
+            setShowMaterialModal(false);
+            setNewMaterialData({
+              name: "",
+              conductivity: "",
+              specific_heat: "",
+              density: "",
+            });
+          }}
+          onSave={async () => {
+            const success = await handleCreateMaterial();
+            if (success) {
               setShowMaterialModal(false);
-              setNewMaterialData({
-                name: "",
-                conductivity: "",
-                specific_heat: "",
-                density: "",
+            }
+          }}
+          title="Nuevo Material"
+          saveLabel="Crear Material"
+        >
+          <div>
+            <div className="form-group mb-3">
+              <LabelWithAsterisk
+                label="Nombre"
+                value={newMaterialData.name}
+              />
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Nombre"
+                value={newMaterialData.name}
+                onChange={(e) =>
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    name: e.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <LabelWithAsterisk
+                label="Conductividad (W/m2K)"
+                value={newMaterialData.conductivity}
+              />
+              <input
+                type="number"
+                min="0"
+                className="form-control"
+                placeholder="Conductividad"
+                value={newMaterialData.conductivity}
+                onChange={(e) =>
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    conductivity: e.target.value,
+                  }))
+                }
+                onKeyDown={handleNumberKeyDown}
+              />
+            </div>
+            <div className="form-group mb-3">
+              <LabelWithAsterisk
+                label="Calor específico (J/kgK)"
+                value={newMaterialData.specific_heat}
+              />
+              <input
+                type="number"
+                min="0"
+                className="form-control"
+                placeholder="Calor específico"
+                value={newMaterialData.specific_heat}
+                onChange={(e) =>
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    specific_heat: e.target.value,
+                  }))
+                }
+                onKeyDown={handleNumberKeyDown}
+              />
+            </div>
+            <div className="form-group mb-3">
+              <LabelWithAsterisk
+                label="Densidad (kg/m3)"
+                value={newMaterialData.density}
+              />
+              <input
+                type="number"
+                min="0"
+                className="form-control"
+                placeholder="Densidad"
+                value={newMaterialData.density}
+                onChange={(e) =>
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    density: e.target.value,
+                  }))
+                }
+                onKeyDown={handleNumberKeyDown}
+              />
+            </div>
+            {!materialIsValid && (
+              <div className="mb-3">
+                <p>
+                  (<span style={{ color: "red" }}>*</span>) Campos obligatorios
+                </p>
+              </div>
+            )}
+          </div>
+        </ModalCreate>
+      )}
+
+      {/* Modal para crear Elemento translúcido */}
+      {showElementModal && (
+        <ModalCreate
+          isOpen={showElementModal}
+          onClose={() => {
+            setShowElementModal(false);
+            if (modalElementType === "ventanas") {
+              setWindowData({
+                name_element: "",
+                u_vidrio: "",
+                fs_vidrio: "",
+                clousure_type: "Corredera",
+                frame_type: "",
+                u_marco: "",
+                fm: "",
               });
-            }}
-            title="Nuevo Material"
-          >
+            } else {
+              setDoorData({
+                name_element: "",
+                ventana_id: "",
+                name_ventana: "",
+                u_puerta_opaca: "",
+                porcentaje_vidrio: "",
+                u_marco: "",
+                fm: "",
+              });
+            }
+          }}
+          onSave={async () => {
+            if (modalElementType === "ventanas") {
+              const success = await handleCreateWindowElement();
+              if (success) setShowElementModal(false);
+            } else {
+              const success = await handleCreateDoorElement();
+              if (success) setShowElementModal(false);
+            }
+          }}
+          title={
+            modalElementType === "ventanas" ? "Nueva Ventana" : "Nueva Puerta"
+          }
+          saveLabel={
+            modalElementType === "ventanas" ? "Crear Ventana" : "Crear Puerta"
+          }
+        >
+          {modalElementType === "ventanas" ? (
             <div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk
                   label="Nombre"
-                  value={newMaterialData.name}
+                  value={windowData.name_element}
                 />
                 <input
                   type="text"
                   className="form-control"
                   placeholder="Nombre"
-                  value={newMaterialData.name}
+                  value={windowData.name_element}
                   onChange={(e) =>
-                    setNewMaterialData((prev) => ({
+                    setWindowData((prev) => ({
                       ...prev,
-                      name: e.target.value,
+                      name_element: e.target.value,
                     }))
                   }
                 />
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk
-                  label="Conductividad (W/m2K)"
-                  value={newMaterialData.conductivity}
+                  label="U Vidrio [W/m2K]"
+                  value={windowData.u_vidrio}
                 />
                 <input
                   type="number"
                   min="0"
                   className="form-control"
-                  placeholder="Conductividad"
-                  value={newMaterialData.conductivity}
+                  placeholder="U Vidrio"
+                  value={windowData.u_vidrio}
                   onChange={(e) =>
-                    setNewMaterialData((prev) => ({
+                    setWindowData((prev) => ({
                       ...prev,
-                      conductivity: e.target.value,
+                      u_vidrio: e.target.value,
                     }))
                   }
                   onKeyDown={handleNumberKeyDown}
@@ -906,19 +1086,19 @@ const DataEntryPage: React.FC = () => {
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk
-                  label="Calor específico (J/kgK)"
-                  value={newMaterialData.specific_heat}
+                  label="FS Vidrio"
+                  value={windowData.fs_vidrio}
                 />
                 <input
                   type="number"
                   min="0"
                   className="form-control"
-                  placeholder="Calor específico"
-                  value={newMaterialData.specific_heat}
+                  placeholder="FS Vidrio"
+                  value={windowData.fs_vidrio}
                   onChange={(e) =>
-                    setNewMaterialData((prev) => ({
+                    setWindowData((prev) => ({
                       ...prev,
-                      specific_heat: e.target.value,
+                      fs_vidrio: e.target.value,
                     }))
                   }
                   onKeyDown={handleNumberKeyDown}
@@ -926,461 +1106,259 @@ const DataEntryPage: React.FC = () => {
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk
-                  label="Densidad (kg/m3)"
-                  value={newMaterialData.density}
+                  label="Tipo Cierre"
+                  value={windowData.clousure_type}
+                />
+                <select
+                  className="form-control"
+                  value={windowData.clousure_type}
+                  onChange={(e) =>
+                    setWindowData((prev) => ({
+                      ...prev,
+                      clousure_type: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="Abatir">Abatir</option>
+                  <option value="Corredera">Corredera</option>
+                  <option value="Fija">Fija</option>
+                  <option value="Guillotina">Guillotina</option>
+                  <option value="Proyectante">Proyectante</option>
+                </select>
+              </div>
+              <div className="form-group mb-3">
+                <LabelWithAsterisk
+                  label="Tipo Marco"
+                  value={windowData.frame_type}
+                />
+                <select
+                  className="form-control"
+                  value={windowData.frame_type}
+                  onChange={(e) =>
+                    setWindowData((prev) => ({
+                      ...prev,
+                      frame_type: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Seleccione</option>
+                  <option value="Fierro">Fierro</option>
+                  <option value="Madera Con RPT">Madera Con RPT</option>
+                  <option value="Madera Sin RPT">Madera Sin RPT</option>
+                  <option value="Metalico Con RPT">Metalico Con RPT</option>
+                  <option value="Metalico Sin RPT">Metalico Sin RPT</option>
+                  <option value="PVC Con RPT">PVC Con RPT</option>
+                  <option value="PVC Sin RPT">PVC Sin RPT</option>
+                </select>
+              </div>
+              <div className="form-group mb-3">
+                <LabelWithAsterisk
+                  label="U Marco [W/m2K]"
+                  value={windowData.u_marco}
                 />
                 <input
                   type="number"
                   min="0"
                   className="form-control"
-                  placeholder="Densidad"
-                  value={newMaterialData.density}
+                  placeholder="U Marco"
+                  value={windowData.u_marco}
                   onChange={(e) =>
-                    setNewMaterialData((prev) => ({
+                    setWindowData((prev) => ({
                       ...prev,
-                      density: e.target.value,
+                      u_marco: e.target.value,
                     }))
                   }
                   onKeyDown={handleNumberKeyDown}
                 />
               </div>
-              {!materialIsValid && (
+              <div className="form-group mb-3">
+                <LabelWithAsterisk label="FM [%]" value={windowData.fm} />
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className="form-control"
+                  placeholder="FM"
+                  value={windowData.fm}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value)) {
+                      setWindowData((prev) => ({ ...prev, fm: "" }));
+                    } else {
+                      const validated = validatePercentage(value);
+                      setWindowData((prev) => ({
+                        ...prev,
+                        fm: validated.toString(),
+                      }));
+                    }
+                  }}
+                  onKeyDown={handleNumberKeyDown}
+                />
+              </div>
+              {!windowIsValid && (
                 <div className="mb-3">
                   <p>
                     (<span style={{ color: "red" }}>*</span>) Campos obligatorios
                   </p>
                 </div>
               )}
-              <div className="d-flex justify-content-end mt-3">
-                <CancelButton
-                  onClick={() => {
-                    setShowMaterialModal(false);
-                    setNewMaterialData({
-                      name: "",
-                      conductivity: "",
-                      specific_heat: "",
-                      density: "",
-                    });
-                  }}
+            </div>
+          ) : (
+            <div>
+              <div className="form-group mb-3">
+                <LabelWithAsterisk
+                  label="Nombre"
+                  value={doorData.name_element}
                 />
-                <CustomButton
-                  variant="save"
-                  onClick={async () => {
-                    const success = await handleCreateMaterial();
-                    if (success) {
-                      setShowMaterialModal(false);
-                    }
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Nombre"
+                  value={doorData.name_element}
+                  onChange={(e) =>
+                    setDoorData((prev) => ({
+                      ...prev,
+                      name_element: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="form-group mb-3">
+                <LabelWithAsterisk
+                  label="U Puerta opaca [W/m2K]"
+                  value={doorData.u_puerta_opaca}
+                />
+                <input
+                  type="number"
+                  min="0"
+                  className="form-control"
+                  placeholder="U Puerta opaca"
+                  value={doorData.u_puerta_opaca}
+                  onChange={(e) =>
+                    setDoorData((prev) => ({
+                      ...prev,
+                      u_puerta_opaca: e.target.value,
+                    }))
+                  }
+                  onKeyDown={handleNumberKeyDown}
+                />
+              </div>
+              <div className="form-group mb-3">
+                <LabelWithAsterisk
+                  label="Ventana Asociada"
+                  value={doorData.ventana_id}
+                  required={false}
+                />
+                <select
+                  className="form-control"
+                  value={doorData.ventana_id}
+                  onChange={(e) => {
+                    const winId = e.target.value;
+                    setDoorData((prev) => ({
+                      ...prev,
+                      ventana_id: winId,
+                      name_ventana:
+                        allWindowsForDoor.find(
+                          (win) => win.id === parseInt(winId)
+                        )?.name_element || "",
+                    }));
                   }}
                 >
-                  Crear Material
-                </CustomButton>
+                  <option value="">Seleccione</option>
+                  {allWindowsForDoor.map((win) => (
+                    <option key={win.id} value={win.id}>
+                      {win.name_element}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
-          </Modal>
-        )}
-
-        {/* Modal para crear Elemento translúcido */}
-        {showElementModal && (
-          <Modal
-            isOpen={showElementModal}
-            onClose={() => {
-              setShowElementModal(false);
-              if (modalElementType === "ventanas") {
-                setWindowData({
-                  name_element: "",
-                  u_vidrio: "",
-                  fs_vidrio: "",
-                  clousure_type: "Corredera",
-                  frame_type: "",
-                  u_marco: "",
-                  fm: "",
-                });
-              } else {
-                setDoorData({
-                  name_element: "",
-                  ventana_id: "",
-                  name_ventana: "",
-                  u_puerta_opaca: "",
-                  porcentaje_vidrio: "",
-                  u_marco: "",
-                  fm: "",
-                });
-              }
-            }}
-            title={
-              modalElementType === "ventanas" ? "Nueva Ventana" : "Nueva Puerta"
-            }
-          >
-            {modalElementType === "ventanas" ? (
-              <div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="Nombre"
-                    value={windowData.name_element}
-                  />
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Nombre"
-                    value={windowData.name_element}
-                    onChange={(e) =>
-                      setWindowData((prev) => ({
-                        ...prev,
-                        name_element: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="U Vidrio [W/m2K]"
-                    value={windowData.u_vidrio}
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-control"
-                    placeholder="U Vidrio"
-                    value={windowData.u_vidrio}
-                    onChange={(e) =>
-                      setWindowData((prev) => ({
-                        ...prev,
-                        u_vidrio: e.target.value,
-                      }))
-                    }
-                    onKeyDown={handleNumberKeyDown}
-                  />
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="FS Vidrio"
-                    value={windowData.fs_vidrio}
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-control"
-                    placeholder="FS Vidrio"
-                    value={windowData.fs_vidrio}
-                    onChange={(e) =>
-                      setWindowData((prev) => ({
-                        ...prev,
-                        fs_vidrio: e.target.value,
-                      }))
-                    }
-                    onKeyDown={handleNumberKeyDown}
-                  />
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="Tipo Cierre"
-                    value={windowData.clousure_type}
-                  />
-                  <select
-                    className="form-control"
-                    value={windowData.clousure_type}
-                    onChange={(e) =>
-                      setWindowData((prev) => ({
-                        ...prev,
-                        clousure_type: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="Abatir">Abatir</option>
-                    <option value="Corredera">Corredera</option>
-                    <option value="Fija">Fija</option>
-                    <option value="Guillotina">Guillotina</option>
-                    <option value="Proyectante">Proyectante</option>
-                  </select>
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="Tipo Marco"
-                    value={windowData.frame_type}
-                  />
-                  <select
-                    className="form-control"
-                    value={windowData.frame_type}
-                    onChange={(e) =>
-                      setWindowData((prev) => ({
-                        ...prev,
-                        frame_type: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">Seleccione</option>
-                    <option value="Fierro">Fierro</option>
-                    <option value="Madera Con RPT">Madera Con RPT</option>
-                    <option value="Madera Sin RPT">Madera Sin RPT</option>
-                    <option value="Metalico Con RPT">Metalico Con RPT</option>
-                    <option value="Metalico Sin RPT">Metalico Sin RPT</option>
-                    <option value="PVC Con RPT">PVC Con RPT</option>
-                    <option value="PVC Sin RPT">PVC Sin RPT</option>
-                  </select>
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="U Marco [W/m2K]"
-                    value={windowData.u_marco}
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-control"
-                    placeholder="U Marco"
-                    value={windowData.u_marco}
-                    onChange={(e) =>
-                      setWindowData((prev) => ({
-                        ...prev,
-                        u_marco: e.target.value,
-                      }))
-                    }
-                    onKeyDown={handleNumberKeyDown}
-                  />
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk label="FM [%]" value={windowData.fm} />
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    className="form-control"
-                    placeholder="FM"
-                    value={windowData.fm}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      if (isNaN(value)) {
-                        setWindowData((prev) => ({ ...prev, fm: "" }));
-                      } else {
-                        const validated = validatePercentage(value);
-                        setWindowData((prev) => ({
-                          ...prev,
-                          fm: validated.toString(),
-                        }));
-                      }
-                    }}
-                    onKeyDown={handleNumberKeyDown}
-                  />
-                </div>
-                {!windowIsValid && (
-                  <div className="mb-3">
-                    <p>
-                      (<span style={{ color: "red" }}>*</span>) Campos obligatorios
-                    </p>
-                  </div>
-                )}
-
-                <div className="d-flex justify-content-end mt-3">
-                  <CancelButton
-                    onClick={() => {
-                      setShowMaterialModal(false);
-                      setNewMaterialData({
-                        name: "",
-                        conductivity: "",
-                        specific_heat: "",
-                        density: "",
-                      });
-                    }}
-                  />
-                  <CustomButton
-                    variant="save"
-                    onClick={async () => {
-                      const success = await handleCreateWindowElement();
-                      if (success) {
-                        setShowElementModal(false);
-                      }
-                    }}
-                  >
-                    Crear Ventana
-                  </CustomButton>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="Nombre"
-                    value={doorData.name_element}
-                  />
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Nombre"
-                    value={doorData.name_element}
-                    onChange={(e) =>
+              <div className="form-group mb-3">
+                <LabelWithAsterisk
+                  label="% Vidrio"
+                  value={doorData.porcentaje_vidrio}
+                  required={false}
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className="form-control"
+                  placeholder="% Vidrio"
+                  value={doorData.ventana_id ? doorData.porcentaje_vidrio : ""}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value)) {
                       setDoorData((prev) => ({
                         ...prev,
-                        name_element: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="U Puerta opaca [W/m2K]"
-                    value={doorData.u_puerta_opaca}
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-control"
-                    placeholder="U Puerta opaca"
-                    value={doorData.u_puerta_opaca}
-                    onChange={(e) =>
-                      setDoorData((prev) => ({
-                        ...prev,
-                        u_puerta_opaca: e.target.value,
-                      }))
-                    }
-                    onKeyDown={handleNumberKeyDown}
-                  />
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="Ventana Asociada"
-                    value={doorData.ventana_id}
-                    required={false}
-                  />
-                  <select
-                    className="form-control"
-                    value={doorData.ventana_id}
-                    onChange={(e) => {
-                      const winId = e.target.value;
-                      setDoorData((prev) => ({
-                        ...prev,
-                        ventana_id: winId,
-                        name_ventana:
-                          allWindowsForDoor.find(
-                            (win) => win.id === parseInt(winId)
-                          )?.name_element || "",
-                      }));
-                    }}
-                  >
-                    <option value="">Seleccione</option>
-                    {allWindowsForDoor.map((win) => (
-                      <option key={win.id} value={win.id}>
-                        {win.name_element}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="% Vidrio"
-                    value={doorData.porcentaje_vidrio}
-                    required={false}
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    className="form-control"
-                    placeholder="% Vidrio"
-                    value={doorData.ventana_id ? doorData.porcentaje_vidrio : ""}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      if (isNaN(value)) {
-                        setDoorData((prev) => ({
-                          ...prev,
-                          porcentaje_vidrio: "",
-                        }));
-                      } else {
-                        const validated = validatePercentage(value);
-                        setDoorData((prev) => ({
-                          ...prev,
-                          porcentaje_vidrio: validated.toString(),
-                        }));
-                      }
-                    }}
-                    onKeyDown={handleNumberKeyDown}
-                    disabled={!doorData.ventana_id}
-                  />
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk
-                    label="U Marco [W/m2K]"
-                    value={doorData.u_marco}
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-control"
-                    placeholder="U Marco"
-                    value={doorData.u_marco}
-                    onChange={(e) =>
-                      setDoorData((prev) => ({
-                        ...prev,
-                        u_marco: e.target.value,
-                      }))
-                    }
-                    onKeyDown={handleNumberKeyDown}
-                  />
-                </div>
-                <div className="form-group mb-3">
-                  <LabelWithAsterisk label="FM [%]" value={doorData.fm} />
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    className="form-control"
-                    placeholder="FM"
-                    value={doorData.fm}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      if (isNaN(value)) {
-                        setDoorData((prev) => ({ ...prev, fm: "" }));
-                      } else {
-                        const validated = validatePercentage(value);
-                        setDoorData((prev) => ({
-                          ...prev,
-                          fm: validated.toString(),
-                        }));
-                      }
-                    }}
-                    onKeyDown={handleNumberKeyDown}
-                  />
-                </div>
-                {!doorIsValid && (
-                  <div className="mb-3">
-                    <p>
-                      (<span style={{ color: "red" }}>*</span>) Campos obligatorios
-                    </p>
-                  </div>
-                )}
-                <div className="text-end">
-                  <CustomButton
-                    variant="save"
-                    onClick={() => {
-                      setShowElementModal(false);
-                      setDoorData({
-                        name_element: "",
-                        ventana_id: "",
-                        name_ventana: "",
-                        u_puerta_opaca: "",
                         porcentaje_vidrio: "",
-                        u_marco: "",
-                        fm: "",
-                      });
-                    }}
-                  >
-                    Cancelar
-                  </CustomButton>
-                  <CustomButton
-                    variant="save"
-                    onClick={async () => {
-                      const success = await handleCreateDoorElement();
-                      if (success) {
-                        setShowElementModal(false);
-                      }
-                    }}
-                  >
-                    Crear Puerta
-                  </CustomButton>
-                </div>
+                      }));
+                    } else {
+                      const validated = validatePercentage(value);
+                      setDoorData((prev) => ({
+                        ...prev,
+                        porcentaje_vidrio: validated.toString(),
+                      }));
+                    }
+                  }}
+                  onKeyDown={handleNumberKeyDown}
+                  disabled={!doorData.ventana_id}
+                />
               </div>
-            )}
-          </Modal>
-        )}
+              <div className="form-group mb-3">
+                <LabelWithAsterisk
+                  label="U Marco [W/m2K]"
+                  value={doorData.u_marco}
+                />
+                <input
+                  type="number"
+                  min="0"
+                  className="form-control"
+                  placeholder="U Marco"
+                  value={doorData.u_marco}
+                  onChange={(e) =>
+                    setDoorData((prev) => ({
+                      ...prev,
+                      u_marco: e.target.value,
+                    }))
+                  }
+                  onKeyDown={handleNumberKeyDown}
+                />
+              </div>
+              <div className="form-group mb-3">
+                <LabelWithAsterisk label="FM [%]" value={doorData.fm} />
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className="form-control"
+                  placeholder="FM"
+                  value={doorData.fm}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value)) {
+                      setDoorData((prev) => ({ ...prev, fm: "" }));
+                    } else {
+                      const validated = validatePercentage(value);
+                      setDoorData((prev) => ({
+                        ...prev,
+                        fm: validated.toString(),
+                      }));
+                    }
+                  }}
+                  onKeyDown={handleNumberKeyDown}
+                />
+              </div>
+              {!doorIsValid && (
+                <div className="mb-3">
+                  <p>
+                    (<span style={{ color: "red" }}>*</span>) Campos obligatorios
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </ModalCreate>
+      )}
     </>
   );
 };

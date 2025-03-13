@@ -15,6 +15,7 @@ import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import ModalCreate from "../src/components/common/ModalCreate";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 // Importamos nuestro componente genérico de tablas
 import TablesParameters from "../src/components/tables/TablesParameters"; 
@@ -1328,8 +1329,20 @@ const WorkFlowpar2editPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
-        <div>{renderMainHeader()}</div>
-        <Card style={{ height: "10vh" }}>
+        
+        <Card>
+        <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem"}}>
+          {renderMainHeader()} 
+          <Breadcrumb
+            items={[
+              {
+                title: "Proyecto Nuevo",
+                href: "/",
+                active: true,
+              },
+            ]}
+          />
+        </div>
           <div className="d-flex align-items-center gap-4">
             <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
               Proyecto:

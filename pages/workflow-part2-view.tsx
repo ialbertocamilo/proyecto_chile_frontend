@@ -17,6 +17,7 @@ import SearchParameters from "../src/components/inputs/SearchParameters";
 
 // Importamos el componente genérico de tablas
 import TablesParameters from "../src/components/tables/TablesParameters";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Detail {
   id_detail: number;

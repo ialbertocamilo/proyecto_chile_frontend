@@ -108,14 +108,18 @@ a {
 /* Modifica los botones dentro de las de detalles */
 
 .btn-table {
-  position: relative !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important; 
+  display: inline-flex !important;          /* Permite alinear elementos internos */
+  justify-content: center !important;       /* Centra horizontalmente el contenido */
+  align-items: center !important;           /* Centra verticalmente el contenido */
   width: 1.3rem !important;
   height: 2.3rem !important;
   padding: 0.5rem !important;
-  margin: 0 !important;
-
+  margin: 0 0.3rem !important; 
+  /* Elimina los estilos de posicionamiento (si aún los tienes):
+  position: relative !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  */
 }
 
 /* Modifica los botones dentro de las tablas  de lista de proyectos*/

@@ -18,6 +18,7 @@ import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import VerticalDivider from "@/components/ui/HorizontalDivider";
 import TablesParameters from "@/components/tables/TablesParameters";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Detail {
   id_detail: number;
@@ -1286,7 +1287,13 @@ const WorkFlowpar2createPage: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Card>{renderMainHeader()}</Card>
+      <Card>
+        <div className="d-flex align-items-center w-100">
+        {renderMainHeader()}
+        <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: false }, { title: 'Nuevo proyecto', active: true }]} />
+        </div>
+        
+        </Card>
       <Card>
         <div className="row">
           <div className="col-lg-3 col-12 order-lg-first order-first">

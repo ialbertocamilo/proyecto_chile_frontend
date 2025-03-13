@@ -9,14 +9,11 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
 import locationData from "../public/locationData";
-import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Importa el componente dinámico de la sidebar
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
-
-
-
 
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap").then(mod => {
   return { default: React.memo(mod.default) };
@@ -63,7 +60,6 @@ const initialFormData: FormData = {
   latitude: -33.4589314398474,
   longitude: -70.6703553846175,
 };
-
 
 const ProjectWorkflowPart1: React.FC = () => {
   useAuth();
@@ -156,31 +152,33 @@ const ProjectWorkflowPart1: React.FC = () => {
   const validateStep1Fields = (): Partial<Record<keyof FormData, string>> => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
     if (!formData.name_project.trim())
-      newErrors.name_project = "";
+      newErrors.name_project = "El nombre del proyecto es obligatorio.";
     if (!formData.owner_name.trim())
-      newErrors.owner_name = "";
+      newErrors.owner_name = "El nombre del propietario es obligatorio.";
     if (!formData.owner_lastname.trim())
-      newErrors.owner_lastname = "";
+      newErrors.owner_lastname = "El apellido del propietario es obligatorio.";
     if (!formData.country.trim())
-      newErrors.country = "";
+      newErrors.country = "Debe seleccionar un país.";
     if (!formData.department.trim())
-      newErrors.department = "";
+      newErrors.department = "Debe seleccionar un departamento.";
     if (!formData.province.trim())
-      newErrors.province = "";
+      newErrors.province = "Debe seleccionar una provincia.";
     if (!formData.district.trim())
-      newErrors.district = "";
+      newErrors.district = "El distrito es obligatorio.";
     if (!formData.building_type.trim())
-      newErrors.building_type = "";
+      newErrors.building_type = "Debe seleccionar un tipo de edificación.";
     if (!formData.main_use_type.trim())
-      newErrors.main_use_type = "";
+      newErrors.main_use_type = "Debe seleccionar un tipo de uso principal.";
     if (formData.number_levels <= 0)
-      newErrors.number_levels = "";
+      newErrors.number_levels = "El número de niveles debe ser mayor a 0.";
     if (formData.number_homes_per_level <= 0)
-      newErrors.number_homes_per_level = "";
+      newErrors.number_homes_per_level = "El número de viviendas/oficinas por nivel debe ser mayor a 0.";
     if (formData.built_surface <= 0)
-      newErrors.built_surface = "";
+      newErrors.built_surface = "La superficie construida debe ser mayor a 0.";
     return newErrors;
   };
+
+  const { post, get } = useApi();
 
   const checkProjectNameExists = async (): Promise<boolean> => {
     try {
@@ -194,34 +192,33 @@ const ProjectWorkflowPart1: React.FC = () => {
           formData.name_project.trim().toLowerCase()
       );
     } catch (error) {
-      console.error("Error checking project name uniqueness", error);
+      console.error("Error al verificar la unicidad del nombre del proyecto", error);
       return false;
     }
   };
+
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
+
   const handleGeolocation = () => {
     if (!navigator.geolocation) {
-      console.error("Geolocalización no soportada.");
+      console.error("La geolocalización no es soportada en este navegador.");
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        setLatitude(latitude)
+        setLatitude(latitude);
         setLongitude(longitude);
         handleFormInputChange("latitude", latitude);
         handleFormInputChange("longitude", longitude);
-        console.log(`Lat: ${latitude}, Lon: ${longitude}`);
+        console.log(`Latitud: ${latitude}, Longitud: ${longitude}`);
       },
       () => {
-        console.error("No se pudo obtener la ubicación.");
+        console.error("No se pudo obtener la ubicación actual.");
       }
     );
   };
-
-  const { post, get } = useApi()
-
 
   const enviarProyecto = async () => {
     setLoading(true);
@@ -229,7 +226,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setGlobalError("Por favor inicie sesión.");
+        setGlobalError("Por favor, inicie sesión para continuar.");
         setLoading(false);
         return;
       }
@@ -273,7 +270,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         errorMessage = JSON.stringify(errorMessage);
       }
       setGlobalError(errorMessage as string);
-      notify("Error al enviar proyecto.");
+      notify("Ocurrió un error al enviar el proyecto.");
     }
     setLoading(false);
   };
@@ -283,52 +280,63 @@ const ProjectWorkflowPart1: React.FC = () => {
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
-      notify("Por favor complete todos los campos.");
+      notify("Por favor, complete correctamente todos los campos requeridos.");
       return;
     }
+    // Verificar si el nombre del proyecto ya existe
     const nameExists = await checkProjectNameExists();
     if (nameExists) {
       setErrors((prev) => ({
         ...prev,
-        name_project: "Este nombre ya existe. Use otro nombre.",
+        name_project: "El nombre del proyecto ya existe. Por favor, elija otro nombre.",
       }));
-      notify("Este nombre ya existe. Use otro nombre");
+      notify("El nombre del proyecto ya existe. Por favor, elija otro nombre.");
       return;
     }
+    // Si todo es correcto, avanzar al siguiente paso
     setStep(2);
   };
 
   const renderMainHeader = () => {
     return <Title text="Proyecto nuevo" />;
-    
   };
 
   const [completionList, setCompletionList] = useState<{
     Title: string;
-    Position: [number, number]
+    Position: [number, number];
   }[]>([]);
+
   useEffect(() => {
     if (!locationSearch.trim()) return;
 
     const delaySearch = setTimeout(() => {
-      console.log('Searching for location:', locationSearch);
-      axios.get(`/api/map?q=${locationSearch}&lat=${latitude}&long=${longitude}`).then((response) => {
-        const { data } = response;
-        console.log('Response location', data.results.ResultItems)
-        setCompletionList(data.results.ResultItems);
-      }).catch((error) => {
-        console.error('Error searching for location:', error);
-      })
+      console.log("Buscando ubicación:", locationSearch);
+      axios
+        .get(`/api/map?q=${locationSearch}&lat=${latitude}&long=${longitude}`)
+        .then((response) => {
+          const { data } = response;
+          console.log("Respuesta de ubicación", data.results.ResultItems);
+          setCompletionList(data.results.ResultItems);
+        })
+        .catch((error) => {
+          console.error("Error al buscar la ubicación:", error);
+        });
     }, 500);
 
     return () => clearTimeout(delaySearch);
-  }, [locationSearch]);
+  }, [locationSearch, latitude, longitude]);
+
   return (
     <>
       <Card>
         <div className="d-flex align-items-center w-100">
           {renderMainHeader()}
-          <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: false }, { title: 'Nuevo proyecto', active: true }]} />
+          <Breadcrumb
+            items={[
+              { title: "Proyectos", href: "/project-list", active: false },
+              { title: "Nuevo proyecto", active: true },
+            ]}
+          />
         </div>
       </Card>
       <Card>
@@ -606,9 +614,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       }
                     />
                     {submitted && errors.number_homes_per_level && (
-                      <small className="text-danger">
-                        {errors.number_homes_per_level}
-                      </small>
+                      <small className="text-danger">{errors.number_homes_per_level}</small>
                     )}
                   </div>
                   <div className="col-12 col-md-6">
@@ -667,7 +673,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                 >
                   <div className="row">
                     <div className="col-12 mb-3">
-
                       <Autocompletion
                         locationSearch={locationSearch}
                         setLocationSearch={setLocationSearch}
@@ -687,10 +692,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       />
                     </div>
                     <div className="col-12 col-md-4">
-                      <label
-                        className="form-label"
-
-                      >
+                      <label className="form-label">
                         Datos de ubicaciones encontradas
                       </label>
                       <textarea
@@ -707,9 +709,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         variant="save"
                         onClick={handleGeolocation}
                       >
-                        <span
-                          className="material-icons"
-                        >
+                        <span className="material-icons">
                           location_on
                         </span>
                         Ubicación actual

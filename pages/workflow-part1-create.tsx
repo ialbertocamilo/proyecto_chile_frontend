@@ -283,7 +283,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
-      notify("Por favor complete todos los campos de la ventana correctamente.");
+      notify("Por favor complete todos los campos.");
       return;
     }
     const nameExists = await checkProjectNameExists();
@@ -292,7 +292,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         ...prev,
         name_project: "Este nombre ya existe. Use otro nombre.",
       }));
-      notify("El Nombre del Material ya existe.");
+      notify("Este nombre ya existe. Use otro nombre");
       return;
     }
     setStep(2);

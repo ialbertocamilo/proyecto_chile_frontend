@@ -21,8 +21,9 @@ const SearchParameters: React.FC<SearchParametersProps> = ({
   showNewButton = true,
 }) => {
   return (
-    <div className="d-flex align-items-center p-2" style={style}>
-      <div style={{ flex: 1, marginRight: "10px" }}>
+    <div className="row g-2 align-items-center" style={style}>
+      {/* Columna para el input */}
+      <div className="col-12 col-md">
         <input
           type="text"
           className="form-control"
@@ -32,10 +33,14 @@ const SearchParameters: React.FC<SearchParametersProps> = ({
           style={{ height: "40px" }}
         />
       </div>
+
+      {/* Columna para el botón, solo si se muestra el botón Nuevo */}
       {showNewButton && (
-        <CustomButton variant="save" onClick={onNew} style={{ height: "40px" }}>
-          <span className="material-icons">add</span> {newButtonText}
-        </CustomButton>
+        <div className="col-12 col-md-auto d-flex justify-content-center justify-content-md-start">
+          <CustomButton variant="save" onClick={onNew} style={{ height: "40px" }}>
+            <span className="material-icons">add</span> {newButtonText}
+          </CustomButton>
+        </div>
       )}
     </div>
   );

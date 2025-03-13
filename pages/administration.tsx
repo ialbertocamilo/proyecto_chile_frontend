@@ -1,3 +1,4 @@
+// AdministrationPage.tsx
 import React, { useState, useEffect } from "react";
 import useAuth from "../src/hooks/useAuth";
 import { useAdministration } from "../src/hooks/useAdministration";
@@ -6,10 +7,9 @@ import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
 import axios from "axios";
 import CustomButton from "../src/components/common/CustomButton";
-import Modal from "../src/components/common/Modal";
+import ModalCreate from "../src/components/common/ModalCreate";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
-import CancelButton from "@/components/common/CancelButton";
 import DetallesConstructivosTab from "../src/components/DetallesConstructivosTab";
 import Breadcrumb from "../src/components/common/Breadcrumb";
 
@@ -44,13 +44,34 @@ interface ElementAttributesWindow {
   clousure_type: string;
 }
 
+// Componente auxiliar para renderizar etiquetas que indiquen campos obligatorios
+interface LabelWithAsteriskProps {
+  label: string;
+  value: string | number;
+  required?: boolean;
+}
+
+const LabelWithAsterisk: React.FC<LabelWithAsteriskProps> = ({
+  label,
+  value,
+  required = true,
+}) => {
+  const isEmpty =
+    value === undefined ||
+    value === null ||
+    (typeof value === "string" && value.trim() === "") ||
+    (typeof value === "number" && value === 0);
+  return (
+    <label>
+      {label} {required && isEmpty && <span style={{ color: "red" }}>*</span>}
+    </label>
+  );
+};
+
 const AdministrationPage: React.FC = () => {
   useAuth();
   const [step, setStep] = useState<number>(3);
-  const [tabElementosOperables, setTabElementosOperables] =
-    useState("ventanas");
-
-  // Estado para cambiar entre la vista de DetallesConstructivosTab y la vista de tabla de detalles generales
+  const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
   const [showGeneralDetails, setShowGeneralDetails] = useState(false);
 
   const {
@@ -159,7 +180,7 @@ const AdministrationPage: React.FC = () => {
     }
   };
 
-  // Función para crear un nuevo detalle y actualizar la lista usando el hook
+  // Función para crear un nuevo detalle
   const handleCreateDetail = async () => {
     if (
       newDetail.scantilon_location.trim() === "" ||
@@ -198,7 +219,6 @@ const AdministrationPage: React.FC = () => {
           material_id: 0,
           layer_thickness: null,
         });
-        // Actualiza los detalles generales usando fetchDetails del hook
         await fetchDetails();
       }
     } catch (error: unknown) {
@@ -215,24 +235,36 @@ const AdministrationPage: React.FC = () => {
         newWindow.u_vidrio <= 0 ||
         newWindow.fs_vidrio <= 0 ||
         newWindow.u_marco <= 0 ||
-        newWindow.fm <= 0 ||
+        newWindow.fm < 0 ||
+        newWindow.fm > 100 ||
         newWindow.clousure_type.trim() === "" ||
         newWindow.frame_type.trim() === ""
       ) {
-        notify("Por favor complete todos los campos de la ventana");
+        notify("Por favor complete todos los campos correctamente");
         return;
       }
     } else {
+      // Para puertas, los únicos campos obligatorios son:
+      // name_element, u_puerta_opaca, u_marco y fm.
       if (
         newDoor.name_element.trim() === "" ||
         newDoor.u_puerta_opaca <= 0 ||
-        newDoor.ventana_id === 0 ||
         newDoor.u_marco <= 0 ||
-        newDoor.fm <= 0 ||
-        newDoor.porcentaje_vidrio <= 0
+        newDoor.fm < 0 ||
+        newDoor.fm > 100
       ) {
-        notify("Por favor complete todos los campos de la puerta");
+        notify("Por favor complete todos los campos correctamente");
         return;
+      }
+      // Si se ha seleccionado una ventana asociada, validamos el % Vidrio
+      if (newDoor.ventana_id !== 0) {
+        if (newDoor.porcentaje_vidrio < 0 || newDoor.porcentaje_vidrio > 100) {
+          notify("Asegúrese de que % Vidrio esté entre 0 y 100");
+          return;
+        }
+      } else {
+        // Si no se selecciona ventana asociada, forzamos el % Vidrio a 0
+        newDoor.porcentaje_vidrio = 0;
       }
     }
     try {
@@ -271,9 +303,7 @@ const AdministrationPage: React.FC = () => {
           fm: newDoor.fm,
           atributs: {
             ventana_id: newDoor.ventana_id,
-            name_ventana: ventanaSeleccionada
-              ? ventanaSeleccionada.name_element
-              : "",
+            name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
             u_puerta_opaca: newDoor.u_puerta_opaca,
             porcentaje_vidrio: newDoor.porcentaje_vidrio,
           },
@@ -310,7 +340,7 @@ const AdministrationPage: React.FC = () => {
     }
   };
 
-  // Función para obtener el nombre del material a partir de su ID (usando materialsList del hook)
+  // Función para obtener el nombre del material a partir de su ID
   const getMaterialName = (materialId: number) => {
     const mat = materialsList.find(
       (m) => m.id === materialId || m.material_id === materialId
@@ -318,7 +348,7 @@ const AdministrationPage: React.FC = () => {
     return mat ? mat.atributs.name : "Desconocido";
   };
 
-  // Actualizamos la data al cambiar de step (manteniendo la funcionalidad original)
+  // Actualizamos la data al cambiar de step
   useEffect(() => {
     if (step === 3) fetchMaterialsList(1);
     if (step === 4) fetchDetails();
@@ -336,11 +366,11 @@ const AdministrationPage: React.FC = () => {
       {/* Header */}
       <Card className="header-card">
         <div className="d-flex align-items-center w-100">
-          <Title text="Administración de Parametros" />
+          <Title text="Administración de Parámetros" />
           <Breadcrumb
             items={[
               {
-                title: "Administracion de Parametros",
+                title: "Administración de Parámetros",
                 href: "/",
                 active: true,
               },
@@ -352,10 +382,7 @@ const AdministrationPage: React.FC = () => {
       {/* Card principal */}
       <Card className="bordered-main-card">
         <div>
-          <div
-            className="d-flex d-flex-responsive"
-            style={{ alignItems: "stretch", gap: 0 }}
-          >
+          <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
             <AdminSidebar
               activeStep={step}
               onStepChange={setStep}
@@ -388,17 +415,8 @@ const AdministrationPage: React.FC = () => {
                       </table>
                     </div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      padding: "10px",
-                    }}
-                  >
-                    <CustomButton
-                      variant="save"
-                      onClick={() => setShowNewMaterialModal(true)}
-                    >
+                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                    <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
                       <span className="material-icons">add</span> Nuevo
                     </CustomButton>
                   </div>
@@ -408,13 +426,14 @@ const AdministrationPage: React.FC = () => {
               {step === 4 && (
                 <>
                   {showGeneralDetails ? (
-                    // Vista de detalles generales
                     <div>
                       <div className="tabs-container">
-                        <div className="tab active" style={{ flex: 1, textAlign: 'center' }}>Detalles Generales</div>
+                        <div className="tab active" style={{ flex: 1, textAlign: "center" }}>
+                          Detalles Generales
+                        </div>
                       </div>
                       <div style={{ overflow: "hidden", padding: "10px" }}>
-                        <div style={{ maxHeight: "500px", overflowY: "auto"}}>
+                        <div style={{ maxHeight: "500px", overflowY: "auto" }}>
                           <table className="table">
                             <thead>
                               <tr>
@@ -437,41 +456,19 @@ const AdministrationPage: React.FC = () => {
                           </table>
                         </div>
                       </div>
-                      {/* Botones: Volver a la izquierda, Nuevo a la derecha */}
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          padding: "10px",
-                        }}
-                      >
-                        <CustomButton
-                          variant="save"
-                          onClick={() => setShowGeneralDetails(false)}
-                        >
-                          <span className="material-icons">arrow_back</span>{" "}
-                          Volver
+                      <div style={{ display: "flex", justifyContent: "space-between", padding: "10px" }}>
+                        <CustomButton variant="save" onClick={() => setShowGeneralDetails(false)}>
+                          <span className="material-icons">arrow_back</span> Volver
                         </CustomButton>
-                        <CustomButton
-                          variant="save"
-                          onClick={() => setShowNewDetailModal(true)}
-                        >
+                        <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
                           <span className="material-icons">add</span> Nuevo
                         </CustomButton>
                       </div>
                     </div>
                   ) : (
-                    // Vista por defecto (Muro, Techo, Piso)
                     <>
                       <DetallesConstructivosTab />
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          padding: "10px",
-                        }}
-                      >
-                        {/* Se quitó el botón de 'Nuevo' aquí */}
+                      <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
                         <CustomButton
                           variant="save"
                           onClick={() => {
@@ -482,16 +479,14 @@ const AdministrationPage: React.FC = () => {
                             display: "flex",
                             alignItems: "center",
                             gap: "0.5rem",
-                            padding:
-                              "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
+                            padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
                             height: "min(3rem, 8vh)",
                             minWidth: "6rem",
                             marginLeft: "10px",
                             marginTop: "2rem",
                           }}
                         >
-                          <span className="material-icons">visibility</span> Ver
-                          detalles generales
+                          <span className="material-icons">visibility</span> Ver detalles generales
                         </CustomButton>
                       </div>
                     </>
@@ -524,20 +519,12 @@ const AdministrationPage: React.FC = () => {
                                 width: "100%",
                                 padding: "0px",
                                 backgroundColor: "#fff",
-                                color:
-                                  tabElementosOperables === tab.toLowerCase()
-                                    ? "var(--primary-color)"
-                                    : "var(--secondary-color)",
+                                color: tabElementosOperables === tab.toLowerCase() ? "var(--primary-color)" : "var(--secondary-color)",
                                 border: "none",
                                 cursor: "pointer",
-                                borderBottom:
-                                  tabElementosOperables === tab.toLowerCase()
-                                    ? "solid var(--primary-color)"
-                                    : "none",
+                                borderBottom: tabElementosOperables === tab.toLowerCase() ? "solid var(--primary-color)" : "none",
                               }}
-                              onClick={() =>
-                                setTabElementosOperables(tab.toLowerCase())
-                              }
+                              onClick={() => setTabElementosOperables(tab.toLowerCase())}
                             >
                               {tab}
                             </button>
@@ -545,13 +532,7 @@ const AdministrationPage: React.FC = () => {
                         ))}
                       </ul>
                     </div>
-                    <div
-                      style={{
-                        maxHeight: "500px",
-                        overflowY: "auto",
-                        padding: "10px",
-                      }}
-                    >
+                    <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
                       <table className="table">
                         <thead>
                           {tabElementosOperables === "ventanas" ? (
@@ -579,40 +560,17 @@ const AdministrationPage: React.FC = () => {
                           {elementsList
                             .filter(
                               (el) =>
-                                el.type ===
-                                (tabElementosOperables === "ventanas"
-                                  ? "window"
-                                  : "door")
+                                el.type === (tabElementosOperables === "ventanas" ? "window" : "door")
                             )
                             .map((el, idx) => {
                               if (tabElementosOperables === "ventanas") {
                                 return (
                                   <tr key={idx}>
                                     <td>{el.name_element}</td>
-                                    <td>
-                                      {
-                                        (el.atributs as ElementAttributesWindow)
-                                          .u_vidrio
-                                      }
-                                    </td>
-                                    <td>
-                                      {
-                                        (el.atributs as ElementAttributesWindow)
-                                          .fs_vidrio
-                                      }
-                                    </td>
-                                    <td>
-                                      {
-                                        (el.atributs as ElementAttributesWindow)
-                                          .clousure_type
-                                      }
-                                    </td>
-                                    <td>
-                                      {
-                                        (el.atributs as ElementAttributesWindow)
-                                          .frame_type
-                                      }
-                                    </td>
+                                    <td>{(el.atributs as ElementAttributesWindow).u_vidrio}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).fs_vidrio}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).clousure_type}</td>
+                                    <td>{(el.atributs as ElementAttributesWindow).frame_type}</td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
                                   </tr>
@@ -621,27 +579,10 @@ const AdministrationPage: React.FC = () => {
                                 return (
                                   <tr key={idx}>
                                     <td>{el.name_element}</td>
+                                    <td>{(el.atributs as ElementAttributesDoor).u_puerta_opaca}</td>
+                                    <td>{(el.atributs as ElementAttributesDoor).name_ventana}</td>
                                     <td>
-                                      {
-                                        (el.atributs as ElementAttributesDoor)
-                                          .u_puerta_opaca
-                                      }
-                                    </td>
-                                    <td>
-                                      {
-                                        (el.atributs as ElementAttributesDoor)
-                                          .name_ventana
-                                      }
-                                    </td>
-                                    <td>
-                                      {(el.atributs as ElementAttributesDoor)
-                                        .porcentaje_vidrio !== undefined
-                                        ? (
-                                            (
-                                              el.atributs as ElementAttributesDoor
-                                            ).porcentaje_vidrio * 100
-                                          ).toFixed(0) + "%"
-                                        : "0%"}
+                                      {((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0)}%
                                     </td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
@@ -653,25 +594,13 @@ const AdministrationPage: React.FC = () => {
                       </table>
                     </div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      padding: "10px",
-                    }}
-                  >
+                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
                     {tabElementosOperables === "ventanas" ? (
-                      <CustomButton
-                        variant="save"
-                        onClick={() => setShowNewWindowModal(true)}
-                      >
+                      <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
                     ) : (
-                      <CustomButton
-                        variant="save"
-                        onClick={() => setShowNewDoorModal(true)}
-                      >
+                      <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
                     )}
@@ -685,7 +614,7 @@ const AdministrationPage: React.FC = () => {
 
       {/* Modales */}
       {showNewMaterialModal && (
-        <Modal
+        <ModalCreate
           isOpen={showNewMaterialModal}
           onClose={() => {
             setShowNewMaterialModal(false);
@@ -696,7 +625,11 @@ const AdministrationPage: React.FC = () => {
               density: 0,
             });
           }}
+          onSave={async () => {
+            await handleCreateMaterial();
+          }}
           title="Agregar Nuevo Material"
+          saveLabel="Crear Material"
         >
           <form
             onSubmit={(e) => {
@@ -705,7 +638,7 @@ const AdministrationPage: React.FC = () => {
             }}
           >
             <div className="form-group">
-              <label>Nombre Material</label>
+              <LabelWithAsterisk label="Nombre Material" value={newMaterialData.name} />
               <input
                 type="text"
                 className="form-control"
@@ -720,7 +653,7 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <label>Conductividad (W/m2K)</label>
+              <LabelWithAsterisk label="Conductividad (W/m2K)" value={newMaterialData.conductivity} />
               <input
                 type="number"
                 className="form-control"
@@ -728,18 +661,16 @@ const AdministrationPage: React.FC = () => {
                 value={newMaterialData.conductivity}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
-                  if (value >= 0) {
-                    setNewMaterialData((prev) => ({
-                      ...prev,
-                      conductivity: value,
-                    }));
-                  }
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    conductivity: isNaN(value) ? 0 : value,
+                  }));
                 }}
                 min="0"
               />
             </div>
             <div className="form-group">
-              <label>Calor específico (J/kgK)</label>
+              <LabelWithAsterisk label="Calor específico (J/kgK)" value={newMaterialData.specific_heat} />
               <input
                 type="number"
                 className="form-control"
@@ -747,18 +678,16 @@ const AdministrationPage: React.FC = () => {
                 value={newMaterialData.specific_heat}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
-                  if (value >= 0) {
-                    setNewMaterialData((prev) => ({
-                      ...prev,
-                      specific_heat: value,
-                    }));
-                  }
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    specific_heat: isNaN(value) ? 0 : value,
+                  }));
                 }}
                 min="0"
               />
             </div>
             <div className="form-group">
-              <label>Densidad (kg/m3)</label>
+              <LabelWithAsterisk label="Densidad (kg/m3)" value={newMaterialData.density} />
               <input
                 type="number"
                 className="form-control"
@@ -766,36 +695,20 @@ const AdministrationPage: React.FC = () => {
                 value={newMaterialData.density}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
-                  if (value >= 0) {
-                    setNewMaterialData((prev) => ({ ...prev, density: value }));
-                  }
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    density: isNaN(value) ? 0 : value,
+                  }));
                 }}
                 min="0"
               />
             </div>
-            <div className="mt-4 d-flex justify-content-between">
-              <CancelButton
-                onClick={() => {
-                  setShowNewMaterialModal(false);
-                  setStep(3);
-                  setNewMaterialData({
-                    name: "",
-                    conductivity: 0,
-                    specific_heat: 0,
-                    density: 0,
-                  });
-                }}
-              />
-              <CustomButton variant="save" type="submit">
-                Crear
-              </CustomButton>
-            </div>
           </form>
-        </Modal>
+        </ModalCreate>
       )}
 
       {showNewDetailModal && (
-        <Modal
+        <ModalCreate
           isOpen={showNewDetailModal}
           onClose={() => {
             setShowNewDetailModal(false);
@@ -806,7 +719,11 @@ const AdministrationPage: React.FC = () => {
               layer_thickness: null,
             });
           }}
+          onSave={async () => {
+            await handleCreateDetail();
+          }}
           title="Agregar Nuevo Detalle Constructivo"
+          saveLabel="Crear Detalle"
         >
           <form
             onSubmit={(e) => {
@@ -815,7 +732,7 @@ const AdministrationPage: React.FC = () => {
             }}
           >
             <div className="form-group">
-              <label>Ubicación del Detalle</label>
+              <LabelWithAsterisk label="Ubicación del Detalle" value={newDetail.scantilon_location} />
               <select
                 className="form-control"
                 value={newDetail.scantilon_location}
@@ -833,7 +750,7 @@ const AdministrationPage: React.FC = () => {
               </select>
             </div>
             <div className="form-group">
-              <label>Nombre del Detalle</label>
+              <LabelWithAsterisk label="Nombre del Detalle" value={newDetail.name_detail} />
               <input
                 type="text"
                 className="form-control"
@@ -848,7 +765,7 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <label>Material</label>
+              <LabelWithAsterisk label="Material" value={newDetail.material_id} />
               <select
                 className="form-control"
                 value={newDetail.material_id}
@@ -868,7 +785,7 @@ const AdministrationPage: React.FC = () => {
               </select>
             </div>
             <div className="form-group">
-              <label>Espesor de la Capa (cm)</label>
+              <LabelWithAsterisk label="Espesor de la Capa (cm)" value={newDetail.layer_thickness ?? ""} />
               <input
                 type="number"
                 className="form-control"
@@ -876,49 +793,27 @@ const AdministrationPage: React.FC = () => {
                 value={newDetail.layer_thickness || ""}
                 onChange={(e) => {
                   const inputValue = e.target.value;
-                  if (/^\d*\.?\d*$/.test(inputValue)) {
-                    const value =
-                      inputValue === "" ? null : parseFloat(inputValue);
-                    setNewDetail((prev) => ({
-                      ...prev,
-                      layer_thickness: value,
-                    }));
-                  }
+                  const value = inputValue === "" ? null : parseFloat(inputValue);
+                  setNewDetail((prev) => ({
+                    ...prev,
+                    layer_thickness: value,
+                  }));
                 }}
                 min="0"
                 step="0.01"
                 onKeyDown={(e) => {
-                  if (e.key === "-" || e.key === "e" || e.key === "E") {
+                  if (["-", "e", "E"].includes(e.key)) {
                     e.preventDefault();
                   }
                 }}
               />
             </div>
-            <div className="mt-4 text-end">
-              <CustomButton
-                variant="save"
-                onClick={() => {
-                  setShowNewDetailModal(false);
-                  setNewDetail({
-                    scantilon_location: "",
-                    name_detail: "",
-                    material_id: 0,
-                    layer_thickness: null,
-                  });
-                }}
-              >
-                Cancelar
-              </CustomButton>
-              <CustomButton variant="save" type="submit">
-                Crear Detalle
-              </CustomButton>
-            </div>
           </form>
-        </Modal>
+        </ModalCreate>
       )}
 
       {showNewWindowModal && (
-        <Modal
+        <ModalCreate
           isOpen={showNewWindowModal}
           onClose={() => {
             setShowNewWindowModal(false);
@@ -932,7 +827,11 @@ const AdministrationPage: React.FC = () => {
               fm: 0,
             });
           }}
+          onSave={async () => {
+            await handleCreateElement();
+          }}
           title="Agregar Nueva Ventana"
+          saveLabel="Crear Ventana"
         >
           <form
             onSubmit={(e) => {
@@ -943,7 +842,7 @@ const AdministrationPage: React.FC = () => {
             <div className="row">
               <div className="col-md-6">
                 <div className="form-group">
-                  <label>Nombre del Elemento</label>
+                  <LabelWithAsterisk label="Nombre del Elemento" value={newWindow.name_element} />
                   <input
                     type="text"
                     className="form-control"
@@ -960,7 +859,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <label>U Vidrio [W/m2K]</label>
+                  <LabelWithAsterisk label="U Vidrio [W/m2K]" value={newWindow.u_vidrio} />
                   <input
                     type="number"
                     className="form-control"
@@ -968,9 +867,10 @@ const AdministrationPage: React.FC = () => {
                     value={newWindow.u_vidrio}
                     onChange={(e) => {
                       const value = parseFloat(e.target.value);
-                      if (value >= 0) {
-                        setNewWindow((prev) => ({ ...prev, u_vidrio: value }));
-                      }
+                      setNewWindow((prev) => ({
+                        ...prev,
+                        u_vidrio: isNaN(value) ? 0 : value,
+                      }));
                     }}
                     min="0"
                   />
@@ -978,7 +878,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <label>FS Vidrio</label>
+                  <LabelWithAsterisk label="FS Vidrio" value={newWindow.fs_vidrio} />
                   <input
                     type="number"
                     className="form-control"
@@ -986,9 +886,10 @@ const AdministrationPage: React.FC = () => {
                     value={newWindow.fs_vidrio}
                     onChange={(e) => {
                       const value = parseFloat(e.target.value);
-                      if (value >= 0) {
-                        setNewWindow((prev) => ({ ...prev, fs_vidrio: value }));
-                      }
+                      setNewWindow((prev) => ({
+                        ...prev,
+                        fs_vidrio: isNaN(value) ? 0 : value,
+                      }));
                     }}
                     min="0"
                   />
@@ -996,7 +897,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <label>Tipo de Cierre</label>
+                  <LabelWithAsterisk label="Tipo de Cierre" value={newWindow.clousure_type} />
                   <select
                     className="form-control"
                     value={newWindow.clousure_type}
@@ -1017,7 +918,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <label>Tipo de Marco</label>
+                  <LabelWithAsterisk label="Tipo de Marco" value={newWindow.frame_type} />
                   <select
                     className="form-control"
                     value={newWindow.frame_type}
@@ -1041,7 +942,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <label>U Marco [W/m2K]</label>
+                  <LabelWithAsterisk label="U Marco [W/m2K]" value={newWindow.u_marco} />
                   <input
                     type="number"
                     className="form-control"
@@ -1049,9 +950,10 @@ const AdministrationPage: React.FC = () => {
                     value={newWindow.u_marco}
                     onChange={(e) => {
                       const value = parseFloat(e.target.value);
-                      if (value >= 0) {
-                        setNewWindow((prev) => ({ ...prev, u_marco: value }));
-                      }
+                      setNewWindow((prev) => ({
+                        ...prev,
+                        u_marco: isNaN(value) ? 0 : value,
+                      }));
                     }}
                     min="0"
                   />
@@ -1059,17 +961,18 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <label>FM [%]</label>
+                  <LabelWithAsterisk label="FM [%]" value={newWindow.fm} />
                   <input
                     type="number"
                     className="form-control"
                     placeholder="FM (%)"
                     value={newWindow.fm}
                     onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      if (value >= 0 && value <= 100) {
-                        setNewWindow((prev) => ({ ...prev, fm: value }));
-                      }
+                      let value = parseFloat(e.target.value);
+                      if (isNaN(value)) value = 0;
+                      if (value < 0) value = 0;
+                      if (value > 100) value = 100;
+                      setNewWindow((prev) => ({ ...prev, fm: value }));
                     }}
                     min="0"
                     max="100"
@@ -1077,34 +980,12 @@ const AdministrationPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-4 text-end">
-              <CustomButton
-                variant="save"
-                onClick={() => {
-                  setShowNewWindowModal(false);
-                  setNewWindow({
-                    name_element: "",
-                    u_vidrio: 0,
-                    fs_vidrio: 0,
-                    clousure_type: "Corredera",
-                    frame_type: "",
-                    u_marco: 0,
-                    fm: 0,
-                  });
-                }}
-              >
-                Cancelar
-              </CustomButton>
-              <CustomButton variant="save" type="submit">
-                Crear Ventana
-              </CustomButton>
-            </div>
           </form>
-        </Modal>
+        </ModalCreate>
       )}
 
       {showNewDoorModal && (
-        <Modal
+        <ModalCreate
           isOpen={showNewDoorModal}
           onClose={() => {
             setShowNewDoorModal(false);
@@ -1117,7 +998,11 @@ const AdministrationPage: React.FC = () => {
               porcentaje_vidrio: 0,
             });
           }}
+          onSave={async () => {
+            await handleCreateElement();
+          }}
           title="Agregar Nueva Puerta"
+          saveLabel="Crear Puerta"
         >
           <form
             onSubmit={(e) => {
@@ -1126,7 +1011,7 @@ const AdministrationPage: React.FC = () => {
             }}
           >
             <div className="form-group">
-              <label>Nombre del Elemento</label>
+              <LabelWithAsterisk label="Nombre del Elemento" value={newDoor.name_element} />
               <input
                 type="text"
                 className="form-control"
@@ -1141,7 +1026,7 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <label>U Puerta opaca [W/m2K]</label>
+              <LabelWithAsterisk label="U Puerta opaca [W/m2K]" value={newDoor.u_puerta_opaca} />
               <input
                 type="number"
                 className="form-control"
@@ -1149,24 +1034,28 @@ const AdministrationPage: React.FC = () => {
                 value={newDoor.u_puerta_opaca}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
-                  if (value >= 0) {
-                    setNewDoor((prev) => ({ ...prev, u_puerta_opaca: value }));
-                  }
+                  setNewDoor((prev) => ({
+                    ...prev,
+                    u_puerta_opaca: isNaN(value) ? 0 : value,
+                  }));
                 }}
                 min="0"
               />
             </div>
             <div className="form-group">
-              <label>Ventana Asociada</label>
+              <LabelWithAsterisk label="Ventana Asociada" value={newDoor.ventana_id} required={false} />
               <select
                 className="form-control"
                 value={newDoor.ventana_id}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  // Si se selecciona "Seleccione una ventana" se reinicia % Vidrio a 0
                   setNewDoor((prev) => ({
                     ...prev,
-                    ventana_id: parseInt(e.target.value),
-                  }))
-                }
+                    ventana_id: value,
+                    porcentaje_vidrio: value === 0 ? 0 : prev.porcentaje_vidrio,
+                  }));
+                }}
               >
                 <option value={0}>Seleccione una ventana</option>
                 {windowsList.map((win) => (
@@ -1177,27 +1066,26 @@ const AdministrationPage: React.FC = () => {
               </select>
             </div>
             <div className="form-group">
-              <label>% Vidrio</label>
+              <LabelWithAsterisk label="% Vidrio" value={newDoor.porcentaje_vidrio} required={false} />
               <input
                 type="number"
                 className="form-control"
                 placeholder="% Vidrio"
                 value={newDoor.porcentaje_vidrio}
                 onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (value >= 0 && value <= 100) {
-                    setNewDoor((prev) => ({
-                      ...prev,
-                      porcentaje_vidrio: value,
-                    }));
-                  }
+                  let value = parseFloat(e.target.value);
+                  if (isNaN(value)) value = 0;
+                  if (value < 0) value = 0;
+                  if (value > 100) value = 100;
+                  setNewDoor((prev) => ({ ...prev, porcentaje_vidrio: value }));
                 }}
                 min="0"
                 max="100"
+                disabled={newDoor.ventana_id === 0}
               />
             </div>
             <div className="form-group">
-              <label>U Marco [W/m2K]</label>
+              <LabelWithAsterisk label="U Marco [W/m2K]" value={newDoor.u_marco} />
               <input
                 type="number"
                 className="form-control"
@@ -1205,55 +1093,35 @@ const AdministrationPage: React.FC = () => {
                 value={newDoor.u_marco}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
-                  if (value >= 0) {
-                    setNewDoor((prev) => ({ ...prev, u_marco: value }));
-                  }
+                  setNewDoor((prev) => ({
+                    ...prev,
+                    u_marco: isNaN(value) ? 0 : value,
+                  }));
                 }}
                 min="0"
               />
             </div>
             <div className="form-group">
-              <label>FM [%]</label>
+              <LabelWithAsterisk label="FM [%]" value={newDoor.fm} />
               <input
                 type="number"
                 className="form-control"
                 placeholder="FM (%)"
                 value={newDoor.fm}
                 onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (value >= 0 && value <= 100) {
-                    setNewDoor((prev) => ({ ...prev, fm: value }));
-                  }
+                  let value = parseFloat(e.target.value);
+                  if (isNaN(value)) value = 0;
+                  if (value < 0) value = 0;
+                  if (value > 100) value = 100;
+                  setNewDoor((prev) => ({ ...prev, fm: value }));
                 }}
                 min="0"
                 max="100"
               />
             </div>
-            <div className="mt-4 text-end">
-              <CustomButton
-                variant="save"
-                onClick={() => {
-                  setShowNewDoorModal(false);
-                  setNewDoor({
-                    name_element: "",
-                    u_puerta_opaca: 0,
-                    ventana_id: 0,
-                    u_marco: 0,
-                    fm: 0,
-                    porcentaje_vidrio: 0,
-                  });
-                }}
-              >
-                Cancelar
-              </CustomButton>
-              <CustomButton variant="save" type="submit">
-                Crear puerta
-              </CustomButton>
-            </div>
           </form>
-        </Modal>
+        </ModalCreate>
       )}
-
       <style jsx>{`
         .custom-container {
           padding: 0 15px;

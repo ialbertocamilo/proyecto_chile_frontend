@@ -668,7 +668,7 @@ const AdministrationPage: React.FC = () => {
 </Card>
 
 
-      {/* Modales para Material, Detalle, Ventana y Puerta */}
+      {/* Modales para Material, Detalle, Ventanasdf y Puerta */}
       {showNewMaterialModal && (
         <ModalCreate
           isOpen={showNewMaterialModal}

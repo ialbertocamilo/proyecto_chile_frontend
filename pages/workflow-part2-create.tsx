@@ -8,13 +8,10 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
-import { Tooltip } from "react-tooltip";
 import ModalCreate from "@/components/common/ModalCreate"; // Se reemplaza Modal por ModalCreate
 import { notify } from "@/utils/notify";
 import Title from "../src/components/Title";
-// Importamos el componente SidebarItemComponent del directorio común
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-// Importamos el componente SearchParameters
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import VerticalDivider from "@/components/ui/HorizontalDivider";
 

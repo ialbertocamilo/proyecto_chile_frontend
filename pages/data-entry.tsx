@@ -788,31 +788,34 @@ const DataEntryPage: React.FC = () => {
       </Card>
 
       <Card>
-        <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
-          <AdminSidebar
-            activeStep={step}
-            onStepChange={setStep}
-            steps={[
-              { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de materiales" },
-              { stepNumber: 5, iconName: "home", title: "Elementos translúcidos" },
-              { stepNumber: 6, iconName: "deck", title: "Perfil de uso" },
-            ]}
-          />
-          
-          <div className="content p-4" style={{ flex: 1 }}>
-            {step === 3 && (
-              <div className="px-3">{renderStep3Materials()}</div>
-            )}
+  <div className="row">
+    {/* Columna para Sidebar */}
+    <div className="col-12 col-md-3">
+      <AdminSidebar
+        activeStep={step}
+        onStepChange={setStep}
+        steps={[
+          { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de materiales" },
+          { stepNumber: 5, iconName: "home", title: "Elementos translúcidos" },
+          { stepNumber: 6, iconName: "deck", title: "Perfil de uso" },
+        ]}
+      />
+    </div>
 
-            {step === 5 && (
-              <div className="px-3">{renderStep5Elements()}</div>
-            )}
+    {/* Columna para contenido principal */}
+    <div className="col-12 col-md-9 p-4">
+      {step === 3 && (
+        <div className="px-3">{renderStep3Materials()}</div>
+      )}
 
-            {step === 6 && renderStep6Profile()}
-          </div>
-        </div>
-      </Card>
+      {step === 5 && (
+        <div className="px-3">{renderStep5Elements()}</div>
+      )}
 
+      {step === 6 && renderStep6Profile()}
+    </div>
+  </div>
+</Card>
       {/* Modal para crear Material */}
       {showMaterialModal && (
         <ModalCreate

@@ -6,6 +6,7 @@ import Card from "@/components/common/Card";
 import Title from "@/components/Title";
 import CreateButton from "@/components/CreateButton";
 import { notify } from "@/utils/notify"; // Importamos notify
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 interface UserFormData {
   name: string;
@@ -186,7 +187,18 @@ const UserCreate = () => {
       <div>
         {/* Card para el Título */}
         <Card>
-          <Title text="Creación de usuario" />
+          <div className="d-flex align-items-center w-100">
+            <Title text="Creación de usuario" />
+            <Breadcrumb
+              items={[
+                {
+                  title: "Creación de Usuario",
+                  href: "/",
+                  active: true,
+                },
+              ]}
+            />
+          </div>
         </Card>
 
         {/* Card para el Formulario */}
@@ -344,10 +356,10 @@ const UserCreate = () => {
                     (<span style={{ color: "red" }}>*</span>) Campos Obligatorios
                   </p>
 
-                  <CreateButton 
-                    backRoute="/user-management" 
-                    saveTooltip="Guardar Usuario" 
-                    saveText="Guardar"/>
+                  <CreateButton
+                    backRoute="/user-management"
+                    saveTooltip="Guardar Usuario"
+                    saveText="Guardar" />
                 </div>
               </form>
             )}

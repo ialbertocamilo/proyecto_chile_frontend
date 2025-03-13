@@ -5,14 +5,12 @@ interface SidebarStep {
   stepNumber: number;
   iconName: string;
   title: string;
-  // Se añade la propiedad opcional para la ruta
   route?: string;
 }
 
 interface SidebarItemProps {
   step: SidebarStep;
   activeStep: number;
-  // Se espera una función ya preparada (sin parámetros) para manejar el click
   onStepChange: () => void;
 }
 
@@ -28,7 +26,6 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   return (
     <>
       <li
-        // Se agregó la clase "sidebar-item" para aplicar margen y hover.
         className="sidebar-item list-unstyled py-2 py-md-3 px-2 px-md-3 border-end border-light"
         onClick={onStepChange}
       >
@@ -49,7 +46,6 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         </div>
       </li>
       <style jsx>{`
-        /* Estilo para cada item del sidebar */
         .sidebar-item {
           width: 100%;
           max-width: 380px;
@@ -58,18 +54,22 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           transform-style: preserve-3d;
           animation: sidebarItemAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
           animation-delay: calc(var(--item-index, 0) * 0.1s);
-          margin: 10px 0; /* Margen arriba y abajo. Modifícalo a tu gusto */
-          transition: background-color 0.3s ease; /* Transición para el hover */
+          margin: 10px 0;
+          transition: background-color 0.3s ease;
         }
 
-        /* Efecto hover para el sidebar completo */
         .sidebar-item:hover {
-          background-color: #f7f7f7; /* Cambia el color de fondo al hacer hover */
+          background-color: #f7f7f7;
         }
 
         @media (max-width: 768px) {
           .sidebar-item {
-            max-width: 300px;
+            max-width: 100%;
+            margin-bottom: 10px;
+          }
+
+          .sidebar-item-content {
+            height: 50px !important;
           }
 
           .sidebar-item-content:hover {
@@ -79,6 +79,21 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
           .sidebar-item:active .sidebar-item-content {
             transform: translateX(4px);
+          }
+        }
+
+        @media (max-width: 480px) {
+          .sidebar-item-content {
+            height: 40px !important;
+            padding: 0.5rem !important;
+          }
+
+          .icon-wrapper {
+            font-size: 1.2rem !important;
+          }
+
+          .title-wrapper {
+            font-size: 0.8rem !important;
           }
         }
 
@@ -195,7 +210,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           .nav {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.5rem;
           }
 
           :global(.sidebar-item) {
@@ -204,7 +219,23 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           }
 
           :global(.sidebar-item-content) {
-            margin-bottom: -0.5rem;
+            margin-bottom: 0;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .internal-sidebar {
+            padding: 0.5rem;
+          }
+
+          :global(.sidebar-item) {
+            width: 100%;
+            max-width: none;
+          }
+
+          :global(.sidebar-item-content) {
+            height: 40px !important;
+            padding: 0.5rem !important;
           }
         }
 
@@ -219,7 +250,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           }
 
           :global(.sidebar-item-content) {
-            height: 55px !important;
+            height: 50px !important;
             padding: 0.5rem !important;
           }
         }

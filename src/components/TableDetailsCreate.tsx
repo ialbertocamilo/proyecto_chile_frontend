@@ -1,5 +1,3 @@
-
-//prueba
 import React, { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";

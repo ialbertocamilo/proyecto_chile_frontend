@@ -11,6 +11,7 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Nuevo componente de sidebar
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -167,8 +168,19 @@ const ProjectWorkflowPart1: React.FC = () => {
   // Render del encabezado principal
   const renderMainHeader = () => {
     return (
-      <Card>
-        <Title text="Vista de Proyecto" />
+      <Card className="header-card">
+        <div className="d-flex align-items-center w-100">
+          <Title text="Vista de Proyecto" />
+          <Breadcrumb
+            items={[
+              {
+                title: "Vista de Proyecto",
+                href: "/",
+                active: true,
+              },
+            ]}
+          />
+        </div>
       </Card>
     );
   };
@@ -179,15 +191,11 @@ const ProjectWorkflowPart1: React.FC = () => {
       <div>
         <div>{renderMainHeader()}</div>
         <Card>
-          <div style={{ padding: "0" }}>
-            <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
+          <div>
+            <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
               {/* Se utiliza el AdminSidebar para renderizar dinámicamente los pasos */}
-              <AdminSidebar
-                activeStep={step}
-                onStepChange={handleSidebarStepChange}
-                steps={steps}
-              />
-              <div style={{ flex: 1, padding: "40px" }}>
+              <AdminSidebar activeStep={step} onStepChange={handleSidebarStepChange} steps={steps} />
+              <div className="content p-4" style={{ flex: 1 }}>
                 {step === 1 && (
                   <>
                     {/* Paso 1: Datos generales */}
@@ -369,7 +377,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         <div className="col-12 col-md-8 mb-3">
                           <div style={{ pointerEvents: "none" }}>
                             <NoSSRInteractiveMap
-                              onLocationSelect={() => {}}
+                              onLocationSelect={() => { }}
                               initialLat={formData.latitude}
                               initialLng={formData.longitude}
                             />

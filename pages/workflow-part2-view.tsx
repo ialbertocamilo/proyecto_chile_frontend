@@ -9,8 +9,7 @@ import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { notify } from "@/utils/notify";
-
-import Title from "../src/components/Title"; 
+import Title from "../src/components/Title";
 // Se importa el componente AdminSidebar en vez de SidebarItemComponent
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 // Importamos el componente SearchParameters
@@ -701,7 +700,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           value={searchQuery}
           onChange={setSearchQuery}
           placeholder="Buscar..."
-          onNew={() => {}}
+          onNew={() => { }}
           style={{ marginBottom: "1rem" }}
           showNewButton={false}
         />
@@ -762,7 +761,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     return (
       <>
         <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
-          Recinto 
+          Recinto
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>
@@ -842,33 +841,26 @@ const WorkFlowpar2viewPage: React.FC = () => {
             </CustomButton>
           </div>
         </Card>
-        <Card style={{ marginTop: "clamp(0.5rem, 2vw, 1rem)", marginLeft: "0.1rem", width: "100%" }}>
-          <div className="row">
+        <Card>
+          <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
             {/* Sidebar utilizando el componente AdminSidebar */}
-            <div className="col-lg-3 col-12 order-lg-first order-first">
-              <div className="mb-3 mb-lg-0">
-                <AdminSidebar
-                  activeStep={step}
-                  steps={sidebarSteps}
-                  onClickAction={(route: string) => router.push(route)}
-                  // La función onStepChange se puede utilizar para casos en que no se requiera navegación directa
-                  onStepChange={(stepNumber: number) => setStep(stepNumber)}
-                />
-              </div>
-            </div>
-            {/* Contenido principal */}
-            <div className="col-lg-9 col-12 order-last">
-              <div style={{ padding: "20px" }}>
-                {step === 4 && (
-                  <>
-                    {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
-                  </>
-                )}
-                {step === 7 && renderRecinto()}
-              </div>
+            <AdminSidebar activeStep={step} steps={sidebarSteps} onClickAction={(route: string) => router.push(route)} onStepChange={() => { }} />
+            <div className="content p-4" style={{ flex: 1 }}>
+
+              {/* Contenido principal */}
+
+
+              {step === 4 && (
+                <>
+                  {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+                </>
+              )}
+              {step === 7 && renderRecinto()}
             </div>
           </div>
+
         </Card>
+
       </div>
     </>
   );

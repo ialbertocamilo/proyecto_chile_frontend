@@ -9,6 +9,7 @@ import CreateButton from "@/components/CreateButton";
 import Card from "../src/components/common/Card";
 import { notify } from "@/utils/notify";
 import Title from "../src/components/Title";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface ProfileData {
   name: string;
@@ -162,7 +163,18 @@ const EditProfile = () => {
   return (
     <>
       <Card>
+      <div className="d-flex align-items-center w-100">
         <Title text="Editar Perfil" />
+        <Breadcrumb
+            items={[
+              {
+                title: "Editar Perfil",
+                href: "/",
+                active: true,
+              },
+            ]}
+          />
+        </div>
       </Card>
       <Head>
         <title>Editar Perfil</title>

@@ -12,6 +12,7 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import DetallesConstructivosTab from "../src/components/DetallesConstructivosTab";
 import Breadcrumb from "../src/components/common/Breadcrumb";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 interface MaterialAttributes {
   name: string;
@@ -420,15 +421,10 @@ const AdministrationPage: React.FC = () => {
       </Card>
 
       {/* Card principal */}
-      <Card className="bordered-main-card">
-        <div>
-          <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
-            <AdminSidebar
-              activeStep={step}
-              onStepChange={setStep}
-              steps={sidebarSteps}
-            />
-            <div className="content-area" style={{ flex: 1 }}>
+      <Card>
+          <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
+            <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
+            <div className="content p-4" style={{ flex: 1 }}>
               {step === 3 && (
                 <>
                   <div style={{ overflow: "hidden", padding: "10px" }}>
@@ -649,7 +645,6 @@ const AdministrationPage: React.FC = () => {
               )}
             </div>
           </div>
-        </div>
       </Card>
 
       {/* Modales */}

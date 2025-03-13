@@ -1,10 +1,10 @@
 'use client'
 import "bootstrap/dist/css/bootstrap.min.css";
+import { FileInput, FilePlus, FolderKanban, LayoutDashboard, ListTodo, LogOut, Menu, Settings, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import GoogleIcons from "../../../public/GoogleIcons";
 import useIsClient from "../../utils/useIsClient";
 
 interface NavbarProps {
@@ -19,6 +19,13 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
   const [isNavbarVisible, setIsNavbarVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [animateIcon, setAnimateIcon] = useState(false);
+  // State for tracking expanded menu sections
+  const [expandedMenus, setExpandedMenus] = useState<{
+    projects: boolean;
+    configuration: boolean;
+    general: boolean;
+    project: boolean;
+  }>({ projects: false, configuration: false, general: false, project: false });
   const isClient = useIsClient();
   
   useEffect(() => {
@@ -67,6 +74,14 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
     setIsNavbarVisible(!isNavbarVisible);
     setTimeout(() => setAnimateIcon(false), 300);
   };
+
+  // Toggle functions for each menu section
+  const toggleMenu = (menuName: 'projects' | 'configuration' | 'general' | 'project') => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [menuName]: !prev[menuName]
+    }));
+  };
   const navLinkStyle: React.CSSProperties = {
     cursor: "pointer",
     fontFamily: "var(--font-family-base)",
@@ -88,7 +103,30 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
     fontWeight: "normal",
     borderRadius: "4px",
     opacity: 0.9,
-
+  };
+  
+  const menuHeaderStyle: React.CSSProperties = {
+    cursor: "pointer",
+    fontFamily: "var(--font-family-base)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    width: "100%",
+    padding: "10px 5px",
+    marginBottom: "8px",
+    boxSizing: "border-box",
+    fontSize: "0.85rem",
+    fontWeight: "bold",
+    lineHeight: "1.3",
+    whiteSpace: "normal",
+    wordWrap: "break-word",
+    transition: "all 0.3s ease",
+    color: "#fff",
+    borderRadius: "4px",
+    opacity: 0.9,
+    position: "relative",
   };
   const iconStyle = (path: string): React.CSSProperties => ({
     fontSize: "1.5rem",
@@ -124,8 +162,6 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
   const logoSize = 80;
   return (
     <>
-      <GoogleIcons />
-  
       {/* Toggle button for both mobile and desktop */}
       <div
         className="navbar-toggle"
@@ -149,15 +185,12 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
           transform: animateIcon ? "scale(0.95)" : "scale(1)"
         }}
       >
-        <span
-          className="material-icons"
+        <Menu 
+          size={24}
           style={{
-            color: isNavbarVisible ? "#fff" : "#000",
-            fontSize: "1.5rem"
+            color: isNavbarVisible ? "#fff" : "#000"
           }}
-        >
-          menu
-        </span>
+        />
       </div>
   
       <nav
@@ -200,132 +233,274 @@ const Navbar: React.FC<NavbarProps> = () => {  // Changed to proper type declara
           }}
         >
           <ul className="nav flex-column">
-            {roleId !== "1" && (
-              <li className="nav-item">
-                <Link
-                  href="/project-list"
-                  className="nav-link text-white"
-                  style={navLinkStyle}
-                >
-                  <span style={iconStyle("/project-list")} className="material-icons">
-                    dns
-                  </span>
-                  Proyectos
-                </Link>
-              </li>
-            )}
-            {roleId !== "1" && (
-              <li className="nav-item">
-                <Link
-                  href="/workflow-part1-create"
-                  className="nav-link text-white"
-                  style={navLinkStyle}
-                >
-                  <span
-                    style={iconStyle("/workflow-part1-create")}
-                    className="material-icons"
+            {/* Admin-specific menu items */}
+            {roleId === "1" && (
+              <>
+                {/* General section - Dashboard */}
+                <li className="nav-item">
+                  <div 
+                    className="nav-link text-white" 
+                    style={menuHeaderStyle}
+                    onClick={() => toggleMenu('general')}
                   >
-                    note_add
-                  </span>
-                  Proyecto Nuevo
-                </Link>
-              </li>
-            )}
-            {projectId && roleId === "2" && (
-              <li className="nav-item">
-                <Link
-                  href="/workflow-part2-create"
-                  className="nav-link text-white"
-                  style={navLinkStyle}
-                >
-                  <span
-                    style={iconStyle("/workflow-part2-create")}
-                    className="material-icons"
+                    General
+                    <span style={{ 
+                      position: "absolute", 
+                      right: "5px", 
+                      top: "50%", 
+                      transform: "translateY(-50%)",
+                      transition: "transform 0.3s ease",
+                      transform: expandedMenus.general ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)"
+                    }}>
+                      ▼
+                    </span>
+                  </div>
+                  {expandedMenus.general && (
+                    <ul className="nav flex-column" style={{ paddingLeft: "10px" }}>
+                      <li className="nav-item">
+                        <Link
+                          href="/dashboard"
+                          className="nav-link text-white"
+                          style={{...navLinkStyle, fontSize: "0.8rem", padding: "8px 5px"}}
+                        >
+                          <div style={iconStyle("/dashboard")}>
+                            <LayoutDashboard size={20} />
+                          </div>
+                          Dashboard
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+
+                {/* Projects section for Admin */}
+                <li className="nav-item mt-3 mb-1">
+                  <div 
+                    className="nav-link text-white" 
+                    style={menuHeaderStyle}
+                    onClick={() => toggleMenu('projects')}
                   >
-                    ballot
-                  </span>
-                  Desarrollo de proyecto
-                </Link>
-              </li>
+                    <div style={iconStyle("/project-status")}>
+                      <FolderKanban size={24} />
+                    </div>
+                    Proyectos
+                    <span style={{ 
+                      position: "absolute", 
+                      right: "5px", 
+                      top: "50%", 
+                      transform: "translateY(-50%)",
+                      transition: "transform 0.3s ease",
+                      transform: expandedMenus.projects ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)"
+                    }}>
+                      ▼
+                    </span>
+                  </div>
+                  {expandedMenus.projects && (
+                    <ul className="nav flex-column" style={{ paddingLeft: "10px" }}>
+                      <li className="nav-item">
+                        <Link
+                          href="/project-status"
+                          className="nav-link text-white"
+                          style={{...navLinkStyle, fontSize: "0.8rem", padding: "8px 5px"}}
+                        >
+                          <div style={iconStyle("/project-status")}>
+                            <FolderKanban size={20} />
+                          </div>
+                          Ver Proyectos
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+                
+                {/* Configuration section header */}
+                <li className="nav-item mt-3 mb-1">
+                  <div 
+                    className="nav-link text-white" 
+                    style={menuHeaderStyle}
+                    onClick={() => toggleMenu('configuration')}
+                  >
+                    <div style={iconStyle("/administration")}>
+                      <Settings size={24} />
+                    </div>
+                    Configuración
+                    <span style={{ 
+                      position: "absolute", 
+                      right: "5px", 
+                      top: "50%", 
+                      transform: "translateY(-50%)",
+                      transition: "transform 0.3s ease",
+                      transform: expandedMenus.configuration ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)"
+                    }}>
+                      ▼
+                    </span>
+                  </div>
+                  
+                  {/* Nested items under Configuración */}
+                  {expandedMenus.configuration && (
+                    <ul className="nav flex-column" style={{ paddingLeft: "10px" }}>
+                      {/* Users */}
+                      <li className="nav-item">
+                        <Link
+                          href="/user-management"
+                          className="nav-link text-white"
+                          style={{...navLinkStyle, fontSize: "0.8rem", padding: "8px 5px"}}
+                        >
+                          <div style={iconStyle("/user-management")}>
+                            <Users size={20} />
+                          </div>
+                          Usuarios
+                        </Link>
+                      </li>
+                      
+                      {/* Parameters */}
+                      <li className="nav-item">
+                        <Link
+                          href="/administration"
+                          className="nav-link text-white"
+                          style={{...navLinkStyle, fontSize: "0.8rem", padding: "8px 5px"}}
+                        >
+                          <div style={iconStyle("/administration")}>
+                            <Settings size={20} />
+                          </div>
+                          Parámetros
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+              </>
             )}
-            {roleId !== "1" && (
-              <li className="nav-item">
-                <Link
-                  href="/data-entry"
-                  className="nav-link text-white"
-                  style={navLinkStyle}
-                >
-                  <span style={iconStyle("/data-entry")} className="material-icons">
-                    input
-                  </span>
-                  Ingreso de Datos de entrada
-                </Link>
-              </li>
+
+            {/* Operator-specific menu items */}
+            {roleId === "2" && (
+              <>
+                {/* General section */}
+                <li className="nav-item">
+                  <div 
+                    className="nav-link text-white" 
+                    style={menuHeaderStyle}
+                    onClick={() => toggleMenu('general')}
+                  >
+                    <div style={iconStyle("/dashboard")}>
+                      <LayoutDashboard size={24} />
+                    </div>
+                    General
+                    <span style={{ 
+                      position: "absolute", 
+                      right: "5px", 
+                      top: "50%", 
+                      transform: "translateY(-50%)",
+                      transition: "transform 0.3s ease",
+                      transform: expandedMenus.general ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)"
+                    }}>
+                      ▼
+                    </span>
+                  </div>
+                  {expandedMenus.general && (
+                    <ul className="nav flex-column" style={{ paddingLeft: "10px" }}>
+                      {/* Dashboard */}
+                      <li className="nav-item">
+                        <Link
+                          href="/dashboard"
+                          className="nav-link text-white"
+                          style={{...navLinkStyle, fontSize: "0.8rem", padding: "8px 5px"}}
+                        >
+                          <div style={iconStyle("/dashboard")}>
+                            <LayoutDashboard size={20} />
+                          </div>
+                          Dashboard
+                        </Link>
+                      </li>
+                      
+                      {/* Data Entry */}
+                      <li className="nav-item">
+                        <Link
+                          href="/data-entry"
+                          className="nav-link text-white"
+                          style={{...navLinkStyle, fontSize: "0.8rem", padding: "8px 5px"}}
+                        >
+                          <div style={iconStyle("/data-entry")}>
+                            <FileInput size={20} />
+                          </div>
+                          Datos de Entrada
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+                
+                {/* Project section header */}
+                <li className="nav-item mt-3 mb-1">
+                  <div 
+                    className="nav-link text-white" 
+                    style={menuHeaderStyle}
+                    onClick={() => toggleMenu('project')}
+                  >
+                    <div style={iconStyle("/project-list")}>
+                      <FolderKanban size={24} />
+                    </div>
+                    Proyecto
+                    <span style={{ 
+                      position: "absolute", 
+                      right: "5px", 
+                      top: "50%", 
+                      transform: "translateY(-50%)",
+                      transition: "transform 0.3s ease",
+                      transform: expandedMenus.project ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)"
+                    }}>
+                      ▼
+                    </span>
+                  </div>
+                  
+                  {/* Nested items under Proyecto */}
+                  {expandedMenus.project && (
+                    <ul className="nav flex-column" style={{ paddingLeft: "10px" }}>
+                      {/* Project List */}
+                      <li className="nav-item">
+                        <Link
+                          href="/project-list"
+                          className="nav-link text-white"
+                          style={{...navLinkStyle, fontSize: "0.8rem", padding: "8px 5px"}}
+                        >
+                          <div style={iconStyle("/project-list")}>
+                            <ListTodo size={20} />
+                          </div>
+                          Listado
+                        </Link>
+                      </li>
+                      
+                      {/* Create Project */}
+                      <li className="nav-item">
+                        <Link
+                          href="/workflow-part1-create"
+                          className="nav-link text-white"
+                          style={{...navLinkStyle, fontSize: "0.8rem", padding: "8px 5px"}}
+                        >
+                          <div style={iconStyle("/workflow-part1-create")}>
+                            <FilePlus size={20} />
+                          </div>
+                          Crear Proyecto
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+              </>
             )}
           </ul>
   
           <ul className="nav flex-column" style={{ marginTop: "auto" }}>
-            {roleId !== "2" && (
-              <>
-                <li className="nav-item">
-                  <Link
-                    href="/dashboard"
-                    className="nav-link text-white"
-                    style={navLinkStyle}
-                  >
-                    <span style={iconStyle("/dashboard")} className="material-icons">
-                      dashboard
-                    </span>
-                    Dashboard
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    href="/project-status"
-                    className="nav-link text-white"
-                    style={navLinkStyle}
-                  >
-                    <span style={iconStyle("/project-status")} className="material-icons">
-                      format_list_bulleted
-                    </span>
-                    Proyectos registrados
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    href="/user-management"
-                    className="nav-link text-white"
-                    style={navLinkStyle}
-                  >
-                    <span style={iconStyle("/user-management")} className="material-icons">
-                      person
-                    </span>
-                    Usuarios
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    href="/administration"
-                    className="nav-link text-white"
-                    style={navLinkStyle}
-                  >
-                    <span style={iconStyle("/administration")} className="material-icons">
-                      build
-                    </span>
-                    Parámetros
-                  </Link>
-                </li>
-              </>
-            )}
+            {/* Logout button - common for both roles */}
             <li className="nav-item">
               <div
                 className="nav-link text-white"
                 style={navLinkStyle}
                 onClick={handleLogout}
               >
-                <span style={iconStyle("/logout")} className="material-icons">
-                  logout
-                </span>
+                <div style={iconStyle("/logout")}>
+                  <LogOut size={24} />
+                </div>
                 Salir
               </div>
             </li>

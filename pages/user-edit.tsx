@@ -6,6 +6,7 @@ import TopBar from "../src/components/layout/TopBar";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
+import { notify } from "@/utils/notify";
 
 type User = {
   id: number;
@@ -28,7 +29,7 @@ const UserEdit = () => {
   const [active, setActive] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [sidebarWidth, ] = useState("300px");
+  const [sidebarWidth] = useState("300px");
 
   const fetchUser = useCallback(async () => {
     try {
@@ -81,6 +82,7 @@ const UserEdit = () => {
       const message = err instanceof Error ? err.message : "Error desconocido";
       console.error("[fetchUser] Fetch user error:", message);
       setError(message);
+      notify(message);
     } finally {
       setLoading(false);
     }
@@ -111,14 +113,17 @@ const UserEdit = () => {
 
       console.log("[handleSubmit] Payload to update:", payload);
 
-      const response = await fetch(`${constantUrlApiEndpoint}/user/${id}/update`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${constantUrlApiEndpoint}/user/${id}/update`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       console.log("[handleSubmit] Response status (PUT update):", response.status);
       if (!response.ok) {
@@ -131,6 +136,8 @@ const UserEdit = () => {
         throw new Error(errorMsg || "Error al actualizar el usuario");
       }
 
+      // Notificamos el éxito de la actualización
+      notify("Usuario actualizado correctamente");
       Swal.fire({
         title: "¡Actualización exitosa!",
         text: "Usuario actualizado correctamente",
@@ -149,6 +156,7 @@ const UserEdit = () => {
         icon: "error",
         confirmButtonText: "Aceptar",
       });
+      notify(message);
     } finally {
       setLoading(false);
     }
@@ -186,6 +194,7 @@ const UserEdit = () => {
           if (!response.ok) {
             throw new Error("Error al eliminar usuario");
           }
+          notify(`El usuario ${user.name} ha sido eliminado exitosamente`);
           Swal.fire(
             "Eliminado",
             `El usuario ${user.name} ha sido eliminado.`,
@@ -196,6 +205,7 @@ const UserEdit = () => {
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "Error desconocido";
           Swal.fire("Error", message, "error");
+          notify(message);
         }
       }
     });
@@ -203,7 +213,7 @@ const UserEdit = () => {
 
   return (
     <div className="d-flex" style={{ fontFamily: "var(--font-family-base)" }}>
-      <Navbar setActiveView={() => {}}  />
+      <Navbar setActiveView={() => {}} />
       <div
         className="d-flex flex-column flex-grow-1"
         style={{
@@ -252,14 +262,23 @@ const UserEdit = () => {
             <p style={{ fontFamily: "var(--font-family-base)" }}>Cargando...</p>
           )}
           {error && (
-            <p className="text-danger" style={{ fontFamily: "var(--font-family-base)" }}>
+            <p
+              className="text-danger"
+              style={{ fontFamily: "var(--font-family-base)" }}
+            >
               {error}
             </p>
           )}
           {user ? (
-            <form id="userEditForm" onSubmit={handleSubmit} style={{ fontFamily: "var(--font-family-base)" }}>
+            <form
+              id="userEditForm"
+              onSubmit={handleSubmit}
+              style={{ fontFamily: "var(--font-family-base)" }}
+            >
               <div className="mb-3">
-                <label style={{ fontFamily: "var(--font-family-base)" }}>Nombre</label>
+                <label style={{ fontFamily: "var(--font-family-base)" }}>
+                  Nombre
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -269,7 +288,9 @@ const UserEdit = () => {
                 />
               </div>
               <div className="mb-3">
-                <label style={{ fontFamily: "var(--font-family-base)" }}>Email</label>
+                <label style={{ fontFamily: "var(--font-family-base)" }}>
+                  Email
+                </label>
                 <input
                   type="email"
                   className="form-control"
@@ -279,7 +300,9 @@ const UserEdit = () => {
                 />
               </div>
               <div className="mb-3">
-                <label style={{ fontFamily: "var(--font-family-base)" }}>Role ID</label>
+                <label style={{ fontFamily: "var(--font-family-base)" }}>
+                  Role ID
+                </label>
                 <select
                   className="form-control"
                   value={roleId}
@@ -292,8 +315,11 @@ const UserEdit = () => {
                   <option value={1}>Administrador</option>
                   <option value={2}>Operador</option>
                 </select>
-                <small className="text-muted" style={{ fontFamily: "var(--font-family-base)" }}>
-                  Selecciona &quot;Administrador&quot; o &quot;Usuario&quot;.
+                <small
+                  className="text-muted"
+                  style={{ fontFamily: "var(--font-family-base)" }}
+                >
+                  Selecciona "Administrador" o "Usuario".
                 </small>
               </div>
               <div className="mb-3 form-check">
@@ -302,9 +328,15 @@ const UserEdit = () => {
                   className="form-check-input"
                   id="activeCheck"
                   checked={active}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setActive(e.target.checked)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setActive(e.target.checked)
+                  }
                 />
-                <label className="form-check-label" htmlFor="activeCheck" style={{ fontFamily: "var(--font-family-base)" }}>
+                <label
+                  className="form-check-label"
+                  htmlFor="activeCheck"
+                  style={{ fontFamily: "var(--font-family-base)" }}
+                >
                   Activo
                 </label>
               </div>

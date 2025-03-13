@@ -353,42 +353,73 @@ const WorkFlowpar2viewPage: React.FC = () => {
   // 3) Pisos (se aplanan las columnas con "I [W/mK]" / "e Aisl [cm]" para cada sub-objeto)
   const renderPisosTable = () => {
     const columnsPisos = [
-      { headerName: "Nombre", field: "nombre" },
-      { headerName: "U [W/m²K]", field: "uValue" },
-      { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
-      { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
-      { headerName: "I [W/mK] (vert)", field: "vertLambda" },
-      { headerName: "e Aisl [cm]", field: "vertEAisl" },
-      { headerName: "D [cm]", field: "vertD" },
-      { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
-      { headerName: "e Aisl [cm]", field: "horizEAisl" },
-      { headerName: "D [cm]", field: "horizD" },
-    ];
-
-    const pisosData = pisosTabList.map((item) => {
-      const bajoPiso = item.info?.aislacion_bajo_piso || {};
-      const vert = item.info?.ref_aisl_vertical || {};
-      const horiz = item.info?.ref_aisl_horizontal || {};
-      return {
-        nombre: item.name_detail,
-        uValue: item.value_u?.toFixed(3) ?? "--",
-        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
-        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
-        vertEAisl: vert.e_aisl ?? "N/A",
-        vertD: vert.d ?? "N/A",
-        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
-        horizEAisl: horiz.e_aisl ?? "N/A",
-        horizD: horiz.d ?? "N/A",
+          { headerName: "Nombre", field: "nombre" },
+          { headerName: "U [W/m²K]", field: "uValue" },
+          { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
+          { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
+          { headerName: "I [W/mK] (vert)", field: "vertLambda" },
+          { headerName: "e Aisl [cm]", field: "vertEAisl" },
+          { headerName: "D [cm]", field: "vertD" },
+          { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
+          { headerName: "e Aisl [cm]", field: "horizEAisl" },
+          { headerName: "D [cm]", field: "horizD" },
+        ];
+    
+        const multiHeaderPisos = {
+          rows: [
+            [
+              { label: "Nombre", rowSpan: 2 },
+              { label: "U [W/m²K]", rowSpan: 2 },
+              { label: "Aislamiento bajo piso", colSpan: 2 },
+              { label: "Ref Aisl Vert.", colSpan: 3 },
+              { label: "Ref Aisl Horiz.", colSpan: 3 },
+            ],
+            [
+              { label: "I [W/mK]" },
+              { label: "e Aisl [cm]" },
+              { label: "I [W/mK]" },
+              { label: "e Aisl [cm]" },
+              { label: "D [cm]" },
+              { label: "I [W/mK]" },
+              { label: "e Aisl [cm]" },
+              { label: "D [cm]" },
+            ],
+          ],
+        };
+    
+        const pisosData = pisosTabList.map((item) => {
+          const bajoPiso = item.info?.aislacion_bajo_piso || {};
+          const vert = item.info?.ref_aisl_vertical || {};
+          const horiz = item.info?.ref_aisl_horizontal || {};
+          return {
+            nombre: item.name_detail,
+            uValue: item.value_u?.toFixed(3) ?? "--",
+            bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
+            bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
+            vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
+            vertEAisl: vert.e_aisl ?? "N/A",
+            vertD: vert.d ?? "N/A",
+            horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
+            horizEAisl: horiz.e_aisl ?? "N/A",
+            horizD: horiz.d ?? "N/A",
+          };
+        });
+    
+        return (
+          <div style={{ minWidth: "600px" }}>
+            {pisosTabList.length > 0 ? (
+              <TablesParameters
+                columns={columnsPisos}
+                data={pisosData}
+                multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
+              />
+            ) : (
+              <p>No hay datos</p>
+            )}
+          </div>
+        );
       };
-    });
-
-    return pisosTabList.length > 0 ? (
-      <TablesParameters columns={columnsPisos} data={pisosData} />
-    ) : (
-      <p>No hay datos</p>
-    );
-  };
+    
 
   // 4) Ventanas
   const renderVentanasTable = () => {

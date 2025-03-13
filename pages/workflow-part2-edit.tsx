@@ -902,7 +902,6 @@ const WorkFlowpar2editPage: React.FC = () => {
         );
       };
     
-
   // ===================== RENDER VENTANAS ======================
   const renderVentanasParameters = () => {
     const columnsVentanas = [

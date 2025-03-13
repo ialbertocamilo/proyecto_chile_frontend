@@ -16,6 +16,9 @@ import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Breadcrumb from "@/components/common/Breadcrumb";
 
+// === Importamos el componente genérico TablesParameters (SIN multiheader) ===
+import TablesParameters from "@/components/tables/TablesParameters";
+
 /** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
   name: string;
@@ -156,6 +159,7 @@ const DataEntryPage: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
 
+  // Validar inputs numéricos
   const handleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const allowedKeys = [
       "Backspace",
@@ -178,6 +182,7 @@ const DataEntryPage: React.FC = () => {
     }
   };
 
+  // === FETCH DE MATERIALES ===
   const fetchMaterialsList = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
@@ -200,10 +205,11 @@ const DataEntryPage: React.FC = () => {
       setMaterialsList(allMaterials);
     } catch (error) {
       console.error("Error al obtener materiales:", error);
-      // Aquí ya NO relanzamos el error, sólo lo registramos
+      // Solo lo registramos
     }
   }, []);
 
+  // === FETCH DE ELEMENTOS (VENTANAS / PUERTAS) ===
   const fetchElements = useCallback(async (type: "window" | "door") => {
     try {
       const token = localStorage.getItem("token");
@@ -220,7 +226,6 @@ const DataEntryPage: React.FC = () => {
         `Error al obtener ${type === "window" ? "ventanas" : "puertas"}`,
         error
       );
-      // De nuevo, sólo mostramos en consola
     }
   }, []);
 
@@ -240,6 +245,7 @@ const DataEntryPage: React.FC = () => {
     }
   }, []);
 
+  // === CREAR MATERIAL ===
   const handleCreateMaterial = async (): Promise<boolean> => {
     if (
       newMaterialData.name.trim() === "" ||
@@ -250,10 +256,7 @@ const DataEntryPage: React.FC = () => {
       !newMaterialData.density ||
       parseFloat(newMaterialData.density) <= 0
     ) {
-      console.error(
-        "Complete todos los campos correctamente para crear el material"
-      );
-      notify("Por favor complete todos los campos del material correctamente")
+      notify("Por favor complete todos los campos del material correctamente");
       return false;
     }
     try {
@@ -278,7 +281,7 @@ const DataEntryPage: React.FC = () => {
       const response = await axios.post(url, requestBody, { headers });
       if (response.status === 200) {
         await fetchMaterialsList();
-        notify(`El material  "${newMaterialData.name}" fue creado exitosamente`);
+        notify(`El material "${newMaterialData.name}" fue creado exitosamente`);
         setNewMaterialData({
           name: "",
           conductivity: "",
@@ -299,10 +302,11 @@ const DataEntryPage: React.FC = () => {
         notify("Error al crear el material");
       }
       console.error("Error al crear material:", error);
-      return false; // No relanzamos el error
+      return false;
     }
   };
 
+  // === CREAR ELEMENTO TIPO VENTANA ===
   const handleCreateWindowElement = async (): Promise<boolean> => {
     if (
       windowData.name_element.trim() === "" ||
@@ -318,10 +322,7 @@ const DataEntryPage: React.FC = () => {
       windowData.clousure_type.trim() === "" ||
       windowData.frame_type.trim() === ""
     ) {
-      console.error(
-        "Complete todos los campos correctamente para crear la ventana"
-      );
-      notify("Por favor complete todos los campos de la ventana correctamente")
+      notify("Por favor complete todos los campos de la ventana correctamente");
       return false;
     }
     try {
@@ -375,10 +376,11 @@ const DataEntryPage: React.FC = () => {
         notify("Error al crear la ventana");
       }
       console.error("Error al crear ventana:", error);
-      return false; // No relanzamos el error
+      return false;
     }
   };
 
+  // === CREAR ELEMENTO TIPO PUERTA ===
   const handleCreateDoorElement = async (): Promise<boolean> => {
     if (
       doorData.name_element.trim() === "" ||
@@ -390,10 +392,7 @@ const DataEntryPage: React.FC = () => {
       parseFloat(doorData.fm) < 0 ||
       parseFloat(doorData.fm) > 100
     ) {
-      console.error(
-        "Complete todos los campos correctamente para crear la puerta"
-      );
-      notify("Por favor complete todos los campos de la puerta correctamente")
+      notify("Por favor complete todos los campos de la puerta correctamente");
       return false;
     }
     try {
@@ -426,7 +425,7 @@ const DataEntryPage: React.FC = () => {
       );
       setElementsList((prev) => [...prev, response.data.element]);
 
-      notify(`La puerta "${doorData.name_element}" fue creada exitosamente`)
+      notify(`La puerta "${doorData.name_element}" fue creada exitosamente`);
       setDoorData({
         name_element: "",
         ventana_id: "",
@@ -448,32 +447,28 @@ const DataEntryPage: React.FC = () => {
         notify("Error al crear la puerta");
       }
       console.error("Error al crear puerta:", error);
-      return false; // No relanzamos el error
+      return false;
     }
   };
 
+  // === useEffect para Step 3 (Materiales) ===
   useEffect(() => {
     if (step === 3) {
-      // Llamamos a la función con try/catch interno,
-      // sin hacer throw, así evitamos el overlay de Next.js
       fetchMaterialsList();
     }
   }, [step, fetchMaterialsList]);
 
+  // === useEffect para Step 5 (Elementos) ===
   useEffect(() => {
     if (step === 5) {
       fetchElements(modalElementType === "ventanas" ? "window" : "door");
+      if (modalElementType === "puertas") {
+        fetchAllWindowsForDoor();
+      }
     }
-  }, [step, modalElementType, fetchElements]);
+  }, [step, modalElementType, fetchElements, fetchAllWindowsForDoor]);
 
-  useEffect(() => {
-    if (step === 5 && modalElementType === "puertas") {
-      fetchAllWindowsForDoor();
-    }
-  }, [step, modalElementType, fetchAllWindowsForDoor]);
-
-  const renderMainHeader = () => step >= 3 && <Title text="Datos de entrada" />;
-
+  // === isValid para formularios
   const materialIsValid =
     newMaterialData.name.trim() !== "" &&
     newMaterialData.conductivity !== "" &&
@@ -530,6 +525,273 @@ const DataEntryPage: React.FC = () => {
     },
   ];
 
+  // === RENDER DE STEP 3: Lista de Materiales (SIN multiheader)
+  const renderStep3Materials = () => {
+    // Definimos columnas
+    const columnsMaterials = [
+      { headerName: "Nombre Material", field: "materialName" },
+      { headerName: "Conductividad (W/m2K)", field: "conductivity" },
+      { headerName: "Calor específico (J/kgK)", field: "specific_heat" },
+      { headerName: "Densidad (kg/m3)", field: "density" },
+    ];
+
+    // Filtrar y mapear la data
+    const filteredMaterialData = materialsList
+      .filter((mat) =>
+        mat.atributs.name
+          .toLowerCase()
+          .includes(materialSearch.toLowerCase())
+      )
+      .map((mat) => ({
+        materialName: mat.atributs.name,
+        conductivity: mat.atributs.conductivity,
+        specific_heat: mat.atributs.specific_heat,
+        density: mat.atributs.density,
+      }));
+
+    return (
+      <>
+        <div className="mb-4">
+          <SearchParameters
+            value={materialSearch}
+            onChange={setMaterialSearch}
+            placeholder="Buscar material..."
+            onNew={() => setShowMaterialModal(true)}
+          />
+        </div>
+        <div className="border rounded overflow-hidden">
+          <TablesParameters columns={columnsMaterials} data={filteredMaterialData} />
+        </div>
+      </>
+    );
+  };
+
+  // === RENDER DE STEP 5: Elementos Translúcidos (Ventanas / Puertas) (SIN multiheader)
+  const renderStep5Elements = () => {
+    if (modalElementType === "ventanas") {
+      // Columns para Ventanas
+      const columnsVentanas = [
+        { headerName: "Nombre Elemento", field: "name_element" },
+        { headerName: "U Vidrio [W/m2K]", field: "u_vidrio" },
+        { headerName: "FS Vidrio", field: "fs_vidrio" },
+        { headerName: "Tipo Cierre", field: "clousure_type" },
+        { headerName: "Tipo Marco", field: "frame_type" },
+        { headerName: "U Marco [W/m2K]", field: "u_marco" },
+        { headerName: "FM [%]", field: "fm" },
+      ];
+
+      // Mapeamos la data
+      const filteredData = elementsList
+        .filter(
+          (el) =>
+            el.type === "window" &&
+            el.name_element
+              .toLowerCase()
+              .includes(elementSearch.toLowerCase())
+        )
+        .map((el) => ({
+          name_element: el.name_element,
+          u_vidrio:
+            el.atributs.u_vidrio && el.atributs.u_vidrio > 0
+              ? el.atributs.u_vidrio
+              : "--",
+          fs_vidrio:
+            el.atributs.fs_vidrio && el.atributs.fs_vidrio > 0
+              ? el.atributs.fs_vidrio
+              : "--",
+          clousure_type: el.atributs.clousure_type ?? "--",
+          frame_type: el.atributs.frame_type ?? "--",
+          u_marco: el.u_marco,
+          fm: (el.fm * 100).toFixed(0) + "%",
+        }));
+
+      return (
+        <>
+          <div className="mb-4">
+            <SearchParameters
+              value={elementSearch}
+              onChange={setElementSearch}
+              placeholder="Buscar elemento..."
+              onNew={() => setShowElementModal(true)}
+            />
+          </div>
+          <div className="border rounded overflow-hidden">
+            <div className="bg-white border-bottom">
+              <div className="row g-0">
+                {["Ventanas", "Puertas"].map((tab) => (
+                  <div key={tab} className="col-6">
+                    <ButtonTab
+                      label={tab}
+                      active={modalElementType === tab.toLowerCase()}
+                      onClick={() => setModalElementType(tab.toLowerCase())}
+                      primaryColor={primaryColor}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <TablesParameters columns={columnsVentanas} data={filteredData} />
+          </div>
+        </>
+      );
+    } else {
+      // Columns para Puertas
+      const columnsPuertas = [
+        { headerName: "Nombre Elemento", field: "name_element" },
+        { headerName: "U Puerta opaca [W/m2K]", field: "u_puerta_opaca" },
+        { headerName: "Nombre Ventana", field: "name_ventana" },
+        { headerName: "% Vidrio", field: "porcentaje_vidrio" },
+        { headerName: "U Marco [W/m2K]", field: "u_marco" },
+        { headerName: "FM [%]", field: "fm" },
+      ];
+
+      const filteredData = elementsList
+        .filter(
+          (el) =>
+            el.type === "door" &&
+            el.name_element
+              .toLowerCase()
+              .includes(elementSearch.toLowerCase())
+        )
+        .map((el) => ({
+          name_element: el.name_element,
+          u_puerta_opaca:
+            el.atributs.u_puerta_opaca && el.atributs.u_puerta_opaca > 0
+              ? el.atributs.u_puerta_opaca
+              : "--",
+          name_ventana: el.atributs.name_ventana ?? "--",
+          porcentaje_vidrio:
+            el.atributs.porcentaje_vidrio !== undefined
+              ? (el.atributs.porcentaje_vidrio * 100).toFixed(0) + "%"
+              : "0%",
+          u_marco: el.u_marco,
+          fm: (el.fm * 100).toFixed(0) + "%",
+        }));
+
+      return (
+        <>
+          <div className="mb-4">
+            <SearchParameters
+              value={elementSearch}
+              onChange={setElementSearch}
+              placeholder="Buscar elemento..."
+              onNew={() => setShowElementModal(true)}
+            />
+          </div>
+          <div className="border rounded overflow-hidden">
+            <div className="bg-white border-bottom">
+              <div className="row g-0">
+                {["Ventanas", "Puertas"].map((tab) => (
+                  <div key={tab} className="col-6">
+                    <ButtonTab
+                      label={tab}
+                      active={modalElementType === tab.toLowerCase()}
+                      onClick={() => setModalElementType(tab.toLowerCase())}
+                      primaryColor={primaryColor}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <TablesParameters columns={columnsPuertas} data={filteredData} />
+          </div>
+        </>
+      );
+    }
+  };
+
+  // === RENDER DE STEP 6: Perfil de uso (tabla manual)
+  const renderStep6Profile = () => (
+    <div className="px-3">
+      <div className="nav nav-tabs mb-3 flex-nowrap overflow-auto">
+        {[
+          { key: "ventilacion", label: "Ventilación y caudales" },
+          { key: "iluminacion", label: "Iluminación" },
+          { key: "cargas", label: "Cargas internas" },
+          { key: "horario", label: "Horario y Clima" },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            className={`nav-link flex-shrink-0 ${
+              tabTipologiaRecinto === tab.key ? "active" : ""
+            }`}
+            style={{
+              color:
+                tabTipologiaRecinto === tab.key
+                  ? primaryColor
+                  : "var(--secondary-color)",
+              borderBottom:
+                tabTipologiaRecinto === tab.key
+                  ? `3px solid ${primaryColor}`
+                  : "none",
+              whiteSpace: "nowrap",
+            }}
+            onClick={() => setTabTipologiaRecinto(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <div className="table-responsive">
+        <div className="border rounded overflow-hidden">
+          <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+            <table className="table  table-hover mb-0">
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "center" }}></th>
+                  <th style={{ textAlign: "center" }}></th>
+                  <th style={{ textAlign: "center" }}></th>
+                  <th style={{ textAlign: "center" }}>Caudal Min Salubridad</th>
+                  <th style={{ textAlign: "center" }}></th>
+                  <th style={{ textAlign: "center" }}>Caudal Impuesto</th>
+                  <th style={{ textAlign: "center" }}></th>
+                </tr>
+                <tr>
+                  <th style={{ textAlign: "center" }}>Código de Recinto</th>
+                  <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
+                  <th style={{ textAlign: "center" }}>R-pers [L/s]</th>
+                  <th style={{ textAlign: "center" }}>IDA</th>
+                  <th style={{ textAlign: "center" }}>Ocupación</th>
+                  <th style={{ textAlign: "center" }}>Vent Noct [1/h]</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="text-center">ES</td>
+                  <td className="text-center">Espera</td>
+                  <td className="text-center">8.80</td>
+                  <td className="text-center">IDA2 ✔</td>
+                  <td className="text-center">Sedentario ✔</td>
+                  <td className="text-center">-</td>
+                </tr>
+                <tr>
+                  <td className="text-center">AU</td>
+                  <td className="text-center">Auditorio</td>
+                  <td className="text-center">5.28</td>
+                  <td className="text-center">IDA3 ✔</td>
+                  <td className="text-center">Sedentario ✔</td>
+                  <td className="text-center">-</td>
+                </tr>
+                {/* ... Más filas de ejemplo ... */}
+              </tbody>
+            </table>
+            <div className="text-end mt-3">
+              <CustomButton
+                variant="save"
+                onClick={() => {
+                  // Lógica para abrir un modal o formulario para agregar un nuevo registro
+                  console.log("Agregar nuevo registro");
+                }}
+              >
+                + Nuevo
+              </CustomButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <GooIcons />
@@ -543,350 +805,29 @@ const DataEntryPage: React.FC = () => {
           />
         </div>
       </Card>
+
       <Card>
-        <div
-          className="d-flex flex-wrap"
-          style={{ alignItems: "stretch", gap: 0 }}
-        >
+        <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
           <AdminSidebar
             activeStep={step}
             onStepChange={setStep}
-            steps={sidebarSteps}
+            steps={[
+              { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de materiales" },
+              { stepNumber: 5, iconName: "home", title: "Elementos translúcidos" },
+              { stepNumber: 6, iconName: "deck", title: "Perfil de uso" },
+            ]}
           />
           <VerticalDivider />
           <div className="content p-4" style={{ flex: 1 }}>
             {step === 3 && (
-              <div className="px-3">
-                <div className="mb-4">
-                  <SearchParameters
-                    value={materialSearch}
-                    onChange={setMaterialSearch}
-                    placeholder="Buscar material..."
-                    onNew={() => setShowMaterialModal(true)}
-                  />
-                </div>
-                <div className="table-responsive">
-                  <div className="border rounded overflow-hidden">
-                    <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                      <table className="table table-hover mb-0">
-                        <thead>
-                          <tr>
-                            <th style={{ textAlign: "center" }}>
-                              Nombre Material
-                            </th>
-                            <th style={{ textAlign: "center" }}>
-                              Conductividad (W/m2K)
-                            </th>
-                            <th style={{ textAlign: "center" }}>
-                              Calor específico (J/kgK)
-                            </th>
-                            <th style={{ textAlign: "center" }}>
-                              Densidad (kg/m3)
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {materialsList
-                            .filter((mat) =>
-                              mat.atributs.name
-                                .toLowerCase()
-                                .includes(materialSearch.toLowerCase())
-                            )
-                            .map((mat, idx) => (
-                              <tr key={idx}>
-                                <td style={{ textAlign: "center" }}>
-                                  {mat.atributs.name}
-                                </td>
-                                <td style={{ textAlign: "center" }}>
-                                  {mat.atributs.conductivity}
-                                </td>
-                                <td style={{ textAlign: "center" }}>
-                                  {mat.atributs.specific_heat}
-                                </td>
-                                <td style={{ textAlign: "center" }}>
-                                  {mat.atributs.density}
-                                </td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div className="px-3">{renderStep3Materials()}</div>
             )}
 
             {step === 5 && (
-              <div className="px-3">
-                <div className="mb-4">
-                  <SearchParameters
-                    value={elementSearch}
-                    onChange={setElementSearch}
-                    placeholder="Buscar elemento..."
-                    onNew={() => setShowElementModal(true)}
-                  />
-                </div>
-
-                <div className="table-responsive">
-                  <div className="border rounded overflow-hidden">
-                    <div className="bg-white border-bottom">
-                      <div className="row g-0">
-                        {["Ventanas", "Puertas"].map((tab) => (
-                          <div key={tab} className="col-6">
-                            <ButtonTab
-                              label={tab}
-                              active={modalElementType === tab.toLowerCase()}
-                              onClick={() =>
-                                setModalElementType(tab.toLowerCase())
-                              }
-                              primaryColor={primaryColor}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                      <table className="table table-hover mb-0">
-                        <thead>
-                          {modalElementType === "ventanas" ? (
-                            <tr>
-                              <th style={{ textAlign: "center" }}>
-                                Nombre Elemento
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                U Vidrio [W/m2K]
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                FS Vidrio
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                Tipo Cierre
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                Tipo Marco
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                U Marco [W/m2K]
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                FM [%]
-                              </th>
-                            </tr>
-                          ) : (
-                            <tr>
-                              <th style={{ textAlign: "center" }}>
-                                Nombre Elemento
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                U Puerta opaca [W/m2K]
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                Nombre Ventana
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                % Vidrio
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                U Marco [W/m2K]
-                              </th>
-                              <th style={{ textAlign: "center" }}>
-                                FM [%]
-                              </th>
-                            </tr>
-                          )}
-                        </thead>
-                        <tbody>
-                          {elementsList
-                            .filter((el) =>
-                              el.name_element
-                                .toLowerCase()
-                                .includes(elementSearch.toLowerCase())
-                            )
-                            .map((el, idx) =>
-                              modalElementType === "ventanas" ? (
-                                <tr key={idx}>
-                                  <td className="text-center">{el.name_element}</td>
-                                  <td className="text-center">{el.atributs.u_vidrio}</td>
-                                  <td className="text-center">{el.atributs.fs_vidrio}</td>
-                                  <td className="text-center">{el.atributs.clousure_type}</td>
-                                  <td className="text-center">{el.atributs.frame_type}</td>
-                                  <td className="text-center">{el.u_marco}</td>
-                                  <td className="text-center">{(el.fm * 100).toFixed(0)}%</td>
-                                </tr>
-                              ) : (
-                                <tr key={idx}>
-                                  <td className="text-center">{el.name_element}</td>
-                                  <td className="text-center">{el.atributs.u_puerta_opaca}</td>
-                                  <td className="text-center">{el.atributs.name_ventana}</td>
-                                  <td className="text-center">
-                                    {el.atributs.porcentaje_vidrio !==
-                                    undefined
-                                      ? (
-                                          (el.atributs
-                                            .porcentaje_vidrio as number) * 100
-                                        ).toFixed(0) + "%"
-                                      : "0%"}
-                                  </td>
-                                  <td className="text-center">{el.u_marco}</td>
-                                  <td className="text-center">{(el.fm * 100).toFixed(0)}%</td>
-                                </tr>
-                              )
-                            )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div className="px-3">{renderStep5Elements()}</div>
             )}
 
-            {step === 6 && (
-              <div className="px-3">
-                <div className="nav nav-tabs mb-3 flex-nowrap overflow-auto">
-                  {[
-                    { key: "ventilacion", label: "Ventilación y caudales" },
-                    { key: "iluminacion", label: "Iluminación" },
-                    { key: "cargas", label: "Cargas internas" },
-                    { key: "horario", label: "Horario y Clima" },
-                  ].map((tab) => (
-                    <button
-                      key={tab.key}
-                      className={`nav-link flex-shrink-0 ${
-                        tabTipologiaRecinto === tab.key ? "active" : ""
-                      }`}
-                      style={{
-                        color:
-                          tabTipologiaRecinto === tab.key
-                            ? primaryColor
-                            : "var(--secondary-color)",
-                        borderBottom:
-                          tabTipologiaRecinto === tab.key
-                            ? `3px solid ${primaryColor}`
-                            : "none",
-                        whiteSpace: "nowrap",
-                      }}
-                      onClick={() => setTabTipologiaRecinto(tab.key)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="table-responsive">
-                  <div className="border rounded overflow-hidden">
-                    <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                      <table className="table  table-hover mb-0">
-                        <thead>
-                          <tr>
-                            <th style={{ textAlign: "center" }}></th>
-                            <th style={{ textAlign: "center" }}></th>
-                            <th style={{ textAlign: "center" }}></th>
-                            <th style={{ textAlign: "center" }}>
-                              Caudal Min Salubridad
-                            </th>
-                            <th style={{ textAlign: "center" }}></th>
-                            <th style={{ textAlign: "center" }}>
-                              Caudal Impuesto
-                            </th>
-                            <th style={{ textAlign: "center" }}></th>
-                          </tr>
-                          <tr>
-                            <th style={{ textAlign: "center" }}>
-                              Código de Recinto
-                            </th>
-                            <th style={{ textAlign: "center" }}>
-                              Tipología de Recinto
-                            </th>
-                            <th style={{ textAlign: "center" }}>
-                              R-pers [L/s]
-                            </th>
-                            <th style={{ textAlign: "center" }}>IDA</th>
-                            <th style={{ textAlign: "center" }}>
-                              Ocupación
-                            </th>
-                            <th style={{ textAlign: "center" }}>
-                              Vent Noct [1/h]
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {/* Ejemplo de datos estáticos */}
-                          <tr>
-                            <td className="text-center">ES</td>
-                            <td className="text-center">Espera</td>
-                            <td className="text-center">8.80</td>
-                            <td className="text-center">IDA2 ✔</td>
-                            <td className="text-center">Sedentario ✔</td>
-                            <td className="text-center">-</td>
-                          </tr>
-                          <tr>
-                            <td className="text-center">AU</td>
-                            <td className="text-center">Auditorio</td>
-                            <td className="text-center">5.28</td>
-                            <td className="text-center">IDA3 ✔</td>
-                            <td className="text-center">Sedentario ✔</td>
-                            <td className="text-center">-</td>
-                          </tr>
-                          <tr>
-                            <td className="text-center">BA</td>
-                            <td className="text-center">Baño</td>
-                            <td className="text-center">8.80</td>
-                            <td className="text-center">IDA2 ✔</td>
-                            <td className="text-center">Sedentario ✔</td>
-                            <td className="text-center">-</td>
-                          </tr>
-                          <tr>
-                            <td className="text-center">BD</td>
-                            <td className="text-center">Bodega</td>
-                            <td className="text-center">8.80</td>
-                            <td className="text-center">IDA2 ✔</td>
-                            <td className="text-center">Sedentario ✔</td>
-                            <td className="text-center">-</td>
-                          </tr>
-                          <tr>
-                            <td className="text-center">KI</td>
-                            <td className="text-center">Cafetería</td>
-                            <td className="text-center">8.80</td>
-                            <td className="text-center">IDA2 ✔</td>
-                            <td className="text-center">Sedentario ✔</td>
-                            <td className="text-center">-</td>
-                          </tr>
-                          <tr>
-                            <td className="text-center">CO</td>
-                            <td className="text-center">Comedores</td>
-                            <td className="text-center">8.80</td>
-                            <td className="text-center">IDA2 ✔</td>
-                            <td className="text-center">Sedentario ✔</td>
-                            <td className="text-center">-</td>
-                          </tr>
-                          <tr>
-                            <td className="text-center">PA</td>
-                            <td className="text-center">Pasillos</td>
-                            <td className="text-center">8.80</td>
-                            <td className="text-center">IDA2 ✔</td>
-                            <td className="text-center">Sedentario ✔</td>
-                            <td className="text-center">-</td>
-                          </tr>
-                        </tbody>
-                      </table>
-
-                      {/* Botón para agregar nuevo registro */}
-                      <div className="text-end mt-3">
-                        <CustomButton
-                          variant="save"
-                          onClick={() => {
-                            // Lógica para abrir un modal o formulario para agregar un nuevo registro
-                            console.log("Agregar nuevo registro");
-                          }}
-                        >
-                          + Nuevo
-                        </CustomButton>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {step === 6 && renderStep6Profile()}
           </div>
         </div>
       </Card>
@@ -915,10 +856,7 @@ const DataEntryPage: React.FC = () => {
         >
           <div>
             <div className="form-group mb-3">
-              <LabelWithAsterisk
-                label="Nombre"
-                value={newMaterialData.name}
-              />
+              <LabelWithAsterisk label="Nombre" value={newMaterialData.name} />
               <input
                 type="text"
                 className="form-control"
@@ -992,13 +930,6 @@ const DataEntryPage: React.FC = () => {
                 onKeyDown={handleNumberKeyDown}
               />
             </div>
-            {!materialIsValid && (
-              <div className="mb-3">
-                <p>
-                  (<span style={{ color: "red" }}>*</span>) Campos obligatorios
-                </p>
-              </div>
-            )}
           </div>
         </ModalCreate>
       )}
@@ -1198,13 +1129,6 @@ const DataEntryPage: React.FC = () => {
                   onKeyDown={handleNumberKeyDown}
                 />
               </div>
-              {!windowIsValid && (
-                <div className="mb-3">
-                  <p>
-                    (<span style={{ color: "red" }}>*</span>) Campos obligatorios
-                  </p>
-                </div>
-              )}
             </div>
           ) : (
             <div>
@@ -1351,13 +1275,6 @@ const DataEntryPage: React.FC = () => {
                   onKeyDown={handleNumberKeyDown}
                 />
               </div>
-              {!doorIsValid && (
-                <div className="mb-3">
-                  <p>
-                    (<span style={{ color: "red" }}>*</span>) Campos obligatorios
-                  </p>
-                </div>
-              )}
             </div>
           )}
         </ModalCreate>

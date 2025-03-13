@@ -90,12 +90,11 @@ const ResetPassword: NextPageWithLayout = () => {
     borderRadius: "0.5rem",
     padding: "0.5rem",
     fontFamily: "var(--font-family-base)",
-    fontSize: "var(--font-size-base)",
     paddingRight: "70px", // espacio para el texto de Mostrar/Ocultar
   };
 
   const labelStyle = {
-    marginBottom: "0.25rem",
+    marginBottom: "1rem",
     fontWeight: 400,
     color: "var(--text-color)",
     fontFamily: "var(--font-family-base)",
@@ -167,10 +166,8 @@ const ResetPassword: NextPageWithLayout = () => {
         <h4
           className="text-start"
           style={{
-            fontFamily: "var(--font-family-base)",
             color: "var(--primary-color)",
             fontWeight: 400,
-            fontSize: "1rem",
             marginBottom: "0.25rem",
           }}
         >
@@ -182,7 +179,6 @@ const ResetPassword: NextPageWithLayout = () => {
           style={{
             fontFamily: "var(--font-family-base)",
             color: "var(--text-color)",
-            fontSize: baseFontSize,
             marginBottom: "1rem",
             textAlign: "left",
           }}
@@ -278,10 +274,8 @@ const ResetPassword: NextPageWithLayout = () => {
             type="submit"
             className="btn btn-primary w-100 submit-btn"
             style={{
-              borderRadius: "0.5rem",
+              
               border: "none",
-              padding: "12px",
-              fontSize: "var(--font-size-base)",
               transition: "background 0.3s ease",
               color: "#fff",
               fontFamily: "var(--font-family-base)",

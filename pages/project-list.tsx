@@ -3,13 +3,13 @@ import { notify } from "@/utils/notify";
 import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import Swal, { SweetAlertResult } from "sweetalert2";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import DataTable from "../src/components/DataTable";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import ModalCreate from "@/components/common/ModalCreate"; // Asegúrate de que la ruta sea la correcta
 
 interface Divisions {
   department?: string;
@@ -50,6 +50,10 @@ const ProjectListPage = () => {
   const [, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Estados para controlar el modal de eliminación
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [projectToDelete, setProjectToDelete] = useState<{ id: number; name: string } | null>(null);
+
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -87,41 +91,30 @@ const ProjectListPage = () => {
   };
 
   const handleGoToWorkflow = (project_edit: Project): void => {
-    console.log(
-      "[handleGoToWorkflow] Navegando al workflow para el proyecto:",
-      project_edit.id
-    );
+    console.log("[handleGoToWorkflow] Navegando al workflow para el proyecto:", project_edit.id);
     localStorage.setItem("project_id_edit", String(project_edit.id));
-    localStorage.setItem(
-      "project_department_edit",
-      project_edit.divisions?.department || ""
-    );
+    localStorage.setItem("project_department_edit", project_edit.divisions?.department || "");
     router.push(`/workflow-part1-edit?id=${project_edit.id}`);
   };
 
-  const handleDelete = async (
-    projectId: number,
-    projectName: string
-  ): Promise<void> => {
-    const result: SweetAlertResult = await Swal.fire({
-      title: "¿Estás seguro de eliminar este proyecto?",
-      text: `ID: ${projectId} - Nombre: ${projectName}\nEsta acción no se puede deshacer.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-    });
-    if (!result.isConfirmed) return;
+  // Función para abrir el modal de confirmación
+  const handleDelete = (projectId: number, projectName: string): void => {
+    setProjectToDelete({ id: projectId, name: projectName });
+    setShowDeleteModal(true);
+  };
+
+  // Función que se ejecuta al confirmar la eliminación en el modal
+  const confirmDelete = async (): Promise<void> => {
+    if (!projectToDelete) return;
 
     const token: string | null = localStorage.getItem("token");
     if (!token) {
       setError("No estás autenticado. Inicia sesión nuevamente.");
+      setShowDeleteModal(false);
       return;
     }
     try {
-      const url = `${constantUrlApiEndpoint}/project/${projectId}/delete`;
+      const url = `${constantUrlApiEndpoint}/project/${projectToDelete.id}/delete`;
       await axios.delete<void>(url, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -131,9 +124,12 @@ const ProjectListPage = () => {
       notify("¡Proyecto eliminado exitosamente!");
       fetchProjects();
     } catch (err: unknown) {
-      console.error("[handleDelete] Error al eliminar proyecto:", err);
+      console.error("[confirmDelete] Error al eliminar proyecto:", err);
       setError("No se pudo eliminar el proyecto.");
       notify("No se pudo eliminar el proyecto.");
+    } finally {
+      setShowDeleteModal(false);
+      setProjectToDelete(null);
     }
   };
 
@@ -212,23 +208,17 @@ const ProjectListPage = () => {
       label: "Acciones",
       minWidth: 100,
       cell: ({ row }: { row: Project }) => (
-        <div
-          className="buttons-container"
-        >
+        <div className="buttons-container">
           <CustomButton
             variant="editIcon"
-            className="btn-table "
+            className="btn-table"
             onClick={() => handleGoToWorkflow(row)}
             title="Editar en Workflow"
-
           />
           <CustomButton
             variant="deleteIcon"
             className="btn-table"
-            onClick={() =>
-              handleDelete(row.id, row.name_project || "N/D")
-            }
-
+            onClick={() => handleDelete(row.id, row.name_project || "N/D")}
           />
         </div>
       ),
@@ -239,10 +229,10 @@ const ProjectListPage = () => {
     <>
       <div>
         <Card>
-
           <div className="d-flex align-items-center w-100">
             <Title text="Listado de Proyectos" />
-            <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: true }]} /></div>
+            <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: true }]} />
+          </div>
         </Card>
         <DataTable
           data={projects}
@@ -254,6 +244,26 @@ const ProjectListPage = () => {
           showButton={true}
         />
       </div>
+
+      {/* Modal de confirmación para eliminar proyecto */}
+      {showDeleteModal && projectToDelete && (
+        <ModalCreate
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setProjectToDelete(null);
+          }}
+          onSave={confirmDelete}
+          title="Confirmar eliminación"
+          saveLabel="Eliminar"
+        >
+          <p>
+            ¿Estás seguro de eliminar el proyecto{" "} 
+            <strong>{projectToDelete.name}</strong> (ID: {projectToDelete.id})? <br />
+            Esta acción no se puede deshacer.
+          </p>
+        </ModalCreate>
+      )}
 
       <style jsx>{`
         /* Estilos personalizados para la tabla, si se necesitan */

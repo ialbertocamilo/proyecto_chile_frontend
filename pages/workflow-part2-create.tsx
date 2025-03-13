@@ -9,9 +9,8 @@ import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { Tooltip } from "react-tooltip";
-import Modal from "../src/components/common/Modal";
+import ModalCreate from "@/components/common/ModalCreate"; // Se reemplaza Modal por ModalCreate
 import { notify } from "@/utils/notify";
-
 import Title from "../src/components/Title";
 // Importamos el componente SidebarItemComponent del directorio común
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
@@ -406,10 +405,11 @@ const WorkFlowpar2createPage: React.FC = () => {
           await axios.post(selectUrl, detailIds, { headers });
           notify("Detalle creado y añadido al proyecto exitosamente");
         } catch (selectError: unknown) {
-          // Verificar si el error es que el detalle ya está en el proyecto
-          if (axios.isAxiosError(selectError) &&
-            selectError.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
-            // Este no es un error real para nuestro caso de uso
+          if (
+            axios.isAxiosError(selectError) &&
+            selectError.response?.data?.detail ===
+              "Todos los detalles ya estaban en el proyecto"
+          ) {
             notify("Detalle creado exitosamente");
           } else {
             console.error("Error al añadir detalle al proyecto:", selectError);
@@ -431,10 +431,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          "Error en la creación del detalle:",
-          error.response?.data
-        );
+        console.error("Error en la creación del detalle:", error.response?.data);
         notify("Error en la creación del detalle");
       } else {
         notify("Error desconocido al crear el detalle");
@@ -472,10 +469,11 @@ const WorkFlowpar2createPage: React.FC = () => {
       setShowTabsInStep4(true);
       setTabStep4("muros");
     } catch (error: unknown) {
-      // Si el error es que todos los detalles ya estaban en el proyecto, no es un error real
-      if (axios.isAxiosError(error) &&
-        error.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
-        // Este no es un error real, aún podemos mostrar las pestañas
+      if (
+        axios.isAxiosError(error) &&
+        error.response?.data?.detail ===
+          "Todos los detalles ya estaban en el proyecto"
+      ) {
         setShowTabsInStep4(true);
         setTabStep4("muros");
         return;
@@ -529,15 +527,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingColors.interior },
-                  exterior: { name: editingColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingColors.interior },
+                    exterior: { name: editingColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -589,15 +587,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingTechColors.interior },
-                  exterior: { name: editingTechColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingTechColors.interior },
+                    exterior: { name: editingTechColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -623,7 +621,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     ] as { key: TabStep4; label: string }[];
 
     return (
-      <div >
+      <div>
         <ul
           className="nav"
           style={{
@@ -658,8 +656,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>
-              <table
-                className="table table-bordered " style={{ width: "100%" }}>
+              <table className="table table-bordered " style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
@@ -815,7 +812,6 @@ const WorkFlowpar2createPage: React.FC = () => {
                                 className="btn-table"
                                 variant="save"
                                 onClick={() => handleConfirmTechEdit(item)}
-
                               >
                                 <span className="material-icons">check</span>
                               </CustomButton>
@@ -823,7 +819,6 @@ const WorkFlowpar2createPage: React.FC = () => {
                                 className="btn-table"
                                 variant="cancelIcon"
                                 onClick={() => handleCancelTechEdit(item)}
-
                               >
                                 Deshacer
                               </CustomButton>
@@ -833,7 +828,6 @@ const WorkFlowpar2createPage: React.FC = () => {
                               variant="editIcon"
                               className="btn-table"
                               onClick={() => handleEditTechClick(item)}
-
                             >
                               Editar
                             </CustomButton>
@@ -953,9 +947,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
                       U Marco [W/m²K]
                     </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      FV [%]
-                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>FV [%]</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1003,18 +995,14 @@ const WorkFlowpar2createPage: React.FC = () => {
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
                       U puerta opaca [W/m²K]
                     </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Vidrio []
-                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Vidrio []</th>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
                       % vidrio
                     </th>
                     <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
                       U Marco [W/m²K]
                     </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      FM [%]
-                    </th>
+                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>FM [%]</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1121,10 +1109,20 @@ const WorkFlowpar2createPage: React.FC = () => {
               </thead>
               <tbody>
                 {showNewDetailRow && (
-                  <Modal
+                  <ModalCreate
                     isOpen={showNewDetailRow}
-                    onClose={() => setShowNewDetailRow(false)}
+                    onClose={() => {
+                      setShowNewDetailRow(false);
+                      setNewDetailForm({
+                        scantilon_location: "",
+                        name_detail: "",
+                        material_id: 0,
+                        layer_thickness: null,
+                      });
+                    }}
+                    onSave={handleCreateNewDetail}
                     title="Agregar Nuevo Detalle Constructivo"
+                    saveLabel="Crear Detalles"
                   >
                     <div
                       style={{
@@ -1250,42 +1248,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                         />
                       </div>
                     </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        marginTop: "15px",
-                        paddingRight: "15px",
-                      }}
-                    >
-                      <CustomButton
-                        variant="save"
-                        onClick={() => {
-                          setShowNewDetailRow(false);
-                          setNewDetailForm({
-                            scantilon_location: "",
-                            name_detail: "",
-                            material_id: 0,
-                            layer_thickness: null,
-                          });
-                        }}
-                      >
-                        Cancelar
-                      </CustomButton>
-                      <CustomButton
-                        variant="save"
-                        onClick={async () => {
-                          await handleCreateNewDetail();
-                        }}
-                        id="grabar-datos-btn"
-                      >
-                        Crear Detalles
-                      </CustomButton>
-                      <Tooltip anchorSelect="#grabar-datos-btn" place="top">
-                        Guardar cambios tras agregar un detalle
-                      </Tooltip>
-                    </div>
-                  </Modal>
+                  </ModalCreate>
                 )}
                 {fetchedDetails
                   .filter((det) => {
@@ -1405,21 +1368,15 @@ const WorkFlowpar2createPage: React.FC = () => {
   return (
     <>
       <GooIcons />
-      <Card>
-        {renderMainHeader()}
-      </Card>
+      <Card>{renderMainHeader()}</Card>
       <Card>
         <div className="row">
           <div className="col-lg-3 col-12 order-lg-first order-first">
             <div className="mb-3 mb-lg-0">
               {/* Sidebar usando el componente común */}
-              <AdminSidebar
-                activeStep={step}
-                onStepChange={setStep}
-                steps={sidebarSteps}
-              />
-          </div>
-          <VerticalDivider />
+              <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
+            </div>
+            <VerticalDivider />
           </div>
           <div className="col-lg-9 col-12 order-last">
             <div style={{ padding: "20px" }}>

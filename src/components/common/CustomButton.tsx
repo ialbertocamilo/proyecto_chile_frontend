@@ -95,7 +95,7 @@ const CustomButton: FC<CustomButtonProps> = ({
           background-color: var(--primary-color) !important; 
           border: none;
           font-size: 16px;
-          border-radius: 5px;
+          border-radius: 3px;
           border: none;
           cursor: pointer;
         }

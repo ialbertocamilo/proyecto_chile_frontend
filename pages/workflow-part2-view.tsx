@@ -744,7 +744,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     />
   </div>
 
-  {/* Columna para contenido principal */}
+  {/* Columna para contenido principafdsl */}
   <div className="col-12 col-md-9 p-4">
     {/* Contenido principal */}
     {step === 4 && (

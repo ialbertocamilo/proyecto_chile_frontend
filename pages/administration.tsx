@@ -264,7 +264,7 @@ const AdministrationPage: React.FC = () => {
             newWindow.name_element.trim().toLowerCase()
         );
       if (windowExists) {
-        notify(`La ventana ya existe`);
+        notify(`El Nombre de la Ventana ya existe`);
         return;
       }
     } else {

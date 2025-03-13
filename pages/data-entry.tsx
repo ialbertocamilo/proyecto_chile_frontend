@@ -253,6 +253,7 @@ const DataEntryPage: React.FC = () => {
       console.error(
         "Complete todos los campos correctamente para crear el material"
       );
+      notify("Por favor complete todos los campos del material correctamente")
       return false;
     }
     try {
@@ -277,7 +278,7 @@ const DataEntryPage: React.FC = () => {
       const response = await axios.post(url, requestBody, { headers });
       if (response.status === 200) {
         await fetchMaterialsList();
-        notify("Material creado exitosamente");
+        notify(`El material  "${newMaterialData.name}" fue creado exitosamente`);
         setNewMaterialData({
           name: "",
           conductivity: "",
@@ -293,7 +294,7 @@ const DataEntryPage: React.FC = () => {
         error.response &&
         error.response.status === 400
       ) {
-        notify("El material ya existe");
+        notify("El Nombre del Material ya existe");
       } else {
         notify("Error al crear el material");
       }
@@ -320,6 +321,7 @@ const DataEntryPage: React.FC = () => {
       console.error(
         "Complete todos los campos correctamente para crear la ventana"
       );
+      notify("Por favor complete todos los campos de la ventana correctamente")
       return false;
     }
     try {
@@ -335,7 +337,7 @@ const DataEntryPage: React.FC = () => {
           frame_type: windowData.frame_type,
         },
         u_marco: parseFloat(windowData.u_marco),
-        fm: parseFloat(windowData.fm) / 100,
+        fm: parseFloat(windowData.fm),
       };
       const response = await axios.post(
         `${constantUrlApiEndpoint}/elements/create`,
@@ -351,7 +353,7 @@ const DataEntryPage: React.FC = () => {
       setElementsList((prev) => [...prev, response.data.element]);
       setAllWindowsForDoor((prev) => [...prev, response.data.element]);
 
-      notify("Ventana creada exitosamente");
+      notify(`La ventana "${windowData.name_element}" fue creada exitosamente`);
       setWindowData({
         name_element: "",
         u_vidrio: "",
@@ -368,7 +370,7 @@ const DataEntryPage: React.FC = () => {
         error.response &&
         error.response.status === 400
       ) {
-        notify("La ventana ya existe");
+        notify("El Nombre de la Ventana ya existe");
       } else {
         notify("Error al crear la ventana");
       }
@@ -391,6 +393,7 @@ const DataEntryPage: React.FC = () => {
       console.error(
         "Complete todos los campos correctamente para crear la puerta"
       );
+      notify("Por favor complete todos los campos de la puerta correctamente")
       return false;
     }
     try {
@@ -408,7 +411,7 @@ const DataEntryPage: React.FC = () => {
             : 0,
         },
         u_marco: parseFloat(doorData.u_marco),
-        fm: parseFloat(doorData.fm) / 100,
+        fm: parseFloat(doorData.fm),
       };
       const response = await axios.post(
         `${constantUrlApiEndpoint}/elements/create`,
@@ -423,7 +426,7 @@ const DataEntryPage: React.FC = () => {
       );
       setElementsList((prev) => [...prev, response.data.element]);
 
-      notify("Puerta creada exitosamente");
+      notify(`La puerta "${doorData.name_element}" fue creada exitosamente`)
       setDoorData({
         name_element: "",
         ventana_id: "",
@@ -440,7 +443,7 @@ const DataEntryPage: React.FC = () => {
         error.response &&
         error.response.status === 400
       ) {
-        notify("La puerta ya existe");
+        notify("El Nombre de la Puerta ya existe");
       } else {
         notify("Error al crear la puerta");
       }

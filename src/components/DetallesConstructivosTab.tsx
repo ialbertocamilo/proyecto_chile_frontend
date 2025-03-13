@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { constantUrlApiEndpoint } from "../../src/utils/constant-url-endpoint";
+// Importas tu componente de tablas
+import TablesParameters from "../components/tables/TablesParameters";
 
 interface Detail {
   id: number;
@@ -57,12 +59,100 @@ const stickyHeaderStyle2 = {
   textAlign: "center" as const,
 };
 
-const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger = 0 }) => {
+const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({
+  refreshTrigger = 0,
+}) => {
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [tabStep4, setTabStep4] = useState<TabStep4>("muros");
   const [murosTabList, setMurosTabList] = useState<Detail[]>([]);
   const [techumbreTabList, setTechumbreTabList] = useState<Detail[]>([]);
   const [pisosTabList, setPisosTabList] = useState<Detail[]>([]);
+
+  // 1. Columnas y data para Muros y Techumbre (comparten mismas columnas)
+  const commonColumns = [
+    { headerName: "Nombre Abreviado", field: "name_detail" },
+    { headerName: "Valor U (W/m²K)", field: "value_u" },
+    { headerName: "Color Exterior", field: "color_exterior" },
+    { headerName: "Color Interior", field: "color_interior" },
+  ];
+
+  const murosData = murosTabList.map((item) => ({
+    name_detail: item.name_detail,
+    value_u: item.value_u?.toFixed(3) ?? "--",
+    color_exterior:
+      item.info?.surface_color?.exterior?.name || "Desconocido",
+    color_interior:
+      item.info?.surface_color?.interior?.name || "Desconocido",
+  }));
+
+  const techumbreData = techumbreTabList.map((item) => ({
+    name_detail: item.name_detail,
+    value_u: item.value_u?.toFixed(3) ?? "--",
+    color_exterior:
+      item.info?.surface_color?.exterior?.name || "Desconocido",
+    color_interior:
+      item.info?.surface_color?.interior?.name || "Desconocido",
+  }));
+
+  // 2. Columnas + data para Pisos (con multi-header)
+  //    A) Defino el 'multiHeader' para armar el encabezado de dos filas
+  const pisosMultiHeader = {
+    rows: [
+      [
+        { label: "Nombre", rowSpan: 2 },
+        { label: "U [W/m²K]", rowSpan: 2 },
+        { label: "Aislamiento bajo piso", colSpan: 2 },
+        { label: "Ref Aisl Vert.", colSpan: 3 },
+        { label: "Ref Aisl Horiz.", colSpan: 3 },
+      ],
+      [
+        { label: "I [W/mK]" },
+        { label: "e Aisl [cm]" },
+        { label: "I [W/mK]" },
+        { label: "e Aisl [cm]" },
+        { label: "D [cm]" },
+        { label: "I [W/mK]" },
+        { label: "e Aisl [cm]" },
+        { label: "D [cm]" },
+      ],
+    ],
+  };
+
+  //    B) Defino columnas base (10 columnas)
+  const pisosColumns = [
+    { headerName: "Nombre", field: "name_detail" },
+    { headerName: "U [W/m²K]", field: "value_u" },
+    { headerName: "I [W/mK]", field: "bajoPiso_lambda" },
+    { headerName: "e Aisl [cm]", field: "bajoPiso_e_aisl" },
+    { headerName: "I [W/mK]", field: "vert_lambda" },
+    { headerName: "e Aisl [cm]", field: "vert_e_aisl" },
+    { headerName: "D [cm]", field: "vert_d" },
+    { headerName: "I [W/mK]", field: "horiz_lambda" },
+    { headerName: "e Aisl [cm]", field: "horiz_e_aisl" },
+    { headerName: "D [cm]", field: "horiz_d" },
+  ];
+
+  //    C) Transformo cada fila con la data concreta
+  const pisosData = pisosTabList.map((item) => {
+    const bajoPiso = item.info?.aislacion_bajo_piso || {};
+    const vert = item.info?.ref_aisl_vertical || {};
+    const horiz = item.info?.ref_aisl_horizontal || {};
+
+    return {
+      name_detail: item.name_detail,
+      value_u: item.value_u?.toFixed(3) ?? "--",
+      bajoPiso_lambda: bajoPiso.lambda
+        ? bajoPiso.lambda.toFixed(3)
+        : "N/A",
+      bajoPiso_e_aisl: bajoPiso.e_aisl ?? "N/A",
+      vert_lambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
+      vert_e_aisl: vert.e_aisl ?? "N/A",
+      vert_d: vert.d ?? "N/A",
+      horiz_lambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
+      horiz_e_aisl: horiz.e_aisl ?? "N/A",
+      horiz_d: horiz.d ?? "N/A",
+    };
+  });
 
   // Función para obtener el valor de una variable CSS
   const getCssVarValue = (varName: string, fallback: string): string => {
@@ -77,12 +167,14 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({ refre
   const getToken = (): string | null => {
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.warning("Token no encontrado. Inicia sesión.", { toastId: "token-warning" });
+      toast.warning("Token no encontrado. Inicia sesión.", {
+        toastId: "token-warning",
+      });
     }
     return token;
   };
 
-  // Función genérica para obtener datos desde un endpoint
+  // Función genérica para obtener datos
   const fetchData = useCallback(
     async <T,>(endpoint: string, setter: (data: T) => void) => {
       const token = getToken();
@@ -98,46 +190,54 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({ refre
     []
   );
 
+  // useEffect para extraer color principal
   useEffect(() => {
     setPrimaryColor(getCssVarValue("--primary-color", "#3ca7b7"));
   }, []);
 
+  // Fetch muros, techumbre, pisos
   const fetchMurosDetails = useCallback(() => {
-    fetchData<Detail[]>(
-      `${constantUrlApiEndpoint}/details/all/Muro/`,
-      (data) => {
-        if (Array.isArray(data)) setMurosTabList(data);
-      }
-    );
+    fetchData<Detail[]>(`${constantUrlApiEndpoint}/details/all/Muro/`, (data) => {
+      if (Array.isArray(data)) setMurosTabList(data);
+    });
   }, [fetchData]);
 
   const fetchTechumbreDetails = useCallback(() => {
-    fetchData<Detail[]>(
-      `${constantUrlApiEndpoint}/details/all/Techo/`,
-      (data) => {
-        if (Array.isArray(data)) setTechumbreTabList(data);
-      }
-    );
+    fetchData<Detail[]>(`${constantUrlApiEndpoint}/details/all/Techo/`, (data) => {
+      if (Array.isArray(data)) setTechumbreTabList(data);
+    });
   }, [fetchData]);
 
   const fetchPisosDetails = useCallback(() => {
-    fetchData<Detail[]>(
-      `${constantUrlApiEndpoint}/details/all/Piso/`,
-      (data) => {
-        if (Array.isArray(data)) setPisosTabList(data);
-      }
-    );
+    fetchData<Detail[]>(`${constantUrlApiEndpoint}/details/all/Piso/`, (data) => {
+      if (Array.isArray(data)) setPisosTabList(data);
+    });
   }, [fetchData]);
 
+  // Cada vez que cambie la pestaña o refreshTrigger, recargo la data
   useEffect(() => {
-    if (tabStep4 === "muros") fetchMurosDetails();
-    else if (tabStep4 === "techumbre") fetchTechumbreDetails();
-    else if (tabStep4 === "pisos") fetchPisosDetails();
-  }, [tabStep4, refreshTrigger, fetchMurosDetails, fetchTechumbreDetails, fetchPisosDetails]);
+    if (tabStep4 === "muros") {
+      fetchMurosDetails();
+    } else if (tabStep4 === "techumbre") {
+      fetchTechumbreDetails();
+    } else if (tabStep4 === "pisos") {
+      fetchPisosDetails();
+    }
+  }, [
+    tabStep4,
+    refreshTrigger,
+    fetchMurosDetails,
+    fetchTechumbreDetails,
+    fetchPisosDetails,
+  ]);
 
   return (
     <div style={{ overflow: "hidden", padding: "10px" }}>
-      <div className="d-flex justify-content-between align-items-center mb-2" style={{ padding: "10px" }}>
+      {/* Pestañas de Muros, Techumbre, Pisos */}
+      <div
+        className="d-flex justify-content-between align-items-center mb-2"
+        style={{ padding: "10px" }}
+      >
         <ul
           style={{
             display: "flex",
@@ -159,10 +259,16 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({ refre
                   width: "100%",
                   padding: "0px",
                   backgroundColor: "#fff",
-                  color: tabStep4 === item.key ? "var(--primary-color)" : "var(--secondary-color)",
+                  color:
+                    tabStep4 === item.key
+                      ? "var(--primary-color)"
+                      : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
-                  borderBottom: tabStep4 === item.key ? "solid var(--primary-color)" : "none",
+                  borderBottom:
+                    tabStep4 === item.key
+                      ? "solid var(--primary-color)"
+                      : "none",
                 }}
                 onClick={() => setTabStep4(item.key as TabStep4)}
               >
@@ -173,143 +279,46 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({ refre
         </ul>
       </div>
 
-      <div style={{ maxHeight: "500px", overflowY: "auto", overflowX: "auto", position: "relative" }}>
+      {/* Contenido de la pestaña actual */}
+      <div
+        style={{
+          maxHeight: "500px",
+          overflowY: "auto",
+          overflowX: "auto",
+          position: "relative",
+        }}
+      >
         {tabStep4 === "muros" && (
           <div style={{ overflow: "hidden", padding: "10px" }}>
-            <table className="table" style={{ width: "100%" }}>
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Valor U (W/m²K)</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Exterior</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Interior</th>
-                </tr>
-              </thead>
-              <tbody>
-                {murosTabList.length > 0 ? (
-                  murosTabList.map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.name_detail}</td>
-                      <td>{item.value_u?.toFixed(3) ?? "--"}</td>
-                      <td>{item.info?.surface_color?.exterior?.name || "Desconocido"}</td>
-                      <td>{item.info?.surface_color?.interior?.name || "Desconocido"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <TablesParameters
+              columns={commonColumns}
+              data={murosData}
+            />
           </div>
         )}
+
         {tabStep4 === "techumbre" && (
           <div style={{ overflow: "hidden", padding: "10px" }}>
-            <table className="table" style={{ width: "100%" }}>
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Valor U (W/m²K)</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Exterior</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Interior</th>
-                </tr>
-              </thead>
-              <tbody>
-                {techumbreTabList.length > 0 ? (
-                  techumbreTabList.map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.name_detail}</td>
-                      <td>{item.value_u?.toFixed(3) ?? "--"}</td>
-                      <td>{item.info?.surface_color?.exterior?.name || "Desconocido"}</td>
-                      <td>{item.info?.surface_color?.interior?.name || "Desconocido"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <TablesParameters
+              columns={commonColumns}
+              data={techumbreData}
+            />
           </div>
         )}
+
         {tabStep4 === "pisos" && (
           <div style={{ overflow: "hidden", padding: "10px" }}>
-            <table className="table" style={{ width: "100%" }}>
-              <thead>
-                <tr>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre</th>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>U [W/m²K]</th>
-                  <th colSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>Aislamiento bajo piso</th>
-                  <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>Ref Aisl Vert.</th>
-                  <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>Ref Aisl Horiz.</th>
-                </tr>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/m²K]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pisosTabList.length > 0 ? (
-                  pisosTabList.map((item) => {
-                    const bajoPiso = item.info?.aislacion_bajo_piso || {};
-                    const vert = item.info?.ref_aisl_vertical || {};
-                    const horiz = item.info?.ref_aisl_horizontal || {};
-                    return (
-                      <tr key={item.id}>
-                        <td style={{ textAlign: "center" }}>{item.name_detail}</td>
-                        <td style={{ textAlign: "center" }}>{item.value_u?.toFixed(3) ?? "--"}</td>
-                        <td style={{ textAlign: "center" }}>
-                          {bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {bajoPiso.e_aisl ? bajoPiso.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.lambda ? vert.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.e_aisl ? vert.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.d ? vert.d : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.e_aisl ? horiz.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.d ? horiz.d : "N/A"}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={10} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            {/* Uso de multiHeader para recrear el encabezado de 2 filas */}
+            <TablesParameters
+              columns={pisosColumns}
+              data={pisosData}
+              multiHeader={pisosMultiHeader}
+            />
           </div>
         )}
       </div>
 
+      {/* Estilos opcionales */}
       <style jsx>{`
         .table th,
         .table td {

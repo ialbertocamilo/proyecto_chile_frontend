@@ -5,7 +5,7 @@ import useAuth from "../src/hooks/useAuth";
 import Card from "@/components/common/Card";
 import Title from "@/components/Title";
 import CreateButton from "@/components/CreateButton";
-import { notify } from "@/utils/notify"; // Importamos notify
+import { notify } from "@/utils/notify"; // Importamosfds notify
 import Breadcrumb from "../src/components/common/Breadcrumb";
 
 interface UserFormData {

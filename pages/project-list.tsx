@@ -9,7 +9,10 @@ import DataTable from "../src/components/DataTable";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import ModalCreate from "@/components/common/ModalCreate"; // Asegúrate de que la ruta sea la correcta
+import ModalCreate from "@/components/common/ModalCreate";
+
+import WelcomeCard from "@/components/CardWelcome";
+import ChartProjectCreated from "@/components/ChartProjectCreated";
 
 interface Divisions {
   department?: string;
@@ -243,6 +246,17 @@ const ProjectListPage = () => {
           pageSize={10}
           showButton={true}
         />
+
+        {/* Sección para los nuevos componentes en columnas laterales */}
+        <div className="row mt-4">
+          <div className="col-md-9">
+            <ChartProjectCreated />
+          </div>
+          <div className="col-md-3">
+            <WelcomeCard />
+          </div>
+          
+        </div>
       </div>
 
       {/* Modal de confirmación para eliminar proyecto */}
@@ -258,7 +272,7 @@ const ProjectListPage = () => {
           saveLabel="Eliminar"
         >
           <p>
-            ¿Estás seguro de eliminar el proyecto{" "} 
+            ¿Estás seguro de eliminar el proyecto{" "}
             <strong>{projectToDelete.name}</strong> (ID: {projectToDelete.id})? <br />
             Esta acción no se puede deshacer.
           </p>

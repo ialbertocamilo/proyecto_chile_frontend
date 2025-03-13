@@ -110,7 +110,7 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-// Se agregó la propiedad activeStep para conocer cuál opción está activadfs
+// Se agregó la propiedad activeStep parafdfdsf conocer cuál opción está activadfs
 interface SidebarItemProps {
   stepNumber: number;
   iconName: string;

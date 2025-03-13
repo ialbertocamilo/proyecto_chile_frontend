@@ -18,7 +18,7 @@ interface ProfileData {
   country: string;
   ubigeo: string;
   proffesion?: string; // Campo opcional
-  userType?: string;  // Aquí se almacenará el ID del rol (ej. "1" o "2")
+  userType?: string;  // Aquí se almacenará el ID del fdrol (ej. "1" o "2")
   email?: string;
 }
 

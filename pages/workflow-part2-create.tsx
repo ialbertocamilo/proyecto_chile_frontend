@@ -1288,11 +1288,32 @@ const WorkFlowpar2createPage: React.FC = () => {
     <>
       <GooIcons />
       <Card>
-        <div className="d-flex align-items-center w-100">
-        {renderMainHeader()}
-        <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: false }, { title: 'Nuevo proyecto', active: true }]} />
+        <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem"}}>
+          {renderMainHeader()} 
         </div>
-        
+          <div className="d-flex align-items-center gap-4">
+            <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
+              Proyecto:
+            </span>
+            <CustomButton
+              variant="save"
+              className="no-hover"
+              style={{ padding: "0.8rem 3rem" }}
+            >
+              {`Edificación Nº ${projectId ?? "xxxxx"}`}
+            </CustomButton>
+            <div className="ms-auto" style={{display: "flex"}}>
+            <Breadcrumb
+            items={[
+              {
+                title: "Proyecto Nuevo",
+                href: "/",
+                active: true,
+              },
+            ]}
+          />
+          </div>
+          </div>
         </Card>
       <Card>
         <div className="row">

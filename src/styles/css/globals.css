@@ -114,7 +114,7 @@ a {
   width: 1.3rem !important;
   height: 2.3rem !important;
   padding: 0.5rem !important;
-  margin: 0 0.3rem !important; 
+  margin: 0 0.3rem !important ; 
   /* Elimina los estilos de posicionamiento (si aún los tienes):
   position: relative !important;
   left: 50% !important;
@@ -208,5 +208,16 @@ a {
 @media (max-width: 576px) {
   .chart-wrapper {
     height: 180px;
+  }
+}
+
+.breadcrumb-container {
+  width: 100%;
+}
+
+/* Para móviles (ajusta el ancho como necesites, aquí se pone auto) */
+@media (max-width: 768px) {
+  .breadcrumb-container {
+    width: auto;
   }
 }

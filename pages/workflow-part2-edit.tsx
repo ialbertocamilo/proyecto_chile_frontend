@@ -1333,15 +1333,6 @@ const WorkFlowpar2editPage: React.FC = () => {
         <Card>
         <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem"}}>
           {renderMainHeader()} 
-          <Breadcrumb
-            items={[
-              {
-                title: "Proyecto Nuevo",
-                href: "/",
-                active: true,
-              },
-            ]}
-          />
         </div>
           <div className="d-flex align-items-center gap-4">
             <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
@@ -1354,6 +1345,17 @@ const WorkFlowpar2editPage: React.FC = () => {
             >
               {`Edificación Nº ${projectId ?? "xxxxx"}`}
             </CustomButton>
+            <div className="ms-auto" style={{display: "flex"}}>
+            <Breadcrumb
+            items={[
+              {
+                title: "Proyecto Nuevo",
+                href: "/",
+                active: true,
+              },
+            ]}
+          />
+          </div>
           </div>
         </Card>
         <Card

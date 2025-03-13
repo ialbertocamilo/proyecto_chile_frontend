@@ -721,17 +721,46 @@ const WorkFlowpar2viewPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
-        <Card>
-          <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
-          <div className="d-flex align-items-center gap-4">
-            <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-              Proyecto:
-            </span>
-            <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
-              {`Edificación Nº ${projectId ?? "xxxxx"}`}
-            </CustomButton>
-          </div>
-        </Card>
+      <Card>
+  <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
+  
+  <div style={{ width: "100%" }}>
+    {/* Bloque izquierdo: texto + botón */}
+    <div className="d-flex align-items-center gap-3">
+      <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
+        Proyecto:
+      </span>
+      <CustomButton
+        variant="save"
+        className="no-hover"
+        style={{ padding: "0.8rem 3rem" }}
+      >
+        {`Edificación Nº ${projectId ?? "xxxxx"}`}
+      </CustomButton>
+    
+
+    {/* Bloque derecho: breadcrumb alineado a la derecha con ancho modificado */}
+    <div className="ms-auto" style={{display: "flex"}}>
+      <Breadcrumb
+        items={[
+          {
+            title: "Vista De Proyecto",
+            href: "/",
+            active: true,
+          },
+        ]}
+      />
+    </div>
+  </div>
+  </div>
+</Card>
+
+
+
+
+
+
+
         <Card>
         <div className="row">
   {/* Columna para Sidebar */}

@@ -1,13 +1,13 @@
 import React from 'react';
-import WelcomeCard from '../src/components/CardWelcome';
+import ChartProjectCreated from '../src/components/ChartProjectCreated';
 
-const TestPage: React.FC = () => {
+const ChartTestPage: React.FC = () => {
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Página de Prueba</h1>
-      <WelcomeCard  />
+      <h1>Chart Project Created Test Page</h1>
+      <ChartProjectCreated />
     </div>
   );
 };
 
-export default TestPage;
+export default ChartTestPage;

@@ -24,6 +24,8 @@ interface Project {
   built_surface?: number;
   latitude?: number;
   longitude?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface ProjectsResponse {
@@ -41,20 +43,19 @@ export default async function handler(
   const token = req.headers.authorization;
 
   if (!token) {
-    return res.status(401).json({ error: 'No authentication token provided' });
+    return res
+      .status(401)
+      .json({ error: 'No authentication token provided' });
   }
 
   try {
     const url = `${constantUrlApiEndpoint}/admin/projects/`;
-    const response = await axios.get<ProjectsResponse>(
-      url,
-      {
-        params: { limit: 999999, num_pag: 1 },
-        headers: {
-          Authorization: token,
-        },
-      }
-    );
+    const response = await axios.get<ProjectsResponse>(url, {
+      params: { limit: 999999, num_pag: 1 },
+      headers: {
+        Authorization: token,
+      },
+    });
 
     return res.status(200).json(response.data);
   } catch (error) {

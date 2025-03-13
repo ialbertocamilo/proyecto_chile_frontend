@@ -24,6 +24,8 @@ interface Project {
   built_surface?: number;
   latitude?: number;
   longitude?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface ProjectsResponse {

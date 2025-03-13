@@ -9,7 +9,7 @@ interface SearchInputProps {
   onSearch?: (searchTerm: string) => void; // Callback opcional para búsqueda global
   createUrl?: string;
   createText?: string;
-  showButton?: boolean; // Prop opcional para mostrar/ocultar el botón
+  showButton?: boolean; // Prop opcional pasdfra mostrar/ocultar el botón
 }
 
 export const SearchInput: FC<SearchInputProps> = ({ 

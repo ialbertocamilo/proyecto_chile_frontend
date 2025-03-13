@@ -1359,7 +1359,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   minWidth: "6rem",
                 }}
               >
-                <span className="material-icons">visibility</span> Mostrar datos
+                Realizar Cálculos
               </CustomButton>
             </div>
           </div>

@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from 'react';
+'use client'
 import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
 
 const WelcomeCard: React.FC = () => {
   const router = useRouter();
   const [lastname, setLastname] = useState<string>('');
+  const [name, setName] = useState<string>('');
 
   useEffect(() => {
     const userProfile = localStorage.getItem("userProfile");
     if (userProfile) {
       const profile = JSON.parse(userProfile);
       setLastname(profile.lastname);
+      setName(profile.name);
     }
   }, []);
 
@@ -17,8 +20,9 @@ const WelcomeCard: React.FC = () => {
     router.push('/edit-profile'); // Ajusta la ruta según tu proyecto
   };
 
+
   return (
-    <div 
+    <div
       className="card welcome-card"
       style={{
         backgroundImage: "url('/assets/images/dashboard/welcome.jpg')",
@@ -27,8 +31,8 @@ const WelcomeCard: React.FC = () => {
         backgroundPosition: 'center'
       }}
     >
-      <div 
-        className="card-body" 
+      <div
+        className="card-body"
         style={{
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
           color: '#fff'
@@ -36,10 +40,10 @@ const WelcomeCard: React.FC = () => {
       >
         <div className="d-flex">
           <div className="flex-grow-1">
-            <h1>Hola, {lastname}</h1>
+            <h1>Hola, {name} {lastname}</h1>
             <p>¡Bienvenidos de nuevo!</p>
             <p>Empecemos desde donde lo dejaste.</p>
-            <button 
+            <button
               className="btn"
               onClick={handleViewProfile}
               style={{
@@ -48,7 +52,7 @@ const WelcomeCard: React.FC = () => {
                 background: 'transparent'
               }}
             >
-              ver Perfil
+              Ver perfil
             </button>
           </div>
         </div>

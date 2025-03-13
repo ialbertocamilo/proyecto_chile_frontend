@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { ApexOptions } from 'apexcharts';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
-import { ApexOptions } from 'apexcharts';
+import React, { useEffect, useState } from 'react';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -110,7 +110,6 @@ const ChartProjectCreated: React.FC = () => {
     }
 
     return (
-        <div className="col-xl-6 col-lg-6">
             <div className="card">
                 <div className="card-header pb-0">
                     <div className="header-top d-flex justify-content-between align-items-center">
@@ -142,7 +141,6 @@ const ChartProjectCreated: React.FC = () => {
                     </div>
                 </div>
             </div>
-        </div>
     );
 };
 

@@ -249,17 +249,16 @@ const ProjectListPage = () => {
 
         {/* Sección para los nuevos componentes en columnas laterales */}
         <div className="row mt-4">
-          <div className="col-md-9">
+          <div className="col-md-6 col-xl-6 col-lg-">
             <ChartProjectCreated />
           </div>
-          <div className="col-md-3">
+          <div className="col-md-6">
             <WelcomeCard />
           </div>
           
         </div>
       </div>
 
-      {/* Modal de confirmación para eliminar proyecto */}
       {showDeleteModal && projectToDelete && (
         <ModalCreate
           isOpen={showDeleteModal}
@@ -280,7 +279,6 @@ const ProjectListPage = () => {
       )}
 
       <style jsx>{`
-        /* Estilos personalizados para la tabla, si se necesitan */
         .status-badge {
           font-family: var(--font-family-base);
         }

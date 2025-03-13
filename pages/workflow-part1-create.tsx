@@ -184,7 +184,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return false;
-      const response = await get(`/user/projects/`);
+      const response = await get(`/user/projects/?limit=999999&num_pag=1`);
       const projects: Project[] = response.projects || [];
       return projects.some(
         (project: Project) =>

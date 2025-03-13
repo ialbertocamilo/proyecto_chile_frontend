@@ -20,7 +20,6 @@ interface MaterialAttributes {
   density: number;
 }
 
-
 export interface Detail {
   id: number;
   scantilon_location: string;
@@ -45,11 +44,14 @@ interface ElementAttributesWindow {
   clousure_type: string;
 }
 
-
 const AdministrationPage: React.FC = () => {
   useAuth();
   const [step, setStep] = useState<number>(3);
-  const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
+  const [tabElementosOperables, setTabElementosOperables] =
+    useState("ventanas");
+
+  // Estado para cambiar entre la vista de DetallesConstructivosTab y la vista de tabla de detalles generales
+  const [showGeneralDetails, setShowGeneralDetails] = useState(false);
 
   const {
     materialsList,
@@ -58,10 +60,10 @@ const AdministrationPage: React.FC = () => {
     fetchMaterialsList,
     fetchDetails,
     fetchElements,
-    handleLogout
-
+    handleLogout,
   } = useAdministration();
 
+  // Estados para nuevos Materiales, Detalles, Ventanas y Puertas
   const [showNewMaterialModal, setShowNewMaterialModal] = useState(false);
   const [newMaterialData, setNewMaterialData] = useState<MaterialAttributes>({
     name: "",
@@ -106,6 +108,7 @@ const AdministrationPage: React.FC = () => {
 
   const windowsList = elementsList.filter((el) => el.type === "window");
 
+  // Función para crear un nuevo material
   const handleCreateMaterial = async () => {
     if (
       newMaterialData.name.trim() === "" ||
@@ -143,15 +146,20 @@ const AdministrationPage: React.FC = () => {
         notify("El material fue creado correctamente");
         await fetchMaterialsList(1);
         setShowNewMaterialModal(false);
-        setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+        setNewMaterialData({
+          name: "",
+          conductivity: 0,
+          specific_heat: 0,
+          density: 0,
+        });
       }
     } catch (error: unknown) {
       console.error("[handleCreateMaterial] Error:", error);
       notify("No se pudo crear el material");
     }
   };
-  const [detailsRefreshCounter, setDetailsRefreshCounter] = useState(0);
 
+  // Función para crear un nuevo detalle y actualizar la lista usando el hook
   const handleCreateDetail = async () => {
     if (
       newDetail.scantilon_location.trim() === "" ||
@@ -163,29 +171,26 @@ const AdministrationPage: React.FC = () => {
       notify("Por favor complete todos los campos de detalle");
       return;
     }
-
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         notify("Token no encontrado. Inicia sesión.");
         return;
       }
-
       const payload = {
         scantilon_location: newDetail.scantilon_location,
         name_detail: newDetail.name_detail,
         material_id: newDetail.material_id,
         layer_thickness: newDetail.layer_thickness,
       };
-
-      const url = `/api/details`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const url = `${constantUrlApiEndpoint}/details/create`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
       const response = await axios.post(url, payload, { headers });
-
       if (response.status === 200) {
         notify("El detalle fue creado correctamente");
-
-        // Cerrar modal y resetear formulario
         setShowNewDetailModal(false);
         setNewDetail({
           scantilon_location: "",
@@ -193,25 +198,16 @@ const AdministrationPage: React.FC = () => {
           material_id: 0,
           layer_thickness: null,
         });
-
-        // Incrementar el contador para activar la actualización
-        setDetailsRefreshCounter(prev => prev + 1);
-
-        // Asegurarse de recargar los detalles
+        // Actualiza los detalles generales usando fetchDetails del hook
         await fetchDetails();
       }
     } catch (error: unknown) {
       console.error("[handleCreateDetail] Error:", error);
-
-      // Manejo de error más específico
-      if (axios.isAxiosError(error)) {
-        notify("No se pudo crear el detalle");
-      } else {
-        notify("No se pudo crear el detalle");
-      }
+      notify("No se pudo crear el detalle");
     }
   };
 
+  // Función para crear un nuevo elemento (ventana o puerta)
   const handleCreateElement = async () => {
     if (tabElementosOperables === "ventanas") {
       if (
@@ -239,18 +235,18 @@ const AdministrationPage: React.FC = () => {
         return;
       }
     }
-
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         notify("Token no encontrado. Inicia sesión.");
         return;
       }
-
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
       const url = `${constantUrlApiEndpoint}/elements/create`;
       let payload;
-
       if (tabElementosOperables === "ventanas") {
         payload = {
           type: "window",
@@ -265,7 +261,9 @@ const AdministrationPage: React.FC = () => {
           },
         };
       } else {
-        const ventanaSeleccionada = windowsList.find((win) => win.id === newDoor.ventana_id);
+        const ventanaSeleccionada = windowsList.find(
+          (win) => win.id === newDoor.ventana_id
+        );
         payload = {
           type: "door",
           name_element: newDoor.name_element,
@@ -273,16 +271,16 @@ const AdministrationPage: React.FC = () => {
           fm: newDoor.fm,
           atributs: {
             ventana_id: newDoor.ventana_id,
-            name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
+            name_ventana: ventanaSeleccionada
+              ? ventanaSeleccionada.name_element
+              : "",
             u_puerta_opaca: newDoor.u_puerta_opaca,
             porcentaje_vidrio: newDoor.porcentaje_vidrio,
           },
         };
       }
-
       await axios.post(url, payload, { headers });
       notify("El elemento fue creado correctamente");
-
       if (tabElementosOperables === "ventanas") {
         setShowNewWindowModal(false);
         setNewWindow({
@@ -305,7 +303,6 @@ const AdministrationPage: React.FC = () => {
           porcentaje_vidrio: 0,
         });
       }
-
       await fetchElements();
     } catch (error: unknown) {
       console.error("[handleCreateElement] Error:", error);
@@ -313,6 +310,15 @@ const AdministrationPage: React.FC = () => {
     }
   };
 
+  // Función para obtener el nombre del material a partir de su ID (usando materialsList del hook)
+  const getMaterialName = (materialId: number) => {
+    const mat = materialsList.find(
+      (m) => m.id === materialId || m.material_id === materialId
+    );
+    return mat ? mat.atributs.name : "Desconocido";
+  };
+
+  // Actualizamos la data al cambiar de step (manteniendo la funcionalidad original)
   useEffect(() => {
     if (step === 3) fetchMaterialsList(1);
     if (step === 4) fetchDetails();
@@ -327,22 +333,34 @@ const AdministrationPage: React.FC = () => {
 
   return (
     <>
-      {/* Título afuera del Card */}
+      {/* Header */}
       <Card className="header-card">
         <div className="d-flex align-items-center w-100">
           <Title text="Administración de Parametros" />
-          <Breadcrumb items={[
-            { title: 'Administracion de Parametros', href: '/', active: true },
-          ]} />
+          <Breadcrumb
+            items={[
+              {
+                title: "Administracion de Parametros",
+                href: "/",
+                active: true,
+              },
+            ]}
+          />
         </div>
       </Card>
 
-      {/* Card con clase adicional */}
+      {/* Card principal */}
       <Card className="bordered-main-card">
         <div>
-          <div className="d-flex d-flex-responsive" style={{ alignItems: "stretch", gap: 0 }}>
-            <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
-
+          <div
+            className="d-flex d-flex-responsive"
+            style={{ alignItems: "stretch", gap: 0 }}
+          >
+            <AdminSidebar
+              activeStep={step}
+              onStepChange={setStep}
+              steps={sidebarSteps}
+            />
             <div className="content-area" style={{ flex: 1 }}>
               {step === 3 && (
                 <>
@@ -370,8 +388,17 @@ const AdministrationPage: React.FC = () => {
                       </table>
                     </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                    <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      padding: "10px",
+                    }}
+                  >
+                    <CustomButton
+                      variant="save"
+                      onClick={() => setShowNewMaterialModal(true)}
+                    >
                       <span className="material-icons">add</span> Nuevo
                     </CustomButton>
                   </div>
@@ -380,18 +407,100 @@ const AdministrationPage: React.FC = () => {
 
               {step === 4 && (
                 <>
-                  <DetallesConstructivosTab refreshTrigger={detailsRefreshCounter} />
-                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                    <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
-                      <span className="material-icons">add</span> Nuevo
-                    </CustomButton>
-                  </div>
+                  {showGeneralDetails ? (
+                    // Vista de detalles generales
+                    <div>
+                      <div className="tabs-container">
+                        <div className="tab active" style={{ flex: 1, textAlign: 'center' }}>Detalles Generales</div>
+                      </div>
+                      <div style={{ overflow: "hidden", padding: "10px" }}>
+                        <div style={{ maxHeight: "500px", overflowY: "auto"}}>
+                          <table className="table">
+                            <thead>
+                              <tr>
+                                <th>Ubicación</th>
+                                <th>Nombre Detalle</th>
+                                <th>Material</th>
+                                <th>Espesor (cm)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {details.map((detail, idx) => (
+                                <tr key={idx}>
+                                  <td>{detail.scantilon_location}</td>
+                                  <td>{detail.name_detail}</td>
+                                  <td>{getMaterialName(detail.material_id)}</td>
+                                  <td>{detail.layer_thickness}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      {/* Botones: Volver a la izquierda, Nuevo a la derecha */}
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          padding: "10px",
+                        }}
+                      >
+                        <CustomButton
+                          variant="save"
+                          onClick={() => setShowGeneralDetails(false)}
+                        >
+                          <span className="material-icons">arrow_back</span>{" "}
+                          Volver
+                        </CustomButton>
+                        <CustomButton
+                          variant="save"
+                          onClick={() => setShowNewDetailModal(true)}
+                        >
+                          <span className="material-icons">add</span> Nuevo
+                        </CustomButton>
+                      </div>
+                    </div>
+                  ) : (
+                    // Vista por defecto (Muro, Techo, Piso)
+                    <>
+                      <DetallesConstructivosTab />
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          padding: "10px",
+                        }}
+                      >
+                        {/* Se quitó el botón de 'Nuevo' aquí */}
+                        <CustomButton
+                          variant="save"
+                          onClick={() => {
+                            fetchDetails();
+                            setShowGeneralDetails(true);
+                          }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            padding:
+                              "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
+                            height: "min(3rem, 8vh)",
+                            minWidth: "6rem",
+                            marginLeft: "10px",
+                            marginTop: "2rem",
+                          }}
+                        >
+                          <span className="material-icons">visibility</span> Ver
+                          detalles generales
+                        </CustomButton>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 
               {step === 5 && (
                 <>
-
                   <div style={{ overflow: "hidden", padding: "10px" }}>
                     <div
                       className="d-flex justify-content-between align-items-center mb-2"
@@ -426,7 +535,9 @@ const AdministrationPage: React.FC = () => {
                                     ? "solid var(--primary-color)"
                                     : "none",
                               }}
-                              onClick={() => setTabElementosOperables(tab.toLowerCase())}
+                              onClick={() =>
+                                setTabElementosOperables(tab.toLowerCase())
+                              }
                             >
                               {tab}
                             </button>
@@ -434,8 +545,13 @@ const AdministrationPage: React.FC = () => {
                         ))}
                       </ul>
                     </div>
-
-                    <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
+                    <div
+                      style={{
+                        maxHeight: "500px",
+                        overflowY: "auto",
+                        padding: "10px",
+                      }}
+                    >
                       <table className="table">
                         <thead>
                           {tabElementosOperables === "ventanas" ? (
@@ -462,17 +578,41 @@ const AdministrationPage: React.FC = () => {
                         <tbody className="small-text">
                           {elementsList
                             .filter(
-                              (el) => el.type === (tabElementosOperables === "ventanas" ? "window" : "door")
+                              (el) =>
+                                el.type ===
+                                (tabElementosOperables === "ventanas"
+                                  ? "window"
+                                  : "door")
                             )
                             .map((el, idx) => {
                               if (tabElementosOperables === "ventanas") {
                                 return (
                                   <tr key={idx}>
                                     <td>{el.name_element}</td>
-                                    <td>{(el.atributs as ElementAttributesWindow).u_vidrio}</td>
-                                    <td>{(el.atributs as ElementAttributesWindow).fs_vidrio}</td>
-                                    <td>{(el.atributs as ElementAttributesWindow).clousure_type}</td>
-                                    <td>{(el.atributs as ElementAttributesWindow).frame_type}</td>
+                                    <td>
+                                      {
+                                        (el.atributs as ElementAttributesWindow)
+                                          .u_vidrio
+                                      }
+                                    </td>
+                                    <td>
+                                      {
+                                        (el.atributs as ElementAttributesWindow)
+                                          .fs_vidrio
+                                      }
+                                    </td>
+                                    <td>
+                                      {
+                                        (el.atributs as ElementAttributesWindow)
+                                          .clousure_type
+                                      }
+                                    </td>
+                                    <td>
+                                      {
+                                        (el.atributs as ElementAttributesWindow)
+                                          .frame_type
+                                      }
+                                    </td>
                                     <td>{el.u_marco}</td>
                                     <td>{(el.fm * 100).toFixed(0)}%</td>
                                   </tr>
@@ -481,11 +621,26 @@ const AdministrationPage: React.FC = () => {
                                 return (
                                   <tr key={idx}>
                                     <td>{el.name_element}</td>
-                                    <td>{(el.atributs as ElementAttributesDoor).u_puerta_opaca}</td>
-                                    <td>{(el.atributs as ElementAttributesDoor).name_ventana}</td>
                                     <td>
-                                      {(el.atributs as ElementAttributesDoor).porcentaje_vidrio !== undefined
-                                        ? ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"
+                                      {
+                                        (el.atributs as ElementAttributesDoor)
+                                          .u_puerta_opaca
+                                      }
+                                    </td>
+                                    <td>
+                                      {
+                                        (el.atributs as ElementAttributesDoor)
+                                          .name_ventana
+                                      }
+                                    </td>
+                                    <td>
+                                      {(el.atributs as ElementAttributesDoor)
+                                        .porcentaje_vidrio !== undefined
+                                        ? (
+                                            (
+                                              el.atributs as ElementAttributesDoor
+                                            ).porcentaje_vidrio * 100
+                                          ).toFixed(0) + "%"
                                         : "0%"}
                                     </td>
                                     <td>{el.u_marco}</td>
@@ -498,13 +653,25 @@ const AdministrationPage: React.FC = () => {
                       </table>
                     </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      padding: "10px",
+                    }}
+                  >
                     {tabElementosOperables === "ventanas" ? (
-                      <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
+                      <CustomButton
+                        variant="save"
+                        onClick={() => setShowNewWindowModal(true)}
+                      >
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
                     ) : (
-                      <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
+                      <CustomButton
+                        variant="save"
+                        onClick={() => setShowNewDoorModal(true)}
+                      >
                         <span className="material-icons">add</span> Nuevo
                       </CustomButton>
                     )}
@@ -522,7 +689,12 @@ const AdministrationPage: React.FC = () => {
           isOpen={showNewMaterialModal}
           onClose={() => {
             setShowNewMaterialModal(false);
-            setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
+            setNewMaterialData({
+              name: "",
+              conductivity: 0,
+              specific_heat: 0,
+              density: 0,
+            });
           }}
           title="Agregar Nuevo Material"
         >
@@ -539,7 +711,12 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="Nombre"
                 value={newMaterialData.name}
-                onChange={(e) => setNewMaterialData((prev) => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    name: e.target.value,
+                  }))
+                }
               />
             </div>
             <div className="form-group">
@@ -552,7 +729,10 @@ const AdministrationPage: React.FC = () => {
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   if (value >= 0) {
-                    setNewMaterialData((prev) => ({ ...prev, conductivity: value }));
+                    setNewMaterialData((prev) => ({
+                      ...prev,
+                      conductivity: value,
+                    }));
                   }
                 }}
                 min="0"
@@ -568,7 +748,10 @@ const AdministrationPage: React.FC = () => {
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   if (value >= 0) {
-                    setNewMaterialData((prev) => ({ ...prev, specific_heat: value }));
+                    setNewMaterialData((prev) => ({
+                      ...prev,
+                      specific_heat: value,
+                    }));
                   }
                 }}
                 min="0"
@@ -591,11 +774,18 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="mt-4 d-flex justify-content-between">
-              <CancelButton onClick={() => {
-                setShowNewMaterialModal(false);
-                setStep(3);
-                setNewMaterialData({ name: "", conductivity: 0, specific_heat: 0, density: 0 });
-              }} />
+              <CancelButton
+                onClick={() => {
+                  setShowNewMaterialModal(false);
+                  setStep(3);
+                  setNewMaterialData({
+                    name: "",
+                    conductivity: 0,
+                    specific_heat: 0,
+                    density: 0,
+                  });
+                }}
+              />
               <CustomButton variant="save" type="submit">
                 Crear
               </CustomButton>
@@ -630,7 +820,10 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 value={newDetail.scantilon_location}
                 onChange={(e) =>
-                  setNewDetail((prev) => ({ ...prev, scantilon_location: e.target.value }))
+                  setNewDetail((prev) => ({
+                    ...prev,
+                    scantilon_location: e.target.value,
+                  }))
                 }
               >
                 <option value="">Seleccione</option>
@@ -646,7 +839,12 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="Nombre Detalle"
                 value={newDetail.name_detail}
-                onChange={(e) => setNewDetail((prev) => ({ ...prev, name_detail: e.target.value }))}
+                onChange={(e) =>
+                  setNewDetail((prev) => ({
+                    ...prev,
+                    name_detail: e.target.value,
+                  }))
+                }
               />
             </div>
             <div className="form-group">
@@ -679,8 +877,12 @@ const AdministrationPage: React.FC = () => {
                 onChange={(e) => {
                   const inputValue = e.target.value;
                   if (/^\d*\.?\d*$/.test(inputValue)) {
-                    const value = inputValue === "" ? null : parseFloat(inputValue);
-                    setNewDetail((prev) => ({ ...prev, layer_thickness: value }));
+                    const value =
+                      inputValue === "" ? null : parseFloat(inputValue);
+                    setNewDetail((prev) => ({
+                      ...prev,
+                      layer_thickness: value,
+                    }));
                   }
                 }}
                 min="0"
@@ -748,7 +950,10 @@ const AdministrationPage: React.FC = () => {
                     placeholder="Nombre"
                     value={newWindow.name_element}
                     onChange={(e) =>
-                      setNewWindow((prev) => ({ ...prev, name_element: e.target.value }))
+                      setNewWindow((prev) => ({
+                        ...prev,
+                        name_element: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -796,7 +1001,10 @@ const AdministrationPage: React.FC = () => {
                     className="form-control"
                     value={newWindow.clousure_type}
                     onChange={(e) =>
-                      setNewWindow((prev) => ({ ...prev, clousure_type: e.target.value }))
+                      setNewWindow((prev) => ({
+                        ...prev,
+                        clousure_type: e.target.value,
+                      }))
                     }
                   >
                     <option value="Corredera">Corredera</option>
@@ -814,7 +1022,10 @@ const AdministrationPage: React.FC = () => {
                     className="form-control"
                     value={newWindow.frame_type}
                     onChange={(e) =>
-                      setNewWindow((prev) => ({ ...prev, frame_type: e.target.value }))
+                      setNewWindow((prev) => ({
+                        ...prev,
+                        frame_type: e.target.value,
+                      }))
                     }
                   >
                     <option value="">Seleccione</option>
@@ -866,7 +1077,6 @@ const AdministrationPage: React.FC = () => {
                 </div>
               </div>
             </div>
-
             <div className="mt-4 text-end">
               <CustomButton
                 variant="save"
@@ -923,7 +1133,10 @@ const AdministrationPage: React.FC = () => {
                 placeholder="Nombre"
                 value={newDoor.name_element}
                 onChange={(e) =>
-                  setNewDoor((prev) => ({ ...prev, name_element: e.target.value }))
+                  setNewDoor((prev) => ({
+                    ...prev,
+                    name_element: e.target.value,
+                  }))
                 }
               />
             </div>
@@ -949,7 +1162,10 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 value={newDoor.ventana_id}
                 onChange={(e) =>
-                  setNewDoor((prev) => ({ ...prev, ventana_id: parseInt(e.target.value) }))
+                  setNewDoor((prev) => ({
+                    ...prev,
+                    ventana_id: parseInt(e.target.value),
+                  }))
                 }
               >
                 <option value={0}>Seleccione una ventana</option>
@@ -970,7 +1186,10 @@ const AdministrationPage: React.FC = () => {
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   if (value >= 0 && value <= 100) {
-                    setNewDoor((prev) => ({ ...prev, porcentaje_vidrio: value }));
+                    setNewDoor((prev) => ({
+                      ...prev,
+                      porcentaje_vidrio: value,
+                    }));
                   }
                 }}
                 min="0"
@@ -1039,8 +1258,6 @@ const AdministrationPage: React.FC = () => {
         .custom-container {
           padding: 0 15px;
         }
-        .smaller-font-table {
-        }
         .bordered-main-card {
           margin: 2rem auto;
           border: 1px solid #ccc;
@@ -1070,15 +1287,7 @@ const AdministrationPage: React.FC = () => {
           overflow-y: auto;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
-        .modal-close {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          background: transparent;
-          border: none;
-          cursor: pointer;
-          color: #333;
-        }
+        
         .form-group {
           margin-bottom: 1rem;
         }
@@ -1097,6 +1306,7 @@ const AdministrationPage: React.FC = () => {
         .table td {
           text-align: center;
           vertical-align: middle;
+          padding: 0.5rem;
         }
         .table thead th {
           position: sticky;
@@ -1104,31 +1314,84 @@ const AdministrationPage: React.FC = () => {
           background-color: #fff;
           color: var(--primary-color);
           z-index: 2;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         .table-striped tbody tr:nth-child(odd),
         .table-striped tbody tr:nth-child(even) {
           background-color: #ffffff;
         }
         .table tbody tr:hover {
-          transform: scale(1.01);
           background-color: rgba(60, 167, 183, 0.05) !important;
           cursor: pointer;
         }
-        
+        .table {
+          transition: opacity 0.3s ease;
+        }
+        .table tbody tr {
+          transition: background-color 0.3s ease, transform 0.2s ease;
+          animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        /* Estilos de pestañas para la vista de detalles generales */
+        .tabs-container {
+          display: flex;
+          gap: 2rem;
+          margin-bottom: 1rem;
+          border-bottom: 2px solid #eee;
+        }
+        .tab {
+          position: relative;
+          padding-bottom: 0.5rem;
+          color: #999;
+          cursor: pointer;
+          font-size: 1.1rem;
+          font-weight: 400;
+          transition: all 0.3s ease;
+        }
+        .tab:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          color: #6dbdc9;
+        }
+        .tab.active {
+          color: #6dbdc9;
+          font-weight: 600;
+        }
+        .tab.active::after {
+          content: "";
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 100%;
+          height: 4px;
+          background-color: #6dbdc9;
+        }
+        .table tbody tr:hover {
+          background-color: rgba(60, 167, 183, 0.05) !important;
+          cursor: pointer;
+        }
+
         /* Animaciones y transiciones */
         .nav-item div {
           transition: all 0.3s ease;
         }
-        
+
         .nav-item div:hover {
           transform: translateX(10px);
           box-shadow: 0 2px 8px rgba(60, 167, 183, 0.1);
         }
-        
+
         .nav-item i {
           transition: transform 0.3s ease;
         }
-        
+
         .nav-item:hover i {
           transform: scale(1.2);
         }
@@ -1142,7 +1405,6 @@ const AdministrationPage: React.FC = () => {
         }
 
         .table tbody tr:hover {
-          transform: scale(1.01);
           background-color: rgba(60, 167, 183, 0.05) !important;
           cursor: pointer;
         }
@@ -1170,7 +1432,7 @@ const AdministrationPage: React.FC = () => {
 
         button:hover {
           transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         @keyframes fadeIn {
@@ -1193,33 +1455,28 @@ const AdministrationPage: React.FC = () => {
           }
         }
 
-        /* Transición para cambio de tabs */
         .content-area > div {
           animation: fadeIn 0.3s ease;
         }
 
-        /* Transición para elementos de tabla */
         .table tbody tr {
           animation: fadeIn 0.5s ease;
         }
 
-        /* Ajuste para evitar parpadeo en transiciones */
         * {
           backface-visibility: hidden;
           -webkit-font-smoothing: antialiased;
         }
 
-        /* Efecto hover para las cards */
         .card {
           transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .card:hover {
           transform: translateY(-5px);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
-        /* Estilos modernos para cards */
         .card {
           background: rgba(255, 255, 255, 0.9);
           backdrop-filter: blur(10px);
@@ -1232,7 +1489,7 @@ const AdministrationPage: React.FC = () => {
         }
 
         .card::before {
-          content: '';
+          content: "";
           position: absolute;
           top: 0;
           left: 0;
@@ -1266,15 +1523,18 @@ const AdministrationPage: React.FC = () => {
           position: relative;
         }
 
-        /* Efecto de brillo en hover */
         .card::after {
-          content: '';
+          content: "";
           position: absolute;
           top: -50%;
           left: -50%;
           width: 200%;
           height: 200%;
-          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+          background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.1) 0%,
+            transparent 50%
+          );
           opacity: 0;
           transform: scale(0.5);
           transition: opacity 0.3s, transform 0.3s;
@@ -1286,7 +1546,6 @@ const AdministrationPage: React.FC = () => {
           transform: scale(1);
         }
 
-        /* Mejoras en animaciones para SidebarItem */
         .sidebar-item {
           perspective: 1000px;
           transform-style: preserve-3d;
@@ -1305,7 +1564,7 @@ const AdministrationPage: React.FC = () => {
 
         .sidebar-item-content::before,
         .sidebar-item-content::after {
-          content: '';
+          content: "";
           position: absolute;
           inset: 0;
           border-radius: 12px;
@@ -1332,9 +1591,7 @@ const AdministrationPage: React.FC = () => {
 
         .sidebar-item-content:hover {
           transform: translateX(8px) translateZ(10px);
-          box-shadow: 
-            0 4px 25px rgba(60, 167, 183, 0.1),
-            0 1px 5px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 25px rgba(60, 167, 183, 0.1);
         }
 
         .sidebar-item-content:hover::before {
@@ -1365,7 +1622,7 @@ const AdministrationPage: React.FC = () => {
         }
 
         .title-wrapper::before {
-          content: '';
+          content: "";
           position: absolute;
           left: 0;
           bottom: -2px;
@@ -1394,7 +1651,6 @@ const AdministrationPage: React.FC = () => {
           color: var(--primary-color);
         }
 
-        /* Animación de entrada mejorada */
         @keyframes sidebarItemAppear {
           0% {
             opacity: 0;
@@ -1410,28 +1666,32 @@ const AdministrationPage: React.FC = () => {
         }
 
         .sidebar-item {
-          animation: sidebarItemAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          animation: sidebarItemAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)
+            forwards;
           animation-delay: calc(var(--item-index, 0) * 0.1s);
         }
 
-        /* Efecto de pulso en hover */
         @keyframes softPulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.02); }
-          100% { transform: scale(1); }
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.02);
+          }
+          100% {
+            transform: scale(1);
+          }
         }
 
         .sidebar-item-content:hover {
           animation: softPulse 2s infinite;
         }
 
-        /* Mejoras para contenido interno */
         .card-content {
           position: relative;
           z-index: 1;
         }
 
-        /* Animación para aparecer */
         @keyframes cardAppear {
           from {
             opacity: 0;
@@ -1447,15 +1707,12 @@ const AdministrationPage: React.FC = () => {
           animation: cardAppear 0.5s ease-out forwards;
         }
 
-        /* Efecto de profundidad en hover */
         .card:hover {
           transform: translateY(-5px) scale(1.005);
-          box-shadow: 
-            0 8px 30px rgba(0, 0, 0, 0.12),
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12),
             0 4px 8px rgba(60, 167, 183, 0.1);
         }
 
-        /* Estilos modernos para SidebarItem */
         .sidebar-item {
           perspective: 1000px;
         }
@@ -1466,7 +1723,7 @@ const AdministrationPage: React.FC = () => {
         }
 
         .sidebar-item-content::before {
-          content: '';
+          content: "";
           position: absolute;
           left: 0;
           top: 0;
@@ -1537,6 +1794,71 @@ const AdministrationPage: React.FC = () => {
           animation: itemAppear 0.5s ease-out forwards;
           animation-delay: calc(var(--item-index) * 0.1s);
         }
+
+
+        .tab {
+          position: relative;
+          padding-bottom: 0.5rem;
+          color: #999;
+          cursor: pointer;
+          font-size: 1.1rem;
+          font-weight: 400;
+        }
+
+        .tab.active {
+          color: #6dbdc9;
+          font-weight: 600;
+        }
+
+        .tab.active::after {
+          content: "";
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background-color: #6dbdc9;
+        }
+          
+       /* Pestaña base */
+.tab {
+  position: relative;
+  padding-bottom: 0.5rem;
+  color: #999;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 400;
+  transition: all 0.3s ease;  /* Para suavizar la animación */
+}
+
+/* Efecto hover: se “eleva” y muestra sombra */
+.tab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  color: #6dbdc9;  /* Podrías resaltar su color también */
+}
+
+/* Pestaña activa (subrayada) */
+.tab.active {
+  color: #6dbdc9;
+  font-weight: 600;
+}
+
+/* Subrayado más grueso en la pestaña activa */
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px; /* ajusta para centrar la línea */
+  left: 0;
+  width: 100%;
+  height: 4px;  /* grosor del subrayado */
+  background-color: #6dbdc9;
+}
+
+.card {
+  overflow: hidden;
+  /* el resto de tus estilos ya existentes */
+}
       `}</style>
     </>
   );

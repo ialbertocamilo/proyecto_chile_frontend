@@ -273,7 +273,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         errorMessage = JSON.stringify(errorMessage);
       }
       setGlobalError(errorMessage as string);
-      notify("Error al enviar el proyecto");
+      notify("Error al enviar proyecto.");
     }
     setLoading(false);
   };
@@ -283,7 +283,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     const fieldErrors = validateStep1Fields();
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
-      notify("Llenar los campos obligatorios");
+      notify("Por favor complete todos los campos de la ventana correctamente.");
       return;
     }
     const nameExists = await checkProjectNameExists();
@@ -292,7 +292,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         ...prev,
         name_project: "Este nombre ya existe. Use otro nombre.",
       }));
-      notify("Este nombre ya existe. Use otro nombre.");
+      notify("El Nombre del Material ya existe.");
       return;
     }
     setStep(2);

@@ -7,6 +7,7 @@ import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import DataTable from "../src/components/DataTable"; // Ajusta la ruta según corresponda
 import Breadcrumb from "../src/components/common/Breadcrumb";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 interface Divisions {
   department?: string;

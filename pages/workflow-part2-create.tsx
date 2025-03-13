@@ -192,13 +192,11 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   useEffect(() => {
     if (hasLoaded && projectId === null) {
-      Swal.fire(
+      notify(
         "Ningún proyecto está seleccionado",
         "Serás redirigido a la creación de proyecto",
-        "warning"
-      ).then(() => {
-        router.push("/workflow-part1-create");
-      });
+      );
+      router.push("/workflow-part1-create");
     }
   }, [hasLoaded, projectId, router]);
 
@@ -220,7 +218,7 @@ const WorkFlowpar2createPage: React.FC = () => {
   const getToken = () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      Swal.fire("Token no encontrado", "Inicia sesión.");
+      notify("Token no encontrado", "Inicia sesión.");
     }
     return token;
   };
@@ -253,7 +251,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       setFetchedDetails(response.data || []);
     } catch (error: unknown) {
       console.error("Error al obtener detalles:", error);
-      Swal.fire("Error", "Error al obtener detalles. Ver consola.");
+      notify("Error", "Error al obtener detalles. Ver consola.");
     }
   }, []);
 
@@ -329,7 +327,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       setMaterials(materialsList);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
-      notify("Error al obtener materiales.");
+      notify("Error al obtener Materiales.");
     }
   };
 
@@ -372,7 +370,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       !newDetailForm.name_detail ||
       !newDetailForm.material_id
     ) {
-      notify("Por favor complete todos los campos de detalle");
+      notify("Por favor complete todos los campos de Detalle.");
       return;
     }
 
@@ -390,7 +388,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const newDetailId = response.data.detail.id;
 
       if (!newDetailId) {
-        notify("El backend no devolvió un ID de detalle válido.");
+        notify("El backend no devolvió un ID de Detalle válido.");
         return;
       }
 
@@ -403,21 +401,21 @@ const WorkFlowpar2createPage: React.FC = () => {
 
         try {
           await axios.post(selectUrl, detailIds, { headers });
-          notify("Detalle creado y añadido al proyecto exitosamente");
+          notify("Detalle creado y añadido al proyecto exitosamente.");
         } catch (selectError: unknown) {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
               "Todos los detalles ya estaban en el proyecto"
           ) {
-            notify("Detalle creado exitosamente");
+            notify("Detalle creado exitosamente.");
           } else {
             console.error("Error al añadir detalle al proyecto:", selectError);
-            notify("Detalle creado pero no se pudo añadir al proyecto");
+            notify("Detalle creado pero no se añadio al proyecto.");
           }
         }
       } else {
-        notify("No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)");
+        notify("No se añadio el Detalle al proyecto (ID de proyecto no disponible).");
       }
 
       // Actualizar la interfaz
@@ -432,9 +430,9 @@ const WorkFlowpar2createPage: React.FC = () => {
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error("Error en la creación del detalle:", error.response?.data);
-        notify("Error en la creación del detalle");
+        notify("Error en la creación del Detalle.");
       } else {
-        notify("Error desconocido al crear el detalle");
+        notify("Error desconocido al crear el Detalle.");
       }
     }
   };
@@ -522,7 +520,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify("Detalle tipo Muro actualizado con éxito");
+      notify("Detalle tipo Muro actualizado con éxito.");
       setMurosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -542,7 +540,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       setEditingRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      notify("Error al actualizar detalle. Ver consola.");
+      notify("Error al actualizar Detalle. Ver consola.");
     }
   };
 
@@ -582,7 +580,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify("Detalle tipo Techo actualizado con éxito");
+      notify("Detalle tipo Techo actualizado con éxito.");
       setTechumbreTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id

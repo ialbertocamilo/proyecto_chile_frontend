@@ -234,7 +234,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       setVentanasTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de ventanas:", error);
-      notify("Error al obtener datos de ventanas. Ver consola.");
+      notify("Error al obtener datos de Ventanas. Ver consola.");
     }
   }, []);
 
@@ -251,7 +251,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       setPuertasTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de puertas:", error);
-      notify("Error al obtener datos de puertas. Ver consola.");
+      notify("Error al obtener datos de Puertas. Ver consola.");
     }
   }, []);
 

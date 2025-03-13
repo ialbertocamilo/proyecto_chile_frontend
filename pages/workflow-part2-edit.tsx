@@ -308,7 +308,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       .then((response) => setPuertasTabList(response.data))
       .catch((error) => {
         console.error("Error al obtener datos de puertas:", error);
-        notify("Reinicie sesion,por favor.");
+        notify("Reinicie sesion por favor.");
       });
   }, []);
 
@@ -351,7 +351,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       !newDetailForm.name_detail ||
       !newDetailForm.material_id
     ) {
-      notify("Por favor complete todos los campos de detalle");
+      notify("Por favor complete todos los campos de Detalle.");
       return;
     }
 
@@ -369,7 +369,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       const newDetailId = response.data.detail.id;
 
       if (!newDetailId) {
-        notify("Reinicie sesion y vuelva a intentar");
+        notify("Reinicie sesion y vuelvalo a intentar.");
         return;
       }
 
@@ -379,21 +379,21 @@ const WorkFlowpar2editPage: React.FC = () => {
         const detailIds = [newDetailId];
         try {
           await axios.post(selectUrl, detailIds, { headers });
-          notify("Detalle creado y añadido al proyecto exitosamente");
+          notify("Detalle creado y añadido al proyecto exitosamente.");
         } catch (selectError: unknown) {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
               "Todos los detalles ya estaban en el proyecto"
           ) {
-            notify("Detalle creado exitosamente");
+            notify("Detalle creado exitosamente.");
           } else {
             console.error("Error al añadir detalle al proyecto:", selectError);
-            notify("Detalle creado pero no se pudo añadir al proyecto");
+            notify("Detalle creado pero no se añadio al proyecto.");
           }
         }
       } else {
-        notify("No se pudo añadir el detalle al proyecto");
+        notify("No se añadio el detalle al proyecto.");
       }
 
       // Actualizar la interfaz y reiniciar el formulario
@@ -408,7 +408,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error("Error en la creación del detalle:", error.response?.data);
-        notify("Reinicie sesion y vuelva a intentar");
+        notify("Reinicie sesion y vuelvalo a intentar.");
       }
     }
   };
@@ -520,7 +520,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       setMaterials(materialsList);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
-      notify("Reinicie sesion y vuelva a intentar");
+      notify("Reinicie sesion y vuelvalo a intentar.");
     }
   };
 
@@ -560,7 +560,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify("Detalle tipo Muro actualizado con éxito");
+      notify("Detalle tipo Muro actualizado con éxito.");
       setMurosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -580,7 +580,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       setEditingRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      notify("Error al actualizar detalle. Ver consola.");
+      notify("Error al actualizar Detalle. Ver consola.");
     }
   };
 
@@ -620,7 +620,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify("Detalle tipo Techo actualizado con éxito");
+      notify("Detalle tipo Techo actualizado con éxito.");
       setTechumbreTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id

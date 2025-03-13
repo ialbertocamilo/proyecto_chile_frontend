@@ -131,6 +131,7 @@ const AdministrationPage: React.FC = () => {
 
   // Función para crear un nuevo material
   const handleCreateMaterial = async () => {
+    // Verifica que todos los campos estén completos
     if (
       newMaterialData.name.trim() === "" ||
       newMaterialData.conductivity <= 0 ||
@@ -138,6 +139,16 @@ const AdministrationPage: React.FC = () => {
       newMaterialData.density <= 0
     ) {
       notify("Por favor complete todos los campos de material");
+      return;
+    }
+    // Validación: si el material ya existe (se asume que 'materialsList' contiene la lista de materiales existentes)
+    const materialExists = materialsList.some(
+      (mat: any) =>
+        (mat.atributs.name as string).trim().toLowerCase() ===
+        newMaterialData.name.trim().toLowerCase()
+    );
+    if (materialExists) {
+      notify(`El Nombre del Material ya existe`);
       return;
     }
     try {
@@ -164,7 +175,7 @@ const AdministrationPage: React.FC = () => {
       };
       const response = await axios.post(url, payload, { headers });
       if (response.status === 200) {
-        notify("El material fue creado correctamente");
+        notify(`El material "${newMaterialData.name}" fue creado correctamente`);
         await fetchMaterialsList(1);
         setShowNewMaterialModal(false);
         setNewMaterialData({
@@ -179,6 +190,7 @@ const AdministrationPage: React.FC = () => {
       notify("No se pudo crear el material");
     }
   };
+  
 
   // Función para crear un nuevo detalle
   const handleCreateDetail = async () => {
@@ -211,7 +223,7 @@ const AdministrationPage: React.FC = () => {
       };
       const response = await axios.post(url, payload, { headers });
       if (response.status === 200) {
-        notify("El detalle fue creado correctamente");
+        notify(`El detalle "${newDetail.name_detail}" fue creado correctamente`);
         setShowNewDetailModal(false);
         setNewDetail({
           scantilon_location: "",
@@ -240,12 +252,23 @@ const AdministrationPage: React.FC = () => {
         newWindow.clousure_type.trim() === "" ||
         newWindow.frame_type.trim() === ""
       ) {
-        notify("Por favor complete todos los campos correctamente");
+        notify("Por favor complete todos los campos de la ventana correctamente");
+        return;
+      }
+      // Validamos si la ventana ya existe (ignorando mayúsculas y espacios)
+      const windowExists = elementsList
+        .filter((el) => el.type === "window")
+        .some(
+          (el) =>
+            el.name_element.trim().toLowerCase() ===
+            newWindow.name_element.trim().toLowerCase()
+        );
+      if (windowExists) {
+        notify(`La ventana ya existe`);
         return;
       }
     } else {
-      // Para puertas, los únicos campos obligatorios son:
-      // name_element, u_puerta_opaca, u_marco y fm.
+      // Validaciones para puertas
       if (
         newDoor.name_element.trim() === "" ||
         newDoor.u_puerta_opaca <= 0 ||
@@ -253,18 +276,30 @@ const AdministrationPage: React.FC = () => {
         newDoor.fm < 0 ||
         newDoor.fm > 100
       ) {
-        notify("Por favor complete todos los campos correctamente");
+        notify("Por favor complete todos los campos de la puerta correctamente");
         return;
       }
-      // Si se ha seleccionado una ventana asociada, validamos el % Vidrio
+      // Validación para % de vidrio si se ha seleccionado una ventana asociada
       if (newDoor.ventana_id !== 0) {
         if (newDoor.porcentaje_vidrio < 0 || newDoor.porcentaje_vidrio > 100) {
-          notify("Asegúrese de que % Vidrio esté entre 0 y 100");
+          notify("Asegúrese de que el % de vidrio esté entre 0 y 100");
           return;
         }
       } else {
-        // Si no se selecciona ventana asociada, forzamos el % Vidrio a 0
+        // Si no se selecciona ventana asociada, forzamos el % de vidrio a 0
         newDoor.porcentaje_vidrio = 0;
+      }
+      // Validamos si la puerta ya existe
+      const doorExists = elementsList
+        .filter((el) => el.type === "door")
+        .some(
+          (el) =>
+            el.name_element.trim().toLowerCase() ===
+            newDoor.name_element.trim().toLowerCase()
+        );
+      if (doorExists) {
+        notify(`El Nombre de la Puerta ya existe`);
+        return;
       }
     }
     try {
@@ -303,15 +338,17 @@ const AdministrationPage: React.FC = () => {
           fm: newDoor.fm,
           atributs: {
             ventana_id: newDoor.ventana_id,
-            name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
+            name_ventana: ventanaSeleccionada
+              ? ventanaSeleccionada.name_element
+              : "",
             u_puerta_opaca: newDoor.u_puerta_opaca,
             porcentaje_vidrio: newDoor.porcentaje_vidrio,
           },
         };
       }
       await axios.post(url, payload, { headers });
-      notify("El elemento fue creado correctamente");
       if (tabElementosOperables === "ventanas") {
+        notify(`La ventana "${newWindow.name_element}" fue creada correctamente`);
         setShowNewWindowModal(false);
         setNewWindow({
           name_element: "",
@@ -323,6 +360,7 @@ const AdministrationPage: React.FC = () => {
           fm: 0,
         });
       } else {
+        notify(`La puerta "${newDoor.name_element}" fue creada correctamente`);
         setShowNewDoorModal(false);
         setNewDoor({
           name_element: "",
@@ -339,6 +377,8 @@ const AdministrationPage: React.FC = () => {
       notify("No se pudo crear el elemento");
     }
   };
+  
+  
 
   // Función para obtener el nombre del material a partir de su ID
   const getMaterialName = (materialId: number) => {
@@ -356,9 +396,9 @@ const AdministrationPage: React.FC = () => {
   }, [step, fetchMaterialsList, fetchDetails, fetchElements]);
 
   const sidebarSteps = [
-    { stepNumber: 3, iconName: "assignment_ind", title: "Materiales" },
-    { stepNumber: 4, iconName: "build", title: "Detalles" },
-    { stepNumber: 5, iconName: "home", title: "Elementos" },
+    { stepNumber: 3, iconName: "assignment_ind", title: "Lista de Materiales" },
+    { stepNumber: 4, iconName: "build", title: "Detalles Constructivos" },
+    { stepNumber: 5, iconName: "home", title: "Elementos Translúcidos" },
   ];
 
   return (
@@ -392,7 +432,7 @@ const AdministrationPage: React.FC = () => {
               {step === 3 && (
                 <>
                   <div style={{ overflow: "hidden", padding: "10px" }}>
-                    <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+                    <div style={{ maxHeight: "500px", overflowY: "auto" }}>
                       <table className="table">
                         <thead>
                           <tr>

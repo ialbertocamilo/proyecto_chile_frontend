@@ -141,7 +141,7 @@ const ForgotPassword: NextPageWithLayout = () => {
                   fontWeight: 500,
                 }}
               >
-                Dirección de Email
+                Dirección de correo
               </label>
               <input
                 type="email"

@@ -1,24 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import Swal from "sweetalert2";
-import axios from "axios";
-import CustomButton from "../src/components/common/CustomButton";
-import Card from "../src/components/common/Card";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
-import { useRouter } from "next/router";
-import GooIcons from "../public/GoogleIcons";
-import { Tooltip } from "react-tooltip";
-import ModalCreate from "@/components/common/ModalCreate"; // Se reemplaza Modal por ModalCreate
 import { notify } from "@/utils/notify";
+import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useRouter } from "next/router";
+import React, { useCallback, useEffect, useState } from "react";
+import GooIcons from "../public/GoogleIcons";
+import Card from "../src/components/common/Card";
+import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
+import useAuth from "../src/hooks/useAuth";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 // Importamos el componente SidebarItemComponent del directorio común
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 // Importamos el componente SearchParameters
-import SearchParameters from "../src/components/inputs/SearchParameters";
-import VerticalDivider from "@/components/ui/HorizontalDivider";
-import TablesParameters from "@/components/tables/TablesParameters";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import TablesParameters from "@/components/tables/TablesParameters";
+import VerticalDivider from "@/components/ui/HorizontalDivider";
+import SearchParameters from "../src/components/inputs/SearchParameters";
+import { NewDetailModal } from "@/components/modals/NewDetailModal";
 
 interface Detail {
   id_detail: number;
@@ -408,7 +406,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-              "Todos los detalles ya estaban en el proyecto"
+            "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -473,7 +471,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       if (
         axios.isAxiosError(error) &&
         error.response?.data?.detail ===
-          "Todos los detalles ya estaban en el proyecto"
+        "Todos los detalles ya estaban en el proyecto"
       ) {
         setShowTabsInStep4(true);
         setTabStep4("muros");
@@ -1158,33 +1156,33 @@ const WorkFlowpar2createPage: React.FC = () => {
     <>
       <GooIcons />
       <Card>
-        <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem"}}>
+        <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem" }}>
           {renderMainHeader()}
         </div>
-          <div className="d-flex align-items-center gap-4">
-            <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-              Proyecto:
-            </span>
-            <CustomButton
-              variant="save"
-              className="no-hover"
-              style={{ padding: "0.8rem 3rem" }}
-            >
-              {`Edificación Nº ${projectId ?? "xxxxx"}`}
-            </CustomButton>
-            <div className="ms-auto" style={{display: "flex"}}>
+        <div className="d-flex align-items-center gap-4">
+          <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
+            Proyecto:
+          </span>
+          <CustomButton
+            variant="save"
+            className="no-hover"
+            style={{ padding: "0.8rem 3rem" }}
+          >
+            {`Edificación Nº ${projectId ?? "xxxxx"}`}
+          </CustomButton>
+          <div className="ms-auto" style={{ display: "flex" }}>
             <Breadcrumb
-            items={[
-              {
-                title: "Proyecto Nuevo",
-                href: "/",
-                active: true,
-              },
-            ]}
-          />
+              items={[
+                {
+                  title: "Proyecto Nuevo",
+                  href: "/",
+                  active: true,
+                },
+              ]}
+            />
           </div>
-          </div>
-        </Card>
+        </div>
+      </Card>
       <Card>
         <div className="row">
           <div className="col-lg-3 col-12 order-lg-first order-first">

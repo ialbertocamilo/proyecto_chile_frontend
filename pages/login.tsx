@@ -46,7 +46,6 @@ const Login: NextPageWithLayout = () => {
       });
 
       const data = await response.json();
-      console.log("Respuesta del backend:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "Credenciales incorrectas.");
@@ -108,7 +107,7 @@ const Login: NextPageWithLayout = () => {
                   )}
 
                   <div className="form-group">
-                    <label className="col-form-label">Dirección de Email</label>
+                    <label className="col-form-label">Dirección de correo</label>
                     <input
                       type="email"
                       className="form-control"

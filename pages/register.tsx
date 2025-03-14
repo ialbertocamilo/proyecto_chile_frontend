@@ -251,7 +251,7 @@ const Register: NextPageWithLayout = () => {
                       color: isError("email") ? "red" : "#000",
                     }}
                   >
-                    Dirección de Email {isError("email") && <span>*</span>}
+                    Dirección de correo {isError("email") && <span>*</span>}
                   </label>
                   <input
                     type="email"

@@ -8,7 +8,7 @@ import Link from "next/link";
 import Head from "next/head";
 import { ReactElement } from "react";
 
-// Definición del tipao para páginas con layout propio
+// Definición del tipo para páginas con layout propio
 type NextPageWithLayout = {
   getLayout?: (page: ReactElement) => ReactElement;
 };
@@ -89,12 +89,21 @@ const TwoFactorAuth: NextPageWithLayout = () => {
         console.warn("No se recibió información de perfil del usuario.");
       }
 
-      console.log("Autenticación completada. Redirigiendo...");
       localStorage.setItem("isAuthenticated", "true");
 
-      setTimeout(() => {
+      // Redireccionar basado en el role_id
+      if (data.user && data.user.role_id) {
+        if (data.user.role_id === 1) {
+          router.push("/dashboard");
+        } else if (data.user.role_id === 2) {
+          router.push("/project-list");
+        } else {
+          // Si el role_id no es ni 1 ni 2, se redirige por defecto al dashboard
+          router.push("/dashboard");
+        }
+      } else {
         router.push("/dashboard");
-      }, 200);
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
       console.error("Error en la verificación:", message);
@@ -138,8 +147,7 @@ const TwoFactorAuth: NextPageWithLayout = () => {
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "url('/assets/images/background.jpg') no-repeat center center/cover",
+        background: "url('/assets/images/background.jpg') no-repeat center center/cover",
         fontFamily: "var(--font-family-base)",
         display: "flex",
         justifyContent: "center",

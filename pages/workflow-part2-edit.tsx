@@ -162,7 +162,8 @@ const WorkFlowpar2editPage: React.FC = () => {
     material_id: 0,
     layer_thickness: null,
   });
-  const [showTabsInStep4, setShowTabsInStep4] = useState(false);
+  // Se cambia el valor inicial a true para que la pantalla de cálculos (tabs) sea la principal
+  const [showTabsInStep4, setShowTabsInStep4] = useState(true);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
   // ===================== ESTADOS POR PESTAÑA ======================
@@ -834,7 +835,6 @@ const WorkFlowpar2editPage: React.FC = () => {
   };
 
   // ===================== RENDER PISOS ======================
-  // Con múltiples columnas en <thead>, aquí lo simplificamos en columnas planas
   const renderPisosParameters = () => {
     const columnsPisos = [
       { headerName: "Nombre", field: "nombre" },
@@ -1038,9 +1038,9 @@ const WorkFlowpar2editPage: React.FC = () => {
             }}
           >
             <span className="material-icons" style={{ fontSize: "24px" }}>
-              arrow_back
+            visibility
             </span>
-            &nbsp;Regresar
+            &nbsp;Detalles generales
           </CustomButton>
         </div>
       </div>

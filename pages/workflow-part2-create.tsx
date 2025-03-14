@@ -9,9 +9,7 @@ import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-// Importamos el componente SidebarItemComponent del directorio común
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-// Importamos el componente SearchParameters
 import Breadcrumb from "@/components/common/Breadcrumb";
 import TablesParameters from "@/components/tables/TablesParameters";
 import VerticalDivider from "@/components/ui/HorizontalDivider";

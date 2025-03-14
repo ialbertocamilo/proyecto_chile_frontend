@@ -15,6 +15,7 @@ import Title from "../src/components/Title";
 import { useApi } from "@/hooks/useApi";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Componente de sidebar dinámico
 import Breadcrumb from "../src/components/common/Breadcrumb";
+import { Autocompletion } from "@/components/maps/Autocompletion"; // Se agrega el componente de autocompletado
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -70,6 +71,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [, setPrimaryColor] = useState("#3ca7b7");
   const [step, setStep] = useState<number>(1);
   const [locationSearch, setLocationSearch] = useState("");
+  const [completionList, setCompletionList] = useState<{ Title: string; Position: [number, number]; }[]>([]); // Estado para autocompletado
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -357,19 +359,40 @@ const ProjectWorkflowPart1: React.FC = () => {
   const renderMainHeader = () => {
     return (
       <div className="d-flex align-items-center w-100">
-      <Title text={router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"} />
-      <Breadcrumb
-            items={[
-              {
-                title: "Proyecto Nuevo",
-                href: "/",
-                active: true,
-              },
-            ]}
-          />
+        <Title text={router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"} />
+        <Breadcrumb
+          items={[
+            {
+              title: "Proyecto Nuevo",
+              href: "/",
+              active: true,
+            },
+          ]}
+        />
       </div>
     );
   };
+
+  // Efecto para búsqueda de ubicación con autocompletado
+  useEffect(() => {
+    if (!locationSearch.trim()) return;
+
+    const delaySearch = setTimeout(() => {
+      console.log("Buscando ubicación:", locationSearch);
+      axios
+        .get(`/api/map?q=${locationSearch}&lat=${formData.latitude}&long=${formData.longitude}`)
+        .then((response) => {
+          const { data } = response;
+          console.log("Respuesta de ubicación", data.results.ResultItems);
+          setCompletionList(data.results.ResultItems);
+        })
+        .catch((error) => {
+          console.error("Error al buscar la ubicación:", error);
+        });
+    }, 500);
+
+    return () => clearTimeout(delaySearch);
+  }, [locationSearch, formData.latitude, formData.longitude]);
 
   // Definición de los pasos para la sidebar
   const steps = [
@@ -412,15 +435,12 @@ const ProjectWorkflowPart1: React.FC = () => {
       <GooIcons />
       <div>
         <Card>
-        <div>{renderMainHeader()}</div>
+          <div>{renderMainHeader()}</div>
         </Card>
         <Card>
           <div>
-          <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
-              <AdminSidebar
-                activeStep={step}
-                onStepChange={handleSidebarStepChange}
-                steps={steps}/>
+            <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
+              <AdminSidebar activeStep={step} onStepChange={handleSidebarStepChange} steps={steps} />
               <div className="content p-4" style={{ flex: 1 }}>
                 {step === 1 && (
                   <>
@@ -749,27 +769,13 @@ const ProjectWorkflowPart1: React.FC = () => {
                     >
                       <div className="row">
                         <div className="col-12 mb-3">
-                          <div style={{ position: "relative" }}>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={locationSearch}
-                              onChange={(e) => setLocationSearch(e.target.value)}
-                              style={{ paddingLeft: "40px" }}
-                            />
-                            <span
-                              className="material-icons"
-                              style={{
-                                position: "absolute",
-                                left: "10px",
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                color: "#ccc",
-                              }}
-                            >
-                              search
-                            </span>
-                          </div>
+                          <Autocompletion
+                            locationSearch={locationSearch}
+                            setLocationSearch={setLocationSearch}
+                            completionList={completionList}
+                            handleFormInputChange={handleFormInputChange}
+                            setCompletionList={setCompletionList}
+                          />
                         </div>
                         <div className="col-12 col-md-8 mb-3">
                           <NoSSRInteractiveMap

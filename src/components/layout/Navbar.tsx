@@ -9,27 +9,17 @@ import useIsClient from "../../utils/useIsClient";
 
 interface NavbarProps {
   setActiveView?: (view: string) => void;
-  onNavbarToggle?: (isOpen: boolean) => void; // Para notificar al componente padre sobre el estado de la navbar
+  onNavbarToggle?: (isOpen: boolean) => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   const router = useRouter();
-  const [logoUrl, setLogoUrl] = useState("/assets/images/proyecto-deuman-logo.png");
   const [roleId, setRoleId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
-  const [isNavbarVisible, setIsNavbarVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [animateIcon, setAnimateIcon] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
   const isClient = useIsClient();
-  
-  useEffect(() => {
-    if (!isClient) return;
-    const storedLogo = localStorage.getItem("logoUrl");
-    if (storedLogo) {
-      setLogoUrl(storedLogo);
-    }
-  }, [isClient]);
-  
+
   useEffect(() => {
     if (!isClient) return;
     const storedRole = localStorage.getItem("role_id");
@@ -37,7 +27,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
       setRoleId(storedRole);
     }
   }, [isClient]);
-  
+
   useEffect(() => {
     if (!isClient) return;
     const storedProjectId = localStorage.getItem("project_id");
@@ -45,7 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
       setProjectId(storedProjectId);
     }
   }, [isClient]);
-  
+
   useEffect(() => {
     if (!isClient) return;
     const handleResize = () => {
@@ -63,22 +53,22 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     router.push("/login");
   };
 
-  const toggleNavbar = () => {
-    setAnimateIcon(true);
-    const newState = !isNavbarVisible;
-    setIsNavbarVisible(newState);
-    // Notifica al componente padre sobre el cambio de estado
-    if (onNavbarToggle) {
-      onNavbarToggle(newState);
-    }
-    setTimeout(() => setAnimateIcon(false), 300);
+  // Función para alternar la visibilidad/estado de la navbar
+  const handleNewFunction = () => {
+    setIsNavOpen((prev) => {
+      const newState = !prev;
+      if (onNavbarToggle) {
+        onNavbarToggle(newState);
+      }
+      return newState;
+    });
   };
-  
+
+  // Estilo base para cada link
   const navLinkStyle: React.CSSProperties = {
     cursor: "pointer",
     fontFamily: "var(--font-family-base)",
     display: "flex",
-    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
@@ -96,10 +86,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     borderRadius: "4px",
     opacity: 0.9,
   };
-  
+
   const iconStyle = (path: string): React.CSSProperties => ({
     fontSize: "1.5rem",
-    marginBottom: "1px",
+    marginBottom: isNavOpen ? 0 : "1px",
     color: "#fff",
     backgroundColor:
       router.pathname === path ? "rgba(50, 50, 50, 0.3)" : "transparent",
@@ -113,7 +103,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     justifyContent: "center",
     boxSizing: "border-box",
   });
-  
+
   const logoContainerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -129,59 +119,27 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     position: "relative",
     zIndex: 999
   };
-  
-  const logoSize = 48;
-  
-  // Calcula el ancho basado en el tipo de dispositivo
-  const navbarWidth = isMobile ? "40%" : "6.5em";
-  
+
+  // Definimos tamaños separados para ancho y alto en desktop y móvil
+  const desktopLogoWidth = 97;
+  const desktopLogoHeight = 50;
+  const mobileLogoWidth = 63;
+  const mobileLogoHeight = 47;
+
+  // Calcula el ancho de la navbar según si está desplegada y el dispositivo
+  const navbarWidth = isNavOpen ? (isMobile ? "11.5em" : "18em") : (isMobile ? "6em" : "8.5em");
+
   return (
     <>
       <GoogleIcons />
-      
-      {/* Botón flotante para expandir la navbar (solo se muestra cuando está comprimida) */}
-      {!isNavbarVisible && (
-        <div
-          className="navbar-toggle"
-          onClick={toggleNavbar}
-          style={{
-            position: "fixed",
-            top: isMobile ? "1.5rem" : "1.5rem",
-            left: "1.5rem",
-            width: "40px",
-            height: "40px",
-            borderRadius: "50%",
-            border: `2px solid rgba(0, 0, 0, 0.2)`,
-            backgroundColor: "#fff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1300,
-            transition: "all 0.3s ease",
-            cursor: "pointer",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-            transform: animateIcon ? "scale(0.95)" : "scale(1)"
-          }}
-        >
-          <span
-            className="material-icons"
-            style={{
-              color: "#000",
-              fontSize: "1.5rem"
-            }}
-          >
-            menu
-          </span>
-        </div>
-      )}
-  
+
       <nav
         className="sidebar d-flex flex-column"
         style={{
           position: "fixed",
           top: isMobile ? "0" : 0,
           bottom: 0,
-          left: isNavbarVisible ? 0 : isMobile ? "-50%" : "-6.5em",
+          left: 0,
           zIndex: 1200,
           width: navbarWidth,
           backgroundColor: "var(--primary-color)",
@@ -196,41 +154,38 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
         <div style={logoContainerStyle}>
           <Link href="/dashboard" style={{ cursor: "pointer" }}>
             <Image
-              src={logoUrl}
-              alt="Proyecto Ceela"
-              width={logoSize}
-              height={logoSize}
-              style={{ borderRadius: "50%", zIndex: 1100 }}
+              src={isMobile ? "/assets/images/proyecto-deuman-logo.png" : "/assets/images/ceela.png"}
+              alt="Logo"
+              width={isMobile ? mobileLogoWidth : desktopLogoWidth}
+              height={isMobile ? mobileLogoHeight : desktopLogoHeight}
+              style={{ borderRadius: "0", zIndex: 1100 }}
             />
           </Link>
-          {/* Botón para colapsar la navbar: solo muestra el icono sin bordes ni fondo */}
-          {isNavbarVisible && (
-            <div
-              className="navbar-toggle-inside"
-              onClick={toggleNavbar}
-              style={{
-                marginTop: "0.5rem",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "40px",
-                height: "40px",
-                // Elimina el borde y fondo para que se "camufle"
-                border: "none",
-                backgroundColor: "transparent"
-              }}
+          {/* Botón debajo del logo para desplegar/ocultar la navbar */}
+          <div
+            className="navbar-toggle-inside"
+            onClick={handleNewFunction}
+            style={{
+              marginTop: "0.5rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "40px",
+              height: "40px",
+              border: "none",
+              backgroundColor: "transparent"
+            }}
+          >
+            <span
+              className="material-icons"
+              style={{ color: "#fff", fontSize: "1.5rem" }}
             >
-              <span
-                className="material-icons"
-                style={{ color: "#fff", fontSize: "1.5rem" }}
-              >
-                menu
-              </span>
-            </div>
-          )}
+              menu
+            </span>
+          </div>
         </div>
-  
+
         <div
           className="menu-container"
           style={{
@@ -246,12 +201,19 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                 <Link
                   href="/project-list"
                   className="nav-link text-white"
-                  style={navLinkStyle}
+                  style={{
+                    ...navLinkStyle,
+                    flexDirection: isNavOpen ? "row" : "column",
+                    justifyContent: isNavOpen ? "flex-start" : "center",
+                    padding: isNavOpen ? "10px 20px" : "10px 5px"
+                  }}
                 >
                   <span style={iconStyle("/project-list")} className="material-icons">
                     dns
                   </span>
-                  Proyectos
+                  <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                    Proyectos
+                  </span>
                 </Link>
               </li>
             )}
@@ -260,7 +222,12 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                 <Link
                   href="/workflow-part1-create"
                   className="nav-link text-white"
-                  style={navLinkStyle}
+                  style={{
+                    ...navLinkStyle,
+                    flexDirection: isNavOpen ? "row" : "column",
+                    justifyContent: isNavOpen ? "flex-start" : "center",
+                    padding: isNavOpen ? "10px 20px" : "10px 5px"
+                  }}
                 >
                   <span
                     style={iconStyle("/workflow-part1-create")}
@@ -268,7 +235,9 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                   >
                     note_add
                   </span>
-                  Proyecto Nuevo
+                  <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                    Proyecto Nuevo
+                  </span>
                 </Link>
               </li>
             )}
@@ -277,7 +246,12 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                 <Link
                   href="/workflow-part2-create"
                   className="nav-link text-white"
-                  style={navLinkStyle}
+                  style={{
+                    ...navLinkStyle,
+                    flexDirection: isNavOpen ? "row" : "column",
+                    justifyContent: isNavOpen ? "flex-start" : "center",
+                    padding: isNavOpen ? "10px 20px" : "10px 5px"
+                  }}
                 >
                   <span
                     style={iconStyle("/workflow-part2-create")}
@@ -285,7 +259,9 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                   >
                     ballot
                   </span>
-                  Desarrollo de proyecto
+                  <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                    Desarrollo de proyecto
+                  </span>
                 </Link>
               </li>
             )}
@@ -294,17 +270,24 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                 <Link
                   href="/data-entry"
                   className="nav-link text-white"
-                  style={navLinkStyle}
+                  style={{
+                    ...navLinkStyle,
+                    flexDirection: isNavOpen ? "row" : "column",
+                    justifyContent: isNavOpen ? "flex-start" : "center",
+                    padding: isNavOpen ? "10px 20px" : "10px 5px"
+                  }}
                 >
                   <span style={iconStyle("/data-entry")} className="material-icons">
                     input
                   </span>
-                  Ingreso de Datos de entrada
+                  <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                    Ingreso de Datos de entrada
+                  </span>
                 </Link>
               </li>
             )}
           </ul>
-  
+
           <ul className="nav flex-column" style={{ marginTop: "auto" }}>
             {roleId !== "2" && (
               <>
@@ -312,48 +295,76 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                   <Link
                     href="/dashboard"
                     className="nav-link text-white"
-                    style={navLinkStyle}
+                    style={{
+                      ...navLinkStyle,
+                      flexDirection: isNavOpen ? "row" : "column",
+                      justifyContent: isNavOpen ? "flex-start" : "center",
+                      padding: isNavOpen ? "10px 20px" : "10px 5px"
+                    }}
                   >
                     <span style={iconStyle("/dashboard")} className="material-icons">
                       dashboard
                     </span>
-                    Dashboard
+                    <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                      Dashboard
+                    </span>
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link
                     href="/project-status"
                     className="nav-link text-white"
-                    style={navLinkStyle}
+                    style={{
+                      ...navLinkStyle,
+                      flexDirection: isNavOpen ? "row" : "column",
+                      justifyContent: isNavOpen ? "flex-start" : "center",
+                      padding: isNavOpen ? "10px 20px" : "10px 5px"
+                    }}
                   >
                     <span style={iconStyle("/project-status")} className="material-icons">
                       format_list_bulleted
                     </span>
-                    Proyectos registrados
+                    <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                      Proyectos registrados
+                    </span>
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link
                     href="/user-management"
                     className="nav-link text-white"
-                    style={navLinkStyle}
+                    style={{
+                      ...navLinkStyle,
+                      flexDirection: isNavOpen ? "row" : "column",
+                      justifyContent: isNavOpen ? "flex-start" : "center",
+                      padding: isNavOpen ? "10px 20px" : "10px 5px"
+                    }}
                   >
                     <span style={iconStyle("/user-management")} className="material-icons">
                       person
                     </span>
-                    Usuarios
+                    <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                      Usuarios
+                    </span>
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link
                     href="/administration"
                     className="nav-link text-white"
-                    style={navLinkStyle}
+                    style={{
+                      ...navLinkStyle,
+                      flexDirection: isNavOpen ? "row" : "column",
+                      justifyContent: isNavOpen ? "flex-start" : "center",
+                      padding: isNavOpen ? "10px 20px" : "10px 5px"
+                    }}
                   >
                     <span style={iconStyle("/administration")} className="material-icons">
                       build
                     </span>
-                    Parámetros
+                    <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                      Parámetros
+                    </span>
                   </Link>
                 </li>
               </>
@@ -361,18 +372,26 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
             <li className="nav-item">
               <div
                 className="nav-link text-white"
-                style={navLinkStyle}
+                style={{
+                  ...navLinkStyle,
+                  flexDirection: isNavOpen ? "row" : "column",
+                  justifyContent: isNavOpen ? "flex-start" : "center",
+                  padding: isNavOpen ? "10px 20px" : "10px 5px",
+                  cursor: "pointer"
+                }}
                 onClick={handleLogout}
               >
                 <span style={iconStyle("/logout")} className="material-icons">
                   logout
                 </span>
-                Salir
+                <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                  Salir
+                </span>
               </div>
             </li>
           </ul>
         </div>
-  
+
         <style jsx>{`
           .sidebar {
             overflow-x: hidden;

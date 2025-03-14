@@ -163,7 +163,7 @@ const TwoFactorAuth: NextPageWithLayout = () => {
             fontFamily: "var(--font-family-base)",
           }}
         >
-          Autenticación de Dos Pasos
+          Autenticación de Doble Factor
         </h5>
         <p
           className="text-muted text-center"

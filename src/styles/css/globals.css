@@ -22,7 +22,9 @@
 .material-icons {
   font-size: 2rem; /* o el tamaño qfue desees */
 }
-
+*{
+  font-family: var(--font-family-base);
+}
 html,
 body {
   margin: 0;
@@ -114,7 +116,7 @@ a {
   width: 1.3rem !important;
   height: 2.3rem !important;
   padding: 0.5rem !important;
-  margin: 0 0.3rem !important ; 
+  margin: 0 0.3rem !important ;
   /* Elimina los estilos de posicionamiento (si aún los tienes):
   position: relative !important;
   left: 50% !important;
@@ -211,6 +213,156 @@ a {
   }
 }
 
+@media (max-width: 992px) {
+  .container-fluid {
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 0 5px;
+  }
+  .col-lg-3 {
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+  }
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mb-3.mb-lg-0 {
+    margin-bottom: 1rem;
+  }
+  [style*="padding: 20px"] {
+    padding: 15px;
+  }
+}
+@media (max-width: 768px) {
+  .table {
+    font-size: 12px;
+  }
+  th,
+  td {
+    padding: 8px;
+  }
+  [style*="height: 390px"] {
+    height: 300px;
+  }
+}
+.no-hover {
+  transition: none !important;
+  cursor: default !important;
+  pointer-events: none !important;
+}
+.no-hover:hover {
+  box-shadow: none !important;
+  transform: none !important;
+}
+.wizard-4 {
+  @media only screen and (max-width: 767.98px) {
+    ul.anchor {
+      width: 100%;
+      height: auto;
+      padding: 30px;
+    }
+    .step-container {
+      width: 100%;
+    }
+  }
+}
+
+@media only screen and (max-width: 991px) and (min-width: 768px) {
+  .page-wrapper.compact-wrapper.material-type::before {
+    height: 230px;
+  }
+  .page-wrapper.compact-wrapper.material-type .page-header {
+    width: calc(100% - 60px) !important;
+    margin: 50px auto 0 !important;
+  }
+  .page-wrapper.compact-wrapper.material-type .page-body-wrapper {
+    margin: 0 30px;
+  }
+  .page-wrapper.compact-wrapper.material-type .page-body-wrapper div.sidebar-wrapper {
+    left: 0;
+  }
+  .page-wrapper.compact-wrapper.material-type .page-body-wrapper .page-body {
+    margin-top: 0;
+  }
+}
+
+@media only screen and (max-width: 810px) {
+  .page-wrapper .page-header .header-wrapper .nav-right > ul > li .profile-media .flex-grow-1 {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 767.98px) {
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-responsive table {
+    @media only screen and (max-width: 767.98px) {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+
+      table {
+        min-width: 800px;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .input-group {
+        flex-wrap: wrap;
+      }
+    }
+  }
+
+  .card {
+    @media only screen and (max-width: 991px) {
+      margin-bottom: 1.5rem;
+
+      .card-header {
+        padding: 1rem;
+      }
+
+      .card-body {
+        padding: 1rem;
+      }
+    }
+
+    @media only screen and (max-width: 767.98px) {
+      .form-row {
+        flex-direction: column;
+
+        > [class*='col-'] {
+          padding-right: 15px;
+          padding-left: 15px;
+        }
+      }
+    }
+  }
+
+  .modal {
+    @media only screen and (max-width: 767.98px) {
+      .modal-dialog {
+        margin: 0.5rem;
+      }
+
+      .modal-content {
+        padding: 1rem;
+      }
+
+      .modal-header {
+        flex-direction: column;
+        align-items: flex-start;
+
+        .close {
+          margin: -1rem -1rem -1rem auto;
+        }
+      }
+    }
+  }
+}
 .breadcrumb-container {
   width: 100%;
 }

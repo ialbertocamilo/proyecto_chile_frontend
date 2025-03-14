@@ -1,6 +1,7 @@
 ;
 import { NextPage } from "next";
 import Head from "next/head";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ReactElement, useEffect, useState } from "react";
@@ -85,11 +86,13 @@ const Login: NextPageWithLayout = () => {
 
               <div className="login-main">
                 <div className="col-12 p-0 d-flex justify-content-center">
-                  <img
-                    src="/assets/images/ceela.png"
-                    alt="Ceela Logo"
-                    className="img-fluid mt-4 mb-3"
-                    style={{ maxHeight: "120px" }}
+                  <Image
+                  src="/assets/images/ceela.png"
+                  alt="Ceela Logo"
+                  width={120}
+                  height={120}
+                  className="img-fluid mt-4 mb-3"
+                  style={{ objectFit: 'contain' }}
                   />
                 </div>
                 <br />

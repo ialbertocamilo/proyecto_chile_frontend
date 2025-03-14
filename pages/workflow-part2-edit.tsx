@@ -1,24 +1,25 @@
 // WorkFlowpar2editPage.tsx
-import React, { useState, useEffect, useCallback } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import Swal from "sweetalert2";
-import axios from "axios";
-import CustomButton from "../src/components/common/CustomButton";
-import Card from "../src/components/common/Card";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
-import { useRouter } from "next/router";
-import GooIcons from "../public/GoogleIcons";
 import { notify } from "@/utils/notify";
+import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useRouter } from "next/router";
+import React, { useCallback, useEffect, useState } from "react";
 import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
+import GooIcons from "../public/GoogleIcons";
 import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
+import Card from "../src/components/common/Card";
+import CustomButton from "../src/components/common/CustomButton";
 import SearchParameters from "../src/components/inputs/SearchParameters";
+import useAuth from "../src/hooks/useAuth";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import ModalCreate from "../src/components/common/ModalCreate";
 import Breadcrumb from "@/components/common/Breadcrumb";
 
 // Importamos nuestro componente genérico de tablas
-import TablesParameters from "../src/components/tables/TablesParameters"; 
+import { NewDetailModal } from "@/components/modals/NewDetailModal";
+import TablesParameters from "../src/components/tables/TablesParameters";
 // Ajusta la ruta de import según corresponda a tu proyecto
 
 interface Detail {
@@ -571,15 +572,15 @@ const WorkFlowpar2editPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingColors.interior },
-                    exterior: { name: editingColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingColors.interior },
+                  exterior: { name: editingColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -836,73 +837,73 @@ const WorkFlowpar2editPage: React.FC = () => {
   // Con múltiples columnas en <thead>, aquí lo simplificamos en columnas planas
   const renderPisosParameters = () => {
     const columnsPisos = [
-          { headerName: "Nombre", field: "nombre" },
-          { headerName: "U [W/m²K]", field: "uValue" },
-          { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
-          { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
-          { headerName: "I [W/mK] (vert)", field: "vertLambda" },
-          { headerName: "e Aisl [cm]", field: "vertEAisl" },
-          { headerName: "D [cm]", field: "vertD" },
-          { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
-          { headerName: "e Aisl [cm]", field: "horizEAisl" },
-          { headerName: "D [cm]", field: "horizD" },
-        ];
-    
-        const multiHeaderPisos = {
-          rows: [
-            [
-              { label: "Nombre", rowSpan: 2 },
-              { label: "U [W/m²K]", rowSpan: 2 },
-              { label: "Aislamiento bajo piso", colSpan: 2 },
-              { label: "Ref Aisl Vert.", colSpan: 3 },
-              { label: "Ref Aisl Horiz.", colSpan: 3 },
-            ],
-            [
-              { label: "I [W/mK]" },
-              { label: "e Aisl [cm]" },
-              { label: "I [W/mK]" },
-              { label: "e Aisl [cm]" },
-              { label: "D [cm]" },
-              { label: "I [W/mK]" },
-              { label: "e Aisl [cm]" },
-              { label: "D [cm]" },
-            ],
-          ],
-        };
-    
-        const pisosData = pisosTabList.map((item) => {
-          const bajoPiso = item.info?.aislacion_bajo_piso || {};
-          const vert = item.info?.ref_aisl_vertical || {};
-          const horiz = item.info?.ref_aisl_horizontal || {};
-          return {
-            nombre: item.name_detail,
-            uValue: item.value_u?.toFixed(3) ?? "--",
-            bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-            bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
-            vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
-            vertEAisl: vert.e_aisl ?? "N/A",
-            vertD: vert.d ?? "N/A",
-            horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
-            horizEAisl: horiz.e_aisl ?? "N/A",
-            horizD: horiz.d ?? "N/A",
-          };
-        });
-    
-        return (
-          <div style={{ minWidth: "600px" }}>
-            {pisosTabList.length > 0 ? (
-              <TablesParameters
-                columns={columnsPisos}
-                data={pisosData}
-                multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
-              />
-            ) : (
-              <p>No hay datos</p>
-            )}
-          </div>
-        );
+      { headerName: "Nombre", field: "nombre" },
+      { headerName: "U [W/m²K]", field: "uValue" },
+      { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
+      { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
+      { headerName: "I [W/mK] (vert)", field: "vertLambda" },
+      { headerName: "e Aisl [cm]", field: "vertEAisl" },
+      { headerName: "D [cm]", field: "vertD" },
+      { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
+      { headerName: "e Aisl [cm]", field: "horizEAisl" },
+      { headerName: "D [cm]", field: "horizD" },
+    ];
+
+    const multiHeaderPisos = {
+      rows: [
+        [
+          { label: "Nombre", rowSpan: 2 },
+          { label: "U [W/m²K]", rowSpan: 2 },
+          { label: "Aislamiento bajo piso", colSpan: 2 },
+          { label: "Ref Aisl Vert.", colSpan: 3 },
+          { label: "Ref Aisl Horiz.", colSpan: 3 },
+        ],
+        [
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+        ],
+      ],
+    };
+
+    const pisosData = pisosTabList.map((item) => {
+      const bajoPiso = item.info?.aislacion_bajo_piso || {};
+      const vert = item.info?.ref_aisl_vertical || {};
+      const horiz = item.info?.ref_aisl_horizontal || {};
+      return {
+        nombre: item.name_detail,
+        uValue: item.value_u?.toFixed(3) ?? "--",
+        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
+        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
+        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
+        vertEAisl: vert.e_aisl ?? "N/A",
+        vertD: vert.d ?? "N/A",
+        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
+        horizEAisl: horiz.e_aisl ?? "N/A",
+        horizD: horiz.d ?? "N/A",
       };
-    
+    });
+
+    return (
+      <div >
+        {pisosTabList.length > 0 ? (
+          <TablesParameters
+            columns={columnsPisos}
+            data={pisosData}
+            multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
+          />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
   // ===================== RENDER VENTANAS ======================
   const renderVentanasParameters = () => {
     const columnsVentanas = [
@@ -986,13 +987,6 @@ const WorkFlowpar2editPage: React.FC = () => {
       <div className="mt-4">
         <ul
           className="nav"
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            padding: 0,
-            listStyle: "none",
-          }}
         >
           {tabs.map((item) => (
             <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
@@ -1085,128 +1079,13 @@ const WorkFlowpar2editPage: React.FC = () => {
           onNew={handleNewButtonClick}
           style={{ marginBottom: "1rem" }}
         />
-        {/* MODAL para crear un nuevo detalle */}
-        {showNewDetailRow && (
-          <ModalCreate
-            isOpen={showNewDetailRow}
-            onClose={() => {
-              setShowNewDetailRow(false);
-              // Reiniciamos el formulario si se cancela
-              setNewDetailForm({
-                scantilon_location: "",
-                name_detail: "",
-                material_id: 0,
-                layer_thickness: null,
-              });
-            }}
-            onSave={handleCreateNewDetail}
-            title="Agregar Nuevo Detalle Constructivo"
-            saveLabel="Crear Detalle"
-          >
-            {/* Formulario del modal */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "15px",
-                padding: "20px",
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={{ textAlign: "left", marginBottom: "5px" }}>
-                  Ubicación del Detalle
-                </label>
-                <select
-                  className="form-control"
-                  value={newDetailForm.scantilon_location}
-                  onChange={(e) =>
-                    setNewDetailForm((prev) => ({
-                      ...prev,
-                      scantilon_location: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Seleccione</option>
-                  <option value="Muro">Muro</option>
-                  <option value="Techo">Techo</option>
-                  <option value="Piso">Piso</option>
-                </select>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={{ textAlign: "left", marginBottom: "5px" }}>
-                  Nombre del Detalle
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Nombre Detalle"
-                  value={newDetailForm.name_detail}
-                  onChange={(e) =>
-                    setNewDetailForm((prev) => ({
-                      ...prev,
-                      name_detail: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={{ textAlign: "left", marginBottom: "5px" }}>
-                  Material
-                </label>
-                <select
-                  className="form-control"
-                  value={newDetailForm.material_id}
-                  onChange={(e) =>
-                    setNewDetailForm((prev) => ({
-                      ...prev,
-                      material_id: parseInt(e.target.value),
-                    }))
-                  }
-                >
-                  <option value={0}>Seleccione un material</option>
-                  {materials.map((mat) => (
-                    <option key={mat.id} value={mat.id}>
-                      {mat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={{ textAlign: "left", marginBottom: "5px" }}>
-                  Espesor de la Capa (cm)
-                </label>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  className="form-control"
-                  placeholder="Espesor (cm)"
-                  value={
-                    newDetailForm.layer_thickness === null
-                      ? ""
-                      : newDetailForm.layer_thickness
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "-" || e.key === "e") {
-                      e.preventDefault();
-                    }
-                  }}
-                  onChange={(e) => {
-                    const inputValue = e.target.value.replace(/[^0-9.]/g, "");
-                    const value = inputValue ? parseFloat(inputValue) : null;
-                    if (value === null || value >= 0) {
-                      setNewDetailForm((prev) => ({
-                        ...prev,
-                        layer_thickness: value,
-                      }));
-                    }
-                  }}
-                  min="0"
-                />
-              </div>
-            </div>
-          </ModalCreate>
-        )}
-
+        <NewDetailModal
+          showNewDetailRow={showNewDetailRow}
+          setShowNewDetailRow={setShowNewDetailRow}
+          newDetailForm={newDetailForm}
+          setNewDetailForm={setNewDetailForm}
+          materials={materials}
+          handleCreateNewDetail={handleCreateNewDetail} />
         <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
           <TablesParameters columns={columnsDetails} data={filteredData} />
         </div>
@@ -1222,12 +1101,6 @@ const WorkFlowpar2editPage: React.FC = () => {
           }}
         >
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
           >
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <CustomButton
@@ -1283,7 +1156,47 @@ const WorkFlowpar2editPage: React.FC = () => {
               <th style={stickyHeaderStyle1}>Área</th>
             </tr>
           </thead>
-          <tbody>{/* Lógica para mostrar los recintos */}</tbody>
+          <tbody>
+            {[
+              {
+                id: 1,
+                status: "Activo",
+                name: "Sala de Estar",
+                occupationProfile: "Residencial",
+                co2Sensor: "Sí",
+                avgHeight: "2.4m",
+                area: "25.5m²"
+              },
+              {
+                id: 2,
+                status: "Activo",
+                name: "Dormitorio Principal",
+                occupationProfile: "Residencial",
+                co2Sensor: "No",
+                avgHeight: "2.4m",
+                area: "16.8m²"
+              },
+              {
+                id: 3,
+                status: "Inactivo",
+                name: "Cocina",
+                occupationProfile: "Residencial",
+                co2Sensor: "Sí",
+                avgHeight: "2.4m",
+                area: "12.3m²"
+              }
+            ].map(room => (
+              <tr key={room.id}>
+                <td>{room.id}</td>
+                <td>{room.status}</td>
+                <td>{room.name}</td>
+                <td>{room.occupationProfile}</td>
+                <td>{room.co2Sensor}</td>
+                <td>{room.avgHeight}</td>
+                <td>{room.area}</td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </>
@@ -1329,10 +1242,10 @@ const WorkFlowpar2editPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
-        
+
         <Card>
         <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem"}}>
-          {renderMainHeader()} 
+          {renderMainHeader()}
         </div>
           <div className="d-flex align-items-center gap-4">
             <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
@@ -1376,63 +1289,17 @@ const WorkFlowpar2editPage: React.FC = () => {
               </div>
             </div>
             <div className="col-lg-9 col-12 order-last">
-              <div style={{ padding: "20px" }}>
-                {step === 4 && (
-                  <>
-                    {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
-                  </>
-                )}
-                {step === 7 && renderRecinto()}
-              </div>
+              {step === 4 && (
+                <>
+                  {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+                </>
+              )}
+              {step === 7 && renderRecinto()}
             </div>
           </div>
         </Card>
       </div>
 
-      <style jsx global>{`
-        @media (max-width: 992px) {
-          .container-fluid {
-            margin-left: 10px;
-            margin-right: 10px;
-            padding: 0 5px;
-          }
-          .col-lg-3 {
-            border-right: none;
-            border-bottom: 1px solid #ccc;
-          }
-          .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-          }
-          .mb-3.mb-lg-0 {
-            margin-bottom: 1rem;
-          }
-          [style*="padding: 20px"] {
-            padding: 15px;
-          }
-        }
-        @media (max-width: 768px) {
-          .table {
-            font-size: 12px;
-          }
-          th,
-          td {
-            padding: 8px;
-          }
-          [style*="height: 390px"] {
-            height: 300px;
-          }
-        }
-        .no-hover {
-          transition: none !important;
-          cursor: default !important;
-          pointer-events: none !important;
-        }
-        .no-hover:hover {
-          box-shadow: none !important;
-          transform: none !important;
-        }
-      `}</style>
     </>
   );
 };

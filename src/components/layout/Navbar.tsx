@@ -130,7 +130,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     zIndex: 999
   };
   
-  const logoSize = 70;
+  const logoSize = 48;
   
   // Calcula el ancho basado en el tipo de dispositivo
   const navbarWidth = isMobile ? "40%" : "6.5em";

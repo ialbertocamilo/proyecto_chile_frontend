@@ -134,7 +134,7 @@ const DataEntryPage: React.FC = () => {
     name_element: "",
     u_vidrio: "",
     fs_vidrio: "",
-    clousure_type: "Corredera",
+    clousure_type: "",
     frame_type: "",
     u_marco: "",
     fm: "",
@@ -358,7 +358,7 @@ const DataEntryPage: React.FC = () => {
         name_element: "",
         u_vidrio: "",
         fs_vidrio: "",
-        clousure_type: "Corredera",
+        clousure_type: "",
         frame_type: "",
         u_marco: "",
         fm: "",
@@ -929,7 +929,7 @@ const DataEntryPage: React.FC = () => {
                 name_element: "",
                 u_vidrio: "",
                 fs_vidrio: "",
-                clousure_type: "Corredera",
+                clousure_type: "",
                 frame_type: "",
                 u_marco: "",
                 fm: "",
@@ -1037,6 +1037,7 @@ const DataEntryPage: React.FC = () => {
                     }))
                   }
                 >
+                  <option value="">Seleccione</option>
                   <option value="Abatir">Abatir</option>
                   <option value="Corredera">Corredera</option>
                   <option value="Fija">Fija</option>

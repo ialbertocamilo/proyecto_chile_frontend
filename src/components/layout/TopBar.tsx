@@ -135,8 +135,8 @@ const TopBar = ({}: TopBarProps) => {
             <Image
               src="/assets/images/ceela.png"
               alt="Logo"
-              width={200}
-              height={100}
+              width={160}
+              height={70}
             />
           </div>
           {/* Logo para pantallas pequeñas */}

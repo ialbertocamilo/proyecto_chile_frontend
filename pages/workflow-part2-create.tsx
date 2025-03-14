@@ -142,19 +142,8 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   // Estados para detalles y pestañas
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
-  const [showNewDetailRow, setShowNewDetailRow] = useState(false);
-  const [newDetailForm, setNewDetailForm] = useState<{
-    scantilon_location: string;
-    name_detail: string;
-    material_id: number;
-    layer_thickness: number | null;
-  }>({
-    scantilon_location: "",
-    name_detail: "",
-    material_id: 0,
-    layer_thickness: null,
-  });
-  const [showTabsInStep4, setShowTabsInStep4] = useState(false);
+  // Inicializamos showTabsInStep4 en true para mostrar la pantalla de pestañas (originalmente secundaria) como principal.
+  const [showTabsInStep4, setShowTabsInStep4] = useState(true);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
   // Estados para cada pestaña
@@ -181,6 +170,20 @@ const WorkFlowpar2createPage: React.FC = () => {
   }>({
     interior: "Intermedio",
     exterior: "Intermedio",
+  });
+
+  // Estado para el formulario de creación de detalle
+  const [showNewDetailRow, setShowNewDetailRow] = useState(false);
+  const [newDetailForm, setNewDetailForm] = useState<{
+    scantilon_location: string;
+    name_detail: string;
+    material_id: number;
+    layer_thickness: number | null;
+  }>({
+    scantilon_location: "",
+    name_detail: "",
+    material_id: 0,
+    layer_thickness: null,
   });
 
   // Inicialización de projectId y primaryColor
@@ -410,11 +413,11 @@ const WorkFlowpar2createPage: React.FC = () => {
             notify("Detalle creado exitosamente.");
           } else {
             console.error("Error al añadir detalle al proyecto:", selectError);
-            notify("Detalle creado pero no se añadio al proyecto.");
+            notify("Detalle creado pero no se añadió al proyecto.");
           }
         }
       } else {
-        notify("No se añadio el Detalle al proyecto (ID de proyecto no disponible).");
+        notify("No se añadió el Detalle al proyecto (ID de proyecto no disponible).");
       }
 
       // Actualizar la interfaz
@@ -463,6 +466,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
     try {
       await axios.post(url, detailIds, { headers });
+      // En este caso, al guardar se vuelve a la pantalla principal (pestañas)
       setShowTabsInStep4(true);
       setTabStep4("muros");
     } catch (error: unknown) {
@@ -688,10 +692,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     return (
       <div style={{ overflowX: "auto" }}>
         {murosTabList.length > 0 ? (
-          <TablesParameters
-            columns={columnsMuros}
-            data={murosData}
-          />
+          <TablesParameters columns={columnsMuros} data={murosData} />
         ) : (
           <p>No hay datos</p>
         )}
@@ -979,6 +980,10 @@ const WorkFlowpar2createPage: React.FC = () => {
           {tabStep4 === "puertas" && renderPuertasTable()}
         </div>
 
+        {/* 
+            En la pantalla de pestañas (ahora principal), cambiamos el botón "Regresar" por uno que permita ver los detalles 
+            (la antigua pantalla principal que ahora es secundaria).
+        */}
         <div
           style={{
             display: "flex",
@@ -1000,9 +1005,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             }}
           >
             <span className="material-icons" style={{ fontSize: "24px" }}>
-              arrow_back
+            visibility
             </span>
-            &nbsp;Regresar
+            &nbsp;Detalles Generales
           </CustomButton>
         </div>
       </div>

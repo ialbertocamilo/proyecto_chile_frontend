@@ -185,19 +185,9 @@ const ProjectListPage = () => {
       minWidth: 100,
     },
     {
-      id: "designer_name",
-      label: "Diseñador",
+      id: "building_type",
+      label: "Tipo de edificación",
       minWidth: 100,
-    },
-    {
-      id: "director_name",
-      label: "Director",
-      minWidth: 100,
-    },
-    {
-      id: "address",
-      label: "Dirección",
-      minWidth: 150,
     },
     {
       id: "divisions",

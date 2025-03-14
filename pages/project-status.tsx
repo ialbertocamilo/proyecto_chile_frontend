@@ -81,6 +81,7 @@ const ProjectListStatusEditPage = () => {
 
   const handleViewProject = (project_view: Project) => {
     localStorage.setItem("project_id_view", project_view.id.toString());
+    localStorage.setItem("project_name_view", project_view.name_project || "N/A");
     localStorage.setItem(
       "project_department_view",
       project_view.divisions?.department || "N/A"
@@ -123,8 +124,8 @@ const ProjectListStatusEditPage = () => {
   return (
     <div>
       <Card>
-      <div className="d-flex align-items-center w-100">
-        <Title text="Administrar proyectos" />
+        <div className="d-flex align-items-center w-100">
+          <Title text="Administrar proyectos" />
           <Breadcrumb items={[
             { title: 'Administrar proyectos', href: '/project-status', active: true }
           ]} />

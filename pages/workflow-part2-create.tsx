@@ -15,6 +15,7 @@ import TablesParameters from "@/components/tables/TablesParameters";
 import VerticalDivider from "@/components/ui/HorizontalDivider";
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import { NewDetailModal } from "@/components/modals/NewDetailModal";
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 
 interface Detail {
   id_detail: number;
@@ -182,12 +183,21 @@ const WorkFlowpar2createPage: React.FC = () => {
     layer_thickness: null,
   });
 
+  // Estados para los datos de ProjectInfoHeader
+  const [projectName, setProjectName] = useState("");
+  const [projectDepartment, setProjectDepartment] = useState("");
+
   // Inicialización de projectId y primaryColor
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id");
     if (storedProjectId) {
       setProjectId(Number(storedProjectId));
     }
+    // Obtener los datos de nombre del proyecto y departamento (región)
+    const storedProjectName = localStorage.getItem("project_name") || "Nombre no definido";
+    const storedProjectDepartment = localStorage.getItem("project_department") || "Región no definida";
+    setProjectName(storedProjectName);
+    setProjectDepartment(storedProjectDepartment);
     setHasLoaded(true);
   }, []);
 
@@ -404,7 +414,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-            "Todos los detalles ya estaban en el proyecto"
+              "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -469,7 +479,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       if (
         axios.isAxiosError(error) &&
         error.response?.data?.detail ===
-        "Todos los detalles ya estaban en el proyecto"
+          "Todos los detalles ya estaban en el proyecto"
       ) {
         setShowTabsInStep4(true);
         setTabStep4("muros");
@@ -524,15 +534,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingColors.interior },
-                  exterior: { name: editingColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingColors.interior },
+                    exterior: { name: editingColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -583,15 +593,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingTechColors.interior },
-                  exterior: { name: editingTechColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingTechColors.interior },
+                    exterior: { name: editingTechColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -1001,7 +1011,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             }}
           >
             <span className="material-icons" style={{ fontSize: "24px" }}>
-            visibility
+              visibility
             </span>
             &nbsp;Detalles Generales
           </CustomButton>
@@ -1044,14 +1054,14 @@ const WorkFlowpar2createPage: React.FC = () => {
           style={{ marginBottom: "1rem" }}
         />
 
-
         <NewDetailModal
           showNewDetailRow={showNewDetailRow}
           setShowNewDetailRow={setShowNewDetailRow}
           newDetailForm={newDetailForm}
           setNewDetailForm={setNewDetailForm}
           materials={materials}
-          handleCreateNewDetail={handleCreateNewDetail} />
+          handleCreateNewDetail={handleCreateNewDetail}
+        />
 
         {/* Tabla generada con TablesParameters para DETALLES */}
         <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
@@ -1158,16 +1168,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           {renderMainHeader()}
         </div>
         <div className="d-flex align-items-center gap-4">
-          <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-            Proyecto:
-          </span>
-          <CustomButton
-            variant="save"
-            className="no-hover"
-            style={{ padding: "0.8rem 3rem" }}
-          >
-            {`Edificación Nº ${projectId ?? "xxxxx"}`}
-          </CustomButton>
+          <ProjectInfoHeader projectName={projectName} region={projectDepartment} />
           <div className="ms-auto" style={{ display: "flex" }}>
             <Breadcrumb
               items={[

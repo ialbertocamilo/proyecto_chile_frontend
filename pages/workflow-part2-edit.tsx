@@ -16,11 +16,11 @@ import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import ModalCreate from "../src/components/common/ModalCreate";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader"; // <-- Importamos el nuevo componente
 
 // Importamos nuestro componente genérico de tablas
 import { NewDetailModal } from "@/components/modals/NewDetailModal";
 import TablesParameters from "../src/components/tables/TablesParameters";
-// Ajusta la ruta de import según corresponda a tu proyecto
 
 interface Detail {
   id_detail: number;
@@ -148,6 +148,10 @@ const WorkFlowpar2editPage: React.FC = () => {
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Estados para almacenar nombre de proyecto y región desde localStorage
+  const [projectName, setProjectName] = useState("");
+  const [region, setRegion] = useState("");
+
   // ===================== ESTADOS DETALLES ======================
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [showNewDetailRow, setShowNewDetailRow] = useState(false);
@@ -199,6 +203,12 @@ const WorkFlowpar2editPage: React.FC = () => {
     if (storedProjectId) {
       setProjectId(Number(storedProjectId));
     }
+    // Obtenemos el nombre del proyecto y la región desde localStorage
+    const storedProjectName = localStorage.getItem("project_name_edit") || "";
+    const storedRegion = localStorage.getItem("project_department_edit") || "";
+    setProjectName(storedProjectName);
+    setRegion(storedRegion);
+
     setHasLoaded(true);
   }, []);
 
@@ -573,15 +583,15 @@ const WorkFlowpar2editPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingColors.interior },
-                  exterior: { name: editingColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingColors.interior },
+                    exterior: { name: editingColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -890,12 +900,12 @@ const WorkFlowpar2editPage: React.FC = () => {
     });
 
     return (
-      <div >
+      <div>
         {pisosTabList.length > 0 ? (
           <TablesParameters
             columns={columnsPisos}
             data={pisosData}
-            multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
+            multiHeader={multiHeaderPisos}
           />
         ) : (
           <p>No hay datos</p>
@@ -916,7 +926,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "FV [%]", field: "fm" },
     ];
 
-    const ventanasData = ventanasTabList.map((item, idx) => ({
+    const ventanasData = ventanasTabList.map((item) => ({
       name_element: item.name_element,
       u_vidrio: item.atributs?.u_vidrio
         ? item.atributs.u_vidrio.toFixed(3)
@@ -950,7 +960,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "FM [%]", field: "fm" },
     ];
 
-    const puertasData = puertasTabList.map((item, idx) => ({
+    const puertasData = puertasTabList.map((item) => ({
       name_element: item.name_element,
       u_puerta: item.atributs?.u_puerta_opaca
         ? item.atributs.u_puerta_opaca.toFixed(3)
@@ -985,9 +995,7 @@ const WorkFlowpar2editPage: React.FC = () => {
 
     return (
       <div className="mt-4">
-        <ul
-          className="nav"
-        >
+        <ul className="nav">
           {tabs.map((item) => (
             <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
               <button
@@ -1010,7 +1018,14 @@ const WorkFlowpar2editPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div style={{ height: "400px", overflowY: "auto", position: "relative", marginTop: "1rem" }}>
+        <div
+          style={{
+            height: "400px",
+            overflowY: "auto",
+            position: "relative",
+            marginTop: "1rem",
+          }}
+        >
           {tabStep4 === "muros" && renderMurosParameters()}
           {tabStep4 === "techumbre" && renderTechumbreParameters()}
           {tabStep4 === "pisos" && renderPisosParameters()}
@@ -1038,7 +1053,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             }}
           >
             <span className="material-icons" style={{ fontSize: "24px" }}>
-            visibility
+              visibility
             </span>
             &nbsp;Detalles generales
           </CustomButton>
@@ -1085,7 +1100,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           newDetailForm={newDetailForm}
           setNewDetailForm={setNewDetailForm}
           materials={materials}
-          handleCreateNewDetail={handleCreateNewDetail} />
+          handleCreateNewDetail={handleCreateNewDetail}
+        />
         <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
           <TablesParameters columns={columnsDetails} data={filteredData} />
         </div>
@@ -1100,8 +1116,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             marginBottom: "10px",
           }}
         >
-          <div
-          >
+          <div>
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <CustomButton
                 id="mostrar-datos-btn"
@@ -1165,7 +1180,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 occupationProfile: "Residencial",
                 co2Sensor: "Sí",
                 avgHeight: "2.4m",
-                area: "25.5m²"
+                area: "25.5m²",
               },
               {
                 id: 2,
@@ -1174,7 +1189,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 occupationProfile: "Residencial",
                 co2Sensor: "No",
                 avgHeight: "2.4m",
-                area: "16.8m²"
+                area: "16.8m²",
               },
               {
                 id: 3,
@@ -1183,9 +1198,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                 occupationProfile: "Residencial",
                 co2Sensor: "Sí",
                 avgHeight: "2.4m",
-                area: "12.3m²"
-              }
-            ].map(room => (
+                area: "12.3m²",
+              },
+            ].map((room) => (
               <tr key={room.id}>
                 <td>{room.id}</td>
                 <td>{room.status}</td>
@@ -1242,34 +1257,15 @@ const WorkFlowpar2editPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
-
         <Card>
-        <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem"}}>
-          {renderMainHeader()}
-        </div>
-          <div className="d-flex align-items-center gap-4">
-            <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-              Proyecto:
-            </span>
-            <CustomButton
-              variant="save"
-              className="no-hover"
-              style={{ padding: "0.8rem 3rem" }}
-            >
-              {`Edificación Nº ${projectId ?? "xxxxx"}`}
-            </CustomButton>
-            <div className="ms-auto" style={{display: "flex"}}>
-            <Breadcrumb
-            items={[
-              {
-                title: "Proyecto Nuevo",
-                href: "/",
-                active: true,
-              },
-            ]}
-          />
+          <div
+            className="d-flex align-items-center w-100"
+            style={{ marginBottom: "2rem" }}
+          >
+            {renderMainHeader()}
           </div>
-          </div>
+          {/* Se reemplaza la cabecera antigua por el componente ProjectInfoHeader */}
+          <ProjectInfoHeader projectName={projectName} region={region} />
         </Card>
         <Card
           style={{
@@ -1299,7 +1295,6 @@ const WorkFlowpar2editPage: React.FC = () => {
           </div>
         </Card>
       </div>
-
     </>
   );
 };

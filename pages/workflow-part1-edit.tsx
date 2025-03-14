@@ -16,6 +16,7 @@ import { useApi } from "@/hooks/useApi";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Componente de sidebar dinámico
 import Breadcrumb from "../src/components/common/Breadcrumb";
 import { Autocompletion } from "@/components/maps/Autocompletion"; // Se agrega el componente de autocompletado
+import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader"; // Importamos el componente
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -71,12 +72,16 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [, setPrimaryColor] = useState("#3ca7b7");
   const [step, setStep] = useState<number>(1);
   const [locationSearch, setLocationSearch] = useState("");
-  const [completionList, setCompletionList] = useState<{ Title: string; Position: [number, number]; }[]>([]); // Estado para autocompletado
+  const [completionList, setCompletionList] = useState<{ Title: string; Position: [number, number] }[]>([]);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState<boolean>(false);
   const [globalError, setGlobalError] = useState<string>("");
+
+  // NUEVOS estados para obtener datos desde el localStorage
+  const [projectNameFromStorage, setProjectNameFromStorage] = useState("");
+  const [regionFromStorage, setRegionFromStorage] = useState("");
 
   useEffect(() => {
     const pColor =
@@ -84,6 +89,14 @@ const ProjectWorkflowPart1: React.FC = () => {
         .getPropertyValue("--primary-color")
         .trim() || "#3ca7b7";
     setPrimaryColor(pColor);
+  }, []);
+
+  // Obtener datos de "project_name_edit" y "project_department_edit" del localStorage
+  useEffect(() => {
+    const storedProjectName = localStorage.getItem("project_name_edit") || "";
+    const storedRegion = localStorage.getItem("project_department_edit") || "";
+    setProjectNameFromStorage(storedProjectName);
+    setRegionFromStorage(storedRegion);
   }, []);
 
   // Actualiza el step si se pasa en la query
@@ -358,17 +371,8 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   const renderMainHeader = () => {
     return (
-      <div className="d-flex align-items-center w-100">
+      <div className="w-100">
         <Title text={router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"} />
-        <Breadcrumb
-          items={[
-            {
-              title: "Proyecto Nuevo",
-              href: "/",
-              active: true,
-            },
-          ]}
-        />
       </div>
     );
   };
@@ -435,7 +439,21 @@ const ProjectWorkflowPart1: React.FC = () => {
       <GooIcons />
       <div>
         <Card>
-          <div>{renderMainHeader()}</div>
+          <div>
+            {renderMainHeader()}
+            <div className="d-flex align-items-center" style={{ gap: "10px" }}>
+              <ProjectInfoHeader projectName={projectNameFromStorage} region={regionFromStorage} />
+              <Breadcrumb
+                items={[
+                  {
+                    title: "Proyecto Nuevo",
+                    href: "/",
+                    active: true,
+                  },
+                ]}
+              />
+            </div>
+          </div>
         </Card>
         <Card>
           <div>

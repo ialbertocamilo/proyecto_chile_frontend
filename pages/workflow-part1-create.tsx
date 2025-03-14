@@ -254,7 +254,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       const { project_id } = data;
       localStorage.setItem("project_id", project_id.toString());
       localStorage.setItem("project_department", formData.department);
-
+      localStorage.setItem("project_name", formData.name_project);
       notify("Proyecto creado con éxito.");
 
       setFormData(initialFormData);

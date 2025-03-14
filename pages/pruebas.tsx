@@ -1,13 +1,17 @@
-import React from 'react';
-import ChartProjectCreated from '../src/components/ChartProjectCreated';
+import React from "react";
+import Card from "../src/components/common/Card";
+import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 
-const ChartTestPage: React.FC = () => {
+const TestProjectInfoPage: React.FC = () => {
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Chart Project Created Test Page</h1>
-      <ChartProjectCreated />
+    <div style={{ padding: "2rem" }}>
+      <Card>
+        <div style={{ padding: "1rem" }}>
+          <ProjectInfoHeader projectName="Proyecto Ejemplo" region="Región 1" />
+        </div>
+      </Card>
     </div>
   );
 };
 
-export default ChartTestPage;
+export default TestProjectInfoPage;

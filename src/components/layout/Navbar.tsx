@@ -41,9 +41,9 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     const handleResize = () => {
       const mobile = window.innerWidth <= 1024;
       setIsMobile(mobile);
-      // En mobile, si el ancho cambia y no se desea mostrar el nav, se puede forzar el cierre
-      if (!mobile) {
-        setIsNavOpen(true);
+      // En dispositivos móviles se forzará que la navbar se mantenga cerrada.
+      if (mobile) {
+        setIsNavOpen(false);
       }
     };
     handleResize();
@@ -131,7 +131,9 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   const mobileLogoHeight = 47;
 
   // Calcula el ancho de la navbar según si está desplegada y el dispositivo
-  const navbarWidth = isNavOpen ? (isMobile ? "11.5em" : "18em") : (isMobile ? "6em" : "8.5em");
+  const navbarWidth = isNavOpen
+    ? (isMobile ? "11.5em" : "18em")
+    : (isMobile ? "6em" : "8.5em");
 
   return (
     <>

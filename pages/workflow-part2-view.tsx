@@ -14,10 +14,11 @@ import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 // Importamos el componente SearchParameters
 import SearchParameters from "../src/components/inputs/SearchParameters";
-
 // Importamos el componente genérico de tablas
 import TablesParameters from "../src/components/tables/TablesParameters";
 import Breadcrumb from "@/components/common/Breadcrumb";
+// Importamos el nuevo componente ProjectInfoHeader
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 
 interface Detail {
   id_detail: number;
@@ -111,6 +112,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   const primaryColor = getCssVarValue("--primary-color", "#3ca7b7");
 
+  // Estados para los datos del proyecto a mostrar en el header
+  const [projectName, setProjectName] = useState("");
+  const [projectDepartment, setProjectDepartment] = useState("");
+
   // Ejemplo de recintos (hardcodeado)
   const recintos = [
     {
@@ -144,6 +149,14 @@ const WorkFlowpar2viewPage: React.FC = () => {
       setHasLoaded(true);
     }
   }, [router.isReady, router.query.id, router.query.step]);
+
+  // ==================== OBTENER DATOS DEL LOCAL STORAGE PARA EL HEADER ====================
+  useEffect(() => {
+    const name = localStorage.getItem("project_name_view") || "";
+    const department = localStorage.getItem("project_department_view") || "";
+    setProjectName(name);
+    setProjectDepartment(department);
+  }, []);
 
   useEffect(() => {
     if (hasLoaded && projectId === null) {
@@ -300,7 +313,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   // ==================== RENDER CABECERA ====================
   const renderMainHeader = () =>
-    step >= 4 && <Title text="Vista de Desarrollo de proyecto" />;
+    step >= 4 && <Title text="Vista de Proyecto" />;
 
   // ==================== RENDER DE TABLAS (MUROS, TECHUMBRE, ETC.) ====================
   // 1) Muros
@@ -354,73 +367,72 @@ const WorkFlowpar2viewPage: React.FC = () => {
   // 3) Pisos (se aplanan las columnas con "I [W/mK]" / "e Aisl [cm]" para cada sub-objeto)
   const renderPisosTable = () => {
     const columnsPisos = [
-          { headerName: "Nombre", field: "nombre" },
-          { headerName: "U [W/m²K]", field: "uValue" },
-          { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
-          { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
-          { headerName: "I [W/mK] (vert)", field: "vertLambda" },
-          { headerName: "e Aisl [cm]", field: "vertEAisl" },
-          { headerName: "D [cm]", field: "vertD" },
-          { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
-          { headerName: "e Aisl [cm]", field: "horizEAisl" },
-          { headerName: "D [cm]", field: "horizD" },
-        ];
-    
-        const multiHeaderPisos = {
-          rows: [
-            [
-              { label: "Nombre", rowSpan: 2 },
-              { label: "U [W/m²K]", rowSpan: 2 },
-              { label: "Aislamiento bajo piso", colSpan: 2 },
-              { label: "Ref Aisl Vert.", colSpan: 3 },
-              { label: "Ref Aisl Horiz.", colSpan: 3 },
-            ],
-            [
-              { label: "I [W/mK]" },
-              { label: "e Aisl [cm]" },
-              { label: "I [W/mK]" },
-              { label: "e Aisl [cm]" },
-              { label: "D [cm]" },
-              { label: "I [W/mK]" },
-              { label: "e Aisl [cm]" },
-              { label: "D [cm]" },
-            ],
-          ],
-        };
-    
-        const pisosData = pisosTabList.map((item) => {
-          const bajoPiso = item.info?.aislacion_bajo_piso || {};
-          const vert = item.info?.ref_aisl_vertical || {};
-          const horiz = item.info?.ref_aisl_horizontal || {};
-          return {
-            nombre: item.name_detail,
-            uValue: item.value_u?.toFixed(3) ?? "--",
-            bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-            bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
-            vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
-            vertEAisl: vert.e_aisl ?? "N/A",
-            vertD: vert.d ?? "N/A",
-            horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
-            horizEAisl: horiz.e_aisl ?? "N/A",
-            horizD: horiz.d ?? "N/A",
-          };
-        });
-    
-        return (
-          <div style={{ minWidth: "600px" }}>
-            {pisosTabList.length > 0 ? (
-              <TablesParameters
-                columns={columnsPisos}
-                data={pisosData}
-                multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
-              />
-            ) : (
-              <p>No hay datos</p>
-            )}
-          </div>
-        );
+      { headerName: "Nombre", field: "nombre" },
+      { headerName: "U [W/m²K]", field: "uValue" },
+      { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
+      { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
+      { headerName: "I [W/mK] (vert)", field: "vertLambda" },
+      { headerName: "e Aisl [cm]", field: "vertEAisl" },
+      { headerName: "D [cm]", field: "vertD" },
+      { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
+      { headerName: "e Aisl [cm]", field: "horizEAisl" },
+      { headerName: "D [cm]", field: "horizD" },
+    ];
+
+    const multiHeaderPisos = {
+      rows: [
+        [
+          { label: "Nombre", rowSpan: 2 },
+          { label: "U [W/m²K]", rowSpan: 2 },
+          { label: "Aislamiento bajo piso", colSpan: 2 },
+          { label: "Ref Aisl Vert.", colSpan: 3 },
+          { label: "Ref Aisl Horiz.", colSpan: 3 },
+        ],
+        [
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+        ],
+      ],
+    };
+
+    const pisosData = pisosTabList.map((item) => {
+      const bajoPiso = item.info?.aislacion_bajo_piso || {};
+      const vert = item.info?.ref_aisl_vertical || {};
+      const horiz = item.info?.ref_aisl_horizontal || {};
+      return {
+        nombre: item.name_detail,
+        uValue: item.value_u?.toFixed(3) ?? "--",
+        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
+        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
+        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
+        vertEAisl: vert.e_aisl ?? "N/A",
+        vertD: vert.d ?? "N/A",
+        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
+        horizEAisl: horiz.e_aisl ?? "N/A",
+        horizD: horiz.d ?? "N/A",
       };
-    
+    });
+
+    return (
+      <div style={{ minWidth: "600px" }}>
+        {pisosTabList.length > 0 ? (
+          <TablesParameters
+            columns={columnsPisos}
+            data={pisosData}
+            multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
+          />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
 
   // 4) Ventanas
   const renderVentanasTable = () => {
@@ -721,70 +733,46 @@ const WorkFlowpar2viewPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
-      <Card>
-  <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
-  
-  <div style={{ width: "100%" }}>
-    {/* Bloque izquierdo: texto + botón */}
-    <div className="d-flex align-items-center gap-3">
-      <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-        Proyecto:
-      </span>
-      <CustomButton
-        variant="save"
-        className="no-hover"
-        style={{ padding: "0.8rem 3rem" }}
-      >
-        {`Edificación Nº ${projectId ?? "xxxxx"}`}
-      </CustomButton>
-    
-
-    {/* Bloque derecho: breadcrumb alineado a la derecha con ancho modificado */}
-    <div className="ms-auto" style={{display: "flex"}}>
-      <Breadcrumb
-        items={[
-          {
-            title: "Vista De Proyecto",
-            href: "/",
-            active: true,
-          },
-        ]}
-      />
-    </div>
-  </div>
-  </div>
-</Card>
-
-
-
-
-
-
+        <Card>
+          <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
+          <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
+            {/* Proyecto y Breadcrumb en el mismo nivel y alineados a la izquierda */}
+            <ProjectInfoHeader projectName={projectName} region={projectDepartment} />
+            <Breadcrumb
+              items={[
+                {
+                  title: "Vista De Proyecto",
+                  href: "/",
+                  active: true,
+                },
+              ]}
+            />
+          </div>
+        </Card>
 
         <Card>
-        <div className="row">
-  {/* Columna para Sidebar */}
-  <div className="col-12 col-md-3">
-    <AdminSidebar
-      activeStep={step}
-      steps={sidebarSteps}
-      onClickAction={(route: string) => router.push(route)}
-      onStepChange={() => {}}
-    />
-  </div>
+          <div className="row">
+            {/* Columna para Sidebar */}
+            <div className="col-12 col-md-3">
+              <AdminSidebar
+                activeStep={step}
+                steps={sidebarSteps}
+                onClickAction={(route: string) => router.push(route)}
+                onStepChange={() => {}}
+              />
+            </div>
 
-  {/* Columna para contenido principafdsl */}
-  <div className="col-12 col-md-9 p-4">
-    {/* Contenido principal */}
-    {step === 4 && (
-      <>
-        {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
-      </>
-    )}
-    {step === 7 && renderRecinto()}
-  </div>
-</div>
-
+            {/* Columna para contenido principal */}
+            <div className="col-12 col-md-9 p-4">
+              {/* Contenido principal */}
+              {step === 4 && (
+                <>
+                  {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+                </>
+              )}
+              {step === 7 && renderRecinto()}
+            </div>
+          </div>
         </Card>
       </div>
     </>

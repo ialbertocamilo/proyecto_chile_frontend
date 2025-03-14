@@ -61,6 +61,7 @@ const initialFormData: FormData = {
   longitude: -70.6703553846175,
 };
 
+
 const ProjectWorkflowPart1: React.FC = () => {
   useAuth();
   const router = useRouter();
@@ -299,6 +300,7 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   const renderMainHeader = () => {
     return <Title text="Proyecto nuevo" />;
+    
   };
 
   const [completionList, setCompletionList] = useState<{
@@ -673,6 +675,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                 >
                   <div className="row">
                     <div className="col-12 mb-3">
+
                       <Autocompletion
                         locationSearch={locationSearch}
                         setLocationSearch={setLocationSearch}
@@ -681,7 +684,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         setCompletionList={setCompletionList}
                       />
                     </div>
-                    <div className="col-12 col-md-8 mb-3">
+                    <div className="col-12 col-md-7 col-sm-12 mb-3">
                       <NoSSRInteractiveMap
                         onLocationSelect={(latlng) => {
                           handleFormInputChange("latitude", latlng.lat);
@@ -691,8 +694,10 @@ const ProjectWorkflowPart1: React.FC = () => {
                         initialLng={formData.longitude}
                       />
                     </div>
-                    <div className="col-12 col-md-4">
-                      <label className="form-label">
+                    <div className="col-12 col-md-4 ">
+                      <label
+                        className="form-label"
+                      >
                         Datos de ubicaciones encontradas
                       </label>
                       <textarea
@@ -709,7 +714,9 @@ const ProjectWorkflowPart1: React.FC = () => {
                         variant="save"
                         onClick={handleGeolocation}
                       >
-                        <span className="material-icons">
+                        <span
+                          className="material-icons"
+                        >
                           location_on
                         </span>
                         Ubicación actual

@@ -17,7 +17,7 @@ const WelcomeCard: React.FC = () => {
   }, []);
 
   const handleViewProfile = () => {
-    router.push('/edit-profile'); // Ajusta la ruta según tu proyecto
+    router.push('/edit-profile'); 
   };
 
 

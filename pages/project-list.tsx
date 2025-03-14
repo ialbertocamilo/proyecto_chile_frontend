@@ -13,6 +13,7 @@ import ModalCreate from "@/components/common/ModalCreate";
 
 import WelcomeCard from "@/components/CardWelcome";
 import ChartProjectCreated from "@/components/ChartProjectCreated";
+import CancelButton from "@/components/common/CancelButton";
 
 interface Divisions {
   department?: string;
@@ -167,7 +168,6 @@ const ProjectListPage = () => {
             fontWeight: "normal",
             padding: "8px 16px",
             borderRadius: "0.5rem",
-            fontFamily: "var(--font-family-base)",
           }}
         >
           {row.status ? row.status.toUpperCase() : "NO DISPONIBLE"}

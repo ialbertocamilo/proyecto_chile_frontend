@@ -1,6 +1,7 @@
 import { LucideIcon } from 'lucide-react';
+import GoogleIcons from 'public/GoogleIcons';
 import React, { ButtonHTMLAttributes, FC } from 'react';
-import GoogleIcons from '../../../public/GoogleIcons';
+import { Tooltip } from 'react-tooltip';
 
 interface CustomButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
   variant?:
@@ -15,6 +16,7 @@ interface CustomButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>
   | 'listIcon'
   | 'cancelIcon'
   | 'viewIcon'
+  | 'closed'
   | 'borderless';
   type?: 'button' | 'submit';
   isLoading?: boolean;
@@ -56,21 +58,23 @@ const CustomButton: FC<CustomButtonProps> = ({
   } else if (variant === 'listIcon') {
     content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>format_list_bulleted</span>;
     tooltipText = 'Ver lista';
-    } else if (variant === 'cancelIcon') {
+  } else if (variant === 'cancelIcon') {
     content = <span className="btn-icon-content material-icons " style={{  fontSize: "1.5rem" }}>close</span>;
     tooltipText = 'Cancelar';
   } else if (variant === 'viewIcon') {
     content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>visibility</span>;
     tooltipText = 'Ver detalles';
-  }
+  } 
 
   const variantClass = variant === 'borderless' ? 'btn-borderless' : `btn-${variant}`;
   const disabledClass = disabled || isLoading ? 'disabled' : '';
+  const buttonId = variant === 'cancelIcon' ? 'grabar-datos-btn' : undefined;
 
   return (
     <>
       <GoogleIcons />
       <button
+        id={buttonId}
         type={type}
         disabled={disabled || isLoading}
         aria-busy={isLoading}
@@ -86,54 +90,133 @@ const CustomButton: FC<CustomButtonProps> = ({
           </>
         )}
       </button>
+      {variant === 'cancelIcon' && (
+        <Tooltip anchorSelect={`#${buttonId}`} place="top">
+          Cancelar
+        </Tooltip>
+      )}
       <style jsx>{`
         .btn {
-          display: flex;
+          display: inline-flex;
           align-items: center;
           justify-content: center;
-          transition: background-color 0.3s ease, transform 0.3s ease;
-          background-color: var(--primary-color) !important; 
+          transition: all 0.2s ease-in-out;
+          background-color: var(--primary-color) !important;
           border: none;
-          font-size: 16px;
-          border-radius: 3px;
-          border: none;
+          font-size: 14px;
+          border-radius: 8px;
+          padding: 10px 16px;
           cursor: pointer;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          font-weight: 500;
+          letter-spacing: 0.3px;
+          min-width: max-content;
+          white-space: normal;
+          line-height: 1.5;
+          height: auto;
         }
 
         .btn-borderless {
           background-color: transparent !important;
-          padding: 0;
+          padding: 8px;
           color: var(--btn-save-bg);
+          box-shadow: none;
         }
 
         .btn-borderless:hover {
-          background-color: transparent !important;
+          background-color: rgba(0, 0, 0, 0.04) !important;
           color: var(--btn-save-hover-bg);
         }
 
         .btn-small {
-          font-size: 12px;
+          font-size: 13px;
+          padding: 8px 12px;
         }
 
         .btn-large {
-          padding: 15px 30px;
-          font-size: 18px;
+          padding: 12px 24px;
+          font-size: 16px;
         }
   
         .btn:hover {
           background-color: var(--btn-save-hover-bg) !important;
-          transform: scale(1.05);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
         .btn:active {
-          transform: scale(0.95);
+          transform: translateY(1px);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .btn-icon-content {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          transition: transform 0.3s ease;
+          transition: transform 0.2s ease;
+          color: white;
+        }
+
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease-in-out;
+          background-color: var(--primary-color) !important;
+          border: none;
+          font-size: 14px;
+          border-radius: 8px;
+          padding: 10px 16px;
+          cursor: pointer;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          font-weight: 500;
+          letter-spacing: 0.3px;
+          min-width: max-content;
+          white-space: normal;
+          line-height: 1.5;
+          height: auto;
+          color: white;
+
+          svg {
+            color: white;
+          }
+        }
+
+        .btn-deleteIcon {
+          background-color: #dc3545 !important;
+        }
+
+        .btn-deleteIcon:hover {
+          background-color: #c82333 !important;
+        }
+
+        .btn-deleteIcon .btn-icon-content {
+          color: white;
+        }
+
+        .btn-cancelIcon {
+          background-color: #dc3545 !important;
+        }
+
+        .btn-cancelIcon:hover {
+          background-color: #c82333 !important;
+        }
+
+        .btn-cancelIcon .btn-icon-content {
+          color: white;
+        }
+
+        .btn-close, .btn-closed {
+          background-color: #dc3545 !important;
+          color: white !important;
+        }
+
+        .btn-close:hover, .btn-closed:hover {
+          background-color: #c82333 !important;
+        }
+
+        .btn-close svg, .btn-closed svg {
+          color: white !important;
         }
 
         .btn-icon-content:hover {
@@ -142,6 +225,8 @@ const CustomButton: FC<CustomButtonProps> = ({
 
         .loading {
           animation: spin 1s linear infinite;
+          display: inline-block;
+          margin-right: 8px;
         }
 
         @keyframes spin {
@@ -151,6 +236,12 @@ const CustomButton: FC<CustomButtonProps> = ({
           100% {
             transform: rotate(360deg);
           }
+        }
+
+        .disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+          pointer-events: none;
         }
       `}</style>
     </>

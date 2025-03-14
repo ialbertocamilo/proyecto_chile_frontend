@@ -15,6 +15,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 // 1. Importa tu componente de tabla
 import TablesParameters from "../src/components/tables/TablesParameters";
+import { NewDetailModal } from "@/components/modals/NewDetailModal";
 
 interface MaterialAttributes {
   name: string;
@@ -506,166 +507,166 @@ const AdministrationPage: React.FC = () => {
 
       {/* Card principal */}
       <Card>
-  <div className="row">
-    {/* Columna para Sidebar */}
-    <div className="col-12 col-md-3">
-      <AdminSidebar
-        activeStep={step}
-        onStepChange={setStep}
-        steps={sidebarSteps}
-      />
-    </div>
-
-    {/* Columna para Contenido principal (la tabla y demás) */}
-    <div className="col-12 col-md-9 p-4">
-      {/* Step 3: Tabla de Materiales */}
-      {step === 3 && (
-        <>
-          <div style={{ overflow: "hidden", padding: "10px" }}>
-            <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-              {/* Uso de TablesParameters */}
-              <TablesParameters columns={materialsColumns} data={materialsData} />
-            </div>
+        <div className="row">
+          {/* Columna para Sidebar */}
+          <div className="col-12 col-md-3">
+            <AdminSidebar
+              activeStep={step}
+              onStepChange={setStep}
+              steps={sidebarSteps}
+            />
           </div>
-          <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-            <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
-              <span className="material-icons">add</span> Nuevo
-            </CustomButton>
-          </div>
-        </>
-      )}
 
-      {/* Step 4: Detalles Constructivos */}
-      {step === 4 && (
-        <>
-          {showGeneralDetails ? (
-            <div>
-              <div className="tabs-container">
-                <div className="tab active" style={{ flex: 1, textAlign: "center" }}>
-                  Detalles Generales
+          {/* Columna para Contenido principal (la tabla y demás) */}
+          <div className="col-12 col-md-9 p-4">
+            {/* Step 3: Tabla de Materiales */}
+            {step === 3 && (
+              <>
+                <div style={{ overflow: "hidden", padding: "10px" }}>
+                  <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+                    {/* Uso de TablesParameters */}
+                    <TablesParameters columns={materialsColumns} data={materialsData} />
+                  </div>
                 </div>
-              </div>
-              <div style={{ overflow: "hidden", padding: "10px" }}>
-                <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                  <TablesParameters columns={detailsColumns} data={detailsData} />
+                <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                  <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
+                    <span className="material-icons">add</span> Nuevo
+                  </CustomButton>
                 </div>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  padding: "10px",
-                }}
-              >
-                <CustomButton variant="save" onClick={() => setShowGeneralDetails(false)}>
-                  <span className="material-icons">arrow_back</span> Volver
-                </CustomButton>
-                <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
-                  <span className="material-icons">add</span> Nuevo
-                </CustomButton>
-              </div>
-            </div>
-          ) : (
-            <>
-              <DetallesConstructivosTab />
-              <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                <CustomButton
-                  variant="save"
-                  onClick={() => {
-                    fetchDetails();
-                    setShowGeneralDetails(true);
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
-                    height: "min(3rem, 8vh)",
-                    minWidth: "6rem",
-                    marginLeft: "10px",
-                    marginTop: "2rem",
-                  }}
-                >
-                  <span className="material-icons">visibility</span> Ver detalles generales
-                </CustomButton>
-              </div>
-            </>
-          )}
-        </>
-      )}
+              </>
+            )}
 
-      {/* Step 5: Elementos Translúcidos */}
-      {step === 5 && (
-        <>
-          <div style={{ overflow: "hidden", padding: "10px" }}>
-            <div
-              className="d-flex justify-content-between align-items-center mb-2"
-              style={{ padding: "10px" }}
-            >
-              <ul
-                className="nav"
-                style={{
-                  display: "flex",
-                  padding: 0,
-                  listStyle: "none",
-                  margin: 0,
-                  flex: 1,
-                  gap: "10px",
-                }}
-              >
-                {["Ventanas", "Puertas"].map((tab) => (
-                  <li key={tab} style={{ flex: 1 }}>
-                    <button
+            {/* Step 4: Detalles Constructivos */}
+            {step === 4 && (
+              <>
+                {showGeneralDetails ? (
+                  <div>
+                    <div className="tabs-container">
+                      <div className="tab active" style={{ flex: 1, textAlign: "center" }}>
+                        Detalles Generales
+                      </div>
+                    </div>
+                    <div style={{ overflow: "hidden", padding: "10px" }}>
+                      <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+                        <TablesParameters columns={detailsColumns} data={detailsData} />
+                      </div>
+                    </div>
+                    <div
                       style={{
-                        width: "100%",
-                        padding: "0px",
-                        backgroundColor: "#fff",
-                        color:
-                          tabElementosOperables === tab.toLowerCase()
-                            ? "var(--primary-color)"
-                            : "var(--secondary-color)",
-                        border: "none",
-                        cursor: "pointer",
-                        borderBottom:
-                          tabElementosOperables === tab.toLowerCase()
-                            ? "solid var(--primary-color)"
-                            : "none",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        padding: "10px",
                       }}
-                      onClick={() => setTabElementosOperables(tab.toLowerCase())}
                     >
-                      {tab}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
-              <TablesParameters
-                columns={
-                  tabElementosOperables === "ventanas" ? windowsColumns : doorsColumns
-                }
-                data={
-                  tabElementosOperables === "ventanas" ? windowsData : doorsData
-                }
-              />
-            </div>
-          </div>
-          <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-            {tabElementosOperables === "ventanas" ? (
-              <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
-                <span className="material-icons">add</span> Nuevo
-              </CustomButton>
-            ) : (
-              <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
-                <span className="material-icons">add</span> Nuevo
-              </CustomButton>
+                      <CustomButton variant="save" onClick={() => setShowGeneralDetails(false)}>
+                        <span className="material-icons">arrow_back</span> Volver
+                      </CustomButton>
+                      <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
+                        <span className="material-icons">add</span> Nuevo
+                      </CustomButton>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <DetallesConstructivosTab />
+                    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                      <CustomButton
+                        variant="save"
+                        onClick={() => {
+                          fetchDetails();
+                          setShowGeneralDetails(true);
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                          padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
+                          height: "min(3rem, 8vh)",
+                          minWidth: "6rem",
+                          marginLeft: "10px",
+                          marginTop: "2rem",
+                        }}
+                      >
+                        <span className="material-icons">visibility</span> Ver detalles generales
+                      </CustomButton>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Step 5: Elementos Translúcidos */}
+            {step === 5 && (
+              <>
+                <div style={{ overflow: "hidden", padding: "10px" }}>
+                  <div
+                    className="d-flex justify-content-between align-items-center mb-2"
+                    style={{ padding: "10px" }}
+                  >
+                    <ul
+                      className="nav"
+                      style={{
+                        display: "flex",
+                        padding: 0,
+                        listStyle: "none",
+                        margin: 0,
+                        flex: 1,
+                        gap: "10px",
+                      }}
+                    >
+                      {["Ventanas", "Puertas"].map((tab) => (
+                        <li key={tab} style={{ flex: 1 }}>
+                          <button
+                            style={{
+                              width: "100%",
+                              padding: "0px",
+                              backgroundColor: "#fff",
+                              color:
+                                tabElementosOperables === tab.toLowerCase()
+                                  ? "var(--primary-color)"
+                                  : "var(--secondary-color)",
+                              border: "none",
+                              cursor: "pointer",
+                              borderBottom:
+                                tabElementosOperables === tab.toLowerCase()
+                                  ? "solid var(--primary-color)"
+                                  : "none",
+                            }}
+                            onClick={() => setTabElementosOperables(tab.toLowerCase())}
+                          >
+                            {tab}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
+                    <TablesParameters
+                      columns={
+                        tabElementosOperables === "ventanas" ? windowsColumns : doorsColumns
+                      }
+                      data={
+                        tabElementosOperables === "ventanas" ? windowsData : doorsData
+                      }
+                    />
+                  </div>
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+                  {tabElementosOperables === "ventanas" ? (
+                    <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
+                      <span className="material-icons">add</span> Nuevo
+                    </CustomButton>
+                  ) : (
+                    <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
+                      <span className="material-icons">add</span> Nuevo
+                    </CustomButton>
+                  )}
+                </div>
+              </>
             )}
           </div>
-        </>
-      )}
-    </div>
-  </div>
-</Card>
+        </div>
+      </Card>
 
 
       {/* Modales para Material, Detalle, Ventanasdf y Puerta */}
@@ -769,6 +770,27 @@ const AdministrationPage: React.FC = () => {
         </ModalCreate>
       )}
 
+      <NewDetailModal
+        showNewDetailRow={showNewDetailModal}
+        setShowNewDetailRow={setShowNewDetailModal}
+        newDetailForm={newDetail}
+        setNewDetailForm={setNewDetail}
+        onClose={() => {
+          setShowNewDetailModal(false);
+          setNewDetail({
+            scantilon_location: "",
+            name_detail: "",
+            material_id: 0,
+            layer_thickness: null
+          });
+        }}
+        handleCreateNewDetail={handleCreateDetail}
+        materials={materialsList.map(material => ({
+          id: material.material_id || material.id,
+          name: material.atributs.name || ''
+        }))}
+
+      />
       {showNewDetailModal && (
         <ModalCreate
           isOpen={showNewDetailModal}

@@ -1,11 +1,11 @@
-;
+
 import { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ReactElement, useEffect, useState } from "react";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-
+import Image from "next/image";
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactElement;
@@ -81,15 +81,14 @@ const Login: NextPageWithLayout = () => {
 
         <div className="col-12 p-0">
           <div className="login-card login-dark">
-            <div>
-
               <div className="login-main">
                 <div className="col-12 p-0 d-flex justify-content-center">
-                  <img
+                  <Image
                     src="/assets/images/ceela.png"
                     alt="Ceela Logo"
-                    className="img-fluid mt-4 mb-3"
-                    style={{ maxHeight: "120px" }}
+                    width={200}
+                    height={120}
+                    style={{ objectFit: 'contain' }}
                   />
                 </div>
                 <br />
@@ -182,7 +181,6 @@ const Login: NextPageWithLayout = () => {
                   </p>
                 </form>
               </div>
-            </div>
           </div>
         </div>
       </div>

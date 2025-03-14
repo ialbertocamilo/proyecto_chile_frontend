@@ -417,7 +417,6 @@ const ProjectWorkflowPart1: React.FC = () => {
         <Card>
           <div>
           <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
-              {/* Se reemplaza la lista de SidebarItemComponent por el AdminSidebar */}
               <AdminSidebar
                 activeStep={step}
                 onStepChange={handleSidebarStepChange}
@@ -854,13 +853,6 @@ const ProjectWorkflowPart1: React.FC = () => {
           </div>
         </Card>
       </div>
-      
-      <style jsx>{`
-        .container {
-          font-family: var(--font-family-base);
-          font-weight: normal;
-        }
-      `}</style>
     </>
   );
 };

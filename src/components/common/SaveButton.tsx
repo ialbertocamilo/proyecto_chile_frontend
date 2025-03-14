@@ -13,13 +13,17 @@ interface SaveButtonProps {
 
 const SaveButton: React.FC<SaveButtonProps> = ({
     onClick,
+    disabled = false,
+    className = '',
+    tooltip = 'Guardar'
 }) => {
-
-
     return <IconButton
         onClick={onClick}
         icon={SaveIcon}
         text='Continuar'
+        disabled={disabled}
+        className={className}
+        tooltip={tooltip}
     />
 };
 

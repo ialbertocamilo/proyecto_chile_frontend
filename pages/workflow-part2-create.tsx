@@ -268,7 +268,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       }
     );
   }, [projectId, fetchData]);
-  // hofds
+
   const fetchTechumbreDetails = useCallback(() => {
     fetchData<TabItem[]>(
       `${constantUrlApiEndpoint}/project/${projectId}/details/Techo`,
@@ -528,15 +528,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingColors.interior },
-                    exterior: { name: editingColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingColors.interior },
+                  exterior: { name: editingColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -587,15 +587,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingTechColors.interior },
-                    exterior: { name: editingTechColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingTechColors.interior },
+                  exterior: { name: editingTechColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -1048,149 +1048,14 @@ const WorkFlowpar2createPage: React.FC = () => {
           style={{ marginBottom: "1rem" }}
         />
 
-        {/* MODAL para crear un detalle nuevo */}
-        {showNewDetailRow && (
-          <ModalCreate
-            isOpen={showNewDetailRow}
-            onClose={() => {
-              setShowNewDetailRow(false);
-              setNewDetailForm({
-                scantilon_location: "",
-                name_detail: "",
-                material_id: 0,
-                layer_thickness: null,
-              });
-            }}
-            onSave={handleCreateNewDetail}
-            title="Agregar Nuevo Detalle Constructivo"
-            saveLabel="Crear Detalles"
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "15px",
-                padding: "20px",
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label
-                  style={{
-                    textAlign: "left",
-                    fontWeight: "normal",
-                    marginBottom: "5px",
-                  }}
-                >
-                  Ubicación del Detalle
-                </label>
-                <select
-                  className="form-control"
-                  value={newDetailForm.scantilon_location}
-                  onChange={(e) =>
-                    setNewDetailForm((prev) => ({
-                      ...prev,
-                      scantilon_location: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Seleccione</option>
-                  <option value="Muro">Muro</option>
-                  <option value="Techo">Techo</option>
-                  <option value="Piso">Piso</option>
-                </select>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label
-                  style={{
-                    textAlign: "left",
-                    fontWeight: "normal",
-                    marginBottom: "5px",
-                  }}
-                >
-                  Nombre del Detalle
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Nombre Detalle"
-                  value={newDetailForm.name_detail}
-                  onChange={(e) =>
-                    setNewDetailForm((prev) => ({
-                      ...prev,
-                      name_detail: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label
-                  style={{
-                    textAlign: "left",
-                    fontWeight: "normal",
-                    marginBottom: "5px",
-                  }}
-                >
-                  Material
-                </label>
-                <select
-                  className="form-control"
-                  value={newDetailForm.material_id}
-                  onChange={(e) =>
-                    setNewDetailForm((prev) => ({
-                      ...prev,
-                      material_id: parseInt(e.target.value),
-                    }))
-                  }
-                >
-                  <option value={0}>Seleccione un material</option>
-                  {materials.map((mat) => (
-                    <option key={mat.id} value={mat.id}>
-                      {mat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label
-                  style={{
-                    textAlign: "left",
-                    fontWeight: "normal",
-                    marginBottom: "5px",
-                  }}
-                >
-                  Espesor de la Capa (cm)
-                </label>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  className="form-control"
-                  placeholder="Espesor (cm)"
-                  value={
-                    newDetailForm.layer_thickness === null
-                      ? ""
-                      : newDetailForm.layer_thickness
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "-" || e.key === "e") {
-                      e.preventDefault();
-                    }
-                  }}
-                  onChange={(e) => {
-                    const inputValue = e.target.value.replace(/[^0-9.]/g, "");
-                    const value = inputValue ? parseFloat(inputValue) : null;
-                    if (value === null || value >= 0) {
-                      setNewDetailForm((prev) => ({
-                        ...prev,
-                        layer_thickness: value,
-                      }));
-                    }
-                  }}
-                  min="0"
-                />
-              </div>
-            </div>
-          </ModalCreate>
-        )}
+
+        <NewDetailModal
+          showNewDetailRow={showNewDetailRow}
+          setShowNewDetailRow={setShowNewDetailRow}
+          newDetailForm={newDetailForm}
+          setNewDetailForm={setNewDetailForm}
+          materials={materials}
+          handleCreateNewDetail={handleCreateNewDetail} />
 
         {/* Tabla generada con TablesParameters para DETALLES */}
         <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
@@ -1294,7 +1159,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       <GooIcons />
       <Card>
         <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem"}}>
-          {renderMainHeader()} 
+          {renderMainHeader()}
         </div>
           <div className="d-flex align-items-center gap-4">
             <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>

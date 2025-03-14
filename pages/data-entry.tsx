@@ -760,7 +760,6 @@ const DataEntryPage: React.FC = () => {
               <CustomButton
                 variant="save"
                 onClick={() => {
-                  // Lógica para abrir un modal o formulario para agregar un nuevo registro
                   console.log("Agregar nuevo registro");
                 }}
               >

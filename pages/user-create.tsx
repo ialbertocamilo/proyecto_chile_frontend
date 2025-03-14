@@ -5,6 +5,8 @@ import useAuth from "../src/hooks/useAuth";
 import Card from "@/components/common/Card";
 import Title from "@/components/Title";
 import CreateButton from "@/components/CreateButton";
+import { notify } from "@/utils/notify"; // Importamosfds notify
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 interface UserFormData {
   name: string;
@@ -40,7 +42,6 @@ const UserCreate = () => {
   const [loading, setLoading] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
-
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -103,12 +104,18 @@ const UserCreate = () => {
       (field) => !userData[field].trim()
     );
     if (missingFields.length > 0) {
+      notify("Por favor complete todos los campos requeridos."); // Notificamos si faltan campos
       return;
     }
 
     // Validar que las contraseñas coincidan
-    if (userData.password.trim() && userData.confirm_password.trim() && userData.password !== userData.confirm_password) {
+    if (
+      userData.password.trim() &&
+      userData.confirm_password.trim() &&
+      userData.password !== userData.confirm_password
+    ) {
       setFieldErrors({ confirm_password: "Las contraseñas no coinciden." });
+      notify("Las contraseñas no coinciden."); // Notificamos el error
       return;
     } else {
       setFieldErrors({});
@@ -118,7 +125,9 @@ const UserCreate = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       if (!token) {
-        throw new Error("No estás autenticado. Inicia sesión nuevamente.");
+        const errMsg = "No estás autenticado. Inicia sesión nuevamente.";
+        notify(errMsg);
+        throw new Error(errMsg);
       }
       const bodyToSend = {
         ...userData,
@@ -154,9 +163,12 @@ const UserCreate = () => {
         } else {
           setGeneralError(message);
         }
+        notify(message); // Notificamos el error recibido
         return;
       }
 
+      // Notificamos el éxito de la operación
+      notify("Usuario creado exitosamente.");
       // Redirigir sin alerta de éxito
       router.push("/user-management");
     } catch (err: unknown) {
@@ -164,23 +176,33 @@ const UserCreate = () => {
         err instanceof Error ? err.message : "Error al crear usuario";
       console.error("[handleSubmit] Error:", message);
       setGeneralError(message);
+      notify(message); // Notificamos el error capturado
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-    >
-      <div
-      >
+    <div>
+      <div>
         {/* Card para el Título */}
         <Card>
-          <Title text="Creación de usuario" />
+          <div className="d-flex align-items-center w-100">
+            <Title text="Creación de usuario" />
+            <Breadcrumb
+              items={[
+                {
+                  title: "Creación de Usuario",
+                  href: "/",
+                  active: true,
+                },
+              ]}
+            />
+          </div>
         </Card>
 
         {/* Card para el Formulario */}
-        <div >
+        <div>
           {generalError && (
             <p
               className="text-danger fw-bold"
@@ -334,10 +356,10 @@ const UserCreate = () => {
                     (<span style={{ color: "red" }}>*</span>) Campos Obligatorios
                   </p>
 
-                    <CreateButton 
-                      backRoute="/user-management" 
-                      saveTooltip="Guardar Usuario" 
-                      saveText="Guardar"/>
+                  <CreateButton
+                    backRoute="/user-management"
+                    saveTooltip="Guardar Usuario"
+                    saveText="Guardar" />
                 </div>
               </form>
             )}
@@ -346,28 +368,28 @@ const UserCreate = () => {
       </div>
 
       <style jsx>{`
-          .card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            border: none;
-          }
+        .card {
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+          border: none;
+        }
 
-          .custom-create-btn {
-            background-color: var(--primary-color) !important;
-            border: none !important;
-            border-radius: 0.5rem !important;
-            padding: 12px !important;
-            font-size: 1rem !important;
-            transition: background 0.3s ease !important;
-            color: #fff !important;
-            cursor: pointer;
-            font-family: var(--font-family-base) !important;
-          }
-          .custom-create-btn:hover {
-            background-color: var(--secondary-color) !important;
-          }
-        `}</style>
+        .custom-create-btn {
+          background-color: var(--primary-color) !important;
+          border: none !important;
+          border-radius: 0.5rem !important;
+          padding: 12px !important;
+          font-size: 1rem !important;
+          transition: background 0.3s ease !important;
+          color: #fff !important;
+          cursor: pointer;
+          font-family: var(--font-family-base) !important;
+        }
+        .custom-create-btn:hover {
+          background-color: var(--secondary-color) !important;
+        }
+      `}</style>
     </div>
   );
 };

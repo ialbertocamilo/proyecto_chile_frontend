@@ -17,7 +17,7 @@ const CancelButton: React.FC<CancelButtonProps> = ({
             title={title}
             aria-label={title}
         >
-            <X size={16} />Cancelar
+            {/* <X size={16} /> */}Cancelar
         </button>
     );
 };

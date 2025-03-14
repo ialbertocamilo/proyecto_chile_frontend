@@ -75,7 +75,7 @@ const Login: NextPageWithLayout = () => {
       className="container-fluid"
       style={{
         background:
-          "url('/assets/images/login_background.png') no-repeat center center/cover",
+          "url('/assets/images/background.jpg') no-repeat center center/cover",
       }}
     >
       <div className="row">

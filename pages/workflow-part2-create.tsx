@@ -9,15 +9,16 @@ import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { Tooltip } from "react-tooltip";
-import Modal from "../src/components/common/Modal";
+import ModalCreate from "@/components/common/ModalCreate"; // Se reemplaza Modal por ModalCreate
 import { notify } from "@/utils/notify";
-
 import Title from "../src/components/Title";
 // Importamos el componente SidebarItemComponent del directorio común
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 // Importamos el componente SearchParameters
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import VerticalDivider from "@/components/ui/HorizontalDivider";
+import TablesParameters from "@/components/tables/TablesParameters";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Detail {
   id_detail: number;
@@ -193,13 +194,11 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   useEffect(() => {
     if (hasLoaded && projectId === null) {
-      Swal.fire(
+      notify(
         "Ningún proyecto está seleccionado",
         "Serás redirigido a la creación de proyecto",
-        "warning"
-      ).then(() => {
-        router.push("/workflow-part1-create");
-      });
+      );
+      router.push("/workflow-part1-create");
     }
   }, [hasLoaded, projectId, router]);
 
@@ -221,7 +220,7 @@ const WorkFlowpar2createPage: React.FC = () => {
   const getToken = () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      Swal.fire("Token no encontrado", "Inicia sesión.");
+      notify("Token no encontrado", "Inicia sesión.");
     }
     return token;
   };
@@ -254,7 +253,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       setFetchedDetails(response.data || []);
     } catch (error: unknown) {
       console.error("Error al obtener detalles:", error);
-      Swal.fire("Error", "Error al obtener detalles. Ver consola.");
+      notify("Error", "Error al obtener detalles. Ver consola.");
     }
   }, []);
 
@@ -330,7 +329,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       setMaterials(materialsList);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
-      notify("Error al obtener materiales.");
+      notify("Error al obtener Materiales.");
     }
   };
 
@@ -373,7 +372,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       !newDetailForm.name_detail ||
       !newDetailForm.material_id
     ) {
-      notify("Por favor complete todos los campos de detalle");
+      notify("Por favor complete todos los campos de Detalle.");
       return;
     }
 
@@ -391,33 +390,31 @@ const WorkFlowpar2createPage: React.FC = () => {
       const newDetailId = response.data.detail.id;
 
       if (!newDetailId) {
-        notify("El backend no devolvió un ID de detalle válido.");
+        notify("El backend no devolvió un ID de Detalle válido.");
         return;
       }
 
       // Paso 2: Añadir el detalle al proyecto directamente
       if (projectId) {
         const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-
-        // Asegurarnos de que estamos enviando un array de IDs
         const detailIds = [newDetailId];
-
         try {
           await axios.post(selectUrl, detailIds, { headers });
-          notify("Detalle creado y añadido al proyecto exitosamente");
+          notify("Detalle creado y añadido al proyecto exitosamente.");
         } catch (selectError: unknown) {
-          // Verificar si el error es que el detalle ya está en el proyecto
-          if (axios.isAxiosError(selectError) &&
-            selectError.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
-            // Este no es un error real para nuestro caso de uso
-            notify("Detalle creado exitosamente");
+          if (
+            axios.isAxiosError(selectError) &&
+            selectError.response?.data?.detail ===
+              "Todos los detalles ya estaban en el proyecto"
+          ) {
+            notify("Detalle creado exitosamente.");
           } else {
             console.error("Error al añadir detalle al proyecto:", selectError);
-            notify("Detalle creado pero no se pudo añadir al proyecto");
+            notify("Detalle creado pero no se añadio al proyecto.");
           }
         }
       } else {
-        notify("No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)");
+        notify("No se añadio el Detalle al proyecto (ID de proyecto no disponible).");
       }
 
       // Actualizar la interfaz
@@ -431,13 +428,10 @@ const WorkFlowpar2createPage: React.FC = () => {
       });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          "Error en la creación del detalle:",
-          error.response?.data
-        );
-        notify("Error en la creación del detalle");
+        console.error("Error en la creación del detalle:", error.response?.data);
+        notify("Error en la creación del Detalle.");
       } else {
-        notify("Error desconocido al crear el detalle");
+        notify("Error desconocido al crear el Detalle.");
       }
     }
   };
@@ -447,7 +441,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchMaterials();
   };
 
-  // Función unificada para guardar detalles (se usa en dos contextos)
+  // Función unificada para guardar detalles
   const saveDetails = async () => {
     if (!projectId) {
       console.error("No se proporcionó un ID de proyecto.");
@@ -472,10 +466,11 @@ const WorkFlowpar2createPage: React.FC = () => {
       setShowTabsInStep4(true);
       setTabStep4("muros");
     } catch (error: unknown) {
-      // Si el error es que todos los detalles ya estaban en el proyecto, no es un error real
-      if (axios.isAxiosError(error) &&
-        error.response?.data?.detail === 'Todos los detalles ya estaban en el proyecto') {
-        // Este no es un error real, aún podemos mostrar las pestañas
+      if (
+        axios.isAxiosError(error) &&
+        error.response?.data?.detail ===
+          "Todos los detalles ya estaban en el proyecto"
+      ) {
         setShowTabsInStep4(true);
         setTabStep4("muros");
         return;
@@ -488,7 +483,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
-  // Funciones para edición de Muros
+  // =================== FUNCIONES DE EDICIÓN (MUROS / TECHUMBRE) ===================
   const handleEditClick = (detail: TabItem) => {
     setEditingRowId(detail.id || null);
     setEditingColors({
@@ -524,7 +519,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify("Detalle tipo Muro actualizado con éxito");
+      notify("Detalle tipo Muro actualizado con éxito.");
       setMurosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -544,11 +539,10 @@ const WorkFlowpar2createPage: React.FC = () => {
       setEditingRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      notify("Error al actualizar detalle. Ver consola.");
+      notify("Error al actualizar Detalle. Ver consola.");
     }
   };
 
-  // Funciones para edición de Techumbre
   const handleEditTechClick = (detail: TabItem) => {
     setEditingTechRowId(detail.id || null);
     setEditingTechColors({
@@ -584,7 +578,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify("Detalle tipo Techo actualizado con éxito");
+      notify("Detalle tipo Techo actualizado con éxito.");
       setTechumbreTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -608,12 +602,332 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
-  // Renderizado de encabezado principal
+  // =================== RENDER DE CABECERA PRINCIPAL ===================
   const renderMainHeader = () => <Title text="Desarrollo de proyecto" />;
 
-  // Renderizado de pestañas en el paso 4 (sin cambios)
+  // =================== RENDER DE TABLAS MUROS / TECHUMBRE / PISOS / VENTANAS / PUERTAS ===================
+  const renderMurosTable = () => {
+    // Defino las columnas
+    const columnsMuros = [
+      { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
+      { headerName: "Valor U (W/m²K)", field: "valorU" },
+      { headerName: "Color Exterior", field: "colorExterior" },
+      { headerName: "Color Interior", field: "colorInterior" },
+      { headerName: "Acciones", field: "acciones" },
+    ];
+
+    // Defino la data, en cada "field" puedo meter JSX si necesito selects o botones:
+    const murosData = murosTabList.map((item) => {
+      const isEditing = editingRowId === item.id;
+      return {
+        nombreAbreviado: item.name_detail,
+        valorU: item.value_u?.toFixed(3) ?? "--",
+        colorExterior: isEditing ? (
+          <select
+            value={editingColors.exterior}
+            onChange={(e) =>
+              setEditingColors((prev) => ({
+                ...prev,
+                exterior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.exterior?.name || "Desconocido"
+        ),
+        colorInterior: isEditing ? (
+          <select
+            value={editingColors.interior}
+            onChange={(e) =>
+              setEditingColors((prev) => ({
+                ...prev,
+                interior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.interior?.name || "Desconocido"
+        ),
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={() => handleConfirmEdit(item)}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={() => handleCancelEdit(item)}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <CustomButton
+            className="btn-table"
+            variant="editIcon"
+            onClick={() => handleEditClick(item)}
+          >
+            Editar
+          </CustomButton>
+        ),
+      };
+    });
+
+    return (
+      <div style={{ overflowX: "auto" }}>
+        {murosTabList.length > 0 ? (
+          <TablesParameters
+            columns={columnsMuros}
+            data={murosData}
+          />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  const renderTechumbreTable = () => {
+    const columnsTech = [
+      { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
+      { headerName: "Valor U (W/m²K)", field: "valorU" },
+      { headerName: "Color Exterior", field: "colorExterior" },
+      { headerName: "Color Interior", field: "colorInterior" },
+      { headerName: "Acciones", field: "acciones" },
+    ];
+
+    const techData = techumbreTabList.map((item) => {
+      const isEditing = editingTechRowId === item.id;
+      return {
+        nombreAbreviado: item.name_detail,
+        valorU: item.value_u?.toFixed(3) ?? "--",
+        colorExterior: isEditing ? (
+          <select
+            value={editingTechColors.exterior}
+            onChange={(e) =>
+              setEditingTechColors((prev) => ({
+                ...prev,
+                exterior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.exterior?.name || "Desconocido"
+        ),
+        colorInterior: isEditing ? (
+          <select
+            value={editingTechColors.interior}
+            onChange={(e) =>
+              setEditingTechColors((prev) => ({
+                ...prev,
+                interior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.interior?.name || "Desconocido"
+        ),
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={() => handleConfirmTechEdit(item)}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={() => handleCancelTechEdit(item)}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <CustomButton
+            variant="editIcon"
+            className="btn-table"
+            onClick={() => handleEditTechClick(item)}
+          >
+            Editar
+          </CustomButton>
+        ),
+      };
+    });
+
+    return (
+      <div style={{ minWidth: "600px" }}>
+        {techumbreTabList.length > 0 ? (
+          <TablesParameters columns={columnsTech} data={techData} />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  const renderPisosTable = () => {
+    // Para múltiples columnas: simulamos la doble cabecera en un solo header (10 columnas)
+    // Nombre | U | I_bajoPiso | eAisl_bajoPiso | I_vert | eAisl_vert | D_vert | I_horiz | eAisl_horiz | D_horiz
+    const columnsPisos = [
+      { headerName: "Nombre", field: "nombre" },
+      { headerName: "U [W/m²K]", field: "uValue" },
+      { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
+      { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
+      { headerName: "I [W/mK] (vert)", field: "vertLambda" },
+      { headerName: "e Aisl [cm]", field: "vertEAisl" },
+      { headerName: "D [cm]", field: "vertD" },
+      { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
+      { headerName: "e Aisl [cm]", field: "horizEAisl" },
+      { headerName: "D [cm]", field: "horizD" },
+    ];
+
+    const multiHeaderPisos = {
+      rows: [
+        [
+          { label: "Nombre", rowSpan: 2 },
+          { label: "U [W/m²K]", rowSpan: 2 },
+          { label: "Aislamiento bajo piso", colSpan: 2 },
+          { label: "Ref Aisl Vert.", colSpan: 3 },
+          { label: "Ref Aisl Horiz.", colSpan: 3 },
+        ],
+        [
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+        ],
+      ],
+    };
+
+    const pisosData = pisosTabList.map((item) => {
+      const bajoPiso = item.info?.aislacion_bajo_piso || {};
+      const vert = item.info?.ref_aisl_vertical || {};
+      const horiz = item.info?.ref_aisl_horizontal || {};
+      return {
+        nombre: item.name_detail,
+        uValue: item.value_u?.toFixed(3) ?? "--",
+        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
+        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
+        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
+        vertEAisl: vert.e_aisl ?? "N/A",
+        vertD: vert.d ?? "N/A",
+        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
+        horizEAisl: horiz.e_aisl ?? "N/A",
+        horizD: horiz.d ?? "N/A",
+      };
+    });
+
+    return (
+      <div style={{ minWidth: "600px" }}>
+        {pisosTabList.length > 0 ? (
+          <TablesParameters
+            columns={columnsPisos}
+            data={pisosData}
+            multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
+          />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  const renderVentanasTable = () => {
+    const columnsVentanas = [
+      { headerName: "Nombre Elemento", field: "name_element" },
+      { headerName: "U Vidrio [W/m²K]", field: "u_vidrio" },
+      { headerName: "FS Vidrio []", field: "fs_vidrio" },
+      { headerName: "Tipo Marco", field: "frame_type" },
+      { headerName: "Tipo Cierre", field: "clousure_type" },
+      { headerName: "U Marco [W/m²K]", field: "u_marco" },
+      { headerName: "FV [%]", field: "fm" },
+    ];
+
+    const ventanasData = ventanasTabList.map((item, idx) => ({
+      name_element: item.name_element,
+      u_vidrio: item.atributs?.u_vidrio
+        ? item.atributs.u_vidrio.toFixed(3)
+        : "--",
+      fs_vidrio: item.atributs?.fs_vidrio ?? "--",
+      frame_type: item.atributs?.frame_type ?? "--",
+      clousure_type: item.atributs?.clousure_type ?? "--",
+      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+      fm: item.fm ?? "--",
+    }));
+
+    return (
+      <div style={{ minWidth: "600px" }}>
+        {ventanasTabList.length > 0 ? (
+          <TablesParameters columns={columnsVentanas} data={ventanasData} />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  const renderPuertasTable = () => {
+    const columnsPuertas = [
+      { headerName: "Nombre Elemento", field: "name_element" },
+      { headerName: "U puerta opaca [W/m²K]", field: "u_puerta" },
+      { headerName: "Vidrio []", field: "name_ventana" },
+      { headerName: "% vidrio", field: "porcentaje_vidrio" },
+      { headerName: "U Marco [W/m²K]", field: "u_marco" },
+      { headerName: "FM [%]", field: "fm" },
+    ];
+
+    const puertasData = puertasTabList.map((item, idx) => ({
+      name_element: item.name_element,
+      u_puerta: item.atributs?.u_puerta_opaca
+        ? item.atributs.u_puerta_opaca.toFixed(3)
+        : "--",
+      name_ventana: item.atributs?.name_ventana ?? "--",
+      porcentaje_vidrio: item.atributs?.porcentaje_vidrio ?? "--",
+      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+      fm: item.fm ?? "--",
+    }));
+
+    return (
+      <div style={{ minWidth: "600px" }}>
+        {puertasTabList.length > 0 ? (
+          <TablesParameters columns={columnsPuertas} data={puertasData} />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  // =================== RENDER DE LAS PESTAÑAS EN STEP 4 ===================
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
+
     const tabs = [
       { key: "muros", label: "Muros" },
       { key: "techumbre", label: "Techumbre" },
@@ -623,7 +937,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     ] as { key: TabStep4; label: string }[];
 
     return (
-      <div >
+      <div>
         <ul
           className="nav"
           style={{
@@ -644,7 +958,8 @@ const WorkFlowpar2createPage: React.FC = () => {
                   color: tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
-                  borderBottom: tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
+                  borderBottom:
+                    tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -655,400 +970,15 @@ const WorkFlowpar2createPage: React.FC = () => {
             </li>
           ))}
         </ul>
+
         <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
-          {tabStep4 === "muros" && (
-            <div style={{ overflowX: "auto" }}>
-              <table
-                className="table table-bordered " style={{ width: "100%" }}>
-                <thead>
-                  <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Valor U (W/m²K)</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Exterior</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Interior</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {murosTabList.length > 0 ? (
-                    murosTabList.map((item) => (
-                      <tr key={item.id || item.id_detail}>
-                        <td>{item.name_detail}</td>
-                        <td>{item.value_u?.toFixed(3) ?? "--"}</td>
-                        <td>
-                          {editingRowId === item.id ? (
-                            <select
-                              value={editingColors.exterior}
-                              onChange={(e) =>
-                                setEditingColors((prev) => ({
-                                  ...prev,
-                                  exterior: e.target.value,
-                                }))
-                              }
-                            >
-                              <option value="Claro">Claro</option>
-                              <option value="Oscuro">Oscuro</option>
-                              <option value="Intermedio">Intermedio</option>
-                            </select>
-                          ) : (
-                            item.info?.surface_color?.exterior?.name || "Desconocido"
-                          )}
-                        </td>
-                        <td>
-                          {editingRowId === item.id ? (
-                            <select
-                              value={editingColors.interior}
-                              onChange={(e) =>
-                                setEditingColors((prev) => ({
-                                  ...prev,
-                                  interior: e.target.value,
-                                }))
-                              }
-                            >
-                              <option value="Claro">Claro</option>
-                              <option value="Oscuro">Oscuro</option>
-                              <option value="Intermedio">Intermedio</option>
-                            </select>
-                          ) : (
-                            item.info?.surface_color?.interior?.name || "Desconocido"
-                          )}
-                        </td>
-                        <td className="container-table-buttons ">
-                          {editingRowId === item.id ? (
-                            <>
-                              <CustomButton
-                                className="btn-table"
-                                variant="save"
-                                onClick={() => handleConfirmEdit(item)}
-                              >
-                                <span className="material-icons">check</span>
-                              </CustomButton>
-                              <CustomButton
-                                className="btn-table"
-                                variant="cancelIcon"
-                                onClick={() => handleCancelEdit(item)}
-                              >
-                                Deshacer
-                              </CustomButton>
-                            </>
-                          ) : (
-                            <CustomButton
-                              className="btn-table"
-                              variant="editIcon"
-                              onClick={() => handleEditClick(item)}
-                            >
-                              Editar
-                            </CustomButton>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5}>No hay datos</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {tabStep4 === "techumbre" && (
-            <div style={{ minWidth: "600px" }}>
-              <table className="table table-bordered " style={{ width: "100%" }}>
-                <thead>
-                  <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Nombre Abreviado</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Valor U (W/m²K)</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Exterior</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Color Interior</th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {techumbreTabList.length > 0 ? (
-                    techumbreTabList.map((item) => (
-                      <tr key={item.id || item.id_detail}>
-                        <td>{item.name_detail}</td>
-                        <td>{item.value_u?.toFixed(3) ?? "--"}</td>
-                        <td>
-                          {editingTechRowId === item.id ? (
-                            <select
-                              value={editingTechColors.exterior}
-                              onChange={(e) =>
-                                setEditingTechColors((prev) => ({
-                                  ...prev,
-                                  exterior: e.target.value,
-                                }))
-                              }
-                            >
-                              <option value="Claro">Claro</option>
-                              <option value="Oscuro">Oscuro</option>
-                              <option value="Intermedio">Intermedio</option>
-                            </select>
-                          ) : (
-                            item.info?.surface_color?.exterior?.name || "Desconocido"
-                          )}
-                        </td>
-                        <td>
-                          {editingTechRowId === item.id ? (
-                            <select
-                              value={editingTechColors.interior}
-                              onChange={(e) =>
-                                setEditingTechColors((prev) => ({
-                                  ...prev,
-                                  interior: e.target.value,
-                                }))
-                              }
-                            >
-                              <option value="Claro">Claro</option>
-                              <option value="Oscuro">Oscuro</option>
-                              <option value="Intermedio">Intermedio</option>
-                            </select>
-                          ) : (
-                            item.info?.surface_color?.interior?.name || "Desconocido"
-                          )}
-                        </td>
-                        <td className="container-table-buttons">
-                          {editingTechRowId === item.id ? (
-                            <>
-                              <CustomButton
-                                className="btn-table"
-                                variant="save"
-                                onClick={() => handleConfirmTechEdit(item)}
-
-                              >
-                                <span className="material-icons">check</span>
-                              </CustomButton>
-                              <CustomButton
-                                className="btn-table"
-                                variant="cancelIcon"
-                                onClick={() => handleCancelTechEdit(item)}
-
-                              >
-                                Deshacer
-                              </CustomButton>
-                            </>
-                          ) : (
-                            <CustomButton
-                              variant="editIcon"
-                              className="btn-table"
-                              onClick={() => handleEditTechClick(item)}
-
-                            >
-                              Editar
-                            </CustomButton>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5}>No hay datos</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {tabStep4 === "pisos" && (
-            <div style={{ minWidth: "600px" }}>
-              <table className="table table-bordered " style={{ width: "100%" }}>
-                <thead>
-                  <tr>
-                    <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Nombre
-                    </th>
-                    <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      U [W/m²K]
-                    </th>
-                    <th colSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Aislamiento bajo piso
-                    </th>
-                    <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Ref Aisl Vert.
-                    </th>
-                    <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Ref Aisl Horiz.
-                    </th>
-                  </tr>
-                  <tr>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/mK]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>I [W/m²K]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>e Aisl [cm]</th>
-                    <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>D [cm]</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pisosTabList.length > 0 ? (
-                    pisosTabList.map((item) => {
-                      const bajoPiso = item.info?.aislacion_bajo_piso || {};
-                      const vert = item.info?.ref_aisl_vertical || {};
-                      const horiz = item.info?.ref_aisl_horizontal || {};
-                      return (
-                        <tr key={item.id || item.id_detail}>
-                          <td style={{ textAlign: "center" }}>{item.name_detail}</td>
-                          <td style={{ textAlign: "center" }}>{item.value_u?.toFixed(3) ?? "--"}</td>
-                          <td style={{ textAlign: "center" }}>
-                            {bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {bajoPiso.e_aisl ? bajoPiso.e_aisl : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {vert.lambda ? vert.lambda.toFixed(3) : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {vert.e_aisl ? vert.e_aisl : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {vert.d ? vert.d : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {horiz.e_aisl ? horiz.e_aisl : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {horiz.d ? horiz.d : "N/A"}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={9} style={{ textAlign: "center" }}>
-                        No hay datos
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {tabStep4 === "ventanas" && (
-            <div style={{ minWidth: "600px" }}>
-              <table className="table table-bordered " style={{ width: "100%" }}>
-                <thead>
-                  <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Nombre Elemento
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      U Vidrio [W/m²K]
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      FS Vidrio []
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Tipo Marco
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Tipo Cierre
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      U Marco [W/m²K]
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      FV [%]
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ventanasTabList.length > 0 ? (
-                    ventanasTabList.map((item, idx) => (
-                      <tr key={item.name_element + idx}>
-                        <td style={{ textAlign: "center" }}>{item.name_element}</td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.u_vidrio?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.fs_vidrio ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.frame_type ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.clousure_type ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.u_marco?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={7} style={{ textAlign: "center" }}>
-                        No hay datos
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {tabStep4 === "puertas" && (
-            <div style={{ minWidth: "600px" }}>
-              <table className="table table-bordered " style={{ width: "100%" }}>
-                <thead>
-                  <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Nombre Elemento
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      U puerta opaca [W/m²K]
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Vidrio []
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      % vidrio
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      U Marco [W/m²K]
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      FM [%]
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {puertasTabList.length > 0 ? (
-                    puertasTabList.map((item, idx) => (
-                      <tr key={item.name_element + idx}>
-                        <td style={{ textAlign: "center" }}>{item.name_element}</td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.u_puerta_opaca?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.name_ventana ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.atributs?.porcentaje_vidrio ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.u_marco?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} style={{ textAlign: "center" }}>
-                        No hay datos
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
+          {tabStep4 === "muros" && renderMurosTable()}
+          {tabStep4 === "techumbre" && renderTechumbreTable()}
+          {tabStep4 === "pisos" && renderPisosTable()}
+          {tabStep4 === "ventanas" && renderVentanasTable()}
+          {tabStep4 === "puertas" && renderPuertasTable()}
         </div>
+
         <div
           style={{
             display: "flex",
@@ -1079,9 +1009,29 @@ const WorkFlowpar2createPage: React.FC = () => {
     );
   };
 
-  // Renderizado de la vista inicial de detalles
+  // =================== RENDER DE LA VISTA INICIAL DE DETALLES ===================
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
+
+    // Columns para TablesParameters
+    const columnsDetails = [
+      { headerName: "Ubicación Detalle", field: "scantilon_location" },
+      { headerName: "Nombre Detalle", field: "name_detail" },
+      { headerName: "Material", field: "material" },
+      { headerName: "Espesor capa (cm)", field: "layer_thickness" },
+    ];
+
+    // Filtramos los detalles para la búsqueda
+    const filteredData = fetchedDetails.filter((det) => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        det.scantilon_location.toLowerCase().includes(searchLower) ||
+        det.name_detail.toLowerCase().includes(searchLower) ||
+        det.material.toLowerCase().includes(searchLower) ||
+        det.layer_thickness.toString().includes(searchLower)
+      );
+    });
+
     return (
       <>
         <SearchParameters
@@ -1092,225 +1042,21 @@ const WorkFlowpar2createPage: React.FC = () => {
           newButtonText="Nuevo"
           style={{ marginBottom: "1rem" }}
         />
-        <div className="mb-3">
-          <div style={{ height: "400px", overflowY: "scroll", overflowX: "auto" }}>
-            <table
-              className="table table-bordered "
-              style={{
-                width: "80%",
-                minWidth: "600px",
-                textAlign: "center",
-                margin: "auto",
-              }}
-            >
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
-                    Ubicación Detalle
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
-                    Nombre Detalle
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
-                    Material
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
-                    Espesor capa (cm)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {showNewDetailRow && (
-                  <Modal
-                    isOpen={showNewDetailRow}
-                    onClose={() => setShowNewDetailRow(false)}
-                    title="Agregar Nuevo Detalle Constructivo"
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "15px",
-                        padding: "20px",
-                      }}
-                    >
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Ubicación del Detalle
-                        </label>
-                        <select
-                          className="form-control"
-                          value={newDetailForm.scantilon_location}
-                          onChange={(e) =>
-                            setNewDetailForm((prev) => ({
-                              ...prev,
-                              scantilon_location: e.target.value,
-                            }))
-                          }
-                        >
-                          <option value="">Seleccione</option>
-                          <option value="Muro">Muro</option>
-                          <option value="Techo">Techo</option>
-                          <option value="Piso">Piso</option>
-                        </select>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Nombre del Detalle
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Nombre Detalle"
-                          value={newDetailForm.name_detail}
-                          onChange={(e) =>
-                            setNewDetailForm((prev) => ({
-                              ...prev,
-                              name_detail: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Material
-                        </label>
-                        <select
-                          className="form-control"
-                          value={newDetailForm.material_id}
-                          onChange={(e) =>
-                            setNewDetailForm((prev) => ({
-                              ...prev,
-                              material_id: parseInt(e.target.value),
-                            }))
-                          }
-                        >
-                          <option value={0}>Seleccione un material</option>
-                          {materials.map((mat) => (
-                            <option key={mat.id} value={mat.id}>
-                              {mat.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Espesor de la Capa (cm)
-                        </label>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          className="form-control"
-                          placeholder="Espesor (cm)"
-                          value={
-                            newDetailForm.layer_thickness === null
-                              ? ""
-                              : newDetailForm.layer_thickness
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "-" || e.key === "e") {
-                              e.preventDefault();
-                            }
-                          }}
-                          onChange={(e) => {
-                            const inputValue = e.target.value.replace(/[^0-9.]/g, "");
-                            const value = inputValue ? parseFloat(inputValue) : null;
-                            if (value === null || value >= 0) {
-                              setNewDetailForm((prev) => ({
-                                ...prev,
-                                layer_thickness: value,
-                              }));
-                            }
-                          }}
-                          min="0"
-                        />
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        marginTop: "15px",
-                        paddingRight: "15px",
-                      }}
-                    >
-                      <CustomButton
-                        variant="save"
-                        onClick={() => {
-                          setShowNewDetailRow(false);
-                          setNewDetailForm({
-                            scantilon_location: "",
-                            name_detail: "",
-                            material_id: 0,
-                            layer_thickness: null,
-                          });
-                        }}
-                      >
-                        Cancelar
-                      </CustomButton>
-                      <CustomButton
-                        variant="save"
-                        onClick={async () => {
-                          await handleCreateNewDetail();
-                        }}
-                        id="grabar-datos-btn"
-                      >
-                        Crear Detalles
-                      </CustomButton>
-                      <Tooltip anchorSelect="#grabar-datos-btn" place="top">
-                        Guardar cambios tras agregar un detalle
-                      </Tooltip>
-                    </div>
-                  </Modal>
-                )}
-                {fetchedDetails
-                  .filter((det) => {
-                    const searchLower = searchQuery.toLowerCase();
-                    return (
-                      det.scantilon_location
-                        .toLowerCase()
-                        .includes(searchLower) ||
-                      det.name_detail.toLowerCase().includes(searchLower) ||
-                      det.material.toLowerCase().includes(searchLower) ||
-                      det.layer_thickness.toString().includes(searchLower)
-                    );
-                  })
-                  .map((det) => (
-                    <tr key={det.id_detail}>
-                      <td>{det.scantilon_location}</td>
-                      <td>{det.name_detail}</td>
-                      <td>{det.material}</td>
-                      <td>{det.layer_thickness}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
+
+
+        <NewDetailModal
+          showNewDetailRow={showNewDetailRow}
+          setShowNewDetailRow={setShowNewDetailRow}
+          newDetailForm={newDetailForm}
+          setNewDetailForm={setNewDetailForm}
+          materials={materials}
+          handleCreateNewDetail={handleCreateNewDetail} />
+
+        {/* Tabla generada con TablesParameters para DETALLES */}
+        <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
+          <TablesParameters columns={columnsDetails} data={filteredData} />
         </div>
+
         <div
           style={{
             display: "flex",
@@ -1347,7 +1093,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                   minWidth: "6rem",
                 }}
               >
-                <span className="material-icons">visibility</span> Mostrar datos
+                Realizar Calculos
               </CustomButton>
             </div>
           </div>
@@ -1356,7 +1102,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     );
   };
 
-  // Renderizado de Recinto (en desarrollo)
+  // =================== RENDER DE RECINTO (SIMPLE) ===================
   const renderRecinto = () => {
     return (
       <>
@@ -1364,28 +1110,28 @@ const WorkFlowpar2createPage: React.FC = () => {
           <div></div>
         </div>
         <div style={{ height: "390px", overflowY: "scroll", overflowX: "auto" }}>
+          {/* Ejemplo de tabla manual, si más adelante quieres TablesParameters, puedes hacerlo */}
           <table className="table table-bordered " style={{ width: "100%", minWidth: "600px" }}>
             <thead>
               <tr>
                 <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>ID</th>
                 <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Estado</th>
-                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Nombre del Recinto</th>
-                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Perfil de Ocupación</th>
+                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
+                  Nombre del Recinto
+                </th>
+                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
+                  Perfil de Ocupación
+                </th>
                 <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Sensor CO2</th>
-                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Altura Promedio</th>
+                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>
+                  Altura Promedio
+                </th>
                 <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Área</th>
               </tr>
             </thead>
             <tbody>{/* Lógica para mostrar los recintos */}</tbody>
           </table>
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: "10px",
-          }}
-        ></div>
       </>
     );
   };
@@ -1402,24 +1148,46 @@ const WorkFlowpar2createPage: React.FC = () => {
       title: "Recinto",
     },
   ];
+
   return (
     <>
       <GooIcons />
       <Card>
-        {renderMainHeader()}
-      </Card>
+        <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem"}}>
+          {renderMainHeader()}
+        </div>
+          <div className="d-flex align-items-center gap-4">
+            <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
+              Proyecto:
+            </span>
+            <CustomButton
+              variant="save"
+              className="no-hover"
+              style={{ padding: "0.8rem 3rem" }}
+            >
+              {`Edificación Nº ${projectId ?? "xxxxx"}`}
+            </CustomButton>
+            <div className="ms-auto" style={{display: "flex"}}>
+            <Breadcrumb
+            items={[
+              {
+                title: "Proyecto Nuevo",
+                href: "/",
+                active: true,
+              },
+            ]}
+          />
+          </div>
+          </div>
+        </Card>
       <Card>
         <div className="row">
           <div className="col-lg-3 col-12 order-lg-first order-first">
             <div className="mb-3 mb-lg-0">
               {/* Sidebar usando el componente común */}
-              <AdminSidebar
-                activeStep={step}
-                onStepChange={setStep}
-                steps={sidebarSteps}
-              />
-          </div>
-          <VerticalDivider />
+              <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
+            </div>
+            <VerticalDivider />
           </div>
           <div className="col-lg-9 col-12 order-last">
             <div style={{ padding: "20px" }}>

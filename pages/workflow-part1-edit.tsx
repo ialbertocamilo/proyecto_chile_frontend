@@ -14,6 +14,7 @@ import { notify } from "@/utils/notify";
 import Title from "../src/components/Title";
 import { useApi } from "@/hooks/useApi";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Componente de sidebar dinámico
+import Breadcrumb from "../src/components/common/Breadcrumb";
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -355,7 +356,18 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   const renderMainHeader = () => {
     return (
+      <div className="d-flex align-items-center w-100">
       <Title text={router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"} />
+      <Breadcrumb
+            items={[
+              {
+                title: "Proyecto Nuevo",
+                href: "/",
+                active: true,
+              },
+            ]}
+          />
+      </div>
     );
   };
 
@@ -403,15 +415,13 @@ const ProjectWorkflowPart1: React.FC = () => {
         <div>{renderMainHeader()}</div>
         </Card>
         <Card>
-          <div style={{ padding: "0" }}>
-            <div className="d-flex" style={{ alignItems: "stretch", gap: 0 }}>
-              {/* Se reemplaza la lista de SidebarItemComponent por el AdminSidebar */}
+          <div>
+          <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
               <AdminSidebar
                 activeStep={step}
                 onStepChange={handleSidebarStepChange}
-                steps={steps}
-              />
-              <div style={{ flex: 1, padding: "40px" }}>
+                steps={steps}/>
+              <div className="content p-4" style={{ flex: 1 }}>
                 {step === 1 && (
                   <>
                     {/* Paso 1: Datos generales */}
@@ -843,13 +853,6 @@ const ProjectWorkflowPart1: React.FC = () => {
           </div>
         </Card>
       </div>
-      
-      <style jsx>{`
-        .container {
-          font-family: var(--font-family-base);
-          font-weight: normal;
-        }
-      `}</style>
     </>
   );
 };

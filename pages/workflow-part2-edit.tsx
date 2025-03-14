@@ -1,22 +1,26 @@
-import React, { useState, useEffect, useCallback } from "react"; 
-import "bootstrap/dist/css/bootstrap.min.css";
-import Swal from "sweetalert2";
+// WorkFlowpar2editPage.tsx
+import { notify } from "@/utils/notify";
 import axios from "axios";
-import CustomButton from "../src/components/common/CustomButton";
-import Card from "../src/components/common/Card";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/router";
-import GooIcons from "../public/GoogleIcons";
-import { Tooltip } from "react-tooltip";
-import Modal from "../src/components/common/Modal";
-import { toast } from "react-toastify";
+import React, { useCallback, useEffect, useState } from "react";
 import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
+import GooIcons from "../public/GoogleIcons";
 import Title from "../src/components/Title";
-// Importamos el nuevo componente AdminSidebar
-import { AdminSidebar }  from "../src/components/administration/AdminSidebar";
-// Importamos el nuevo componente SearchParameters
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
+import Card from "../src/components/common/Card";
+import CustomButton from "../src/components/common/CustomButton";
 import SearchParameters from "../src/components/inputs/SearchParameters";
+import useAuth from "../src/hooks/useAuth";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import ModalCreate from "../src/components/common/ModalCreate";
+import Breadcrumb from "@/components/common/Breadcrumb";
+
+// Importamos nuestro componente genérico de tablas
+import { NewDetailModal } from "@/components/modals/NewDetailModal";
+import TablesParameters from "../src/components/tables/TablesParameters";
+// Ajusta la ruta de import según corresponda a tu proyecto
 
 interface Detail {
   id_detail: number;
@@ -116,7 +120,7 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-// Constantes de estilos
+// Constantes de estilos para cabeceras fijas
 const stickyHeaderStyle1 = {
   position: "sticky" as const,
   top: 0,
@@ -137,14 +141,14 @@ const WorkFlowpar2editPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
-  // Estados generales
+  // ===================== ESTADOS GENERALES ======================
   const [projectId, setProjectId] = useState<number | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [step, setStep] = useState<number>(4);
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Estados para detalles y pestañas
+  // ===================== ESTADOS DETALLES ======================
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [showNewDetailRow, setShowNewDetailRow] = useState(false);
   const [newDetailForm, setNewDetailForm] = useState<{
@@ -161,7 +165,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   const [showTabsInStep4, setShowTabsInStep4] = useState(false);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
-  // Estados para cada pestaña
+  // ===================== ESTADOS POR PESTAÑA ======================
   const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
   const [techumbreTabList, setTechumbreTabList] = useState<TabItem[]>([]);
   const [pisosTabList, setPisosTabList] = useState<TabItem[]>([]);
@@ -169,7 +173,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   const [puertasTabList, setPuertasTabList] = useState<Puerta[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
 
-  // Estados para edición en Muros y Techumbre
+  // ===================== ESTADOS EDICIÓN MUROS / TECHUMBRE ======================
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [editingColors, setEditingColors] = useState<{
     interior: string;
@@ -178,6 +182,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     interior: "Intermedio",
     exterior: "Intermedio",
   });
+
   const [editingTechRowId, setEditingTechRowId] = useState<number | null>(null);
   const [editingTechColors, setEditingTechColors] = useState<{
     interior: string;
@@ -187,7 +192,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     exterior: "Intermedio",
   });
 
-  // Inicialización de projectId y primaryColor
+  // ===================== INIT ======================
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id_edit");
     if (storedProjectId) {
@@ -222,7 +227,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
 
-  // Función auxiliar para obtener el token
+  // ===================== FUNCIONES AUXILIARES ======================
   const getToken = () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -231,7 +236,6 @@ const WorkFlowpar2editPage: React.FC = () => {
     return token;
   };
 
-  // Función genérica para obtener datos de un endpoint
   const fetchData = useCallback(
     async <T,>(endpoint: string, setter: (data: T) => void) => {
       if (!projectId) return;
@@ -248,7 +252,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     [projectId]
   );
 
-  // Envolvemos fetchFetchedDetails en useCallback para estabilidad en la dependencia
+  // ===================== OBTENCIÓN DE DATOS ======================
   const fetchFetchedDetails = useCallback(async () => {
     const token = getToken();
     if (!token) return;
@@ -296,7 +300,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       .then((response) => setVentanasTabList(response.data))
       .catch((error) => {
         console.error("Error al obtener datos de ventanas:", error);
-        toast.error("Error al obtener datos de ventanas. Ver consola.");
+        notify("Reinicie sesion, por favor.");
       });
   }, []);
 
@@ -310,11 +314,35 @@ const WorkFlowpar2editPage: React.FC = () => {
       .then((response) => setPuertasTabList(response.data))
       .catch((error) => {
         console.error("Error al obtener datos de puertas:", error);
-        toast.error("Error al obtener datos de puertas. Ver consola.");
+        notify("Reinicie sesion por favor.");
       });
   }, []);
 
-  // Efectos para carga de datos según el step y pestaña seleccionada
+  const fetchMaterials = async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/constants/?page=1&per_page=700`;
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(url, { headers });
+      const allConstants: Constant[] = response.data.constants || [];
+      const materialsList: Material[] = allConstants
+        .filter(
+          (c: Constant) =>
+            c.name === "materials" && c.type === "definition materials"
+        )
+        .map((c: Constant) => ({
+          id: c.id,
+          name: c.atributs.name,
+        }));
+      setMaterials(materialsList);
+    } catch (error: unknown) {
+      console.error("Error al obtener materiales:", error);
+      notify("Reinicie sesion y vuelvalo a intentar.");
+    }
+  };
+
+  // ===================== EFFECTS ======================
   useEffect(() => {
     if (step === 4) {
       fetchFetchedDetails();
@@ -345,7 +373,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // Función para crear un nuevo detalle y añadirlo directamente al proyecto
+  // ===================== CREAR DETALLE ======================
   const handleCreateNewDetail = async () => {
     if (!showNewDetailRow) return;
     if (
@@ -353,9 +381,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       !newDetailForm.name_detail ||
       !newDetailForm.material_id
     ) {
-      toast.warning("Por favor complete todos los campos de detalle", {
-        toastId: "material-warning",
-      });
+      notify("Por favor complete todos los campos de Detalle.");
       return;
     }
 
@@ -373,45 +399,34 @@ const WorkFlowpar2editPage: React.FC = () => {
       const newDetailId = response.data.detail.id;
 
       if (!newDetailId) {
-        toast.error("El backend no devolvió un ID de detalle válido.");
+        notify("Reinicie sesion y vuelvalo a intentar.");
         return;
       }
 
-      // Paso 2: Añadir el detalle al proyecto directamente
+      // Paso 2: Añadir el detalle al proyecto
       if (projectId) {
         const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-        // Asegurarnos de que estamos enviando un array de IDs
         const detailIds = [newDetailId];
-
         try {
           await axios.post(selectUrl, detailIds, { headers });
-          toast.success("Detalle creado y añadido al proyecto exitosamente", {
-            toastId: "detail-added-success",
-          });
+          notify("Detalle creado y añadido al proyecto exitosamente.");
         } catch (selectError: unknown) {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
               "Todos los detalles ya estaban en el proyecto"
           ) {
-            toast.success("Detalle creado exitosamente", {
-              toastId: "detail-created-success",
-            });
+            notify("Detalle creado exitosamente.");
           } else {
             console.error("Error al añadir detalle al proyecto:", selectError);
-            toast.warning("Detalle creado pero no se pudo añadir al proyecto", {
-              toastId: "detail-associated-error",
-            });
+            notify("Detalle creado pero no se añadio al proyecto.");
           }
         }
       } else {
-        toast.warning(
-          "No se pudo añadir el detalle al proyecto (ID de proyecto no disponible)",
-          { toastId: "project-id-missing" }
-        );
+        notify("No se añadio el detalle al proyecto.");
       }
 
-      // Actualizar la interfaz
+      // Actualizamos la interfaz y cerramos el modal
       fetchFetchedDetails();
       setShowNewDetailRow(false);
       setNewDetailForm({
@@ -423,13 +438,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error("Error en la creación del detalle:", error.response?.data);
-        toast.error(error.response?.data?.detail || error.message, {
-          toastId: "material-warning",
-        });
-      } else {
-        toast.error("Error desconocido al crear el detalle", {
-          toastId: "material-warning",
-        });
+        notify("Reinicie sesion y vuelvalo a intentar.");
       }
     }
   };
@@ -439,7 +448,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     fetchMaterials();
   };
 
-  // Función unificada para guardar detalles (se usa en dos contextos)
+  // ===================== GUARDAR DETALLES ======================
   const saveDetails = async () => {
     if (!projectId) {
       console.error("No se proporcionó un ID de proyecto.");
@@ -479,7 +488,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
   };
 
-  // Función corregida para guardar detalles en el proyecto
+  // Copia interna que se ejecuta cuando cambie fetchedDetails
   const handleSaveDetailsCopy = useCallback(async () => {
     if (!projectId) {
       console.error("No se proporcionó un ID de proyecto.");
@@ -503,7 +512,8 @@ const WorkFlowpar2editPage: React.FC = () => {
     } catch (error: unknown) {
       if (
         axios.isAxiosError(error) &&
-        error.response?.data?.detail === "Todos los detalles ya estaban en el proyecto"
+        error.response?.data?.detail ===
+          "Todos los detalles ya estaban en el proyecto"
       ) {
         return;
       }
@@ -521,33 +531,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
   }, [fetchedDetails, handleSaveDetailsCopy]);
 
-  const fetchMaterials = async () => {
-    const token = getToken();
-    if (!token) return;
-    try {
-      const url = `${constantUrlApiEndpoint}/constants/?page=1&per_page=700`;
-      const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(url, { headers });
-      const allConstants: Constant[] = response.data.constants || [];
-      const materialsList: Material[] = allConstants
-        .filter(
-          (c: Constant) =>
-            c.name === "materials" && c.type === "definition materials"
-        )
-        .map((c: Constant) => ({
-          id: c.id,
-          name: c.atributs.name,
-        }));
-      setMaterials(materialsList);
-    } catch (error: unknown) {
-      console.error("Error al obtener materiales:", error);
-      toast.error("Error al obtener materiales.", {
-        toastId: "material-warning",
-      });
-    }
-  };
-
-  // Funciones para edición de Muros
+  // ===================== EDICIÓN MUROS ======================
   const handleEditClick = (detail: TabItem) => {
     setEditingRowId(detail.id || null);
     setEditingColors({
@@ -583,33 +567,31 @@ const WorkFlowpar2editPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      toast.success("Detalle tipo Muro actualizado con éxito", {
-        toastId: "material-sucess",
-      });
+      notify("Detalle tipo Muro actualizado con éxito.");
       setMurosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingColors.interior },
-                    exterior: { name: editingColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingColors.interior },
+                  exterior: { name: editingColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
       setEditingRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      toast.error("Error al actualizar detalle. Ver consola.");
+      notify("Error al actualizar Detalle. Ver consola.");
     }
   };
 
-  // Funciones para edición de Techumbre (similar a Muros)
+  // ===================== EDICIÓN TECHUMBRE ======================
   const handleEditTechClick = (detail: TabItem) => {
     setEditingTechRowId(detail.id || null);
     setEditingTechColors({
@@ -645,9 +627,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      toast.success("Detalle tipo Techo actualizado con éxito", {
-        toastId: "material-success",
-      });
+      notify("Detalle tipo Techo actualizado con éxito.");
       setTechumbreTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -667,16 +647,332 @@ const WorkFlowpar2editPage: React.FC = () => {
       setEditingTechRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      toast.error("Error al actualizar detalle. Ver consola.");
     }
   };
 
-  // Renderizado de encabezado principal
+  // ===================== RENDER CABECERA PRINCIPAL ======================
   const renderMainHeader = () => (
-    <Title text="Edicion de Desarrollo de proyecto" />
+    <Title text="Edición de Desarrollo de Proyecto" />
   );
 
-  // Renderizado de pestañas en el paso 4
+  // ===================== RENDER MUROS ======================
+  const renderMurosParameters = () => {
+    const columnsMuros = [
+      { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
+      { headerName: "Valor U (W/m²K)", field: "valorU" },
+      { headerName: "Color Exterior", field: "colorExterior" },
+      { headerName: "Color Interior", field: "colorInterior" },
+      { headerName: "Acciones", field: "acciones" },
+    ];
+
+    const murosData = murosTabList.map((item) => {
+      const isEditing = editingRowId === item.id;
+      return {
+        nombreAbreviado: item.name_detail,
+        valorU: item.value_u?.toFixed(3) ?? "--",
+        colorExterior: isEditing ? (
+          <select
+            value={editingColors.exterior}
+            onChange={(e) =>
+              setEditingColors((prev) => ({
+                ...prev,
+                exterior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.exterior?.name || "Desconocido"
+        ),
+        colorInterior: isEditing ? (
+          <select
+            value={editingColors.interior}
+            onChange={(e) =>
+              setEditingColors((prev) => ({
+                ...prev,
+                interior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.interior?.name || "Desconocido"
+        ),
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={() => handleConfirmEdit(item)}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={() => handleCancelEdit(item)}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <CustomButton
+            className="btn-table"
+            variant="editIcon"
+            onClick={() => handleEditClick(item)}
+          >
+            Editar
+          </CustomButton>
+        ),
+      };
+    });
+
+    return (
+      <div style={{ overflowX: "auto" }}>
+        {murosTabList.length > 0 ? (
+          <TablesParameters columns={columnsMuros} data={murosData} />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  // ===================== RENDER TECHUMBRE ======================
+  const renderTechumbreParameters = () => {
+    const columnsTech = [
+      { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
+      { headerName: "Valor U (W/m²K)", field: "valorU" },
+      { headerName: "Color Exterior", field: "colorExterior" },
+      { headerName: "Color Interior", field: "colorInterior" },
+      { headerName: "Acciones", field: "acciones" },
+    ];
+
+    const techData = techumbreTabList.map((item) => {
+      const isEditing = editingTechRowId === item.id;
+      return {
+        nombreAbreviado: item.name_detail,
+        valorU: item.value_u?.toFixed(3) ?? "--",
+        colorExterior: isEditing ? (
+          <select
+            value={editingTechColors.exterior}
+            onChange={(e) =>
+              setEditingTechColors((prev) => ({
+                ...prev,
+                exterior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.exterior?.name || "Desconocido"
+        ),
+        colorInterior: isEditing ? (
+          <select
+            value={editingTechColors.interior}
+            onChange={(e) =>
+              setEditingTechColors((prev) => ({
+                ...prev,
+                interior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.interior?.name || "Desconocido"
+        ),
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={() => handleConfirmTechEdit(item)}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={() => handleCancelTechEdit(item)}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <CustomButton
+            className="btn-table"
+            variant="editIcon"
+            onClick={() => handleEditTechClick(item)}
+          >
+            Editar
+          </CustomButton>
+        ),
+      };
+    });
+
+    return (
+      <div style={{ overflowX: "auto" }}>
+        {techumbreTabList.length > 0 ? (
+          <TablesParameters columns={columnsTech} data={techData} />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  // ===================== RENDER PISOS ======================
+  // Con múltiples columnas en <thead>, aquí lo simplificamos en columnas planas
+  const renderPisosParameters = () => {
+    const columnsPisos = [
+      { headerName: "Nombre", field: "nombre" },
+      { headerName: "U [W/m²K]", field: "uValue" },
+      { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
+      { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
+      { headerName: "I [W/mK] (vert)", field: "vertLambda" },
+      { headerName: "e Aisl [cm]", field: "vertEAisl" },
+      { headerName: "D [cm]", field: "vertD" },
+      { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
+      { headerName: "e Aisl [cm]", field: "horizEAisl" },
+      { headerName: "D [cm]", field: "horizD" },
+    ];
+
+    const multiHeaderPisos = {
+      rows: [
+        [
+          { label: "Nombre", rowSpan: 2 },
+          { label: "U [W/m²K]", rowSpan: 2 },
+          { label: "Aislamiento bajo piso", colSpan: 2 },
+          { label: "Ref Aisl Vert.", colSpan: 3 },
+          { label: "Ref Aisl Horiz.", colSpan: 3 },
+        ],
+        [
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+        ],
+      ],
+    };
+
+    const pisosData = pisosTabList.map((item) => {
+      const bajoPiso = item.info?.aislacion_bajo_piso || {};
+      const vert = item.info?.ref_aisl_vertical || {};
+      const horiz = item.info?.ref_aisl_horizontal || {};
+      return {
+        nombre: item.name_detail,
+        uValue: item.value_u?.toFixed(3) ?? "--",
+        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
+        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
+        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
+        vertEAisl: vert.e_aisl ?? "N/A",
+        vertD: vert.d ?? "N/A",
+        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
+        horizEAisl: horiz.e_aisl ?? "N/A",
+        horizD: horiz.d ?? "N/A",
+      };
+    });
+
+    return (
+      <div >
+        {pisosTabList.length > 0 ? (
+          <TablesParameters
+            columns={columnsPisos}
+            data={pisosData}
+            multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
+          />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  // ===================== RENDER VENTANAS ======================
+  const renderVentanasParameters = () => {
+    const columnsVentanas = [
+      { headerName: "Nombre Elemento", field: "name_element" },
+      { headerName: "U Vidrio [W/m²K]", field: "u_vidrio" },
+      { headerName: "FS Vidrio []", field: "fs_vidrio" },
+      { headerName: "Tipo Marco", field: "frame_type" },
+      { headerName: "Tipo Cierre", field: "clousure_type" },
+      { headerName: "U Marco [W/m²K]", field: "u_marco" },
+      { headerName: "FV [%]", field: "fm" },
+    ];
+
+    const ventanasData = ventanasTabList.map((item, idx) => ({
+      name_element: item.name_element,
+      u_vidrio: item.atributs?.u_vidrio
+        ? item.atributs.u_vidrio.toFixed(3)
+        : "--",
+      fs_vidrio: item.atributs?.fs_vidrio ?? "--",
+      frame_type: item.atributs?.frame_type ?? "--",
+      clousure_type: item.atributs?.clousure_type ?? "--",
+      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+      fm: item.fm ?? "--",
+    }));
+
+    return (
+      <div style={{ overflowX: "auto" }}>
+        {ventanasTabList.length > 0 ? (
+          <TablesParameters columns={columnsVentanas} data={ventanasData} />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  // ===================== RENDER PUERTAS ======================
+  const renderPuertasParameters = () => {
+    const columnsPuertas = [
+      { headerName: "Nombre Elemento", field: "name_element" },
+      { headerName: "U puerta opaca [W/m²K]", field: "u_puerta" },
+      { headerName: "Vidrio []", field: "name_ventana" },
+      { headerName: "% vidrio", field: "porcentaje_vidrio" },
+      { headerName: "U Marco [W/m²K]", field: "u_marco" },
+      { headerName: "FM [%]", field: "fm" },
+    ];
+
+    const puertasData = puertasTabList.map((item, idx) => ({
+      name_element: item.name_element,
+      u_puerta: item.atributs?.u_puerta_opaca
+        ? item.atributs.u_puerta_opaca.toFixed(3)
+        : "--",
+      name_ventana: item.atributs?.name_ventana ?? "--",
+      porcentaje_vidrio: item.atributs?.porcentaje_vidrio ?? "--",
+      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+      fm: item.fm ?? "--",
+    }));
+
+    return (
+      <div style={{ overflowX: "auto" }}>
+        {puertasTabList.length > 0 ? (
+          <TablesParameters columns={columnsPuertas} data={puertasData} />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  // ===================== RENDER PESTAÑAS STEP4 ======================
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
     const tabs = [
@@ -691,13 +987,6 @@ const WorkFlowpar2editPage: React.FC = () => {
       <div className="mt-4">
         <ul
           className="nav"
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            padding: 0,
-            listStyle: "none",
-          }}
         >
           {tabs.map((item) => (
             <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
@@ -706,16 +995,11 @@ const WorkFlowpar2editPage: React.FC = () => {
                   width: "100%",
                   padding: "10px",
                   backgroundColor: "#fff",
-                  color:
-                    tabStep4 === item.key
-                      ? primaryColor
-                      : "var(--secondary-color)",
+                  color: tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
                   borderBottom:
-                    tabStep4 === item.key
-                      ? `3px solid ${primaryColor}`
-                      : "none",
+                    tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -726,463 +1010,12 @@ const WorkFlowpar2editPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
-          {tabStep4 === "muros" && (
-            <div style={{ overflowX: "auto" }}>
-              <table
-                className="table table-bordered "
-                style={{ width: "100%", minWidth: "600px" }}
-              >
-                <thead>
-                  <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Nombre Abreviado
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Valor U (W/m²K)
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Color Exterior
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Color Interior
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {murosTabList.length > 0 ? (
-                    murosTabList.map((item) => (
-                      <tr key={item.id || item.id_detail}>
-                        <td>{item.name_detail}</td>
-                        <td>{item.value_u?.toFixed(3) ?? "--"}</td>
-                        <td>
-                          {editingRowId === item.id ? (
-                            <select
-                              value={editingColors.exterior}
-                              onChange={(e) =>
-                                setEditingColors((prev) => ({
-                                  ...prev,
-                                  exterior: e.target.value,
-                                }))
-                              }
-                            >
-                              <option value="Claro">Claro</option>
-                              <option value="Oscuro">Oscuro</option>
-                              <option value="Intermedio">Intermedio</option>
-                            </select>
-                          ) : (
-                            item.info?.surface_color?.exterior?.name ||
-                            "Desconocido"
-                          )}
-                        </td>
-                        <td>
-                          {editingRowId === item.id ? (
-                            <select
-                              value={editingColors.interior}
-                              onChange={(e) =>
-                                setEditingColors((prev) => ({
-                                  ...prev,
-                                  interior: e.target.value,
-                                }))
-                              }
-                            >
-                              <option value="Claro">Claro</option>
-                              <option value="Oscuro">Oscuro</option>
-                              <option value="Intermedio">Intermedio</option>
-                            </select>
-                          ) : (
-                            item.info?.surface_color?.interior?.name ||
-                            "Desconocido"
-                          )}
-                        </td>
-                        <td className="container-table-buttons">
-                          {editingRowId === item.id ? (
-                            <>
-                              <CustomButton
-                                className="btn-table"
-                                variant="save"
-                                onClick={() => handleConfirmEdit(item)}
-                              >
-                                <span className="material-icons">check</span>
-                              </CustomButton>
-                              <CustomButton
-                                className="btn-table"
-                                variant="cancelIcon"
-                                onClick={() => handleCancelEdit(item)}
-                                
-                              >
-                                Deshacer
-                              </CustomButton>
-                            </>
-                          ) : (
-                            <CustomButton
-                              className="btn-table"
-                              variant="editIcon"
-                              onClick={() => handleEditClick(item)}
-                            >
-                              Editar
-                            </CustomButton>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5}>No hay datos</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
-          {tabStep4 === "techumbre" && (
-            <div>
-              <table
-                className="table table-bordered "
-                style={{ width: "100%", minWidth: "600px" }}
-              >
-                <thead>
-                  <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Nombre Abreviado
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Valor U (W/m²K)
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Color Exterior
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Color Interior
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {techumbreTabList.length > 0 ? (
-                    techumbreTabList.map((item) => (
-                      <tr key={item.id || item.id_detail}>
-                        <td>{item.name_detail}</td>
-                        <td>{item.value_u?.toFixed(3) ?? "--"}</td>
-                        <td>
-                          {editingTechRowId === item.id ? (
-                            <select
-                              value={editingTechColors.exterior}
-                              onChange={(e) =>
-                                setEditingTechColors((prev) => ({
-                                  ...prev,
-                                  exterior: e.target.value,
-                                }))
-                              }
-                            >
-                              <option value="Claro">Claro</option>
-                              <option value="Oscuro">Oscuro</option>
-                              <option value="Intermedio">Intermedio</option>
-                            </select>
-                          ) : (
-                            item.info?.surface_color?.exterior?.name ||
-                            "Desconocido"
-                          )}
-                        </td>
-                        <td>
-                          {editingTechRowId === item.id ? (
-                            <select
-                              value={editingTechColors.interior}
-                              onChange={(e) =>
-                                setEditingTechColors((prev) => ({
-                                  ...prev,
-                                  interior: e.target.value,
-                                }))
-                              }
-                            >
-                              <option value="Claro">Claro</option>
-                              <option value="Oscuro">Oscuro</option>
-                              <option value="Intermedio">Intermedio</option>
-                            </select>
-                          ) : (
-                            item.info?.surface_color?.interior?.name ||
-                            "Desconocido"
-                          )}
-                        </td>
-                        <td className="container-table-buttons">
-                          {editingTechRowId === item.id ? (
-                            <>
-                              <CustomButton
-                                className="btn-table"
-                                variant="save"
-                                onClick={() => handleConfirmTechEdit(item)}
-
-                              >
-                                <span className="material-icons">check</span>
-                              </CustomButton>
-                              <CustomButton
-                                className="btn-table"
-                                variant="cancelIcon"
-                                onClick={() => handleCancelTechEdit(item)}
-                              >
-                                Deshacer
-                              </CustomButton>
-                            </>
-                          ) : (
-                            <CustomButton
-                              className="btn-table"
-                              variant="editIcon"
-                              onClick={() => handleEditTechClick(item)}
-                            >
-                              Editar
-                            </CustomButton>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5}>No hay datos</td>
-                    </tr>
-                  )}
-                </tbody>
-
-              </table>
-              
-            </div>
-          )}
-          {tabStep4 === "pisos" && (
-            <table className="table table-bordered ">
-              <thead>
-                <tr>
-                  <th
-                    rowSpan={2}
-                    style={{ ...stickyHeaderStyle1, color: primaryColor }}
-                  >
-                    Nombre
-                  </th>
-                  <th
-                    rowSpan={2}
-                    style={{ ...stickyHeaderStyle1, color: primaryColor }}
-                  >
-                    U [W/m²K]
-                  </th>
-                  <th
-                    colSpan={2}
-                    style={{ ...stickyHeaderStyle1, color: primaryColor }}
-                  >
-                    Aislamiento bajo piso
-                  </th>
-                  <th
-                    colSpan={3}
-                    style={{ ...stickyHeaderStyle1, color: primaryColor }}
-                  >
-                    Ref Aisl Vert.
-                  </th>
-                  <th
-                    colSpan={3}
-                    style={{ ...stickyHeaderStyle1, color: primaryColor }}
-                  >
-                    Ref Aisl Horiz.
-                  </th>
-                </tr>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    I [W/mK]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    e Aisl [cm]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    I [W/mK]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    e Aisl [cm]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    D [cm]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    I [W/mK]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    e Aisl [cm]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    D [cm]
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {pisosTabList.length > 0 ? (
-                  pisosTabList.map((item) => {
-                    const bajoPiso = item.info?.aislacion_bajo_piso || {};
-                    const vert = item.info?.ref_aisl_vertical || {};
-                    const horiz = item.info?.ref_aisl_horizontal || {};
-                    return (
-                      <tr key={item.id || item.id_detail}>
-                        <td style={{ textAlign: "center" }}>
-                          {item.name_detail}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.value_u?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {bajoPiso.e_aisl ? bajoPiso.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.lambda ? vert.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.e_aisl ? vert.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.d ? vert.d : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.e_aisl ? horiz.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.d ? horiz.d : "N/A"}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={9} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-          {tabStep4 === "ventanas" && (
-            <table className="table table-bordered ">
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Nombre Elemento
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    U Vidrio [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    FS Vidrio []
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Tipo Marco
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Tipo Cierre
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    U Marco [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    FV [%]
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {ventanasTabList.length > 0 ? (
-                  ventanasTabList.map((item, idx) => (
-                    <tr key={item.name_element + idx}>
-                      <td style={{ textAlign: "center" }}>
-                        {item.name_element}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.u_vidrio?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.fs_vidrio ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.frame_type ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.clousure_type ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.u_marco?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-          {tabStep4 === "puertas" && (
-            <table className="table table-bordered ">
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Nombre Elemento
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    U puerta opaca [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Vidrio []
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    % vidrio
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    U Marco [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    FM [%]
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {puertasTabList.length > 0 ? (
-                  puertasTabList.map((item, idx) => (
-                    <tr key={item.name_element + idx}>
-                      <td style={{ textAlign: "center" }}>
-                        {item.name_element}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.u_puerta_opaca?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.name_ventana ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.porcentaje_vidrio ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.u_marco?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+        <div style={{ height: "400px", overflowY: "auto", position: "relative", marginTop: "1rem" }}>
+          {tabStep4 === "muros" && renderMurosParameters()}
+          {tabStep4 === "techumbre" && renderTechumbreParameters()}
+          {tabStep4 === "pisos" && renderPisosParameters()}
+          {tabStep4 === "ventanas" && renderVentanasParameters()}
+          {tabStep4 === "puertas" && renderPuertasParameters()}
         </div>
         <div
           style={{
@@ -1211,16 +1044,34 @@ const WorkFlowpar2editPage: React.FC = () => {
           </CustomButton>
         </div>
       </div>
-      </div>
     );
   };
 
-  // Renderizado de la vista inicial de detalles
+  // ===================== RENDER INICIAL DETALLES ======================
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
+
+    // Definimos columnas y data para la tabla de detalles
+    const columnsDetails = [
+      { headerName: "Ubicación Detalle", field: "scantilon_location" },
+      { headerName: "Nombre Detalle", field: "name_detail" },
+      { headerName: "Material", field: "material" },
+      { headerName: "Espesor capa (cm)", field: "layer_thickness" },
+    ];
+
+    // Filtramos datos según searchQuery
+    const filteredData = fetchedDetails.filter((det) => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        det.scantilon_location.toLowerCase().includes(searchLower) ||
+        det.name_detail.toLowerCase().includes(searchLower) ||
+        det.material.toLowerCase().includes(searchLower) ||
+        det.layer_thickness.toString().includes(searchLower)
+      );
+    });
+
     return (
       <>
-        {/* Se reemplaza la sección de búsqueda por el componente SearchParameters */}
         <SearchParameters
           value={searchQuery}
           onChange={setSearchQuery}
@@ -1228,240 +1079,17 @@ const WorkFlowpar2editPage: React.FC = () => {
           onNew={handleNewButtonClick}
           style={{ marginBottom: "1rem" }}
         />
-        <div className="mb-3">
-          <div style={{ height: "400px", overflowY: "scroll" }}>
-            <table
-              className="table table-bordered "
-              style={{ textAlign: "center" }}
-            >
-              <thead>
-                <tr>
-                  <th
-                    style={{
-                      ...stickyHeaderStyle1,
-                      color: "var(--primary-color)",
-                    }}
-                  >
-                    Ubicación Detalle
-                  </th>
-                  <th
-                    style={{
-                      ...stickyHeaderStyle1,
-                      color: "var(--primary-color)",
-                    }}
-                  >
-                    Nombre Detalle
-                  </th>
-                  <th
-                    style={{
-                      ...stickyHeaderStyle1,
-                      color: "var(--primary-color)",
-                    }}
-                  >
-                    Material
-                  </th>
-                  <th
-                    style={{
-                      ...stickyHeaderStyle1,
-                      color: "var(--primary-color)",
-                    }}
-                  >
-                    Espesor capa (cm)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {showNewDetailRow && (
-                  <Modal
-                    isOpen={showNewDetailRow}
-                    onClose={() => setShowNewDetailRow(false)}
-                    title="Agregar Nuevo Detalle Constructivo"
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "15px",
-                        padding: "20px",
-                      }}
-                    >
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Ubicación del Detalle
-                        </label>
-                        <select
-                          className="form-control"
-                          value={newDetailForm.scantilon_location}
-                          onChange={(e) =>
-                            setNewDetailForm((prev) => ({
-                              ...prev,
-                              scantilon_location: e.target.value,
-                            }))
-                          }
-                        >
-                          <option value="">Seleccione</option>
-                          <option value="Muro">Muro</option>
-                          <option value="Techo">Techo</option>
-                          <option value="Piso">Piso</option>
-                        </select>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Nombre del Detalle
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Nombre Detalle"
-                          value={newDetailForm.name_detail}
-                          onChange={(e) =>
-                            setNewDetailForm((prev) => ({
-                              ...prev,
-                              name_detail: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Material
-                        </label>
-                        <select
-                          className="form-control"
-                          value={newDetailForm.material_id}
-                          onChange={(e) =>
-                            setNewDetailForm((prev) => ({
-                              ...prev,
-                              material_id: parseInt(e.target.value),
-                            }))
-                          }
-                        >
-                          <option value={0}>Seleccione un material</option>
-                          {materials.map((mat) => (
-                            <option key={mat.id} value={mat.id}>
-                              {mat.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Espesor de la Capa (cm)
-                        </label>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          className="form-control"
-                          placeholder="Espesor (cm)"
-                          value={
-                            newDetailForm.layer_thickness === null
-                              ? ""
-                              : newDetailForm.layer_thickness
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "-" || e.key === "e") {
-                              e.preventDefault();
-                            }
-                          }}
-                          onChange={(e) => {
-                            const inputValue = e.target.value.replace(/[^0-9.]/g, "");
-                            const value = inputValue ? parseFloat(inputValue) : null;
-                            if (value === null || value >= 0) {
-                              setNewDetailForm((prev) => ({
-                                ...prev,
-                                layer_thickness: value,
-                              }));
-                            }
-                          }}
-                          min="0"
-                        />
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        marginTop: "15px",
-                        paddingRight: "15px",
-                      }}
-                    >
-                      <CustomButton
-                        variant="save"
-                        onClick={() => {
-                          setShowNewDetailRow(false);
-                          setNewDetailForm({
-                            scantilon_location: "",
-                            name_detail: "",
-                            material_id: 0,
-                            layer_thickness: null,
-                          });
-                        }}
-                      >
-                        Cancelar
-                      </CustomButton>
-                      <CustomButton
-                        variant="save"
-                        onClick={async () => {
-                          await handleCreateNewDetail();
-                        }}
-                        id="grabar-datos-btn"
-                      >
-                        Crear Detalles
-                      </CustomButton>
-                      <Tooltip anchorSelect="#grabar-datos-btn" place="top">
-                        Guardar cambios tras agregar un detalle
-                      </Tooltip>
-                    </div>
-                  </Modal>
-                )}
-                {fetchedDetails
-                  .filter((det) => {
-                    const searchLower = searchQuery.toLowerCase();
-                    return (
-                      det.scantilon_location
-                        .toLowerCase()
-                        .includes(searchLower) ||
-                      det.name_detail.toLowerCase().includes(searchLower) ||
-                      det.material.toLowerCase().includes(searchLower) ||
-                      det.layer_thickness.toString().includes(searchLower)
-                    );
-                  })
-                  .map((det) => (
-                    <tr key={det.id_detail}>
-                      <td>{det.scantilon_location}</td>
-                      <td>{det.name_detail}</td>
-                      <td>{det.material}</td>
-                      <td>{det.layer_thickness}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
+        <NewDetailModal
+          showNewDetailRow={showNewDetailRow}
+          setShowNewDetailRow={setShowNewDetailRow}
+          newDetailForm={newDetailForm}
+          setNewDetailForm={setNewDetailForm}
+          materials={materials}
+          handleCreateNewDetail={handleCreateNewDetail} />
+        <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
+          <TablesParameters columns={columnsDetails} data={filteredData} />
         </div>
+
         <div
           style={{
             display: "flex",
@@ -1473,12 +1101,6 @@ const WorkFlowpar2editPage: React.FC = () => {
           }}
         >
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
           >
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <CustomButton
@@ -1498,7 +1120,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   minWidth: "6rem",
                 }}
               >
-                <span className="material-icons">visibility</span> Mostrar datos
+                Realizar Cálculos
               </CustomButton>
             </div>
           </div>
@@ -1507,50 +1129,80 @@ const WorkFlowpar2editPage: React.FC = () => {
     );
   };
 
-  // Renderizado de Recinto (en desarrollo)
-  const renderRecinto = () => {
-    return (
-      <>
-        <h5
-          style={{
-            fontWeight: "normal",
-            fontFamily: "var(--font-family-base)",
-          }}
-          className="mb-3"
-        >
-        </h5>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div></div>
-        </div>
-        <div style={{ height: "390px", overflowY: "scroll" }}>
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                <th style={stickyHeaderStyle1}>ID</th>
-                <th style={stickyHeaderStyle1}>Estado</th>
-                <th style={stickyHeaderStyle1}>Nombre del Recinto</th>
-                <th style={stickyHeaderStyle1}>Perfil de Ocupación</th>
-                <th style={stickyHeaderStyle1}>Sensor CO2</th>
-                <th style={stickyHeaderStyle1}>Altura Promedio</th>
-                <th style={stickyHeaderStyle1}>Área</th>
+  // ===================== RENDER RECINTO ======================
+  const renderRecinto = () => (
+    <>
+      <h5
+        style={{
+          fontWeight: "normal",
+          fontFamily: "var(--font-family-base)",
+        }}
+        className="mb-3"
+      ></h5>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div></div>
+      </div>
+      <div style={{ height: "390px", overflowY: "scroll" }}>
+        {/* Si más adelante deseas convertir esta tabla a TablesParameters, hazlo igual que las demás */}
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              <th style={stickyHeaderStyle1}>ID</th>
+              <th style={stickyHeaderStyle1}>Estado</th>
+              <th style={stickyHeaderStyle1}>Nombre del Recinto</th>
+              <th style={stickyHeaderStyle1}>Perfil de Ocupación</th>
+              <th style={stickyHeaderStyle1}>Sensor CO2</th>
+              <th style={stickyHeaderStyle1}>Altura Promedio</th>
+              <th style={stickyHeaderStyle1}>Área</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              {
+                id: 1,
+                status: "Activo",
+                name: "Sala de Estar",
+                occupationProfile: "Residencial",
+                co2Sensor: "Sí",
+                avgHeight: "2.4m",
+                area: "25.5m²"
+              },
+              {
+                id: 2,
+                status: "Activo",
+                name: "Dormitorio Principal",
+                occupationProfile: "Residencial",
+                co2Sensor: "No",
+                avgHeight: "2.4m",
+                area: "16.8m²"
+              },
+              {
+                id: 3,
+                status: "Inactivo",
+                name: "Cocina",
+                occupationProfile: "Residencial",
+                co2Sensor: "Sí",
+                avgHeight: "2.4m",
+                area: "12.3m²"
+              }
+            ].map(room => (
+              <tr key={room.id}>
+                <td>{room.id}</td>
+                <td>{room.status}</td>
+                <td>{room.name}</td>
+                <td>{room.occupationProfile}</td>
+                <td>{room.co2Sensor}</td>
+                <td>{room.avgHeight}</td>
+                <td>{room.area}</td>
               </tr>
-            </thead>
-            <tbody>{/* Lógica para mostrar los recintos */}</tbody>
-          </table>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: "10px",
-          }}
-        ></div>
-      </>
-    );
-  };
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
 
-  // Función para manejar el cambio de paso en la barra lateral.
-  // Para los pasos 1 y 2 se redirige vía router, para los demás se actualiza el estado local.
+  // ===================== SIDEBAR & STEP CHANGE ======================
   const handleSidebarStepChange = (newStep: number) => {
     if (newStep === 1) {
       router.push(`/workflow-part1-edit?id=${projectId}&step=1`);
@@ -1561,7 +1213,6 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
   };
 
-  // Definición de los pasos para el sidebar
   const sidebarSteps = [
     {
       stepNumber: 1,
@@ -1586,19 +1237,18 @@ const WorkFlowpar2editPage: React.FC = () => {
     },
   ];
 
+  // ===================== RENDER FINAL ======================
   return (
     <>
       <GooIcons />
       <div>
-        <div>{renderMainHeader()}</div>
-        <Card style={{ height: "10vh" }}>
+
+        <Card>
+        <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem"}}>
+          {renderMainHeader()}
+        </div>
           <div className="d-flex align-items-center gap-4">
-            <span
-              style={{
-                fontWeight: "normal",
-                fontFamily: "var(--font-family-base)",
-              }}
-            >
+            <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
               Proyecto:
             </span>
             <CustomButton
@@ -1608,6 +1258,17 @@ const WorkFlowpar2editPage: React.FC = () => {
             >
               {`Edificación Nº ${projectId ?? "xxxxx"}`}
             </CustomButton>
+            <div className="ms-auto" style={{display: "flex"}}>
+            <Breadcrumb
+            items={[
+              {
+                title: "Proyecto Nuevo",
+                href: "/",
+                active: true,
+              },
+            ]}
+          />
+          </div>
           </div>
         </Card>
         <Card
@@ -1620,7 +1281,6 @@ const WorkFlowpar2editPage: React.FC = () => {
           <div className="row">
             <div className="col-lg-3 col-12 order-lg-first order-first">
               <div className="mb-3 mb-lg-0">
-                {/* Se reemplaza la lista antigua por el nuevo AdminSidebar */}
                 <AdminSidebar
                   activeStep={step}
                   onStepChange={handleSidebarStepChange}
@@ -1629,64 +1289,17 @@ const WorkFlowpar2editPage: React.FC = () => {
               </div>
             </div>
             <div className="col-lg-9 col-12 order-last">
-              <div style={{ padding: "20px" }}>
-                {step === 4 && (
-                  <>
-                    {showTabsInStep4
-                      ? renderStep4Tabs()
-                      : renderInitialDetails()}
-                  </>
-                )}
-                {step === 7 && renderRecinto()}
-              </div>
+              {step === 4 && (
+                <>
+                  {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+                </>
+              )}
+              {step === 7 && renderRecinto()}
             </div>
           </div>
         </Card>
       </div>
-      <style jsx global>{`
-        @media (max-width: 992px) {
-          .container-fluid {
-            margin-left: 10px;
-            margin-right: 10px;
-            padding: 0 5px;
-          }
-          .col-lg-3 {
-            border-right: none;
-            border-bottom: 1px solid #ccc;
-          }
-          .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-          }
-          .mb-3.mb-lg-0 {
-            margin-bottom: 1rem;
-          }
-          [style*="padding: 20px"] {
-            padding: 15px;
-          }
-        }
-        @media (max-width: 768px) {
-          .table {
-            font-size: 12px;
-          }
-          th,
-          td {
-            padding: 8px;
-          }
-          [style*="height: 390px"] {
-            height: 300px;
-          }
-        }
-        .no-hover {
-          transition: none !important;
-          cursor: default !important;
-          pointer-events: none !important;
-        }
-        .no-hover:hover {
-          box-shadow: none !important;
-          transform: none !important;
-        }
-      `}</style>
+
     </>
   );
 };

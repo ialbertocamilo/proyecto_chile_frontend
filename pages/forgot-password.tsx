@@ -122,14 +122,8 @@ const ForgotPassword: NextPageWithLayout = () => {
             <CustomButton
               type="button"
               variant="save"
+              className="btn btn-block w-100"
               onClick={() => router.push("/resetpassword")}
-              style={{
-                width: "100%",
-                borderRadius: "8px",
-                marginBottom: "1rem",
-                fontFamily: "var(--font-family-base)",
-                fontSize: "var(--font-size-base)",
-              }}
             >
               Continuar
             </CustomButton>
@@ -163,13 +157,7 @@ const ForgotPassword: NextPageWithLayout = () => {
             <CustomButton
               type="submit"
               variant="save"
-              style={{
-                width: "100%",
-                borderRadius: "8px",
-                marginBottom: "1rem",
-                fontFamily: "var(--font-family-base)",
-                height: "2.5rem"
-              }}
+              className="btn btn-block w-100"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -203,7 +191,6 @@ const ForgotPassword: NextPageWithLayout = () => {
               margin: "0 auto",
               width: "auto",
               padding: "8px 16px",
-              borderRadius: "8px",
               minWidth: "auto",
             }}
           >

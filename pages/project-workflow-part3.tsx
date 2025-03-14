@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useCallback } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import Swal from "sweetalert2";
+import { NewDetailModal } from "@/components/modals/NewDetailModal";
+import { notify } from "@/utils/notify";
 import axios from "axios";
-import CustomButton from "../src/components/common/CustomButton";
+import "bootstrap/dist/css/bootstrap.min.css";
+import router, { useRouter } from "next/router";
+import React, { useCallback, useEffect, useState } from "react";
+import { Tooltip } from "react-tooltip";
+import Swal from "sweetalert2";
+import GooIcons from "../public/GoogleIcons";
 import Card from "../src/components/common/Card";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import CustomButton from "../src/components/common/CustomButton";
 import Navbar from "../src/components/layout/Navbar";
 import TopBar from "../src/components/layout/TopBar";
 import useAuth from "../src/hooks/useAuth";
-import router, { useRouter } from "next/router";
-import GooIcons from "../public/GoogleIcons";
-import { Tooltip } from "react-tooltip";
-import Modal from "../src/components/common/Modal";
-import { notify } from "@/utils/notify";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 interface Detail {
   id_detail: number;
   scantilon_location: string;
@@ -110,7 +110,7 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-// Se agregó la propiedad activeStep para conocer cuál opción está activadfs
+// Se agregó la propiedad activeStep parafdfdsf conocer cuál opción está activadfs
 interface SidebarItemProps {
   stepNumber: number;
   iconName: string;
@@ -331,7 +331,7 @@ const ProjectWorkflowPart3: React.FC = () => {
       console.error("Error al obtener datos de muros:", error);
     }
   }, [projectId]);
-//s
+  //s
   const fetchTechumbreDetails = useCallback(async () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");
@@ -463,9 +463,8 @@ const ProjectWorkflowPart3: React.FC = () => {
         "Content-Type": "application/json",
       };
 
-      const response = await axios.post(createUrl, newDetailForm, { headers });
       setShowNewDetailRow(false);
-      console.log("Respuesta del backend al crear detalle:", response.data);
+      const response = await axios.post(createUrl, newDetailForm, { headers });
 
       const newDetailId = response.data.detail.id; // Accede correctamente al ID dentrfdfso de detail
 
@@ -1732,188 +1731,14 @@ const ProjectWorkflowPart3: React.FC = () => {
               </thead>
               <tbody>
                 {showNewDetailRow && (
-                  <Modal
-                    isOpen={showNewDetailRow}
-                    onClose={() => setShowNewDetailRow(false)}
-                    title="Agregar Nuevo Detalle Constructivo"
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "15px", // Espaciado entre elementos
-                        padding: "20px", // Más espacio interno
-                      }}
-                    >
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Ubicación del Detalle
-                        </label>
-                        <select
-                          className="form-control"
-                          value={newDetailForm.scantilon_location}
-                          onChange={(e) =>
-                            setNewDetailForm((prev) => ({
-                              ...prev,
-                              scantilon_location: e.target.value,
-                            }))
-                          }
-                          disabled={isViewMode}
-                        >
-                          <option value="">Seleccione</option>
-                          <option value="Muro">Muro</option>
-                          <option value="Techo">Techo</option>
-                          <option value="Piso">Piso</option>
-                        </select>
-                      </div>
 
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Nombre del Detalle
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Nombre Detalle"
-                          value={newDetailForm.name_detail}
-                          onChange={(e) =>
-                            setNewDetailForm((prev) => ({
-                              ...prev,
-                              name_detail: e.target.value,
-                            }))
-                          }
-                          disabled={isViewMode}
-                        />
-                      </div>
-
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Material
-                        </label>
-                        <select
-                          className="form-control"
-                          value={newDetailForm.material_id}
-                          onChange={(e) =>
-                            setNewDetailForm((prev) => ({
-                              ...prev,
-                              material_id: parseInt(e.target.value),
-                            }))
-                          }
-                          disabled={isViewMode}
-                        >
-                          <option value={0}>Seleccione un material</option>
-                          {materials.map((mat) => (
-                            <option key={mat.id} value={mat.id}>
-                              {mat.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label
-                          style={{
-                            textAlign: "left",
-                            fontWeight: "normal",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Espesor de la Capa (cm)
-                        </label>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          className="form-control"
-                          placeholder="Espesor (cm)"
-                          value={
-                            newDetailForm.layer_thickness === null
-                              ? ""
-                              : newDetailForm.layer_thickness
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "-" || e.key === "e") {
-                              e.preventDefault();
-                            }
-                          }}
-                          onChange={(e) => {
-                            const inputValue = e.target.value.replace(
-                              /[^0-9.]/g,
-                              ""
-                            ); // Permite solo números y punto decfdsfsimalaa
-                            const value = inputValue
-                              ? parseFloat(inputValue)
-                              : null;
-                            if (value === null || value >= 0) {
-                              setNewDetailForm((prev) => ({
-                                ...prev,
-                                layer_thickness: value,
-                              }));
-                            }
-                          }}
-                          min="0"
-                          disabled={isViewMode}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Botón alineado abajo a la derecha */}
-                    {!isViewMode && (
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          marginTop: "15px",
-                          paddingRight: "15px",
-                        }}
-                      >
-                        <CustomButton
-                          variant="save"
-                          onClick={() => {
-                            setShowNewDetailRow(false);
-                            setNewDetailForm({
-                              scantilon_location: "",
-                              name_detail: "",
-                              material_id: 0,
-                              layer_thickness: null,
-                            }); // Restablecer el estado
-                          }}
-                        >
-                          Cancelar
-                        </CustomButton>
-                        <CustomButton
-                          variant="save"
-                          onClick={async () => {
-                            await handleCreateNewDetail();
-                          }}
-                          id="grabar-datos-btn"
-                        >
-                          Crear Detalles
-                        </CustomButton>
-                      </div>
-                    )}
-
-                    <Tooltip anchorSelect="#grabar-datos-btn" place="top">
-                      Guardar cambios tras agregar un detalle
-                    </Tooltip>
-                  </Modal>
+                  <NewDetailModal
+                    showNewDetailRow={showNewDetailRow}
+                    setShowNewDetailRow={setShowNewDetailRow}
+                    newDetailForm={newDetailForm}
+                    setNewDetailForm={setNewDetailForm}
+                    materials={materials}
+                    handleCreateNewDetail={handleCreateNewDetail} isViewMode={isViewMode} />
                 )}
 
                 {fetchedDetails
@@ -2071,7 +1896,7 @@ const ProjectWorkflowPart3: React.FC = () => {
           }}
           className="mb-3"
         >
-          Recinto 
+          Recinto
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>

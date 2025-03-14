@@ -1,8 +1,8 @@
 'use client'
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useEffect, useRef, useState } from "react";
 
 interface TopBarProps {
   sidebarWidth: string;
@@ -49,7 +49,7 @@ const TopBar = ({}: TopBarProps) => {
           // Si en el perfil ya está el texto (por ejemplo, "Administrador"), lo usamos así.
           const userTypeFromProfile = parsedProfile.userType
             ? parsedProfile.userType
-            : localStorage.getItem("role_id") || "Tipo de Usuario";
+            : localStorage.getItem("role_id") || "Administrador";
 
           setUser({
             name: nameFromProfile,
@@ -130,12 +130,24 @@ const TopBar = ({}: TopBarProps) => {
             flex: 1,
           }}
         >
-          <Image
-            src="/assets/images/ceela.png"
-            alt="Logo"
-            width={200}
-            height={100}
-          />
+          {/* Logo para pantallas medianas y grandes */}
+          <div className="d-none d-md-block">
+            <Image
+              src="/assets/images/ceela.png"
+              alt="Logo"
+              width={200}
+              height={100}
+            />
+          </div>
+          {/* Logo para pantallas pequeñas */}
+          <div className="d-block d-md-none">
+            <Image
+              src="/assets/images/ceela2.png"
+              alt="Logo"
+              width={150}
+              height={75}
+            />
+          </div>
         </div>
 
         <div

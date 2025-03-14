@@ -9,12 +9,15 @@ import useAuth from "../src/hooks/useAuth";
 import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { notify } from "@/utils/notify";
-
-import Title from "../src/components/Title"; 
+import Title from "../src/components/Title";
 // Se importa el componente AdminSidebar en vez de SidebarItemComponent
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 // Importamos el componente SearchParameters
 import SearchParameters from "../src/components/inputs/SearchParameters";
+
+// Importamos el componente genérico de tablas
+import TablesParameters from "../src/components/tables/TablesParameters";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Detail {
   id_detail: number;
@@ -89,15 +92,14 @@ const WorkFlowpar2viewPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
-  // Estado para el id del proyecto y paso actual
+  // ==================== ESTADOS PRINCIPALES ====================
   const [projectId, setProjectId] = useState<number | null>(null);
   const [step, setStep] = useState<number>(4);
   const [hasLoaded, setHasLoaded] = useState(false);
 
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
-  // Estado para búsqueda en detalles constructivos
   const [searchQuery, setSearchQuery] = useState("");
-  // Estados para las pestañas (para mostrar datos en detalle)
+
   const [showTabsInStep4, setShowTabsInStep4] = useState(false);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
@@ -109,6 +111,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   const primaryColor = getCssVarValue("--primary-color", "#3ca7b7");
 
+  // Ejemplo de recintos (hardcodeado)
   const recintos = [
     {
       id: 1,
@@ -121,7 +124,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     },
   ];
 
-  // --- Obtención del projectId y step desde la URL o localStorage ---  
+  // ==================== OBTENCIÓN DE projectId y paso ====================
   useEffect(() => {
     if (router.isReady) {
       if (router.query.id) {
@@ -154,6 +157,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     }
   }, [hasLoaded, projectId, router]);
 
+  // ==================== LLAMADAS A ENDPOINTS ====================
   const fetchFetchedDetails = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -235,7 +239,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       setVentanasTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de ventanas:", error);
-      notify("Error al obtener datos de ventanas. Ver consola.");
+      notify("Error al obtener datos de Ventanas. Ver consola.");
     }
   }, []);
 
@@ -252,10 +256,11 @@ const WorkFlowpar2viewPage: React.FC = () => {
       setPuertasTabList(response.data);
     } catch (error: unknown) {
       console.error("Error al obtener datos de puertas:", error);
-      notify("Error al obtener datos de puertas. Ver consola.");
+      notify("Error al obtener datos de Puertas. Ver consola.");
     }
   }, []);
 
+  // ==================== EFECTOS SEGÚN STEP ====================
   useEffect(() => {
     if (step === 4) {
       fetchFetchedDetails();
@@ -293,23 +298,191 @@ const WorkFlowpar2viewPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
+  // ==================== RENDER CABECERA ====================
   const renderMainHeader = () =>
     step >= 4 && <Title text="Vista de Desarrollo de proyecto" />;
 
-  const stickyHeaderStyle1 = {
-    position: "sticky" as const,
-    top: 0,
-    backgroundColor: "#fff",
-    zIndex: 3,
+  // ==================== RENDER DE TABLAS (MUROS, TECHUMBRE, ETC.) ====================
+  // 1) Muros
+  const renderMurosTable = () => {
+    // Definimos columnas
+    const columnsMuros = [
+      { headerName: "Nombre Abreviado", field: "name_detail" },
+      { headerName: "Valor U (W/m²K)", field: "valorU" },
+      { headerName: "Color Exterior", field: "colorExterior" },
+      { headerName: "Color Interior", field: "colorInterior" },
+    ];
+
+    // Transformamos data en objetos con dichas propiedades
+    const murosData = murosTabList.map((item) => ({
+      name_detail: item.name_detail,
+      valorU: item.value_u?.toFixed(3) ?? "--",
+      colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
+      colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
+    }));
+
+    return murosTabList.length > 0 ? (
+      <TablesParameters columns={columnsMuros} data={murosData} />
+    ) : (
+      <p>No hay datos</p>
+    );
   };
 
-  const stickyHeaderStyle2 = {
-    position: "sticky" as const,
-    top: 40,
-    backgroundColor: "#fff",
-    zIndex: 2,
+  // 2) Techumbre
+  const renderTechumbreTable = () => {
+    const columnsTechumbre = [
+      { headerName: "Nombre Abreviado", field: "name_detail" },
+      { headerName: "Valor U (W/m²K)", field: "valorU" },
+      { headerName: "Color Exterior", field: "colorExterior" },
+      { headerName: "Color Interior", field: "colorInterior" },
+    ];
+
+    const techData = techumbreTabList.map((item) => ({
+      name_detail: item.name_detail,
+      valorU: item.value_u?.toFixed(3) ?? "--",
+      colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
+      colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
+    }));
+
+    return techumbreTabList.length > 0 ? (
+      <TablesParameters columns={columnsTechumbre} data={techData} />
+    ) : (
+      <p>No hay datos</p>
+    );
   };
 
+  // 3) Pisos (se aplanan las columnas con "I [W/mK]" / "e Aisl [cm]" para cada sub-objeto)
+  const renderPisosTable = () => {
+    const columnsPisos = [
+          { headerName: "Nombre", field: "nombre" },
+          { headerName: "U [W/m²K]", field: "uValue" },
+          { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
+          { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
+          { headerName: "I [W/mK] (vert)", field: "vertLambda" },
+          { headerName: "e Aisl [cm]", field: "vertEAisl" },
+          { headerName: "D [cm]", field: "vertD" },
+          { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
+          { headerName: "e Aisl [cm]", field: "horizEAisl" },
+          { headerName: "D [cm]", field: "horizD" },
+        ];
+    
+        const multiHeaderPisos = {
+          rows: [
+            [
+              { label: "Nombre", rowSpan: 2 },
+              { label: "U [W/m²K]", rowSpan: 2 },
+              { label: "Aislamiento bajo piso", colSpan: 2 },
+              { label: "Ref Aisl Vert.", colSpan: 3 },
+              { label: "Ref Aisl Horiz.", colSpan: 3 },
+            ],
+            [
+              { label: "I [W/mK]" },
+              { label: "e Aisl [cm]" },
+              { label: "I [W/mK]" },
+              { label: "e Aisl [cm]" },
+              { label: "D [cm]" },
+              { label: "I [W/mK]" },
+              { label: "e Aisl [cm]" },
+              { label: "D [cm]" },
+            ],
+          ],
+        };
+    
+        const pisosData = pisosTabList.map((item) => {
+          const bajoPiso = item.info?.aislacion_bajo_piso || {};
+          const vert = item.info?.ref_aisl_vertical || {};
+          const horiz = item.info?.ref_aisl_horizontal || {};
+          return {
+            nombre: item.name_detail,
+            uValue: item.value_u?.toFixed(3) ?? "--",
+            bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
+            bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
+            vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
+            vertEAisl: vert.e_aisl ?? "N/A",
+            vertD: vert.d ?? "N/A",
+            horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
+            horizEAisl: horiz.e_aisl ?? "N/A",
+            horizD: horiz.d ?? "N/A",
+          };
+        });
+    
+        return (
+          <div style={{ minWidth: "600px" }}>
+            {pisosTabList.length > 0 ? (
+              <TablesParameters
+                columns={columnsPisos}
+                data={pisosData}
+                multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
+              />
+            ) : (
+              <p>No hay datos</p>
+            )}
+          </div>
+        );
+      };
+    
+
+  // 4) Ventanas
+  const renderVentanasTable = () => {
+    const columnsVentanas = [
+      { headerName: "Nombre Elemento", field: "name_element" },
+      { headerName: "U Vidrio [W/m²K]", field: "u_vidrio" },
+      { headerName: "FS Vidrio []", field: "fs_vidrio" },
+      { headerName: "Tipo Marco", field: "frame_type" },
+      { headerName: "Tipo Cierre", field: "clousure_type" },
+      { headerName: "U Marco [W/m²K]", field: "u_marco" },
+      { headerName: "FV [%]", field: "fm" },
+    ];
+
+    const ventanasData = ventanasTabList.map((item) => ({
+      name_element: item.name_element,
+      u_vidrio: item.atributs?.u_vidrio
+        ? item.atributs.u_vidrio.toFixed(3)
+        : "--",
+      fs_vidrio: item.atributs?.fs_vidrio ?? "--",
+      frame_type: item.atributs?.frame_type ?? "--",
+      clousure_type: item.atributs?.clousure_type ?? "--",
+      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+      fm: item.fm ?? "--",
+    }));
+
+    return ventanasTabList.length > 0 ? (
+      <TablesParameters columns={columnsVentanas} data={ventanasData} />
+    ) : (
+      <p>No hay datos</p>
+    );
+  };
+
+  // 5) Puertas
+  const renderPuertasTable = () => {
+    const columnsPuertas = [
+      { headerName: "Nombre Elemento", field: "name_element" },
+      { headerName: "U puerta opaca [W/m²K]", field: "u_puerta" },
+      { headerName: "Vidrio []", field: "name_ventana" },
+      { headerName: "% vidrio", field: "porcentaje_vidrio" },
+      { headerName: "U Marco [W/m²K]", field: "u_marco" },
+      { headerName: "FM [%]", field: "fm" },
+    ];
+
+    const puertasData = puertasTabList.map((item) => ({
+      name_element: item.name_element,
+      u_puerta: item.atributs?.u_puerta_opaca
+        ? item.atributs.u_puerta_opaca.toFixed(3)
+        : "--",
+      name_ventana: item.atributs?.name_ventana ?? "--",
+      porcentaje_vidrio: item.atributs?.porcentaje_vidrio ?? "--",
+      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+      fm: item.fm ?? "--",
+    }));
+
+    return puertasTabList.length > 0 ? (
+      <TablesParameters columns={columnsPuertas} data={puertasData} />
+    ) : (
+      <p>No hay datos</p>
+    );
+  };
+
+  // ==================== RENDER PESTAÑAS (STEP 4) ====================
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
     const tabs = [
@@ -358,309 +531,28 @@ const WorkFlowpar2viewPage: React.FC = () => {
         <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>
-              <table
-                className="table table-bordered "
-                style={{ width: "100%", minWidth: "600px" }}
-              >
-                <thead>
-                  <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                      Nombre Abreviado
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                      Valor U (W/m²K)
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                      Color Exterior
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                      Color Interior
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {murosTabList.length > 0 ? (
-                    murosTabList.map((item, idx) => (
-                      <tr key={idx}>
-                        <td style={{ textAlign: "center" }}>{item.name_detail}</td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.value_u?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.info?.surface_color?.exterior?.name || "Desconocido"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.info?.surface_color?.interior?.name || "Desconocido"}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td style={{ textAlign: "center" }}>No hay datos</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+              {renderMurosTable()}
             </div>
           )}
           {tabStep4 === "techumbre" && (
             <div style={{ overflowX: "auto" }}>
-              <table
-                className="table table-bordered "
-                style={{ width: "100%", minWidth: "600px" }}
-              >
-                <thead>
-                  <tr>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                      Nombre Abreviado
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                      Valor U (W/m²K)
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                      Color Exterior
-                    </th>
-                    <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                      Color Interior
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {techumbreTabList.length > 0 ? (
-                    techumbreTabList.map((item, idx) => (
-                      <tr key={idx}>
-                        <td style={{ textAlign: "center" }}>{item.name_detail}</td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.value_u?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.info?.surface_color?.exterior?.name || "Desconocido"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.info?.surface_color?.interior?.name || "Desconocido"}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} style={{ textAlign: "center" }}>
-                        No hay datos
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+              {renderTechumbreTable()}
             </div>
           )}
           {tabStep4 === "pisos" && (
-            <table className="table table-bordered ">
-              <thead>
-                <tr>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    Nombre
-                  </th>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    U [W/m²K]
-                  </th>
-                  <th colSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    Aislamiento bajo piso
-                  </th>
-                  <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    Ref Aisl Vert.
-                  </th>
-                  <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    Ref Aisl Horiz.
-                  </th>
-                </tr>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                    I [W/mK]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                    e Aisl [cm]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                    I [W/mK]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                    e Aisl [cm]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                    D [cm]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                    I [W/mK]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                    e Aisl [cm]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor, textAlign: "center" }}>
-                    D [cm]
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {pisosTabList.length > 0 ? (
-                  pisosTabList.map((item, idx) => {
-                    const bajoPiso = item.info?.aislacion_bajo_piso || {};
-                    const vert = item.info?.ref_aisl_vertical || {};
-                    const horiz = item.info?.ref_aisl_horizontal || {};
-                    return (
-                      <tr key={idx}>
-                        <td style={{ textAlign: "center" }}>{item.name_detail}</td>
-                        <td style={{ textAlign: "center" }}>
-                          {item.value_u?.toFixed(3) ?? "--"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {bajoPiso.e_aisl ? bajoPiso.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.lambda ? vert.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.e_aisl ? vert.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {vert.d ? vert.d : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.e_aisl ? horiz.e_aisl : "N/A"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          {horiz.d ? horiz.d : "N/A"}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={9} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <div style={{ overflowX: "auto" }}>
+              {renderPisosTable()}
+            </div>
           )}
           {tabStep4 === "ventanas" && (
-            <table className="table table-bordered ">
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    Nombre Elemento
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    U Vidrio [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    FS Vidrio []
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    Tipo Marco
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    Tipo Cierre
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    U Marco [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    FV [%]
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {ventanasTabList.length > 0 ? (
-                  ventanasTabList.map((item, idx) => (
-                    <tr key={idx}>
-                      <td style={{ textAlign: "center" }}>{item.name_element}</td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.u_vidrio?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.fs_vidrio ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.frame_type ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.clousure_type ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.u_marco?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <div style={{ overflowX: "auto" }}>
+              {renderVentanasTable()}
+            </div>
           )}
           {tabStep4 === "puertas" && (
-            <table className="table table-bordered ">
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    Nombre Elemento
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    U puerta opaca [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    Vidrio []
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    % vidrio
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    U Marco [W/m²K]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor, textAlign: "center" }}>
-                    FM [%]
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {puertasTabList.length > 0 ? (
-                  puertasTabList.map((item, idx) => (
-                    <tr key={idx}>
-                      <td style={{ textAlign: "center" }}>{item.name_element}</td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.u_puerta_opaca?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.name_ventana ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.atributs?.porcentaje_vidrio ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {item.u_marco?.toFixed(3) ?? "--"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>{item.fm ?? "--"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <div style={{ overflowX: "auto" }}>
+              {renderPuertasTable()}
+            </div>
           )}
         </div>
         <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "10px" }}>
@@ -684,8 +576,19 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
+  // ==================== RENDER DETALLES INICIALES ====================
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
+
+    // Definimos columnas
+    const columnsDetails = [
+      { headerName: "Ubicación Detalle", field: "scantilon_location" },
+      { headerName: "Nombre Detalle", field: "name_detail" },
+      { headerName: "Material", field: "material" },
+      { headerName: "Espesor capa (cm)", field: "layer_thickness" },
+    ];
+
+    // Filtramos según searchQuery
     const filteredDetails = fetchedDetails.filter((det) => {
       const searchLower = searchQuery.toLowerCase();
       return (
@@ -695,6 +598,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         det.layer_thickness.toString().includes(searchLower)
       );
     });
+
     return (
       <>
         <SearchParameters
@@ -703,41 +607,22 @@ const WorkFlowpar2viewPage: React.FC = () => {
           placeholder="Buscar..."
           onNew={() => {}}
           style={{ marginBottom: "1rem" }}
-          showNewButton={false}
+          showNewButton={false} // Solo vista, no "Nuevo"
         />
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
-            <table className="table table-bordered " style={{ textAlign: "center" }}>
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
-                    Ubicación Detalle
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
-                    Nombre Detalle
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
-                    Material
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)", textAlign: "center" }}>
-                    Espesor capa (cm)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredDetails.map((det) => (
-                  <tr key={det.id_detail}>
-                    <td>{det.scantilon_location}</td>
-                    <td>{det.name_detail}</td>
-                    <td>{det.material}</td>
-                    <td>{det.layer_thickness}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {/* Reemplazamos la tabla manual por TablesParameters */}
+            <TablesParameters columns={columnsDetails} data={filteredDetails} />
           </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "30px", marginBottom: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "30px",
+            marginBottom: "10px",
+          }}
+        >
           <CustomButton
             id="mostrar-datos-btn"
             variant="save"
@@ -758,26 +643,31 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
+  // ==================== RENDER RECINTO ====================
   const renderRecinto = () => {
     return (
       <>
-        <h5 style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }} className="mb-3">
-          Recinto 
+        <h5
+          style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}
+          className="mb-3"
+        >
+          Recinto
         </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>
         </div>
         <div style={{ height: "390px", overflowY: "scroll" }}>
+          {/* Aquí podrías usar TablesParameters también si lo deseas */}
           <table className="table table-bordered ">
             <thead>
               <tr>
-                <th style={{ ...stickyHeaderStyle1 }}>ID</th>
-                <th style={{ ...stickyHeaderStyle1 }}>Estado</th>
-                <th style={{ ...stickyHeaderStyle1 }}>Nombre del Recinto</th>
-                <th style={{ ...stickyHeaderStyle1 }}>Perfil de Ocupación</th>
-                <th style={{ ...stickyHeaderStyle1 }}>Sensor CO2</th>
-                <th style={{ ...stickyHeaderStyle1 }}>Altura Promedio</th>
-                <th style={{ ...stickyHeaderStyle1 }}>Área</th>
+                <th>ID</th>
+                <th>Estado</th>
+                <th>Nombre del Recinto</th>
+                <th>Perfil de Ocupación</th>
+                <th>Sensor CO2</th>
+                <th>Altura Promedio</th>
+                <th>Área</th>
               </tr>
             </thead>
             <tbody>
@@ -799,7 +689,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // Definición de los pasos para la navegación del sidebar
+  // ==================== PASOS / SIDEBAR ====================
   const sidebarSteps = [
     {
       stepNumber: 1,
@@ -831,43 +721,70 @@ const WorkFlowpar2viewPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
+      <Card>
+  <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
+  
+  <div style={{ width: "100%" }}>
+    {/* Bloque izquierdo: texto + botón */}
+    <div className="d-flex align-items-center gap-3">
+      <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
+        Proyecto:
+      </span>
+      <CustomButton
+        variant="save"
+        className="no-hover"
+        style={{ padding: "0.8rem 3rem" }}
+      >
+        {`Edificación Nº ${projectId ?? "xxxxx"}`}
+      </CustomButton>
+    
+
+    {/* Bloque derecho: breadcrumb alineado a la derecha con ancho modificado */}
+    <div className="ms-auto" style={{display: "flex"}}>
+      <Breadcrumb
+        items={[
+          {
+            title: "Vista De Proyecto",
+            href: "/",
+            active: true,
+          },
+        ]}
+      />
+    </div>
+  </div>
+  </div>
+</Card>
+
+
+
+
+
+
+
         <Card>
-          <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
-          <div className="d-flex align-items-center gap-4">
-            <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-              Proyecto:
-            </span>
-            <CustomButton variant="save" className="no-hover" style={{ padding: "0.8rem 3rem" }}>
-              {`Edificación Nº ${projectId ?? "xxxxx"}`}
-            </CustomButton>
-          </div>
-        </Card>
-        <Card style={{ marginTop: "clamp(0.5rem, 2vw, 1rem)", marginLeft: "0.1rem", width: "100%" }}>
-          <div className="row">
-            {/* Sidebar utilizando el componente AdminSidebar */}
-            <div className="col-lg-3 col-12 order-lg-first order-first">
-              <div className="mb-3 mb-lg-0">
-                <AdminSidebar
-                  activeStep={step}
-                  steps={sidebarSteps}
-                  onClickAction={(route: string) => router.push(route)}
-                  // La función onStepChange se puede utilizar para casos en que no se requiera navegación directa
-                  onStepChange={(stepNumber: number) => setStep(stepNumber)}
-                />
-              </div>
-            </div>
-            {/* Contenido principal */}
-            <div className="col-lg-9 col-12 order-last">
-              <div style={{ padding: "20px" }}>
-                {step === 4 && (
-                  <>
-                    {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
-                  </>
-                )}
-                {step === 7 && renderRecinto()}
-              </div>
-            </div>
-          </div>
+        <div className="row">
+  {/* Columna para Sidebar */}
+  <div className="col-12 col-md-3">
+    <AdminSidebar
+      activeStep={step}
+      steps={sidebarSteps}
+      onClickAction={(route: string) => router.push(route)}
+      onStepChange={() => {}}
+    />
+  </div>
+
+  {/* Columna para contenido principafdsl */}
+  <div className="col-12 col-md-9 p-4">
+    {/* Contenido principal */}
+    {step === 4 && (
+      <>
+        {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+      </>
+    )}
+    {step === 7 && renderRecinto()}
+  </div>
+</div>
+
         </Card>
       </div>
     </>

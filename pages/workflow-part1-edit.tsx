@@ -1,22 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { useApi } from "@/hooks/useApi";
+import { notify } from "@/utils/notify";
 import axios from "axios";
-import dynamic from "next/dynamic";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import CustomButton from "../src/components/common/CustomButton";
-import Card from "../src/components/common/Card";
+import React, { useCallback, useEffect, useState } from "react";
 import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
-import { notify } from "@/utils/notify";
-import Title from "../src/components/Title";
-import { useApi } from "@/hooks/useApi";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Componente de sidebar dinámico
 import Breadcrumb from "../src/components/common/Breadcrumb";
-import { Autocompletion } from "@/components/maps/Autocompletion"; // Se agrega el componente de autocompletado
 import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader"; // Importamos el componente
+import Card from "../src/components/common/Card";
+import CustomButton from "../src/components/common/CustomButton";
+import Title from "../src/components/Title";
+import useAuth from "../src/hooks/useAuth";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import MapAutocompletion from "@/components/maps/MapAutocompletion";
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -72,7 +72,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [, setPrimaryColor] = useState("#3ca7b7");
   const [step, setStep] = useState<number>(1);
   const [locationSearch, setLocationSearch] = useState("");
-  const [completionList, setCompletionList] = useState<{ Title: string; Position: [number, number] }[]>([]);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -376,27 +375,6 @@ const ProjectWorkflowPart1: React.FC = () => {
       </div>
     );
   };
-
-  // Efecto para búsqueda de ubicación con autocompletado
-  useEffect(() => {
-    if (!locationSearch.trim()) return;
-
-    const delaySearch = setTimeout(() => {
-      console.log("Buscando ubicación:", locationSearch);
-      axios
-        .get(`/api/map?q=${locationSearch}&lat=${formData.latitude}&long=${formData.longitude}`)
-        .then((response) => {
-          const { data } = response;
-          console.log("Respuesta de ubicación", data.results.ResultItems);
-          setCompletionList(data.results.ResultItems);
-        })
-        .catch((error) => {
-          console.error("Error al buscar la ubicación:", error);
-        });
-    }, 500);
-
-    return () => clearTimeout(delaySearch);
-  }, [locationSearch, formData.latitude, formData.longitude]);
 
   // Definición de los pasos para la sidebar
   const steps = [
@@ -785,50 +763,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                         marginBottom: "20px",
                       }}
                     >
-                      <div className="row">
-                        <div className="col-12 mb-3">
-                          <Autocompletion
-                            locationSearch={locationSearch}
-                            setLocationSearch={setLocationSearch}
-                            completionList={completionList}
-                            handleFormInputChange={handleFormInputChange}
-                            setCompletionList={setCompletionList}
-                          />
-                        </div>
-                        <div className="col-12 col-md-8 mb-3">
-                          <NoSSRInteractiveMap
-                            onLocationSelect={(latlng) => {
-                              handleFormInputChange("latitude", latlng.lat);
-                              handleFormInputChange("longitude", latlng.lng);
-                            }}
-                            initialLat={formData.latitude}
-                            initialLng={formData.longitude}
-                          />
-                        </div>
-                        <div className="col-12 col-md-4">
-                          <label
-                            className="form-label"
-                            style={{
-                              width: "100%",
-                              height: "20px",
-                              marginTop: "20px",
-                            }}
-                          >
-                            Datos de ubicaciones encontradas
-                          </label>
-                          <textarea
-                            className="form-control mb-2"
-                            rows={5}
-                            value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
-                            readOnly
-                            style={{
-                              width: "100%",
-                              height: "100px",
-                              marginTop: "0px",
-                            }}
-                          />
-                        </div>
-                      </div>
+                      <MapAutocompletion
+                        formData={formData}
+                        handleFormInputChange={handleFormInputChange}
+                      />
+
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <div className="d-flex">
                           <CustomButton

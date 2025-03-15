@@ -1,0 +1,96 @@
+
+
+import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
+import { Autocompletion } from './Autocompletion'
+import axios from 'axios'
+
+interface MapAutocompletionProps {
+    formData: {
+        latitude: number
+        longitude: number
+    }
+    handleFormInputChange: (field: any, value: any) => void
+}
+
+const NoSSRInteractiveMap = dynamic(() => import("@/components/InteractiveMap"), {
+    ssr: false,
+});
+
+export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, handleFormInputChange }) => {
+    const [locationSearch, setLocationSearch] = useState('')
+
+    const [completionList, setCompletionList] = useState<{
+        Title: string;
+        Position: [number, number];
+    }[]>([]);
+
+    useEffect(() => {
+        if (!locationSearch.trim()) return;
+
+        const delaySearch = setTimeout(() => {
+            console.log("Buscando ubicación:", locationSearch);
+            axios
+                .get(`/api/map?q=${locationSearch}&lat=${formData.latitude}&long=${formData.longitude}`)
+                .then((response) => {
+                    const { data } = response;
+                    console.log("Respuesta de ubicación", data.results.ResultItems);
+                    setCompletionList(data.results.ResultItems);
+                })
+                .catch((error) => {
+                    console.error("Error al buscar la ubicación:", error);
+                });
+        }, 500);
+
+        return () => clearTimeout(delaySearch);
+    }, [locationSearch, formData.latitude, formData.longitude]);
+
+    return (
+        <div className="row">
+            <div className="col-12 mb-3">
+                <Autocompletion
+                    locationSearch={locationSearch}
+                    setLocationSearch={setLocationSearch}
+                    completionList={completionList}
+                    handleFormInputChange={handleFormInputChange}
+                    setCompletionList={setCompletionList}
+                />
+            </div>
+            <div className="col-12 col-md-8 mb-3">
+                <NoSSRInteractiveMap
+                    onLocationSelect={(latlng) => {
+                        handleFormInputChange("latitude", latlng.lat);
+                        handleFormInputChange("longitude", latlng.lng);
+                    }}
+                    initialLat={formData.latitude}
+                    initialLng={formData.longitude}
+                />
+            </div>
+            <div className="col-12 col-md-4">
+                <label
+                    className="form-label"
+                    style={{
+                        width: "100%",
+                        height: "20px",
+                        marginTop: "20px",
+                    }}
+                >
+                    Datos de ubicaciones encontradas
+                </label>
+                <textarea
+                    className="form-control mb-2"
+                    rows={5}
+                    value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
+                    readOnly
+                    style={{
+                        width: "100%",
+                        height: "100px",
+                        marginTop: "0px",
+                    }}
+                />
+            </div>
+        </div>
+    )
+}
+
+export default MapAutocompletion

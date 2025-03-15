@@ -21,6 +21,7 @@ import ProjectInfoHeader from "@/components/common/ProjectInfoHeader"; // <-- Im
 // Importamos nuestro componente genérico de tablas
 import { NewDetailModal } from "@/components/modals/NewDetailModal";
 import TablesParameters from "../src/components/tables/TablesParameters";
+// Ajusta la ruta de import según corresponda a tu proyecto
 
 interface Detail {
   id_detail: number;
@@ -166,8 +167,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     material_id: 0,
     layer_thickness: null,
   });
-  // Se cambia el valor inicial a true para que la pantalla de cálculos (tabs) sea la principal
-  const [showTabsInStep4, setShowTabsInStep4] = useState(true);
+  const [showTabsInStep4, setShowTabsInStep4] = useState(false);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
   // ===================== ESTADOS POR PESTAÑA ======================
@@ -583,15 +583,15 @@ const WorkFlowpar2editPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingColors.interior },
-                    exterior: { name: editingColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingColors.interior },
+                  exterior: { name: editingColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -643,15 +643,15 @@ const WorkFlowpar2editPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingTechColors.interior },
-                    exterior: { name: editingTechColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingTechColors.interior },
+                  exterior: { name: editingTechColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -845,6 +845,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   };
 
   // ===================== RENDER PISOS ======================
+  // Con múltiples columnas en <thead>, aquí lo simplificamos en columnas planas
   const renderPisosParameters = () => {
     const columnsPisos = [
       { headerName: "Nombre", field: "nombre" },
@@ -900,12 +901,12 @@ const WorkFlowpar2editPage: React.FC = () => {
     });
 
     return (
-      <div>
+      <div >
         {pisosTabList.length > 0 ? (
           <TablesParameters
             columns={columnsPisos}
             data={pisosData}
-            multiHeader={multiHeaderPisos}
+            multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
           />
         ) : (
           <p>No hay datos</p>
@@ -926,7 +927,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "FV [%]", field: "fm" },
     ];
 
-    const ventanasData = ventanasTabList.map((item) => ({
+    const ventanasData = ventanasTabList.map((item, idx) => ({
       name_element: item.name_element,
       u_vidrio: item.atributs?.u_vidrio
         ? item.atributs.u_vidrio.toFixed(3)
@@ -960,7 +961,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "FM [%]", field: "fm" },
     ];
 
-    const puertasData = puertasTabList.map((item) => ({
+    const puertasData = puertasTabList.map((item, idx) => ({
       name_element: item.name_element,
       u_puerta: item.atributs?.u_puerta_opaca
         ? item.atributs.u_puerta_opaca.toFixed(3)
@@ -995,7 +996,9 @@ const WorkFlowpar2editPage: React.FC = () => {
 
     return (
       <div className="mt-4">
-        <ul className="nav">
+        <ul
+          className="nav"
+        >
           {tabs.map((item) => (
             <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
               <button
@@ -1018,14 +1021,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div
-          style={{
-            height: "400px",
-            overflowY: "auto",
-            position: "relative",
-            marginTop: "1rem",
-          }}
-        >
+        <div style={{ height: "400px", overflowY: "auto", position: "relative", marginTop: "1rem" }}>
           {tabStep4 === "muros" && renderMurosParameters()}
           {tabStep4 === "techumbre" && renderTechumbreParameters()}
           {tabStep4 === "pisos" && renderPisosParameters()}
@@ -1053,9 +1049,9 @@ const WorkFlowpar2editPage: React.FC = () => {
             }}
           >
             <span className="material-icons" style={{ fontSize: "24px" }}>
-              visibility
+              arrow_back
             </span>
-            &nbsp;Detalles generales
+            &nbsp;Regresar
           </CustomButton>
         </div>
       </div>
@@ -1100,8 +1096,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           newDetailForm={newDetailForm}
           setNewDetailForm={setNewDetailForm}
           materials={materials}
-          handleCreateNewDetail={handleCreateNewDetail}
-        />
+          handleCreateNewDetail={handleCreateNewDetail} />
         <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
           <TablesParameters columns={columnsDetails} data={filteredData} />
         </div>
@@ -1116,7 +1111,8 @@ const WorkFlowpar2editPage: React.FC = () => {
             marginBottom: "10px",
           }}
         >
-          <div>
+          <div
+          >
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <CustomButton
                 id="mostrar-datos-btn"
@@ -1180,7 +1176,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 occupationProfile: "Residencial",
                 co2Sensor: "Sí",
                 avgHeight: "2.4m",
-                area: "25.5m²",
+                area: "25.5m²"
               },
               {
                 id: 2,
@@ -1189,7 +1185,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 occupationProfile: "Residencial",
                 co2Sensor: "No",
                 avgHeight: "2.4m",
-                area: "16.8m²",
+                area: "16.8m²"
               },
               {
                 id: 3,
@@ -1198,9 +1194,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                 occupationProfile: "Residencial",
                 co2Sensor: "Sí",
                 avgHeight: "2.4m",
-                area: "12.3m²",
-              },
-            ].map((room) => (
+                area: "12.3m²"
+              }
+            ].map(room => (
               <tr key={room.id}>
                 <td>{room.id}</td>
                 <td>{room.status}</td>
@@ -1295,6 +1291,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           </div>
         </Card>
       </div>
+
     </>
   );
 };

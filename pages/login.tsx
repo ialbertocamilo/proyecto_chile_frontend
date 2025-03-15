@@ -52,7 +52,7 @@ const Login: NextPageWithLayout = () => {
       localStorage.setItem("email", email);
       localStorage.setItem("user_name", data.name || "Usuario");
 
-      console.log("User data:", data);
+      console.log("User data", data);
 
       setTimeout(() => {
         push("/twofactorauth");

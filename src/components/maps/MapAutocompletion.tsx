@@ -1,9 +1,9 @@
 
 
-import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
-import { Autocompletion } from './Autocompletion'
 import axios from 'axios'
+import dynamic from 'next/dynamic'
+import { useEffect, useState } from 'react'
+import { Autocompletion } from './Autocompletion'
 
 interface MapAutocompletionProps {
     formData: {
@@ -71,21 +71,19 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
                     className="form-label"
                     style={{
                         width: "100%",
-                        height: "20px",
-                        marginTop: "20px",
+                        marginBottom: "8px"
                     }}
                 >
                     Datos de ubicaciones encontradas
                 </label>
                 <textarea
-                    className="form-control mb-2"
-                    rows={5}
+                    className="form-control"
+                    rows={3}
                     value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
                     readOnly
                     style={{
                         width: "100%",
-                        height: "100px",
-                        marginTop: "0px",
+                        resize: "none"
                     }}
                 />
             </div>

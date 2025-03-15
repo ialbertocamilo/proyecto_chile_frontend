@@ -1,3 +1,4 @@
+import MapAutocompletion from "@/components/maps/MapAutocompletion";
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import axios from "axios";
@@ -10,13 +11,12 @@ import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Componente de sidebar dinámico
 import Breadcrumb from "../src/components/common/Breadcrumb";
-import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader"; // Importamos el componente
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
+import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader"; // Importamos el componente
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import MapAutocompletion from "@/components/maps/MapAutocompletion";
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -424,7 +424,7 @@ const ProjectWorkflowPart1: React.FC = () => {
               <Breadcrumb
                 items={[
                   {
-                    title: "Proyecto Nuevo",
+                    title: "Editar",
                     href: "/",
                     active: true,
                   },
@@ -434,384 +434,387 @@ const ProjectWorkflowPart1: React.FC = () => {
           </div>
         </Card>
         <Card>
-          <div>
-            <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
-              <AdminSidebar activeStep={step} onStepChange={handleSidebarStepChange} steps={steps} />
-              <div className="content p-4" style={{ flex: 1 }}>
-                {step === 1 && (
-                  <>
-                    {/* Paso 1: Datos generales */}
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Nombre del proyecto{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.name_project}
-                          onChange={(e) =>
-                            handleFormInputChange("name_project", e.target.value)
-                          }
-                          style={
-                            submitted && errors.name_project ? { borderColor: "red" } : undefined
-                          }
-                        />
-                        {submitted && errors.name_project && (
-                          <small className="text-danger">{errors.name_project}</small>
-                        )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Nombre del propietario{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.owner_name}
-                          onChange={(e) =>
-                            handleFormInputChange("owner_name", e.target.value)
-                          }
-                        />
-                        {router.query.id &&
-                          submitted &&
-                          errors.owner_name && (
-                            <small className="text-danger">{errors.owner_name}</small>
-                          )}
-                      </div>
+          <div className="row" >
+
+          <div className="col-12 col-lg-3">
+            <AdminSidebar activeStep={step} onStepChange={handleSidebarStepChange} steps={steps} />
+            </div>
+            <div className="col-12 col-lg-9">
+              <div className="w-100">
+              {step === 1 && (
+                <>
+                  {/* Paso 1: Datos generales */}
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6 ">
+                      <label className="form-label">
+                        Nombre del proyecto{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.name_project}
+                        onChange={(e) =>
+                          handleFormInputChange("name_project", e.target.value)
+                        }
+                        style={
+                          submitted && errors.name_project ? { borderColor: "red" } : undefined
+                        }
+                      />
+                      {submitted && errors.name_project && (
+                        <small className="text-danger">{errors.name_project}</small>
+                      )}
                     </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Apellido del propietario{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.owner_lastname}
-                          onChange={(e) =>
-                            handleFormInputChange("owner_lastname", e.target.value)
-                          }
-                        />
-                        {router.query.id &&
-                          submitted &&
-                          errors.owner_lastname && (
-                            <small className="text-danger">{errors.owner_lastname}</small>
-                          )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          País{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.country}
-                          onChange={(e) =>
-                            handleCountryChange(e.target.value as Country)
-                          }
-                        >
-                          <option value="">Seleccione un país</option>
-                          {Object.keys(locationData).map((country) => (
-                            <option key={country} value={country}>
-                              {country}
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Nombre del propietario{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.owner_name}
+                        onChange={(e) =>
+                          handleFormInputChange("owner_name", e.target.value)
+                        }
+                      />
+                      {router.query.id &&
+                        submitted &&
+                        errors.owner_name && (
+                          <small className="text-danger">{errors.owner_name}</small>
+                        )}
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Apellido del propietario{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.owner_lastname}
+                        onChange={(e) =>
+                          handleFormInputChange("owner_lastname", e.target.value)
+                        }
+                      />
+                      {router.query.id &&
+                        submitted &&
+                        errors.owner_lastname && (
+                          <small className="text-danger">{errors.owner_lastname}</small>
+                        )}
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        País{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <select
+                        className="form-control"
+                        value={formData.country}
+                        onChange={(e) =>
+                          handleCountryChange(e.target.value as Country)
+                        }
+                      >
+                        <option value="">Seleccione un país</option>
+                        {Object.keys(locationData).map((country) => (
+                          <option key={country} value={country}>
+                            {country}
+                          </option>
+                        ))}
+                      </select>
+                      {router.query.id &&
+                        submitted &&
+                        errors.country && (
+                          <small className="text-danger">{errors.country}</small>
+                        )}
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Departamento{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <select
+                        className="form-control"
+                        value={formData.department}
+                        onChange={(e) =>
+                          handleDepartmentChange(e.target.value)
+                        }
+                        disabled={!formData.country}
+                      >
+                        <option value="">Seleccione un departamento</option>
+                        {formData.country &&
+                          Object.keys(locationData[formData.country]?.departments || {}).map((dept) => (
+                            <option key={dept} value={dept}>
+                              {dept}
                             </option>
                           ))}
-                        </select>
-                        {router.query.id &&
-                          submitted &&
-                          errors.country && (
-                            <small className="text-danger">{errors.country}</small>
-                          )}
-                      </div>
+                      </select>
+                      {router.query.id &&
+                        submitted &&
+                        errors.department && (
+                          <small className="text-danger">{errors.department}</small>
+                        )}
                     </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Departamento{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.department}
-                          onChange={(e) =>
-                            handleDepartmentChange(e.target.value)
-                          }
-                          disabled={!formData.country}
-                        >
-                          <option value="">Seleccione un departamento</option>
-                          {formData.country &&
-                            Object.keys(locationData[formData.country]?.departments || {}).map((dept) => (
-                              <option key={dept} value={dept}>
-                                {dept}
-                              </option>
-                            ))}
-                        </select>
-                        {router.query.id &&
-                          submitted &&
-                          errors.department && (
-                            <small className="text-danger">{errors.department}</small>
-                          )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Provincia{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.province}
-                          onChange={(e) =>
-                            handleFormInputChange("province", e.target.value)
-                          }
-                          disabled={!formData.department}
-                        >
-                          <option value="">Seleccione una provincia</option>
-                          {formData.country &&
-                            formData.department &&
-                            (locationData[formData.country]?.departments?.[formData.department] || []).map((prov) => (
-                              <option key={prov} value={prov}>
-                                {prov}
-                              </option>
-                            ))}
-                        </select>
-                        {router.query.id &&
-                          submitted &&
-                          errors.province && (
-                            <small className="text-danger">{errors.province}</small>
-                          )}
-                      </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Provincia{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <select
+                        className="form-control"
+                        value={formData.province}
+                        onChange={(e) =>
+                          handleFormInputChange("province", e.target.value)
+                        }
+                        disabled={!formData.department}
+                      >
+                        <option value="">Seleccione una provincia</option>
+                        {formData.country &&
+                          formData.department &&
+                          (locationData[formData.country]?.departments?.[formData.department] || []).map((prov) => (
+                            <option key={prov} value={prov}>
+                              {prov}
+                            </option>
+                          ))}
+                      </select>
+                      {router.query.id &&
+                        submitted &&
+                        errors.province && (
+                          <small className="text-danger">{errors.province}</small>
+                        )}
                     </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Distrito{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.district}
-                          onChange={(e) =>
-                            handleFormInputChange("district", e.target.value)
-                          }
-                        />
-                        {router.query.id &&
-                          submitted &&
-                          errors.district && (
-                            <small className="text-danger">{errors.district}</small>
-                          )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Tipo de edificación{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.building_type}
-                          onChange={(e) =>
-                            handleFormInputChange("building_type", e.target.value)
-                          }
-                        >
-                          <option value="">Seleccione un tipo de edificación</option>
-                          <option value="Unifamiliar">Unifamiliar</option>
-                          <option value="Duplex">Duplex</option>
-                          <option value="Vertical / Departamentos">Vertical / Departamentos</option>
-                        </select>
-                        {router.query.id &&
-                          submitted &&
-                          errors.building_type && (
-                            <small className="text-danger">{errors.building_type}</small>
-                          )}
-                      </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Distrito{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.district}
+                        onChange={(e) =>
+                          handleFormInputChange("district", e.target.value)
+                        }
+                      />
+                      {router.query.id &&
+                        submitted &&
+                        errors.district && (
+                          <small className="text-danger">{errors.district}</small>
+                        )}
                     </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Tipo de uso principal{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.main_use_type}
-                          onChange={(e) =>
-                            handleFormInputChange("main_use_type", e.target.value)
-                          }
-                        >
-                          <option value="">Seleccione un tipo de uso</option>
-                          <option value="Viviendas">Viviendas</option>
-                          <option value="Oficinas">Oficinas</option>
-                          <option value="Terciarios">Terciarios</option>
-                        </select>
-                        {router.query.id &&
-                          submitted &&
-                          errors.main_use_type && (
-                            <small className="text-danger">{errors.main_use_type}</small>
-                          )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Número de niveles{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.number_levels}
-                          onChange={(e) =>
-                            handleFormInputChange("number_levels", parseInt(e.target.value) || 0)
-                          }
-                        />
-                        {router.query.id &&
-                          submitted &&
-                          errors.number_levels && (
-                            <small className="text-danger">{errors.number_levels}</small>
-                          )}
-                      </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Tipo de edificación{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <select
+                        className="form-control"
+                        value={formData.building_type}
+                        onChange={(e) =>
+                          handleFormInputChange("building_type", e.target.value)
+                        }
+                      >
+                        <option value="">Seleccione un tipo de edificación</option>
+                        <option value="Unifamiliar">Unifamiliar</option>
+                        <option value="Duplex">Duplex</option>
+                        <option value="Vertical / Departamentos">Vertical / Departamentos</option>
+                      </select>
+                      {router.query.id &&
+                        submitted &&
+                        errors.building_type && (
+                          <small className="text-danger">{errors.building_type}</small>
+                        )}
                     </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Número de viviendas / oficinas x nivel{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.number_homes_per_level}
-                          onChange={(e) =>
-                            handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)
-                          }
-                        />
-                        {router.query.id &&
-                          submitted &&
-                          errors.number_homes_per_level && (
-                            <small className="text-danger">{errors.number_homes_per_level}</small>
-                          )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Superficie construida (m²){" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.built_surface}
-                          onChange={(e) =>
-                            handleFormInputChange("built_surface", parseFloat(e.target.value) || 0)
-                          }
-                        />
-                        {router.query.id &&
-                          submitted &&
-                          errors.built_surface && (
-                            <small className="text-danger">{errors.built_surface}</small>
-                          )}
-                      </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Tipo de uso principal{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <select
+                        className="form-control"
+                        value={formData.main_use_type}
+                        onChange={(e) =>
+                          handleFormInputChange("main_use_type", e.target.value)
+                        }
+                      >
+                        <option value="">Seleccione un tipo de uso</option>
+                        <option value="Viviendas">Viviendas</option>
+                        <option value="Oficinas">Oficinas</option>
+                        <option value="Terciarios">Terciarios</option>
+                      </select>
+                      {router.query.id &&
+                        submitted &&
+                        errors.main_use_type && (
+                          <small className="text-danger">{errors.main_use_type}</small>
+                        )}
                     </div>
-                    {globalError && (
-                      <div className="alert alert-danger" role="alert">
-                        {globalError}
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Número de niveles{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="form-control"
+                        value={formData.number_levels}
+                        onChange={(e) =>
+                          handleFormInputChange("number_levels", parseInt(e.target.value) || 0)
+                        }
+                      />
+                      {router.query.id &&
+                        submitted &&
+                        errors.number_levels && (
+                          <small className="text-danger">{errors.number_levels}</small>
+                        )}
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Número de viviendas / oficinas x nivel{" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="form-control"
+                        value={formData.number_homes_per_level}
+                        onChange={(e) =>
+                          handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)
+                        }
+                      />
+                      {router.query.id &&
+                        submitted &&
+                        errors.number_homes_per_level && (
+                          <small className="text-danger">{errors.number_homes_per_level}</small>
+                        )}
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Superficie construida (m²){" "}
+                        {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="form-control"
+                        value={formData.built_surface}
+                        onChange={(e) =>
+                          handleFormInputChange("built_surface", parseFloat(e.target.value) || 0)
+                        }
+                      />
+                      {router.query.id &&
+                        submitted &&
+                        errors.built_surface && (
+                          <small className="text-danger">{errors.built_surface}</small>
+                        )}
+                    </div>
+                  </div>
+                  {globalError && (
+                    <div className="alert alert-danger" role="alert">
+                      {globalError}
+                    </div>
+                  )}
+                  {router.query.id ? (
+                    <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                      <CustomButton
+                        variant="save"
+                        onClick={handleStep1Action}
+                        style={{ height: "50px" }}
+                      >
+                        <span className="material-icons" style={{ marginRight: "5px" }}>
+                          save_as
+                        </span>
+                        Actualizar Datos
+                      </CustomButton>
+                    </div>
+                  ) : (
+                    <div className="d-flex justify-content-between align-items-center mt-4">
+                      <div>
+                        <small>(*) Campos Obligatorios</small>
                       </div>
-                    )}
-                    {router.query.id ? (
-                      <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                      <CustomButton
+                        variant="save"
+                        onClick={handleStep1Action}
+                        style={{ height: "50px" }}
+                        disabled={loading}
+                      >
+                        Continuar
+                      </CustomButton>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {step === 2 && (
+                <>
+                  {/* Paso 2: Ubicación */}
+                  <div
+                    style={{
+                      border: "1px solid #ccc",
+                      borderRadius: "8px",
+                      padding: "30px",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    <MapAutocompletion
+                      formData={formData}
+                      handleFormInputChange={handleFormInputChange}
+                    />
+
+                    <div className="d-flex justify-content-between align-items-center mt-4">
+                      <div className="d-flex">
                         <CustomButton
                           variant="save"
-                          onClick={handleStep1Action}
-                          style={{ height: "50px" }}
+                          onClick={handleGeolocation}
+                          style={{ marginLeft: "10px", height: "50px", width: "200px" }}
                         >
                           <span className="material-icons" style={{ marginRight: "5px" }}>
-                            save_as
+                            location_on
                           </span>
-                          Actualizar Datos
+                          Ubicación actual
                         </CustomButton>
                       </div>
-                    ) : (
-                      <div className="d-flex justify-content-between align-items-center mt-4">
-                        <div>
-                          <small>(*) Campos Obligatorios</small>
-                        </div>
-                        <CustomButton
-                          variant="save"
-                          onClick={handleStep1Action}
-                          style={{ height: "50px" }}
-                          disabled={loading}
-                        >
-                          Continuar
-                        </CustomButton>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {step === 2 && (
-                  <>
-                    {/* Paso 2: Ubicación */}
-                    <div
-                      style={{
-                        border: "1px solid #ccc",
-                        borderRadius: "8px",
-                        padding: "30px",
-                        marginBottom: "20px",
-                      }}
-                    >
-                      <MapAutocompletion
-                        formData={formData}
-                        handleFormInputChange={handleFormInputChange}
-                      />
-
-                      <div className="d-flex justify-content-between align-items-center mt-4">
-                        <div className="d-flex">
+                      <div className="d-flex">
+                        {router.query.id ? (
                           <CustomButton
                             variant="save"
-                            onClick={handleGeolocation}
-                            style={{ marginLeft: "10px", height: "50px", width: "200px" }}
+                            onClick={enviarProyecto}
+                            style={{ height: "50px" }}
                           >
                             <span className="material-icons" style={{ marginRight: "5px" }}>
-                              location_on
+                              save_as
                             </span>
-                            Ubicación actual
+                            Actualizar Datos
                           </CustomButton>
-                        </div>
-                        <div className="d-flex">
-                          {router.query.id ? (
-                            <CustomButton
-                              variant="save"
-                              onClick={enviarProyecto}
-                              style={{ height: "50px" }}
-                            >
-                              <span className="material-icons" style={{ marginRight: "5px" }}>
-                                save_as
-                              </span>
-                              Actualizar Datos
-                            </CustomButton>
-                          ) : (
-                            <CustomButton
-                              variant="save"
-                              onClick={enviarProyecto}
-                              style={{ height: "50px" }}
-                              disabled={loading}
-                            >
-                              <span className="material-icons" style={{ marginRight: "5px" }}>
-                                sd_card
-                              </span>
-                              Grabar Datos
-                            </CustomButton>
-                          )}
-                        </div>
+                        ) : (
+                          <CustomButton
+                            variant="save"
+                            onClick={enviarProyecto}
+                            style={{ height: "50px" }}
+                            disabled={loading}
+                          >
+                            <span className="material-icons" style={{ marginRight: "5px" }}>
+                              sd_card
+                            </span>
+                            Grabar Datos
+                          </CustomButton>
+                        )}
                       </div>
                     </div>
-                  </>
-                )}
-              </div>
+                  </div>
+                </>
+              )}
+            </div>
             </div>
           </div>
         </Card>

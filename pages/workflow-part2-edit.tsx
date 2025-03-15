@@ -1,4 +1,5 @@
 // WorkFlowpar2editPage.tsx
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader"; // <-- Importamos el nuevo componente
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -14,11 +15,9 @@ import CustomButton from "../src/components/common/CustomButton";
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import ModalCreate from "../src/components/common/ModalCreate";
-import Breadcrumb from "@/components/common/Breadcrumb";
-import ProjectInfoHeader from "@/components/common/ProjectInfoHeader"; // <-- Importamos el nuevo componente
 
 // Importamos nuestro componente genérico de tablas
+import Breadcrumb from "@/components/common/Breadcrumb";
 import { NewDetailModal } from "@/components/modals/NewDetailModal";
 import TablesParameters from "../src/components/tables/TablesParameters";
 // Ajusta la ruta de import según corresponda a tu proyecto
@@ -425,7 +424,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-              "Todos los detalles ya estaban en el proyecto"
+            "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -524,7 +523,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       if (
         axios.isAxiosError(error) &&
         error.response?.data?.detail ===
-          "Todos los detalles ya estaban en el proyecto"
+        "Todos los detalles ya estaban en el proyecto"
       ) {
         return;
       }
@@ -663,7 +662,7 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // ===================== RENDER CABECERA PRINCIPAL ======================
   const renderMainHeader = () => (
-    <Title text="Edición de Desarrollo de Proyecto" />
+    <Title text="Edición de Proyecto" />
   );
 
   // ===================== RENDER MUROS ======================
@@ -1254,39 +1253,41 @@ const WorkFlowpar2editPage: React.FC = () => {
       <GooIcons />
       <div>
         <Card>
-          <div
-            className="d-flex align-items-center w-100"
-            style={{ marginBottom: "2rem" }}
-          >
+          <div>
             {renderMainHeader()}
+            <div className="d-flex align-items-center" style={{ gap: "10px" }}>
+              <ProjectInfoHeader projectName={projectName} region={region} />
+              <Breadcrumb
+                items={[
+                  {
+                    title: "Editar",
+                    href: "/",
+                    active: true,
+                  },
+                ]}
+              />
+            </div>
           </div>
-          {/* Se reemplaza la cabecera antigua por el componente ProjectInfoHeader */}
-          <ProjectInfoHeader projectName={projectName} region={region} />
         </Card>
         <Card
-          style={{
-            marginTop: "clamp(0.5rem, 2vw, 1rem)",
-            marginLeft: "0.1rem",
-            width: "100%",
-          }}
         >
           <div className="row">
-            <div className="col-lg-3 col-12 order-lg-first order-first">
-              <div className="mb-3 mb-lg-0">
-                <AdminSidebar
-                  activeStep={step}
-                  onStepChange={handleSidebarStepChange}
-                  steps={sidebarSteps}
-                />
-              </div>
+            <div className="col-12 col-lg-3">
+              <AdminSidebar
+                activeStep={step}
+                onStepChange={handleSidebarStepChange}
+                steps={sidebarSteps}
+              />
             </div>
-            <div className="col-lg-9 col-12 order-last">
-              {step === 4 && (
-                <>
-                  {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
-                </>
-              )}
-              {step === 7 && renderRecinto()}
+            <div className="col-12 col-lg-9">
+              <div className="w-100">
+                {step === 4 && (
+                  <>
+                    {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+                  </>
+                )}
+                {step === 7 && renderRecinto()}
+              </div>
             </div>
           </div>
         </Card>

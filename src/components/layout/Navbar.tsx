@@ -248,7 +248,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                     <span style={iconStyle("/project-list")} className="material-icons">
                       dns
                     </span>
-                    <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                    <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>
                       Proyectos
                     </span>
                   </Link>
@@ -272,7 +272,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                     >
                       note_add
                     </span>
-                    <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                    <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>
                       Proyecto Nuevo
                     </span>
                   </Link>
@@ -296,7 +296,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                     >
                       ballot
                     </span>
-                    <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                    <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>
                       Desarrollo de proyecto
                     </span>
                   </Link>
@@ -317,7 +317,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                     <span style={iconStyle("/data-entry")} className="material-icons">
                       input
                     </span>
-                    <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                    <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>
                       Ingreso de Datos de entrada
                     </span>
                   </Link>
@@ -342,7 +342,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       <span style={iconStyle("/dashboard")} className="material-icons">
                         dashboard
                       </span>
-                      <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                      <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>
                         Dashboard
                       </span>
                     </Link>
@@ -361,7 +361,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       <span style={iconStyle("/project-status")} className="material-icons">
                         format_list_bulleted
                       </span>
-                      <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                      <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>
                         Proyectos registrados
                       </span>
                     </Link>
@@ -380,7 +380,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       <span style={iconStyle("/user-management")} className="material-icons">
                         person
                       </span>
-                      <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                      <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>
                         Usuarios
                       </span>
                     </Link>
@@ -399,7 +399,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       <span style={iconStyle("/administration")} className="material-icons">
                         build
                       </span>
-                      <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                      <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>
                         Parámetros
                       </span>
                     </Link>
@@ -421,7 +421,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                   <span style={iconStyle("/logout")} className="material-icons">
                     logout
                   </span>
-                  <span style={{ marginLeft: isNavOpen ? "10px" : "0" }}>
+                  <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>
                     Salir
                   </span>
                 </div>

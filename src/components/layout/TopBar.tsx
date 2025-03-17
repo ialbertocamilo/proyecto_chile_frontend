@@ -8,7 +8,7 @@ interface TopBarProps {
   sidebarWidth: string;
 }
 
-// Modificamos la función para que si el valor ya es "Administrador" o "Operador", lo retorne directamente
+// Función para convertir el valor del rol a texto (se retorna directamente si ya es "Administrador" u "Operador")
 const getUserTypeText = (role: string): string => {
   if (role === "Administrador" || role === "Operador") return role;
   switch (role) {
@@ -32,49 +32,51 @@ const TopBar = ({}: TopBarProps) => {
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Función para cargar datos desde localStorage
+  const loadProfile = () => {
+    const storedProfile = localStorage.getItem("userProfile");
+    if (storedProfile) {
+      try {
+        const parsedProfile = JSON.parse(storedProfile);
+        const emailFromProfile = parsedProfile.email || localStorage.getItem("email") || "";
+        const nameFromProfile = parsedProfile.name || localStorage.getItem("user_name") || "Usuario";
+        const userTypeFromProfile = parsedProfile.userType || localStorage.getItem("role_id") || "Administrador";
+
+        setUser({
+          name: nameFromProfile,
+          email: emailFromProfile,
+          userType: userTypeFromProfile,
+        });
+      } catch (err) {
+        console.error("Error al parsear el perfil desde localStorage:", err);
+      }
+    } else {
+      setUser({
+        name: localStorage.getItem("user_name") || "Usuario",
+        email: localStorage.getItem("email") || "",
+        userType: localStorage.getItem("role_id") || "Tipo de Usuario",
+      });
+    }
+  };
+
   useEffect(() => {
     setIsMounted(true);
-
-    if (typeof window !== "undefined") {
-      const storedProfile = localStorage.getItem("userProfile");
-      if (storedProfile) {
-        try {
-          const parsedProfile = JSON.parse(storedProfile);
-          const emailFromProfile = parsedProfile.email
-            ? parsedProfile.email
-            : localStorage.getItem("email") || "";
-          const nameFromProfile = parsedProfile.name
-            ? parsedProfile.name
-            : localStorage.getItem("user_name") || "Usuario";
-          // Si en el perfil ya está el texto (por ejemplo, "Administrador"), lo usamos así.
-          const userTypeFromProfile = parsedProfile.userType
-            ? parsedProfile.userType
-            : localStorage.getItem("role_id") || "Administrador";
-
-          setUser({
-            name: nameFromProfile,
-            email: emailFromProfile,
-            userType: userTypeFromProfile,
-          });
-        } catch (err) {
-          console.error("Error al parsear el perfil desde localStorage:", err);
-          setUser({
-            name: localStorage.getItem("user_name") || "Usuario",
-            email: localStorage.getItem("email") || "",
-            userType: localStorage.getItem("role_id") || "Tipo de Usuario",
-          });
-        }
-      } else {
-        setUser({
-          name: localStorage.getItem("user_name") || "Usuario",
-          email: localStorage.getItem("email") || "",
-          userType: localStorage.getItem("role_id") || "Tipo de Usuario",
-        });
-      }
-    }
+    loadProfile();
   }, []);
 
-  // Cerrar el menú dropdown si se hace clic fuera
+  // Escucha el evento "profileUpdated" para recargar el perfil
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      loadProfile();
+    };
+
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    return () => {
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+    };
+  }, []);
+
+  // Cerrar el menú si se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -130,24 +132,7 @@ const TopBar = ({}: TopBarProps) => {
             flex: 1,
           }}
         >
-          {/* Logo para pantallas medianas y grandes */}
-          {/* <div className="d-none d-md-block">
-            <Image
-              src="/assets/images/ceela.png"
-              alt="Logo"
-              width={160}
-              height={70}
-            />
-          </div> */}
-          {/* Logo para pantallas pequeñas */}
-          {/* <div className="d-block d-md-none">
-            <Image
-              src="/assets/images/ceela2.png"
-              alt="Logo"
-              width={150}
-              height={75}
-            />
-          </div> */}
+          {/* Aquí puedes colocar tu logo si lo requieres */}
         </div>
 
         <div
@@ -178,26 +163,13 @@ const TopBar = ({}: TopBarProps) => {
             />
 
             <div className="d-none d-md-flex flex-column align-items-start">
-              <span
-                style={{
-                  color: "var(--primary-color)",
-                }}
-              >
-                {user.email}
+              <span style={{ color: "var(--primary-color)" }}>
+                {user.email || "Email"}
               </span>
-              <span
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                {user.name}{" "}
-                <i
-                  className="bi bi-caret-down-fill ms-1"
-                  style={{ fontSize: "14px" }}
-                />
+              <span style={{ display: "flex", alignItems: "center" }}>
+                {user.name || "Usuario"}{" "}
+                <i className="bi bi-caret-down-fill ms-1" style={{ fontSize: "14px" }} />
               </span>
-              {/* Ahora se muestra direcfftamente el texto correcto */}
               <span
                 style={{
                   fontSize: "12px",
@@ -208,11 +180,9 @@ const TopBar = ({}: TopBarProps) => {
                   marginTop: "6px",
                 }}
               >
-                {getUserTypeText(user.userType)}
+                {getUserTypeText(user.userType || "")}
               </span>
             </div>
-
-            <div className="d-flex d-md-none"></div>
           </button>
 
           {menuOpen && (
@@ -223,17 +193,14 @@ const TopBar = ({}: TopBarProps) => {
               <div className="d-md-none p-2 border-bottom">
                 <span>{user.email}</span>
                 <span>{user.name}</span>
-                <span>{getUserTypeText(user.userType)}</span>
+                <span>{getUserTypeText(user.userType || "")}</span>
               </div>
 
               <Link href="/edit-profile" className="dropdown-item">
                 <i className="bi bi-person me-2"></i> Perfil
               </Link>
               <div className="dropdown-divider"></div>
-              <button
-                className="dropdown-item text-danger"
-                onClick={handleLogout}
-              >
+              <button className="dropdown-item text-danger" onClick={handleLogout}>
                 <i className="bi bi-box-arrow-right me-2"></i> Cerrar sesión
               </button>
             </div>

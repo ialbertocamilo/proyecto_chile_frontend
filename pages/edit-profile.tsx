@@ -10,6 +10,7 @@ import Card from "../src/components/common/Card";
 import { notify } from "@/utils/notify";
 import Title from "../src/components/Title";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import { useRouter } from "next/router";
 
 interface ProfileData {
   name: string;
@@ -18,7 +19,7 @@ interface ProfileData {
   country: string;
   ubigeo: string;
   proffesion?: string; // Campo opcional
-  userType?: string;  // Aquí se almacenará el ID del fdrol (ej. "1" o "2")
+  userType?: string;  // Aquí se almacenará el ID del rol (ej. "1" o "2")
   email?: string;
 }
 
@@ -31,6 +32,7 @@ const getUserTypeText = (roleId: string): string => {
 
 const EditProfile = () => {
   useAuth();
+  const router = useRouter();
   console.log("[EditProfile] Página cargada y sesión validada.");
 
   const [profile, setProfile] = useState<ProfileData>({
@@ -40,7 +42,7 @@ const EditProfile = () => {
     country: "",
     ubigeo: "",
     proffesion: "",
-    userType: "", // Se guardará el ID del rol
+    userType: "",
     email: "",
   });
   const [loading, setLoading] = useState(false);
@@ -60,7 +62,7 @@ const EditProfile = () => {
           country: parsedProfile.country || "",
           ubigeo: parsedProfile.ubigeo || "",
           proffesion: parsedProfile.proffesion || "",
-          userType: roleId, // Guardamos el ID del rol
+          userType: roleId,
           email: parsedProfile.email || "",
         });
         console.log("[EditProfile] Perfil cargado desde localStorage:", parsedProfile);
@@ -115,9 +117,13 @@ const EditProfile = () => {
       }
 
       await response.json();
-      // Se guarda el perfil actualizado sin modificar el ID de rol
       localStorage.setItem("userProfile", JSON.stringify({ ...profile }));
       notify("Tu perfil se actualizó correctamente.");
+
+      // Dispara un evento para notificar a otros componentes del cambio
+      window.dispatchEvent(new Event("profileUpdated"));
+
+      router.back();
     } catch (err: unknown) {
       console.error("[EditProfile] Error actualizando perfil:", err);
       notify("Error al actualizar el perfil");
@@ -163,9 +169,9 @@ const EditProfile = () => {
   return (
     <>
       <Card>
-      <div className="d-flex align-items-center w-100">
-        <Title text="Editar Perfil" />
-        <Breadcrumb
+        <div className="d-flex align-items-center w-100">
+          <Title text="Editar Perfil" />
+          <Breadcrumb
             items={[
               {
                 title: "Editar Perfil",
@@ -223,7 +229,7 @@ const EditProfile = () => {
                     </div>
                   </div>
                 </div>
- 
+
                 <div style={{ marginBottom: "2rem" }}>
                   <label style={labelStyle}>
                     Email Address <span style={{ color: "red" }}></span>
@@ -368,9 +374,12 @@ const EditProfile = () => {
 
                     <div className="mt-auto d-flex justify-content-end">
                       <CreateButton
+                        useRouterBack={true}
                         backRoute="/dashboard"
                         saveTooltip="Guardar"
+                        backTooltip="Volver"
                         saveText={loading ? "Guardando..." : "Guardar"}
+                        backText="Cancelar"
                       />
                     </div>
                   </form>

@@ -15,6 +15,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import TablesParameters from "../src/components/tables/TablesParameters";
 import { NewDetailModal } from "@/components/modals/NewDetailModal";
 import ActionButtons from "@/components/common/ActionButtons";
+import SearchParameters from "../src/components/inputs/SearchParameters";
 
 interface MaterialAttributes {
   name: string;
@@ -67,7 +68,12 @@ const LabelWithAsterisk: React.FC<LabelWithAsteriskProps> = ({ label, value, req
   );
 };
 
-const handleCreate = async (payload: any, endpoint: string, successMessage: string, fetchData: () => Promise<void>) => {
+const handleCreate = async (
+  payload: any,
+  endpoint: string,
+  successMessage: string,
+  fetchData: () => Promise<void>
+) => {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -95,7 +101,12 @@ const handleCreate = async (payload: any, endpoint: string, successMessage: stri
   return false;
 };
 
-const handleDelete = async (id: number, endpoint: string, successMessage: string, fetchData: () => Promise<void>) => {
+const handleDelete = async (
+  id: number,
+  endpoint: string,
+  successMessage: string,
+  fetchData: () => Promise<void>
+) => {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -121,7 +132,13 @@ const handleDelete = async (id: number, endpoint: string, successMessage: string
   }
 };
 
-const handleEdit = async (id: number, payload: any, endpoint: string, successMessage: string, fetchData: () => Promise<void>) => {
+const handleEdit = async (
+  id: number,
+  payload: any,
+  endpoint: string,
+  successMessage: string,
+  fetchData: () => Promise<void>
+) => {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -153,6 +170,11 @@ const AdministrationPage: React.FC = () => {
   const [step, setStep] = useState<number>(3);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
   const [showGeneralDetails, setShowGeneralDetails] = useState(false);
+
+  // Estados para búsqueda
+  const [searchMaterial, setSearchMaterial] = useState("");
+  const [searchDetail, setSearchDetail] = useState("");
+  const [searchElement, setSearchElement] = useState("");
 
   const {
     materialsList,
@@ -222,29 +244,39 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
-  const materialsData = materialsList.map((mat: any) => ({
-    name: mat.atributs.name,
-    conductivity: mat.atributs.conductivity,
-    specific_heat: mat.atributs.specific_heat,
-    density: mat.atributs.density,
-    action: (
-      <ActionButtons
-        onEdit={() => {
-          setSelectedMaterialId(mat.id);
-          setNewMaterialData({
-            name: mat.atributs.name,
-            conductivity: mat.atributs.conductivity,
-            specific_heat: mat.atributs.specific_heat,
-            density: mat.atributs.density,
-          });
-          setShowNewMaterialModal(true);
-        }}
-        onDelete={() => {
-          handleDelete(mat.id, "constant", `El material "${mat.atributs.name}" fue eliminado correctamente`, () => fetchMaterialsList(1));
-        }}
-      />
-    ),
-  }));
+  // Se filtran los materiales según la búsqueda (por nombre)
+  const materialsData = materialsList
+    .filter((mat: any) =>
+      mat.atributs.name.toLowerCase().includes(searchMaterial.toLowerCase())
+    )
+    .map((mat: any) => ({
+      name: mat.atributs.name,
+      conductivity: mat.atributs.conductivity,
+      specific_heat: mat.atributs.specific_heat,
+      density: mat.atributs.density,
+      action: (
+        <ActionButtons
+          onEdit={() => {
+            setSelectedMaterialId(mat.id);
+            setNewMaterialData({
+              name: mat.atributs.name,
+              conductivity: mat.atributs.conductivity,
+              specific_heat: mat.atributs.specific_heat,
+              density: mat.atributs.density,
+            });
+            setShowNewMaterialModal(true);
+          }}
+          onDelete={() => {
+            handleDelete(
+              mat.id,
+              "constant",
+              `El material "${mat.atributs.name}" fue eliminado correctamente`,
+              () => fetchMaterialsList(1)
+            );
+          }}
+        />
+      ),
+    }));
 
   const detailsColumns = [
     { headerName: "Ubicación", field: "scantilon_location" },
@@ -254,28 +286,39 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
-  const detailsData = details.map((detail) => ({
-    scantilon_location: detail.scantilon_location,
-    name_detail: detail.name_detail,
-    material_name: getMaterialName(detail.material_id),
-    layer_thickness: detail.layer_thickness,
-    action: (
-      <ActionButtons
-        onEdit={() => {
-          setNewDetail({
-            scantilon_location: detail.scantilon_location,
-            name_detail: detail.name_detail,
-            material_id: detail.material_id,
-            layer_thickness: detail.layer_thickness,
-          });
-          setShowNewDetailModal(true);
-        }}
-        onDelete={() => {
-          handleDelete(detail.id, "details", `El detalle "${detail.name_detail}" fue eliminado correctamente`, fetchDetails);
-        }}
-      />
-    ),
-  }));
+  // Filtrado para detalles (por nombre o ubicación)
+  const detailsData = details
+    .filter((detail) =>
+      detail.name_detail.toLowerCase().includes(searchDetail.toLowerCase()) ||
+      detail.scantilon_location.toLowerCase().includes(searchDetail.toLowerCase())
+    )
+    .map((detail) => ({
+      scantilon_location: detail.scantilon_location,
+      name_detail: detail.name_detail,
+      material_name: getMaterialName(detail.material_id),
+      layer_thickness: detail.layer_thickness,
+      action: (
+        <ActionButtons
+          onEdit={() => {
+            setNewDetail({
+              scantilon_location: detail.scantilon_location,
+              name_detail: detail.name_detail,
+              material_id: detail.material_id,
+              layer_thickness: detail.layer_thickness,
+            });
+            setShowNewDetailModal(true);
+          }}
+          onDelete={() => {
+            handleDelete(
+              detail.id,
+              "details",
+              `El detalle "${detail.name_detail}" fue eliminado correctamente`,
+              fetchDetails
+            );
+          }}
+        />
+      ),
+    }));
 
   const windowsColumns = [
     { headerName: "Nombre Elemento", field: "name_element" },
@@ -290,6 +333,9 @@ const AdministrationPage: React.FC = () => {
 
   const windowsData = elementsList
     .filter((el) => el.type === "window")
+    .filter((el) =>
+      el.name_element.toLowerCase().includes(searchElement.toLowerCase())
+    )
     .map((el) => ({
       name_element: el.name_element,
       u_vidrio: (el.atributs as ElementAttributesWindow).u_vidrio,
@@ -314,7 +360,12 @@ const AdministrationPage: React.FC = () => {
             setShowNewWindowModal(true);
           }}
           onDelete={() => {
-            handleDelete(el.id, "elements", `La ventana "${el.name_element}" fue eliminada correctamente`, fetchElements);
+            handleDelete(
+              el.id,
+              "elements",
+              `La ventana "${el.name_element}" fue eliminada correctamente`,
+              fetchElements
+            );
           }}
         />
       ),
@@ -332,11 +383,16 @@ const AdministrationPage: React.FC = () => {
 
   const doorsData = elementsList
     .filter((el) => el.type === "door")
+    .filter((el) =>
+      el.name_element.toLowerCase().includes(searchElement.toLowerCase())
+    )
     .map((el) => ({
       name_element: el.name_element,
       u_puerta_opaca: (el.atributs as ElementAttributesDoor).u_puerta_opaca,
       name_ventana: (el.atributs as ElementAttributesDoor).name_ventana,
-      porcentaje_vidrio: ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%",
+      porcentaje_vidrio:
+        ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) +
+        "%",
       u_marco: el.u_marco,
       fm: (el.fm * 100).toFixed(0) + "%",
       action: (
@@ -349,19 +405,27 @@ const AdministrationPage: React.FC = () => {
               ventana_id: (el.atributs as ElementAttributesDoor).ventana_id,
               u_marco: el.u_marco,
               fm: el.fm,
-              porcentaje_vidrio: (el.atributs as ElementAttributesDoor).porcentaje_vidrio,
+              porcentaje_vidrio: (el.atributs as ElementAttributesDoor)
+                .porcentaje_vidrio,
             });
             setShowNewDoorModal(true);
           }}
           onDelete={() => {
-            handleDelete(el.id, "elements/delete", `La puerta "${el.name_element}" fue eliminada correctamente`, fetchElements);
+            handleDelete(
+              el.id,
+              "elements/delete",
+              `La puerta "${el.name_element}" fue eliminada correctamente`,
+              fetchElements
+            );
           }}
         />
       ),
     }));
 
   function getMaterialName(materialId: number) {
-    const mat = materialsList.find((m) => m.id === materialId || m.material_id === materialId);
+    const mat = materialsList.find(
+      (m) => m.id === materialId || m.material_id === materialId
+    );
     return mat ? mat.atributs.name : "Desconocido";
   }
 
@@ -398,7 +462,12 @@ const AdministrationPage: React.FC = () => {
       type: "definition materials",
     };
 
-    const success = await handleCreate(payload, "constants/create", `El material "${newMaterialData.name}" fue creado correctamente`, () => fetchMaterialsList(1));
+    const success = await handleCreate(
+      payload,
+      "constants/create",
+      `El material "${newMaterialData.name}" fue creado correctamente`,
+      () => fetchMaterialsList(1)
+    );
 
     if (success) {
       setShowNewMaterialModal(false);
@@ -462,7 +531,12 @@ const AdministrationPage: React.FC = () => {
       layer_thickness: newDetail.layer_thickness,
     };
 
-    const success = await handleCreate(payload, "details/create", `El detalle "${newDetail.name_detail}" fue creado correctamente`, fetchDetails);
+    const success = await handleCreate(
+      payload,
+      "details/create",
+      `El detalle "${newDetail.name_detail}" fue creado correctamente`,
+      fetchDetails
+    );
 
     if (success) {
       setShowNewDetailModal(false);
@@ -517,7 +591,12 @@ const AdministrationPage: React.FC = () => {
         },
       };
 
-      const success = await handleCreate(payload, "elements/create", `La ventana "${newWindow.name_element}" fue creada correctamente`, fetchElements);
+      const success = await handleCreate(
+        payload,
+        "elements/create",
+        `La ventana "${newWindow.name_element}" fue creada correctamente`,
+        fetchElements
+      );
 
       if (success) {
         setShowNewWindowModal(false);
@@ -565,7 +644,9 @@ const AdministrationPage: React.FC = () => {
         return;
       }
 
-      const ventanaSeleccionada = windowsList.find((win) => win.id === newDoor.ventana_id);
+      const ventanaSeleccionada = windowsList.find(
+        (win) => win.id === newDoor.ventana_id
+      );
       const payload = {
         type: "door",
         name_element: newDoor.name_element,
@@ -579,7 +660,12 @@ const AdministrationPage: React.FC = () => {
         },
       };
 
-      const success = await handleCreate(payload, "elements/create", `La puerta "${newDoor.name_element}" fue creada correctamente`, fetchElements);
+      const success = await handleCreate(
+        payload,
+        "elements/create",
+        `La puerta "${newDoor.name_element}" fue creada correctamente`,
+        fetchElements
+      );
 
       if (success) {
         setShowNewDoorModal(false);
@@ -635,7 +721,9 @@ const AdministrationPage: React.FC = () => {
   const handleEditDoor = async () => {
     if (!selectedDoorId) return;
 
-    const ventanaSeleccionada = windowsList.find((win) => win.id === newDoor.ventana_id);
+    const ventanaSeleccionada = windowsList.find(
+      (win) => win.id === newDoor.ventana_id
+    );
     const payload = {
       type: "door",
       name_element: newDoor.name_element,
@@ -704,11 +792,7 @@ const AdministrationPage: React.FC = () => {
         <div className="row">
           {/* Columna para Sidebar */}
           <div className="col-12 col-md-3">
-            <AdminSidebar
-              activeStep={step}
-              onStepChange={setStep}
-              steps={sidebarSteps}
-            />
+            <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
           </div>
 
           {/* Columna para Contenido principal */}
@@ -716,15 +800,18 @@ const AdministrationPage: React.FC = () => {
             {/* Step 3: Tabla de Materiales */}
             {step === 3 && (
               <>
+                <SearchParameters
+                  value={searchMaterial}
+                  onChange={setSearchMaterial}
+                  placeholder="Buscar material..."
+                  onNew={() => setShowNewMaterialModal(true)}
+                  newButtonText="Nuevo"
+                  style={{ marginBottom: "10px" }}
+                />
                 <div style={{ overflow: "hidden", padding: "10px" }}>
                   <div style={{ maxHeight: "500px", overflowY: "auto" }}>
                     <TablesParameters columns={materialsColumns} data={materialsData} />
                   </div>
-                </div>
-                <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                  <CustomButton variant="save" onClick={() => setShowNewMaterialModal(true)}>
-                    <span className="material-icons">add</span> Nuevo
-                  </CustomButton>
                 </div>
               </>
             )}
@@ -734,28 +821,23 @@ const AdministrationPage: React.FC = () => {
               <>
                 {showGeneralDetails ? (
                   <div>
-                    <div className="tabs-container">
-                      <div className="tab active" style={{ flex: 1, textAlign: "center" }}>
-                        Detalles Generales
-                      </div>
-                    </div>
+                    
+                    <SearchParameters
+                      value={searchDetail}
+                      onChange={setSearchDetail}
+                      placeholder="Buscar detalle..."
+                      onNew={() => setShowNewDetailModal(true)}
+                      newButtonText="Nuevo"
+                      style={{ marginBottom: "10px" }}
+                    />
                     <div style={{ overflow: "hidden", padding: "10px" }}>
                       <div style={{ maxHeight: "500px", overflowY: "auto" }}>
                         <TablesParameters columns={detailsColumns} data={detailsData} />
                       </div>
                     </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        padding: "10px",
-                      }}
-                    >
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "10px" }}>
                       <CustomButton variant="save" onClick={() => setShowGeneralDetails(false)}>
                         <span className="material-icons">arrow_back</span> Volver
-                      </CustomButton>
-                      <CustomButton variant="save" onClick={() => setShowNewDetailModal(true)}>
-                        <span className="material-icons">add</span> Nuevo
                       </CustomButton>
                     </div>
                   </div>
@@ -791,6 +873,24 @@ const AdministrationPage: React.FC = () => {
             {/* Step 5: Elementos Translúcidos */}
             {step === 5 && (
               <>
+                <SearchParameters
+                  value={searchElement}
+                  onChange={setSearchElement}
+                  placeholder={
+                    tabElementosOperables === "ventanas"
+                      ? "Buscar ventana..."
+                      : "Buscar puerta..."
+                  }
+                  onNew={() => {
+                    if (tabElementosOperables === "ventanas") {
+                      setShowNewWindowModal(true);
+                    } else {
+                      setShowNewDoorModal(true);
+                    }
+                  }}
+                  newButtonText="Nuevo"
+                  style={{ marginBottom: "10px" }}
+                />
                 <div style={{ overflow: "hidden", padding: "10px" }}>
                   <div
                     className="d-flex justify-content-between align-items-center mb-2"
@@ -838,22 +938,9 @@ const AdministrationPage: React.FC = () => {
                       columns={
                         tabElementosOperables === "ventanas" ? windowsColumns : doorsColumns
                       }
-                      data={
-                        tabElementosOperables === "ventanas" ? windowsData : doorsData
-                      }
+                      data={tabElementosOperables === "ventanas" ? windowsData : doorsData}
                     />
                   </div>
-                </div>
-                <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                  {tabElementosOperables === "ventanas" ? (
-                    <CustomButton variant="save" onClick={() => setShowNewWindowModal(true)}>
-                      <span className="material-icons">add</span> Nuevo
-                    </CustomButton>
-                  ) : (
-                    <CustomButton variant="save" onClick={() => setShowNewDoorModal(true)}>
-                      <span className="material-icons">add</span> Nuevo
-                    </CustomButton>
-                  )}
                 </div>
               </>
             )}
@@ -1254,11 +1341,7 @@ const AdministrationPage: React.FC = () => {
               </select>
             </div>
             <div className="form-group">
-              <LabelWithAsterisk
-                label="% Vidrio"
-                value={newDoor.porcentaje_vidrio}
-                required={false}
-              />
+              <LabelWithAsterisk label="% Vidrio" value={newDoor.porcentaje_vidrio} required={false} />
               <input
                 type="number"
                 className="form-control"

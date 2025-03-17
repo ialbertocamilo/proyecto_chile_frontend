@@ -524,7 +524,7 @@ const Register: NextPageWithLayout = () => {
                   </div>
                 </div>
 
-                {/* Botones utilizando CreateButton */}
+                {/* Botones utfdsfdsilizando CreateButton */}
                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.7rem" }}>
                   <CreateButton
                     backRoute="/login"

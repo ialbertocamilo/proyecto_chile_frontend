@@ -187,7 +187,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
           }}
         >
           <div style={logoContainerStyle}>
-            <Link href="/dashboard" style={{ cursor: "pointer" }}>
               <Image
                 src={isMobile ? "/assets/images/proyecto-deuman-logo.png" : "/assets/images/ceela.png"}
                 alt="Logo"
@@ -195,7 +194,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                 height={isMobile ? mobileLogoHeight : desktopLogoHeight}
                 style={{ borderRadius: "0", zIndex: 1100 }}
               />
-            </Link>
             {/* Botón debajo del logo para alternar la visibilidad (solo se muestra en desktop o si se quiere cerrar en mobile) */}
             {(!isMobile || (isMobile && isNavOpen)) && (
               <div

@@ -14,7 +14,7 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 import SidebarItemComponent from "../src/components/common/SidebarItemComponent";
 import { notify } from "@/utils/notify";
-// Cargamos el mapa sin SSR
+// Cargamos el mapa sin SSRfdsfds
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
   ssr: false,
 });

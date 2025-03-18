@@ -23,7 +23,7 @@ type Material = {
 };
 
 const ConstantsManagement = () => {
-  // Validamos la sesión usando el hook personfdsalizado
+  // Validamos la sesión usando el hook personffdsfdsalizado
   useAuth();
   console.log("[ConstantsManagement] Sesión validada y página cargada.");
 

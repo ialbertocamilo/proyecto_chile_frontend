@@ -16,6 +16,7 @@ import TablesParameters from "../src/components/tables/TablesParameters";
 import { NewDetailModal } from "@/components/modals/NewDetailModal";
 import ActionButtons from "@/components/common/ActionButtons";
 import SearchParameters from "../src/components/inputs/SearchParameters";
+import UseProfileTab from "../src/components/UseProfileTab";
 
 interface MaterialAttributes {
   name: string;
@@ -761,13 +762,17 @@ const AdministrationPage: React.FC = () => {
     if (step === 3) fetchMaterialsList(1);
     if (step === 4) fetchDetails();
     if (step === 5) fetchElements();
+    if (step === 6) {setRefreshProfileTab(prev => prev + 1);}
   }, [step, fetchMaterialsList, fetchDetails, fetchElements]);
 
   const sidebarSteps = [
     { stepNumber: 3, iconName: "assignment_ind", title: "Lista de Materiales" },
     { stepNumber: 4, iconName: "build", title: "Detalles Constructivos" },
     { stepNumber: 5, iconName: "home", title: "Elementos Translúcidos" },
+    { stepNumber: 6, iconName: "deck", title: "Perfil de Uso" },
   ];
+
+  const [refreshProfileTab, setRefreshProfileTab] = useState(0);
 
   return (
     <>
@@ -821,7 +826,7 @@ const AdministrationPage: React.FC = () => {
               <>
                 {showGeneralDetails ? (
                   <div>
-                    
+
                     <SearchParameters
                       value={searchDetail}
                       onChange={setSearchDetail}
@@ -943,6 +948,13 @@ const AdministrationPage: React.FC = () => {
                   </div>
                 </div>
               </>
+            )}
+
+            {/* Step 6: Perfil de Uso */}
+            {step === 6 && (
+              <div className="px-3">
+                <UseProfileTab refreshTrigger={refreshProfileTab} />
+              </div>
             )}
           </div>
         </div>

@@ -1,13 +1,14 @@
 import React from "react";
 import UseProfileTab from "../src/components/UseProfileTab";
-
-const DemoPage: React.FC = () => {
+const App: React.FC = () => {
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Demo del Componente UseProfileTab</h1>
+    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <h1 style={{ textAlign: "center", color: "#3ca7b7" }}>
+        Gestión de Recintos
+      </h1>
       <UseProfileTab />
     </div>
   );
 };
 
-export default DemoPage;
+export default App;

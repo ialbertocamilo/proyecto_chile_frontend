@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { constantUrlApiEndpoint } from "../../src/utils/constant-url-endpoint";
-// Importas tu componente de tablas
 import TablesParameters from "../components/tables/TablesParameters";
+import { useCrudOperations } from "../hooks/useCrudOperations";
+import ActionButtons from "@/components/common/ActionButtons";
+import ModalCreate from "@/components/common/ModalCreate";
 
 interface Detail {
   id: number;
@@ -43,6 +45,8 @@ interface Detail {
 
 type TabStep4 = "muros" | "techumbre" | "pisos";
 
+const { handleCreate, handleEdit, handleDelete } = useCrudOperations();
+
 const stickyHeaderStyle1 = {
   position: "sticky" as const,
   top: 0,
@@ -68,34 +72,46 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({
   const [techumbreTabList, setTechumbreTabList] = useState<Detail[]>([]);
   const [pisosTabList, setPisosTabList] = useState<Detail[]>([]);
 
+  // Estados para los modales de edición
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [currentDetail, setCurrentDetail] = useState<Detail | null>(null);
+
   // 1. Columnas y data para Muros y Techumbre (comparten mismas columnas)
   const commonColumns = [
     { headerName: "Nombre Abreviado", field: "name_detail" },
     { headerName: "Valor U (W/m²K)", field: "value_u" },
     { headerName: "Color Exterior", field: "color_exterior" },
     { headerName: "Color Interior", field: "color_interior" },
+    { headerName: "Acción", field: "action" },
   ];
 
   const murosData = murosTabList.map((item) => ({
     name_detail: item.name_detail,
     value_u: item.value_u?.toFixed(3) ?? "--",
-    color_exterior:
-      item.info?.surface_color?.exterior?.name || "Desconocido",
-    color_interior:
-      item.info?.surface_color?.interior?.name || "Desconocido",
+    color_exterior: item.info?.surface_color?.exterior?.name || "Desconocido",
+    color_interior: item.info?.surface_color?.interior?.name || "Desconocido",
+    action: (
+      <ActionButtons
+        onEdit={() => handleEditMuro(item)}
+        onDelete={() => handleDeleteMuro(item.id)}
+      />
+    ),
   }));
 
   const techumbreData = techumbreTabList.map((item) => ({
     name_detail: item.name_detail,
     value_u: item.value_u?.toFixed(3) ?? "--",
-    color_exterior:
-      item.info?.surface_color?.exterior?.name || "Desconocido",
-    color_interior:
-      item.info?.surface_color?.interior?.name || "Desconocido",
+    color_exterior: item.info?.surface_color?.exterior?.name || "Desconocido",
+    color_interior: item.info?.surface_color?.interior?.name || "Desconocido",
+    action: (
+      <ActionButtons
+        onEdit={() => handleEditTechumbre(item)}
+        onDelete={() => handleDeleteTechumbre(item.id)}
+      />
+    ),
   }));
 
   // 2. Columnas + data para Pisos (con multi-header)
-  //    A) Defino el 'multiHeader' para armar el encabezado de dos filas
   const pisosMultiHeader = {
     rows: [
       [
@@ -118,7 +134,6 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({
     ],
   };
 
-  //    B) Defino columnas base (10 columnas)
   const pisosColumns = [
     { headerName: "Nombre", field: "name_detail" },
     { headerName: "U [W/m²K]", field: "value_u" },
@@ -130,9 +145,9 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({
     { headerName: "I [W/mK]", field: "horiz_lambda" },
     { headerName: "e Aisl [cm]", field: "horiz_e_aisl" },
     { headerName: "D [cm]", field: "horiz_d" },
+    { headerName: "Acción", field: "action" },
   ];
 
-  //    C) Transformo cada fila con la data concreta
   const pisosData = pisosTabList.map((item) => {
     const bajoPiso = item.info?.aislacion_bajo_piso || {};
     const vert = item.info?.ref_aisl_vertical || {};
@@ -141,9 +156,7 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({
     return {
       name_detail: item.name_detail,
       value_u: item.value_u?.toFixed(3) ?? "--",
-      bajoPiso_lambda: bajoPiso.lambda
-        ? bajoPiso.lambda.toFixed(3)
-        : "N/A",
+      bajoPiso_lambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
       bajoPiso_e_aisl: bajoPiso.e_aisl ?? "N/A",
       vert_lambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
       vert_e_aisl: vert.e_aisl ?? "N/A",
@@ -151,6 +164,12 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({
       horiz_lambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
       horiz_e_aisl: horiz.e_aisl ?? "N/A",
       horiz_d: horiz.d ?? "N/A",
+      action: (
+        <ActionButtons
+          onEdit={() => handleEditPiso(item)}
+          onDelete={() => handleDeletePiso(item.id)}
+        />
+      ),
     };
   });
 
@@ -196,23 +215,75 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({
   }, []);
 
   // Fetch muros, techumbre, pisos
-  const fetchMurosDetails = useCallback(() => {
-    fetchData<Detail[]>(`${constantUrlApiEndpoint}/details/all/Muro/`, (data) => {
+  const fetchMurosDetails = useCallback(async () => {
+    await fetchData<Detail[]>(`${constantUrlApiEndpoint}/details/all/Muro/`, (data) => {
       if (Array.isArray(data)) setMurosTabList(data);
     });
   }, [fetchData]);
 
-  const fetchTechumbreDetails = useCallback(() => {
-    fetchData<Detail[]>(`${constantUrlApiEndpoint}/details/all/Techo/`, (data) => {
+  const fetchTechumbreDetails = useCallback(async () => {
+    await fetchData<Detail[]>(`${constantUrlApiEndpoint}/details/all/Techo/`, (data) => {
       if (Array.isArray(data)) setTechumbreTabList(data);
     });
   }, [fetchData]);
 
-  const fetchPisosDetails = useCallback(() => {
-    fetchData<Detail[]>(`${constantUrlApiEndpoint}/details/all/Piso/`, (data) => {
+  const fetchPisosDetails = useCallback(async () => {
+    await fetchData<Detail[]>(`${constantUrlApiEndpoint}/details/all/Piso/`, (data) => {
       if (Array.isArray(data)) setPisosTabList(data);
     });
   }, [fetchData]);
+
+  // Funciones de edición y eliminación
+  const handleEditMuro = (detail: Detail) => {
+    setCurrentDetail(detail);
+    setShowEditModal(true);
+  };
+
+  const handleDeleteMuro = (id: number) => {
+    handleDelete(
+      id,
+      "details/delete",
+      `El muro fue eliminado correctamente`,
+      fetchMurosDetails
+    );
+  };
+
+  const handleEditTechumbre = (detail: Detail) => {
+    setCurrentDetail(detail);
+    setShowEditModal(true);
+  };
+
+  const handleDeleteTechumbre = (id: number) => {
+    handleDelete(
+      id,
+      "details/delete",
+      `La techumbre fue eliminada correctamente`,
+      fetchTechumbreDetails
+    );
+  };
+
+  const handleEditPiso = (detail: Detail) => {
+    setCurrentDetail(detail);
+    setShowEditModal(true);
+  };
+
+  const handleDeletePiso = (id: number) => {
+    handleDelete(
+      id,
+      "details/delete",
+      `El piso fue eliminado correctamente`,
+      fetchPisosDetails
+    );
+  };
+
+  // Función para guardar los cambios en el modal de edición
+  const handleSaveEdit = () => {
+    if (currentDetail) {
+      // Lógica para guardar los cambios
+      console.log("Guardando cambios para:", currentDetail);
+      setShowEditModal(false);
+    }
+  };
 
   // Cada vez que cambie la pestaña o refreshTrigger, recargo la data
   useEffect(() => {
@@ -308,7 +379,6 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({
 
         {tabStep4 === "pisos" && (
           <div style={{ overflow: "hidden", padding: "10px" }}>
-            {/* Uso de multiHeader para recrear el encabezado de 2 filas */}
             <TablesParameters
               columns={pisosColumns}
               data={pisosData}
@@ -317,6 +387,49 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({
           </div>
         )}
       </div>
+
+      {/* Modal de edición */}
+      <ModalCreate
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSave={handleSaveEdit}
+        title="Editar Detalle"
+        saveLabel="Guardar Cambios"
+      >
+        {currentDetail && (
+          <form>
+            <div className="form-group">
+              <label>Nombre Abreviado</label>
+              <input
+                type="text"
+                className="form-control"
+                value={currentDetail.name_detail}
+                onChange={(e) =>
+                  setCurrentDetail({
+                    ...currentDetail,
+                    name_detail: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>Valor U (W/m²K)</label>
+              <input
+                type="number"
+                className="form-control"
+                value={currentDetail.value_u || ""}
+                onChange={(e) =>
+                  setCurrentDetail({
+                    ...currentDetail,
+                    value_u: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+            {/* Agrega más campos según sea necesario */}
+          </form>
+        )}
+      </ModalCreate>
 
       {/* Estilos opcionales */}
       <style jsx>{`
@@ -384,6 +497,7 @@ const DetallesConstructivosTab: React.FC<{ refreshTrigger?: number }> = ({
           }
         }
         .table thead th {
+         
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
       `}</style>

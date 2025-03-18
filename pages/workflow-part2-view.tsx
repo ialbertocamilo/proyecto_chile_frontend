@@ -174,7 +174,7 @@ const fetchFetchedDetails = async () => {
   try {
     // Check if projectId exists before making the request
     if (!projectId) {
-      console.log("Project ID is not available yet");
+      console.log("Project ID is not available ");
       return;
     }
     
@@ -326,7 +326,7 @@ const fetchFetchedDetails = async () => {
     fetchPuertasDetails,
   ]);
 
-  // ==================== RENDER CABECERA ====================
+  // ==================== RENDER CABECERA aaaa ====================
   const renderMainHeader = () =>
     step >= 4 && <Title text="Vista de Desarrollo de proyecto" />;
 

@@ -253,18 +253,19 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   // Función para obtener detalles
   const fetchFetchedDetails = useCallback(async () => {
+    console.log("ID DEL PROYECTO <<<<<>>>>>>>>" , projectId);
     const token = getToken();
     if (!token) return;
     try {
-      const url = `${constantUrlApiEndpoint}/details/`;
+      const url = `${constantUrlApiEndpoint}/user/details/?project_id=${projectId}`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setFetchedDetails(response.data || []);
     } catch (error: unknown) {
       console.error("Error al obtener detalles:", error);
-      notify("Error", "Error al obtener detalles. Ver consola.");
+      notify("Error", "Error al obtener detalles. Ver consola. id de proyecto ");
     }
-  }, []);
+  }, [projectId]);
 
   const fetchMurosDetails = useCallback(() => {
     fetchData<TabItem[]>(
@@ -344,10 +345,10 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   // Efectos para carga de datos según el step y pestaña seleccionada
   useEffect(() => {
-    if (step === 4) {
+    if (step === 4 && projectId) {
       fetchFetchedDetails();
     }
-  }, [step, fetchFetchedDetails]);
+  }, [step, fetchFetchedDetails, projectId]);
 
   useEffect(() => {
     if (showTabsInStep4) {
@@ -390,7 +391,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
     try {
       // Paso 1: Crear el nuevo detalle
-      const createUrl = `${constantUrlApiEndpoint}/details/create`;
+      const createUrl = `${constantUrlApiEndpoint}/user/details/create?project_id=${projectId}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -414,7 +415,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-              "Todos los detalles ya estaban en el proyecto"
+            "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -451,46 +452,10 @@ const WorkFlowpar2createPage: React.FC = () => {
   };
 
   // Función unificada para guardar detalles
-  const saveDetails = async () => {
-    if (!projectId) {
-      console.error("No se proporcionó un ID de proyecto.");
-      return;
-    }
-    const token = getToken();
-    if (!token) return;
-    if (fetchedDetails.length === 0) {
-      console.error("No se encontraron detalles para enviar.");
-      return;
-    }
-
-    const detailIds = fetchedDetails.map((det) => det.id_detail);
-    const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    try {
-      await axios.post(url, detailIds, { headers });
-      // En este caso, al guardar se vuelve a la pantalla principal (pestañas)
-      setShowTabsInStep4(true);
-      setTabStep4("muros");
-    } catch (error: unknown) {
-      if (
-        axios.isAxiosError(error) &&
-        error.response?.data?.detail ===
-          "Todos los detalles ya estaban en el proyecto"
-      ) {
-        setShowTabsInStep4(true);
-        setTabStep4("muros");
-        return;
-      }
-
-      console.error("Error al enviar la solicitud:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Detalles de la respuesta:", error.response?.data);
-      }
-    }
+  const saveDetails = () => {
+    // Simply change the view to show the tabs screen
+    setShowTabsInStep4(true);
+    setTabStep4("muros");
   };
 
   // =================== FUNCIONES DE EDICIÓN (MUROS / TECHUMBRE) ===================
@@ -534,15 +499,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingColors.interior },
-                    exterior: { name: editingColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingColors.interior },
+                  exterior: { name: editingColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -593,15 +558,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingTechColors.interior },
-                    exterior: { name: editingTechColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingTechColors.interior },
+                  exterior: { name: editingTechColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -990,13 +955,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             En la pantalla de pestañas (ahora principal), cambiamos el botón "Regresar" por uno que permita ver los detalles 
             (la antigua pantalla principal que ahora es secundaria).
         */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            marginTop: "10px",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
           <CustomButton
             variant="save"
             onClick={() => setShowTabsInStep4(false)}
@@ -1013,7 +972,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             <span className="material-icons" style={{ fontSize: "24px" }}>
               visibility
             </span>
-            &nbsp;Detalles Generales
+            &nbsp;Ver Detalles Generales
           </CustomButton>
         </div>
       </div>
@@ -1086,15 +1045,11 @@ const WorkFlowpar2createPage: React.FC = () => {
               width: "100%",
             }}
           >
-            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "10px" }}>
               <CustomButton
                 id="mostrar-datos-btn"
                 variant="save"
-                onClick={() => {
-                  setTimeout(() => {
-                    saveDetails();
-                  }, 600);
-                }}
+                onClick={saveDetails}  // Changed from the setTimeout wrapper
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -1104,7 +1059,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                   minWidth: "6rem",
                 }}
               >
-                Realizar Calculos
+                <span className="material-icons">arrow_back</span> Volver
               </CustomButton>
             </div>
           </div>

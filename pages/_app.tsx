@@ -72,7 +72,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => {
     return (
       <>
-        <Script src="public/assets/js/icons/feather-icon/feather.min.js" />
+        <Script src="/assets/js/icons/feather-icon/feather.min.js" />
         <div className="page-wrapper" id="pageWrapper">
           <div 
             className="page-header" 

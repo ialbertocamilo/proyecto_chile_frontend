@@ -169,22 +169,39 @@ const WorkFlowpar2viewPage: React.FC = () => {
   }, [hasLoaded, projectId, router]);
 
   // ==================== LLAMADAS A ENDPOINTS ====================
-  const fetchFetchedDetails = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.");
-        return;
-      }
-      const url = `${constantUrlApiEndpoint}/details/`;
-      const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(url, { headers });
-      setFetchedDetails(response.data || []);
-    } catch (error: unknown) {
-      console.error("Error al obtener detalles:", error);
-      Swal.fire("Error", "Error al obtener detalles. Ver consola.");
+  // Modify the fetchFetchedDetails function to handle null projectId
+const fetchFetchedDetails = async () => {
+  try {
+    // Check if projectId exists before making the request
+    if (!projectId) {
+      console.log("Project ID is not available yet");
+      return;
     }
-  };
+    
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire("Token no encontrado", "Inicia sesión.");
+      return;
+    }
+    
+    const url = `${constantUrlApiEndpoint}/user/details/?project_id=${projectId}`;
+    const headers = { Authorization: `Bearer ${token}` };
+    
+    console.log("Fetching details with project ID:", projectId);
+    const response = await axios.get(url, { headers });
+    setFetchedDetails(response.data || []);
+  } catch (error: unknown) {
+    console.error("Error al obtener detalles:", error);
+    
+    // More detailed error logging
+    if (axios.isAxiosError(error)) {
+      console.error("Status:", error.response?.status);
+      console.error("Response data:", error.response?.data);
+    }
+    
+    Swal.fire("Error", "Error al obtener detalles. Ver consola.");
+  }
+};
 
   const fetchMurosDetails = useCallback(async () => {
     if (!projectId) return;
@@ -273,10 +290,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   // ==================== EFECTOS SEGÚN STEP ====================
   useEffect(() => {
-    if (step === 4) {
+    if (step === 4 && projectId !== null) {
       fetchFetchedDetails();
     }
-  }, [step]);
+  }, [step, projectId]); 
 
   useEffect(() => {
     if (showTabsInStep4) {

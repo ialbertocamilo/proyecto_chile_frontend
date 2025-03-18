@@ -199,9 +199,13 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== INIT ======================
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id_edit");
-    if (storedProjectId) {
-      setProjectId(Number(storedProjectId));
-    }
+  console.log("Cargando ID del proyecto:", storedProjectId);
+  
+  if (storedProjectId) {
+    setProjectId(Number(storedProjectId));
+  } else {
+    console.warn("No se encontró ID del proyecto en localStorage");
+  }
     // Obtenemos el nombre del proyecto y la región desde localStorage
     const storedProjectName = localStorage.getItem("project_name_edit") || "";
     const storedRegion = localStorage.getItem("project_department_edit") || "";
@@ -248,15 +252,26 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   const fetchData = useCallback(
     async <T,>(endpoint: string, setter: (data: T) => void) => {
-      if (!projectId) return;
+      if (!projectId) {
+        console.log("No se puede obtener datos sin un ID de proyecto");
+        return;
+      }
+      
       const token = getToken();
       if (!token) return;
+      
       try {
+        console.log("Fetching data from:", endpoint);
         const headers = { Authorization: `Bearer ${token}` };
         const response = await axios.get(endpoint, { headers });
         setter(response.data);
       } catch (error: unknown) {
         console.error(`Error al obtener datos desde ${endpoint}:`, error);
+        
+        // No mostrar error en consola si es 404
+        if (axios.isAxiosError(error) && error.response?.status !== 404) {
+          console.error("Error status:", error.response?.status);
+        }
       }
     },
     [projectId]
@@ -266,18 +281,36 @@ const WorkFlowpar2editPage: React.FC = () => {
   const fetchFetchedDetails = useCallback(async () => {
     const token = getToken();
     if (!token) return;
+    
+    console.log("Fetching details with projectId:", projectId);
+    
     try {
-      const url = `${constantUrlApiEndpoint}/details/`;
+      const url = `${constantUrlApiEndpoint}/user/details/?project_id=${projectId}`;
+      console.log("Request URL:", url);
+      
       const headers = { Authorization: `Bearer ${token}` };
+      console.log("Using token:", token.substring(0, 10) + "...");
+      
       const response = await axios.get(url, { headers });
       setFetchedDetails(response.data || []);
     } catch (error: unknown) {
       console.error("Error al obtener detalles:", error);
+      
+      if (axios.isAxiosError(error)) {
+        console.error("Response data:", error.response?.data);
+        console.error("Response status:", error.response?.status);
+      }
+      
       Swal.fire("Error", "Error al obtener detalles. Ver consola.");
     }
-  }, []);
+  }, [projectId]);
 
   const fetchMurosDetails = useCallback(() => {
+    if (!projectId) {
+      console.log("No se puede obtener detalles de muros sin ID de proyecto");
+      return;
+    }
+    
     fetchData<TabItem[]>(
       `${constantUrlApiEndpoint}/project/${projectId}/details/Muro`,
       (data) => {
@@ -354,10 +387,10 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // ===================== EFFECTS ======================
   useEffect(() => {
-    if (step === 4) {
+    if (step === 4 && projectId !== null) {
       fetchFetchedDetails();
     }
-  }, [step, fetchFetchedDetails]);
+  }, [step, fetchFetchedDetails, projectId]);
 
   useEffect(() => {
     if (showTabsInStep4) {
@@ -366,7 +399,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   }, [showTabsInStep4]);
 
   useEffect(() => {
-    if (showTabsInStep4) {
+    if (showTabsInStep4 && projectId !== null) {
       if (tabStep4 === "muros") fetchMurosDetails();
       else if (tabStep4 === "techumbre") fetchTechumbreDetails();
       else if (tabStep4 === "pisos") fetchPisosDetails();
@@ -376,6 +409,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   }, [
     showTabsInStep4,
     tabStep4,
+    projectId, // Añadir projectId como dependencia
     fetchMurosDetails,
     fetchTechumbreDetails,
     fetchPisosDetails,
@@ -400,7 +434,7 @@ const WorkFlowpar2editPage: React.FC = () => {
 
     try {
       // Paso 1: Crear el nuevo detalle
-      const createUrl = `${constantUrlApiEndpoint}/details/create`;
+      const createUrl = `${constantUrlApiEndpoint}/user/details/create?project_id=${projectId}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -459,87 +493,18 @@ const WorkFlowpar2editPage: React.FC = () => {
   };
 
   // ===================== GUARDAR DETALLES ======================
-  const saveDetails = async () => {
+  // En la función saveDetails
+  const saveDetails = () => {
     if (!projectId) {
-      console.error("No se proporcionó un ID de proyecto.");
+      notify("No se puede continuar sin un ID de proyecto");
       return;
     }
-    const token = getToken();
-    if (!token) return;
-    if (fetchedDetails.length === 0) {
-      console.error("No se encontraron detalles para enviar.");
-      return;
-    }
-
-    const detailIds = fetchedDetails.map((det) => det.id_detail);
-    const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    try {
-      await axios.post(url, detailIds, { headers });
-      setShowTabsInStep4(true);
-      setTabStep4("muros");
-    } catch (error: unknown) {
-      if (
-        axios.isAxiosError(error) &&
-        error.response?.data?.detail === "Todos los detalles ya estaban en el proyecto"
-      ) {
-        setShowTabsInStep4(true);
-        setTabStep4("muros");
-        return;
-      }
-      console.error("Error al enviar la solicitud:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Detalles de la respuesta:", error.response?.data);
-      }
-    }
+    
+    // Simply change the view to show the tabs screen
+    setShowTabsInStep4(true);
+    setTabStep4("muros");
   };
 
-  // Copia interna que se ejecuta cuando cambie fetchedDetails
-  const handleSaveDetailsCopy = useCallback(async () => {
-    if (!projectId) {
-      console.error("No se proporcionó un ID de proyecto.");
-      return;
-    }
-    const token = getToken();
-    if (!token) return;
-    if (fetchedDetails.length === 0) {
-      console.error("No se encontraron detalles para enviar.");
-      return;
-    }
-    const detailIds = fetchedDetails.map((det) => det.id_detail);
-    const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    try {
-      await axios.post(url, detailIds, { headers });
-    } catch (error: unknown) {
-      if (
-        axios.isAxiosError(error) &&
-        error.response?.data?.detail ===
-        "Todos los detalles ya estaban en el proyecto"
-      ) {
-        return;
-      }
-      console.error("Error al enviar la solicitud:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Detalles de la respuesta:", error.response?.data);
-        console.error("Status code:", error.response?.status);
-      }
-    }
-  }, [projectId, fetchedDetails]);
-
-  useEffect(() => {
-    if (fetchedDetails.length > 0) {
-      handleSaveDetailsCopy();
-    }
-  }, [fetchedDetails, handleSaveDetailsCopy]);
 
   // ===================== EDICIÓN MUROS ======================
   const handleEditClick = (detail: TabItem) => {
@@ -1027,13 +992,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           {tabStep4 === "ventanas" && renderVentanasParameters()}
           {tabStep4 === "puertas" && renderPuertasParameters()}
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            marginTop: "10px",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
           <CustomButton
             variant="save"
             onClick={() => setShowTabsInStep4(false)}
@@ -1048,9 +1007,9 @@ const WorkFlowpar2editPage: React.FC = () => {
             }}
           >
             <span className="material-icons" style={{ fontSize: "24px" }}>
-              arrow_back
+              visibility
             </span>
-            &nbsp;Regresar
+            &nbsp;Ver Detalles Generales
           </CustomButton>
         </div>
       </div>
@@ -1104,7 +1063,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           style={{
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
+            alignItems: "flex-start",
             gap: "10px",
             marginTop: "30px",
             marginBottom: "10px",
@@ -1112,27 +1071,23 @@ const WorkFlowpar2editPage: React.FC = () => {
         >
           <div
           >
-            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <CustomButton
-                id="mostrar-datos-btn"
-                variant="save"
-                onClick={() => {
-                  setTimeout(() => {
-                    saveDetails();
-                  }, 600);
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
-                  height: "min(3rem, 8vh)",
-                  minWidth: "6rem",
-                }}
-              >
-                Realizar Cálculos
-              </CustomButton>
-            </div>
+            <div style={{ marginTop: "30px", marginBottom: "10px", width: "100%" }}>
+  <CustomButton
+    id="mostrar-datos-btn"
+    variant="save"
+    onClick={saveDetails}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
+      height: "min(3rem, 8vh)",
+      minWidth: "6rem",
+    }}
+  >
+    <span className="material-icons">arrow_back</span> Volver
+  </CustomButton>
+</div>
           </div>
         </div>
       </>

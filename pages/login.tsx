@@ -21,7 +21,7 @@ const Login: NextPageWithLayout = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const { push } = useRouter();
 
-  // Verifica si el usuario está lofdsfgeado y redirige a /dashboard
+  // Verifica si el usuario está lofdsfgeado y redirige a /dashboard aa
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {

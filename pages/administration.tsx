@@ -4,16 +4,14 @@ import { useAdministration } from "../src/hooks/useAdministration";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
-import CustomButton from "../src/components/common/CustomButton";
 import ModalCreate from "../src/components/common/ModalCreate";
 import { notify } from "@/utils/notify";
-import DetallesConstructivosTab from "../src/components/DetallesConstructivosTab";
 import Breadcrumb from "../src/components/common/Breadcrumb";
 import TablesParameters from "../src/components/tables/TablesParameters";
-import { NewDetailModal } from "@/components/modals/NewDetailModal";
 import ActionButtons from "@/components/common/ActionButtons";
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import { useCrudOperations } from "../src/hooks/useCrudOperations";
+import ConstructiveDetailsComponent from  "@/components/ConstructiveDetailsComponent";
 
 interface MaterialAttributes {
   name: string;
@@ -51,20 +49,16 @@ const AdministrationPage: React.FC = () => {
   const { handleCreate, handleEdit, handleDelete } = useCrudOperations();
   const {
     materialsList,
-    details,
     elementsList,
     fetchMaterialsList,
-    fetchDetails,
     fetchElements,
     handleLogout,
   } = useAdministration();
 
   const [step, setStep] = useState<number>(3);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
-  const [showGeneralDetails, setShowGeneralDetails] = useState(false);
 
   const [searchMaterial, setSearchMaterial] = useState("");
-  const [searchDetail, setSearchDetail] = useState("");
   const [searchElement, setSearchElement] = useState("");
 
   const [showNewMaterialModal, setShowNewMaterialModal] = useState(false);
@@ -76,19 +70,6 @@ const AdministrationPage: React.FC = () => {
   });
 
   const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(null);
-
-  const [showNewDetailModal, setShowNewDetailModal] = useState(false);
-  const [newDetail, setNewDetail] = useState<{
-    scantilon_location: string;
-    name_detail: string;
-    material_id: number;
-    layer_thickness: number | null;
-  }>({
-    scantilon_location: "",
-    name_detail: "",
-    material_id: 0,
-    layer_thickness: null,
-  });
 
   const [showNewWindowModal, setShowNewWindowModal] = useState(false);
   const [newWindow, setNewWindow] = useState({
@@ -152,49 +133,6 @@ const AdministrationPage: React.FC = () => {
               "constant",
               `El material "${mat.atributs.name}" fue eliminado correctamente`,
               () => fetchMaterialsList(1)
-            );
-          }}
-        />
-      ),
-    }));
-
-  const detailsColumns = [
-    { headerName: "Ubicación", field: "scantilon_location" },
-    { headerName: "Nombre Detalle", field: "name_detail" },
-    { headerName: "Material", field: "material_name" },
-    { headerName: "Espesor (cm)", field: "layer_thickness" },
-    { headerName: "Acción", field: "action" },
-  ];
-
-  const detailsData = details
-    .filter((detail) =>
-      detail.name_detail.toLowerCase().includes(searchDetail.toLowerCase()) ||
-      detail.scantilon_location.toLowerCase().includes(searchDetail.toLowerCase())
-    )
-    .map((detail) => ({
-      scantilon_location: detail.scantilon_location,
-      name_detail: detail.name_detail,
-      material_name: getMaterialName(detail.material_id),
-      layer_thickness: detail.layer_thickness,
-      action: (
-        <ActionButtons
-          onEdit={() => {
-            // Lógica para editar el detalle
-            setNewDetail({
-              scantilon_location: detail.scantilon_location,
-              name_detail: detail.name_detail,
-              material_id: detail.material_id,
-              layer_thickness: detail.layer_thickness,
-            });
-            setShowNewDetailModal(true);
-          }}
-          onDelete={() => {
-            // Lógica para eliminar el detalle
-            handleDelete(
-              detail.id,
-              "details/delete",
-              `El detalle "${detail.name_detail}" fue eliminado correctamente`,
-              fetchDetails
             );
           }}
         />
@@ -391,43 +329,6 @@ const AdministrationPage: React.FC = () => {
       density: 0,
     });
     setSelectedMaterialId(null);
-  };
-
-  const handleCreateDetail = async () => {
-    if (
-      newDetail.scantilon_location.trim() === "" ||
-      newDetail.name_detail.trim() === "" ||
-      newDetail.material_id <= 0 ||
-      newDetail.layer_thickness === null ||
-      newDetail.layer_thickness <= 0
-    ) {
-      notify("Por favor complete todos los campos de detalle");
-      return;
-    }
-
-    const payload = {
-      scantilon_location: newDetail.scantilon_location,
-      name_detail: newDetail.name_detail,
-      material_id: newDetail.material_id,
-      layer_thickness: newDetail.layer_thickness,
-    };
-
-    const success = await handleCreate(
-      payload,
-      "details/create",
-      `El detalle "${newDetail.name_detail}" fue creado correctamente`,
-      fetchDetails
-    );
-
-    if (success) {
-      setShowNewDetailModal(false);
-      setNewDetail({
-        scantilon_location: "",
-        name_detail: "",
-        material_id: 0,
-        layer_thickness: null,
-      });
-    }
   };
 
   const handleCreateElement = async () => {
@@ -640,9 +541,8 @@ const AdministrationPage: React.FC = () => {
 
   useEffect(() => {
     if (step === 3) fetchMaterialsList(1);
-    if (step === 4) fetchDetails();
     if (step === 5) fetchElements();
-  }, [step, fetchMaterialsList, fetchDetails, fetchElements]);
+  }, [step, fetchMaterialsList, fetchElements]);
 
   const sidebarSteps = [
     { stepNumber: 3, iconName: "assignment_ind", title: "Lista de Materiales" },
@@ -699,55 +599,9 @@ const AdministrationPage: React.FC = () => {
 
             {/* Step 4: Detalles Constructivos */}
             {step === 4 && (
-              <>
-                {showGeneralDetails ? (
-                  <div>
-                    <SearchParameters
-                      value={searchDetail}
-                      onChange={setSearchDetail}
-                      placeholder="Buscar detalle..."
-                      onNew={() => setShowNewDetailModal(true)}
-                      newButtonText="Nuevo"
-                      style={{ marginBottom: "10px" }}
-                    />
-                    <div style={{ overflow: "hidden", padding: "10px" }}>
-                      <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                        <TablesParameters columns={detailsColumns} data={detailsData} />
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", padding: "10px" }}>
-                      <CustomButton variant="save" onClick={() => setShowGeneralDetails(false)}>
-                        <span className="material-icons">arrow_back</span> Volver
-                      </CustomButton>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <DetallesConstructivosTab />
-                    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                      <CustomButton
-                        variant="save"
-                        onClick={() => {
-                          fetchDetails();
-                          setShowGeneralDetails(true);
-                        }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
-                          height: "min(3rem, 8vh)",
-                          minWidth: "6rem",
-                          marginLeft: "10px",
-                          marginTop: "2rem",
-                        }}
-                      >
-                        <span className="material-icons">visibility</span> Ver detalles generales
-                      </CustomButton>
-                    </div>
-                  </>
-                )}
-              </>
+              <div>
+                <ConstructiveDetailsComponent/>
+              </div>
             )}
 
             {/* Step 5: Elementos Translúcidos */}
@@ -920,29 +774,6 @@ const AdministrationPage: React.FC = () => {
             </div>
           </form>
         </ModalCreate>
-      )}
-
-      {showNewDetailModal && (
-        <NewDetailModal
-          showNewDetailRow={showNewDetailModal}
-          setShowNewDetailRow={setShowNewDetailModal}
-          newDetailForm={newDetail}
-          setNewDetailForm={setNewDetail}
-          onClose={() => {
-            setShowNewDetailModal(false);
-            setNewDetail({
-              scantilon_location: "",
-              name_detail: "",
-              material_id: 0,
-              layer_thickness: null,
-            });
-          }}
-          handleCreateNewDetail={handleCreateDetail}
-          materials={materialsList.map((material) => ({
-            id: material.material_id || material.id,
-            name: material.atributs.name || "",
-          }))}
-        />
       )}
 
       {showNewWindowModal && (

@@ -72,8 +72,7 @@ interface Constant {
 
 type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos";
 
-interface ConstructiveDetailsProps {}
-
+// Se eliminó la interfaz vacía ConstructiveDetailsProps, ya que el componente no recibe props.
 const getCssVarValue = (varName: string, fallback: string): string => {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement)
@@ -82,7 +81,7 @@ const getCssVarValue = (varName: string, fallback: string): string => {
   return value || fallback;
 };
 
-const ConstructiveDetailsComponent: React.FC<ConstructiveDetailsProps> = () => {
+const ConstructiveDetailsComponent: React.FC = () => {
   const router = useRouter();
 
   // Estados generales

@@ -146,7 +146,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       return;
     }
     try {
-      const url = `${constantUrlApiEndpoint}/details/${deletingDetail.id_detail}/delete`;
+      const url = `${constantUrlApiEndpoint}/admin/details/${deletingDetail.id_detail}/delete`;
       const response = await axios.delete(url, {
         headers: { Authorization: `Bearer ${token}`, accept: "application/json" },
       });

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
+import TablesParameters from "@/components/tables/TablesParameters";
+import SearchParameters from "@/components/inputs/SearchParameters";
+import { constantUrlApiEndpoint } from "../utils/constant-url-endpoint";
 
-// Interfaces para cada pestaña
 interface Ventilacion {
   codigoRecinto: string;
   tipologiaRecinto: string;
   caudalMinSalubridad: {
     rPers: number;
-    ida: number;
-    ocupacion: number;
+    ida: string;
+    ocupacion: string;
   };
   caudalImpuestoVentNoct: number;
 }
@@ -34,92 +36,354 @@ interface HorarioClima {
   codigoRecinto: string;
   tipologiaRecinto: string;
   recinto: {
-    climatizado: string; // "Si" o "No"
+    climatizado: string;
   };
   hrsDesfaseClimaInv: number;
 }
-
-// Estilos para encabezados "sticky"
-const stickyHeaderStyle1 = {
-  position: "sticky" as const,
-  top: 0,
-  backgroundColor: "#fff",
-  zIndex: 3,
-  textAlign: "center" as const,
-};
-
-const stickyHeaderStyle2 = {
-  position: "sticky" as const,
-  top: 40,
-  backgroundColor: "#fff",
-  zIndex: 2,
-  textAlign: "center" as const,
-};
-
-// Función para obtener una variable CSS
-const getCssVarValue = (varName: string, fallback: string): string => {
-  if (typeof window === "undefined") return fallback;
-  const value = getComputedStyle(document.documentElement)
-    .getPropertyValue(varName)
-    .trim();
-  return value || fallback;
-};
 
 type TabKey = "ventilacion" | "iluminacion" | "cargas" | "horario";
 
 const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger = 0 }) => {
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [activeTab, setActiveTab] = useState<TabKey>("ventilacion");
+  const [rolUser, setRolUser] = useState<string>("");
 
-  // Estados para almacenar los datos de cada pestaña (inicialmente vacíos)
+  // Estados para almacenar los datos de cada pestaña
   const [ventilacionData, setVentilacionData] = useState<Ventilacion[]>([]);
   const [iluminacionData, setIluminacionData] = useState<Iluminacion[]>([]);
   const [cargasData, setCargasData] = useState<CargasInternas[]>([]);
   const [horarioData, setHorarioData] = useState<HorarioClima[]>([]);
 
-  // Aquí podrías integrar la lógica para obtener datos (fetchData) según se requiera
+  // Estados de búsqueda para cada tab
+  const [searchVentilacion, setSearchVentilacion] = useState("");
+  const [searchIluminacion, setSearchIluminacion] = useState("");
+  const [searchCargas, setSearchCargas] = useState("");
+  const [searchHorario, setSearchHorario] = useState("");
 
+  // Función stub para el botón “+ Nuevo”
+  const handleNuevoClick = (tab: TabKey) => {
+    console.log(`Nuevo elemento para ${tab}`);
+    // Aquí puedes abrir un modal o redirigir a una pantalla de creación
+  };
+
+  // Obtener el valor de la variable CSS --primary-color
+  const getCssVarValue = (varName: string, fallback: string): string => {
+    if (typeof window === "undefined") return fallback;
+    const value = getComputedStyle(document.documentElement)
+      .getPropertyValue(varName)
+      .trim();
+    return value || fallback;
+  };
+
+  // Se ejecuta una sola vez para obtener el rol del usuario y el color primario
   useEffect(() => {
     setPrimaryColor(getCssVarValue("--primary-color", "#3ca7b7"));
+    const roleId = localStorage.getItem("role_id");
+    if (roleId === "1") {
+      setRolUser("admin");
+    } else if (roleId === "2") {
+      setRolUser("user");
+    }
   }, []);
 
+  // 1. Ventilación y caudales
+  useEffect(() => {
+    if (!rolUser) return;
+    const token = localStorage.getItem("token");
+    const url = `${constantUrlApiEndpoint}/${rolUser}/enclosures-typing/?type=ventilation_flows`;
+    fetch(url, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        let enclosures = [];
+        if (Array.isArray(data)) {
+          enclosures = data;
+        } else if (Array.isArray(data.results)) {
+          enclosures = data.results;
+        } else {
+          console.error("Formato de respuesta no esperado:", data);
+        }
+        const mapped: Ventilacion[] = enclosures.map((enclosure: any) => {
+          const condition = enclosure.building_conditions[0]?.details || {};
+          const minSalubridad = condition.cauldal_min_salubridad || {};
+          const rPers = minSalubridad.r_pers ?? 0;
+          const ida = minSalubridad.ida || "";
+          const ocupacion = minSalubridad.ocupacion || "";
+          const caudalImpuestoVentNoct = condition.caudal_impuesto?.vent_noct ?? 0;
+          return {
+            codigoRecinto: enclosure.code,
+            tipologiaRecinto: enclosure.name,
+            caudalMinSalubridad: { rPers, ida, ocupacion },
+            caudalImpuestoVentNoct,
+          };
+        });
+        setVentilacionData(mapped);
+      })
+      .catch((err) => console.error("Error al obtener ventilacion:", err));
+  }, [rolUser]);
+
+  // 2. Iluminación
+  useEffect(() => {
+    if (!rolUser) return;
+    const token = localStorage.getItem("token");
+    const url = `${constantUrlApiEndpoint}/${rolUser}/enclosures-typing/?type=lightning`;
+    fetch(url, { headers: { "Authorization": `Bearer ${token}` } })
+      .then((res) => res.json())
+      .then((data) => {
+        let enclosures = [];
+        if (Array.isArray(data)) {
+          enclosures = data;
+        } else if (Array.isArray(data.results)) {
+          enclosures = data.results;
+        } else {
+          console.error("Formato de respuesta no esperado:", data);
+        }
+        const mapped: Iluminacion[] = enclosures.map((enclosure: any) => {
+          const condition = enclosure.building_conditions.find(
+            (cond: any) => cond.type === "lightning"
+          );
+          const details = condition ? condition.details : {};
+          return {
+            codigoRecinto: enclosure.code,
+            tipologiaRecinto: enclosure.name,
+            potenciaBase: details.potencia_base || 0,
+            estrategia: details.estrategia || "",
+            potenciaPropuesta: details.potencia_propuesta || 0,
+          };
+        });
+        setIluminacionData(mapped);
+      })
+      .catch((err) => console.error("Error al obtener iluminacion:", err));
+  }, [rolUser]);
+
+  // 3. Cargas internas
+  useEffect(() => {
+    if (!rolUser) return;
+    const token = localStorage.getItem("token");
+    const url = `${constantUrlApiEndpoint}/${rolUser}/enclosures-typing/?type=internal_loads`;
+    fetch(url, { headers: { "Authorization": `Bearer ${token}` } })
+      .then((res) => res.json())
+      .then((data) => {
+        let enclosures = [];
+        if (Array.isArray(data)) {
+          enclosures = data;
+        } else if (Array.isArray(data.results)) {
+          enclosures = data.results;
+        } else {
+          console.error("Formato de respuesta no esperado:", data);
+        }
+        const mapped: CargasInternas[] = enclosures.map((enclosure: any) => {
+          const condition = enclosure.building_conditions[0]?.details || {};
+          return {
+            codigoRecinto: enclosure.code,
+            tipologiaRecinto: enclosure.name,
+            usuarios: condition.usuarios || 0,
+            calorLatente: condition.calor_latente || 0,
+            calorSensible: condition.calor_sensible || 0,
+            equipos: condition.equipos || 0,
+            funcionamientoSemanal: condition.horario?.funcionamiento_semanal || "",
+          };
+        });
+        setCargasData(mapped);
+      })
+      .catch((err) => console.error("Error al obtener cargas internas:", err));
+  }, [rolUser]);
+
+  // 4. Horario y Clima
+  useEffect(() => {
+    if (!rolUser) return;
+    const token = localStorage.getItem("token");
+    const url = `${constantUrlApiEndpoint}/${rolUser}/enclosures-typing/?type=schedule_weather`;
+    fetch(url, { headers: { "Authorization": `Bearer ${token}` } })
+      .then((res) => res.json())
+      .then((data) => {
+        let enclosures = [];
+        if (Array.isArray(data)) {
+          enclosures = data;
+        } else if (Array.isArray(data.results)) {
+          enclosures = data.results;
+        } else {
+          console.error("Formato de respuesta no esperado:", data);
+        }
+        const mapped: HorarioClima[] = enclosures.map((enclosure: any) => {
+          const details = enclosure.building_conditions[0]?.details || {};
+          const recinto = details.recinto || {};
+          return {
+            codigoRecinto: enclosure.code,
+            tipologiaRecinto: enclosure.name,
+            recinto: { climatizado: recinto.climatizado || "N/A" },
+            hrsDesfaseClimaInv: recinto.desfase_clima || 0,
+          };
+        });
+        setHorarioData(mapped);
+      })
+      .catch((err) => console.error("Error al obtener horario y clima:", err));
+  }, [rolUser]);
+
+  // Mapeo de datos para cada tabla
+  const ventilacionMappedData = ventilacionData.map((item) => ({
+    codigoRecinto: item.codigoRecinto,
+    tipologiaRecinto: item.tipologiaRecinto,
+    rPers: item.caudalMinSalubridad.rPers !== undefined
+      ? item.caudalMinSalubridad.rPers.toFixed(2)
+      : "N/A",
+    ida: item.caudalMinSalubridad.ida || "N/A",
+    ocupacion: item.caudalMinSalubridad.ocupacion || "N/A",
+    caudalImpuestoVentNoct: item.caudalImpuestoVentNoct !== undefined
+      ? item.caudalImpuestoVentNoct.toFixed(2)
+      : "N/A",
+  }));
+
+  const iluminacionMappedData = iluminacionData.map((item) => ({
+    codigoRecinto: item.codigoRecinto,
+    tipologiaRecinto: item.tipologiaRecinto,
+    potenciaBase: item.potenciaBase !== undefined ? item.potenciaBase.toFixed(2) : "N/A",
+    estrategia: item.estrategia,
+    potenciaPropuesta: item.potenciaPropuesta !== undefined
+      ? item.potenciaPropuesta.toFixed(2)
+      : "N/A",
+  }));
+
+  const cargasMappedData = cargasData.map((item) => ({
+    codigoRecinto: item.codigoRecinto,
+    tipologiaRecinto: item.tipologiaRecinto,
+    usuarios: item.usuarios !== undefined ? item.usuarios.toFixed(2) : "N/A",
+    calorLatente: item.calorLatente !== undefined ? item.calorLatente.toFixed(2) : "N/A",
+    calorSensible: item.calorSensible !== undefined ? item.calorSensible.toFixed(2) : "N/A",
+    equipos: item.equipos !== undefined ? item.equipos.toFixed(2) : "N/A",
+    funcionamientoSemanal: item.funcionamientoSemanal,
+  }));
+
+  const horarioMappedData = horarioData.map((item) => ({
+    codigoRecinto: item.codigoRecinto,
+    tipologiaRecinto: item.tipologiaRecinto,
+    climatizado: item.recinto.climatizado || "N/A",
+    hrsDesfaseClimaInv: item.hrsDesfaseClimaInv !== undefined
+      ? item.hrsDesfaseClimaInv.toFixed(2)
+      : "N/A",
+  }));
+
+  // Filtrado de data según el input de búsqueda para cada pestaña
+  const filteredVentilacion = ventilacionMappedData.filter((item) =>
+    item.codigoRecinto.toLowerCase().includes(searchVentilacion.toLowerCase()) ||
+    item.tipologiaRecinto.toLowerCase().includes(searchVentilacion.toLowerCase())
+  );
+  const filteredIluminacion = iluminacionMappedData.filter((item) =>
+    item.codigoRecinto.toLowerCase().includes(searchIluminacion.toLowerCase()) ||
+    item.tipologiaRecinto.toLowerCase().includes(searchIluminacion.toLowerCase())
+  );
+  const filteredCargas = cargasMappedData.filter((item) =>
+    item.codigoRecinto.toLowerCase().includes(searchCargas.toLowerCase()) ||
+    item.tipologiaRecinto.toLowerCase().includes(searchCargas.toLowerCase())
+  );
+  const filteredHorario = horarioMappedData.filter((item) =>
+    item.codigoRecinto.toLowerCase().includes(searchHorario.toLowerCase()) ||
+    item.tipologiaRecinto.toLowerCase().includes(searchHorario.toLowerCase())
+  );
+
+  // Definición de columnas para cada tabla
+  const columnsVentilacion = [
+    { headerName: "Codigo de Recinto", field: "codigoRecinto" },
+    { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
+    { headerName: "R-pers [L/s]", field: "rPers" },
+    { headerName: "IDA", field: "ida" },
+    { headerName: "Ocupacion", field: "ocupacion" },
+    { headerName: "Caudal Impuesto Vent Noct", field: "caudalImpuestoVentNoct" },
+  ];
+
+  const columnsIluminacion = [
+    { headerName: "Codigo de Recinto", field: "codigoRecinto" },
+    { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
+    { headerName: "Potencia Base [W/m2]", field: "potenciaBase" },
+    { headerName: "Estrategia", field: "estrategia" },
+    { headerName: "Potencia Propuesta [W/m2]", field: "potenciaPropuesta" },
+  ];
+
+  const columnsCargas = [
+    { headerName: "Codigo de Recinto", field: "codigoRecinto" },
+    { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
+    { headerName: "Usuarios [m2/pers]", field: "usuarios" },
+    { headerName: "Calor Latente [W/pers]", field: "calorLatente" },
+    { headerName: "Calor Sensible [W/pers]", field: "calorSensible" },
+    { headerName: "Equipos [W/m2]", field: "equipos" },
+    { headerName: "Funcionamiento Semanal", field: "funcionamientoSemanal" },
+  ];
+
+  const columnsHorario = [
+    { headerName: "Codigo de Recinto", field: "codigoRecinto" },
+    { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
+    { headerName: "Climatizado", field: "climatizado" },
+    { headerName: "Hrs Desfase Clima (Inv)", field: "hrsDesfaseClimaInv" },
+  ];
+
+  // Propiedades de búsqueda según la pestaña activa
+  const getSearchProps = () => {
+    switch (activeTab) {
+      case "ventilacion":
+        return {
+          value: searchVentilacion,
+          onChange: setSearchVentilacion,
+          onNew: () => handleNuevoClick("ventilacion"),
+          placeholder: "Buscar recinto..."
+        };
+      case "iluminacion":
+        return {
+          value: searchIluminacion,
+          onChange: setSearchIluminacion,
+          onNew: () => handleNuevoClick("iluminacion"),
+          placeholder: "Buscar recinto..."
+        };
+      case "cargas":
+        return {
+          value: searchCargas,
+          onChange: setSearchCargas,
+          onNew: () => handleNuevoClick("cargas"),
+          placeholder: "Buscar recinto..."
+        };
+      case "horario":
+        return {
+          value: searchHorario,
+          onChange: setSearchHorario,
+          onNew: () => handleNuevoClick("horario"),
+          placeholder: "Buscar recinto..."
+        };
+      default:
+        return {
+          value: "",
+          onChange: () => {},
+          onNew: () => {},
+          placeholder: "Buscar recinto..."
+        };
+    }
+  };
+
   return (
-    <div style={{ overflow: "hidden", padding: "10px" }}>
+    <div className="p-3">
+      {/* Contenedor de la barra de búsqueda (estilo similar al de la lista de materiales) */}
+      <div className="mb-4">
+        <SearchParameters {...getSearchProps()} />
+      </div>
+
       {/* Navegación por pestañas */}
-      <div
-        className="d-flex justify-content-between align-items-center mb-2"
-        style={{ padding: "10px" }}
-      >
-        <ul
-          style={{
-            display: "flex",
-            padding: 0,
-            listStyle: "none",
-            margin: 0,
-            flex: 1,
-            gap: "10px",
-          }}
-        >
+      <div className="mb-2 px-2">
+        <ul className="d-flex list-unstyled m-0" style={{ gap: "10px" }}>
           {[
             { key: "ventilacion", label: "Ventilacion y caudales" },
             { key: "iluminacion", label: "Iluminacion" },
             { key: "cargas", label: "Cargas internas" },
             { key: "horario", label: "Horario y Clima" },
           ].map((item) => (
-            <li key={item.key} style={{ flex: 1 }}>
+            <li key={item.key} className="flex-fill">
               <button
+                className="w-100 p-0"
                 style={{
-                  width: "100%",
-                  padding: "0px",
                   backgroundColor: "#fff",
-                  color:
-                    activeTab === item.key
-                      ? "var(--primary-color)"
-                      : "var(--secondary-color)",
+                  color: activeTab === item.key ? primaryColor : "var(--secondary-color)",
                   border: "none",
-                  cursor: "pointer",
-                  borderBottom:
-                    activeTab === item.key ? "solid var(--primary-color)" : "none",
+                  borderBottom: activeTab === item.key ? `solid 2px ${primaryColor}` : "none",
                 }}
                 onClick={() => setActiveTab(item.key as TabKey)}
               >
@@ -130,300 +394,32 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
         </ul>
       </div>
 
-      {/* Contenedor de tablas */}
-      <div
-        style={{
-          maxHeight: "500px",
-          overflowY: "auto",
-          overflowX: "auto",
-          position: "relative",
-        }}
-      >
-        {/* 1. Ventilacion y caudales */}
+      {/* Contenedor de la tabla */}
+      <div className="overflow-auto" style={{ maxHeight: "500px" }}>
         {activeTab === "ventilacion" && (
-          <div style={{ overflow: "hidden", padding: "10px" }}>
-            <table className="table" style={{ width: "100%" }}>
-              <thead>
-                <tr>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Codigo de Recinto
-                  </th>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Tipologia de Recinto
-                  </th>
-                  <th colSpan={3} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Caudal Min Salubridad
-                  </th>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Caudal Impuesto Vent Noct
-                  </th>
-                </tr>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    R-pers [L/s]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>IDA</th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>Ocupacion</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ventilacionData.length > 0 ? (
-                  ventilacionData.map((item, idx) => (
-                    <tr key={idx}>
-                      <td>{item.codigoRecinto}</td>
-                      <td>{item.tipologiaRecinto}</td>
-                      <td>
-                        {item.caudalMinSalubridad.rPers !== undefined
-                          ? item.caudalMinSalubridad.rPers.toFixed(2)
-                          : "N/A"}
-                      </td>
-                      <td>
-                        {item.caudalMinSalubridad.ida !== undefined
-                          ? item.caudalMinSalubridad.ida.toFixed(2)
-                          : "N/A"}
-                      </td>
-                      <td>
-                        {item.caudalMinSalubridad.ocupacion !== undefined
-                          ? item.caudalMinSalubridad.ocupacion.toFixed(2)
-                          : "N/A"}
-                      </td>
-                      <td>
-                        {item.caudalImpuestoVentNoct !== undefined
-                          ? item.caudalImpuestoVentNoct.toFixed(2)
-                          : "N/A"}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="p-2">
+            <TablesParameters columns={columnsVentilacion} data={filteredVentilacion} />
           </div>
         )}
 
-        {/* 2. Iluminacion */}
         {activeTab === "iluminacion" && (
-          <div style={{ overflow: "hidden", padding: "10px" }}>
-            <table className="table" style={{ width: "100%" }}>
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Codigo de Recinto
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Tipologia de Recinto
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Potencia Base [W/m2]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>Estrategia</th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Potencia Propuesta [W/m2]
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {iluminacionData.length > 0 ? (
-                  iluminacionData.map((item, idx) => (
-                    <tr key={idx}>
-                      <td>{item.codigoRecinto}</td>
-                      <td>{item.tipologiaRecinto}</td>
-                      <td>
-                        {item.potenciaBase !== undefined
-                          ? item.potenciaBase.toFixed(2)
-                          : "N/A"}
-                      </td>
-                      <td>{item.estrategia}</td>
-                      <td>
-                        {item.potenciaPropuesta !== undefined
-                          ? item.potenciaPropuesta.toFixed(2)
-                          : "N/A"}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="p-2">
+            <TablesParameters columns={columnsIluminacion} data={filteredIluminacion} />
           </div>
         )}
 
-        {/* 3. Cargas internas */}
         {activeTab === "cargas" && (
-          <div style={{ overflow: "hidden", padding: "10px" }}>
-            <table className="table" style={{ width: "100%" }}>
-              <thead>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Codigo de Recinto
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Tipologia de Recinto
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Usuarios [m2/pers]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Calor Latente [W/pers]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Calor Sensible [W/pers]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Equipos [W/m2]
-                  </th>
-                  <th style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Funcionamiento Semanal
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {cargasData.length > 0 ? (
-                  cargasData.map((item, idx) => (
-                    <tr key={idx}>
-                      <td>{item.codigoRecinto}</td>
-                      <td>{item.tipologiaRecinto}</td>
-                      <td>
-                        {item.usuarios !== undefined
-                          ? item.usuarios.toFixed(2)
-                          : "N/A"}
-                      </td>
-                      <td>
-                        {item.calorLatente !== undefined
-                          ? item.calorLatente.toFixed(2)
-                          : "N/A"}
-                      </td>
-                      <td>
-                        {item.calorSensible !== undefined
-                          ? item.calorSensible.toFixed(2)
-                          : "N/A"}
-                      </td>
-                      <td>
-                        {item.equipos !== undefined
-                          ? item.equipos.toFixed(2)
-                          : "N/A"}
-                      </td>
-                      <td>{item.funcionamientoSemanal}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="p-2">
+            <TablesParameters columns={columnsCargas} data={filteredCargas} />
           </div>
         )}
 
-        {/* 4. Horario y Clima */}
         {activeTab === "horario" && (
-          <div style={{ overflow: "hidden", padding: "10px" }}>
-            <table className="table" style={{ width: "100%" }}>
-              <thead>
-                <tr>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Codigo de Recinto
-                  </th>
-                  <th rowSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Tipologia de Recinto
-                  </th>
-                  <th colSpan={2} style={{ ...stickyHeaderStyle1, color: primaryColor }}>
-                    Recinto
-                  </th>
-                </tr>
-                <tr>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    Climatizado Si/No
-                  </th>
-                  <th style={{ ...stickyHeaderStyle2, color: primaryColor }}>
-                    Hrs Desfase Clima (Inv)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {horarioData.length > 0 ? (
-                  horarioData.map((item, idx) => (
-                    <tr key={idx}>
-                      <td>{item.codigoRecinto}</td>
-                      <td>{item.tipologiaRecinto}</td>
-                      <td>{item.recinto.climatizado || "N/A"}</td>
-                      <td>
-                        {item.hrsDesfaseClimaInv !== undefined
-                          ? item.hrsDesfaseClimaInv.toFixed(2)
-                          : "N/A"}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} style={{ textAlign: "center" }}>
-                      No hay datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="p-2">
+            <TablesParameters columns={columnsHorario} data={filteredHorario} />
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .table th,
-        .table td {
-          text-align: center;
-          vertical-align: middle;
-          padding: 0.5rem;
-        }
-        .table thead th {
-          position: sticky;
-          top: 0;
-          background-color: #fff;
-          color: var(--primary-color);
-          z-index: 2;
-        }
-        .table-striped tbody tr:nth-child(odd),
-        .table-striped tbody tr:nth-child(even) {
-          background-color: #ffffff;
-        }
-        .table tbody tr:hover {
-          transform: scale(1.01);
-          background-color: rgba(60, 167, 183, 0.05) !important;
-          cursor: pointer;
-        }
-        .table {
-          transition: opacity 0.3s ease;
-        }
-        .table tbody tr {
-          transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        .table tbody tr {
-          animation: fadeIn 0.5s ease;
-        }
-        .table thead th {
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-      `}</style>
     </div>
   );
 };

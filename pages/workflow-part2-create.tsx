@@ -169,6 +169,13 @@ const WorkFlowpar2createPage: React.FC = () => {
     exterior: "Intermedio",
   });
 
+  // NUEVOS ESTADOS PARA EDITAR PISOS
+  const [editingPisoRowId, setEditingPisoRowId] = useState<number | null>(null);
+  const [editingPisoForm, setEditingPisoForm] = useState({
+    vertical: { lambda: "", e_aisl: "", d: "" },
+    horizontal: { lambda: "", e_aisl: "", d: "" },
+  });
+
   // Estado para el formulario de creación de detalle
   const [showNewDetailRow, setShowNewDetailRow] = useState(false);
   const [newDetailForm, setNewDetailForm] = useState<{
@@ -253,7 +260,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   // Función para obtener detalles
   const fetchFetchedDetails = useCallback(async () => {
-    console.log("ID DEL PROYECTO <<<<<>>>>>>>>" , projectId);
+    console.log("ID DEL PROYECTO <<<<<>>>>>>>>", projectId);
     const token = getToken();
     if (!token) return;
     try {
@@ -415,7 +422,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-            "Todos los detalles ya estaban en el proyecto"
+              "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -458,7 +465,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     setTabStep4("muros");
   };
 
-  // =================== FUNCIONES DE EDICIÓN (MUROS / TECHUMBRE) ===================
+  // =================== FUNCIONES DE EDICIÓN (MUROS / TECHUMBRE / PISOS) ===================
   const handleEditClick = (detail: TabItem) => {
     setEditingRowId(detail.id || null);
     setEditingColors({
@@ -499,15 +506,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingColors.interior },
-                  exterior: { name: editingColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingColors.interior },
+                    exterior: { name: editingColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -558,15 +565,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingTechColors.interior },
-                  exterior: { name: editingTechColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingTechColors.interior },
+                    exterior: { name: editingTechColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -574,6 +581,82 @@ const WorkFlowpar2createPage: React.FC = () => {
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
       notify("Error al actualizar detalle. Ver consola.");
+    }
+  };
+
+  // NUEVAS FUNCIONES DE EDICIÓN PARA PISOS
+  const handleEditPisoClick = (detail: TabItem) => {
+    setEditingPisoRowId(detail.id || null);
+    setEditingPisoForm({
+      vertical: {
+        lambda: detail.info?.ref_aisl_vertical?.lambda?.toString() || "",
+        e_aisl: detail.info?.ref_aisl_vertical?.e_aisl?.toString() || "",
+        d: detail.info?.ref_aisl_vertical?.d?.toString() || "",
+      },
+      horizontal: {
+        lambda: detail.info?.ref_aisl_horizontal?.lambda?.toString() || "",
+        e_aisl: detail.info?.ref_aisl_horizontal?.e_aisl?.toString() || "",
+        d: detail.info?.ref_aisl_horizontal?.d?.toString() || "",
+      },
+    });
+  };
+
+  const handleCancelPisoEdit = () => {
+    setEditingPisoRowId(null);
+  };
+
+  const handleConfirmPisoEdit = async (detail: TabItem) => {
+    if (!projectId) return;
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Piso/${detail.id}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+      const payload = {
+        info: {
+          ref_aisl_vertical: {
+            d: Number(editingPisoForm.vertical.d),
+            e_aisl: Number(editingPisoForm.vertical.e_aisl),
+            lambda: Number(editingPisoForm.vertical.lambda),
+          },
+          ref_aisl_horizontal: {
+            d: Number(editingPisoForm.horizontal.d),
+            e_aisl: Number(editingPisoForm.horizontal.e_aisl),
+            lambda: Number(editingPisoForm.horizontal.lambda),
+          },
+        },
+      };
+      await axios.put(url, payload, { headers });
+      notify(`✅ Se actualizó correctamente el detalle con ID '${detail.id}' en el proyecto '${projectId}' de tipo 'Piso'.`);
+      setPisosTabList((prev) =>
+        prev.map((item) =>
+          item.id === detail.id
+            ? {
+                ...item,
+                info: {
+                  ...item.info,
+                  ref_aisl_vertical: {
+                    lambda: Number(editingPisoForm.vertical.lambda),
+                    e_aisl: Number(editingPisoForm.vertical.e_aisl),
+                    d: Number(editingPisoForm.vertical.d),
+                  },
+                  ref_aisl_horizontal: {
+                    lambda: Number(editingPisoForm.horizontal.lambda),
+                    e_aisl: Number(editingPisoForm.horizontal.e_aisl),
+                    d: Number(editingPisoForm.horizontal.d),
+                  },
+                },
+              }
+            : item
+        )
+      );
+      setEditingPisoRowId(null);
+    } catch (error: unknown) {
+      console.error("Error al actualizar detalle de Piso:", error);
+      notify("Error al actualizar detalle de Piso. Ver consola.");
     }
   };
 
@@ -760,19 +843,20 @@ const WorkFlowpar2createPage: React.FC = () => {
   };
 
   const renderPisosTable = () => {
-    // Para múltiples columnas: simulamos la doble cabecera en un solo header (10 columnas)
-    // Nombre | U | I_bajoPiso | eAisl_bajoPiso | I_vert | eAisl_vert | D_vert | I_horiz | eAisl_horiz | D_horiz
+    // Para múltiples columnas: simulamos la doble cabecera en un solo header (10 columnas + 1 para acciones)
+    // Nombre | U | I (bajo piso) | e Aisl (bajo piso) | I (vert) | e Aisl (vert) | D (vert) | I (horiz) | e Aisl (horiz) | D (horiz) | Acciones
     const columnsPisos = [
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
       { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
-      { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
+      { headerName: "e Aisl [cm] (bajo piso)", field: "bajoPisoEAisl" },
       { headerName: "I [W/mK] (vert)", field: "vertLambda" },
-      { headerName: "e Aisl [cm]", field: "vertEAisl" },
-      { headerName: "D [cm]", field: "vertD" },
+      { headerName: "e Aisl [cm] (vert)", field: "vertEAisl" },
+      { headerName: "D [cm] (vert)", field: "vertD" },
       { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
-      { headerName: "e Aisl [cm]", field: "horizEAisl" },
-      { headerName: "D [cm]", field: "horizD" },
+      { headerName: "e Aisl [cm] (horiz)", field: "horizEAisl" },
+      { headerName: "D [cm] (horiz)", field: "horizD" },
+      { headerName: "Acciones", field: "acciones" },
     ];
 
     const multiHeaderPisos = {
@@ -783,6 +867,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           { label: "Aislamiento bajo piso", colSpan: 2 },
           { label: "Ref Aisl Vert.", colSpan: 3 },
           { label: "Ref Aisl Horiz.", colSpan: 3 },
+          { label: "Acciones", rowSpan: 2 },
         ],
         [
           { label: "I [W/mK]" },
@@ -801,17 +886,128 @@ const WorkFlowpar2createPage: React.FC = () => {
       const bajoPiso = item.info?.aislacion_bajo_piso || {};
       const vert = item.info?.ref_aisl_vertical || {};
       const horiz = item.info?.ref_aisl_horizontal || {};
+      const isEditing = editingPisoRowId === item.id;
       return {
         nombre: item.name_detail,
         uValue: item.value_u?.toFixed(3) ?? "--",
         bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
         bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
-        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
-        vertEAisl: vert.e_aisl ?? "N/A",
-        vertD: vert.d ?? "N/A",
-        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
-        horizEAisl: horiz.e_aisl ?? "N/A",
-        horizD: horiz.d ?? "N/A",
+        vertLambda: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.vertical.lambda}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                vertical: { ...prev.vertical, lambda: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          vert.lambda ? vert.lambda.toFixed(3) : "N/A"
+        ),
+        vertEAisl: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.vertical.e_aisl}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                vertical: { ...prev.vertical, e_aisl: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          vert.e_aisl ?? "N/A"
+        ),
+        vertD: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.vertical.d}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                vertical: { ...prev.vertical, d: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          vert.d ?? "N/A"
+        ),
+        horizLambda: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.horizontal.lambda}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                horizontal: { ...prev.horizontal, lambda: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"
+        ),
+        horizEAisl: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.horizontal.e_aisl}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                horizontal: { ...prev.horizontal, e_aisl: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          horiz.e_aisl ?? "N/A"
+        ),
+        horizD: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.horizontal.d}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                horizontal: { ...prev.horizontal, d: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          horiz.d ?? "N/A"
+        ),
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={() => handleConfirmPisoEdit(item)}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={() => handleCancelPisoEdit()}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <CustomButton
+            className="btn-table"
+            variant="editIcon"
+            onClick={() => handleEditPisoClick(item)}
+          >
+            Editar
+          </CustomButton>
+        ),
       };
     });
 
@@ -821,7 +1017,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           <TablesParameters
             columns={columnsPisos}
             data={pisosData}
-            multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
+            multiHeader={multiHeaderPisos} // Se mantiene la magia del multiheader
           />
         ) : (
           <p>No hay datos</p>
@@ -1049,7 +1245,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               <CustomButton
                 id="mostrar-datos-btn"
                 variant="save"
-                onClick={saveDetails}  // Changed from the setTimeout wrapper
+                onClick={saveDetails}
                 style={{
                   display: "flex",
                   alignItems: "center",

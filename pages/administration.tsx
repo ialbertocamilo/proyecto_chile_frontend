@@ -11,7 +11,8 @@ import TablesParameters from "../src/components/tables/TablesParameters";
 import ActionButtons from "@/components/common/ActionButtons";
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import { useCrudOperations } from "../src/hooks/useCrudOperations";
-import ConstructiveDetailsComponent from  "@/components/ConstructiveDetailsComponent";
+import ConstructiveDetailsComponent from "@/components/ConstructiveDetailsComponent";
+import UseProfileTab from "../src/components/UseProfileTab";
 
 interface MaterialAttributes {
   name: string;
@@ -548,6 +549,7 @@ const AdministrationPage: React.FC = () => {
     { stepNumber: 3, iconName: "assignment_ind", title: "Lista de Materiales" },
     { stepNumber: 4, iconName: "build", title: "Detalles Constructivos" },
     { stepNumber: 5, iconName: "home", title: "Elementos Translúcidos" },
+    { stepNumber: 6, iconName: "deck", title: "Perfil de Uso" },
   ];
 
   return (
@@ -600,7 +602,7 @@ const AdministrationPage: React.FC = () => {
             {/* Step 4: Detalles Constructivos */}
             {step === 4 && (
               <div>
-                <ConstructiveDetailsComponent/>
+                <ConstructiveDetailsComponent />
               </div>
             )}
 
@@ -677,6 +679,13 @@ const AdministrationPage: React.FC = () => {
                   </div>
                 </div>
               </>
+            )}
+
+            {step === 6 && (
+
+              <div className="px-3">
+                <UseProfileTab />
+              </div>
             )}
           </div>
         </div>

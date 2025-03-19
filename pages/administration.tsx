@@ -4,19 +4,14 @@ import { useAdministration } from "../src/hooks/useAdministration";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
-import axios from "axios";
-import CustomButton from "../src/components/common/CustomButton";
 import ModalCreate from "../src/components/common/ModalCreate";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
-import DetallesConstructivosTab from "../src/components/DetallesConstructivosTab";
 import Breadcrumb from "../src/components/common/Breadcrumb";
-import "bootstrap/dist/css/bootstrap.min.css";
 import TablesParameters from "../src/components/tables/TablesParameters";
-import { NewDetailModal } from "@/components/modals/NewDetailModal";
 import ActionButtons from "@/components/common/ActionButtons";
 import SearchParameters from "../src/components/inputs/SearchParameters";
-import UseProfileTab from "../src/components/UseProfileTab";
+import { useCrudOperations } from "../src/hooks/useCrudOperations";
+import ConstructiveDetailsComponent from  "@/components/ConstructiveDetailsComponent";
 
 interface MaterialAttributes {
   name: string;
@@ -49,143 +44,22 @@ interface ElementAttributesWindow {
   clousure_type: string;
 }
 
-interface LabelWithAsteriskProps {
-  label: string;
-  value: string | number;
-  required?: boolean;
-}
-
-const LabelWithAsterisk: React.FC<LabelWithAsteriskProps> = ({ label, value, required = true }) => {
-  const isEmpty =
-    value === undefined ||
-    value === null ||
-    (typeof value === "string" && value.trim() === "") ||
-    (typeof value === "number" && value === 0);
-
-  return (
-    <label>
-      {label} {required && isEmpty && <span style={{ color: "red" }}>*</span>}
-    </label>
-  );
-};
-
-const handleCreate = async (
-  payload: any,
-  endpoint: string,
-  successMessage: string,
-  fetchData: () => Promise<void>
-) => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      notify("Token no encontrado. Inicia sesión.");
-      return;
-    }
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    const url = `${constantUrlApiEndpoint}/${endpoint}`;
-    const response = await axios.post(url, payload, { headers });
-
-    if (response.status === 200) {
-      notify(successMessage);
-      await fetchData();
-      return true;
-    }
-  } catch (error) {
-    console.error(`[handleCreate] Error:`, error);
-    notify("No se pudo crear el elemento");
-  }
-  return false;
-};
-
-const handleDelete = async (
-  id: number,
-  endpoint: string,
-  successMessage: string,
-  fetchData: () => Promise<void>
-) => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      notify("Token no encontrado. Inicia sesión.");
-      return;
-    }
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    const url = `${constantUrlApiEndpoint}/${endpoint}/${id}/delete`;
-    const response = await axios.delete(url, { headers });
-
-    if (response.status === 200) {
-      notify(successMessage);
-      await fetchData();
-    }
-  } catch (error) {
-    console.error(`[handleDelete] Error:`, error);
-    notify("No se pudo eliminar el elemento");
-  }
-};
-
-const handleEdit = async (
-  id: number,
-  payload: any,
-  endpoint: string,
-  successMessage: string,
-  fetchData: () => Promise<void>
-) => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      notify("Token no encontrado. Inicia sesión.");
-      return;
-    }
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    const url = `${constantUrlApiEndpoint}/${endpoint}/${id}/update`;
-    const response = await axios.put(url, payload, { headers });
-
-    if (response.status === 200) {
-      notify(successMessage);
-      await fetchData();
-    }
-  } catch (error) {
-    console.error(`[handleEdit] Error:`, error);
-    notify("No se pudo editar el elemento");
-  }
-};
-
 const AdministrationPage: React.FC = () => {
   useAuth();
-
-  const [step, setStep] = useState<number>(3);
-  const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
-  const [showGeneralDetails, setShowGeneralDetails] = useState(false);
-
-  // Estados para búsqueda
-  const [searchMaterial, setSearchMaterial] = useState("");
-  const [searchDetail, setSearchDetail] = useState("");
-  const [searchElement, setSearchElement] = useState("");
-
+  const { handleCreate, handleEdit, handleDelete } = useCrudOperations();
   const {
     materialsList,
-    details,
     elementsList,
     fetchMaterialsList,
-    fetchDetails,
     fetchElements,
     handleLogout,
   } = useAdministration();
+
+  const [step, setStep] = useState<number>(3);
+  const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
+
+  const [searchMaterial, setSearchMaterial] = useState("");
+  const [searchElement, setSearchElement] = useState("");
 
   const [showNewMaterialModal, setShowNewMaterialModal] = useState(false);
   const [newMaterialData, setNewMaterialData] = useState<MaterialAttributes>({
@@ -196,19 +70,6 @@ const AdministrationPage: React.FC = () => {
   });
 
   const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(null);
-
-  const [showNewDetailModal, setShowNewDetailModal] = useState(false);
-  const [newDetail, setNewDetail] = useState<{
-    scantilon_location: string;
-    name_detail: string;
-    material_id: number;
-    layer_thickness: number | null;
-  }>({
-    scantilon_location: "",
-    name_detail: "",
-    material_id: 0,
-    layer_thickness: null,
-  });
 
   const [showNewWindowModal, setShowNewWindowModal] = useState(false);
   const [newWindow, setNewWindow] = useState({
@@ -245,7 +106,6 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
-  // Se filtran los materiales según la búsqueda (por nombre)
   const materialsData = materialsList
     .filter((mat: any) =>
       mat.atributs.name.toLowerCase().includes(searchMaterial.toLowerCase())
@@ -273,48 +133,6 @@ const AdministrationPage: React.FC = () => {
               "constant",
               `El material "${mat.atributs.name}" fue eliminado correctamente`,
               () => fetchMaterialsList(1)
-            );
-          }}
-        />
-      ),
-    }));
-
-  const detailsColumns = [
-    { headerName: "Ubicación", field: "scantilon_location" },
-    { headerName: "Nombre Detalle", field: "name_detail" },
-    { headerName: "Material", field: "material_name" },
-    { headerName: "Espesor (cm)", field: "layer_thickness" },
-    { headerName: "Acción", field: "action" },
-  ];
-
-  // Filtrado para detalles (por nombre o ubicación)
-  const detailsData = details
-    .filter((detail) =>
-      detail.name_detail.toLowerCase().includes(searchDetail.toLowerCase()) ||
-      detail.scantilon_location.toLowerCase().includes(searchDetail.toLowerCase())
-    )
-    .map((detail) => ({
-      scantilon_location: detail.scantilon_location,
-      name_detail: detail.name_detail,
-      material_name: getMaterialName(detail.material_id),
-      layer_thickness: detail.layer_thickness,
-      action: (
-        <ActionButtons
-          onEdit={() => {
-            setNewDetail({
-              scantilon_location: detail.scantilon_location,
-              name_detail: detail.name_detail,
-              material_id: detail.material_id,
-              layer_thickness: detail.layer_thickness,
-            });
-            setShowNewDetailModal(true);
-          }}
-          onDelete={() => {
-            handleDelete(
-              detail.id,
-              "details",
-              `El detalle "${detail.name_detail}" fue eliminado correctamente`,
-              fetchDetails
             );
           }}
         />
@@ -511,43 +329,6 @@ const AdministrationPage: React.FC = () => {
       density: 0,
     });
     setSelectedMaterialId(null);
-  };
-
-  const handleCreateDetail = async () => {
-    if (
-      newDetail.scantilon_location.trim() === "" ||
-      newDetail.name_detail.trim() === "" ||
-      newDetail.material_id <= 0 ||
-      newDetail.layer_thickness === null ||
-      newDetail.layer_thickness <= 0
-    ) {
-      notify("Por favor complete todos los campos de detalle");
-      return;
-    }
-
-    const payload = {
-      scantilon_location: newDetail.scantilon_location,
-      name_detail: newDetail.name_detail,
-      material_id: newDetail.material_id,
-      layer_thickness: newDetail.layer_thickness,
-    };
-
-    const success = await handleCreate(
-      payload,
-      "details/create",
-      `El detalle "${newDetail.name_detail}" fue creado correctamente`,
-      fetchDetails
-    );
-
-    if (success) {
-      setShowNewDetailModal(false);
-      setNewDetail({
-        scantilon_location: "",
-        name_detail: "",
-        material_id: 0,
-        layer_thickness: null,
-      });
-    }
   };
 
   const handleCreateElement = async () => {
@@ -760,19 +541,14 @@ const AdministrationPage: React.FC = () => {
 
   useEffect(() => {
     if (step === 3) fetchMaterialsList(1);
-    if (step === 4) fetchDetails();
     if (step === 5) fetchElements();
-    if (step === 6) {setRefreshProfileTab(prev => prev + 1);}
-  }, [step, fetchMaterialsList, fetchDetails, fetchElements]);
+  }, [step, fetchMaterialsList, fetchElements]);
 
   const sidebarSteps = [
     { stepNumber: 3, iconName: "assignment_ind", title: "Lista de Materiales" },
     { stepNumber: 4, iconName: "build", title: "Detalles Constructivos" },
     { stepNumber: 5, iconName: "home", title: "Elementos Translúcidos" },
-    { stepNumber: 6, iconName: "deck", title: "Perfil de Uso" },
   ];
-
-  const [refreshProfileTab, setRefreshProfileTab] = useState(0);
 
   return (
     <>
@@ -823,56 +599,9 @@ const AdministrationPage: React.FC = () => {
 
             {/* Step 4: Detalles Constructivos */}
             {step === 4 && (
-              <>
-                {showGeneralDetails ? (
-                  <div>
-
-                    <SearchParameters
-                      value={searchDetail}
-                      onChange={setSearchDetail}
-                      placeholder="Buscar detalle..."
-                      onNew={() => setShowNewDetailModal(true)}
-                      newButtonText="Nuevo"
-                      style={{ marginBottom: "10px" }}
-                    />
-                    <div style={{ overflow: "hidden", padding: "10px" }}>
-                      <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                        <TablesParameters columns={detailsColumns} data={detailsData} />
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", padding: "10px" }}>
-                      <CustomButton variant="save" onClick={() => setShowGeneralDetails(false)}>
-                        <span className="material-icons">arrow_back</span> Volver
-                      </CustomButton>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <DetallesConstructivosTab />
-                    <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-                      <CustomButton
-                        variant="save"
-                        onClick={() => {
-                          fetchDetails();
-                          setShowGeneralDetails(true);
-                        }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
-                          height: "min(3rem, 8vh)",
-                          minWidth: "6rem",
-                          marginLeft: "10px",
-                          marginTop: "2rem",
-                        }}
-                      >
-                        <span className="material-icons">visibility</span> Ver detalles generales
-                      </CustomButton>
-                    </div>
-                  </>
-                )}
-              </>
+              <div>
+                <ConstructiveDetailsComponent/>
+              </div>
             )}
 
             {/* Step 5: Elementos Translúcidos */}
@@ -949,13 +678,6 @@ const AdministrationPage: React.FC = () => {
                 </div>
               </>
             )}
-
-            {/* Step 6: Perfil de Uso */}
-            {step === 6 && (
-              <div className="px-3">
-                <UseProfileTab refreshTrigger={refreshProfileTab} />
-              </div>
-            )}
           </div>
         </div>
       </Card>
@@ -985,7 +707,7 @@ const AdministrationPage: React.FC = () => {
             }}
           >
             <div className="form-group">
-              <LabelWithAsterisk label="Nombre Material" value={newMaterialData.name} />
+              <label>Nombre Material</label>
               <input
                 type="text"
                 className="form-control"
@@ -1000,10 +722,7 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk
-                label="Conductividad (W/m2K)"
-                value={newMaterialData.conductivity}
-              />
+              <label>Conductividad (W/m2K)</label>
               <input
                 type="number"
                 className="form-control"
@@ -1020,10 +739,7 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk
-                label="Calor específico (J/kgK)"
-                value={newMaterialData.specific_heat}
-              />
+              <label>Calor específico (J/kgK)</label>
               <input
                 type="number"
                 className="form-control"
@@ -1040,7 +756,7 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk label="Densidad (kg/m3)" value={newMaterialData.density} />
+              <label>Densidad (kg/m3)</label>
               <input
                 type="number"
                 className="form-control"
@@ -1058,29 +774,6 @@ const AdministrationPage: React.FC = () => {
             </div>
           </form>
         </ModalCreate>
-      )}
-
-      {showNewDetailModal && (
-        <NewDetailModal
-          showNewDetailRow={showNewDetailModal}
-          setShowNewDetailRow={setShowNewDetailModal}
-          newDetailForm={newDetail}
-          setNewDetailForm={setNewDetail}
-          onClose={() => {
-            setShowNewDetailModal(false);
-            setNewDetail({
-              scantilon_location: "",
-              name_detail: "",
-              material_id: 0,
-              layer_thickness: null,
-            });
-          }}
-          handleCreateNewDetail={handleCreateDetail}
-          materials={materialsList.map((material) => ({
-            id: material.material_id || material.id,
-            name: material.atributs.name || "",
-          }))}
-        />
       )}
 
       {showNewWindowModal && (
@@ -1112,10 +805,7 @@ const AdministrationPage: React.FC = () => {
             <div className="row">
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk
-                    label="Nombre del Elemento"
-                    value={newWindow.name_element}
-                  />
+                  <label>Nombre del Elemento</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1132,10 +822,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk
-                    label="U Vidrio [W/m2K]"
-                    value={newWindow.u_vidrio}
-                  />
+                  <label>U Vidrio [W/m2K]</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1154,7 +841,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk label="FS Vidrio" value={newWindow.fs_vidrio} />
+                  <label>FS Vidrio</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1173,10 +860,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk
-                    label="Tipo de Cierre"
-                    value={newWindow.clousure_type}
-                  />
+                  <label>Tipo de Cierre</label>
                   <select
                     className="form-control"
                     value={newWindow.clousure_type}
@@ -1197,7 +881,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk label="Tipo de Marco" value={newWindow.frame_type} />
+                  <label>Tipo de Marco</label>
                   <select
                     className="form-control"
                     value={newWindow.frame_type}
@@ -1221,10 +905,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk
-                    label="U Marco [W/m2K]"
-                    value={newWindow.u_marco}
-                  />
+                  <label>U Marco [W/m2K]</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1243,7 +924,7 @@ const AdministrationPage: React.FC = () => {
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <LabelWithAsterisk label="FM [%]" value={newWindow.fm} />
+                  <label>FM [%]</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1292,7 +973,7 @@ const AdministrationPage: React.FC = () => {
             }}
           >
             <div className="form-group">
-              <LabelWithAsterisk label="Nombre del Elemento" value={newDoor.name_element} />
+              <label>Nombre del Elemento</label>
               <input
                 type="text"
                 className="form-control"
@@ -1307,10 +988,7 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk
-                label="U Puerta opaca [W/m2K]"
-                value={newDoor.u_puerta_opaca}
-              />
+              <label>U Puerta opaca [W/m2K]</label>
               <input
                 type="number"
                 className="form-control"
@@ -1327,11 +1005,7 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk
-                label="Ventana Asociada"
-                value={newDoor.ventana_id}
-                required={false}
-              />
+              <label>Ventana Asociada</label>
               <select
                 className="form-control"
                 value={newDoor.ventana_id}
@@ -1353,7 +1027,7 @@ const AdministrationPage: React.FC = () => {
               </select>
             </div>
             <div className="form-group">
-              <LabelWithAsterisk label="% Vidrio" value={newDoor.porcentaje_vidrio} required={false} />
+              <label>% Vidrio</label>
               <input
                 type="number"
                 className="form-control"
@@ -1372,7 +1046,7 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk label="U Marco [W/m2K]" value={newDoor.u_marco} />
+              <label>U Marco [W/m2K]</label>
               <input
                 type="number"
                 className="form-control"
@@ -1389,7 +1063,7 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <LabelWithAsterisk label="FM [%]" value={newDoor.fm} />
+              <label>FM [%]</label>
               <input
                 type="number"
                 className="form-control"

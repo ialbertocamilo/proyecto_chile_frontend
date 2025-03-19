@@ -24,6 +24,7 @@ interface Detail {
   material_id: number;
   material: string;
   layer_thickness: number;
+  created_status: string; // Nuevo atributo con valores "default" o "created"
 }
 
 interface TabItem {
@@ -1187,16 +1188,27 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
     ];
 
-    // Filtramos los detalles para la búsqueda
-    const filteredData = fetchedDetails.filter((det) => {
-      const searchLower = searchQuery.toLowerCase();
-      return (
-        det.scantilon_location.toLowerCase().includes(searchLower) ||
-        det.name_detail.toLowerCase().includes(searchLower) ||
-        det.material.toLowerCase().includes(searchLower) ||
-        det.layer_thickness.toString().includes(searchLower)
-      );
-    });
+    // Filtramos y transformamos los detalles para la búsqueda, aplicando estilo azul a los que tengan "default"
+    const filteredData = fetchedDetails
+      .filter((det) => {
+        const searchLower = searchQuery.toLowerCase();
+        return (
+          det.scantilon_location.toLowerCase().includes(searchLower) ||
+          det.name_detail.toLowerCase().includes(searchLower) ||
+          det.material.toLowerCase().includes(searchLower) ||
+          det.layer_thickness.toString().includes(searchLower)
+        );
+      })
+      .map((det) => {
+        // Si el detalle tiene estado "default", se pinta en azul.
+        const textStyle = det.created_status === "default" ? { color: "blue" } : {};
+        return {
+          scantilon_location: <span style={textStyle}>{det.scantilon_location}</span>,
+          name_detail: <span style={textStyle}>{det.name_detail}</span>,
+          material: <span style={textStyle}>{det.material}</span>,
+          layer_thickness: <span style={textStyle}>{det.layer_thickness}</span>,
+        };
+      });
 
     return (
       <>

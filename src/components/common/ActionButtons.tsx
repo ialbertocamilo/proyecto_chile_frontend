@@ -13,13 +13,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onEdit, onDelete }) => {
         variant="editIcon"
         className="btn-table-list"
         onClick={onEdit}
-        title="Editar en Workflow"
+        title="Editar"
       />
       <CustomButton
         variant="deleteIcon"
         className="btn-table-list"
         onClick={onDelete}
-        title="Eliminar proyecto"
+        title="Eliminar"
       />
     </div>
   );

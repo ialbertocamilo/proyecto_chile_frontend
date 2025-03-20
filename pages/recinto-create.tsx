@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-
+import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
 import Card from "../src/components/common/Card";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import Title from "../src/components/Title";
@@ -274,7 +274,7 @@ const RecintoCreate: React.FC = () => {
         </div>
       </Card>
 
-      {/* Card con los campos en el orden solicitado y el botón Guardar al final */}
+      {/* Card con los campos de "Características de la edificación" */}
       <Card>
         <div>
           <Title text="Características de la edificación" />
@@ -436,6 +436,14 @@ const RecintoCreate: React.FC = () => {
               Guardar
             </CustomButton>
           </div>
+        </div>
+      </Card>
+
+      {/* Nueva Card agregada debajo de "Características de la edificación" */}
+      <Card>
+        <div>
+          <Title text="Características térmicas de la envolvente" />
+          <RecintoCaractersComponent />
         </div>
       </Card>
     </>

@@ -72,7 +72,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                 });
 
                 process.on("close", (code) => {
-                    console.log(`Proceso finalizado con código ${code}`);
                     if (code === 0) {
                         res.status(200).json({ status: 'ok', message: 'Files were uploaded and converted successfully' });
                     } else {

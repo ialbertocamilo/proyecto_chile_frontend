@@ -21,7 +21,7 @@ const Login: NextPageWithLayout = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const { push } = useRouter();
 
-  // Verifica si el usuario está logeado y redirige a /dashboard
+  // Verifica si el usuario está lofdsfgeado y redirige a /dashboard 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -35,9 +35,6 @@ const Login: NextPageWithLayout = () => {
     setLoading(true);
 
     const requestBody = { email, password };
-
-    console.log("Enviando datos al backend:", requestBody);
-
     try {
       const response = await fetch(`${constantUrlApiEndpoint}/login`, {
         method: "POST",
@@ -55,7 +52,7 @@ const Login: NextPageWithLayout = () => {
       localStorage.setItem("email", email);
       localStorage.setItem("user_name", data.name || "Usuario");
 
-      console.log("User data:", data);
+      console.log("User data", data);
 
       setTimeout(() => {
         push("/twofactorauth");
@@ -74,7 +71,7 @@ const Login: NextPageWithLayout = () => {
       className="container-fluid"
       style={{
         background:
-          "url('/assets/images/background.jpg') no-repeat center center/cover",
+          "url('/assets/images/login_background.png') no-repeat center center/cover",
       }}
     >
       <div className="row">

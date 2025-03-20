@@ -1,4 +1,5 @@
 // WorkFlowpar2editPage.tsx
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader"; // <-- Importamos el nuevo componente
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -14,10 +15,9 @@ import CustomButton from "../src/components/common/CustomButton";
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import ModalCreate from "../src/components/common/ModalCreate";
-import Breadcrumb from "@/components/common/Breadcrumb";
 
 // Importamos nuestro componente genérico de tablas
+import Breadcrumb from "@/components/common/Breadcrumb";
 import { NewDetailModal } from "@/components/modals/NewDetailModal";
 import TablesParameters from "../src/components/tables/TablesParameters";
 // Ajusta la ruta de import según corresponda a tu proyecto
@@ -29,6 +29,7 @@ interface Detail {
   id_material: number;
   material: string;
   layer_thickness: number;
+  created_status: string; // <-- Nuevo atributo con posibles valores "default" y "created"
 }
 
 interface TabItem {
@@ -148,6 +149,10 @@ const WorkFlowpar2editPage: React.FC = () => {
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Estados para almacenar nombre de proyecto y región desde localStorage
+  const [projectName, setProjectName] = useState("");
+  const [region, setRegion] = useState("");
+
   // ===================== ESTADOS DETALLES ======================
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [showNewDetailRow, setShowNewDetailRow] = useState(false);
@@ -192,12 +197,31 @@ const WorkFlowpar2editPage: React.FC = () => {
     exterior: "Intermedio",
   });
 
+  // ===================== ESTADOS EDICIÓN PISOS ======================
+  const [editingPisosRowId, setEditingPisosRowId] = useState<number | null>(null);
+  const [editingPisosData, setEditingPisosData] = useState<{
+    ref_aisl_vertical: { lambda: string; e_aisl: string; d: string };
+    ref_aisl_horizontal: { lambda: string; e_aisl: string; d: string };
+  }>({
+    ref_aisl_vertical: { lambda: "", e_aisl: "", d: "" },
+    ref_aisl_horizontal: { lambda: "", e_aisl: "", d: "" },
+  });
+
   // ===================== INIT ======================
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id_edit");
+    console.log("Cargando ID del proyecto:", storedProjectId);
     if (storedProjectId) {
       setProjectId(Number(storedProjectId));
+    } else {
+      console.warn("No se encontró ID del proyecto en localStorage");
     }
+    // Obtenemos el nombre del proyecto y la región desde localStorage
+    const storedProjectName = localStorage.getItem("project_name_edit") || "";
+    const storedRegion = localStorage.getItem("project_department_edit") || "";
+    setProjectName(storedProjectName);
+    setRegion(storedRegion);
+
     setHasLoaded(true);
   }, []);
 
@@ -238,15 +262,22 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   const fetchData = useCallback(
     async <T,>(endpoint: string, setter: (data: T) => void) => {
-      if (!projectId) return;
+      if (!projectId) {
+        console.log("No se puede obtener datos sin un ID de proyecto");
+        return;
+      }
       const token = getToken();
       if (!token) return;
       try {
+        console.log("Fetching data from:", endpoint);
         const headers = { Authorization: `Bearer ${token}` };
         const response = await axios.get(endpoint, { headers });
         setter(response.data);
       } catch (error: unknown) {
         console.error(`Error al obtener datos desde ${endpoint}:`, error);
+        if (axios.isAxiosError(error) && error.response?.status !== 404) {
+          console.error("Error status:", error.response?.status);
+        }
       }
     },
     [projectId]
@@ -256,18 +287,29 @@ const WorkFlowpar2editPage: React.FC = () => {
   const fetchFetchedDetails = useCallback(async () => {
     const token = getToken();
     if (!token) return;
+    console.log("Fetching details with projectId:", projectId);
     try {
-      const url = `${constantUrlApiEndpoint}/details/`;
+      const url = `${constantUrlApiEndpoint}/user/details/?project_id=${projectId}`;
+      console.log("Request URL:", url);
       const headers = { Authorization: `Bearer ${token}` };
+      console.log("Using token:", token.substring(0, 10) + "...");
       const response = await axios.get(url, { headers });
       setFetchedDetails(response.data || []);
     } catch (error: unknown) {
       console.error("Error al obtener detalles:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Response data:", error.response?.data);
+        console.error("Response status:", error.response?.status);
+      }
       Swal.fire("Error", "Error al obtener detalles. Ver consola.");
     }
-  }, []);
+  }, [projectId]);
 
   const fetchMurosDetails = useCallback(() => {
+    if (!projectId) {
+      console.log("No se puede obtener detalles de muros sin ID de proyecto");
+      return;
+    }
     fetchData<TabItem[]>(
       `${constantUrlApiEndpoint}/project/${projectId}/details/Muro`,
       (data) => {
@@ -344,10 +386,10 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // ===================== EFFECTS ======================
   useEffect(() => {
-    if (step === 4) {
+    if (step === 4 && projectId !== null) {
       fetchFetchedDetails();
     }
-  }, [step, fetchFetchedDetails]);
+  }, [step, fetchFetchedDetails, projectId]);
 
   useEffect(() => {
     if (showTabsInStep4) {
@@ -356,7 +398,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   }, [showTabsInStep4]);
 
   useEffect(() => {
-    if (showTabsInStep4) {
+    if (showTabsInStep4 && projectId !== null) {
       if (tabStep4 === "muros") fetchMurosDetails();
       else if (tabStep4 === "techumbre") fetchTechumbreDetails();
       else if (tabStep4 === "pisos") fetchPisosDetails();
@@ -366,6 +408,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   }, [
     showTabsInStep4,
     tabStep4,
+    projectId,
     fetchMurosDetails,
     fetchTechumbreDetails,
     fetchPisosDetails,
@@ -384,25 +427,21 @@ const WorkFlowpar2editPage: React.FC = () => {
       notify("Por favor complete todos los campos de Detalle.");
       return;
     }
-
     const token = getToken();
     if (!token) return;
-
     try {
       // Paso 1: Crear el nuevo detalle
-      const createUrl = `${constantUrlApiEndpoint}/details/create`;
+      const createUrl = `${constantUrlApiEndpoint}/user/details/create?project_id=${projectId}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
       const response = await axios.post(createUrl, newDetailForm, { headers });
       const newDetailId = response.data.detail.id;
-
       if (!newDetailId) {
         notify("Reinicie sesion y vuelvalo a intentar.");
         return;
       }
-
       // Paso 2: Añadir el detalle al proyecto
       if (projectId) {
         const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
@@ -425,7 +464,6 @@ const WorkFlowpar2editPage: React.FC = () => {
       } else {
         notify("No se añadio el detalle al proyecto.");
       }
-
       // Actualizamos la interfaz y cerramos el modal
       fetchFetchedDetails();
       setShowNewDetailRow(false);
@@ -449,87 +487,15 @@ const WorkFlowpar2editPage: React.FC = () => {
   };
 
   // ===================== GUARDAR DETALLES ======================
-  const saveDetails = async () => {
+  const saveDetails = () => {
     if (!projectId) {
-      console.error("No se proporcionó un ID de proyecto.");
+      notify("No se puede continuar sin un ID de proyecto");
       return;
     }
-    const token = getToken();
-    if (!token) return;
-    if (fetchedDetails.length === 0) {
-      console.error("No se encontraron detalles para enviar.");
-      return;
-    }
-
-    const detailIds = fetchedDetails.map((det) => det.id_detail);
-    const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    try {
-      await axios.post(url, detailIds, { headers });
-      setShowTabsInStep4(true);
-      setTabStep4("muros");
-    } catch (error: unknown) {
-      if (
-        axios.isAxiosError(error) &&
-        error.response?.data?.detail === "Todos los detalles ya estaban en el proyecto"
-      ) {
-        setShowTabsInStep4(true);
-        setTabStep4("muros");
-        return;
-      }
-      console.error("Error al enviar la solicitud:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Detalles de la respuesta:", error.response?.data);
-      }
-    }
+    // Simply change the view to show the tabs screen
+    setShowTabsInStep4(true);
+    setTabStep4("muros");
   };
-
-  // Copia interna que se ejecuta cuando cambie fetchedDetails
-  const handleSaveDetailsCopy = useCallback(async () => {
-    if (!projectId) {
-      console.error("No se proporcionó un ID de proyecto.");
-      return;
-    }
-    const token = getToken();
-    if (!token) return;
-    if (fetchedDetails.length === 0) {
-      console.error("No se encontraron detalles para enviar.");
-      return;
-    }
-    const detailIds = fetchedDetails.map((det) => det.id_detail);
-    const url = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    try {
-      await axios.post(url, detailIds, { headers });
-    } catch (error: unknown) {
-      if (
-        axios.isAxiosError(error) &&
-        error.response?.data?.detail ===
-          "Todos los detalles ya estaban en el proyecto"
-      ) {
-        return;
-      }
-      console.error("Error al enviar la solicitud:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Detalles de la respuesta:", error.response?.data);
-        console.error("Status code:", error.response?.status);
-      }
-    }
-  }, [projectId, fetchedDetails]);
-
-  useEffect(() => {
-    if (fetchedDetails.length > 0) {
-      handleSaveDetailsCopy();
-    }
-  }, [fetchedDetails, handleSaveDetailsCopy]);
 
   // ===================== EDICIÓN MUROS ======================
   const handleEditClick = (detail: TabItem) => {
@@ -572,15 +538,15 @@ const WorkFlowpar2editPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingColors.interior },
-                  exterior: { name: editingColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingColors.interior },
+                    exterior: { name: editingColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -650,9 +616,103 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
   };
 
+  // ===================== EDICIÓN PISOS ======================
+  const handleEditPisosClick = (detail: TabItem) => {
+    setEditingPisosRowId(detail.id || null);
+    setEditingPisosData({
+      ref_aisl_vertical: {
+        lambda:
+          detail.info?.ref_aisl_vertical?.lambda !== undefined
+            ? detail.info.ref_aisl_vertical.lambda.toString()
+            : "",
+        e_aisl:
+          detail.info?.ref_aisl_vertical?.e_aisl !== undefined
+            ? detail.info.ref_aisl_vertical.e_aisl.toString()
+            : "",
+        d:
+          detail.info?.ref_aisl_vertical?.d !== undefined
+            ? detail.info.ref_aisl_vertical.d.toString()
+            : "",
+      },
+      ref_aisl_horizontal: {
+        lambda:
+          detail.info?.ref_aisl_horizontal?.lambda !== undefined
+            ? detail.info.ref_aisl_horizontal.lambda.toString()
+            : "",
+        e_aisl:
+          detail.info?.ref_aisl_horizontal?.e_aisl !== undefined
+            ? detail.info.ref_aisl_horizontal.e_aisl.toString()
+            : "",
+        d:
+          detail.info?.ref_aisl_horizontal?.d !== undefined
+            ? detail.info.ref_aisl_horizontal.d.toString()
+            : "",
+      },
+    });
+  };
+
+  const handleCancelPisosEdit = (detail: TabItem) => {
+    setEditingPisosRowId(null);
+  };
+
+  const handleConfirmPisosEdit = async (detail: TabItem) => {
+    if (!projectId) return;
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Piso/${detail.id}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+      const payload = {
+        info: {
+          ref_aisl_vertical: {
+            lambda: parseFloat(editingPisosData.ref_aisl_vertical.lambda),
+            e_aisl: parseFloat(editingPisosData.ref_aisl_vertical.e_aisl),
+            d: parseFloat(editingPisosData.ref_aisl_vertical.d),
+          },
+          ref_aisl_horizontal: {
+            lambda: parseFloat(editingPisosData.ref_aisl_horizontal.lambda),
+            e_aisl: parseFloat(editingPisosData.ref_aisl_horizontal.e_aisl),
+            d: parseFloat(editingPisosData.ref_aisl_horizontal.d),
+          },
+        },
+      };
+      await axios.put(url, payload, { headers });
+      notify("Detalle tipo Piso actualizado con éxito.");
+      setPisosTabList((prev) =>
+        prev.map((item) =>
+          item.id === detail.id
+            ? {
+                ...item,
+                info: {
+                  ...item.info,
+                  ref_aisl_vertical: {
+                    lambda: payload.info.ref_aisl_vertical.lambda,
+                    e_aisl: payload.info.ref_aisl_vertical.e_aisl,
+                    d: payload.info.ref_aisl_vertical.d,
+                  },
+                  ref_aisl_horizontal: {
+                    lambda: payload.info.ref_aisl_horizontal.lambda,
+                    e_aisl: payload.info.ref_aisl_horizontal.e_aisl,
+                    d: payload.info.ref_aisl_horizontal.d,
+                  },
+                },
+              }
+            : item
+        )
+      );
+      setEditingPisosRowId(null);
+    } catch (error) {
+      console.error("Error al actualizar detalle de Piso:", error);
+      notify("Error al actualizar Detalle de Piso. Ver consola.");
+    }
+  };
+
   // ===================== RENDER CABECERA PRINCIPAL ======================
   const renderMainHeader = () => (
-    <Title text="Edición de Desarrollo de Proyecto" />
+    <Title text="Edición de Proyecto" />
   );
 
   // ===================== RENDER MUROS ======================
@@ -834,19 +894,19 @@ const WorkFlowpar2editPage: React.FC = () => {
   };
 
   // ===================== RENDER PISOS ======================
-  // Con múltiples columnas en <thead>, aquí lo simplificamos en columnas planas
   const renderPisosParameters = () => {
     const columnsPisos = [
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
       { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
-      { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
+      { headerName: "e Aisl [cm] (bajo piso)", field: "bajoPisoEAisl" },
       { headerName: "I [W/mK] (vert)", field: "vertLambda" },
-      { headerName: "e Aisl [cm]", field: "vertEAisl" },
-      { headerName: "D [cm]", field: "vertD" },
+      { headerName: "e Aisl [cm] (vert)", field: "vertEAisl" },
+      { headerName: "D [cm] (vert)", field: "vertD" },
       { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
-      { headerName: "e Aisl [cm]", field: "horizEAisl" },
-      { headerName: "D [cm]", field: "horizD" },
+      { headerName: "e Aisl [cm] (horiz)", field: "horizEAisl" },
+      { headerName: "D [cm] (horiz)", field: "horizD" },
+      { headerName: "Acciones", field: "acciones" },
     ];
 
     const multiHeaderPisos = {
@@ -857,6 +917,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           { label: "Aislamiento bajo piso", colSpan: 2 },
           { label: "Ref Aisl Vert.", colSpan: 3 },
           { label: "Ref Aisl Horiz.", colSpan: 3 },
+          { label: "Acciones", rowSpan: 2 },
         ],
         [
           { label: "I [W/mK]" },
@@ -872,30 +933,161 @@ const WorkFlowpar2editPage: React.FC = () => {
     };
 
     const pisosData = pisosTabList.map((item) => {
-      const bajoPiso = item.info?.aislacion_bajo_piso || {};
-      const vert = item.info?.ref_aisl_vertical || {};
-      const horiz = item.info?.ref_aisl_horizontal || {};
+      const isEditing = editingPisosRowId === item.id;
+      const vertical = isEditing
+        ? editingPisosData.ref_aisl_vertical
+        : item.info?.ref_aisl_vertical || {};
+      const horizontal = isEditing
+        ? editingPisosData.ref_aisl_horizontal
+        : item.info?.ref_aisl_horizontal || {};
       return {
+        id: item.id,
         nombre: item.name_detail,
         uValue: item.value_u?.toFixed(3) ?? "--",
-        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
-        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
-        vertEAisl: vert.e_aisl ?? "N/A",
-        vertD: vert.d ?? "N/A",
-        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
-        horizEAisl: horiz.e_aisl ?? "N/A",
-        horizD: horiz.d ?? "N/A",
+        bajoPisoLambda: item.info?.aislacion_bajo_piso?.lambda
+          ? item.info.aislacion_bajo_piso.lambda.toFixed(3)
+          : "N/A",
+        bajoPisoEAisl: item.info?.aislacion_bajo_piso?.e_aisl ?? "N/A",
+        vertLambda: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={vertical.lambda}
+            onChange={(e) =>
+              setEditingPisosData((prev) => ({
+                ...prev,
+                ref_aisl_vertical: {
+                  ...prev.ref_aisl_vertical,
+                  lambda: e.target.value,
+                },
+              }))
+            }
+          />
+        ) : vertical.lambda !== undefined && vertical.lambda !== null ? (
+          Number(vertical.lambda).toFixed(3)
+        ) : (
+          "N/A"
+        ),
+        vertEAisl: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={vertical.e_aisl}
+            onChange={(e) =>
+              setEditingPisosData((prev) => ({
+                ...prev,
+                ref_aisl_vertical: {
+                  ...prev.ref_aisl_vertical,
+                  e_aisl: e.target.value,
+                },
+              }))
+            }
+          />
+        ) : vertical.e_aisl ?? "N/A",
+        vertD: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={vertical.d}
+            onChange={(e) =>
+              setEditingPisosData((prev) => ({
+                ...prev,
+                ref_aisl_vertical: {
+                  ...prev.ref_aisl_vertical,
+                  d: e.target.value,
+                },
+              }))
+            }
+          />
+        ) : vertical.d ?? "N/A",
+        horizLambda: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={horizontal.lambda}
+            onChange={(e) =>
+              setEditingPisosData((prev) => ({
+                ...prev,
+                ref_aisl_horizontal: {
+                  ...prev.ref_aisl_horizontal,
+                  lambda: e.target.value,
+                },
+              }))
+            }
+          />
+        ) : horizontal.lambda !== undefined && horizontal.lambda !== null ? (
+          Number(horizontal.lambda).toFixed(3)
+        ) : (
+          "N/A"
+        ),
+        horizEAisl: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={horizontal.e_aisl}
+            onChange={(e) =>
+              setEditingPisosData((prev) => ({
+                ...prev,
+                ref_aisl_horizontal: {
+                  ...prev.ref_aisl_horizontal,
+                  e_aisl: e.target.value,
+                },
+              }))
+            }
+          />
+        ) : horizontal.e_aisl ?? "N/A",
+        horizD: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={horizontal.d}
+            onChange={(e) =>
+              setEditingPisosData((prev) => ({
+                ...prev,
+                ref_aisl_horizontal: {
+                  ...prev.ref_aisl_horizontal,
+                  d: e.target.value,
+                },
+              }))
+            }
+          />
+        ) : horizontal.d ?? "N/A",
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={() => handleConfirmPisosEdit(item)}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={() => handleCancelPisosEdit(item)}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <CustomButton
+            className="btn-table"
+            variant="editIcon"
+            onClick={() => handleEditPisosClick(item)}
+          >
+            Editar
+          </CustomButton>
+        ),
       };
     });
 
     return (
-      <div >
+      <div>
         {pisosTabList.length > 0 ? (
           <TablesParameters
             columns={columnsPisos}
             data={pisosData}
-            multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
+            multiHeader={multiHeaderPisos}
           />
         ) : (
           <p>No hay datos</p>
@@ -985,9 +1177,7 @@ const WorkFlowpar2editPage: React.FC = () => {
 
     return (
       <div className="mt-4">
-        <ul
-          className="nav"
-        >
+        <ul className="nav">
           {tabs.map((item) => (
             <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
               <button
@@ -998,8 +1188,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   color: tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
-                  borderBottom:
-                    tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
+                  borderBottom: tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -1010,20 +1199,21 @@ const WorkFlowpar2editPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div style={{ height: "400px", overflowY: "auto", position: "relative", marginTop: "1rem" }}>
+        <div
+          style={{
+            height: "400px",
+            overflowY: "auto",
+            position: "relative",
+            marginTop: "1rem",
+          }}
+        >
           {tabStep4 === "muros" && renderMurosParameters()}
           {tabStep4 === "techumbre" && renderTechumbreParameters()}
           {tabStep4 === "pisos" && renderPisosParameters()}
           {tabStep4 === "ventanas" && renderVentanasParameters()}
           {tabStep4 === "puertas" && renderPuertasParameters()}
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            marginTop: "10px",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
           <CustomButton
             variant="save"
             onClick={() => setShowTabsInStep4(false)}
@@ -1038,9 +1228,9 @@ const WorkFlowpar2editPage: React.FC = () => {
             }}
           >
             <span className="material-icons" style={{ fontSize: "24px" }}>
-              arrow_back
+              visibility
             </span>
-            &nbsp;Regresar
+            &nbsp;Ver Detalles Generales
           </CustomButton>
         </div>
       </div>
@@ -1050,16 +1240,12 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== RENDER INICIAL DETALLES ======================
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
-
-    // Definimos columnas y data para la tabla de detalles
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
       { headerName: "Nombre Detalle", field: "name_detail" },
       { headerName: "Material", field: "material" },
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
     ];
-
-    // Filtramos datos según searchQuery
     const filteredData = fetchedDetails.filter((det) => {
       const searchLower = searchQuery.toLowerCase();
       return (
@@ -1069,6 +1255,34 @@ const WorkFlowpar2editPage: React.FC = () => {
         det.layer_thickness.toString().includes(searchLower)
       );
     });
+
+    // Se mapea la data para aplicar estilo azul a los detalles con created_status "default"
+    const detailsData = filteredData.map((det) => ({
+      scantilon_location:
+        det.created_status === "default" ? (
+          <span style={{ color: "blue" }}>{det.scantilon_location}</span>
+        ) : (
+          det.scantilon_location
+        ),
+      name_detail:
+        det.created_status === "default" ? (
+          <span style={{ color: "blue" }}>{det.name_detail}</span>
+        ) : (
+          det.name_detail
+        ),
+      material:
+        det.created_status === "default" ? (
+          <span style={{ color: "blue" }}>{det.material}</span>
+        ) : (
+          det.material
+        ),
+      layer_thickness:
+        det.created_status === "default" ? (
+          <span style={{ color: "blue" }}>{det.layer_thickness}</span>
+        ) : (
+          det.layer_thickness
+        ),
+    }));
 
     return (
       <>
@@ -1085,32 +1299,27 @@ const WorkFlowpar2editPage: React.FC = () => {
           newDetailForm={newDetailForm}
           setNewDetailForm={setNewDetailForm}
           materials={materials}
-          handleCreateNewDetail={handleCreateNewDetail} />
+          handleCreateNewDetail={handleCreateNewDetail}
+        />
         <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
-          <TablesParameters columns={columnsDetails} data={filteredData} />
+          <TablesParameters columns={columnsDetails} data={detailsData} />
         </div>
-
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
+            alignItems: "flex-start",
             gap: "10px",
             marginTop: "30px",
             marginBottom: "10px",
           }}
         >
-          <div
-          >
-            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+          <div>
+            <div style={{ marginTop: "30px", marginBottom: "10px", width: "100%" }}>
               <CustomButton
                 id="mostrar-datos-btn"
                 variant="save"
-                onClick={() => {
-                  setTimeout(() => {
-                    saveDetails();
-                  }, 600);
-                }}
+                onClick={saveDetails}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -1120,7 +1329,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   minWidth: "6rem",
                 }}
               >
-                Realizar Cálculos
+                <span className="material-icons">arrow_back</span> Volver
               </CustomButton>
             </div>
           </div>
@@ -1143,7 +1352,6 @@ const WorkFlowpar2editPage: React.FC = () => {
         <div></div>
       </div>
       <div style={{ height: "390px", overflowY: "scroll" }}>
-        {/* Si más adelante deseas convertir esta tabla a TablesParameters, hazlo igual que las demás */}
         <table className="table table-bordered">
           <thead>
             <tr>
@@ -1165,7 +1373,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 occupationProfile: "Residencial",
                 co2Sensor: "Sí",
                 avgHeight: "2.4m",
-                area: "25.5m²"
+                area: "25.5m²",
               },
               {
                 id: 2,
@@ -1174,7 +1382,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 occupationProfile: "Residencial",
                 co2Sensor: "No",
                 avgHeight: "2.4m",
-                area: "16.8m²"
+                area: "16.8m²",
               },
               {
                 id: 3,
@@ -1183,9 +1391,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                 occupationProfile: "Residencial",
                 co2Sensor: "Sí",
                 avgHeight: "2.4m",
-                area: "12.3m²"
-              }
-            ].map(room => (
+                area: "12.3m²",
+              },
+            ].map((room) => (
               <tr key={room.id}>
                 <td>{room.id}</td>
                 <td>{room.status}</td>
@@ -1242,64 +1450,45 @@ const WorkFlowpar2editPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
-
         <Card>
-        <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem"}}>
-          {renderMainHeader()}
-        </div>
-          <div className="d-flex align-items-center gap-4">
-            <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-              Proyecto:
-            </span>
-            <CustomButton
-              variant="save"
-              className="no-hover"
-              style={{ padding: "0.8rem 3rem" }}
-            >
-              {`Edificación Nº ${projectId ?? "xxxxx"}`}
-            </CustomButton>
-            <div className="ms-auto" style={{display: "flex"}}>
-            <Breadcrumb
-            items={[
-              {
-                title: "Proyecto Nuevo",
-                href: "/",
-                active: true,
-              },
-            ]}
-          />
-          </div>
+          <div>
+            {renderMainHeader()}
+            <div className="d-flex align-items-center" style={{ gap: "10px" }}>
+              <ProjectInfoHeader projectName={projectName} region={region} />
+              <Breadcrumb
+                items={[
+                  {
+                    title: "Editar",
+                    href: "/",
+                    active: true,
+                  },
+                ]}
+              />
+            </div>
           </div>
         </Card>
-        <Card
-          style={{
-            marginTop: "clamp(0.5rem, 2vw, 1rem)",
-            marginLeft: "0.1rem",
-            width: "100%",
-          }}
-        >
+        <Card>
           <div className="row">
-            <div className="col-lg-3 col-12 order-lg-first order-first">
-              <div className="mb-3 mb-lg-0">
-                <AdminSidebar
-                  activeStep={step}
-                  onStepChange={handleSidebarStepChange}
-                  steps={sidebarSteps}
-                />
-              </div>
+            <div className="col-12 col-lg-3">
+              <AdminSidebar
+                activeStep={step}
+                onStepChange={handleSidebarStepChange}
+                steps={sidebarSteps}
+              />
             </div>
-            <div className="col-lg-9 col-12 order-last">
-              {step === 4 && (
-                <>
-                  {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
-                </>
-              )}
-              {step === 7 && renderRecinto()}
+            <div className="col-12 col-lg-9">
+              <div className="w-100">
+                {step === 4 && (
+                  <>
+                    {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+                  </>
+                )}
+                {step === 7 && renderRecinto()}
+              </div>
             </div>
           </div>
         </Card>
       </div>
-
     </>
   );
 };

@@ -9,6 +9,7 @@ import Head from "next/head";
 import { ReactElement } from "react";
 import { NextPage } from "next";
 import CreateButton from "../src/components/CreateButton";
+import { notify } from "../src/utils/notify";
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactElement;
@@ -42,16 +43,18 @@ const Register: NextPageWithLayout = () => {
     birthdate: "",
     ubigeo: "",
   });
-
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    // Limpiar error de correo si se está modificando el email
+    if (name === "email") setEmailError(null);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -61,6 +64,9 @@ const Register: NextPageWithLayout = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormSubmitted(true);
+    setEmailError(null);
+
+    // Validaciones de campos obligatorios
     if (
       !formData.name ||
       !formData.lastname ||
@@ -76,9 +82,11 @@ const Register: NextPageWithLayout = () => {
     ) {
       return;
     }
+    // Validación de longitud de contraseña
     if (formData.password.length < 8 || formData.password.length > 20) {
       return;
     }
+    // Validación de confirmación de contraseña
     if (formData.password !== formData.confirm_password) {
       return;
     }
@@ -92,13 +100,21 @@ const Register: NextPageWithLayout = () => {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || "Error al registrar usuario.");
+        // Si el error viene por el correo ya registrado, se muestra debajo del campo
+        if (data.detail && data.detail.includes("correo electrónico")) {
+          setEmailError(data.detail);
+        } else {
+          throw new Error(data.message || "Error al registrar usuario.");
+        }
+        return;
       }
       setSuccessMessage("Registro exitoso. Redirigiendo al login...");
       setTimeout(() => {
         router.push("/login");
       }, 500);
-    } catch (err) {
+    } catch (err: any) {
+      // Para otros errores se notifica al usuario
+      notify(err.message);
       console.error(err);
     } finally {
       setLoading(false);
@@ -230,9 +246,7 @@ const Register: NextPageWithLayout = () => {
                       alt="Profile"
                       width={60}
                       height={60}
-                      style={{
-                        objectFit: "cover",
-                      }}
+                      style={{ objectFit: "cover" }}
                     />
                   </div>
 
@@ -262,6 +276,12 @@ const Register: NextPageWithLayout = () => {
                     onChange={handleChange}
                     style={inputStyle}
                   />
+                  {/* Mostrar error del email si existe */}
+                  {emailError && (
+                    <small style={{ color: "red", fontSize: "0.75rem" }}>
+                      {emailError}
+                    </small>
+                  )}
                 </div>
 
                 <div style={fieldContainerStyle}>
@@ -504,10 +524,10 @@ const Register: NextPageWithLayout = () => {
                   </div>
                 </div>
 
-                {/* Reemplazamos el bloque de botones por el componente CreateButton */}
+                {/* Botones utfdsfdsilizando CreateButton */}
                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.7rem" }}>
                   <CreateButton
-                    backRoute="/login" // Redirige al login (puedes ajustar la ruta según lo necesites)
+                    backRoute="/login"
                     submitType={true}
                     saveText={loading ? "Registrando..." : "Crear y guardar datos"}
                     backTooltip="Volver"
@@ -526,8 +546,7 @@ const Register: NextPageWithLayout = () => {
           display: flex;
           justify-content: center;
           align-items: center;
-          background: url("/assets/images/background.jpg") no-repeat center
-            center/cover;
+          background: url("/assets/images/background.jpg") no-repeat center center/cover;
           position: relative;
           input::placeholder {
             color: rgba(0, 0, 0, 0.3);

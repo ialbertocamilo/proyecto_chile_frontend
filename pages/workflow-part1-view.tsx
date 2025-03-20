@@ -12,6 +12,7 @@ import useAuth from "../src/hooks/useAuth";
 import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Nuevo componente de sidebar
 import Breadcrumb from "../src/components/common/Breadcrumb";
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader"; // Importamos el nuevo componente
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -64,12 +65,27 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [locationSearch, setLocationSearch] = useState("");
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
+  // Estado para almacenar datos del header del proyecto
+  const [projectHeaderData, setProjectHeaderData] = useState({
+    projectName: "",
+    region: "",
+  });
+
   useEffect(() => {
     const pColor =
       getComputedStyle(document.documentElement)
         .getPropertyValue("--primary-color")
         .trim() || "#3ca7b7";
     setPrimaryColor(pColor);
+  }, []);
+
+  // Obtener datos del localStorage para el header del proyecto
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const name = localStorage.getItem("project_name_view") || "";
+      const region = localStorage.getItem("project_department_view") || "";
+      setProjectHeaderData({ projectName: name, region: region });
+    }
   }, []);
 
   // Actualiza el step en modo vista si se pasa como query
@@ -169,17 +185,23 @@ const ProjectWorkflowPart1: React.FC = () => {
   const renderMainHeader = () => {
     return (
       <Card className="header-card">
-        <div className="d-flex align-items-center w-100">
+        <div className="d-flex flex-column w-100">
           <Title text="Vista de Proyecto" />
-          <Breadcrumb
-            items={[
-              {
-                title: "Vista de Proyecto",
-                href: "/",
-                active: true,
-              },
-            ]}
-          />
+          <div className="d-flex justify-content-between align-items-center w-100">
+            <ProjectInfoHeader
+              projectName={projectHeaderData.projectName}
+              region={projectHeaderData.region}
+            />
+            <Breadcrumb
+              items={[
+                {
+                  title: "Vista de Proyecto",
+                  href: "/",
+                  active: true,
+                },
+              ]}
+            />
+          </div>
         </div>
       </Card>
     );
@@ -377,7 +399,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         <div className="col-12 col-md-8 mb-3">
                           <div style={{ pointerEvents: "none" }}>
                             <NoSSRInteractiveMap
-                              onLocationSelect={() => { }}
+                              onLocationSelect={() => {}}
                               initialLat={formData.latitude}
                               initialLng={formData.longitude}
                             />

@@ -20,9 +20,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
 >
   <li className="breadcrumb-item">
     <Link href="/" style={{ textDecoration: "none", color: "#2ab0c5" }}>
-      <svg className="stroke-icon">
-        <use href="../assets/svg/icon-sprite.svg#stroke-home"></use>
-      </svg>
+    <span className="material-icons" style={{ color: "#2ab0c5" }}>home</span>
     </Link>
   </li>
   {items.map((item, index) => (

@@ -8,7 +8,6 @@ import type { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import { useRouter } from "next/router";
 import Script from 'next/script';
-// import 'public/assets/css/responsive.css';
 import 'public/assets/css/color-1.css';
 import 'public/assets/css/font-awesome.css';
 import 'public/assets/css/style.css';
@@ -36,18 +35,17 @@ type AppPropsWithLayout = AppProps & {
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const router = useRouter();
-  const hideNavRoutes = ["/login","/twofactorauth"];
+  const hideNavRoutes = ["/login", "/twofactorauth"];
   const showNav = !hideNavRoutes.includes(router.pathname);
   const [isNavbarOpen, setIsNavbarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect if we're on mobile
+  // Detectamos si es dispositivo móvil
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1024);
     };
     
-    // Set initial value
     if (typeof window !== 'undefined') {
       handleResize();
       window.addEventListener('resize', handleResize);
@@ -60,19 +58,21 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     };
   }, []);
 
-  // Handle navbar toggle
+  // Función para manejar el toggle de la navbar (se recibe desde el componente Navbar)
   const handleNavbarToggle = (isOpen: boolean) => {
     setIsNavbarOpen(isOpen);
   };
 
-  // Calculate sidebar width based on device type and state
-  const navbarWidth = isMobile ? "40%" : "6.5em";
-  const contentMarginLeft = isNavbarOpen ? navbarWidth : "0";
+  // Definimos anchos para el estado colapsado y expandido
+  const collapsedWidth = isMobile ? "40%" : "6.5em";
+  const expandedWidth = isMobile ? "60%" : "200px";
+  // Aunque la navbar se expanda, siempre reservamos el mismo espacio en el contenido:
+  const contentMarginLeft = collapsedWidth;
 
   const getLayout = Component.getLayout ?? ((page) => {
     return (
       <>
-        <Script src="public/assets/js/icons/feather-icon/feather.min.js" />
+        <Script src="/assets/js/icons/feather-icon/feather.min.js" />
         <div className="page-wrapper" id="pageWrapper">
           <div 
             className="page-header" 
@@ -82,7 +82,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             }}
           >
             <div className="header-wrapper row m-0">
-              {showNav && <TopBar sidebarWidth={navbarWidth} />}
+              {showNav && <TopBar sidebarWidth={isNavbarOpen ? expandedWidth : collapsedWidth} />}
             </div>
           </div>
           <div className="page-body-wrapper horizontal-menu">
@@ -95,13 +95,13 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               )}
             </div>
             <div 
-              className="page-body" 
-              style={{ 
-                marginLeft: showNav && isNavbarOpen ? contentMarginLeft : "0",
-                transition: "margin-left 0.3s ease",
-                width: showNav && isNavbarOpen ? `calc(100% - ${contentMarginLeft})` : "100%"
-              }}
-            >
+                className="page-body" 
+                style={{ 
+                  marginLeft: showNav ? `calc(${contentMarginLeft} + 25px)` : "0",
+                  transition: "margin-left 0.3s ease",
+                  width: showNav ? `calc(100% - (${contentMarginLeft} + 25px))` : "100%"
+                }}
+              >
               {!hideNavRoutes.includes(router.pathname) ? (
                 <div style={{ paddingRight: '1.2em' }}>
                   {page}

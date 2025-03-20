@@ -10,14 +10,12 @@ import { useRouter } from "next/router";
 import GooIcons from "../public/GoogleIcons";
 import { notify } from "@/utils/notify";
 import Title from "../src/components/Title";
-// Se importa el componente AdminSidebar en vez de SidebarItemComponent
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-// Importamos el componente SearchParameters
 import SearchParameters from "../src/components/inputs/SearchParameters";
-
-// Importamos el componente genérico de tablas
 import TablesParameters from "../src/components/tables/TablesParameters";
 import Breadcrumb from "@/components/common/Breadcrumb";
+// Se importa el componente ProjectInfoHeader
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 
 interface Detail {
   id_detail: number;
@@ -100,7 +98,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [showTabsInStep4, setShowTabsInStep4] = useState(false);
+  // La vista por defecto mostrará los tabs (datos constructivos)
+  const [showTabsInStep4, setShowTabsInStep4] = useState(true);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
   const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
@@ -110,6 +109,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
   const [puertasTabList, setPuertasTabList] = useState<Puerta[]>([]);
 
   const primaryColor = getCssVarValue("--primary-color", "#3ca7b7");
+
+  // ==================== ESTADOS PARA CABECERA ====================
+  const [projectName, setProjectName] = useState("");
+  const [projectDepartment, setProjectDepartment] = useState("");
 
   // Ejemplo de recintos (hardcodeado)
   const recintos = [
@@ -145,6 +148,14 @@ const WorkFlowpar2viewPage: React.FC = () => {
     }
   }, [router.isReady, router.query.id, router.query.step]);
 
+  // ==================== OBTENER DATOS DEL LOCAL STORAGE PARA CABECERA ====================
+  useEffect(() => {
+    const name = localStorage.getItem("project_name_view") || "";
+    const department = localStorage.getItem("project_department_view") || "";
+    setProjectName(name);
+    setProjectDepartment(department);
+  }, []);
+
   useEffect(() => {
     if (hasLoaded && projectId === null) {
       Swal.fire(
@@ -158,22 +169,39 @@ const WorkFlowpar2viewPage: React.FC = () => {
   }, [hasLoaded, projectId, router]);
 
   // ==================== LLAMADAS A ENDPOINTS ====================
-  const fetchFetchedDetails = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        Swal.fire("Token no encontrado", "Inicia sesión.");
-        return;
-      }
-      const url = `${constantUrlApiEndpoint}/details/`;
-      const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(url, { headers });
-      setFetchedDetails(response.data || []);
-    } catch (error: unknown) {
-      console.error("Error al obtener detalles:", error);
-      Swal.fire("Error", "Error al obtener detalles. Ver consola.");
+  // Modify the fetchFetchedDetails function to handle null projectId
+const fetchFetchedDetails = async () => {
+  try {
+    // Check if projectId exists before making the request
+    if (!projectId) {
+      console.log("Project ID is not available ");
+      return;
     }
-  };
+    
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire("Token no encontrado", "Inicia sesión.");
+      return;
+    }
+    
+    const url = `${constantUrlApiEndpoint}/user/details/?project_id=${projectId}`;
+    const headers = { Authorization: `Bearer ${token}` };
+    
+    console.log("Fetching details with project ID:", projectId);
+    const response = await axios.get(url, { headers });
+    setFetchedDetails(response.data || []);
+  } catch (error: unknown) {
+    console.error("Error al obtener detalles:", error);
+    
+    // More detailed error logging
+    if (axios.isAxiosError(error)) {
+      console.error("Status:", error.response?.status);
+      console.error("Response data:", error.response?.data);
+    }
+    
+    Swal.fire("Error", "Error al obtener detalles. Ver consola.");
+  }
+};
 
   const fetchMurosDetails = useCallback(async () => {
     if (!projectId) return;
@@ -262,10 +290,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   // ==================== EFECTOS SEGÚN STEP ====================
   useEffect(() => {
-    if (step === 4) {
+    if (step === 4 && projectId !== null) {
       fetchFetchedDetails();
     }
-  }, [step]);
+  }, [step, projectId]); 
 
   useEffect(() => {
     if (showTabsInStep4) {
@@ -298,14 +326,12 @@ const WorkFlowpar2viewPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // ==================== RENDER CABECERA ====================
+  // ==================== RENDER CABECERA aaaa ====================
   const renderMainHeader = () =>
     step >= 4 && <Title text="Vista de Desarrollo de proyecto" />;
 
   // ==================== RENDER DE TABLAS (MUROS, TECHUMBRE, ETC.) ====================
-  // 1) Muros
   const renderMurosTable = () => {
-    // Definimos columnas
     const columnsMuros = [
       { headerName: "Nombre Abreviado", field: "name_detail" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
@@ -313,7 +339,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { headerName: "Color Interior", field: "colorInterior" },
     ];
 
-    // Transformamos data en objetos con dichas propiedades
     const murosData = murosTabList.map((item) => ({
       name_detail: item.name_detail,
       valorU: item.value_u?.toFixed(3) ?? "--",
@@ -328,7 +353,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // 2) Techumbre
   const renderTechumbreTable = () => {
     const columnsTechumbre = [
       { headerName: "Nombre Abreviado", field: "name_detail" },
@@ -351,78 +375,75 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // 3) Pisos (se aplanan las columnas con "I [W/mK]" / "e Aisl [cm]" para cada sub-objeto)
   const renderPisosTable = () => {
     const columnsPisos = [
-          { headerName: "Nombre", field: "nombre" },
-          { headerName: "U [W/m²K]", field: "uValue" },
-          { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
-          { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
-          { headerName: "I [W/mK] (vert)", field: "vertLambda" },
-          { headerName: "e Aisl [cm]", field: "vertEAisl" },
-          { headerName: "D [cm]", field: "vertD" },
-          { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
-          { headerName: "e Aisl [cm]", field: "horizEAisl" },
-          { headerName: "D [cm]", field: "horizD" },
-        ];
-    
-        const multiHeaderPisos = {
-          rows: [
-            [
-              { label: "Nombre", rowSpan: 2 },
-              { label: "U [W/m²K]", rowSpan: 2 },
-              { label: "Aislamiento bajo piso", colSpan: 2 },
-              { label: "Ref Aisl Vert.", colSpan: 3 },
-              { label: "Ref Aisl Horiz.", colSpan: 3 },
-            ],
-            [
-              { label: "I [W/mK]" },
-              { label: "e Aisl [cm]" },
-              { label: "I [W/mK]" },
-              { label: "e Aisl [cm]" },
-              { label: "D [cm]" },
-              { label: "I [W/mK]" },
-              { label: "e Aisl [cm]" },
-              { label: "D [cm]" },
-            ],
-          ],
-        };
-    
-        const pisosData = pisosTabList.map((item) => {
-          const bajoPiso = item.info?.aislacion_bajo_piso || {};
-          const vert = item.info?.ref_aisl_vertical || {};
-          const horiz = item.info?.ref_aisl_horizontal || {};
-          return {
-            nombre: item.name_detail,
-            uValue: item.value_u?.toFixed(3) ?? "--",
-            bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-            bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
-            vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
-            vertEAisl: vert.e_aisl ?? "N/A",
-            vertD: vert.d ?? "N/A",
-            horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
-            horizEAisl: horiz.e_aisl ?? "N/A",
-            horizD: horiz.d ?? "N/A",
-          };
-        });
-    
-        return (
-          <div style={{ minWidth: "600px" }}>
-            {pisosTabList.length > 0 ? (
-              <TablesParameters
-                columns={columnsPisos}
-                data={pisosData}
-                multiHeader={multiHeaderPisos} // <--- Aquí la magia del multiheader
-              />
-            ) : (
-              <p>No hay datos</p>
-            )}
-          </div>
-        );
-      };
-    
+      { headerName: "Nombre", field: "nombre" },
+      { headerName: "U [W/m²K]", field: "uValue" },
+      { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
+      { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
+      { headerName: "I [W/mK] (vert)", field: "vertLambda" },
+      { headerName: "e Aisl [cm]", field: "vertEAisl" },
+      { headerName: "D [cm]", field: "vertD" },
+      { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
+      { headerName: "e Aisl [cm]", field: "horizEAisl" },
+      { headerName: "D [cm]", field: "horizD" },
+    ];
 
-  // 4) Ventanas
+    const multiHeaderPisos = {
+      rows: [
+        [
+          { label: "Nombre", rowSpan: 2 },
+          { label: "U [W/m²K]", rowSpan: 2 },
+          { label: "Aislamiento bajo piso", colSpan: 2 },
+          { label: "Ref Aisl Vert.", colSpan: 3 },
+          { label: "Ref Aisl Horiz.", colSpan: 3 },
+        ],
+        [
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+        ],
+      ],
+    };
+
+    const pisosData = pisosTabList.map((item) => {
+      const bajoPiso = item.info?.aislacion_bajo_piso || {};
+      const vert = item.info?.ref_aisl_vertical || {};
+      const horiz = item.info?.ref_aisl_horizontal || {};
+      return {
+        nombre: item.name_detail,
+        uValue: item.value_u?.toFixed(3) ?? "--",
+        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
+        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
+        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
+        vertEAisl: vert.e_aisl ?? "N/A",
+        vertD: vert.d ?? "N/A",
+        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
+        horizEAisl: horiz.e_aisl ?? "N/A",
+        horizD: horiz.d ?? "N/A",
+      };
+    });
+
+    return (
+      <div style={{ minWidth: "600px" }}>
+        {pisosTabList.length > 0 ? (
+          <TablesParameters
+            columns={columnsPisos}
+            data={pisosData}
+            multiHeader={multiHeaderPisos}
+          />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
   const renderVentanasTable = () => {
     const columnsVentanas = [
       { headerName: "Nombre Elemento", field: "name_element" },
@@ -453,7 +474,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // 5) Puertas
   const renderPuertasTable = () => {
     const columnsPuertas = [
       { headerName: "Nombre Elemento", field: "name_element" },
@@ -482,7 +502,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // ==================== RENDER PESTAÑAS (STEP 4) ====================
+  // ==================== RENDER PESTAÑAS (DATOS CONSTRUCTIVOS) ====================
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
     const tabs = [
@@ -530,74 +550,52 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
         <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
           {tabStep4 === "muros" && (
-            <div style={{ overflowX: "auto" }}>
-              {renderMurosTable()}
-            </div>
+            <div style={{ overflowX: "auto" }}>{renderMurosTable()}</div>
           )}
           {tabStep4 === "techumbre" && (
-            <div style={{ overflowX: "auto" }}>
-              {renderTechumbreTable()}
-            </div>
+            <div style={{ overflowX: "auto" }}>{renderTechumbreTable()}</div>
           )}
           {tabStep4 === "pisos" && (
-            <div style={{ overflowX: "auto" }}>
-              {renderPisosTable()}
-            </div>
+            <div style={{ overflowX: "auto" }}>{renderPisosTable()}</div>
           )}
           {tabStep4 === "ventanas" && (
-            <div style={{ overflowX: "auto" }}>
-              {renderVentanasTable()}
-            </div>
+            <div style={{ overflowX: "auto" }}>{renderVentanasTable()}</div>
           )}
           {tabStep4 === "puertas" && (
-            <div style={{ overflowX: "auto" }}>
-              {renderPuertasTable()}
-            </div>
+            <div style={{ overflowX: "auto" }}>{renderPuertasTable()}</div>
           )}
         </div>
-        <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "10px",
+          }}
+        >
           <CustomButton
             variant="save"
             onClick={() => setShowTabsInStep4(false)}
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              gap: "0.5rem",
               padding: "12px 67px",
               borderRadius: "8px",
               height: "40px",
-              marginTop: "30px",
+              marginTop: "2rem"
             }}
           >
-            <span className="material-icons">arrow_back</span>
+            <span className="material-icons">visibility</span>
+            Ver detalles generales
           </CustomButton>
         </div>
       </div>
     );
   };
 
-  // ==================== RENDER DETALLES INICIALES ====================
+  // ==================== RENDER DETALLES GENERALES ====================
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
-
-    // Definimos columnas
-    const columnsDetails = [
-      { headerName: "Ubicación Detalle", field: "scantilon_location" },
-      { headerName: "Nombre Detalle", field: "name_detail" },
-      { headerName: "Material", field: "material" },
-      { headerName: "Espesor capa (cm)", field: "layer_thickness" },
-    ];
-
-    // Filtramos según searchQuery
-    const filteredDetails = fetchedDetails.filter((det) => {
-      const searchLower = searchQuery.toLowerCase();
-      return (
-        det.scantilon_location.toLowerCase().includes(searchLower) ||
-        det.name_detail.toLowerCase().includes(searchLower) ||
-        det.material.toLowerCase().includes(searchLower) ||
-        det.layer_thickness.toString().includes(searchLower)
-      );
-    });
 
     return (
       <>
@@ -607,43 +605,57 @@ const WorkFlowpar2viewPage: React.FC = () => {
           placeholder="Buscar..."
           onNew={() => {}}
           style={{ marginBottom: "1rem" }}
-          showNewButton={false} // Solo vista, no "Nuevo"
+          showNewButton={false}
         />
         <div className="mb-3">
           <div style={{ height: "400px", overflowY: "scroll" }}>
-            {/* Reemplazamos la tabla manual por TablesParameters */}
-            <TablesParameters columns={columnsDetails} data={filteredDetails} />
+            <TablesParameters
+              columns={[
+                { headerName: "Ubicación Detalle", field: "scantilon_location" },
+                { headerName: "Nombre Detalle", field: "name_detail" },
+                { headerName: "Material", field: "material" },
+                { headerName: "Espesor capa (cm)", field: "layer_thickness" },
+              ]}
+              data={fetchedDetails.filter((det) => {
+                const searchLower = searchQuery.toLowerCase();
+                return (
+                  det.scantilon_location.toLowerCase().includes(searchLower) ||
+                  det.name_detail.toLowerCase().includes(searchLower) ||
+                  det.material.toLowerCase().includes(searchLower) ||
+                  det.layer_thickness.toString().includes(searchLower)
+                );
+              })}
+            />
           </div>
         </div>
         <div
           style={{
             display: "flex",
-            justifyContent: "center",
-            marginTop: "30px",
-            marginBottom: "10px",
+            justifyContent: "flex-start",
+            marginTop: "10px",
           }}
         >
           <CustomButton
-            id="mostrar-datos-btn"
             variant="save"
             onClick={() => setShowTabsInStep4(true)}
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "0.5rem",
-              padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
-              height: "min(3rem, 8vh)",
-              minWidth: "6rem",
+              gap: "0.3rem",
+              padding: "0.5rem 1rem",
+              borderRadius: "8px",
+              marginTop: "2rem"
             }}
           >
-            <span className="material-icons">visibility</span> Mostrar datos
+            <span className="material-icons">arrow_back</span>
+            Volver
           </CustomButton>
         </div>
       </>
     );
   };
 
-  // ==================== RENDER RECINTO ====================
+  // ==================== RENDER RECINTOfdsfs ====================
   const renderRecinto = () => {
     return (
       <>
@@ -657,7 +669,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
           <div></div>
         </div>
         <div style={{ height: "390px", overflowY: "scroll" }}>
-          {/* Aquí podrías usar TablesParameters también si lo deseas */}
           <table className="table table-bordered ">
             <thead>
               <tr>
@@ -721,70 +732,53 @@ const WorkFlowpar2viewPage: React.FC = () => {
     <>
       <GooIcons />
       <div>
-      <Card>
-  <h3 style={{ paddingBottom: "2rem" }}>{renderMainHeader()}</h3>
-  
-  <div style={{ width: "100%" }}>
-    {/* Bloque izquierdo: texto + botón */}
-    <div className="d-flex align-items-center gap-3">
-      <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
-        Proyecto:
-      </span>
-      <CustomButton
-        variant="save"
-        className="no-hover"
-        style={{ padding: "0.8rem 3rem" }}
-      >
-        {`Edificación Nº ${projectId ?? "xxxxx"}`}
-      </CustomButton>
-    
-
-    {/* Bloque derecho: breadcrumb alineado a la derecha con ancho modificado */}
-    <div className="ms-auto" style={{display: "flex"}}>
-      <Breadcrumb
-        items={[
-          {
-            title: "Vista De Proyecto",
-            href: "/",
-            active: true,
-          },
-        ]}
-      />
-    </div>
-  </div>
-  </div>
-</Card>
-
-
-
-
-
-
+        <Card>
+          <h3>{renderMainHeader()}</h3>
+          {/* Agrupamos ProjectInfoHeader y Breadcrumb en un contenedor flex */}
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <ProjectInfoHeader
+              projectName={projectName}
+              region={projectDepartment}
+            />
+            <Breadcrumb
+              items={[
+                {
+                  title: "Vista De Proyecto",
+                  href: "/",
+                  active: true,
+                },
+              ]}
+            />
+          </div>
+        </Card>
 
         <Card>
-        <div className="row">
-  {/* Columna para Sidebar */}
-  <div className="col-12 col-md-3">
-    <AdminSidebar
-      activeStep={step}
-      steps={sidebarSteps}
-      onClickAction={(route: string) => router.push(route)}
-      onStepChange={() => {}}
-    />
-  </div>
+          <div className="row">
+            <div className="col-12 col-md-3">
+              <AdminSidebar
+                activeStep={step}
+                steps={sidebarSteps}
+                onClickAction={(route: string) => router.push(route)}
+                onStepChange={() => {}}
+              />
+            </div>
 
-  {/* Columna para contenido principafdsl */}
-  <div className="col-12 col-md-9 p-4">
-    {/* Contenido principal */}
-    {step === 4 && (
-      <>
-        {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
-      </>
-    )}
-    {step === 7 && renderRecinto()}
-  </div>
-</div>
-
+            <div className="col-12 col-md-9 p-4">
+              {step === 4 && (
+                <>
+                  {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
+                </>
+              )}
+              {step === 7 && renderRecinto()}
+            </div>
+          </div>
         </Card>
       </div>
     </>

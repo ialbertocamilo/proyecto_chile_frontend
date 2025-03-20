@@ -14,6 +14,7 @@ import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
+import MapAutocompletion from "@/components/maps/MapAutocompletion";
 
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap").then(mod => {
   return { default: React.memo(mod.default) };
@@ -254,7 +255,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       const { project_id } = data;
       localStorage.setItem("project_id", project_id.toString());
       localStorage.setItem("project_department", formData.department);
-
+      localStorage.setItem("project_name", formData.name_project);
       notify("Proyecto creado con éxito.");
 
       setFormData(initialFormData);
@@ -300,7 +301,7 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   const renderMainHeader = () => {
     return <Title text="Proyecto nuevo" />;
-    
+
   };
 
   const [completionList, setCompletionList] = useState<{
@@ -673,41 +674,12 @@ const ProjectWorkflowPart1: React.FC = () => {
                     marginBottom: "20px",
                   }}
                 >
-                  <div className="row">
-                    <div className="col-12 mb-3">
 
-                      <Autocompletion
-                        locationSearch={locationSearch}
-                        setLocationSearch={setLocationSearch}
-                        completionList={completionList}
-                        handleFormInputChange={handleFormInputChange}
-                        setCompletionList={setCompletionList}
-                      />
-                    </div>
-                    <div className="col-12 col-md-7 col-sm-12 mb-3">
-                      <NoSSRInteractiveMap
-                        onLocationSelect={(latlng) => {
-                          handleFormInputChange("latitude", latlng.lat);
-                          handleFormInputChange("longitude", latlng.lng);
-                        }}
-                        initialLat={formData.latitude}
-                        initialLng={formData.longitude}
-                      />
-                    </div>
-                    <div className="col-12 col-md-4 ">
-                      <label
-                        className="form-label"
-                      >
-                        Datos de ubicaciones encontradas
-                      </label>
-                      <textarea
-                        className="form-control mb-2"
-                        rows={5}
-                        value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
-                        readOnly
-                      />
-                    </div>
-                  </div>
+                  <MapAutocompletion
+                    formData={formData}
+                    handleFormInputChange={handleFormInputChange}
+                  />
+
                   <div className="d-flex justify-content-between align-items-center ">
                     <div className="d-flex">
                       <CustomButton

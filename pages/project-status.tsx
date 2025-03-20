@@ -36,6 +36,40 @@ export interface Project {
   [key: string]: unknown;
 }
 
+// Función para obtener el estilo según el estado, usando los colores indicados
+const getStatusStyle = (status: string | undefined) => {
+  const s = status?.toLowerCase();
+  if (s === "finalizado") {
+    return { backgroundColor: "#ffe8e8", color: "#e45f5f" };
+  }
+  if (s === "registrado") {
+    return { backgroundColor: "#e8ffed", color: "#a9dfb4" };
+  }
+  if (s === "en proceso") {
+    return { backgroundColor: "#fff9e8", color: "#edc68c" };
+  }
+  return {};
+};
+
+// Función auxiliar para renderizar el tag de estado con los estilos definidos
+const getStatusTag = (status?: string): React.ReactElement => {
+  const style = getStatusStyle(status);
+  return (
+    <span
+      style={{
+        ...style,
+        padding: "2px 8px",
+        borderRadius: "4px",
+        fontWeight: "bold",
+      }}
+    >
+      {status?.toUpperCase()}
+    </span>
+  );
+};
+
+const toUpperCase = (value?: string): string => (value ? value.toUpperCase() : "");
+
 const ProjectListStatusEditPage = () => {
   useAuth();
   const router = useRouter();
@@ -81,26 +115,55 @@ const ProjectListStatusEditPage = () => {
 
   const handleViewProject = (project_view: Project) => {
     localStorage.setItem("project_id_view", project_view.id.toString());
+    localStorage.setItem("project_name_view", toUpperCase(project_view.name_project) || "N/A");
     localStorage.setItem(
       "project_department_view",
-      project_view.divisions?.department || "N/A"
+      toUpperCase(project_view.divisions?.department) || "N/A"
     );
     router.push(`/workflow-part1-view?id=${project_view.id}`);
   };
 
-  // Definición de columnas para el DataTable
+  // Definición de columnas para el DataTable, con la columna "Estado" en segunda posición
   const columns = [
     { id: "id", label: "ID", minWidth: 50 },
-    { id: "name_project", label: "Nombre del Proyecto", minWidth: 150 },
-    { id: "owner_name", label: "Propietario", minWidth: 100 },
-    { id: "building_type", label: "Tipo de edificación", minWidth: 100 },
-    { id: "main_use_type", label: "Tipo de uso principal", minWidth: 100 },
-    { id: "number_levels", label: "Número de niveles", minWidth: 100 },
-    { id: "number_homes_per_level", label: "N° viviendas/oficinas x nivel", minWidth: 100 },
-    { id: "built_surface", label: "Superficie construida (m²)", minWidth: 100 },
+    {
+      id: "status",
+      label: "ESTADO",
+      minWidth: 100,
+      cell: ({ row }: { row: Project }) => (
+        <div className="text-center">{getStatusTag(row.status)}</div>
+      )
+    },
+    {
+      id: "name_project",
+      label: "NOMBRE DEL PROYECTO",
+      minWidth: 150,
+      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.name_project)}</span>
+    },
+    {
+      id: "owner_name",
+      label: "PROPIETARIO",
+      minWidth: 100,
+      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.owner_name)}</span>
+    },
+    {
+      id: "building_type",
+      label: "TIPO DE EDIFICACIÓN",
+      minWidth: 100,
+      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.building_type)}</span>
+    },
+    {
+      id: "main_use_type",
+      label: "TIPO DE USO PRINCIPAL",
+      minWidth: 100,
+      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.main_use_type)}</span>
+    },
+    { id: "number_levels", label: "NÚMERO DE NIVELES", minWidth: 100 },
+    { id: "number_homes_per_level", label: "N° VIVIENDAS/OFICINAS X NIVEL", minWidth: 100 },
+    { id: "built_surface", label: "SUPERFICIE CONSTRUIDA (M²)", minWidth: 100 },
     {
       id: "actions",
-      label: "Acciones",
+      label: "ACCIONES",
       minWidth: 100,
       cell: ({ row }: { row: Project }) => (
         <div className="text-center">
@@ -123,11 +186,13 @@ const ProjectListStatusEditPage = () => {
   return (
     <div>
       <Card>
-      <div className="d-flex align-items-center w-100">
-        <Title text="Administrar proyectos" />
-          <Breadcrumb items={[
-            { title: 'Administrar proyectos', href: '/project-status', active: true }
-          ]} />
+        <div className="d-flex align-items-center w-100">
+          <Title text="Administrar proyectos" />
+          <Breadcrumb
+            items={[
+              { title: "Administrar proyectos", href: "/project-status", active: true }
+            ]}
+          />
         </div>
       </Card>
       {/* El DataTable se encarga de mostrar la búsqueda, paginación y tabla */}

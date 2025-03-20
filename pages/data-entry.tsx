@@ -14,11 +14,9 @@ import SearchParameters from "../src/components/inputs/SearchParameters";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Breadcrumb from "@/components/common/Breadcrumb";
-
-// === Importamos el componente genérico TablesParameters (SIN multiheader) ===
 import TablesParameters from "@/components/tables/TablesParameters";
+import UseProfileTab from "../src/components/UseProfileTab";
 
-/** Tipos e interfaces necesarias **/
 interface MaterialAtributs {
   name: string;
   conductivity: number;
@@ -49,7 +47,6 @@ export interface ElementBase {
   };
 }
 
-// Función para obtener el valor de una variable CSS con un valor por defecto
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement)
@@ -57,8 +54,6 @@ function getCssVarValue(varName: string, fallback: string) {
     .trim();
   return value || fallback;
 }
-
-// Helper para validar porcentajes
 const validatePercentage = (value: number) => {
   if (isNaN(value)) return 0;
   if (value < 0) return 0;
@@ -66,7 +61,6 @@ const validatePercentage = (value: number) => {
   return value;
 };
 
-// Componente auxiliar para renderizar el label con asterisco si el campo está vacío
 interface LabelWithAsteriskProps {
   label: string;
   value: string;
@@ -134,7 +128,7 @@ const DataEntryPage: React.FC = () => {
     name_element: "",
     u_vidrio: "",
     fs_vidrio: "",
-    clousure_type: "Corredera",
+    clousure_type: "",
     frame_type: "",
     u_marco: "",
     fm: "",
@@ -358,7 +352,7 @@ const DataEntryPage: React.FC = () => {
         name_element: "",
         u_vidrio: "",
         fs_vidrio: "",
-        clousure_type: "Corredera",
+        clousure_type: "",
         frame_type: "",
         u_marco: "",
         fm: "",
@@ -684,91 +678,7 @@ const DataEntryPage: React.FC = () => {
   // === RENDER DE STEP 6: Perfil de uso (tabla manual)
   const renderStep6Profile = () => (
     <div className="px-3">
-      <div className="nav nav-tabs mb-3 flex-nowrap overflow-auto">
-        {[
-          { key: "ventilacion", label: "Ventilación y caudales" },
-          { key: "iluminacion", label: "Iluminación" },
-          { key: "cargas", label: "Cargas internas" },
-          { key: "horario", label: "Horario y Clima" },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            className={`nav-link flex-shrink-0 ${
-              tabTipologiaRecinto === tab.key ? "active" : ""
-            }`}
-            style={{
-              color:
-                tabTipologiaRecinto === tab.key
-                  ? primaryColor
-                  : "var(--secondary-color)",
-              borderBottom:
-                tabTipologiaRecinto === tab.key
-                  ? `3px solid ${primaryColor}`
-                  : "none",
-              whiteSpace: "nowrap",
-            }}
-            onClick={() => setTabTipologiaRecinto(tab.key)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-      <div className="table-responsive">
-        <div className="border rounded overflow-hidden">
-          <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-            <table className="table  table-hover mb-0">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "center" }}></th>
-                  <th style={{ textAlign: "center" }}></th>
-                  <th style={{ textAlign: "center" }}></th>
-                  <th style={{ textAlign: "center" }}>Caudal Min Salubridad</th>
-                  <th style={{ textAlign: "center" }}></th>
-                  <th style={{ textAlign: "center" }}>Caudal Impuesto</th>
-                  <th style={{ textAlign: "center" }}></th>
-                </tr>
-                <tr>
-                  <th style={{ textAlign: "center" }}>Código de Recinto</th>
-                  <th style={{ textAlign: "center" }}>Tipología de Recinto</th>
-                  <th style={{ textAlign: "center" }}>R-pers [L/s]</th>
-                  <th style={{ textAlign: "center" }}>IDA</th>
-                  <th style={{ textAlign: "center" }}>Ocupación</th>
-                  <th style={{ textAlign: "center" }}>Vent Noct [1/h]</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="text-center">ES</td>
-                  <td className="text-center">Espera</td>
-                  <td className="text-center">8.80</td>
-                  <td className="text-center">IDA2 ✔</td>
-                  <td className="text-center">Sedentario ✔</td>
-                  <td className="text-center">-</td>
-                </tr>
-                <tr>
-                  <td className="text-center">AU</td>
-                  <td className="text-center">Auditorio</td>
-                  <td className="text-center">5.28</td>
-                  <td className="text-center">IDA3 ✔</td>
-                  <td className="text-center">Sedentario ✔</td>
-                  <td className="text-center">-</td>
-                </tr>
-                {/* ... Más filas de ejemplo ... */}
-              </tbody>
-            </table>
-            <div className="text-end mt-3">
-              <CustomButton
-                variant="save"
-                onClick={() => {
-                  console.log("Agregar nuevo registro");
-                }}
-              >
-                + Nuevo
-              </CustomButton>
-            </div>
-          </div>
-        </div>
-      </div>
+      <UseProfileTab refreshTrigger={0} />
     </div>
   );
 
@@ -928,7 +838,7 @@ const DataEntryPage: React.FC = () => {
                 name_element: "",
                 u_vidrio: "",
                 fs_vidrio: "",
-                clousure_type: "Corredera",
+                clousure_type: "",
                 frame_type: "",
                 u_marco: "",
                 fm: "",
@@ -1036,6 +946,7 @@ const DataEntryPage: React.FC = () => {
                     }))
                   }
                 >
+                  <option value="">Seleccione</option>
                   <option value="Abatir">Abatir</option>
                   <option value="Corredera">Corredera</option>
                   <option value="Fija">Fija</option>

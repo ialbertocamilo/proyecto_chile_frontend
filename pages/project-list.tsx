@@ -100,6 +100,7 @@ const ProjectListPage = () => {
     console.log("[handleGoToWorkflow] Navegando al workflow para el proyecto:", project_edit.id);
     localStorage.setItem("project_id_edit", String(project_edit.id));
     localStorage.setItem("project_department_edit", project_edit.divisions?.department || "");
+    localStorage.setItem("project_name_edit", project_edit.name_project || "");
     router.push(`/workflow-part1-edit?id=${project_edit.id}`);
   };
 
@@ -247,7 +248,6 @@ const ProjectListPage = () => {
           <div className="col-md-6">
             <WelcomeCard />
           </div>
-          
         </div>
       </div>
 

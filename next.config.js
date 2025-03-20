@@ -1,11 +1,12 @@
-module.exports = {
-    async rewrites() {
-      return [
-        {
-          source: "/api/register",
-          destination: "https://tu-api.com/register",
-        },
-      ];
-    },
-  };
-  //por si acaso
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  webpack: (config) => {
+    config.resolve.fallback = {
+      fs: false,
+      path: false,
+    };
+    return config;
+  },
+};
+
+module.exports = nextConfig;

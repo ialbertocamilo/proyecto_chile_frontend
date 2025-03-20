@@ -144,14 +144,14 @@ const UserManagement = () => {
   return (
     <>
       <Card>
-      <div className="d-flex align-items-center w-100">
+        <div className="d-flex align-items-center w-100">
           <Title text="Listado de usuarios" />
-            <Breadcrumb items={[
-              { title: 'Dashboard', href: '/dashboard', active: false },
-              { title: 'Gestión de usuarios', href: '/user-management' }
-            ]} />
-            </div>
-          </Card>
+          <Breadcrumb items={[
+            { title: 'Dashboard', href: '/dashboard', active: false },
+            { title: 'Gestión de usuarios', href: '/user-management' }
+          ]} />
+        </div>
+      </Card>
       <DataTable
         columns={columns.map((col) => ({
           ...col,

@@ -580,7 +580,7 @@ const AdministrationPage: React.FC = () => {
 
           {/* Columna para Contenido principal */}
           <div className="col-12 col-md-9 p-4">
-            {/* Step 3: Tabla de Materiales */}
+            {/* Step 3: Tabla de Materiales aaa*/}
             {step === 3 && (
               <>
                 <SearchParameters

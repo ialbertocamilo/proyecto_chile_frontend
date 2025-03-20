@@ -47,6 +47,6 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             cd /root/server
-            ./reboot.sh
+            # ./reboot.sh
             docker pull  ${{ vars.DOCKER_HUB_NAME }}
             docker-compose restart

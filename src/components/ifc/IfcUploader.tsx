@@ -63,7 +63,7 @@ const IFCUploader = ({ onFileUpload }: IfcUploaderProps) => {
             const errorMessage = error.response?.data?.message ||
                 error.message ||
                 'Error desconocido';
-            console.error('Error details:', error);
+            console.error('Error details :', error);
             toast.error(`Error al subir el archivo: ${errorMessage}`);
             return; // Return early to prevent showing success message
         }

@@ -3,19 +3,22 @@ import React, { useState, useEffect } from 'react';
 import CancelButton from '@/components/common/CancelButton';
 import CustomButton from '@/components/common/CustomButton';
 
+type Material = {
+  // Define the properties of Material as needed
+  id: string;
+  name: string;
+};
 interface ModalCreateProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
-  children: React.ReactNode;
-  /** Título del modal (opcional) */
-  title?: string;
-  /** Etiqueta para el botón de crear (opcional) */
-  saveLabel?: string;
-  /** Estilos personalizados para el contenedor del modal (opcional) */
-  modalStyle?: React.CSSProperties;
-  /** Estilos personalizados para el overlay (opcional) */
+  children: React.ReactNode;/** Título del modal (opcional) */
+  title?: string;/** Etiqueta para el botón de crear (opcional) */
+  saveLabel?: string;/** Estilos personalizados para el contenedor del modal (opcional) */
+  modalStyle?: React.CSSProperties;/** Estilos personalizados para el overlay (opcional) */
   overlayStyle?: React.CSSProperties;
+  saveButtonText?: string;
+  materials?: Material[];
 }
 
 const ModalCreate: React.FC<ModalCreateProps> = ({
@@ -24,7 +27,7 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
   onSave,
   children,
   title,
-  saveLabel = 'Crear',
+  saveLabel = 'Guardar Cambios',
   modalStyle,
   overlayStyle,
 }) => {

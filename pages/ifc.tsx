@@ -1,3 +1,4 @@
+import TitleBread from "@/components/ui/TitleBread";
 import dynamic from "next/dynamic";
 
 const IFCViewerComponent = dynamic(() => import("@/components/ifc/Viewer"), { ssr: false });
@@ -5,7 +6,7 @@ const IFCViewerComponent = dynamic(() => import("@/components/ifc/Viewer"), { ss
 export default function Home() {
   return (
     <div>
-      <h1>Visor IFC</h1>
+      <TitleBread title="Visor IFC" breadcrumbItems={[{ title: "Visor IFC", href: "/ifc" }]} />
       <IFCViewerComponent />
     </div>
   );

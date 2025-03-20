@@ -1,9 +1,8 @@
 "use client";
-import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-import { Container, Row, Col } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useEffect, useState } from "react";
 import Card from "../common/Card";
+import CustomButton from '../common/CustomButton';
 
 const loadIFCViewer = async () => {
     const { default: IFCViewer } = await import("@bytestone/ifc-component");
@@ -13,6 +12,14 @@ const loadIFCViewer = async () => {
 export default function IFCViewerComponent() {
     const [viewerInstance, setViewerInstance] = useState<any>(null);
 
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file && file.name.endsWith('.ifc')) {
+            // TODO: Handle the IFC file
+            console.log('IFC file selected:', file);
+        }
+    };
+
     useEffect(() => {
         loadIFCViewer().then((IFCViewer) => {
             setViewerInstance(new IFCViewer({ canvasId: "myCanvas" }));
@@ -21,256 +28,154 @@ export default function IFCViewerComponent() {
 
     return (
         <Card>
-
-<div className="viewer-container">
-            <div id="treeViewContainer" ></div>
-            <div id="canvasContainer">
-                <canvas id="myCanvas" />
-            </div>
-            <style jsx>{`
-                .viewer-container {
-                    display: flex;
-                    width: 100%;
-                    height: 100dvh;
-                }
-
-                #treeViewContainer {
-                    width: 350px;
-                    height: 100dvh;
-                    overflow-y: auto;
-                    overflow-x: hidden;
-                    background-color: rgba(255, 255, 255, 0.95);
-                    padding: 10px;
-                    border-right: 1px solid #dee2e6;
-                    flex-shrink: 0;
-                }
-
-                #canvasContainer {
-                    flex: 1;
-                    height: 100dvh;
-                    position: relative;
-                }
-
-                #myCanvas {
-                    width: 100%;
-                    height: 100%;
-                }
-
-                @media (max-width: 768px) {
+            <CustomButton
+                htmlFor="ifc-file-input"
+                style={{ cursor: 'pointer' }}
+            >
+                Upload .ifc
+                <input
+                    id="ifc-file-input"
+                    type="file"
+                    accept=".ifc"
+                    onChange={handleFileUpload}
+                    style={{ display: 'none' }}
+                />
+            </CustomButton>
+            <div className="viewer-container">
+                <div id="treeViewContainer"></div>
+                <div id="canvasContainer">
+                    <canvas id="myCanvas" />
+                </div>
+                <style jsx>{`
                     .viewer-container {
-                        flex-direction: column;
+                        display: flex;
+                        width: 100%;
+                        height: 100dvh;
+                        position: relative;
+                        background: #f8f9fa;
                     }
 
                     #treeViewContainer {
-                        width: 100%;
-                        height: 40dvh;
-                        border-right: none;
-                        border-bottom: 1px solid #dee2e6;
+                        width: 300px;
+                        height: 100%;
+                        overflow-y: auto;
+                        background-color: #ffffff;
+                        padding: 1rem;
+                        border-right: 1px solid #e9ecef;
+                        box-shadow: 2px 0 5px rgba(0,0,0,0.05);
                     }
 
                     #canvasContainer {
-                        height: 60dvh;
+                        flex: 1;
+                        height: 100%;
+                        position: relative;
+                        background: #fff;
                     }
-                }
 
-                body {
-                    margin: 0;
-                    padding: 0;
-                    overflow: hidden;
-                }
+                    #myCanvas {
+                        width: 100%;
+                        height: 100%;
+                        touch-action: none;
+                    }
 
-                .container {
-                    display: table;
-                    width: 100vw;
-                    height: 100vh;
-                    table-layout: fixed;
-                }
+                    /* Tree View Styles */
+                    #treeViewContainer ul {
+                        list-style: none;
+                        padding-left: 1.25rem;
+                        margin: 0.25rem 0;
+                    }
 
-                #treeViewContainer {
-                    display: table-cell;
-                    width: 350px;
-                    height: 100vh;
-                    overflow-y: scroll;
-                    overflow-x: hidden;
-                    background-color: rgba(255, 255, 255, 0.2);
-                    color: black;
-                    padding-left: 10px;
-                    font-family: 'Roboto', sans-serif;
-                    font-size: 15px;
-                    user-select: none;
-                    -ms-user-select: none;
-                    -moz-user-select: none;
-                    -webkit-user-select: none;
-                    vertical-align: top;
-                }
+                    #treeViewContainer ul li {
+                        padding: 0.35rem 0;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    }
 
-                #canvasContainer {
-                    display: table-cell;
-                    height: 100vh;
-                    vertical-align: top;
-                }
+                    #treeViewContainer ul li a {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 20px;
+                        height: 20px;
+                        border-radius: 4px;
+                        background: #f8f9fa;
+                        border: 1px solid #dee2e6;
+                        color: #495057;
+                        text-decoration: none;
+                        transition: all 0.2s ease;
+                    }
 
-                #myCanvas {
-                    width: 100%;
-                    height: 100%;
-                }
+                    #treeViewContainer ul li span {
+                        font-size: 0.9rem;
+                        color: #495057;
+                        padding: 0.25rem 0.5rem;
+                        border-radius: 4px;
+                        transition: all 0.2s ease;
+                    }
 
-                #treeViewContainer ul {
-                    list-style: none;
-                    padding-left: 1.75em;
-                    pointer-events: none;
-                }
+                    #treeViewContainer ul li span:hover {
+                        background: #e9ecef;
+                        cursor: pointer;
+                    }
 
-                #treeViewContainer ul li {
-                    position: relative;
-                    width: 500px;
-                    pointer-events: none;
-                    padding-top: 3px;
-                    padding-bottom: 3px;
-                    vertical-align: middle;
-                }
+                    .highlighted-node {
+                        background: #e9ecef;
+                        font-weight: 500;
+                    }
 
-                #treeViewContainer ul li a {
-                    background-color: #eee;
-                    border-radius: 50%;
-                    color: #000;
-                    display: inline-block;
-                    height: 1.5em;
-                    left: -1.5em;
-                    position: absolute;
-                    text-align: center;
-                    text-decoration: none;
-                    width: 1.5em;
-                    pointer-events: all;
-                }
+                    @media (max-width: 768px) {
+                        .viewer-container {
+                            flex-direction: column;
+                        }
 
-                #treeViewContainer ul li a.plus {
-                    background-color: #ded;
-                    pointer-events: all;
-                }
+                        #treeViewContainer {
+                            width: 100%;
+                            height: 40vh;
+                            border-right: none;
+                            border-bottom: 1px solid #e9ecef;
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                        }
 
-                #treeViewContainer ul li a.minus {
-                    background-color: #eee;
-                    pointer-events: all;
-                }
+                        #canvasContainer {
+                            height: 60vh;
+                        }
+                    }
 
-                #treeViewContainer ul li a:active {
-                    top: 1px;
-                    pointer-events: all;
-                }
+                    /* Context Menu Styles */
+                    .xeokit-context-menu {
+                        background: white;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                        padding: 0.5rem 0;
+                    }
 
-                #treeViewContainer ul li span:hover {
-                    color: white;
-                    cursor: pointer;
-                    background: black;
-                    padding-left: 2px;
-                    pointer-events: all;
-                }
+                    .xeokit-context-menu-item {
+                        padding: 0.5rem 1rem;
+                        transition: background 0.2s ease;
+                    }
 
-                #treeViewContainer ul li span {
-                    display: inline-block;
-                    width: calc(100% - 50px);
-                    padding-left: 2px;
-                    pointer-events: all;
-                    height: 23px;
-                }
+                    .xeokit-context-menu-item:hover {
+                        background: #f8f9fa;
+                    }
 
-                #treeViewContainer .highlighted-node {
-                    border: black solid 1px;
-                    background: yellow;
-                    color: black;
-                    padding-left: 1px;
-                    padding-right: 5px;
-                    pointer-events: all;
-                }
+                    /* Measurement Styles */
+                    .xeokit-measurements-plugin-marker {
+                        background: white;
+                        border: 2px solid #0d6efd;
+                        color: #0d6efd;
+                        font-weight: 500;
+                    }
 
-                .xeokit-context-menu {
-                    font-family: 'Roboto', sans-serif;
-                    font-size: 15px;
-                    display: none;
-                    z-index: 300000;
-                    background: rgba(255, 255, 255, 0.46);
-                    border: 1px solid black;
-                    border-radius: 6px;
-                    padding: 0;
-                    width: 200px;
-                }
-
-                .xeokit-context-menu ul {
-                    list-style: none;
-                    margin-left: 0;
-                    padding: 0;
-                }
-
-                .xeokit-context-menu-item {
-                    list-style-type: none;
-                    padding-left: 10px;
-                    padding-right: 20px;
-                    padding-top: 4px;
-                    padding-bottom: 4px;
-                    color: black;
-                    background: rgba(255, 255, 255, 0.46);
-                    cursor: pointer;
-                    width: calc(100% - 30px);
-                }
-
-                .xeokit-context-menu-item:hover {
-                    background: black;
-                    color: white;
-                    font-weight: normal;
-                }
-
-                .xeokit-context-menu-item span {
-                    display: inline-block;
-                }
-
-                .xeokit-context-menu .disabled {
-                    display: inline-block;
-                    color: gray;
-                    cursor: default;
-                    font-weight: normal;
-                }
-
-                .xeokit-context-menu .disabled:hover {
-                    color: gray;
-                    cursor: default;
-                    background: #eeeeee;
-                    font-weight: normal;
-                }
-
-                .xeokit-context-menu-item-separator {
-                    background: rgba(0, 0, 0, 1);
-                    height: 1px;
-                    width: 100%;
-                }
-                .xeokit-measurements-plugin-marker {
-                    color: black;
-                    position: absolute;
-                    width: 25px;
-                    height: 25px;
-                    border-radius: 15px;
-                    border: 2px solid black;
-                    background: rgba(255, 255, 255, 0.8);
-                    text-align: center;
-                    font-family: Arial, sans-serif;
-                    font-size: 15px;
-                    padding-top: 2px;
-                    pointer-events: none;
-                }
-
-                .xeokit-measurements-plugin-distance-label {
-                    pointer-events: none;
-                    position: absolute;
-                    background: rgba(255, 255, 255, 0.8);
-                    color: black;
-                    font-family: Arial, sans-serif;
-                    font-size: 15px;
-                    padding: 5px;
-                    border-radius: 5px;
-                    border: 2px solid black;
-                }
-            `}</style>
-        </div>
+                    .xeokit-measurements-plugin-distance-label {
+                        background: white;
+                        border: 2px solid #0d6efd;
+                        color: #0d6efd;
+                        font-weight: 500;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                    }
+                `}</style>
+            </div>
         </Card>
     );
 }

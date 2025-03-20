@@ -14,6 +14,7 @@ import ModalCreate from "@/components/common/ModalCreate";
 import WelcomeCard from "@/components/CardWelcome";
 import ChartProjectCreated from "@/components/ChartProjectCreated";
 import CancelButton from "@/components/common/CancelButton";
+import { useApi } from "@/hooks/useApi";
 
 interface Divisions {
   department?: string;
@@ -58,6 +59,7 @@ const ProjectListPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: number; name: string } | null>(null);
 
+  const { get } =useApi();
   useEffect(() => {
     fetchProjects();
   }, []);

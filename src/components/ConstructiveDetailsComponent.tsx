@@ -693,18 +693,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
         </p>
       </ModalCreate>
 
-      {/* Estilos para definir fondo blanco en los headers de la tabla */}
-      <style jsx>{`
-        .custom-table-container table thead {
-          background-color: #fff;
-        }
-        .custom-table-container table thead th {
-          background-color: #fff;
-          color: #000;
-          padding: 8px;
-          border-bottom: 1px solid #ddd;
-        }
-      `}</style>
     </div>
   );
 };

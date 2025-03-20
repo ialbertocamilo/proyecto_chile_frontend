@@ -249,7 +249,7 @@ const RecintoCreate: React.FC = () => {
       console.log("Respuesta del servidor:", result);
 
       if (!response.ok) {
-        // Se muestra la notificación con el detalle del error recibido
+        // Se muestra la notificación con el detalle del error recibido aa 
         notify(result.detail || "Error al guardar los datos");
         return;
       }

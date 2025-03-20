@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState } from "react";
 import Card from "../common/Card";
 import CustomButton from '../common/CustomButton';
+import IFCUploader from './IfcUploader';
 
 const loadIFCViewer = async () => {
     const { default: IFCViewer } = await import("@bytestone/ifc-component");
@@ -12,35 +13,50 @@ const loadIFCViewer = async () => {
 export default function IFCViewerComponent() {
     const [viewerInstance, setViewerInstance] = useState<any>(null);
 
-    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file && file.name.endsWith('.ifc')) {
-            // TODO: Handle the IFC file
-            console.log('IFC file selected:', file);
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {   
+        const file = event;
+        if (file) {   
+            loadIFCViewer().then((IFCViewer) => {
+                setViewerInstance(new IFCViewer({ canvasId: "myCanvas", modelPath: "./output.ifc.xkt" }));
+            });
+        }
+    };
+
+    const handleProcessFile = () => {
+        if (viewerInstance) {
+            viewerInstance.unloadAllModels?.();
+            setViewerInstance(null);
+            
+            // Get the canvas element and clear it
+            const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+                
+                canvas.width = canvas.width;
+            }
+            
+            setTimeout(() => {
+                loadIFCViewer().then((IFCViewer) => {
+                    const newViewer = new IFCViewer({ canvasId: "myCanvas", modelPath: "./output.ifc.xkt" });
+                    setViewerInstance(newViewer);
+                });
+            }, 100);
         }
     };
 
     useEffect(() => {
         loadIFCViewer().then((IFCViewer) => {
-            setViewerInstance(new IFCViewer({ canvasId: "myCanvas" }));
+            setViewerInstance(new IFCViewer({ canvasId: "myCanvas",modelPath: "./output.ifc.xkt" }));
         });
     }, []);
 
     return (
         <Card>
-            <CustomButton
-                htmlFor="ifc-file-input"
-                style={{ cursor: 'pointer' }}
-            >
-                Upload .ifc
-                <input
-                    id="ifc-file-input"
-                    type="file"
-                    accept=".ifc"
-                    onChange={handleFileUpload}
-                    style={{ display: 'none' }}
-                />
-            </CustomButton>
+            <IFCUploader onFileUpload={handleFileUpload} />
+            <CustomButton onClick={handleProcessFile}>Procesar Archivo</CustomButton>
             <div className="viewer-container">
                 <div id="treeViewContainer"></div>
                 <div id="canvasContainer">

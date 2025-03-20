@@ -15,6 +15,7 @@ import WelcomeCard from "@/components/CardWelcome";
 import ChartProjectCreated from "@/components/ChartProjectCreated";
 import CancelButton from "@/components/common/CancelButton";
 import { useApi } from "@/hooks/useApi";
+import { useApiNext } from "@/hooks/useApiNext";
 
 interface Divisions {
   department?: string;
@@ -59,30 +60,18 @@ const ProjectListPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: number; name: string } | null>(null);
 
-  const { get } =useApi();
+  const { get } =useApiNext();
   useEffect(() => {
     fetchProjects();
   }, []);
 
   const fetchProjects = async (): Promise<void> => {
     setLoading(true);
-    const token: string | null = localStorage.getItem("token");
-    if (!token) {
-      console.error("[fetchProjects] No se encontró un token en localStorage.");
-      setError("No estás autenticado. Inicia sesión nuevamente.");
-      setLoading(false);
-      return;
-    }
     try {
       console.log("[fetchProjects] 📡 Obteniendo proyectos...");
-      const response = await axios.get<{ projects: Project[] }>("/api/projects_user", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      console.log("[fetchProjects] Proyectos recibidos:", response.data);
-      setProjects(response.data.projects);
+      const response = await get("/api/projects_user");
+      console.log("[fetchProjects] Proyectos recibidos:", response);
+      setProjects(response.projects);
     } catch (err: unknown) {
       console.error("[fetchProjects] Error al obtener los proyectos:", err);
       if (axios.isAxiosError(err) && err.response) {

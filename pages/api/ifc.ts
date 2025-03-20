@@ -4,7 +4,7 @@ import formidable, { File } from 'formidable';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { spawn } from 'child_process';
 
-let convert2xkt;
+let convert2xkt: any;
 try {
     convert2xkt = (await import("@xeokit/xeokit-convert/dist/convert2xkt.cjs.js")).convert2xkt;
 } catch (error) {
@@ -61,7 +61,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
         for (const file of files) {
             const tempPath = file[1].filepath;
-            const newFilePath = path.join(targetPath, file[1].originalFilename);
+            const newFilePath = path.join(targetPath, file[1].originalFilename as string);
             const outputFilePath = path.join(publicPath, `output.ifc.xkt`);
             await fs.rename(tempPath, newFilePath);
             try {
@@ -73,9 +73,19 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
                 process.on("close", (code) => {
                     console.log(`Proceso finalizado con código ${code}`);
+                    if (code === 0) {
+                        res.status(200).json({ status: 'ok', message: 'Files were uploaded and converted successfully' });
+                    } else {
+                        res.status(500).json({ status: 'fail', message: 'Conversion process failed' });
+                    }
                 });
+                return; // Exit the loop and wait for the process to finish
             } catch (error) {
                 console.error(`Error converting file ${file[1].originalFilename}:`, error);
+                status = 500;
+                resultBody = {
+                    status: 'fail', message: 'Conversion error'
+                };
             }
         }
     } else {

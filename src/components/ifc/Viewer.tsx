@@ -26,15 +26,12 @@ export default function IFCViewerComponent() {
         if (viewerInstance) {
             viewerInstance.unloadAllModels?.();
             setViewerInstance(null);
-            
-            // Get the canvas element and clear it
             const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
             if (canvas) {
                 const ctx = canvas.getContext('2d');
                 if (ctx) {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
-                
                 canvas.width = canvas.width;
             }
             

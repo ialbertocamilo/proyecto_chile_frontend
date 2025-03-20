@@ -3,12 +3,15 @@ import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-toastify';
 
-const IFCUploader = ({ onFileUpload }) => {
-    const [selectedFile, setSelectedFile] = useState(null);
+interface IfcUploaderProps {
+  onFileUpload: (data: any) => void;
+}
+
+const IFCUploader = ({ onFileUpload }: IfcUploaderProps) => {
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
 
     const { getRootProps, getInputProps } = useDropzone({
-        accept: '.ifc',
         maxFiles: 1,
         validator: (file) => {
             if (file.size > 104857600) {
@@ -36,7 +39,7 @@ const IFCUploader = ({ onFileUpload }) => {
         }
     });
 
-    const handleFileUpload = async (file) => {
+    const handleFileUpload = async (file: string | Blob) => {
         const formData = new FormData();
         formData.append('file', file);
 
@@ -56,7 +59,7 @@ const IFCUploader = ({ onFileUpload }) => {
                 }
             });
             onFileUpload(response.data);
-        } catch (error) {
+        } catch (error:any) {
             const errorMessage = error.response?.data?.message ||
                 error.message ||
                 'Error desconocido';

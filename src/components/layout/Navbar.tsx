@@ -1,3 +1,5 @@
+
+
 'use client'
 import "bootstrap/dist/css/bootstrap.min.css";
 import Image from "next/image";
@@ -172,8 +174,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
         <nav
           className="sidebar d-flex flex-column"
           style={{
-            position: "fixed",
-            top: isMobile ? "0" : 0,
+            position: isMobile ? "fixed" : "absolute",
+            top: 0,
             bottom: 0,
             left: 0,
             zIndex: 1200,

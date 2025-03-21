@@ -77,7 +77,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
           <div 
             className="page-header" 
             style={{ 
-              marginLeft: showNav ? contentMarginLeft : "0", 
+              marginLeft: showNav ? (isMobile ? contentMarginLeft : (isNavbarOpen ? expandedWidth : collapsedWidth)) : "0", 
               transition: "margin-left 0.3s ease"
             }}
           >
@@ -97,9 +97,9 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             <div 
                 className="page-body" 
                 style={{ 
-                  marginLeft: showNav ? `calc(${contentMarginLeft} + 25px)` : "0",
+                  marginLeft: showNav ? (isMobile ? `calc(${contentMarginLeft} + 25px)` : `calc(${isNavbarOpen ? expandedWidth : collapsedWidth} + 25px)`) : "0",
                   transition: "margin-left 0.3s ease",
-                  width: showNav ? `calc(100% - (${contentMarginLeft} + 25px))` : "100%"
+                  width: showNav ? (isMobile ? `calc(100% - (${contentMarginLeft} + 25px))` : `calc(100% - (${isNavbarOpen ? expandedWidth : collapsedWidth} + 25px))`) : "100%"
                 }}
               >
               {!hideNavRoutes.includes(router.pathname) ? (

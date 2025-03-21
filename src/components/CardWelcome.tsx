@@ -37,7 +37,7 @@ const WelcomeCard: React.FC = () => {
         <div className="d-flex align-items-center justify-content-center h-100">
           <div className="text-start">
             <h1 style={{ color: '#fff' }}>Hola, {name} {lastname}</h1>
-            <p style={{ color: '#fff' }}>¡Bienvenidos de nuevo!</p>
+            <p style={{ color: '#fff' }}>¡Bienvenidos de nuevo! </p>
             <p style={{ color: '#fff' }}>Empecemos desde donde lo dejaste.</p>
             <button
               className="btn profile-btn"

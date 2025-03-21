@@ -53,7 +53,7 @@ const ProjectListPage = () => {
   const [, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Estados para controlar el modal de eliminación
+  // Estados para controlar el modal de eliminación aa
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: number; name: string } | null>(null);
 

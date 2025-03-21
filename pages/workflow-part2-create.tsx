@@ -349,7 +349,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   useEffect(() => {
     if (editingDetail) {
-      fetchMaterials();
+      
     }
   }, [editingDetail]);
 

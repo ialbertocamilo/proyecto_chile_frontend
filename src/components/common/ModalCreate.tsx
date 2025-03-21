@@ -21,9 +21,8 @@ interface ModalCreateProps {
   saveButtonText?: string;
   materials?: Material[];
   show?: boolean;
-  detail: any;
+  detail?: any; // Se marca como opcional
   onRowClick?: (row: any) => void;
-
   /** NUEVA PROP: oculta por completo el footer (botones) si es true */
   hideFooter?: boolean;
 }

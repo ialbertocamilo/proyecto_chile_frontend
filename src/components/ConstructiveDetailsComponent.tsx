@@ -756,7 +756,30 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Acciones", field: "acciones" },
     ];
 
-    const data = pisosTabList.map((item) => {
+    const multiHeaderPisos = {
+      rows: [
+        [
+          { label: "Nombre", rowSpan: 2 },
+          { label: "U [W/m²K]", rowSpan: 2 },
+          { label: "Aislamiento bajo piso", colSpan: 2 },
+          { label: "Ref Aisl Vert.", colSpan: 3 },
+          { label: "Ref Aisl Horiz.", colSpan: 3 },
+          { label: "Acciones", rowSpan: 2 },
+        ],
+        [
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+          { label: "I [W/mK]" },
+          { label: "e Aisl [cm]" },
+          { label: "D [cm]" },
+        ],
+      ],
+    };
+
+    const pisosData = pisosTabList.map((item) => {
       const bajoPiso = item.info?.aislacion_bajo_piso || {};
       const vert = item.info?.ref_aisl_vertical || {};
       const horiz = item.info?.ref_aisl_horizontal || {};
@@ -895,7 +918,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     return (
       <div style={{ overflowX: "auto", minWidth: "600px" }}>
         {pisosTabList.length > 0 ? (
-          <TablesParameters columns={columnsPisos} data={data} />
+          <TablesParameters columns={columnsPisos} data={pisosData}  multiHeader={multiHeaderPisos}/>
         ) : (
           <p>No hay datos</p>
         )}

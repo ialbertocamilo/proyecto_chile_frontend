@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
 import axios from "axios";
-import CustomButton from "../src/components/common/CustomButton";
 import Card from "../src/components/common/Card";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
@@ -11,11 +10,9 @@ import GooIcons from "../public/GoogleIcons";
 import { notify } from "@/utils/notify";
 import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-import SearchParameters from "../src/components/inputs/SearchParameters";
 import TablesParameters from "../src/components/tables/TablesParameters";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
-import { Modal } from "react-bootstrap";
 import ModalCreate from "../src/components/common/ModalCreate";
 
 interface Detail {
@@ -287,7 +284,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
   // ==================== EFECTOS SEGÚN STEP ====================
   useEffect(() => {
     if (step === 4 && projectId !== null) {
-      fetchFetchedDetails();
+      
     }
   }, [step, projectId]);
 

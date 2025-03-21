@@ -224,9 +224,8 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+
+  
 
   // --------------------
   // HANDLERS PARA MUROS

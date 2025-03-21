@@ -32,8 +32,7 @@ const TableParameters = <T extends { [key: string]: any }>(
   } = props;
 
   // Estilo base para el encabezado
-  const headerStyle: React.CSSProperties = {
-    position: "sticky" as "sticky",
+  const headerStyle: React.CSSProperties = { 
     top: 0,
     backgroundColor: "#fff",
     zIndex: 10, // Aumentado
@@ -85,8 +84,8 @@ const TableParameters = <T extends { [key: string]: any }>(
                     const thStyle: React.CSSProperties = isAcciones
                       ? {
                         ...headerStyle,
-                        position: "sticky" as "sticky",
-                        right: 0,
+                        position: "sticky",
+                        right: "auto",
                         backgroundColor: "#fff",
                         zIndex: 10, // Encabezado de acciones con mayor z-index
                       }
@@ -109,8 +108,8 @@ const TableParameters = <T extends { [key: string]: any }>(
                           textAlign: "center",
                           padding: "6px",
                           whiteSpace: "nowrap",
-                          position: "sticky" as "sticky",
-                          right: 0,
+                          position: "sticky",
+                          right: "auto",
                           top: "auto", // Evitamos que se fije verticalmente
                           backgroundColor: "#fff",
                           zIndex: 9,

@@ -19,6 +19,7 @@ const WelcomeCard: React.FC = () => {
   }, []);
 
   const handleViewProfile = () => {
+    console.log('Ver perfil');
     router.push('/edit-profile'); 
   };
 

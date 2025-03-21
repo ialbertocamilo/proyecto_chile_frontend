@@ -194,72 +194,74 @@ const RecintoCreate: React.FC = () => {
     fetchProfiles();
   }, []);
 
-  // ---------------------------
-  //  Función para guardar (crear recinto) con validación de campos obligatorios
-  // ---------------------------
-  const handleSave = async () => {
-    // Validación de campos obligatorios
-    if (
-      !selectedRegion ||
-      !selectedComuna ||
-      !selectedZonaTermica ||
-      !nombreRecinto.trim() ||
-      !perfilOcupacion ||
-      !alturaPromedio.trim() ||
-      isNaN(parseFloat(alturaPromedio))
-    ) {
-      notify("Por favor, complete todos los campos requeridos");
+ // ...
+const handleSave = async () => {
+  // Validación de campos obligatorios
+  if (
+    !selectedRegion ||
+    !selectedComuna ||
+    !selectedZonaTermica ||
+    !nombreRecinto.trim() ||
+    !perfilOcupacion ||
+    !alturaPromedio.trim() ||
+    isNaN(parseFloat(alturaPromedio))
+  ) {
+    notify("Por favor, complete todos los campos requeridos");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      notify("Token no disponible");
       return;
     }
 
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        notify("Token no disponible");
-        return;
+    const payload = {
+      name_enclosure: nombreRecinto,
+      region_id: parseInt(selectedRegion),
+      comuna_id: parseInt(selectedComuna),
+      zona_termica: selectedZonaTermica,
+      occupation_profile_id: perfilOcupacion,
+      height: parseFloat(alturaPromedio),
+      co2_sensor: sensorCo2 ? "Si" : "No",
+    };
+
+    console.log("Payload a enviar:", payload);
+
+    const response = await fetch(
+      `${constantUrlApiEndpoint}/enclosure-generals-create/${projectId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
       }
+    );
 
-      const payload = {
-        name_enclosure: nombreRecinto,
-        region_id: parseInt(selectedRegion),
-        comuna_id: parseInt(selectedComuna),
-        zona_termica: selectedZonaTermica,
-        occupation_profile_id: perfilOcupacion,
-        height: parseFloat(alturaPromedio),
-        co2_sensor: sensorCo2 ? "Si" : "No",
-      };
+    const result = await response.json();
+    console.log("Status del response:", response.status);
+    console.log("Respuesta del servidor:", result);
 
-      console.log("Payload a enviar:", payload);
-
-      const response = await fetch(
-        `${constantUrlApiEndpoint}/enclosure-generals-create/${projectId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const result = await response.json();
-      console.log("Status del response:", response.status);
-      console.log("Respuesta del servidor:", result);
-
-      if (!response.ok) {
-        // Se muestra la notificación con el detalle del error recibido aa 
-        notify(result.detail || "Error al guardar los datos");
-        return;
-      }
-
-      notify("Recinto creado correctamente");
-    } catch (error) {
-      console.error("Error en handleSave:", error);
-      notify("Error al guardar los datos", "error");
+    if (!response.ok) {
+      notify(result.detail || "Error al guardar los datos");
+      return;
     }
-  };
+
+    // Se guarda el id del recinto en el localStorage con la llave "recinto_id"
+    localStorage.setItem("recinto_id", result.id.toString());
+
+    notify("Recinto creado correctamente");
+  } catch (error) {
+    console.error("Error en handleSave:", error);
+    notify("Error al guardar los datos", "error");
+  }
+};
+// ...
+
 
   return (
     <>

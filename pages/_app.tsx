@@ -63,11 +63,11 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     setIsNavbarOpen(isOpen);
   };
 
-  // Definimos anchos para el estado colapsado y expandido
-  const collapsedWidth = isMobile ? "40%" : "6.5em";
-  const expandedWidth = isMobile ? "60%" : "200px";
-  // Aunque la navbar se expanda, siempre reservamos el mismo espacio en el contenido:
-  const contentMarginLeft = collapsedWidth;
+  // Definimos anchos para el estado colapsado y expandido para desktop.
+  // En mobile el comportamiento permanece overlay, por ello el margen es 0.
+  const collapsedWidth = "6.5em";
+  const expandedWidth = "200px";
+  const contentMarginLeft = !isMobile ? (isNavbarOpen ? expandedWidth : collapsedWidth) : "0";
 
   const getLayout = Component.getLayout ?? ((page) => {
     return (
@@ -95,13 +95,13 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               )}
             </div>
             <div 
-                className="page-body" 
-                style={{ 
-                  marginLeft: showNav ? `calc(${contentMarginLeft} + 25px)` : "0",
-                  transition: "margin-left 0.3s ease",
-                  width: showNav ? `calc(100% - (${contentMarginLeft} + 25px))` : "100%"
-                }}
-              >
+              className="page-body" 
+              style={{ 
+                marginLeft: showNav ? `calc(${contentMarginLeft} + 25px)` : "0",
+                transition: "margin-left 0.3s ease",
+                width: showNav ? `calc(100% - (${contentMarginLeft} + 25px))` : "100%"
+              }}
+            >
               {!hideNavRoutes.includes(router.pathname) ? (
                 <div style={{ paddingRight: '1.2em' }}>
                   {page}

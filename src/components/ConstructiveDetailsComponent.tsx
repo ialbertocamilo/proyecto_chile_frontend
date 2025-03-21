@@ -4,7 +4,6 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/router";
 import CustomButton from "./common/CustomButton";
-import Title from "./Title";
 import { notify } from "@/utils/notify";
 import { constantUrlApiEndpoint } from "../utils/constant-url-endpoint";
 import TablesParameters from "@/components/tables/TablesParameters";

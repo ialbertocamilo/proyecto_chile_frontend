@@ -6,6 +6,7 @@ import Card from "./common/Card";
 export interface ColumnDefinition<T> {
   id: number | string;
   label: string;
+  field?: string;
   minWidth?: number;
   format?: (value: any, row: T) => React.ReactNode;
   cell?: (props: { row: T }) => React.ReactNode;
@@ -30,16 +31,17 @@ const TableParameters = <T extends { [key: string]: any }>(
     primaryColor = "#3ca7b7",
   } = props;
 
-  // Encabezados sticky
+  // Estilo base para el encabezado
   const headerStyle: React.CSSProperties = {
-    position: "sticky",
+    position: "sticky" as "sticky",
     top: 0,
     backgroundColor: "#fff",
-    zIndex: 3,
+    zIndex: 10, // Aumentado
     textAlign: "center",
     color: primaryColor,
     fontSize: "1rem",
     padding: "6px",
+    whiteSpace: "nowrap",
   };
 
   return (
@@ -57,50 +59,83 @@ const TableParameters = <T extends { [key: string]: any }>(
           <div
             className="table-responsive"
             style={{
-              maxHeight: "450px", // Un poco más alta
-              maxWidth: "1000px",  // Menos ancha
-              margin: "0 auto",   // Centrar horizontalmente
+              position: "relative", // Importante para que sticky funcione correctamente
+              maxHeight: "450px",
+              maxWidth: "1000px",
+              margin: "0 auto",
               overflowX: "auto",
               overflowY: "auto",
               WebkitOverflowScrolling: "touch",
+              whiteSpace: "nowrap",
             }}
           >
             <table
               className="table table-bordered table-striped"
               style={{
-                minWidth,               // Ancho mínimo
+                minWidth,
                 borderCollapse: "collapse",
-                fontSize: "1rem",    // Tamaño de fuente para el contenido
-                width: "100%",          // Ocupar todo el contenedor
+                fontSize: "1rem",
+                width: "100%",
               }}
             >
               <thead className="bg-light border-bottom">
                 <tr>
-                  {columns.map((col, idx) => (
-                    <th key={idx} style={headerStyle}>
-                      {col.label}
-                    </th>
-                  ))}
+                  {columns.map((col, idx) => {
+                    const isAcciones = col.field === "acciones";
+                    const thStyle: React.CSSProperties = isAcciones
+                      ? {
+                        ...headerStyle,
+                        position: "sticky" as "sticky",
+                        right: 0,
+                        backgroundColor: "#fff",
+                        zIndex: 10, // Encabezado de acciones con mayor z-index
+                      }
+                      : headerStyle;
+                    return (
+                      <th key={idx} style={thStyle}>
+                        {col.label}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
                 {data.map((row, index) => (
                   <tr key={index} style={{ lineHeight: 1.2 }}>
-                    {columns.map((col) => (
-                      <td
-                        key={col.id.toString()}
-                        style={{
+                    {columns.map((col) => {
+                      const isAcciones = col.field === "acciones";
+                      const tdStyle: React.CSSProperties = isAcciones
+                        ? {
                           textAlign: "center",
-                          padding: "6px", // Menos padding para filas compactas
-                        }}
-                      >
-                        {col.cell
-                          ? col.cell({ row })
-                          : col.format
-                          ? col.format(row[col.id], row)
-                          : row[col.id]}
-                      </td>
-                    ))}
+                          padding: "6px",
+                          whiteSpace: "nowrap",
+                          position: "sticky" as "sticky",
+                          right: 0,
+                          top: "auto", // Evitamos que se fije verticalmente
+                          backgroundColor: "#fff",
+                          zIndex: 9,
+                        }
+                        : {
+                          textAlign: "center",
+                          padding: "6px",
+                          whiteSpace: "nowrap",
+                        };
+
+                      let content: React.ReactNode;
+                      if (col.cell) {
+                        content = col.cell({ row });
+                      } else if (col.format) {
+                        content = col.format(row[col.id], row);
+                      } else {
+                        content = row[col.id];
+                      }
+
+                      return (
+                        <td key={col.id.toString()} style={tdStyle}>
+                          {content}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>

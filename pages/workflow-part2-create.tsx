@@ -1521,6 +1521,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         <ModalCreate
           isOpen={true}
           title="Editar Detalle Constructivo"
+          detail={editingDetail}
           onClose={() => setEditingDetail(null)}
           onSave={handleConfirmEditDetail}
         >
@@ -1592,6 +1593,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         <ModalCreate
           isOpen={true}
           title="Editar Ventana"
+          detail={editingVentanaForm}
           onClose={() => setEditingVentanaForm(null)}
           onSave={() => handleConfirmVentanaEdit(editingVentanaForm)}
         >
@@ -1716,6 +1718,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         <ModalCreate
           isOpen={true}
           title="Editar Puerta"
+          detail={editingPuertaForm}
           onClose={() => setEditingPuertaForm(null)}
           onSave={() => handleConfirmPuertaEdit(editingPuertaForm)}
         >
@@ -1820,6 +1823,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {/* Modal de confirmación para eliminar */}
       {showConfirmModal && (
         <ModalCreate
+          detail={null}
           isOpen={showConfirmModal}
           title="Confirmación"
           onClose={() => {
@@ -1844,6 +1848,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         <ModalCreate
           isOpen={showNewDetailRow}
           onClose={() => setShowNewDetailRow(false)}
+          detail={null}
           materials={materials.map((mat) => ({ ...mat, id: String(mat.id) }))}
           onSave={handleCreateNewDetail}
           title="Nuevo Detalle"
@@ -1921,6 +1926,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {/* Modal para mostrar Detalles Generales filtrados según el tipo */}
       {showDetallesModal && (
         <ModalCreate
+          detail={null}
           isOpen={true}
           title="Detalles Generales"
           onClose={() => setShowDetallesModal(false)}

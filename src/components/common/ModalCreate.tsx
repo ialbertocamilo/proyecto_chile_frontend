@@ -12,6 +12,7 @@ interface ModalCreateProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
+  onHide?: () => void;
   children: React.ReactNode;
   title?: string;
   saveLabel?: string;
@@ -19,6 +20,9 @@ interface ModalCreateProps {
   overlayStyle?: React.CSSProperties;
   saveButtonText?: string;
   materials?: Material[];
+  show?: boolean;
+  detail: any;
+  onRowClick?: (row: any) => void;
 
   /** NUEVA PROP: oculta por completo el footer (botones) si es true */
   hideFooter?: boolean;

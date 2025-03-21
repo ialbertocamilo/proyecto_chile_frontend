@@ -1,4 +1,3 @@
-// ConstructiveDetailsComponent.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -9,7 +8,6 @@ import { constantUrlApiEndpoint } from "../utils/constant-url-endpoint";
 import TablesParameters from "@/components/tables/TablesParameters";
 import SearchParameters from "./inputs/SearchParameters";
 import ModalCreate from "./common/ModalCreate";
-import ActionButtons from "./common/ActionButtons";
 
 interface Detail {
   id_detail: number;
@@ -71,7 +69,6 @@ interface Constant {
 
 type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos";
 
-// Se eliminó la interfaz vacía ConstructiveDetailsProps, ya que el componente no recibe props.
 const getCssVarValue = (varName: string, fallback: string): string => {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement)
@@ -83,23 +80,55 @@ const getCssVarValue = (varName: string, fallback: string): string => {
 const ConstructiveDetailsComponent: React.FC = () => {
   const router = useRouter();
 
-  // Estados generales
+  // ----------------------------
+  //  Estados generales
+  // ----------------------------
   const [hasLoaded, setHasLoaded] = useState(false);
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Estados para detalles y pestañas
+  // ----------------------------
+  //  Estados para detalles
+  // ----------------------------
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [showTabsInStep4, setShowTabsInStep4] = useState(true);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
-  // Estados para cada pestaña
+  // ----------------------------
+  //  Estados para cada pestaña
+  // ----------------------------
   const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
   const [techumbreTabList, setTechumbreTabList] = useState<TabItem[]>([]);
   const [pisosTabList, setPisosTabList] = useState<TabItem[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
 
-  // Estado para el formulario de creación y modal de nuevo detalle
+  // ----------------------------
+  //  Estados para edición en línea
+  // ----------------------------
+  // Muros
+  const [editingMurosRowId, setEditingMurosRowId] = useState<number | null>(null);
+  const [editingMurosColors, setEditingMurosColors] = useState({
+    interior: "Intermedio",
+    exterior: "Intermedio",
+  });
+
+  // Techumbre
+  const [editingTechRowId, setEditingTechRowId] = useState<number | null>(null);
+  const [editingTechColors, setEditingTechColors] = useState({
+    interior: "Intermedio",
+    exterior: "Intermedio",
+  });
+
+  // Pisos
+  const [editingPisoRowId, setEditingPisoRowId] = useState<number | null>(null);
+  const [editingPisoForm, setEditingPisoForm] = useState({
+    vertical: { lambda: "", e_aisl: "", d: "" },
+    horizontal: { lambda: "", e_aisl: "", d: "" },
+  });
+
+  // ----------------------------
+  //  Estado para crear nuevo detalle
+  // ----------------------------
   const [showNewDetailRow, setShowNewDetailRow] = useState(false);
   const [isCreatingDetail, setIsCreatingDetail] = useState(false);
   const [newDetailForm, setNewDetailForm] = useState<{
@@ -114,55 +143,20 @@ const ConstructiveDetailsComponent: React.FC = () => {
     layer_thickness: null,
   });
 
-  // Estados para eliminación de detalle (modal de confirmación)
+  // ----------------------------
+  //  Estados para eliminar detalle
+  // ----------------------------
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingDetail, setDeletingDetail] = useState<Detail | null>(null);
 
-  // Funciones para editar y eliminar
-  const handleEdit = (id: number) => {
-    console.log("Editar detalle con id:", id);
-    notify("Editar", `Editar detalle con id: ${id}`);
-  };
+  // ----------------------------
+  //  Estado para Detalles Generales
+  // ----------------------------
+  const [showGeneralDetailsModal, setShowGeneralDetailsModal] = useState(false);
 
-  // Al hacer clic en eliminar se busca el detalle y se abre el modal
-  const handleDelete = (id: number) => {
-    console.log("handleDelete llamado con id:", id);
-    const detail = fetchedDetails.find((det) => det.id_detail === id);
-    if (!detail) {
-      notify("Error", "Detalle no encontrado.");
-      return;
-    }
-    setDeletingDetail(detail);
-    setShowDeleteModal(true);
-  };
-
-  // Función para confirmar la eliminación
-  const confirmDeleteDetail = async () => {
-    if (!deletingDetail) return;
-    const token = localStorage.getItem("token");
-    if (!token) {
-      notify("Token no encontrado", "Inicia sesión.");
-      return;
-    }
-    try {
-      const url = `${constantUrlApiEndpoint}/admin/details/${deletingDetail.id_detail}/delete`;
-      const response = await axios.delete(url, {
-        headers: { Authorization: `Bearer ${token}`, accept: "application/json" },
-      });
-      console.log("Detalle eliminado:", response.data);
-      notify("Detalle correctamente eliminado");
-      // Actualiza la lista de detalles
-      await fetchFetchedDetails();
-    } catch (error: unknown) {
-      console.error("Error al eliminar detalle:", error);
-      notify("Error", "No se pudo eliminar el detalle.");
-    } finally {
-      setShowDeleteModal(false);
-      setDeletingDetail(null);
-    }
-  };
-
-  // Inicialización
+  // ========================================================
+  //              useEffect y Funciones de carga
+  // ========================================================
   useEffect(() => {
     setPrimaryColor(getCssVarValue("--primary-color", "#3ca7b7"));
     setHasLoaded(true);
@@ -176,7 +170,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
     return token;
   };
 
-  // Función genérica para obtener datos
   const fetchData = useCallback(
     async <T,>(endpoint: string, setter: (data: T) => void) => {
       const token = getToken();
@@ -193,7 +186,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
     []
   );
 
-  // Función para obtener todos los detalles y actualizar la tabla
   const fetchFetchedDetails = useCallback(async () => {
     const token = getToken();
     if (!token) return;
@@ -257,7 +249,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   };
 
-  // Efectos de carga de datos
+  // ----------------------------
+  //  Carga inicial de datos
+  // ----------------------------
   useEffect(() => {
     if (hasLoaded) fetchFetchedDetails();
   }, [hasLoaded, fetchFetchedDetails]);
@@ -281,7 +275,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
     hasLoaded,
   ]);
 
-  // Manejo de creación de nuevo detalle
+  // ========================================================
+  //   Función para crear un nuevo detalle
+  // ========================================================
   const handleCreateNewDetail = async () => {
     if (
       !newDetailForm.scantilon_location ||
@@ -326,127 +322,692 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   };
 
+  // -------------------------------------------
+  //  Función para abrir modal "Nuevo Detalle"
+  // -------------------------------------------
   const handleNewButtonClick = () => {
     setShowNewDetailRow(true);
     fetchMaterials();
   };
 
+  // -------------------------------------------
+  //  Botón "Volver" en la vista inicial
+  // -------------------------------------------
   const saveDetails = () => {
     setShowTabsInStep4(true);
     setTabStep4("muros");
   };
 
-  // =================== RENDER DE TABLAS ===================
-  const renderTable = (
-    tabList: TabItem[],
-    columns: { headerName: string; field: string }[],
-    dataMap: (item: TabItem) => any,
-    multiHeader?: { rows: any[] }
-  ) => (
-    <div className="custom-table-container" style={{ overflowX: "auto", minWidth: "600px" }}>
-      {tabList.length > 0 ? (
-        <TablesParameters columns={columns} data={tabList.map(dataMap)} multiHeader={multiHeader} />
-      ) : (
-        <p>No hay datos</p>
-      )}
-    </div>
-  );
+  // ========================================================
+  //   EDICIÓN EN LÍNEA - MUROS
+  // ========================================================
+  const handleEditMurosClick = (item: TabItem) => {
+    setEditingMurosRowId(item.id || null);
+    setEditingMurosColors({
+      interior: item.info?.surface_color?.interior?.name || "Intermedio",
+      exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
+    });
+  };
 
-  const renderMurosTable = () =>
-    renderTable(
-      murosTabList,
-      [
-        { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
-        { headerName: "Valor U (W/m²K)", field: "valorU" },
-        { headerName: "Color Exterior", field: "colorExterior" },
-        { headerName: "Color Interior", field: "colorInterior" },
-      ],
-      (item) => ({
-        nombreAbreviado: item.name_detail,
-        valorU: item.value_u ? item.value_u.toFixed(3) : "--",
-        colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
-        colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
-      })
-    );
+  const handleCancelMurosEdit = (item: TabItem) => {
+    setEditingMurosRowId(null);
+    setEditingMurosColors({
+      interior: item.info?.surface_color?.interior?.name || "Intermedio",
+      exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
+    });
+  };
 
-  const renderTechumbreTable = () =>
-    renderTable(
-      techumbreTabList,
-      [
-        { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
-        { headerName: "Valor U (W/m²K)", field: "valorU" },
-        { headerName: "Color Exterior", field: "colorExterior" },
-        { headerName: "Color Interior", field: "colorInterior" },
-      ],
-      (item) => ({
-        nombreAbreviado: item.name_detail,
-        valorU: item.value_u ? item.value_u.toFixed(3) : "--",
-        colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
-        colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
-      })
-    );
+  const handleConfirmMurosEdit = async (item: TabItem) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/admin/details/${item.id}/update`;
+      const payload = {
+        info: {
+          surface_color: {
+            interior: { name: editingMurosColors.interior },
+            exterior: { name: editingMurosColors.exterior },
+          },
+        },
+      };
+      await axios.put(url, payload, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      });
+      notify("Detalle tipo Muro actualizado con éxito.");
+      setMurosTabList((prev) =>
+        prev.map((it) =>
+          it.id === item.id
+            ? {
+                ...it,
+                info: {
+                  ...it.info,
+                  surface_color: {
+                    interior: { name: editingMurosColors.interior },
+                    exterior: { name: editingMurosColors.exterior },
+                  },
+                },
+              }
+            : it
+        )
+      );
+      setEditingMurosRowId(null);
+    } catch (error: unknown) {
+      console.error("Error al actualizar detalle de muro:", error);
+      notify("Error al actualizar el detalle.");
+    }
+  };
 
-  const renderPisosTable = () => {
-    const multiHeaderPisos = {
-      rows: [
-        [
-          { label: "Nombre", rowSpan: 2 },
-          { label: "U [W/m²K]", rowSpan: 2 },
-          { label: "Aislamiento bajo piso", colSpan: 2 },
-          { label: "Ref Aisl Vert.", colSpan: 3 },
-          { label: "Ref Aisl Horiz.", colSpan: 3 },
-        ],
-        [
-          { label: "I [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "I [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "D [cm]" },
-          { label: "I [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "D [cm]" },
-        ],
-      ],
-    };
+  // ========================================================
+  //   EDICIÓN EN LÍNEA - TECHUMBRE
+  // ========================================================
+  const handleEditTechClick = (item: TabItem) => {
+    setEditingTechRowId(item.id || null);
+    setEditingTechColors({
+      interior: item.info?.surface_color?.interior?.name || "Intermedio",
+      exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
+    });
+  };
 
-    return renderTable(
-      pisosTabList,
-      [
-        { headerName: "Nombre", field: "nombre" },
-        { headerName: "U [W/m²K]", field: "uValue" },
-        { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
-        { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
-        { headerName: "I [W/mK] (vert)", field: "vertLambda" },
-        { headerName: "e Aisl [cm]", field: "vertEAisl" },
-        { headerName: "D [cm]", field: "vertD" },
-        { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
-        { headerName: "e Aisl [cm]", field: "horizEAisl" },
-        { headerName: "D [cm]", field: "horizD" },
-      ],
-      (item) => {
-        const bajoPiso = item.info?.aislacion_bajo_piso || {};
-        const vert = item.info?.ref_aisl_vertical || {};
-        const horiz = item.info?.ref_aisl_horizontal || {};
-        return {
-          nombre: item.name_detail,
-          uValue: item.value_u ? item.value_u.toFixed(3) : "--",
-          bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-          bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
-          vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
-          vertEAisl: vert.e_aisl ?? "N/A",
-          vertD: vert.d ?? "N/A",
-          horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
-          horizEAisl: horiz.e_aisl ?? "N/A",
-          horizD: horiz.d ?? "N/A",
-        };
+  const handleCancelTechEdit = (item: TabItem) => {
+    setEditingTechRowId(null);
+    setEditingTechColors({
+      interior: item.info?.surface_color?.interior?.name || "Intermedio",
+      exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
+    });
+  };
+
+  const handleConfirmTechEdit = async (item: TabItem) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/admin/details/${item.id}/update`;
+      const payload = {
+        info: {
+          surface_color: {
+            interior: { name: editingTechColors.interior },
+            exterior: { name: editingTechColors.exterior },
+          },
+        },
+      };
+      await axios.put(url, payload, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      });
+      notify("Detalle tipo Techo actualizado con éxito.");
+      setTechumbreTabList((prev) =>
+        prev.map((it) =>
+          it.id === item.id
+            ? {
+                ...it,
+                info: {
+                  ...it.info,
+                  surface_color: {
+                    interior: { name: editingTechColors.interior },
+                    exterior: { name: editingTechColors.exterior },
+                  },
+                },
+              }
+            : it
+        )
+      );
+      setEditingTechRowId(null);
+    } catch (error: unknown) {
+      console.error("Error al actualizar detalle de techo:", error);
+      notify("Error al actualizar el detalle.");
+    }
+  };
+
+  // ========================================================
+  //   EDICIÓN EN LÍNEA - PISOS
+  // ========================================================
+  const handleEditPisoClick = (item: TabItem) => {
+    setEditingPisoRowId(item.id || null);
+    setEditingPisoForm({
+      vertical: {
+        lambda: item.info?.ref_aisl_vertical?.lambda?.toString() || "",
+        e_aisl: item.info?.ref_aisl_vertical?.e_aisl?.toString() || "",
+        d: item.info?.ref_aisl_vertical?.d?.toString() || "",
       },
-      multiHeaderPisos
+      horizontal: {
+        lambda: item.info?.ref_aisl_horizontal?.lambda?.toString() || "",
+        e_aisl: item.info?.ref_aisl_horizontal?.e_aisl?.toString() || "",
+        d: item.info?.ref_aisl_horizontal?.d?.toString() || "",
+      },
+    });
+  };
+
+  const handleCancelPisoEdit = () => {
+    setEditingPisoRowId(null);
+  };
+
+  const handleConfirmPisoEdit = async (item: TabItem) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/admin/details/${item.id}/update`;
+      const payload = {
+        info: {
+          ref_aisl_vertical: {
+            lambda: Number(editingPisoForm.vertical.lambda),
+            e_aisl: Number(editingPisoForm.vertical.e_aisl),
+            d: Number(editingPisoForm.vertical.d),
+          },
+          ref_aisl_horizontal: {
+            lambda: Number(editingPisoForm.horizontal.lambda),
+            e_aisl: Number(editingPisoForm.horizontal.e_aisl),
+            d: Number(editingPisoForm.horizontal.d),
+          },
+        },
+      };
+      await axios.put(url, payload, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      });
+      notify("Detalle tipo Piso actualizado con éxito.");
+      setPisosTabList((prev) =>
+        prev.map((it) =>
+          it.id === item.id
+            ? {
+                ...it,
+                info: {
+                  ...it.info,
+                  ref_aisl_vertical: {
+                    lambda: Number(editingPisoForm.vertical.lambda),
+                    e_aisl: Number(editingPisoForm.vertical.e_aisl),
+                    d: Number(editingPisoForm.vertical.d),
+                  },
+                  ref_aisl_horizontal: {
+                    lambda: Number(editingPisoForm.horizontal.lambda),
+                    e_aisl: Number(editingPisoForm.horizontal.e_aisl),
+                    d: Number(editingPisoForm.horizontal.d),
+                  },
+                },
+              }
+            : it
+        )
+      );
+      setEditingPisoRowId(null);
+    } catch (error: unknown) {
+      console.error("Error al actualizar detalle de piso:", error);
+      notify("Error al actualizar el detalle.");
+    }
+  };
+
+  // ========================================================
+  //   ELIMINACIÓN DE DETALLE
+  // ========================================================
+  const confirmDeleteDetail = async () => {
+    if (!deletingDetail) return;
+    const token = getToken();
+    if (!token) {
+      notify("Token no encontrado", "Inicia sesión.");
+      return;
+    }
+    try {
+      const url = `${constantUrlApiEndpoint}/admin/details/${deletingDetail.id_detail}/delete`;
+      const response = await axios.delete(url, {
+        headers: { Authorization: `Bearer ${token}`, accept: "application/json" },
+      });
+      console.log("Detalle eliminado:", response.data);
+      notify("Detalle correctamente eliminado");
+      await fetchFetchedDetails();
+    } catch (error: unknown) {
+      console.error("Error al eliminar detalle:", error);
+      notify("Error", "No se pudo eliminar el detalle.");
+    } finally {
+      setShowDeleteModal(false);
+      setDeletingDetail(null);
+    }
+  };
+
+  // ========================================================
+  //   Renderizado de Tablas con edición
+  // ========================================================
+  const renderMurosTable = () => {
+    const columnsMuros = [
+      { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
+      { headerName: "Valor U (W/m²K)", field: "valorU" },
+      { headerName: "Color Exterior", field: "colorExterior" },
+      { headerName: "Color Interior", field: "colorInterior" },
+      { headerName: "Acciones", field: "acciones" },
+    ];
+
+    const data = murosTabList.map((item) => {
+      const isEditing = editingMurosRowId === item.id;
+      return {
+        nombreAbreviado: item.name_detail,
+        valorU: item.value_u ? item.value_u.toFixed(3) : "--",
+        colorExterior: isEditing ? (
+          <select
+            value={editingMurosColors.exterior}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) =>
+              setEditingMurosColors((prev) => ({ ...prev, exterior: e.target.value }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.exterior?.name || "Desconocido"
+        ),
+        colorInterior: isEditing ? (
+          <select
+            value={editingMurosColors.interior}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) =>
+              setEditingMurosColors((prev) => ({ ...prev, interior: e.target.value }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.interior?.name || "Desconocido"
+        ),
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              variant="save"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleConfirmMurosEdit(item);
+              }}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              variant="cancelIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCancelMurosEdit(item);
+              }}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <CustomButton
+            variant="editIcon"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEditMurosClick(item);
+            }}
+          >
+            Editar
+          </CustomButton>
+        ),
+      };
+    });
+
+    return (
+      <div style={{ overflowX: "auto", minWidth: "600px" }}>
+        {murosTabList.length > 0 ? (
+          <TablesParameters columns={columnsMuros} data={data} />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
     );
   };
 
-  // =================== RENDER DE PESTAÑAS Y VISTAS ===================
+  const renderTechumbreTable = () => {
+    const columnsTech = [
+      { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
+      { headerName: "Valor U (W/m²K)", field: "valorU" },
+      { headerName: "Color Exterior", field: "colorExterior" },
+      { headerName: "Color Interior", field: "colorInterior" },
+      { headerName: "Acciones", field: "acciones" },
+    ];
+
+    const data = techumbreTabList.map((item) => {
+      const isEditing = editingTechRowId === item.id;
+      return {
+        nombreAbreviado: item.name_detail,
+        valorU: item.value_u ? item.value_u.toFixed(3) : "--",
+        colorExterior: isEditing ? (
+          <select
+            value={editingTechColors.exterior}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) =>
+              setEditingTechColors((prev) => ({ ...prev, exterior: e.target.value }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.exterior?.name || "Desconocido"
+        ),
+        colorInterior: isEditing ? (
+          <select
+            value={editingTechColors.interior}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) =>
+              setEditingTechColors((prev) => ({ ...prev, interior: e.target.value }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
+        ) : (
+          item.info?.surface_color?.interior?.name || "Desconocido"
+        ),
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              variant="save"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleConfirmTechEdit(item);
+              }}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              variant="cancelIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCancelTechEdit(item);
+              }}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <CustomButton
+            variant="editIcon"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEditTechClick(item);
+            }}
+          >
+            Editar
+          </CustomButton>
+        ),
+      };
+    });
+
+    return (
+      <div style={{ overflowX: "auto", minWidth: "600px" }}>
+        {techumbreTabList.length > 0 ? (
+          <TablesParameters columns={columnsTech} data={data} />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  const renderPisosTable = () => {
+    const columnsPisos = [
+      { headerName: "Nombre", field: "nombre" },
+      { headerName: "U [W/m²K]", field: "uValue" },
+      { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
+      { headerName: "e Aisl [cm] (bajo piso)", field: "bajoPisoEAisl" },
+      { headerName: "I [W/mK] (vert)", field: "vertLambda" },
+      { headerName: "e Aisl [cm] (vert)", field: "vertEAisl" },
+      { headerName: "D [cm] (vert)", field: "vertD" },
+      { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
+      { headerName: "e Aisl [cm] (horiz)", field: "horizEAisl" },
+      { headerName: "D [cm] (horiz)", field: "horizD" },
+      { headerName: "Acciones", field: "acciones" },
+    ];
+
+    const data = pisosTabList.map((item) => {
+      const bajoPiso = item.info?.aislacion_bajo_piso || {};
+      const vert = item.info?.ref_aisl_vertical || {};
+      const horiz = item.info?.ref_aisl_horizontal || {};
+      const isEditing = editingPisoRowId === item.id;
+
+      return {
+        nombre: item.name_detail,
+        uValue: item.value_u ? item.value_u.toFixed(3) : "--",
+        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
+        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
+        vertLambda: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.vertical.lambda}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                vertical: { ...prev.vertical, lambda: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          vert.lambda ? vert.lambda.toFixed(3) : "N/A"
+        ),
+        vertEAisl: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.vertical.e_aisl}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                vertical: { ...prev.vertical, e_aisl: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          vert.e_aisl ?? "N/A"
+        ),
+        vertD: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.vertical.d}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                vertical: { ...prev.vertical, d: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          vert.d ?? "N/A"
+        ),
+        horizLambda: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.horizontal.lambda}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                horizontal: { ...prev.horizontal, lambda: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"
+        ),
+        horizEAisl: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.horizontal.e_aisl}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                horizontal: { ...prev.horizontal, e_aisl: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          horiz.e_aisl ?? "N/A"
+        ),
+        horizD: isEditing ? (
+          <input
+            type="number"
+            className="form-control form-control-sm"
+            value={editingPisoForm.horizontal.d}
+            onChange={(e) =>
+              setEditingPisoForm((prev) => ({
+                ...prev,
+                horizontal: { ...prev.horizontal, d: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          horiz.d ?? "N/A"
+        ),
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              variant="save"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleConfirmPisoEdit(item);
+              }}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              variant="cancelIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCancelPisoEdit();
+              }}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <CustomButton
+            variant="editIcon"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEditPisoClick(item);
+            }}
+          >
+            Editar
+          </CustomButton>
+        ),
+      };
+    });
+
+    return (
+      <div style={{ overflowX: "auto", minWidth: "600px" }}>
+        {pisosTabList.length > 0 ? (
+          <TablesParameters columns={columnsPisos} data={data} />
+        ) : (
+          <p>No hay datos</p>
+        )}
+      </div>
+    );
+  };
+
+  // ========================================================
+  //   Renderizado "Detalles Generales" (Vista inicial)
+  // ========================================================
+  const renderInitialDetails = (inModal: boolean = false) => {
+    const columnsDetails = [
+      { headerName: "Ubicación Detalle", field: "scantilon_location" },
+      { headerName: "Nombre Detalle", field: "name_detail" },
+      { headerName: "Material", field: "material" },
+      { headerName: "Espesor capa (cm)", field: "layer_thickness" },
+    ];
+
+    let filteredData = fetchedDetails.filter((det) => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        det.scantilon_location.toLowerCase().includes(searchLower) ||
+        det.name_detail.toLowerCase().includes(searchLower) ||
+        det.material.toLowerCase().includes(searchLower) ||
+        det.layer_thickness.toString().includes(searchLower)
+      );
+    });
+
+    if (inModal) {
+      if (tabStep4 === "muros") {
+        filteredData = filteredData.filter(
+          (det) => det.scantilon_location.toLowerCase() === "muro"
+        );
+      } else if (tabStep4 === "techumbre") {
+        filteredData = filteredData.filter(
+          (det) => det.scantilon_location.toLowerCase() === "techo"
+        );
+      } else if (tabStep4 === "pisos") {
+        filteredData = filteredData.filter(
+          (det) => det.scantilon_location.toLowerCase() === "piso"
+        );
+      }
+    }
+
+    return (
+      <>
+        {!inModal && (
+          <SearchParameters
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Buscar..."
+            onNew={handleNewButtonClick}
+            newButtonText="Nuevo"
+            style={{ marginBottom: "1rem" }}
+          />
+        )}
+
+        <div
+          className="custom-table-container"
+          style={{
+            height: "400px",
+            overflowY: "auto",
+            overflowX: "auto",
+          }}
+        >
+          <TablesParameters columns={columnsDetails} data={filteredData} />
+        </div>
+
+        {!inModal && (
+          <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+            <CustomButton
+              variant="save"
+              onClick={() => {
+                if (inModal) setShowGeneralDetailsModal(false);
+                else setShowTabsInStep4(false);
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "12px 67px",
+                borderRadius: "8px",
+                height: "40px",
+                marginTop: "30px",
+              }}
+            >
+              <span className="material-icons">arrow_back</span> Volver
+            </CustomButton>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  // ========================================================
+  //   Renderizado de las pestañas (Muros, Techumbre, Pisos)
+  // ========================================================
   const renderDetailsTabs = () => (
     <div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+        <CustomButton
+          onClick={handleNewButtonClick}
+          style={{
+            padding: "8px 16px",
+            borderRadius: "8px",
+            height: "40px",
+          }}
+        >
+          + Nuevo
+        </CustomButton>
+      </div>
+
       <ul
         className="nav"
         style={{
@@ -484,128 +1045,42 @@ const ConstructiveDetailsComponent: React.FC = () => {
       </ul>
 
       <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
-        {tabStep4 === "muros" && renderMurosTable()}
-        {tabStep4 === "techumbre" && renderTechumbreTable()}
-        {tabStep4 === "pisos" && renderPisosTable()}
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
-        <CustomButton
-          variant="save"
-          onClick={() => setShowTabsInStep4(false)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "12px 67px",
-            borderRadius: "8px",
-            height: "40px",
-            marginTop: "30px",
-          }}
-        >
-          <span className="material-icons" style={{ fontSize: "24px" }}>
-            visibility
-          </span>
-          &nbsp;Ver Detalles Generales
-        </CustomButton>
+        {tabStep4 === "muros" && (
+          <div onClick={() => setShowGeneralDetailsModal(true)}>
+            {renderMurosTable()}
+          </div>
+        )}
+        {tabStep4 === "techumbre" && (
+          <div onClick={() => setShowGeneralDetailsModal(true)}>
+            {renderTechumbreTable()}
+          </div>
+        )}
+        {tabStep4 === "pisos" && (
+          <div onClick={() => setShowGeneralDetailsModal(true)}>
+            {renderPisosTable()}
+          </div>
+        )}
       </div>
     </div>
   );
 
-  const renderInitialDetails = () => {
-    // Se añade la columna "Acciones"
-    const columnsDetails = [
-      { headerName: "Ubicación Detalle", field: "scantilon_location" },
-      { headerName: "Nombre Detalle", field: "name_detail" },
-      { headerName: "Material", field: "material" },
-      { headerName: "Espesor capa (cm)", field: "layer_thickness" },
-      { headerName: "Accion", field: "action" },
-    ];
-
-    // Se filtran los datos según la búsqueda y se agrega la columna con ActionButtons
-    const filteredData = fetchedDetails
-      .filter((det) => {
-        const searchLower = searchQuery.toLowerCase();
-        return (
-          det.scantilon_location.toLowerCase().includes(searchLower) ||
-          det.name_detail.toLowerCase().includes(searchLower) ||
-          det.material.toLowerCase().includes(searchLower) ||
-          det.layer_thickness.toString().includes(searchLower)
-        );
-      })
-      .map((detail) => ({
-        ...detail,
-        action: (
-          <ActionButtons
-            onEdit={() => handleEdit(detail.id_detail)}
-            onDelete={() => handleDelete(detail.id_detail)}
-          />
-        ),
-      }));
-
-    return (
-      <>
-        <SearchParameters
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Buscar..."
-          onNew={handleNewButtonClick}
-          newButtonText="Nuevo"
-          style={{ marginBottom: "1rem" }}
-        />
-
-        <div className="custom-table-container" style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
-          <TablesParameters columns={columnsDetails} data={filteredData} />
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "10px",
-            marginTop: "30px",
-            marginBottom: "10px",
-          }}
-        >
-          <div style={{ width: "100%", padding: "10px" }}>
-            <CustomButton
-              id="mostrar-datos-btn"
-              variant="save"
-              onClick={saveDetails}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
-                height: "min(3rem, 8vh)",
-                minWidth: "6rem",
-              }}
-            >
-              <span className="material-icons">arrow_back</span> Volver
-            </CustomButton>
-          </div>
-        </div>
-      </>
-    );
-  };
-
-  // Agregamos un log para confirmar el valor del modal de eliminación
-  console.log("showDeleteModal:", showDeleteModal);
-
+  // ========================================================
+  //   Render principal del componente
+  // ========================================================
   return (
     <div className="constructive-details-container" style={{ padding: "20px" }}>
       <div style={{ marginTop: "20px" }}>
         {showTabsInStep4 ? renderDetailsTabs() : renderInitialDetails()}
       </div>
 
-      {/* Modal para crear nuevo detalle */}
+      {/* MODAL: Crear Nuevo Detalle */}
       <ModalCreate
         isOpen={showNewDetailRow}
         onClose={() => setShowNewDetailRow(false)}
         onSave={handleCreateNewDetail}
         title="Nuevo Detalle"
         saveLabel="Crear"
+        detail={newDetailForm}
       >
         <form
           onSubmit={(e) => {
@@ -675,16 +1150,19 @@ const ConstructiveDetailsComponent: React.FC = () => {
         </form>
       </ModalCreate>
 
-      {/* Modal para confirmar eliminación de detalle */}
+      {/* MODAL: Confirmar Eliminación */}
       <ModalCreate
         isOpen={showDeleteModal}
         onClose={() => {
           setShowDeleteModal(false);
           setDeletingDetail(null);
         }}
-        onSave={confirmDeleteDetail}
+        onSave={async () => {
+          await confirmDeleteDetail();
+        }}
         title="Confirmar Eliminación"
         saveLabel="Eliminar"
+        detail={deletingDetail}
       >
         <p>
           ¿Estás seguro que deseas eliminar el detalle{" "}
@@ -692,6 +1170,22 @@ const ConstructiveDetailsComponent: React.FC = () => {
         </p>
       </ModalCreate>
 
+      {/* MODAL: Detalles Generales (sin footer) */}
+      <ModalCreate
+        isOpen={showGeneralDetailsModal}
+        onClose={() => setShowGeneralDetailsModal(false)}
+        onSave={() => {}}
+        title="Detalles Generales"
+        detail={null}
+        modalStyle={{
+          maxWidth: "70%",
+          width: "70%",
+          padding: "32px",
+        }}
+        hideFooter={true}
+      >
+        {renderInitialDetails(true)}
+      </ModalCreate>
     </div>
   );
 };

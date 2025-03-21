@@ -189,7 +189,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
         >
           <div style={logoContainerStyle}>
               <Image
-                src={isMobile ? "/assets/images/proyecto-deuman-logo.png" : "/assets/images/ceela.png"}
+                src={isNavOpen ? "/assets/images/ceela.png" : "/assets/images/logo-min.png"}
                 alt="Logo"
                 width={isMobile ? mobileLogoWidth : desktopLogoWidth}
                 height={isMobile ? mobileLogoHeight : desktopLogoHeight}

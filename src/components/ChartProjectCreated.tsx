@@ -2,6 +2,7 @@ import { ApexOptions } from 'apexcharts';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
+import Title from './Title';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -54,45 +55,157 @@ const ChartProjectCreated: React.FC = () => {
 
     const chartOptions: ApexOptions = {
         chart: {
-            type: 'bar',
-            height: 350,
-            foreColor: '#8d8d8d',
-            background: 'transparent'
-        },
-        plotOptions: {
-            bar: {
-                columnWidth: '40%',
-                borderRadius: 0
+            height: 335,
+            type: 'area',
+            stacked: false,
+            toolbar: {
+                show: false,
             },
-        },
-        fill: {
-            type: 'gradient',
-            gradient: {
-                shade: 'light',
-                type: 'vertical',
-                shadeIntensity: 0,
-                gradientToColors: ['#FFFFFF'],
-                inverseColors: false,
-                opacityFrom: 1,
-                opacityTo: 1,
-                stops: [0, 90, 100]
+            dropShadow: {
+                enabled: true,
+                color: '#64748B',
+                top: 12,
+                left: 5,
+                blur: 15,
+                opacity: 0.15
+            },
+            animations: {
+                enabled: true,
+                speed: 800,
+                animateGradually: {
+                    enabled: true,
+                    delay: 150
+                },
+                dynamicAnimation: {
+                    enabled: true,
+                    speed: 350
+                }
             }
         },
         stroke: {
-            show: false
+            width: [3, 2],
+            curve: ['stepline'],
+            dashArray: [0, 5]
         },
-        colors: ['#008FFB'],
-        title: {
-            text: `Proyectos Creados por Mes - ${selectedYear}`,
-            align: 'center'
+
+        plotOptions: {
+            bar: {
+                columnWidth: '100px'
+            }
+        },
+        colors: ['#00B4D8', '#00B4D8'],
+        fill: {
+            type: "gradient",
+            gradient: {
+                type: "vertical",
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.2,
+                stops: [0, 90, 100],
+                colorStops: [
+                    {
+                        offset: 0,
+                        color: '#00B4D8',
+                        opacity: 0.7
+                    },
+                    {
+                        offset: 100,
+                        color: '#90E0EF',
+                        opacity: 0.2
+                    }
+                ]
+            }
+        },
+        grid: {
+            show: true,
+            borderColor: '#E2E8F0',
+            strokeDashArray: 0,
+            position: 'back',
+            xaxis: {
+                lines: {
+                    show: true
+                }
+            },
+            yaxis: {
+                lines: {
+                    show: true
+                }
+            },
+            row: {
+                colors: ['transparent', 'rgba(0, 0, 0, 0.02)'],
+                opacity: 0.5
+            },
+            column: {
+                colors: ['transparent', 'rgba(0, 0, 0, 0.02)'],
+                opacity: 0.5
+            },
+            padding: {
+                top: 10,
+                right: 10,
+                bottom: 10,
+                left: 10
+            },
+        },
+        markers: {
+            size: 5,
+            colors: ['#00B4D8'],
+            strokeColors: '#fff',
+            strokeWidth: 2,
+            hover: {
+                size: 7
+            }
         },
         xaxis: {
             categories: months,
+            axisBorder: {
+                show: false
+            },
+            axisTicks: {
+                show: false
+            },
+            labels: {
+                style: {
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    colors: '#64748B',
+                    fontFamily: 'Outfit, sans-serif',
+                },
+                offsetY: 5
+            },
         },
         yaxis: {
-            title: {
-                text: 'Cantidad',
+            show: true,
+            labels: {
+                style: {
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    colors: '#64748B',
+                    fontFamily: 'Noto Sans, sans-serif',
+                },
+                formatter: function (value) {
+                    return Math.round(value).toString();
+                }
             },
+        },
+        dataLabels: {
+            enabled: false,
+        },
+        legend: {
+            show: false,
+        },
+        tooltip: {
+            style: {
+                fontSize: '12px',
+                fontFamily: 'Outfit, sans-serif',
+            },
+            y: {
+                formatter: function (value) {
+                    return value + ' proyectos';
+                }
+            },
+            marker: {
+                show: false
+            }
         },
     };
 
@@ -100,7 +213,8 @@ const ChartProjectCreated: React.FC = () => {
         {
             name: 'Proyectos',
             data: chartData,
-        },
+            type: 'area'
+        }
     ];
 
     const availableYears = [2021, 2022, 2023, 2024, new Date().getFullYear()];
@@ -110,37 +224,38 @@ const ChartProjectCreated: React.FC = () => {
     }
 
     return (
-            <div className="card">
-                <div className="card-header pb-0">
-                    <div className="header-top d-flex justify-content-between align-items-center">
-                        <div>
-                            <select
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(Number(e.target.value))}
-                                className="form-select"
-                            >
-                                {availableYears.map((year) => (
-                                    <option key={year} value={year}>
-                                        {year}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div className="card-body p-0">
-                    <div id="revenuegrowth-1" style={{ minHeight: '350px' }}>
-                        <div id="chart">
-                            <ReactApexChart
-                                options={chartOptions}
-                                series={series}
-                                type="bar"
-                                height={350}
-                            />
-                        </div>
+        <div className="card mb-0">
+            <div className="card-header">
+                <Title text="Proyectos creados" />
+                <div className="header-top d-flex justify-content-between align-items-center">
+                    <div>
+                        <select
+                            value={selectedYear}
+                            onChange={(e) => setSelectedYear(Number(e.target.value))}
+                            className="form-select"
+                        >
+                            {availableYears.map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
             </div>
+            <div className="card-body p-0 mb-0">
+                <div id="revenuegrowth-1" style={{ minHeight: '350px' }}>
+                    <div id="chart">
+                        <ReactApexChart
+                            options={chartOptions}
+                            series={series}
+                            type="line"
+                            height={350}
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 

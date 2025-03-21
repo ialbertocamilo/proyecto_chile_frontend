@@ -230,11 +230,11 @@ const ProjectListPage = () => {
         />
 
         {/* Sección para los nuevos componentes en columnas laterales */}
-        <div className="row mt-4">
-          <div className="col-md-6 col-xl-6 col-lg-">
+        <div className="row mt-4 mb-4">
+          <div className="col-md-6 col-xl-6">
             <ChartProjectCreated />
           </div>
-          <div className="col-md-6">
+          <div className="col-md-6 col-xl-6">
             <WelcomeCard />
           </div>
         </div>

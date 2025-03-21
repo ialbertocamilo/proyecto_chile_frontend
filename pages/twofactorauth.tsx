@@ -147,7 +147,7 @@ const TwoFactorAuth: NextPageWithLayout = () => {
     <div
       style={{
         minHeight: "100vh",
-        background: "url('/assets/images/background.jpg') no-repeat center center/cover",
+        background: "url('/assets/images/login_background.png') no-repeat center center/cover",
         fontFamily: "var(--font-family-base)",
         display: "flex",
         justifyContent: "center",

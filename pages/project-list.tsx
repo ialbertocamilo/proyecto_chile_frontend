@@ -58,7 +58,9 @@ const ProjectListPage = () => {
   const [projectToDelete, setProjectToDelete] = useState<{ id: number; name: string } | null>(null);
 
   const { get } =useApiNext();
-  
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
   const fetchProjects = async (): Promise<void> => {
     setLoading(true);

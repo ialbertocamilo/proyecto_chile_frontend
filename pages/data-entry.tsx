@@ -16,6 +16,7 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import TablesParameters from "@/components/tables/TablesParameters";
 import UseProfileTab from "../src/components/UseProfileTab";
+import ActionButtons from "@/components/common/ActionButtons";
 
 interface MaterialAtributs {
   name: string;
@@ -124,6 +125,10 @@ const DataEntryPage: React.FC = () => {
   const [modalElementType, setModalElementType] = useState<string>("ventanas");
   const [elementsList, setElementsList] = useState<ElementBase[]>([]);
   const [showElementModal, setShowElementModal] = useState(false);
+  const [elementSearch, setElementSearch] = useState("");
+  const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
+
+  // Estados para creación de ventana y puerta
   const [windowData, setWindowData] = useState({
     name_element: "",
     u_vidrio: "",
@@ -143,8 +148,12 @@ const DataEntryPage: React.FC = () => {
     fm: "",
   });
   const [allWindowsForDoor, setAllWindowsForDoor] = useState<ElementBase[]>([]);
-  const [elementSearch, setElementSearch] = useState("");
-  const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
+
+  // Estados para edición de elementos
+  const [editingWindowData, setEditingWindowData] = useState<ElementBase | null>(null);
+  const [editingDoorData, setEditingDoorData] = useState<ElementBase | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [deleteAction, setDeleteAction] = useState<(() => void) | null>(null);
 
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   useEffect(() => {
@@ -198,7 +207,6 @@ const DataEntryPage: React.FC = () => {
       setMaterialsList(allMaterials);
     } catch (error) {
       console.error("Error al obtener materiales:", error);
-      // Solo lo registramos
     }
   }, []);
 
@@ -346,7 +354,6 @@ const DataEntryPage: React.FC = () => {
       );
       setElementsList((prev) => [...prev, response.data.element]);
       setAllWindowsForDoor((prev) => [...prev, response.data.element]);
-
       notify(`La ventana "${windowData.name_element}" fue creada exitosamente`);
       setWindowData({
         name_element: "",
@@ -417,7 +424,6 @@ const DataEntryPage: React.FC = () => {
         }
       );
       setElementsList((prev) => [...prev, response.data.element]);
-
       notify(`La puerta "${doorData.name_element}" fue creada exitosamente`);
       setDoorData({
         name_element: "",
@@ -441,6 +447,86 @@ const DataEntryPage: React.FC = () => {
       }
       console.error("Error al crear puerta:", error);
       return false;
+    }
+  };
+
+  // === Funciones para eliminación de elemento (ventana o puerta) ===
+  const handleDeleteElement = async (elementId: number, type: "window" | "door") => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const url = `${constantUrlApiEndpoint}/elements/${elementId}/delete?type=${type}`;
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.delete(url, { headers });
+      notify("Elemento eliminado exitosamente");
+      setElementsList((prev) => prev.filter((el) => el.id !== elementId));
+    } catch (error) {
+      console.error("Error al eliminar elemento:", error);
+      notify("Error al eliminar el elemento");
+    }
+  };
+
+  const confirmDeleteElement = (elementId: number, type: "window" | "door") => {
+    setDeleteAction(() => () => handleDeleteElement(elementId, type));
+    setShowConfirmModal(true);
+  };
+
+  // === Funciones para edición de elementos ===
+  const handleConfirmWindowEdit = async (element: ElementBase) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const url = `${constantUrlApiEndpoint}/elements/${element.id}/update`;
+      const headers = {
+        "Content-Type": "application/json",
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+      const body = {
+        name_element: element.name_element,
+        type: "window",
+        atributs: element.atributs,
+        u_marco: element.u_marco,
+        fm: element.fm,
+      };
+      await axios.put(url, body, { headers });
+      notify("Ventana actualizada con éxito");
+      setElementsList((prev) =>
+        prev.map((el) => (el.id === element.id ? element : el))
+      );
+      setEditingWindowData(null);
+    } catch (error) {
+      console.error("Error al actualizar ventana:", error);
+      notify("Error al actualizar la ventana");
+    }
+  };
+
+  const handleConfirmDoorEdit = async (element: ElementBase) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const url = `${constantUrlApiEndpoint}/elements/${element.id}/update`;
+      const headers = {
+        "Content-Type": "application/json",
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+      const body = {
+        name_element: element.name_element,
+        type: "door",
+        atributs: element.atributs,
+        u_marco: element.u_marco,
+        fm: element.fm,
+      };
+      await axios.put(url, body, { headers });
+      notify("Puerta actualizada con éxito");
+      setElementsList((prev) =>
+        prev.map((el) => (el.id === element.id ? element : el))
+      );
+      setEditingDoorData(null);
+    } catch (error) {
+      console.error("Error al actualizar puerta:", error);
+      notify("Error al actualizar la puerta");
     }
   };
 
@@ -502,7 +588,6 @@ const DataEntryPage: React.FC = () => {
 
   // === RENDER DE STEP 3: Lista de Materiales (SIN multiheader)
   const renderStep3Materials = () => {
-    // Definimos columnas
     const columnsMaterials = [
       { headerName: "Nombre Material", field: "materialName" },
       { headerName: "Conductividad (W/m2K)", field: "conductivity" },
@@ -510,12 +595,9 @@ const DataEntryPage: React.FC = () => {
       { headerName: "Densidad (kg/m3)", field: "density" },
     ];
 
-    // Filtrar y mapear la data
     const filteredMaterialData = materialsList
       .filter((mat) =>
-        mat.atributs.name
-          .toLowerCase()
-          .includes(materialSearch.toLowerCase())
+        mat.atributs.name.toLowerCase().includes(materialSearch.toLowerCase())
       )
       .map((mat) => ({
         materialName: mat.atributs.name,
@@ -541,10 +623,10 @@ const DataEntryPage: React.FC = () => {
     );
   };
 
-  // === RENDER DE STEP 5: Elementos Translúcidos (Ventanas / Puertas) (SIN multiheader)
+  // === RENDER DE STEP 5: Elementos Translúcidos (Ventanas / Puertas) CON ACCIONES
   const renderStep5Elements = () => {
     if (modalElementType === "ventanas") {
-      // Columns para Ventanas
+      // Columns para Ventanas con columna de acciones
       const columnsVentanas = [
         { headerName: "Nombre Elemento", field: "name_element" },
         { headerName: "U Vidrio [W/m2K]", field: "u_vidrio" },
@@ -553,16 +635,14 @@ const DataEntryPage: React.FC = () => {
         { headerName: "Tipo Marco", field: "frame_type" },
         { headerName: "U Marco [W/m2K]", field: "u_marco" },
         { headerName: "FM [%]", field: "fm" },
+        { headerName: "Acciones", field: "acciones" },
       ];
 
-      // Mapeamos la data
-      const filteredData = elementsList
+      const ventanasData = elementsList
         .filter(
           (el) =>
             el.type === "window" &&
-            el.name_element
-              .toLowerCase()
-              .includes(elementSearch.toLowerCase())
+            el.name_element.toLowerCase().includes(elementSearch.toLowerCase())
         )
         .map((el) => ({
           name_element: el.name_element,
@@ -578,6 +658,12 @@ const DataEntryPage: React.FC = () => {
           frame_type: el.atributs.frame_type ?? "--",
           u_marco: el.u_marco,
           fm: (el.fm * 100).toFixed(0) + "%",
+          acciones: (
+            <ActionButtons
+              onEdit={() => setEditingWindowData(el)}
+              onDelete={() => confirmDeleteElement(el.id, "window")}
+            />
+          ),
         }));
 
       return (
@@ -605,12 +691,12 @@ const DataEntryPage: React.FC = () => {
                 ))}
               </div>
             </div>
-            <TablesParameters columns={columnsVentanas} data={filteredData} />
+            <TablesParameters columns={columnsVentanas} data={ventanasData} />
           </div>
         </>
       );
     } else {
-      // Columns para Puertas
+      // Columns para Puertas con columna de acciones
       const columnsPuertas = [
         { headerName: "Nombre Elemento", field: "name_element" },
         { headerName: "U Puerta opaca [W/m2K]", field: "u_puerta_opaca" },
@@ -618,15 +704,14 @@ const DataEntryPage: React.FC = () => {
         { headerName: "% Vidrio", field: "porcentaje_vidrio" },
         { headerName: "U Marco [W/m2K]", field: "u_marco" },
         { headerName: "FM [%]", field: "fm" },
+        { headerName: "Acciones", field: "acciones" },
       ];
 
-      const filteredData = elementsList
+      const puertasData = elementsList
         .filter(
           (el) =>
             el.type === "door" &&
-            el.name_element
-              .toLowerCase()
-              .includes(elementSearch.toLowerCase())
+            el.name_element.toLowerCase().includes(elementSearch.toLowerCase())
         )
         .map((el) => ({
           name_element: el.name_element,
@@ -641,6 +726,12 @@ const DataEntryPage: React.FC = () => {
               : "0%",
           u_marco: el.u_marco,
           fm: (el.fm * 100).toFixed(0) + "%",
+          acciones: (
+            <ActionButtons
+              onEdit={() => setEditingDoorData(el)}
+              onDelete={() => confirmDeleteElement(el.id, "door")}
+            />
+          ),
         }));
 
       return (
@@ -668,7 +759,7 @@ const DataEntryPage: React.FC = () => {
                 ))}
               </div>
             </div>
-            <TablesParameters columns={columnsPuertas} data={filteredData} />
+            <TablesParameters columns={columnsPuertas} data={puertasData} />
           </div>
         </>
       );
@@ -697,34 +788,29 @@ const DataEntryPage: React.FC = () => {
       </Card>
 
       <Card>
-  <div className="row">
-    {/* Columna para Sidebar */}
-    <div className="col-12 col-md-3">
-      <AdminSidebar
-        activeStep={step}
-        onStepChange={setStep}
-        steps={[
-          { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de materiales" },
-          { stepNumber: 5, iconName: "home", title: "Elementos translúcidos" },
-          { stepNumber: 6, iconName: "deck", title: "Perfil de uso" },
-        ]}
-      />
-    </div>
+        <div className="row">
+          {/* Sidebar */}
+          <div className="col-12 col-md-3">
+            <AdminSidebar
+              activeStep={step}
+              onStepChange={setStep}
+              steps={[
+                { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de materiales" },
+                { stepNumber: 5, iconName: "home", title: "Elementos translúcidos" },
+                { stepNumber: 6, iconName: "deck", title: "Perfil de uso" },
+              ]}
+            />
+          </div>
 
-    {/* Columna para contenido principal */}
-    <div className="col-12 col-md-9 p-4">
-      {step === 3 && (
-        <div className="px-3">{renderStep3Materials()}</div>
-      )}
+          {/* Contenido principal */}
+          <div className="col-12 col-md-9 p-4">
+            {step === 3 && <div className="px-3">{renderStep3Materials()}</div>}
+            {step === 5 && <div className="px-3">{renderStep5Elements()}</div>}
+            {step === 6 && renderStep6Profile()}
+          </div>
+        </div>
+      </Card>
 
-      {step === 5 && (
-        <div className="px-3">{renderStep5Elements()}</div>
-      )}
-
-      {step === 6 && renderStep6Profile()}
-    </div>
-  </div>
-</Card>
       {/* Modal para crear Material */}
       {showMaterialModal && (
         <ModalCreate
@@ -756,10 +842,7 @@ const DataEntryPage: React.FC = () => {
                 placeholder="Nombre"
                 value={newMaterialData.name}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({
-                    ...prev,
-                    name: e.target.value,
-                  }))
+                  setNewMaterialData((prev) => ({ ...prev, name: e.target.value }))
                 }
               />
             </div>
@@ -775,10 +858,7 @@ const DataEntryPage: React.FC = () => {
                 placeholder="Conductividad"
                 value={newMaterialData.conductivity}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({
-                    ...prev,
-                    conductivity: e.target.value,
-                  }))
+                  setNewMaterialData((prev) => ({ ...prev, conductivity: e.target.value }))
                 }
                 onKeyDown={handleNumberKeyDown}
               />
@@ -795,10 +875,7 @@ const DataEntryPage: React.FC = () => {
                 placeholder="Calor específico"
                 value={newMaterialData.specific_heat}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({
-                    ...prev,
-                    specific_heat: e.target.value,
-                  }))
+                  setNewMaterialData((prev) => ({ ...prev, specific_heat: e.target.value }))
                 }
                 onKeyDown={handleNumberKeyDown}
               />
@@ -815,10 +892,7 @@ const DataEntryPage: React.FC = () => {
                 placeholder="Densidad"
                 value={newMaterialData.density}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({
-                    ...prev,
-                    density: e.target.value,
-                  }))
+                  setNewMaterialData((prev) => ({ ...prev, density: e.target.value }))
                 }
                 onKeyDown={handleNumberKeyDown}
               />
@@ -827,7 +901,7 @@ const DataEntryPage: React.FC = () => {
         </ModalCreate>
       )}
 
-      {/* Modal para crear Elemento translúcido */}
+      {/* Modal para crear Elemento translúcido (Ventana o Puerta) */}
       {showElementModal && (
         <ModalCreate
           isOpen={showElementModal}
@@ -864,38 +938,25 @@ const DataEntryPage: React.FC = () => {
               if (success) setShowElementModal(false);
             }
           }}
-          title={
-            modalElementType === "ventanas" ? "Nueva Ventana" : "Nueva Puerta"
-          }
-          saveLabel={
-            modalElementType === "ventanas" ? "Crear Ventana" : "Crear Puerta"
-          }
+          title={modalElementType === "ventanas" ? "Nueva Ventana" : "Nueva Puerta"}
+          saveLabel={modalElementType === "ventanas" ? "Crear Ventana" : "Crear Puerta"}
         >
           {modalElementType === "ventanas" ? (
             <div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="Nombre"
-                  value={windowData.name_element}
-                />
+                <LabelWithAsterisk label="Nombre" value={windowData.name_element} />
                 <input
                   type="text"
                   className="form-control"
                   placeholder="Nombre"
                   value={windowData.name_element}
                   onChange={(e) =>
-                    setWindowData((prev) => ({
-                      ...prev,
-                      name_element: e.target.value,
-                    }))
+                    setWindowData((prev) => ({ ...prev, name_element: e.target.value }))
                   }
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="U Vidrio [W/m2K]"
-                  value={windowData.u_vidrio}
-                />
+                <LabelWithAsterisk label="U Vidrio [W/m2K]" value={windowData.u_vidrio} />
                 <input
                   type="number"
                   min="0"
@@ -903,19 +964,13 @@ const DataEntryPage: React.FC = () => {
                   placeholder="U Vidrio"
                   value={windowData.u_vidrio}
                   onChange={(e) =>
-                    setWindowData((prev) => ({
-                      ...prev,
-                      u_vidrio: e.target.value,
-                    }))
+                    setWindowData((prev) => ({ ...prev, u_vidrio: e.target.value }))
                   }
                   onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="FS Vidrio"
-                  value={windowData.fs_vidrio}
-                />
+                <LabelWithAsterisk label="FS Vidrio" value={windowData.fs_vidrio} />
                 <input
                   type="number"
                   min="0"
@@ -923,27 +978,18 @@ const DataEntryPage: React.FC = () => {
                   placeholder="FS Vidrio"
                   value={windowData.fs_vidrio}
                   onChange={(e) =>
-                    setWindowData((prev) => ({
-                      ...prev,
-                      fs_vidrio: e.target.value,
-                    }))
+                    setWindowData((prev) => ({ ...prev, fs_vidrio: e.target.value }))
                   }
                   onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="Tipo Cierre"
-                  value={windowData.clousure_type}
-                />
+                <LabelWithAsterisk label="Tipo Cierre" value={windowData.clousure_type} />
                 <select
                   className="form-control"
                   value={windowData.clousure_type}
                   onChange={(e) =>
-                    setWindowData((prev) => ({
-                      ...prev,
-                      clousure_type: e.target.value,
-                    }))
+                    setWindowData((prev) => ({ ...prev, clousure_type: e.target.value }))
                   }
                 >
                   <option value="">Seleccione</option>
@@ -955,18 +1001,12 @@ const DataEntryPage: React.FC = () => {
                 </select>
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="Tipo Marco"
-                  value={windowData.frame_type}
-                />
+                <LabelWithAsterisk label="Tipo Marco" value={windowData.frame_type} />
                 <select
                   className="form-control"
                   value={windowData.frame_type}
                   onChange={(e) =>
-                    setWindowData((prev) => ({
-                      ...prev,
-                      frame_type: e.target.value,
-                    }))
+                    setWindowData((prev) => ({ ...prev, frame_type: e.target.value }))
                   }
                 >
                   <option value="">Seleccione</option>
@@ -980,10 +1020,7 @@ const DataEntryPage: React.FC = () => {
                 </select>
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="U Marco [W/m2K]"
-                  value={windowData.u_marco}
-                />
+                <LabelWithAsterisk label="U Marco [W/m2K]" value={windowData.u_marco} />
                 <input
                   type="number"
                   min="0"
@@ -991,10 +1028,7 @@ const DataEntryPage: React.FC = () => {
                   placeholder="U Marco"
                   value={windowData.u_marco}
                   onChange={(e) =>
-                    setWindowData((prev) => ({
-                      ...prev,
-                      u_marco: e.target.value,
-                    }))
+                    setWindowData((prev) => ({ ...prev, u_marco: e.target.value }))
                   }
                   onKeyDown={handleNumberKeyDown}
                 />
@@ -1014,10 +1048,7 @@ const DataEntryPage: React.FC = () => {
                       setWindowData((prev) => ({ ...prev, fm: "" }));
                     } else {
                       const validated = validatePercentage(value);
-                      setWindowData((prev) => ({
-                        ...prev,
-                        fm: validated.toString(),
-                      }));
+                      setWindowData((prev) => ({ ...prev, fm: validated.toString() }));
                     }
                   }}
                   onKeyDown={handleNumberKeyDown}
@@ -1027,28 +1058,19 @@ const DataEntryPage: React.FC = () => {
           ) : (
             <div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="Nombre"
-                  value={doorData.name_element}
-                />
+                <LabelWithAsterisk label="Nombre" value={doorData.name_element} />
                 <input
                   type="text"
                   className="form-control"
                   placeholder="Nombre"
                   value={doorData.name_element}
                   onChange={(e) =>
-                    setDoorData((prev) => ({
-                      ...prev,
-                      name_element: e.target.value,
-                    }))
+                    setDoorData((prev) => ({ ...prev, name_element: e.target.value }))
                   }
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="U Puerta opaca [W/m2K]"
-                  value={doorData.u_puerta_opaca}
-                />
+                <LabelWithAsterisk label="U Puerta opaca [W/m2K]" value={doorData.u_puerta_opaca} />
                 <input
                   type="number"
                   min="0"
@@ -1056,20 +1078,13 @@ const DataEntryPage: React.FC = () => {
                   placeholder="U Puerta opaca"
                   value={doorData.u_puerta_opaca}
                   onChange={(e) =>
-                    setDoorData((prev) => ({
-                      ...prev,
-                      u_puerta_opaca: e.target.value,
-                    }))
+                    setDoorData((prev) => ({ ...prev, u_puerta_opaca: e.target.value }))
                   }
                   onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="Ventana Asociada"
-                  value={doorData.ventana_id}
-                  required={false}
-                />
+                <LabelWithAsterisk label="Ventana Asociada" value={doorData.ventana_id} required={false} />
                 <select
                   className="form-control"
                   value={doorData.ventana_id}
@@ -1079,9 +1094,7 @@ const DataEntryPage: React.FC = () => {
                       ...prev,
                       ventana_id: winId,
                       name_ventana:
-                        allWindowsForDoor.find(
-                          (win) => win.id === parseInt(winId)
-                        )?.name_element || "",
+                        allWindowsForDoor.find((win) => win.id === parseInt(winId))?.name_element || "",
                     }));
                   }}
                 >
@@ -1094,11 +1107,7 @@ const DataEntryPage: React.FC = () => {
                 </select>
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="% Vidrio"
-                  value={doorData.porcentaje_vidrio}
-                  required={false}
-                />
+                <LabelWithAsterisk label="% Vidrio" value={doorData.porcentaje_vidrio} required={false} />
                 <input
                   type="number"
                   min="0"
@@ -1109,16 +1118,10 @@ const DataEntryPage: React.FC = () => {
                   onChange={(e) => {
                     const value = parseFloat(e.target.value);
                     if (isNaN(value)) {
-                      setDoorData((prev) => ({
-                        ...prev,
-                        porcentaje_vidrio: "",
-                      }));
+                      setDoorData((prev) => ({ ...prev, porcentaje_vidrio: "" }));
                     } else {
                       const validated = validatePercentage(value);
-                      setDoorData((prev) => ({
-                        ...prev,
-                        porcentaje_vidrio: validated.toString(),
-                      }));
+                      setDoorData((prev) => ({ ...prev, porcentaje_vidrio: validated.toString() }));
                     }
                   }}
                   onKeyDown={handleNumberKeyDown}
@@ -1126,10 +1129,7 @@ const DataEntryPage: React.FC = () => {
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk
-                  label="U Marco [W/m2K]"
-                  value={doorData.u_marco}
-                />
+                <LabelWithAsterisk label="U Marco [W/m2K]" value={doorData.u_marco} />
                 <input
                   type="number"
                   min="0"
@@ -1137,10 +1137,7 @@ const DataEntryPage: React.FC = () => {
                   placeholder="U Marco"
                   value={doorData.u_marco}
                   onChange={(e) =>
-                    setDoorData((prev) => ({
-                      ...prev,
-                      u_marco: e.target.value,
-                    }))
+                    setDoorData((prev) => ({ ...prev, u_marco: e.target.value }))
                   }
                   onKeyDown={handleNumberKeyDown}
                 />
@@ -1160,10 +1157,7 @@ const DataEntryPage: React.FC = () => {
                       setDoorData((prev) => ({ ...prev, fm: "" }));
                     } else {
                       const validated = validatePercentage(value);
-                      setDoorData((prev) => ({
-                        ...prev,
-                        fm: validated.toString(),
-                      }));
+                      setDoorData((prev) => ({ ...prev, fm: validated.toString() }));
                     }
                   }}
                   onKeyDown={handleNumberKeyDown}
@@ -1171,6 +1165,287 @@ const DataEntryPage: React.FC = () => {
               </div>
             </div>
           )}
+        </ModalCreate>
+      )}
+
+      {/* Modal para editar Ventana */}
+      {editingWindowData && (
+        <ModalCreate
+          isOpen={true}
+          title="Editar Ventana"
+          onClose={() => setEditingWindowData(null)}
+          onSave={() => {
+            if (editingWindowData) handleConfirmWindowEdit(editingWindowData);
+          }}
+        >
+          <div>
+            <div className="form-group mb-3">
+              <label>Nombre Elemento</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editingWindowData.name_element}
+                onChange={(e) =>
+                  setEditingWindowData((prev) =>
+                    prev ? { ...prev, name_element: e.target.value } : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>U Vidrio [W/m²K]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingWindowData.atributs.u_vidrio || ""}
+                onChange={(e) =>
+                  setEditingWindowData((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_vidrio: parseFloat(e.target.value),
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>FS Vidrio</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingWindowData.atributs.fs_vidrio || ""}
+                onChange={(e) =>
+                  setEditingWindowData((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            fs_vidrio: parseFloat(e.target.value),
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>Tipo Cierre</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editingWindowData.atributs.clousure_type || ""}
+                onChange={(e) =>
+                  setEditingWindowData((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            clousure_type: e.target.value,
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>Tipo Marco</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editingWindowData.atributs.frame_type || ""}
+                onChange={(e) =>
+                  setEditingWindowData((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            frame_type: e.target.value,
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>U Marco [W/m²K]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingWindowData.u_marco || ""}
+                onChange={(e) =>
+                  setEditingWindowData((prev) =>
+                    prev
+                      ? { ...prev, u_marco: parseFloat(e.target.value) }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>FM [%]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingWindowData.fm || ""}
+                onChange={(e) =>
+                  setEditingWindowData((prev) =>
+                    prev ? { ...prev, fm: parseFloat(e.target.value) } : prev
+                  )
+                }
+              />
+            </div>
+          </div>
+        </ModalCreate>
+      )}
+
+      {/* Modal para editar Puerta */}
+      {editingDoorData && (
+        <ModalCreate
+          isOpen={true}
+          title="Editar Puerta"
+          onClose={() => setEditingDoorData(null)}
+          onSave={() => {
+            if (editingDoorData) handleConfirmDoorEdit(editingDoorData);
+          }}
+        >
+          <div>
+            <div className="form-group mb-3">
+              <label>Nombre Elemento</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editingDoorData.name_element}
+                onChange={(e) =>
+                  setEditingDoorData((prev) =>
+                    prev ? { ...prev, name_element: e.target.value } : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>U Puerta opaca [W/m²K]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingDoorData.atributs.u_puerta_opaca || ""}
+                onChange={(e) =>
+                  setEditingDoorData((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_puerta_opaca: parseFloat(e.target.value),
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>Nombre Ventana</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editingDoorData.atributs.name_ventana || ""}
+                onChange={(e) =>
+                  setEditingDoorData((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            name_ventana: e.target.value,
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>% Vidrio</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingDoorData.atributs.porcentaje_vidrio !== undefined ? editingDoorData.atributs.porcentaje_vidrio : ""}
+                onChange={(e) =>
+                  setEditingDoorData((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: parseFloat(e.target.value),
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>U Marco [W/m²K]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingDoorData.u_marco || ""}
+                onChange={(e) =>
+                  setEditingDoorData((prev) =>
+                    prev
+                      ? { ...prev, u_marco: parseFloat(e.target.value) }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>FM [%]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingDoorData.fm || ""}
+                onChange={(e) =>
+                  setEditingDoorData((prev) =>
+                    prev ? { ...prev, fm: parseFloat(e.target.value) } : prev
+                  )
+                }
+              />
+            </div>
+          </div>
+        </ModalCreate>
+      )}
+
+      {/* Modal de confirmación para eliminación */}
+      {showConfirmModal && (
+        <ModalCreate
+          isOpen={showConfirmModal}
+          title="Confirmación"
+          onClose={() => {
+            setShowConfirmModal(false);
+            setDeleteAction(null);
+          }}
+          onSave={() => {
+            if (deleteAction) deleteAction();
+            setShowConfirmModal(false);
+            setDeleteAction(null);
+          }}
+          saveLabel="Eliminar"
+        >
+          <div>
+            <p>¿Estás seguro de que deseas eliminar este elemento?</p>
+          </div>
         </ModalCreate>
       )}
     </>

@@ -704,7 +704,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify(`✅ Se actualizó correctamente el detalle con ID '${detail.id}' en el proyecto '${projectId}' de tipo 'Piso'.`);
+      notify(`Se actualizó correctamente el detalle con ID '${detail.id}' en el proyecto '${projectId}' de tipo 'Piso'.`);
       setPisosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -825,15 +825,16 @@ const WorkFlowpar2createPage: React.FC = () => {
         )
       : fetchedDetails;
   
-    // Se elimina la columna "Acción"
+    // Se agrega la columna "Acción"
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
       { headerName: "Nombre Detalle", field: "name_detail" },
       { headerName: "Material", field: "material" },
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
+      { headerName: "Acción", field: "accion" }, // Nueva columna de acción
     ];
   
-    // Mapeo sin incluir la propiedad "accion"
+    // Mapeo incluyendo la propiedad "accion"
     const data = filteredDetails.map((det) => {
       const textStyle = det.created_status === "default" ? { color: "blue" } : {};
       return {
@@ -841,6 +842,24 @@ const WorkFlowpar2createPage: React.FC = () => {
         name_detail: <span style={textStyle}>{det.name_detail}</span>,
         material: <span style={textStyle}>{det.material}</span>,
         layer_thickness: <span style={textStyle}>{det.layer_thickness}</span>,
+        accion: (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="editIcon"
+              onClick={() => setEditingDetail(det)}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="deleteIcon"
+              onClick={() => confirmDeleteDetail(det.id_detail)}
+            >
+              <span className="material-icons">delete</span>
+            </CustomButton>
+          </>
+        ),
       };
     });
   

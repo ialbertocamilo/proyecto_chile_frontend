@@ -69,6 +69,45 @@ interface Constant {
 
 type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos";
 
+// Componente ActionButtons para encapsular los botones de editar y eliminar
+interface ActionButtonsProps {
+  onEdit: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onDelete: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+const ActionButtons: React.FC<ActionButtonsProps> = ({ onEdit, onDelete }) => {
+  return (
+    <>
+      <CustomButton
+        variant="editIcon"
+        onClick={(e) => {
+          e.stopPropagation();
+          onEdit(e);
+        }}
+      >
+        Editar
+      </CustomButton>
+      <CustomButton
+        variant="delete"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(e);
+        }}
+      >
+        Borrar
+      </CustomButton>
+    </>
+  );
+};
+
+// Función helper para formatear los números
+const formatNumber = (value: number | undefined, decimals: number = 3): string => {
+  if (value === undefined || value === null || value === 0) {
+    return "-";
+  }
+  return value.toFixed(decimals);
+};
+
 const getCssVarValue = (varName: string, fallback: string): string => {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement)
@@ -559,7 +598,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
   };
 
   // ========================================================
-  //   Renderizado de Tablas con edición
+  //   Renderizado de Tablas con edición (Muros, Techumbre, Pisos)
   // ========================================================
   const renderMurosTable = () => {
     const columnsMuros = [
@@ -787,9 +826,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
       return {
         nombre: item.name_detail,
-        uValue: item.value_u ? item.value_u.toFixed(3) : "--",
-        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
+        uValue: item.value_u && item.value_u !== 0 ? item.value_u.toFixed(3) : "-",
+        bajoPisoLambda: formatNumber(bajoPiso.lambda),
+        bajoPisoEAisl: formatNumber(bajoPiso.e_aisl, 0),
         vertLambda: isEditing ? (
           <input
             type="number"
@@ -803,7 +842,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             }
           />
         ) : (
-          vert.lambda ? vert.lambda.toFixed(3) : "N/A"
+          formatNumber(vert.lambda)
         ),
         vertEAisl: isEditing ? (
           <input
@@ -818,7 +857,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             }
           />
         ) : (
-          vert.e_aisl ?? "N/A"
+          formatNumber(vert.e_aisl, 0)
         ),
         vertD: isEditing ? (
           <input
@@ -833,7 +872,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             }
           />
         ) : (
-          vert.d ?? "N/A"
+          formatNumber(vert.d, 0)
         ),
         horizLambda: isEditing ? (
           <input
@@ -848,7 +887,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             }
           />
         ) : (
-          horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"
+          formatNumber(horiz.lambda)
         ),
         horizEAisl: isEditing ? (
           <input
@@ -863,7 +902,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             }
           />
         ) : (
-          horiz.e_aisl ?? "N/A"
+          formatNumber(horiz.e_aisl, 0)
         ),
         horizD: isEditing ? (
           <input
@@ -878,7 +917,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             }
           />
         ) : (
-          horiz.d ?? "N/A"
+          formatNumber(horiz.d, 0)
         ),
         acciones: isEditing ? (
           <>
@@ -918,7 +957,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     return (
       <div style={{ overflowX: "auto", minWidth: "600px" }}>
         {pisosTabList.length > 0 ? (
-          <TablesParameters columns={columnsPisos} data={pisosData}  multiHeader={multiHeaderPisos}/>
+          <TablesParameters columns={columnsPisos} data={pisosData} multiHeader={multiHeaderPisos} />
         ) : (
           <p>No hay datos</p>
         )}
@@ -927,15 +966,29 @@ const ConstructiveDetailsComponent: React.FC = () => {
   };
 
   // ========================================================
+  //   Función para manejar la edición de un detalle en el modal
+  // ========================================================
+  const handleEditDetail = (detail: Detail) => {
+    // Aquí puedes implementar la lógica de edición para el detalle seleccionado
+    alert("Editar detalle: " + detail.name_detail);
+  };
+
+  // ========================================================
   //   Renderizado "Detalles Generales" (Vista inicial)
   // ========================================================
   const renderInitialDetails = (inModal: boolean = false) => {
+    // Definición base de columnas
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
       { headerName: "Nombre Detalle", field: "name_detail" },
       { headerName: "Material", field: "material" },
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
     ];
+
+    // Si es modal, agregamos la columna "Accion"
+    if (inModal) {
+      columnsDetails.push({ headerName: "Accion", field: "accion" });
+    }
 
     let filteredData = fetchedDetails.filter((det) => {
       const searchLower = searchQuery.toLowerCase();
@@ -947,21 +1000,23 @@ const ConstructiveDetailsComponent: React.FC = () => {
       );
     });
 
-    if (inModal) {
-      if (tabStep4 === "muros") {
-        filteredData = filteredData.filter(
-          (det) => det.scantilon_location.toLowerCase() === "muro"
-        );
-      } else if (tabStep4 === "techumbre") {
-        filteredData = filteredData.filter(
-          (det) => det.scantilon_location.toLowerCase() === "techo"
-        );
-      } else if (tabStep4 === "pisos") {
-        filteredData = filteredData.filter(
-          (det) => det.scantilon_location.toLowerCase() === "piso"
-        );
-      }
-    }
+    // Si estamos en el modal, agregamos la propiedad "accion" a cada registro
+    const tableData = inModal
+      ? filteredData.map((det) => ({
+          ...det,
+          accion: (
+            <ActionButtons
+              onEdit={(e) => {
+                handleEditDetail(det);
+              }}
+              onDelete={(e) => {
+                setDeletingDetail(det);
+                setShowDeleteModal(true);
+              }}
+            />
+          ),
+        }))
+      : filteredData;
 
     return (
       <>
@@ -984,7 +1039,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             overflowX: "auto",
           }}
         >
-          <TablesParameters columns={columnsDetails} data={filteredData} />
+          <TablesParameters columns={columnsDetails} data={tableData} />
         </div>
 
         {!inModal && (

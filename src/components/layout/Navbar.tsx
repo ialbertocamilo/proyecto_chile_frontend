@@ -198,7 +198,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                 height={isMobile ? mobileLogoHeight : desktopLogoHeight}
                 style={{ borderRadius: "0", zIndex: 1100 }}
               />
-            {/* Botón debajo del logo para alternar la visibilidad (solo se muestra en desktop o si se quiere cerrar en mobile) */}
+            {/* Botón debajo del logo para alternar la visibilidad (solo se muestra en desktop o si se quiere cerrar en mobile) aa*/}
             {(!isMobile || (isMobile && isNavOpen)) && (
               <div
                 className="navbar-toggle-inside"

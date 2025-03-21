@@ -243,8 +243,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           </Link>
                         </li>
                         <li className="nav-item">
-                          <Link href="/project-list" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
-                            <span style={iconStyle("/project-list")} className="material-icons">folder</span>
+                          <Link href="/project-status" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
+                            <span style={iconStyle("/project-status")} className="material-icons">folder</span>
                             <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>Proyectos</span>
                           </Link>
                         </li>
@@ -264,8 +264,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           </Link>
                         </li>
                         <li className="nav-item">
-                          <Link href="/constants-management" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
-                            <span style={iconStyle("/constants-management")} className="material-icons">settings</span>
+                          <Link href="/administration" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
+                            <span style={iconStyle("/administration")} className="material-icons">settings</span>
                             <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>Parámetros</span>
                           </Link>
                         </li>

@@ -74,7 +74,7 @@ const WelcomeCard: React.FC = () => {
                 }
                 .profile-btn:hover {
                   transform: scale(1.05);
-                  opacity: 0.9;
+                  opacity: 0.9; 
                   background-color: rgba(255, 255, 255, 0.1);
                   box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
                 }

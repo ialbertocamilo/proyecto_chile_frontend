@@ -1,4 +1,5 @@
 import Breadcrumb from "@/components/common/Breadcrumb";
+import ModalCreate from "@/components/common/ModalCreate";
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -9,12 +10,9 @@ import DataTable from "../src/components/DataTable";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import ModalCreate from "@/components/common/ModalCreate";
 
 import WelcomeCard from "@/components/CardWelcome";
 import ChartProjectCreated from "@/components/ChartProjectCreated";
-import CancelButton from "@/components/common/CancelButton";
-import { useApi } from "@/hooks/useApi";
 import { useApiNext } from "@/hooks/useApiNext";
 
 interface Divisions {
@@ -230,7 +228,7 @@ const ProjectListPage = () => {
         />
 
         {/* Sección para los nuevos componentes en columnas laterales */}
-        <div className="row mt-4 mb-4">
+        <div className="row mt-4 mb-4 ">
           <div className="col-md-6 col-xl-6">
             <ChartProjectCreated />
           </div>

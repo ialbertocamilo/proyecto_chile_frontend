@@ -10,7 +10,7 @@ import DataTable from "../src/components/DataTable";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-
+import ModalCreate from "@/components/common/ModalCreate";
 import WelcomeCard from "@/components/CardWelcome";
 import ChartProjectCreated from "@/components/ChartProjectCreated";
 import { useApiNext } from "@/hooks/useApiNext";
@@ -59,9 +59,7 @@ const ProjectListPage = () => {
   const [projectToDelete, setProjectToDelete] = useState<{ id: number; name: string } | null>(null);
 
   const { get } =useApiNext();
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+  
 
   const fetchProjects = async (): Promise<void> => {
     setLoading(true);

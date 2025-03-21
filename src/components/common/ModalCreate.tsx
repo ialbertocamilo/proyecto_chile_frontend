@@ -4,21 +4,27 @@ import CancelButton from '@/components/common/CancelButton';
 import CustomButton from '@/components/common/CustomButton';
 
 type Material = {
-  // Define the properties of Material as needed
   id: string;
   name: string;
 };
+
 interface ModalCreateProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
-  children: React.ReactNode;/** Título del modal (opcional) */
-  title?: string;/** Etiqueta para el botón de crear (opcional) */
-  saveLabel?: string;/** Estilos personalizados para el contenedor del modal (opcional) */
-  modalStyle?: React.CSSProperties;/** Estilos personalizados para el overlay (opcional) */
+  onHide?: () => void;
+  children: React.ReactNode;
+  title?: string;
+  saveLabel?: string;
+  modalStyle?: React.CSSProperties;
   overlayStyle?: React.CSSProperties;
   saveButtonText?: string;
   materials?: Material[];
+  show?: boolean;
+  detail?: any; // Se marca como opcional
+  onRowClick?: (row: any) => void;
+  /** NUEVA PROP: oculta por completo el footer (botones) si es true */
+  hideFooter?: boolean;
 }
 
 const ModalCreate: React.FC<ModalCreateProps> = ({
@@ -30,8 +36,8 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
   saveLabel = 'Guardar Cambios',
   modalStyle,
   overlayStyle,
+  hideFooter = false, // Valor por defecto: false (no oculta el footer)
 }) => {
-  // Controla si se ejecuta en el cliente para usar window.innerWidth
   const [isClient, setIsClient] = useState<boolean>(false);
   const [windowWidth, setWindowWidth] = useState<number>(0);
 
@@ -47,7 +53,6 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
 
   if (!isOpen) return null;
 
-  // Estilos por defecto para el overlay (fondo semi-transparente)
   const defaultOverlayStyle: React.CSSProperties = {
     position: 'fixed',
     top: 0,
@@ -63,7 +68,6 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
     transition: 'all 0.3s ease-in-out',
   };
 
-  // Estilos por defecto para el modal (con bordes redondeados)
   const defaultModalStyle: React.CSSProperties = {
     backgroundColor: '#fff',
     borderRadius: '12px',
@@ -77,7 +81,6 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
     transition: 'all 0.3s ease-in-out',
   };
 
-  // Ajustes responsivos en función del ancho de la ventana
   const responsiveModalStyle: React.CSSProperties = {
     ...(windowWidth < 768 ? { padding: '20px' } : {}),
     ...(windowWidth < 480 ? { margin: '10px', padding: '16px', borderRadius: '8px' } : {}),
@@ -86,13 +89,13 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
   return (
     <div
       style={{ ...defaultOverlayStyle, ...overlayStyle }}
-      onClick={onClose} // Cierra el modal al hacer clic en el overlay
+      onClick={onClose}
     >
       <div
         style={{ ...defaultModalStyle, ...responsiveModalStyle, ...modalStyle }}
-        onClick={(e) => e.stopPropagation()} // Evita cerrar el modal al hacer clic en su contenido
+        onClick={(e) => e.stopPropagation()} // Evita cerrar el modal al hacer clic dentro
       >
-        {/* Botón para cerrar el modal en la esquina superior derecha */}
+        {/* Botón "X" para cerrar */}
         <button
           onClick={onClose}
           style={{
@@ -117,21 +120,27 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
         >
           ✕
         </button>
+
         {title && <h4>{title}</h4>}
+
+        {/* Contenido del modal */}
         {children}
-        {/* Footer con botones: cancelar (izquierda) y crear (derecha) */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginTop: '24px',
-          }}
-        >
-          <CancelButton onClick={onClose} />
-          <CustomButton variant="save" onClick={onSave}>
-            {saveLabel}
-          </CustomButton>
-        </div>
+
+        {/* Footer con botones (se muestra solo si hideFooter es false) */}
+        {!hideFooter && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginTop: '24px',
+            }}
+          >
+            <CancelButton onClick={onClose} />
+            <CustomButton variant="save" onClick={onSave}>
+              {saveLabel}
+            </CustomButton>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -695,6 +695,7 @@ const AdministrationPage: React.FC = () => {
       {showNewMaterialModal && (
         <ModalCreate
           isOpen={showNewMaterialModal}
+          detail=""
           onClose={() => {
             setShowNewMaterialModal(false);
             setNewMaterialData({
@@ -788,6 +789,7 @@ const AdministrationPage: React.FC = () => {
       {showNewWindowModal && (
         <ModalCreate
           isOpen={showNewWindowModal}
+          detail=""
           onClose={() => {
             setShowNewWindowModal(false);
             setNewWindow({
@@ -955,10 +957,10 @@ const AdministrationPage: React.FC = () => {
           </form>
         </ModalCreate>
       )}
-
       {showNewDoorModal && (
         <ModalCreate
           isOpen={showNewDoorModal}
+          detail=""
           onClose={() => {
             setShowNewDoorModal(false);
             setNewDoor({

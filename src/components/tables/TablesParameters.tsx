@@ -4,6 +4,8 @@ interface Column {
   headerName: string;
   field: string;
   headerStyle?: React.CSSProperties;
+  // Agregamos renderCell para renderizar contenido personalizado en la celda
+  renderCell?: (row: any) => React.ReactNode;
 }
 
 interface TablesParametersProps {
@@ -31,7 +33,7 @@ export default function TablesParameters({
   data,
   multiHeader,
 }: TablesParametersProps) {
-  const stickyHeaderStyle1: React.CSSProperties = {
+  const stickyHeaderStyle: React.CSSProperties = {
     position: "sticky",
     top: 0,
     backgroundColor: "#fff",
@@ -50,7 +52,7 @@ export default function TablesParameters({
       >
         <thead>
           {multiHeader ? (
-            /* Si hay multiHeader, generamos varias filas según rows */
+            // Si hay multiHeader, generamos varias filas según rows
             multiHeader.rows.map((row, rowIndex) => (
               <tr key={rowIndex}>
                 {row.map((cell, cellIndex) => (
@@ -59,7 +61,7 @@ export default function TablesParameters({
                     colSpan={cell.colSpan}
                     rowSpan={cell.rowSpan}
                     style={{
-                      ...stickyHeaderStyle1,
+                      ...stickyHeaderStyle,
                       color: "var(--primary-color)",
                       ...cell.style,
                     }}
@@ -70,13 +72,13 @@ export default function TablesParameters({
               </tr>
             ))
           ) : (
-            /* Si NO hay multiHeader, usamos las columnas clásicas */
+            // Si NO hay multiHeader, usamos las columnas clásicas
             <tr>
               {columns.map((col) => (
                 <th
                   key={col.field}
                   style={{
-                    ...stickyHeaderStyle1,
+                    ...stickyHeaderStyle,
                     color: "var(--primary-color)",
                     ...col.headerStyle,
                   }}
@@ -87,14 +89,12 @@ export default function TablesParameters({
             </tr>
           )}
         </thead>
-
         <tbody>
           {data.map((row, rowIndex) => (
             <tr key={rowIndex}>
               {columns.map((col) => (
                 <td key={col.field}>
-                  {/* row[col.field]: valor de la propiedad 'field' en el objeto de datos */}
-                  {row[col.field]}
+                  {col.renderCell ? col.renderCell(row) : row[col.field]}
                 </td>
               ))}
             </tr>

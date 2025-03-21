@@ -233,7 +233,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                     {/* Sección General */}
                     <div className="nav-section">
                       <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 20px', marginBottom: '10px' }}>
-                   
                         <span style={{ color: "#fff", fontSize: "0.8rem", opacity: 0.7 }}>General</span>
                       </div>
                       <div style={{ display: 'block' }}>
@@ -255,7 +254,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                     {/* Sección Configuración */}
                     <div className="nav-section" style={{ marginTop: "20px" }}>
                       <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 20px', marginBottom: '10px' }}>
-                       
                         <span style={{ color: "#fff", fontSize: "0.8rem", opacity: 0.7 }}>Configuración</span>
                       </div>
                       <div style={{ display: 'block' }}>
@@ -279,7 +277,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                     {/* Sección General */}
                     <div className="nav-section">
                       <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 20px', marginBottom: '10px' }}>
-                       
                         <span style={{ color: "#fff", fontSize: "0.8rem", opacity: 0.7 }}>General</span>
                       </div>
                       <div style={{ display: 'block' }}>
@@ -295,7 +292,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                     {/* Sección Proyecto */}
                     <div className="nav-section" style={{ marginTop: "20px" }}>
                       <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 20px', marginBottom: '10px' }}>
-                        
                         <span style={{ color: "#fff", fontSize: "0.8rem", opacity: 0.7 }}>Proyecto</span>
                       </div>
                       <div style={{ display: 'block' }}>
@@ -317,7 +313,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                             <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>Desarrollo de proyecto</span>
                           </Link>
                         </li>
-
                         <li className="nav-item">
                           <Link href="/ifc" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
                             <span style={iconStyle("/ifc")} className="material-icons">apartment</span>

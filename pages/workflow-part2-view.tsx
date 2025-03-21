@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
 import axios from "axios";
-import CustomButton from "../src/components/common/CustomButton";
 import Card from "../src/components/common/Card";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
@@ -11,11 +10,10 @@ import GooIcons from "../public/GoogleIcons";
 import { notify } from "@/utils/notify";
 import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-import SearchParameters from "../src/components/inputs/SearchParameters";
 import TablesParameters from "../src/components/tables/TablesParameters";
 import Breadcrumb from "@/components/common/Breadcrumb";
-// Se importa el componente ProjectInfoHeader
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import ModalCreate from "../src/components/common/ModalCreate";
 
 interface Detail {
   id_detail: number;
@@ -110,6 +108,9 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   const primaryColor = getCssVarValue("--primary-color", "#3ca7b7");
 
+  // Estado para el modal de detalles generales
+  const [showGeneralDetailsModal, setShowGeneralDetailsModal] = useState(false);
+
   // ==================== ESTADOS PARA CABECERA ====================
   const [projectName, setProjectName] = useState("");
   const [projectDepartment, setProjectDepartment] = useState("");
@@ -169,39 +170,31 @@ const WorkFlowpar2viewPage: React.FC = () => {
   }, [hasLoaded, projectId, router]);
 
   // ==================== LLAMADAS A ENDPOINTS ====================
-  // Modify the fetchFetchedDetails function to handle null projectId
-const fetchFetchedDetails = async () => {
-  try {
-    // Check if projectId exists before making the request
-    if (!projectId) {
-      console.log("Project ID is not available ");
-      return;
+  const fetchFetchedDetails = async () => {
+    try {
+      if (!projectId) {
+        console.log("Project ID is not available ");
+        return;
+      }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire("Token no encontrado", "Inicia sesión.");
+        return;
+      }
+      const url = `${constantUrlApiEndpoint}/user/details/?project_id=${projectId}`;
+      const headers = { Authorization: `Bearer ${token}` };
+      console.log("Fetching details with project ID:", projectId);
+      const response = await axios.get(url, { headers });
+      setFetchedDetails(response.data || []);
+    } catch (error: unknown) {
+      console.error("Error al obtener detalles:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Status:", error.response?.status);
+        console.error("Response data:", error.response?.data);
+      }
+      Swal.fire("Error", "Error al obtener detalles. Ver consola.");
     }
-    
-    const token = localStorage.getItem("token");
-    if (!token) {
-      Swal.fire("Token no encontrado", "Inicia sesión.");
-      return;
-    }
-    
-    const url = `${constantUrlApiEndpoint}/user/details/?project_id=${projectId}`;
-    const headers = { Authorization: `Bearer ${token}` };
-    
-    console.log("Fetching details with project ID:", projectId);
-    const response = await axios.get(url, { headers });
-    setFetchedDetails(response.data || []);
-  } catch (error: unknown) {
-    console.error("Error al obtener detalles:", error);
-    
-    // More detailed error logging
-    if (axios.isAxiosError(error)) {
-      console.error("Status:", error.response?.status);
-      console.error("Response data:", error.response?.data);
-    }
-    
-    Swal.fire("Error", "Error al obtener detalles. Ver consola.");
-  }
-};
+  };
 
   const fetchMurosDetails = useCallback(async () => {
     if (!projectId) return;
@@ -291,9 +284,9 @@ const fetchFetchedDetails = async () => {
   // ==================== EFECTOS SEGÚN STEP ====================
   useEffect(() => {
     if (step === 4 && projectId !== null) {
-      fetchFetchedDetails();
+      
     }
-  }, [step, projectId]); 
+  }, [step, projectId]);
 
   useEffect(() => {
     if (showTabsInStep4) {
@@ -326,7 +319,7 @@ const fetchFetchedDetails = async () => {
     fetchPuertasDetails,
   ]);
 
-  // ==================== RENDER CABECERA aaaa ====================
+  // ==================== RENDER CABECERA ====================
   const renderMainHeader = () =>
     step >= 4 && <Title text="Vista de Desarrollo de proyecto" />;
 
@@ -548,7 +541,23 @@ const fetchFetchedDetails = async () => {
           ))}
         </ul>
 
-        <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
+        {/* Se agrega onClick solo para tabs que no sean "puertas" ni "ventanas" */}
+        <div
+          style={{
+            height: "400px",
+            overflowY: "auto",
+            position: "relative",
+            cursor:
+              tabStep4 !== "puertas" && tabStep4 !== "ventanas"
+                ? "pointer"
+                : "default",
+          }}
+          onClick={
+            tabStep4 !== "puertas" && tabStep4 !== "ventanas"
+              ? () => setShowGeneralDetailsModal(true)
+              : undefined
+          }
+        >
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>{renderMurosTable()}</div>
           )}
@@ -565,97 +574,54 @@ const fetchFetchedDetails = async () => {
             <div style={{ overflowX: "auto" }}>{renderPuertasTable()}</div>
           )}
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            marginTop: "10px",
-          }}
-        >
-          <CustomButton
-            variant="save"
-            onClick={() => setShowTabsInStep4(false)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              padding: "12px 67px",
-              borderRadius: "8px",
-              height: "40px",
-              marginTop: "2rem"
-            }}
-          >
-            <span className="material-icons">visibility</span>
-            Ver detalles generales
-          </CustomButton>
-        </div>
       </div>
     );
   };
 
-  // ==================== RENDER DETALLES GENERALES ====================
-  const renderInitialDetails = () => {
-    if (showTabsInStep4) return null;
-
+  // ==================== RENDER DETALLES GENERALES (para el modal sin searchbar) ====================
+  const renderGeneralDetailsContent = () => {
+    // Filtra los detalles según la pestaña activa (muros, techumbre o pisos)
+    const filteredDetails = fetchedDetails.filter((det) => {
+      let typeMatch = false;
+      const location = det.scantilon_location.toLowerCase();
+      if (tabStep4 === "muros") {
+        typeMatch = location === "muro";
+      } else if (tabStep4 === "techumbre") {
+        // Asumiendo que en la respuesta se usa "techo" o "techumbre" para techumbre
+        typeMatch = location === "techo" || location === "techumbre";
+      } else if (tabStep4 === "pisos") {
+        typeMatch = location === "piso";
+      }
+  
+      const searchLower = searchQuery.toLowerCase();
+      const searchMatch =
+        det.scantilon_location.toLowerCase().includes(searchLower) ||
+        det.name_detail.toLowerCase().includes(searchLower) ||
+        det.material.toLowerCase().includes(searchLower) ||
+        det.layer_thickness.toString().includes(searchLower);
+  
+      return typeMatch && searchMatch;
+    });
+  
     return (
-      <>
-        <SearchParameters
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Buscar..."
-          onNew={() => {}}
-          style={{ marginBottom: "1rem" }}
-          showNewButton={false}
-        />
-        <div className="mb-3">
-          <div style={{ height: "400px", overflowY: "scroll" }}>
-            <TablesParameters
-              columns={[
-                { headerName: "Ubicación Detalle", field: "scantilon_location" },
-                { headerName: "Nombre Detalle", field: "name_detail" },
-                { headerName: "Material", field: "material" },
-                { headerName: "Espesor capa (cm)", field: "layer_thickness" },
-              ]}
-              data={fetchedDetails.filter((det) => {
-                const searchLower = searchQuery.toLowerCase();
-                return (
-                  det.scantilon_location.toLowerCase().includes(searchLower) ||
-                  det.name_detail.toLowerCase().includes(searchLower) ||
-                  det.material.toLowerCase().includes(searchLower) ||
-                  det.layer_thickness.toString().includes(searchLower)
-                );
-              })}
-            />
-          </div>
+      <div className="mb-3">
+        <div style={{ height: "400px", overflowY: "scroll" }}>
+          <TablesParameters
+            columns={[
+              { headerName: "Ubicación Detalle", field: "scantilon_location" },
+              { headerName: "Nombre Detalle", field: "name_detail" },
+              { headerName: "Material", field: "material" },
+              { headerName: "Espesor capa (cm)", field: "layer_thickness" },
+            ]}
+            data={filteredDetails}
+          />
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            marginTop: "10px",
-          }}
-        >
-          <CustomButton
-            variant="save"
-            onClick={() => setShowTabsInStep4(true)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.3rem",
-              padding: "0.5rem 1rem",
-              borderRadius: "8px",
-              marginTop: "2rem"
-            }}
-          >
-            <span className="material-icons">arrow_back</span>
-            Volver
-          </CustomButton>
-        </div>
-      </>
+      </div>
     );
   };
+  
 
-  // ==================== RENDER RECINTOfdsfs ====================
+  // ==================== RENDER RECINTO ====================
   const renderRecinto = () => {
     return (
       <>
@@ -734,7 +700,6 @@ const fetchFetchedDetails = async () => {
       <div>
         <Card>
           <h3>{renderMainHeader()}</h3>
-          {/* Agrupamos ProjectInfoHeader y Breadcrumb en un contenedor flex */}
           <div
             style={{
               width: "100%",
@@ -771,16 +736,29 @@ const fetchFetchedDetails = async () => {
             </div>
 
             <div className="col-12 col-md-9 p-4">
-              {step === 4 && (
-                <>
-                  {showTabsInStep4 ? renderStep4Tabs() : renderInitialDetails()}
-                </>
-              )}
+              {step === 4 && showTabsInStep4 && renderStep4Tabs()}
               {step === 7 && renderRecinto()}
             </div>
           </div>
         </Card>
       </div>
+
+      {/* Modal para detalles generales sin searchbar, sin botón "Cerrar" en el footer y de tamaño "xl" */}
+      <ModalCreate
+        detail=""
+        isOpen={showGeneralDetailsModal}
+        onClose={() => setShowGeneralDetailsModal(false)}
+        onSave={() => {}}
+        title="Detalles Generales"
+        hideFooter={true}
+        modalStyle={{
+          maxWidth: '70%',
+          width: '70%',
+          padding: '32px',
+        }}	
+      >
+        {renderGeneralDetailsContent()}
+      </ModalCreate>
     </>
   );
 };

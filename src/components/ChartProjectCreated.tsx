@@ -50,7 +50,7 @@ const ChartProjectCreated: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        filterProjectsByYear(selectedYear);
+    
     }, [projects, selectedYear]);
 
     const chartOptions: ApexOptions = {

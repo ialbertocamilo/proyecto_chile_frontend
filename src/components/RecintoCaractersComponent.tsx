@@ -1,84 +1,80 @@
 // RecintoCaractersComponent.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { notify } from "@/utils/notify";
+import TabMuroCreate from "@/components/tab_recint_create/TabMuroCreate"; // Ajusta la ruta si es necesario
+import TabWindowCreate from "@/components/tab_recint_create/TabWindowCreate"; // Componente para Ventanas
 
-type TabStep = "muros" | "techumbre" | "pisos";
+type TabStep = "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
 
 const RecintoCaractersComponent: React.FC = () => {
-  const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [tabStep, setTabStep] = useState<TabStep>("muros");
 
-  // Obtiene el valor de la variable CSS --primary-color
-  useEffect(() => {
-    const value =
-      typeof window !== "undefined"
-        ? getComputedStyle(document.documentElement).getPropertyValue("--primary-color").trim()
-        : "#3ca7b7";
-    setPrimaryColor(value || "#3ca7b7");
-  }, []);
-
-  // Renderiza el contenido de cada pestaña (actualmente con un placeholder)
   const renderTabContent = () => {
     switch (tabStep) {
       case "muros":
-        return <div style={{ padding: "20px" }}>Contenido de Muros pendiente de implementación.</div>;
+        return <TabMuroCreate />;
+      case "ventanas":
+        return <TabWindowCreate />;  // Se usa el componente importado para Ventanas
       case "techumbre":
-        return <div style={{ padding: "20px" }}>Contenido de Techumbre pendiente de implementación.</div>;
+        return <div className="p-3">Contenido de Techumbre pendiente de implementación.</div>;
       case "pisos":
-        return <div style={{ padding: "20px" }}>Contenido de Pisos pendiente de implementación.</div>;
+        return <div className="p-3">Contenido de Pisos pendiente de implementación.</div>;
+      case "puertas":
+        return <div className="p-3">Contenido de Puertas pendiente de implementación.</div>;
       default:
         return null;
     }
   };
 
-  // Renderiza la interfaz de pestañas
   const renderTabs = () => (
-    <div>
-      <ul
-        className="nav"
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          padding: 0,
-          listStyle: "none",
-        }}
-      >
-        {[
-          { key: "muros", label: "Muros" },
-          { key: "techumbre", label: "Techumbre" },
-          { key: "pisos", label: "Pisos" },
-        ].map((item) => (
-          <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
-            <button
-              style={{
-                width: "100%",
-                padding: "10px",
-                backgroundColor: "#fff",
-                color: tabStep === item.key ? primaryColor : "var(--secondary-color)",
-                border: "none",
-                cursor: "pointer",
-                borderBottom: tabStep === item.key ? `3px solid ${primaryColor}` : "none",
-                fontFamily: "var(--font-family-base)",
-                fontWeight: "normal",
-              }}
-              onClick={() => setTabStep(item.key as TabStep)}
-            >
-              {item.label}
-            </button>
-          </li>
-        ))}
-      </ul>
-      <div style={{ minHeight: "400px", overflowY: "auto", position: "relative", marginTop: "20px" }}>
-        {renderTabContent()}
-      </div>
-    </div>
+    <ul className="nav nav-tabs nav-fill">
+      <li className="nav-item">
+        <button
+          className={`nav-link ${tabStep === "muros" ? "active" : ""}`}
+          onClick={() => setTabStep("muros")}
+        >
+          Muros
+        </button>
+      </li>
+      <li className="nav-item">
+        <button
+          className={`nav-link ${tabStep === "ventanas" ? "active" : ""}`}
+          onClick={() => setTabStep("ventanas")}
+        >
+          Ventanas
+        </button>
+      </li>
+      <li className="nav-item">
+        <button
+          className={`nav-link ${tabStep === "puertas" ? "active" : ""}`}
+          onClick={() => setTabStep("puertas")}
+        >
+          Puertas
+        </button>
+      </li>
+      <li className="nav-item">
+        <button
+          className={`nav-link ${tabStep === "techumbre" ? "active" : ""}`}
+          onClick={() => setTabStep("techumbre")}
+        >
+          Techumbre
+        </button>
+      </li>
+      <li className="nav-item">
+        <button
+          className={`nav-link ${tabStep === "pisos" ? "active" : ""}`}
+          onClick={() => setTabStep("pisos")}
+        >
+          Pisos
+        </button>
+      </li>
+    </ul>
   );
 
   return (
-    <div className="recinto-caracters-container" style={{ padding: "20px" }}>
+    <div className="container-fluid">
       {renderTabs()}
+      <div className="mt-3">{renderTabContent()}</div>
     </div>
   );
 };

@@ -57,6 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   const handleLogout = () => {
     if (!isClient) return;
     localStorage.clear();
+    console.log('navbar')
     router.push("/login");
   };
 

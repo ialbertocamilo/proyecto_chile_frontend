@@ -153,7 +153,7 @@ const TabCeilingCreate: React.FC = () => {
     
     try {
       const response = await fetch(
-        `https://ceela-backend.svgdev.tech/roof-enclosures-delete/${itemToDelete.id}`,
+        `${constantUrlApiEndpoint}/roof-enclosures-delete/${itemToDelete.id}`,
         {
           method: "DELETE",
           headers: {
@@ -474,7 +474,6 @@ const TabCeilingCreate: React.FC = () => {
             <div className="col-12 text-center">
               <p>¿Está seguro que desea eliminar el siguiente techo?</p>
               <h5 className="mt-3 mb-3">{itemToDelete?.techos}</h5>
-              <p className="text-danger">Esta acción no se puede deshacer.</p>
             </div>
           </div>
         </div>

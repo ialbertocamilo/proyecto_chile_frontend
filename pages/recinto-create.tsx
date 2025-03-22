@@ -1,5 +1,4 @@
 // recinto-create.tsx
-
 import React, { useEffect, useState } from "react";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
@@ -98,9 +97,6 @@ const RecintoCreate: React.FC = () => {
     fetchRegions();
   }, []);
 
-  // ---------------------------
-  //  useEffect para cargar Comunas cuando cambia la Región seleccionada
-  // ---------------------------
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token || !selectedRegion) {
@@ -131,9 +127,6 @@ const RecintoCreate: React.FC = () => {
     fetchComunas();
   }, [selectedRegion]);
 
-  // ---------------------------
-  //  useEffect para cargar Zonas Térmicas cuando cambia la Comuna seleccionada
-  // ---------------------------
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token || !selectedComuna) {
@@ -164,9 +157,6 @@ const RecintoCreate: React.FC = () => {
     fetchZonasTermicas();
   }, [selectedComuna]);
 
-  // ---------------------------
-  //  useEffect para cargar Perfiles de ocupación
-  // ---------------------------
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;

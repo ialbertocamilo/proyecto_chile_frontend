@@ -27,55 +27,50 @@ interface DoorData {
   fav3Alpha: number;
 }
 
+interface DoorEnclosureData {
+  id: number;
+  door_id: number;
+  enclosure_id: number;
+  characteristics: string;
+  angulo_azimut: string;
+  orientation: string;
+  high: number;
+  broad: number;
+}
+
+interface DoorElement {
+  id: number;
+  name_element: string;
+  type: string;
+  fm: number;
+  created_status: string;
+  calculations: {
+    r_puro: number;
+    u_vidrio: number;
+    u_ponderado: number;
+    u_ponderado_opaco: number;
+  };
+  atributs: {
+    ventana_id: number;
+    name_ventana: string;
+    u_puerta_opaca: number;
+    porcentaje_vidrio: number;
+  };
+  u_marco: number;
+  is_deleted: boolean;
+}
+
 const TabDoorCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id") || "12";
   const projectId = localStorage.getItem("project_id") || "37";
   const token = localStorage.getItem("token") || "";
 
-  // Datos de ejemplo para la tabla
-  const [data, setData] = useState<DoorData[]>([
-    {
-      id: 1,
-      tipoPuente: "Tipo A",
-      caracteristicas: "Espacio contiguo A",
-      anguloAzimut: "45° ≤ Az < 67,5°",
-      orientacion: "Norte",
-      incluyeMarcoAlto: 2.5,
-      incluyeMarcoAncho: 1.2,
-      fav1D: 3,
-      fav1L: 1.5,
-      fav2izqP: 2,
-      fav2izqS: 0.8,
-      fav2DerP: 2.2,
-      fav2DerS: 0.9,
-      fav3E: 4,
-      fav3T: 2,
-      fav3Beta: 30,
-      fav3Alpha: 15,
-    },
-    {
-      id: 2,
-      tipoPuente: "Tipo B",
-      caracteristicas: "Espacio contiguo B",
-      anguloAzimut: "67,5° ≤ Az < 90°",
-      orientacion: "Sur",
-      incluyeMarcoAlto: 2.8,
-      incluyeMarcoAncho: 1.3,
-      fav1D: 3.2,
-      fav1L: 1.6,
-      fav2izqP: 2.1,
-      fav2izqS: 0.85,
-      fav2DerP: 2.3,
-      fav2DerS: 0.95,
-      fav3E: 4.1,
-      fav3T: 2.1,
-      fav3Beta: 32,
-      fav3Alpha: 16,
-    },
-  ]);
+  // Estado para los datos de la tabla
+  const [data, setData] = useState<DoorData[]>([]);
 
-  // Estado para identificar la fila en edición
-  const [editingRowId, setEditingRowId] = useState<number | null>(null);
+  // Estado para almacenar la fila en edición
+  const [editingRow, setEditingRow] = useState<DoorData | null>(null);
+  
   // Estado para mostrar el modal de creación
   const [showModal, setShowModal] = useState(false);
 
@@ -85,58 +80,379 @@ const TabDoorCreate: React.FC = () => {
   const [anguloAzimut, setAnguloAzimut] = useState<string>("");
   const [high, setHigh] = useState<number>(0);
   const [broad, setBroad] = useState<number>(0);
+  
   // Estado para almacenar las opciones del ángulo azimut
   const [angleOptions, setAngleOptions] = useState<string[]>([]);
+  
+  // Estado para almacenar las opciones de puertas
+  const [doorOptions, setDoorOptions] = useState<DoorElement[]>([]);
 
-  // Cargar opciones de ángulo azimut al montar el componente
+  // Estado para el modal de confirmación de eliminación
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingRow, setDeletingRow] = useState<DoorData | null>(null);
+
+  // Cargar datos de puertas, opciones de ángulo azimut y tipos de puerta
   useEffect(() => {
-    const fetchAngleOptions = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch("https://ceela-backend.svgdev.tech/angle-azimut", {
+        // Fetch door enclosure data for the table
+        const doorEnclosuresResponse = await fetch(`${constantUrlApiEndpoint}/door-enclosures/${enclosure_id}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
-        if (!response.ok) {
+        
+        if (!doorEnclosuresResponse.ok) {
+          throw new Error("Error al obtener los datos de puertas");
+        }
+        
+        const doorEnclosuresData: DoorEnclosureData[] = await doorEnclosuresResponse.json();
+        
+        // Map API data to table format
+        const tableData: DoorData[] = doorEnclosuresData.map(item => {
+          // We'll fetch door name in a subsequent API call
+          return {
+            id: item.id,
+            tipoPuente: `ID: ${item.door_id}`, // Temporary, will be updated with door name
+            caracteristicas: item.characteristics,
+            anguloAzimut: item.angulo_azimut,
+            orientacion: item.orientation,
+            incluyeMarcoAlto: item.high,
+            incluyeMarcoAncho: item.broad,
+            // Default values for other fields
+            fav1D: 0,
+            fav1L: 0,
+            fav2izqP: 0,
+            fav2izqS: 0,
+            fav2DerP: 0,
+            fav2DerS: 0,
+            fav3E: 0,
+            fav3T: 0,
+            fav3Beta: 0,
+            fav3Alpha: 0,
+          };
+        });
+        
+        setData(tableData);
+        
+        // Fetch angle options
+        const angleResponse = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (!angleResponse.ok) {
           throw new Error("Error al obtener las opciones de ángulo azimut");
         }
-        const options: string[] = await response.json();
+        
+        const options: string[] = await angleResponse.json();
         setAngleOptions(options);
+        
+        // Fetch door options
+        const doorResponse = await fetch(`${constantUrlApiEndpoint}/elements/?type=door`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (!doorResponse.ok) {
+          throw new Error("Error al obtener las opciones de puertas");
+        }
+        
+        const doorData: DoorElement[] = await doorResponse.json();
+        setDoorOptions(doorData);
+        
+        // Update door names in the table data
+        if (tableData.length > 0 && doorData.length > 0) {
+          const updatedTableData = tableData.map(row => {
+            // Find the door element that matches the door_id from the enclosure data
+            const matchingDoorElement = doorEnclosuresData.find(enclosure => enclosure.id === row.id);
+            if (matchingDoorElement) {
+              const doorInfo = doorData.find(door => door.id === matchingDoorElement.door_id);
+              if (doorInfo) {
+                return {
+                  ...row,
+                  tipoPuente: doorInfo.name_element
+                };
+              }
+            }
+            return row;
+          });
+          
+          setData(updatedTableData);
+        }
       } catch (error) {
-        console.error("Error fetching angle options:", error);
+        console.error("Error fetching data:", error);
+        notify("Error al cargar los datos", "error");
       }
     };
-    fetchAngleOptions();
-  }, [token]);
+    
+    fetchData();
+  }, [token, enclosure_id]);
+
+  // Función para recargar los datos de la tabla
+  const fetchDoorData = async () => {
+    try {
+      // Fetch door enclosure data for the table
+      const doorEnclosuresResponse = await fetch(`${constantUrlApiEndpoint}/door-enclosures/${enclosure_id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (!doorEnclosuresResponse.ok) {
+        throw new Error("Error al obtener los datos de puertas");
+      }
+      
+      const doorEnclosuresData: DoorEnclosureData[] = await doorEnclosuresResponse.json();
+      
+      // Map API data to table format with door names
+      const tableData: DoorData[] = await Promise.all(doorEnclosuresData.map(async (item) => {
+        // Find the corresponding door name
+        const doorInfo = doorOptions.find(door => door.id === item.door_id);
+        
+        return {
+          id: item.id,
+          tipoPuente: doorInfo ? doorInfo.name_element : `ID: ${item.door_id}`,
+          caracteristicas: item.characteristics,
+          anguloAzimut: item.angulo_azimut,
+          orientacion: item.orientation,
+          incluyeMarcoAlto: item.high,
+          incluyeMarcoAncho: item.broad,
+          // Default values for other fields
+          fav1D: 0,
+          fav1L: 0,
+          fav2izqP: 0,
+          fav2izqS: 0,
+          fav2DerP: 0,
+          fav2DerS: 0,
+          fav3E: 0,
+          fav3T: 0,
+          fav3Beta: 0,
+          fav3Alpha: 0,
+        };
+      }));
+      
+      setData(tableData);
+    } catch (error) {
+      console.error("Error fetching door data:", error);
+      notify("Error al cargar los datos de puertas", "error");
+    }
+  };
+
+  // Funciones para manejar cambios en los campos editables
+  const handleRowFieldChange = (field: keyof DoorData, value: string | number) => {
+    if (editingRow) {
+      setEditingRow({
+        ...editingRow,
+        [field]: value
+      });
+    }
+  };
 
   // Funciones para manejar las acciones de la fila
   const handleEdit = (row: DoorData) => {
-    setEditingRowId(row.id);
+    setEditingRow({...row});
   };
 
-  const handleDelete = (row: DoorData) => {
-    notify("Registro eliminado");
-    setData((prev) => prev.filter((item) => item.id !== row.id));
+  const handleAccept = async () => {
+    if (!editingRow) return;
+
+    try {
+      // Encontrar el door_id basado en el tipoPuente seleccionado
+      const selectedDoor = doorOptions.find(door => door.name_element === editingRow.tipoPuente);
+      const doorId = selectedDoor ? selectedDoor.id : 0;
+
+      const payload = {
+        door_id: doorId,
+        characteristics: editingRow.caracteristicas,
+        angulo_azimut: editingRow.anguloAzimut,
+        high: editingRow.incluyeMarcoAlto,
+        broad: editingRow.incluyeMarcoAncho,
+      };
+
+      const response = await fetch(
+        `${constantUrlApiEndpoint}/door-enclosures-update/${editingRow.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error al actualizar el registro");
+      }
+
+      notify("Cambios guardados correctamente");
+      setEditingRow(null);
+      // Recargar los datos
+      fetchDoorData();
+    } catch (error) {
+      console.error("Error:", error);
+      notify("Error al guardar los cambios", "error");
+    }
   };
 
-  const handleAccept = (row: DoorData) => {
-    notify("Cambios guardados");
-    setEditingRowId(null);
+  const handleCancel = () => {
+    setEditingRow(null);
   };
 
-  const handleCancel = (row: DoorData) => {
-    setEditingRowId(null);
+  // Manejador para mostrar el modal de confirmación de eliminación
+  const handleDeleteConfirmation = (row: DoorData) => {
+    setDeletingRow(row);
+    setShowDeleteModal(true);
+  };
+
+  // Manejador para cerrar el modal de confirmación de eliminación
+  const handleDeleteModalClose = () => {
+    setShowDeleteModal(false);
+    setDeletingRow(null);
+  };
+
+  // Manejador para ejecutar la eliminación cuando se confirma
+  const handleDeleteConfirm = async () => {
+    if (!deletingRow) return;
+
+    try {
+      // Llamada al endpoint de eliminación
+      const response = await fetch(
+        `${constantUrlApiEndpoint}/door-enclosures-delete/${deletingRow.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error al eliminar el registro");
+      }
+
+      notify("Registro eliminado correctamente");
+      handleDeleteModalClose();
+      // Actualizar la tabla después de eliminar
+      fetchDoorData();
+    } catch (error) {
+      console.error("Error:", error);
+      notify("Error al eliminar el registro", "error");
+      handleDeleteModalClose();
+    }
   };
 
   // Definición de las columnas de la tabla (incluyendo multiHeader)
   const columns = [
-    { headerName: "Tipo Puente", field: "tipoPuente" },
-    { headerName: "Características espacio contiguo al elemento", field: "caracteristicas" },
-    { headerName: "Ángulo Azimut", field: "anguloAzimut" },
+    { 
+      headerName: "Tipo Puente", 
+      field: "tipoPuente",
+      renderCell: (row: DoorData) => {
+        if (editingRow && editingRow.id === row.id) {
+          return (
+            <select
+              className="form-control"
+              value={editingRow.tipoPuente}
+              onChange={(e) => handleRowFieldChange("tipoPuente", e.target.value)}
+            >
+              {doorOptions.map((door) => (
+                <option key={door.id} value={door.name_element}>
+                  {door.name_element}
+                </option>
+              ))}
+            </select>
+          );
+        }
+        return row.tipoPuente;
+      }
+    },
+    { 
+      headerName: "Características espacio contiguo al elemento", 
+      field: "caracteristicas",
+      renderCell: (row: DoorData) => {
+        if (editingRow && editingRow.id === row.id) {
+          return (
+            <select
+              className="form-control"
+              value={editingRow.caracteristicas}
+              onChange={(e) => handleRowFieldChange("caracteristicas", e.target.value)}
+            >
+              <option value="">Seleccione una opción</option>
+              <option value="Exterior">Exterior</option>
+              <option value="Inter Recintos Clim">Inter Recintos Clim</option>
+              <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+            </select>
+          );
+        }
+        return row.caracteristicas;
+      }
+    },
+    { 
+      headerName: "Ángulo Azimut", 
+      field: "anguloAzimut",
+      renderCell: (row: DoorData) => {
+        if (editingRow && editingRow.id === row.id) {
+          return (
+            <select
+              className="form-control"
+              value={editingRow.anguloAzimut}
+              onChange={(e) => handleRowFieldChange("anguloAzimut", e.target.value)}
+            >
+              <option value="">Seleccione un ángulo</option>
+              {angleOptions.map((option, index) => (
+                <option key={index} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          );
+        }
+        return row.anguloAzimut;
+      }
+    },
     { headerName: "Orientación", field: "orientacion" },
-    { headerName: "Alto [m]", field: "incluyeMarcoAlto" },
-    { headerName: "Ancho [m]", field: "incluyeMarcoAncho" },
+    { 
+      headerName: "Alto [m]", 
+      field: "incluyeMarcoAlto",
+      renderCell: (row: DoorData) => {
+        if (editingRow && editingRow.id === row.id) {
+          return (
+            <input
+              type="number"
+              className="form-control"
+              value={editingRow.incluyeMarcoAlto}
+              onChange={(e) => handleRowFieldChange("incluyeMarcoAlto", Number(e.target.value))}
+            />
+          );
+        }
+        return row.incluyeMarcoAlto;
+      }
+    },
+    { 
+      headerName: "Ancho [m]", 
+      field: "incluyeMarcoAncho",
+      renderCell: (row: DoorData) => {
+        if (editingRow && editingRow.id === row.id) {
+          return (
+            <input
+              type="number"
+              className="form-control"
+              value={editingRow.incluyeMarcoAncho}
+              onChange={(e) => handleRowFieldChange("incluyeMarcoAncho", Number(e.target.value))}
+            />
+          );
+        }
+        return row.incluyeMarcoAncho;
+      }
+    },
     { headerName: "D [m]", field: "fav1D" },
     { headerName: "L [m]", field: "fav1L" },
     { headerName: "P [m]", field: "fav2izqP" },
@@ -151,18 +467,18 @@ const TabDoorCreate: React.FC = () => {
       headerName: "Acciones",
       field: "acciones",
       renderCell: (row: DoorData) => {
-        if (editingRowId === row.id) {
+        if (editingRow && editingRow.id === row.id) {
           return (
             <ActionButtonsConfirm
-              onAccept={() => handleAccept(row)}
-              onCancel={() => handleCancel(row)}
+              onAccept={handleAccept}
+              onCancel={handleCancel}
             />
           );
         }
         return (
           <ActionButtons
             onEdit={() => handleEdit(row)}
-            onDelete={() => handleDelete(row)}
+            onDelete={() => handleDeleteConfirmation(row)}
           />
         );
       },
@@ -245,10 +561,11 @@ const TabDoorCreate: React.FC = () => {
 
       notify("Puerta creada exitosamente");
       handleModalClose();
-      // Aquí puedes actualizar la tabla si es necesario
+      // Refrescar la tabla después de crear
+      fetchDoorData();
     } catch (error) {
       console.error("Error:", error);
-      // Opcional: notificar error
+      notify("Error al crear la puerta", "error");
     }
   };
 
@@ -260,6 +577,8 @@ const TabDoorCreate: React.FC = () => {
           Crear
         </CustomButton>
       </div>
+      
+      {/* Modal para crear nueva puerta */}
       <ModalCreate
         isOpen={showModal}
         onClose={handleModalClose}
@@ -270,16 +589,22 @@ const TabDoorCreate: React.FC = () => {
         <div className="container">
           <div className="row mb-3">
             <div className="col-md-4">
-              <label htmlFor="doorId">ID de la Puerta</label>
+              <label htmlFor="doorId">Tipo de Puerta</label>
             </div>
             <div className="col-md-8">
-              <input
-                type="number"
+              <select
                 id="doorId"
                 className="form-control"
                 value={doorId}
                 onChange={(e) => setDoorId(Number(e.target.value))}
-              />
+              >
+                <option value={0}>Seleccione una puerta</option>
+                {doorOptions.map((door) => (
+                  <option key={door.id} value={door.id}>
+                    {door.name_element}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <div className="row mb-3">
@@ -346,6 +671,24 @@ const TabDoorCreate: React.FC = () => {
                 value={broad}
                 onChange={(e) => setBroad(Number(e.target.value))}
               />
+            </div>
+          </div>
+        </div>
+      </ModalCreate>
+      
+      {/* Modal de confirmación para eliminar puerta */}
+      <ModalCreate
+        isOpen={showDeleteModal}
+        onClose={handleDeleteModalClose}
+        onSave={handleDeleteConfirm}
+        saveLabel="Eliminar"
+        title="Confirmar Eliminación"
+      >
+        <div className="container">
+          <div className="row mb-3">
+            <div className="col-12 text-center">
+              <p>¿Está seguro que desea eliminar la puerta <strong>{deletingRow?.tipoPuente}</strong>?</p>
+             
             </div>
           </div>
         </div>

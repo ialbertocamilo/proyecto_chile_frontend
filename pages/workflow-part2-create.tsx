@@ -349,7 +349,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   useEffect(() => {
     if (editingDetail) {
-      
+      // Aquí puedes realizar acciones adicionales al editar el detalle
     }
   }, [editingDetail]);
 
@@ -382,6 +382,18 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchVentanasDetails,
     fetchPuertasDetails,
   ]);
+
+  // Nueva función para manejar la edición y asignar el material predefinido
+  const handleEditDetail = (detail: Detail) => {
+    // Si no existe material_id pero sí el nombre, se busca en la lista de materiales
+    if ((!detail.material_id || detail.material_id === 0) && detail.material) {
+      const foundMaterial = materials.find((mat) => mat.name === detail.material);
+      detail.material_id = foundMaterial ? foundMaterial.id : 0;
+    }
+    // Se carga la lista de materiales para que el select los muestre correctamente
+    fetchMaterials();
+    setEditingDetail(detail);
+  };
 
   const handleCreateNewDetail = async () => {
     if (!showNewDetailRow) return;
@@ -831,7 +843,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "Nombre Detalle", field: "name_detail" },
       { headerName: "Material", field: "material" },
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
-      { headerName: "Acción", field: "accion" }, // Nueva columna de acción
+      { headerName: "Acción", field: "accion" },
     ];
   
     // Mapeo incluyendo la propiedad "accion"
@@ -847,7 +859,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             <CustomButton
               className="btn-table"
               variant="editIcon"
-              onClick={() => setEditingDetail(det)}
+              onClick={() => handleEditDetail(det)}
             >
               Editar
             </CustomButton>
@@ -911,7 +923,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                     layer_thickness: <span style={textStyle}>{det.layer_thickness}</span>,
                     accion: (
                       <>
-                        <CustomButton variant="editIcon" onClick={() => setEditingDetail(det)}>
+                        <CustomButton variant="editIcon" onClick={() => handleEditDetail(det)}>
                           Editar
                         </CustomButton>
                         <CustomButton variant="deleteIcon" onClick={() => confirmDeleteDetail(det.id_detail)}>
@@ -1575,12 +1587,13 @@ const WorkFlowpar2createPage: React.FC = () => {
               <label>Material</label>
               <select
                 className="form-control"
-                value={editingDetail.material_id}
+                value={editingDetail.material_id || 0}
                 onChange={(e) =>
                   setEditingDetail((prev) =>
                     prev ? { ...prev, material_id: Number(e.target.value) } : prev
                   )
                 }
+                onClick={fetchMaterials}
               >
                 <option value={0}>Seleccione un material</option>
                 {materials.map((mat) => (
@@ -1953,7 +1966,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           hideFooter={true}
           modalStyle={{
             maxWidth: '70%', // aumenta el ancho máximo
-            width: '70%',    // ocupa el 90% del ancho del viewport
+            width: '70%',    // ocupa el 70% del ancho del viewport
             padding: '32px', // puedes ajustar el padding para que se vea ordenado
           }}
         >

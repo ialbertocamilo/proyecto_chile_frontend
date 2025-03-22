@@ -14,6 +14,7 @@ import TablesParameters from "../src/components/tables/TablesParameters";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import ModalCreate from "../src/components/common/ModalCreate";
+import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataView";
 
 interface Detail {
   id_detail: number;
@@ -621,47 +622,14 @@ const WorkFlowpar2viewPage: React.FC = () => {
   };
   
 
-  // ==================== RENDER RECINTO ====================
+  // ==================== RENDER RECINTO ===================
   const renderRecinto = () => {
     return (
       <>
-        <h5
-          style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}
-          className="mb-3"
-        >
-          Recinto
-        </h5>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>
         </div>
-        <div style={{ height: "390px", overflowY: "scroll" }}>
-          <table className="table table-bordered ">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Estado</th>
-                <th>Nombre del Recinto</th>
-                <th>Perfil de Ocupación</th>
-                <th>Sensor CO2</th>
-                <th>Altura Promedio</th>
-                <th>Área</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recintos.map((r) => (
-                <tr key={r.id}>
-                  <td>{r.id}</td>
-                  <td>{r.estado}</td>
-                  <td>{r.nombre}</td>
-                  <td>{r.perfilOcup}</td>
-                  <td>{r.sensorCO2}</td>
-                  <td>{r.alturaProm}</td>
-                  <td>{r.area}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <TabRecintDataCreate />
       </>
     );
   };

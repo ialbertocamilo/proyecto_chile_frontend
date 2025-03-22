@@ -21,6 +21,7 @@ import TablesParameters from "../src/components/tables/TablesParameters";
 import { NewDetailModal } from "@/components/modals/NewDetailModal";
 // Importamos nuestro nuevo componente de modales
 import ModalCreate from "@/components/common/ModalCreate";
+import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataEdit";
 
 // -----------------------
 // Componente para el Modal de Detalles (detalles individuales de un registro)
@@ -1431,77 +1432,17 @@ const WorkFlowpar2editPage: React.FC = () => {
     );
   };
 
-  // ===================== RENDER RECINTO ======================
-  const renderRecinto = () => (
-    <>
-      <h5
-        style={{
-          fontWeight: "normal",
-          fontFamily: "var(--font-family-base)",
-        }}
-        className="mb-3"
-      ></h5>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <div></div>
-      </div>
-      <div style={{ height: "390px", overflowY: "scroll" }}>
-        <table className="table table-bordered">
-          <thead>
-            <tr>
-              <th style={stickyHeaderStyle1}>ID</th>
-              <th style={stickyHeaderStyle1}>Estado</th>
-              <th style={stickyHeaderStyle1}>Nombre del Recinto</th>
-              <th style={stickyHeaderStyle1}>Perfil de Ocupación</th>
-              <th style={stickyHeaderStyle1}>Sensor CO2</th>
-              <th style={stickyHeaderStyle1}>Altura Promedio</th>
-              <th style={stickyHeaderStyle1}>Área</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              {
-                id: 1,
-                status: "Activo",
-                name: "Sala de Estar",
-                occupationProfile: "Residencial",
-                co2Sensor: "Sí",
-                avgHeight: "2.4m",
-                area: "25.5m²",
-              },
-              {
-                id: 2,
-                status: "Activo",
-                name: "Dormitorio Principal",
-                occupationProfile: "Residencial",
-                co2Sensor: "No",
-                avgHeight: "2.4m",
-                area: "16.8m²",
-              },
-              {
-                id: 3,
-                status: "Inactivo",
-                name: "Cocina",
-                occupationProfile: "Residencial",
-                co2Sensor: "Sí",
-                avgHeight: "2.4m",
-                area: "12.3m²",
-              },
-            ].map((room) => (
-              <tr key={room.id}>
-                <td>{room.id}</td>
-                <td>{room.status}</td>
-                <td>{room.name}</td>
-                <td>{room.occupationProfile}</td>
-                <td>{room.co2Sensor}</td>
-                <td>{room.avgHeight}</td>
-                <td>{room.area}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
-  );
+  // ===================== RENDER RECINTO =====================
+  const renderRecinto = () => {
+    return (
+      <>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div></div>
+        </div>
+        <TabRecintDataCreate />
+      </>
+    );
+  };
 
   // ===================== SIDEBAR & STEP CHANGE ======================
   const handleSidebarStepChange = (newStep: number) => {

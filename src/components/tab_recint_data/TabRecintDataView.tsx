@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import TablesParameters from "@/components/tables/TablesParameters";
-import ActionButtons from "@/components/common/ActionButtons";
-import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import CustomButton from "@/components/common/CustomButton";
 import ModalCreate from "@/components/common/ModalCreate";
 import { notify } from "@/utils/notify";
@@ -19,12 +17,10 @@ interface EnclosureGeneralData {
   comuna_id: number;
 }
 
-// Interfaz para los perfiles de ocupación
 interface OccupationProfile {
   id: number;
-  code: string; // Si tu endpoint también devuelve code (ES, AU, BA, etc.), lo puedes agregar
+  code: string;
   name: string;
-  // Agrega los campos que retorne tu endpoint para cada perfil de ocupación
 }
 
 interface Region {
@@ -43,11 +39,12 @@ interface Comuna {
 
 const TabEnclosureGenerals: React.FC = () => {
   const router = useRouter();
-  const projectId = localStorage.getItem("project_id") || "44";
+  const projectId = localStorage.getItem("project_id_view") || "44";
   const token = localStorage.getItem("token") || "";
 
   // Estados para la tabla principal
   const [data, setData] = useState<EnclosureGeneralData[]>([]);
+
   // Estados para regiones, comunas, zonas térmicas
   const [regiones, setRegiones] = useState<Region[]>([]);
   const [comunas, setComunas] = useState<Comuna[]>([]);
@@ -69,15 +66,9 @@ const TabEnclosureGenerals: React.FC = () => {
     comuna_id: 0,
   });
 
-  // Modal de confirmación para eliminar
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<EnclosureGeneralData | null>(null);
-
   // ===========================================================
   // 1. Funciones para fetch de datos
   // ===========================================================
-
-  // Obtener datos de la tabla de Enclosure Generals
   const fetchEnclosureGenerals = async () => {
     try {
       const url = `https://ceela-backend.svgdev.tech/enclosure-generals/${projectId}`;
@@ -97,7 +88,6 @@ const TabEnclosureGenerals: React.FC = () => {
     }
   };
 
-  // Obtener datos de Regiones
   const fetchRegiones = async () => {
     try {
       const url = "https://ceela-backend.svgdev.tech/regiones";
@@ -117,10 +107,8 @@ const TabEnclosureGenerals: React.FC = () => {
     }
   };
 
-  // Obtener datos de Comunas (puedes ajustar la región según necesites)
   const fetchComunas = async () => {
     try {
-      // Ajusta la región en esta URL si lo requieres (ahora está fija con id 4, a modo de ejemplo).
       const url = "https://ceela-backend.svgdev.tech/comunas/4";
       const response = await fetch(url, {
         method: "GET",
@@ -138,10 +126,8 @@ const TabEnclosureGenerals: React.FC = () => {
     }
   };
 
-  // Obtener opciones para Zona Térmica (puedes ajustar la comuna si lo requieres)
   const fetchZonasTermicas = async () => {
     try {
-      // Ajusta la comuna en esta URL si lo requieres (ahora está fija con id 24, a modo de ejemplo).
       const url = "https://ceela-backend.svgdev.tech/zonas-termicas/24";
       const response = await fetch(url, {
         method: "GET",
@@ -159,7 +145,6 @@ const TabEnclosureGenerals: React.FC = () => {
     }
   };
 
-  // Obtener perfiles de ocupación (endpoint que tú indicaste)
   const fetchOccupationProfiles = async () => {
     try {
       const url = "https://ceela-backend.svgdev.tech/user/enclosures-typing/";
@@ -180,111 +165,20 @@ const TabEnclosureGenerals: React.FC = () => {
   };
 
   // ===========================================================
-  // 2. useEffect para cargar todos los datos al inicio
+  // 2. useEffect para cargar los datos al inicio
   // ===========================================================
   useEffect(() => {
     fetchEnclosureGenerals();
     fetchRegiones();
     fetchComunas();
     fetchZonasTermicas();
-    fetchOccupationProfiles(); // <-- Importante: llamada para los perfiles
+    fetchOccupationProfiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ===========================================================
-  // 3. Funciones para edición
+  // (Se omiten las funciones relacionadas con el botón "Acciones")
   // ===========================================================
-  const handleEdit = (row: EnclosureGeneralData) => {
-    setEditingRowId(row.id);
-    setEditingValues({
-      occupation_profile_id: row.occupation_profile_id,
-      height: row.height,
-      co2_sensor: row.co2_sensor,
-      project_id: row.project_id,
-      region_id: row.region_id,
-      zona_termica: row.zona_termica,
-      name_enclosure: row.name_enclosure,
-      comuna_id: row.comuna_id,
-    });
-  };
-
-  const handleAccept = async (row: EnclosureGeneralData) => {
-    if (!editingRowId) return;
-    const url = `https://ceela-backend.svgdev.tech/enclosure-generals-update/${projectId}/${row.id}`;
-    const payload = {
-      name_enclosure: editingValues.name_enclosure,
-      region_id: editingValues.region_id,
-      comuna_id: editingValues.comuna_id,
-      zona_termica: editingValues.zona_termica,
-      occupation_profile_id: editingValues.occupation_profile_id,
-      height: editingValues.height,
-      co2_sensor: editingValues.co2_sensor,
-    };
-
-    try {
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) throw new Error("Error al actualizar el recinto");
-      notify("Registro actualizado con éxito");
-      setEditingRowId(null);
-      await fetchEnclosureGenerals();
-    } catch (error) {
-      console.error(error);
-      notify("Error al guardar los cambios");
-    }
-  };
-
-  const handleCancel = () => {
-    setEditingRowId(null);
-  };
-
-  // ===========================================================
-  // 4. Funciones para eliminación
-  // ===========================================================
-  const handleDelete = (row: EnclosureGeneralData) => {
-    setItemToDelete(row);
-    setShowDeleteModal(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!itemToDelete) return;
-    const url = `https://ceela-backend.svgdev.tech/enclosure-generals-delete/${projectId}/${itemToDelete.id}`;
-    try {
-      const response = await fetch(url, {
-        method: "DELETE",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al eliminar el recinto");
-      notify("Recinto eliminado exitosamente");
-      setShowDeleteModal(false);
-      setItemToDelete(null);
-      await fetchEnclosureGenerals();
-    } catch (error) {
-      console.error(error);
-      notify("Error al eliminar");
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowDeleteModal(false);
-    setItemToDelete(null);
-  };
-
-  // ===========================================================
-  // 5. Función para crear nuevo registro
-  // ===========================================================
-  const handleCreate = () => {
-    router.push("/recinto-create");
-  };
 
   // ===========================================================
   // 6. Definición de columnas para la tabla
@@ -317,7 +211,6 @@ const TabEnclosureGenerals: React.FC = () => {
       field: "occupation_profile_id",
       renderCell: (row: EnclosureGeneralData) =>
         editingRowId === row.id ? (
-          // MODO EDICIÓN: combo con los perfiles disponibles
           <select
             className="form-control"
             value={editingValues.occupation_profile_id}
@@ -336,10 +229,8 @@ const TabEnclosureGenerals: React.FC = () => {
             ))}
           </select>
         ) : (
-          // MODO LECTURA: mostrar el "name" del perfil, en vez del ID
-          occupationProfiles.find(
-            (p) => p.id === row.occupation_profile_id
-          )?.name || row.occupation_profile_id
+          occupationProfiles.find((p) => p.id === row.occupation_profile_id)?.name ||
+          row.occupation_profile_id
         ),
     },
     {
@@ -408,7 +299,6 @@ const TabEnclosureGenerals: React.FC = () => {
             ))}
           </select>
         ) : (
-          // Muestra el nombre de la región o el ID si no se encuentra
           regiones.find((r) => r.id === row.region_id)?.nombre_region || row.region_id
         ),
     },
@@ -464,66 +354,17 @@ const TabEnclosureGenerals: React.FC = () => {
           comunas.find((c) => c.id === row.comuna_id)?.nombre_comuna || row.comuna_id
         ),
     },
-    {
-      headerName: "Acciones",
-      field: "acciones",
-      renderCell: (row: EnclosureGeneralData) => {
-        if (editingRowId === row.id) {
-          return (
-            <ActionButtonsConfirm
-              onAccept={() => handleAccept(row)}
-              onCancel={handleCancel}
-            />
-          );
-        }
-        return (
-          <ActionButtons onEdit={() => handleEdit(row)} onDelete={() => handleDelete(row)} />
-        );
-      },
-    },
+    // Se elimina la columna "Acciones"
   ];
 
-  // ===========================================================
-  // 7. Render del componente
-  // ===========================================================
   return (
     <div>
-      {/* Título y botón "+ Nuevo" */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          marginBottom: "1rem",
-        }}
-      >
-        <CustomButton variant="save" onClick={handleCreate}>
-          + Nuevo
-        </CustomButton>
-      </div>
+      {/* Se elimina el botón "+ Nuevo" */}
 
       {/* Tabla de datos */}
       <TablesParameters columns={columns} data={data} />
 
-      {/* Modal de confirmación para eliminar */}
-      <ModalCreate
-        isOpen={showDeleteModal}
-        onClose={cancelDelete}
-        onSave={confirmDelete}
-        saveLabel="Eliminar"
-        title="Confirmar Eliminación"
-      >
-        <div className="container">
-          <div className="row mb-3">
-            <div className="col-12 text-center">
-              <p>¿Está seguro que desea eliminar el siguiente recinto?</p>
-              <h5 className="mt-3 mb-3">
-                {itemToDelete?.name_enclosure || "Sin nombre"}
-              </h5>
-            </div>
-          </div>
-        </div>
-      </ModalCreate>
+      {/* Se elimina el Modal de confirmación para eliminar */}
     </div>
   );
 };

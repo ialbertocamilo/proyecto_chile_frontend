@@ -13,12 +13,9 @@ const TabWindowCreate: React.FC = () => {
   const token = localStorage.getItem("token") || "";
 
   const [editingRow, setEditingRow] = useState<number | null>(null);
-  // Modal creación
   const [showModal, setShowModal] = useState<boolean>(false);
-  // Modal eliminación
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [rowToDelete, setRowToDelete] = useState<any>(null);
-  // Datos para edición en línea
   const [editData, setEditData] = useState<any>(null);
 
   const initialFormData = {
@@ -33,8 +30,6 @@ const TabWindowCreate: React.FC = () => {
     broad: 0,
   };
   const [formData, setFormData] = useState(initialFormData);
-
-  // Opciones fijas para los campos seleccionables
   const characteristicsOptions = [
     "Exterior",
     "Inter Recintos Clim",
@@ -93,7 +88,8 @@ const TabWindowCreate: React.FC = () => {
             },
           }
         );
-        if (!response.ok) throw new Error("Error al obtener las opciones de ángulo");
+        if (!response.ok)
+          throw new Error("Error al obtener las opciones de ángulo");
         const data = await response.json();
         setAngleOptions(data);
       } catch (error) {
@@ -156,6 +152,17 @@ const TabWindowCreate: React.FC = () => {
         alto: item.high,
         ancho: item.broad,
         marco: item.frame,
+        // Nuevos campos FAV
+        fav1_D: item.fav1_D || "",
+        fav1_L: item.fav1_L || "",
+        fav2izq_P: item.fav2izq_P || "",
+        fav2izq_S: item.fav2izq_S || "",
+        fav2der_P: item.fav2der_P || "",
+        fav2der_S: item.fav2der_S || "",
+        fav3_E: item.fav3_E || "",
+        fav3_T: item.fav3_T || "",
+        fav3_beta: item.fav3_beta || "",
+        fav3_alpha: item.fav3_alpha || "",
       }));
       setTableData(mappedData);
     } catch (error) {
@@ -184,6 +191,11 @@ const TabWindowCreate: React.FC = () => {
   // Abrir modal de creación
   const handleCreateWindow = () => {
     setShowModal(true);
+  };
+
+  // Función para el botón de Crear FAV
+  const handleCreateFav = () => {
+    notify("Crear FAV clicked");
   };
 
   // Cerrar modal de creación
@@ -275,7 +287,7 @@ const TabWindowCreate: React.FC = () => {
       angulo_azimut: row.anguloAzimut,
       housed_in: row.alojadoEn,
       position: row.posicionVentanal,
-      tipoCierre: row.tipoCierre, // Campo agregado
+      tipoCierre: row.tipoCierre,
       with_no_return: row.aislacion,
       high: row.alto,
       broad: row.ancho,
@@ -568,6 +580,92 @@ const TabWindowCreate: React.FC = () => {
         }
       },
     },
+    // Columnas FAV fijas (sticky)
+    {
+      headerName: "D [m]",
+      field: "fav1_D",
+      renderCell: (row: any) => row.fav1_D || "",
+      cellStyle: { position: "sticky", right: "720px", background: "#fff", zIndex: 1 },
+    },
+    {
+      headerName: "L [m]",
+      field: "fav1_L",
+      renderCell: (row: any) => row.fav1_L || "",
+      cellStyle: { position: "sticky", right: "640px", background: "#fff", zIndex: 1 },
+    },
+    {
+      headerName: "P [m]",
+      field: "fav2izq_P",
+      renderCell: (row: any) => row.fav2izq_P || "",
+      cellStyle: { position: "sticky", right: "560px", background: "#fff", zIndex: 1 },
+    },
+    {
+      headerName: "S [m]",
+      field: "fav2izq_S",
+      renderCell: (row: any) => row.fav2izq_S || "",
+      cellStyle: { position: "sticky", right: "480px", background: "#fff", zIndex: 1 },
+    },
+    {
+      headerName: "P [m]",
+      field: "fav2der_P",
+      renderCell: (row: any) => row.fav2der_P || "",
+      cellStyle: { position: "sticky", right: "400px", background: "#fff", zIndex: 1 },
+    },
+    {
+      headerName: "S [m]",
+      field: "fav2der_S",
+      renderCell: (row: any) => row.fav2der_S || "",
+      cellStyle: { position: "sticky", right: "320px", background: "#fff", zIndex: 1 },
+    },
+    {
+      headerName: "E [m]",
+      field: "fav3_E",
+      renderCell: (row: any) => row.fav3_E || "",
+      cellStyle: { position: "sticky", right: "240px", background: "#fff", zIndex: 1 },
+    },
+    {
+      headerName: "T [m]",
+      field: "fav3_T",
+      renderCell: (row: any) => row.fav3_T || "",
+      cellStyle: { position: "sticky", right: "160px", background: "#fff", zIndex: 1 },
+    },
+    {
+      headerName: "β [°]",
+      field: "fav3_beta",
+      renderCell: (row: any) => row.fav3_beta || "",
+      cellStyle: { position: "sticky", right: "80px", background: "#fff", zIndex: 1 },
+    },
+    {
+      headerName: "α [°]",
+      field: "fav3_alpha",
+      renderCell: (row: any) => row.fav3_alpha || "",
+      cellStyle: { position: "sticky", right: "0px", background: "#fff", zIndex: 1 },
+    },
+    // Nueva columna de Acciones al final
+    {
+      headerName: "Acciones",
+      field: "acciones_extra",
+      renderCell: (row: any) => {
+        if (editingRow === row.id) {
+          return (
+            <ActionButtonsConfirm
+              onAccept={() => handleConfirmEdit(row.id)}
+              onCancel={() => {
+                setEditingRow(null);
+                setEditData(null);
+              }}
+            />
+          );
+        } else {
+          return (
+            <ActionButtons
+              onEdit={() => handleEditClick(row)}
+              onDelete={() => handleDeleteClick(row)}
+            />
+          );
+        }
+      },
+    },
   ];
 
   const multiHeader = {
@@ -585,6 +683,23 @@ const TabWindowCreate: React.FC = () => {
         { label: "Ancho (W) [m]", rowSpan: 2 },
         { label: "Marco", rowSpan: 2 },
         { label: "Acciones", rowSpan: 2 },
+        { label: "FAV 1", colSpan: 2 },
+        { label: "FAV 2 izq", colSpan: 2 },
+        { label: "FAV 2 Der", colSpan: 2 },
+        { label: "FAV 3", colSpan: 4 },
+        { label: "Acciones", rowSpan: 2 },
+      ],
+      [
+        { label: "D [m]" },
+        { label: "L [m]" },
+        { label: "P [m]" },
+        { label: "S [m]" },
+        { label: "P [m]" },
+        { label: "S [m]" },
+        { label: "E [m]" },
+        { label: "T [m]" },
+        { label: "β [°]" },
+        { label: "α [°]" },
       ],
     ],
   };
@@ -592,9 +707,19 @@ const TabWindowCreate: React.FC = () => {
   return (
     <div>
       <TablesParameters columns={columns} data={tableData} multiHeader={multiHeader} />
-      <div style={{ marginTop: "1rem" }}>
+      <div
+        style={{
+          marginTop: "1rem",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <CustomButton variant="save" onClick={handleCreateWindow}>
           Crear Ventana
+        </CustomButton>
+        <CustomButton variant="save" onClick={handleCreateFav}>
+          Crear FAV
         </CustomButton>
       </div>
       {/* Modal de creación */}

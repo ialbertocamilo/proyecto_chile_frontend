@@ -33,11 +33,17 @@ export default function TablesParameters({
   data,
   multiHeader,
 }: TablesParametersProps) {
-  const stickyHeaderStyle: React.CSSProperties = {
+  // Altura fija para cada fila de encabezado
+  const headerRowHeight = 40;
+
+  // Estilo base para los encabezados sticky
+  const baseStickyStyle: React.CSSProperties = {
     position: "sticky",
-    top: 0,
     backgroundColor: "#fff",
     zIndex: 500,
+    textAlign: "center",
+    verticalAlign: "top",
+    color: "var(--primary-color)",
   };
 
   // Función para calcular el total de colSpan en una fila (si no se indica, se asume 1)
@@ -66,8 +72,8 @@ export default function TablesParameters({
                       colSpan={cell.colSpan}
                       rowSpan={cell.rowSpan}
                       style={{
-                        ...stickyHeaderStyle,
-                        color: "var(--primary-color)",
+                        ...baseStickyStyle,
+                        top: `${rowIndex * headerRowHeight}px`,
                         ...cell.style,
                       }}
                     >
@@ -78,7 +84,10 @@ export default function TablesParameters({
                   {rowIndex === 0 && getTotalColSpan(row) < columns.length && (
                     <th
                       colSpan={columns.length - getTotalColSpan(row)}
-                      style={stickyHeaderStyle}
+                      style={{
+                        ...baseStickyStyle,
+                        top: "0px",
+                      }}
                     ></th>
                   )}
                 </tr>
@@ -90,8 +99,8 @@ export default function TablesParameters({
                 <th
                   key={col.field}
                   style={{
-                    ...stickyHeaderStyle,
-                    color: "var(--primary-color)",
+                    ...baseStickyStyle,
+                    top: "0px",
                     ...col.headerStyle,
                   }}
                 >

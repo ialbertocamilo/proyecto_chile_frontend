@@ -16,6 +16,8 @@ import VerticalDivider from "@/components/ui/HorizontalDivider";
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import ModalCreate from "@/components/common/ModalCreate";
+import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataCreate";
+
 
 interface Detail {
   id_detail: number;
@@ -1479,22 +1481,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>
         </div>
-        <div style={{ height: "390px", overflowY: "scroll", overflowX: "auto" }}>
-          <table className="table table-bordered" style={{ width: "100%", minWidth: "600px" }}>
-            <thead>
-              <tr>
-                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>ID</th>
-                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Estado</th>
-                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Nombre del Recinto</th>
-                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Perfil de Ocupación</th>
-                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Sensor CO2</th>
-                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Altura Promedio</th>
-                <th style={{ ...stickyHeaderStyle1, color: "var(--primary-color)" }}>Área</th>
-              </tr>
-            </thead>
-            <tbody>{/* Lógica para mostrar los recintos */}</tbody>
-          </table>
-        </div>
+        <TabRecintDataCreate />
       </>
     );
   };

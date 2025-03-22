@@ -21,18 +21,22 @@ interface Wall {
   u?: number;
 }
 
-// Interfaz para puentes térmicos
+// Interfaz para puentes térmicos (actualizada para incluir los nombres de los elementos)
 interface ThermalBridge {
   id: number;
   po1_length: number;
   po1_id_element: number;
+  po1_element_name?: string;
   po2_length: number;
   po2_id_element: number;
+  po2_element_name?: string;
   po3_length: number;
   po3_id_element: number;
+  po3_element_name?: string;
   po4_length: number;
   po4_e_aislacion: number;
   po4_id_element: number;
+  po4_element_name?: string;
 }
 
 // Interfaz para las opciones de desplegable (tanto para muros como para elementos de puente térmico)
@@ -47,9 +51,6 @@ interface WallDetail {
 }
 
 const TabMuroCreate: React.FC = () => {
-  // Se elimina el estado de pestaña, ya que este componente ya no manejará pestañas
-  // const [tabStep, setTabStep] = useState<TabStep>("muros");
-
   // Estados de modales
   const [isWallModalOpen, setIsWallModalOpen] = useState<boolean>(false);
   const [isThermalBridgeModalOpen, setIsThermalBridgeModalOpen] = useState<boolean>(false);
@@ -106,15 +107,16 @@ const TabMuroCreate: React.FC = () => {
     if (storedProjectId) {
       setProjectId(storedProjectId);
     } else {
+      // Si es necesario, se podría notificar o manejar el error
     }
   }, []);
 
-// activar project id 
-useEffect(() => {
-  if (projectId) {
-    fetchData();
-  }
-}, [projectId]);
+  // Activar project id 
+  useEffect(() => {
+    if (projectId) {
+      fetchData();
+    }
+  }, [projectId]);
 
   // Función para obtener token y enclosure_id desde localStorage
   const getAuthData = () => {
@@ -559,7 +561,8 @@ useEffect(() => {
             </select>
           );
         }
-        return row.po1_id_element;
+        // Mostrar el nombre si existe, de lo contrario el id
+        return row.po1_element_name || row.po1_id_element;
       },
     },
     {
@@ -601,7 +604,7 @@ useEffect(() => {
             </select>
           );
         }
-        return row.po2_id_element;
+        return row.po2_element_name || row.po2_id_element;
       },
     },
     {
@@ -643,7 +646,7 @@ useEffect(() => {
             </select>
           );
         }
-        return row.po3_id_element;
+        return row.po3_element_name || row.po3_id_element;
       },
     },
     {
@@ -703,7 +706,7 @@ useEffect(() => {
             </select>
           );
         }
-        return row.po4_id_element;
+        return row.po4_element_name || row.po4_id_element;
       },
     },
     {
@@ -825,6 +828,7 @@ useEffect(() => {
       console.error(error);
     }
   };
+
   // Ahora se renderiza directamente el contenido correspondiente a "muros" (sin pestañas)
   const renderContent = () => (
     <div className="d-flex flex-column gap-4">

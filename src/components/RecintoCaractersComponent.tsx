@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import TabMuroCreate from "@/components/tab_recint_create/TabMuroCreate"; // Ajusta la ruta si es necesario
 import TabWindowCreate from "@/components/tab_recint_create/TabWindowCreate"; // Componente para Ventanas
+import TabWindowFAVCreate from "@/components/tab_recint_create/TabWindowFAVCreate"; // Componente para FAV
 
 type TabStep = "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
 
@@ -14,7 +15,16 @@ const RecintoCaractersComponent: React.FC = () => {
       case "muros":
         return <TabMuroCreate />;
       case "ventanas":
-        return <TabWindowCreate />;  // Se usa el componente importado para Ventanas
+        return (
+          <div className="row">
+            <div className="col-md-6">
+              <TabWindowCreate />
+            </div>
+            <div className="col-md-6">
+              <TabWindowFAVCreate />
+            </div>
+          </div>
+        );
       case "techumbre":
         return <div className="p-3">Contenido de Techumbre pendiente de implementación.</div>;
       case "pisos":

@@ -47,6 +47,13 @@ interface EditingRow {
   original: any;
 }
 
+// Interfaz para el item a eliminar
+interface ItemToDelete {
+  id: string;
+  name: string;
+  tab: TabKey;
+}
+
 const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger = 0 }) => {
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [activeTab, setActiveTab] = useState<TabKey>("ventilacion");
@@ -68,16 +75,56 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newRecintoName, setNewRecintoName] = useState("");
 
+  // Estado para el modal de eliminación
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
+
   // Estado para refrescar las tablas
   const [refresh, setRefresh] = useState(0);
 
   // Estado para llevar el registro de la fila que se está editando
   const [editingRow, setEditingRow] = useState<EditingRow | null>(null);
 
-  // Función para abrir el modal
+  // Función para abrir el modal de creación
   const handleNuevoClick = (tab: TabKey) => {
     console.log(`Nuevo elemento para ${tab}`);
     setIsCreateModalOpen(true);
+  };
+
+  // Función para abrir el modal de eliminación
+  const handleDeleteClick = (tab: TabKey, id: string, name: string) => {
+    setItemToDelete({ id, name, tab });
+    setIsDeleteModalOpen(true);
+  };
+
+  // Función para realizar el DELETE y eliminar un recinto
+  const handleDeleteConfirm = () => {
+    if (!itemToDelete) return;
+    
+    const token = localStorage.getItem("token");
+    if (!token || !rolUser) return;
+    
+    const url = `${constantUrlApiEndpoint}/enclosures-typing/${itemToDelete.id}/delete?section=${rolUser}`;
+    
+    fetch(url, {
+      method: "DELETE",
+      headers: {
+        "accept": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Eliminación exitosa", data);
+        notify("Recinto eliminado exitosamente");
+        setIsDeleteModalOpen(false);
+        setItemToDelete(null);
+        setRefresh((prev) => prev + 1);
+      })
+      .catch((err) => {
+        console.error("Error al eliminar recinto", err);
+        notify("Error al eliminar recinto", "error");
+      });
   };
 
   // Función para realizar el POST y crear un nuevo recinto
@@ -316,8 +363,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
 
   // Funciones para construir cada fila de tabla según el tipo de dato
 
-  // En mapVentilacionRow, el campo "R-pers [L/s]" se muestra siempre como texto,
-  // de la misma forma que "Tipologia de Recinto", sin posibilidad de edición.
   const mapVentilacionRow = (enclosure: any) => {
     const condition = enclosure.building_conditions[0]?.details || {};
     const minSalubridad = condition.cauldal_min_salubridad || {};
@@ -397,7 +442,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
               caudalImpuestoVentNoct: condition.caudal_impuesto?.vent_noct || 0,
             })
           }
-          onDelete={() => console.log("Eliminar", enclosure)}
+          onDelete={() => handleDeleteClick("ventilacion", enclosure.id, enclosure.name)}
         />
       ),
     };
@@ -471,7 +516,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
               potenciaPropuesta: details.potencia_propuesta || 0,
             })
           }
-          onDelete={() => console.log("Eliminar", enclosure)}
+          onDelete={() => handleDeleteClick("iluminacion", enclosure.id, enclosure.name)}
         />
       ),
     };
@@ -562,7 +607,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
               funcionamientoSemanal: condition.horario?.funcionamiento_semanal || "",
             })
           }
-          onDelete={() => console.log("Eliminar", enclosure)}
+          onDelete={() => handleDeleteClick("cargas", enclosure.id, enclosure.name)}
         />
       ),
     };
@@ -620,7 +665,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
               hrsDesfaseClimaInv: recinto.desfase_clima || 0,
             })
           }
-          onDelete={() => console.log("Eliminar", enclosure)}
+          onDelete={() => handleDeleteClick("horario", enclosure.id, enclosure.name)}
         />
       ),
     };
@@ -817,6 +862,20 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
             placeholder="Ingrese el nombre"
             style={{ width: "100%", padding: "8px", marginTop: "8px" }}
           />
+        </div>
+      </ModalCreate>
+
+      {/* Modal de confirmación de eliminación */}
+      <ModalCreate
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onSave={handleDeleteConfirm}
+        title="Confirmar eliminación"
+        saveLabel="Eliminar"
+      >
+        <div>
+          <p>¿Está seguro que desea eliminar el recinto <strong>{itemToDelete?.name}</strong>?</p>
+         
         </div>
       </ModalCreate>
     </div>

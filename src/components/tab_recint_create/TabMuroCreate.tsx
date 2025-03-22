@@ -6,19 +6,14 @@ import TablesParameters from "@/components/tables/TablesParameters";
 import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
-
-// Importar los componentes de acciones
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
-// Aunque se mantienen las interfaces y funciones relacionadas a otros tipos (techumbre, pisos, ventanas, puertas),
-// este componente ahora solo renderiza el contenido de "muros".
-
 // Interfaz para muros
 interface Wall {
-  id?: number; // id del registro en la tabla (usado en el endpoint de actualización)
+  id?: number; 
   wall_id: number;
-  name: string; // Se usa para mostrar el nombre del muro (si aplica)
+  name: string; 
   characteristics: string;
   angulo_azimut: string;
   area: number;
@@ -111,9 +106,15 @@ const TabMuroCreate: React.FC = () => {
     if (storedProjectId) {
       setProjectId(storedProjectId);
     } else {
-      notify("Error: No se encontró 'project_id' en el localStorage.");
     }
   }, []);
+
+// activar project id 
+useEffect(() => {
+  if (projectId) {
+    fetchData();
+  }
+}, [projectId]);
 
   // Función para obtener token y enclosure_id desde localStorage
   const getAuthData = () => {
@@ -124,7 +125,6 @@ const TabMuroCreate: React.FC = () => {
       return null;
     }
     if (!enclosure_id) {
-      notify("Error: No se encontró 'recinto_id' en el localStorage.");
       return null;
     }
     return { token, enclosure_id };
@@ -146,7 +146,6 @@ const TabMuroCreate: React.FC = () => {
         const walls: WallDetail[] = await response.json();
         setWallOptions(walls);
       } catch (error) {
-        notify("Error al cargar los detalles de muros");
         console.error(error);
       }
     };
@@ -169,7 +168,6 @@ const TabMuroCreate: React.FC = () => {
         const details: WallDetail[] = await response.json();
         setDetailOptions(details);
       } catch (error) {
-        notify("Error al cargar los detalles para los elementos");
         console.error(error);
       }
     };
@@ -188,7 +186,6 @@ const TabMuroCreate: React.FC = () => {
         const options = await response.json();
         setAngleOptions(options);
       } catch (error) {
-        notify("Error al cargar opciones de ángulo azimut");
         console.error(error);
       }
     };
@@ -223,13 +220,6 @@ const TabMuroCreate: React.FC = () => {
       console.error(error);
     }
   };
-
-
-  
-
-  // --------------------
-  // HANDLERS PARA MUROS
-  // --------------------
 
   // Iniciar edición de muro (edición en línea)
   const handleEditWall = (wallId: number) => {
@@ -328,10 +318,6 @@ const TabMuroCreate: React.FC = () => {
     setWallToDelete(null);
   };
 
-  // -------------------------------
-  // HANDLERS PARA PUENTES TÉRMICOS (Edición en línea y eliminación)
-  // -------------------------------
-
   // Iniciar edición de puente térmico: se guarda el registro completo en editingBridgeData
   const handleEditBridge = (bridgeId: number) => {
     const bridgeToEdit = puentesData.find((b) => b.id === bridgeId);
@@ -423,10 +409,6 @@ const TabMuroCreate: React.FC = () => {
     setIsDeleteBridgeModalOpen(false);
     setBridgeToDelete(null);
   };
-
-  // -------------------------------
-  // COLUMNAS DE LAS TABLAS
-  // -------------------------------
 
   // Columnas para la tabla de muros (sin cambios en la parte de creación)
   const murosColumns = [
@@ -769,9 +751,7 @@ const TabMuroCreate: React.FC = () => {
     ],
   };
 
-  // -------------------------------
   // MANEJO DE FORMULARIOS (Modal de creación)
-  // -------------------------------
 
   const handleWallInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -845,10 +825,6 @@ const TabMuroCreate: React.FC = () => {
       console.error(error);
     }
   };
-
-  // -------------------------------
-  // RENDERIZACIÓN DEL CONTENIDO
-  // -------------------------------
   // Ahora se renderiza directamente el contenido correspondiente a "muros" (sin pestañas)
   const renderContent = () => (
     <div className="d-flex flex-column gap-4">

@@ -45,6 +45,12 @@ interface ElementAttributesWindow {
   clousure_type: string;
 }
 
+// Interfaz para las props del modal de confirmación
+interface ConfirmModalProps {
+  onConfirm: () => Promise<void>;
+  message: string;
+}
+
 const AdministrationPage: React.FC = () => {
   useAuth();
   const { handleCreate, handleEdit, handleDelete } = useCrudOperations();
@@ -56,12 +62,15 @@ const AdministrationPage: React.FC = () => {
     handleLogout,
   } = useAdministration();
 
+  // Estados para steps y tabs
   const [step, setStep] = useState<number>(3);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
 
+  // Estados para búsqueda
   const [searchMaterial, setSearchMaterial] = useState("");
   const [searchElement, setSearchElement] = useState("");
 
+  // Estados para modales de creación/edición
   const [showNewMaterialModal, setShowNewMaterialModal] = useState(false);
   const [newMaterialData, setNewMaterialData] = useState<MaterialAttributes>({
     name: "",
@@ -69,7 +78,6 @@ const AdministrationPage: React.FC = () => {
     specific_heat: 0,
     density: 0,
   });
-
   const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(null);
 
   const [showNewWindowModal, setShowNewWindowModal] = useState(false);
@@ -82,7 +90,6 @@ const AdministrationPage: React.FC = () => {
     u_marco: 0,
     fm: 0,
   });
-
   const [selectedWindowId, setSelectedWindowId] = useState<number | null>(null);
 
   const [showNewDoorModal, setShowNewDoorModal] = useState(false);
@@ -94,11 +101,43 @@ const AdministrationPage: React.FC = () => {
     fm: 0,
     porcentaje_vidrio: 0,
   });
-
   const [selectedDoorId, setSelectedDoorId] = useState<number | null>(null);
 
+  // Estados para el modal de confirmación
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmModalProps, setConfirmModalProps] = useState<ConfirmModalProps>({
+    onConfirm: async () => Promise.resolve(),
+    message: "",
+  });
+
+  // Función para configurar el modal de confirmación
+  const confirmDelete = (
+    id: number,
+    type: string,
+    itemLabel: string,
+    refreshCallback: () => void
+  ) => {
+    setConfirmModalProps({
+      onConfirm: async () => {
+        await handleDelete(
+          id,
+          type,
+          `El ${itemLabel} fue eliminado correctamente`,
+async () => {
+  await refreshCallback();
+}
+        );
+        setShowConfirmModal(false);
+      },
+      message: `¿Está seguro que desea eliminar ${itemLabel}?`,
+    });
+    setShowConfirmModal(true);
+  };
+
+  // Filtrar ventanas de la lista de elementos
   const windowsList = elementsList.filter((el) => el.type === "window");
 
+  // Columnas y datos para la tabla de materiales
   const materialsColumns = [
     { headerName: "Nombre Material", field: "name" },
     { headerName: "Conductividad (W/m2K)", field: "conductivity" },
@@ -129,10 +168,10 @@ const AdministrationPage: React.FC = () => {
             setShowNewMaterialModal(true);
           }}
           onDelete={() => {
-            handleDelete(
+            confirmDelete(
               mat.id,
               "constant",
-              `El material "${mat.atributs.name}" fue eliminado correctamente`,
+              `el material "${mat.atributs.name}"`,
               () => fetchMaterialsList(1)
             );
           }}
@@ -140,6 +179,7 @@ const AdministrationPage: React.FC = () => {
       ),
     }));
 
+  // Columnas y datos para la tabla de ventanas
   const windowsColumns = [
     { headerName: "Nombre Elemento", field: "name_element" },
     { headerName: "U Vidrio [W/m2K]", field: "u_vidrio" },
@@ -180,10 +220,10 @@ const AdministrationPage: React.FC = () => {
             setShowNewWindowModal(true);
           }}
           onDelete={() => {
-            handleDelete(
+            confirmDelete(
               el.id,
               "elements",
-              `La ventana "${el.name_element}" fue eliminada correctamente`,
+              `la ventana "${el.name_element}"`,
               fetchElements
             );
           }}
@@ -191,6 +231,7 @@ const AdministrationPage: React.FC = () => {
       ),
     }));
 
+  // Columnas y datos para la tabla de puertas
   const doorsColumns = [
     { headerName: "Nombre Elemento", field: "name_element" },
     { headerName: "U Puerta opaca [W/m2K]", field: "u_puerta_opaca" },
@@ -231,10 +272,10 @@ const AdministrationPage: React.FC = () => {
             setShowNewDoorModal(true);
           }}
           onDelete={() => {
-            handleDelete(
+            confirmDelete(
               el.id,
               "elements/delete",
-              `La puerta "${el.name_element}" fue eliminada correctamente`,
+              `la puerta "${el.name_element}"`,
               fetchElements
             );
           }}
@@ -242,6 +283,7 @@ const AdministrationPage: React.FC = () => {
       ),
     }));
 
+  // Función para obtener el nombre del material (si la necesitas)
   function getMaterialName(materialId: number) {
     const mat = materialsList.find(
       (m) => m.id === materialId || m.material_id === materialId
@@ -249,6 +291,7 @@ const AdministrationPage: React.FC = () => {
     return mat ? mat.atributs.name : "Desconocido";
   }
 
+  // Funciones para crear y editar materiales
   const handleCreateMaterial = async () => {
     if (
       newMaterialData.name.trim() === "" ||
@@ -332,6 +375,7 @@ const AdministrationPage: React.FC = () => {
     setSelectedMaterialId(null);
   };
 
+  // Función para crear elementos (ventanas y puertas)
   const handleCreateElement = async () => {
     if (tabElementosOperables === "ventanas") {
       if (
@@ -580,7 +624,7 @@ const AdministrationPage: React.FC = () => {
 
           {/* Columna para Contenido principal */}
           <div className="col-12 col-md-9 p-4">
-            {/* Step 3: Tabla de Materiales aaa*/}
+            {/* Step 3: Tabla de Materiales */}
             {step === 3 && (
               <>
                 <SearchParameters
@@ -681,17 +725,18 @@ const AdministrationPage: React.FC = () => {
               </>
             )}
 
+            {/* Step 6: Perfil de Uso */}
             {step === 6 && (
-
               <div className="px-3">
                 <UseProfileTab />
+                
               </div>
             )}
           </div>
         </div>
       </Card>
 
-      {/* Modales */}
+      {/* Modales de creación/edición */}
       {showNewMaterialModal && (
         <ModalCreate
           isOpen={showNewMaterialModal}
@@ -957,6 +1002,7 @@ const AdministrationPage: React.FC = () => {
           </form>
         </ModalCreate>
       )}
+
       {showNewDoorModal && (
         <ModalCreate
           isOpen={showNewDoorModal}
@@ -1092,6 +1138,20 @@ const AdministrationPage: React.FC = () => {
               />
             </div>
           </form>
+        </ModalCreate>
+      )}
+
+      {/* Modal de Confirmación */}
+      {showConfirmModal && (
+        <ModalCreate
+          isOpen={showConfirmModal}
+          detail=""
+          onClose={() => setShowConfirmModal(false)}
+          onSave={confirmModalProps.onConfirm}
+          title="Confirmación"
+          saveLabel="Confirmar"
+        >
+          <p>{confirmModalProps.message}</p>
         </ModalCreate>
       )}
     </>

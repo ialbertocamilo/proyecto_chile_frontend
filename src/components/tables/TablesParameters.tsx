@@ -4,14 +4,14 @@ interface Column {
   headerName: string;
   field: string;
   headerStyle?: React.CSSProperties;
-  // Agregamos renderCell para renderizar contenido personalizado en la celda
+  // Permite renderizar contenido personalizado en la celda
   renderCell?: (row: any) => React.ReactNode;
 }
 
 interface TablesParametersProps {
   columns: Column[];
   data: any[];
-  multiHeader?: MultiHeader; // Nuevo: encabezado de múltiples filas
+  multiHeader?: MultiHeader; // Encabezado de múltiples filas (opcional)
 }
 
 // Cada celda del encabezado (multi-header)
@@ -33,11 +33,22 @@ export default function TablesParameters({
   data,
   multiHeader,
 }: TablesParametersProps) {
-  const stickyHeaderStyle: React.CSSProperties = {
+  // Altura fija para cada fila de encabezado
+  const headerRowHeight = 40;
+
+  // Estilo base para los encabezados sticky
+  const baseStickyStyle: React.CSSProperties = {
     position: "sticky",
-    top: 0,
     backgroundColor: "#fff",
+    zIndex: 500,
+    textAlign: "center",
+    verticalAlign: "top",
+    color: "var(--primary-color)",
   };
+
+  // Función para calcular el total de colSpan en una fila (si no se indica, se asume 1)
+  const getTotalColSpan = (row: HeaderRow) =>
+    row.reduce((acc, cell) => acc + (cell.colSpan ? cell.colSpan : 1), 0);
 
   return (
     <div style={{ height: "400px", overflowY: "scroll", overflowX: "auto" }}>
@@ -52,34 +63,44 @@ export default function TablesParameters({
       >
         <thead>
           {multiHeader ? (
-            // Si hay multiHeader, generamos varias filas según rows
-            multiHeader.rows.map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                {row.map((cell, cellIndex) => (
-                  <th
-                    key={cellIndex}
-                    colSpan={cell.colSpan}
-                    rowSpan={cell.rowSpan}
-                    style={{
-                      ...stickyHeaderStyle,
-                      color: "var(--primary-color)",
-                      ...cell.style,
-                    }}
-                  >
-                    {cell.label}
-                  </th>
-                ))}
-              </tr>
-            ))
+            <>
+              {multiHeader.rows.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((cell, cellIndex) => (
+                    <th
+                      key={cellIndex}
+                      colSpan={cell.colSpan}
+                      rowSpan={cell.rowSpan}
+                      style={{
+                        ...baseStickyStyle,
+                        top: `${rowIndex * headerRowHeight}px`,
+                        ...cell.style,
+                      }}
+                    >
+                      {cell.label}
+                    </th>
+                  ))}
+                  {/* En la primera fila, si el total de colSpan es menor al número de columnas, agregamos una celda extra */}
+                  {rowIndex === 0 && getTotalColSpan(row) < columns.length && (
+                    <th
+                      colSpan={columns.length - getTotalColSpan(row)}
+                      style={{
+                        ...baseStickyStyle,
+                        top: "0px",
+                      }}
+                    ></th>
+                  )}
+                </tr>
+              ))}
+            </>
           ) : (
-            // Si NO hay multiHeader, usamos las columnas clásicas
             <tr>
               {columns.map((col) => (
                 <th
                   key={col.field}
                   style={{
-                    ...stickyHeaderStyle,
-                    color: "var(--primary-color)",
+                    ...baseStickyStyle,
+                    top: "0px",
                     ...col.headerStyle,
                   }}
                 >

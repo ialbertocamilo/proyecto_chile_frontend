@@ -1,8 +1,12 @@
 // RecintoCaractersComponent.tsx
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import TabMuroCreate from "@/components/tab_recint_create/TabMuroCreate"; // Ajusta la ruta si es necesario
-import TabWindowCreate from "@/components/tab_recint_create/TabWindowCreate"; // Componente para Ventanas
+import TabMuroCreate from "@/components/tab_recint_create/TabMuroCreate"; 
+import TabWindowCreate from "@/components/tab_recint_create/TabWindowCreate"; 
+import TabFloorCreate from "@/components/tab_recint_create/TabFloorCreate";
+import TabRoofCreate from "@/components/tab_recint_create/TabRoofCreate";
+import TabDoorCreate from "@/components/tab_recint_create/TabDoorCreate";
+
 
 type TabStep = "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
 
@@ -14,14 +18,13 @@ const RecintoCaractersComponent: React.FC = () => {
       case "muros":
         return <TabMuroCreate />;
       case "ventanas":
-        return <TabWindowCreate />;  // Se usa el componente importado para Ventanas
+        return <TabWindowCreate />;
       case "techumbre":
-        return <div className="p-3">Contenido de Techumbre pendiente de implementación.</div>;
+        return <TabRoofCreate />;
       case "pisos":
-        return <div className="p-3">Contenido de Pisos pendiente de implementación.</div>;
+        return <TabFloorCreate />;
       case "puertas":
-        return <div className="p-3">Contenido de Puertas pendiente de implementación.</div>;
-      default:
+        return <TabDoorCreate />; default:
         return null;
     }
   };

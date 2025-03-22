@@ -213,7 +213,6 @@ const handleSave = async () => {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
-      notify("Token no disponible");
       return;
     }
 
@@ -257,7 +256,7 @@ const handleSave = async () => {
     notify("Recinto creado correctamente");
   } catch (error) {
     console.error("Error en handleSave:", error);
-    notify("Error al guardar los datos", "error");
+    notify("Error al guardar los datos");
   }
 };
 // ...

@@ -106,8 +106,6 @@ const TabMuroCreate: React.FC = () => {
     const storedProjectId = localStorage.getItem("project_id");
     if (storedProjectId) {
       setProjectId(storedProjectId);
-    } else {
-      // Si es necesario, se podría notificar o manejar el error
     }
   }, []);
 
@@ -412,7 +410,7 @@ const TabMuroCreate: React.FC = () => {
     setBridgeToDelete(null);
   };
 
-  // Columnas para la tabla de muros (sin cambios en la parte de creación)
+  // Columnas para la tabla de muros (se modifica la columna de "Caracteristicas" para usar un desplegable)
   const murosColumns = [
     {
       headerName: "Muros",
@@ -444,13 +442,17 @@ const TabMuroCreate: React.FC = () => {
       renderCell: (row: Wall) => {
         if (row.wall_id === editingWallId && editingWallData) {
           return (
-            <input
-              type="text"
+            <select
               name="characteristics"
               value={editingWallData.characteristics}
               onChange={handleEditWallChange}
               className="form-control form-control-sm"
-            />
+            >
+              <option value="">Seleccione...</option>
+              <option value="Exterior">Exterior</option>
+              <option value="Inter Recintos Clim">Inter Recintos Clim</option>
+              <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+            </select>
           );
         }
         return row.characteristics;
@@ -561,7 +563,6 @@ const TabMuroCreate: React.FC = () => {
             </select>
           );
         }
-        // Mostrar el nombre si existe, de lo contrario el id
         return row.po1_element_name || row.po1_id_element;
       },
     },
@@ -893,14 +894,18 @@ const TabMuroCreate: React.FC = () => {
               Características
             </label>
             <div className="col-sm-9">
-              <input
+              <select
                 id="characteristics"
-                type="text"
                 name="characteristics"
                 className="form-control form-control-sm"
                 value={newWall.characteristics}
                 onChange={handleWallInputChange}
-              />
+              >
+                <option value="">Seleccione...</option>
+                <option value="Exterior">Exterior</option>
+                <option value="Inter Recintos Clim">Inter Recintos Clim</option>
+                <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+              </select>
             </div>
           </div>
           <div className="row align-items-center mb-3">

@@ -6,7 +6,7 @@ const IFCViewerComponent = dynamic(() => import("@/components/ifc/Viewer"), { ss
 export default function Home() {
   return (
     <div>
-      <TitleBread title="Visor IFC" breadcrumbItems={[{ title: "Visor IFC", href: "/ifc" }]} />
+      <TitleBread title="Gestor IFC" breadcrumbItems={[{ title: "Visor IFC", href: "/ifc" }]} />
       <IFCViewerComponent />
     </div>
   );

@@ -47,7 +47,7 @@ jobs:
           #key: ${{ secrets.SSH_KEY }}
           password: ${{ secrets.PASSWORD }}
           script: |
-            cd /root/server
+            cd /root/server/container
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ialbertocamilo --password-stdin
             docker pull ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:latest
             docker stack deploy -c container/docker-compose.yml bytestone

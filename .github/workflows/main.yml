@@ -50,4 +50,5 @@ jobs:
             cd /root/server
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ialbertocamilo --password-stdin
             docker pull ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:latest
-            docker stack deploy -c docker-compose.yml bytestone
+            docker stack deploy -c container/docker-compose.yml bytestone
+            docker service update --image ${{ env.IMAGE_NAME }}:latest bytestone_chile_web

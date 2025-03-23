@@ -274,7 +274,7 @@ async () => {
           onDelete={() => {
             confirmDelete(
               el.id,
-              "elements/delete",
+              "elements",
               `la puerta "${el.name_element}"`,
               fetchElements
             );
@@ -567,7 +567,7 @@ async () => {
     await handleEdit(
       selectedDoorId,
       payload,
-      "elements/update",
+      "elements",
       `La puerta "${newDoor.name_element}" fue actualizada correctamente`,
       fetchElements
     );

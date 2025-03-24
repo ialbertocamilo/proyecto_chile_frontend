@@ -15,9 +15,9 @@ const getUserTypeText = (role: string): string => {
     case "1":
       return "Administrador";
     case "2":
-      return "Operador";
+      return "Desarrollador";
     default:
-      return "Operador";
+      return "Desarrollador";
   }
 };
 

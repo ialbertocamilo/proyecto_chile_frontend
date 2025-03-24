@@ -66,7 +66,7 @@ const ProjectListPage = () => {
     setLoading(true);
     try {
       console.log("[fetchProjects] 📡 Obteniendo proyectos...");
-      const response = await get("/api/projects_user");
+      const response = await get("api/projects_user");
       console.log("[fetchProjects] Proyectos recibidos:", response);
       setProjects(response.projects);
     } catch (err: unknown) {

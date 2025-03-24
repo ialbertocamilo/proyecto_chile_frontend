@@ -48,7 +48,7 @@ const IconButton: React.FC<IconButtonProps> = ({
       </button>
       <style jsx>{`
         .primary-bg {
-          background-color: var(--primary-color) !important;
+          background-color: #2ab0c5 !important;
         }
       `}</style>
     </>

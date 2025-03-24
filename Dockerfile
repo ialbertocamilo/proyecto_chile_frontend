@@ -20,4 +20,4 @@ COPY --from=builder /app/node_modules ./node_modules
 RUN yarn install --production --frozen-lockfile --ignore-scripts
 
 EXPOSE 3000
-CMD ["node", ".next/standalone/server.js"]
+CMD ["yarn", "start"]

@@ -936,7 +936,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       return {
         __detail: item,
         nombreAbreviado: item.name_detail,
-        valorU: item.value_u?.toFixed(3) ?? "--",
+        valorU: item.value_u !== undefined && item.value_u !== 0 ? item.value_u.toFixed(3) : "-",
         colorExterior: isEditing ? (
           <select
             value={editingColors.exterior}
@@ -1024,7 +1024,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       return {
         __detail: item,
         nombreAbreviado: item.name_detail,
-        valorU: item.value_u?.toFixed(3) ?? "--",
+        valorU: item.value_u !== undefined && item.value_u !== 0 ? item.value_u.toFixed(3) : "-",
         colorExterior: isEditing ? (
           <select
             value={editingTechColors.exterior}
@@ -1147,11 +1147,20 @@ const WorkFlowpar2editPage: React.FC = () => {
         __detail: item,
         id: item.id,
         nombre: item.name_detail,
-        uValue: item.value_u?.toFixed(3) ?? "--",
-        bajoPisoLambda: item.info?.aislacion_bajo_piso?.lambda
-          ? item.info.aislacion_bajo_piso.lambda.toFixed(3)
-          : "N/A",
-        bajoPisoEAisl: item.info?.aislacion_bajo_piso?.e_aisl ?? "N/A",
+        uValue:
+          item.value_u !== undefined && item.value_u !== 0
+            ? item.value_u.toFixed(3)
+            : "-",
+        bajoPisoLambda:
+          item.info?.aislacion_bajo_piso?.lambda !== undefined &&
+          item.info.aislacion_bajo_piso.lambda !== 0
+            ? item.info.aislacion_bajo_piso.lambda.toFixed(3)
+            : "-",
+        bajoPisoEAisl:
+          item.info?.aislacion_bajo_piso?.e_aisl !== undefined &&
+          item.info.aislacion_bajo_piso.e_aisl !== 0
+            ? item.info.aislacion_bajo_piso.e_aisl
+            : "-",
         vertLambda: isEditing ? (
           <input
             type="number"
@@ -1167,10 +1176,12 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : vertical.lambda !== undefined && vertical.lambda !== null ? (
+        ) : vertical.lambda !== undefined &&
+          vertical.lambda !== null &&
+          Number(vertical.lambda) !== 0 ? (
           Number(vertical.lambda).toFixed(3)
         ) : (
-          "N/A"
+          "-"
         ),
         vertEAisl: isEditing ? (
           <input
@@ -1187,7 +1198,13 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : vertical.e_aisl ?? "N/A",
+        ) : vertical.e_aisl !== undefined &&
+          vertical.e_aisl !== null &&
+          Number(vertical.e_aisl) !== 0 ? (
+          vertical.e_aisl
+        ) : (
+          "-"
+        ),
         vertD: isEditing ? (
           <input
             type="number"
@@ -1203,7 +1220,13 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : vertical.d ?? "N/A",
+        ) : vertical.d !== undefined &&
+          vertical.d !== null &&
+          Number(vertical.d) !== 0 ? (
+          vertical.d
+        ) : (
+          "-"
+        ),
         horizLambda: isEditing ? (
           <input
             type="number"
@@ -1219,10 +1242,12 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : horizontal.lambda !== undefined && horizontal.lambda !== null ? (
+        ) : horizontal.lambda !== undefined &&
+          horizontal.lambda !== null &&
+          Number(horizontal.lambda) !== 0 ? (
           Number(horizontal.lambda).toFixed(3)
         ) : (
-          "N/A"
+          "-"
         ),
         horizEAisl: isEditing ? (
           <input
@@ -1239,7 +1264,13 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : horizontal.e_aisl ?? "N/A",
+        ) : horizontal.e_aisl !== undefined &&
+          horizontal.e_aisl !== null &&
+          Number(horizontal.e_aisl) !== 0 ? (
+          horizontal.e_aisl
+        ) : (
+          "-"
+        ),
         horizD: isEditing ? (
           <input
             type="number"
@@ -1255,7 +1286,13 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : horizontal.d ?? "N/A",
+        ) : horizontal.d !== undefined &&
+          horizontal.d !== null &&
+          Number(horizontal.d) !== 0 ? (
+          horizontal.d
+        ) : (
+          "-"
+        ),
         acciones: isEditing ? (
           <>
             <CustomButton
@@ -1466,7 +1503,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     );
   };
 
-  // ===================== RENDER RECINTO =====================
+  // ===================== RENDER RECINTO ======================
   const renderRecinto = () => {
     return (
       <>

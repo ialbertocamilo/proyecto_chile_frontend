@@ -1,7 +1,7 @@
 import { ApexOptions } from 'apexcharts';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import Title from './Title';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
@@ -22,7 +22,6 @@ const ChartProjectCreated: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
-    // Función para filtrar y contar proyectos por mes según el año seleccionado.
     const filterProjectsByYear = (year: number) => {
         const counts = new Array(12).fill(0);
         projects.forEach((project) => {
@@ -35,11 +34,6 @@ const ChartProjectCreated: React.FC = () => {
         });
         setChartData(counts);
     };
-
-    // Actualiza el chartData cada vez que cambien los proyectos o el año seleccionado.
-    useEffect(() => {
-        filterProjectsByYear(selectedYear);
-    }, [projects, selectedYear]);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -55,21 +49,17 @@ const ChartProjectCreated: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    // Opciones del gráfico con habilitación de zoom y movimiento.
-    const chartOptions: ApexOptions = useMemo(() => ({
+    useEffect(() => {
+        filterProjectsByYear(selectedYear);
+    }, [projects, selectedYear]);
+
+    const chartOptions: ApexOptions = {
         chart: {
             height: 335,
             type: 'area',
             stacked: false,
             toolbar: {
-                show: true,
-                tools: {
-                    pan: true,
-                    zoom: true,
-                    zoomin: true,
-                    zoomout: true,
-                    reset: true,
-                }
+                show: false,
             },
             dropShadow: {
                 enabled: true,
@@ -90,22 +80,6 @@ const ChartProjectCreated: React.FC = () => {
                     enabled: true,
                     speed: 350
                 }
-            },
-            zoom: {
-                enabled: true,
-                type: 'x',
-                autoScaleYaxis: true,
-                zoomedArea: {
-                    fill: {
-                        color: '#90E0EF',
-                        opacity: 0.4
-                    },
-                    stroke: {
-                        color: '#00B4D8',
-                        opacity: 0.6,
-                        width: 1
-                    }
-                }
             }
         },
         stroke: {
@@ -113,6 +87,7 @@ const ChartProjectCreated: React.FC = () => {
             curve: ['stepline'],
             dashArray: [0, 5]
         },
+
         plotOptions: {
             bar: {
                 columnWidth: '100px'
@@ -199,8 +174,7 @@ const ChartProjectCreated: React.FC = () => {
             },
         },
         yaxis: {
-            min: 0,
-            max: Math.max(...chartData, 5),
+            show: true,
             labels: {
                 style: {
                     fontSize: '12px',
@@ -233,7 +207,7 @@ const ChartProjectCreated: React.FC = () => {
                 show: false
             }
         },
-    }), [chartData]);
+    };
 
     const series = [
         {

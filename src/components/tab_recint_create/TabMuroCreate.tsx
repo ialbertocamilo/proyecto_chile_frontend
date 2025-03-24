@@ -750,7 +750,7 @@ const TabMuroCreate: React.FC = () => {
         { label: "L[m]" },
         { label: "e Aislación [cm]" },
         { label: "Elemento 2" },
-        { label: "Acciones" },
+        
       ],
     ],
   };
@@ -831,13 +831,16 @@ const TabMuroCreate: React.FC = () => {
   };
 
   // Ahora se renderiza directamente el contenido correspondiente a "muros" (sin pestañas)
-  const renderContent = () => (
-    <div className="d-flex flex-column gap-4">
-      <div className="row">
-        <div className="col-7">
+  // ... (resto del código permanece igual)
+
+const renderContent = () => (
+  <div className="d-flex flex-column gap-4">
+    <div className="table-responsive">
+      <div className="d-flex" style={{ minWidth: "1200px" }}>
+        <div className="p-2" style={{ flex: 1 }}>
           <TablesParameters columns={murosColumns} data={murosData} />
         </div>
-        <div className="col-5">
+        <div className="p-2" style={{ flex: 1 }}>
           <TablesParameters
             columns={puentesColumns}
             data={puentesData}
@@ -845,16 +848,20 @@ const TabMuroCreate: React.FC = () => {
           />
         </div>
       </div>
-      <div className="d-flex justify-content-end gap-2">
-        <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
-          Nuevo Muro
-        </CustomButton>
-        <CustomButton variant="save" onClick={() => setIsThermalBridgeModalOpen(true)}>
-          Nuevo Puente Térmico
-        </CustomButton>
-      </div>
     </div>
-  );
+    <div className="d-flex justify-content-end gap-2">
+      <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
+        Nuevo Muro
+      </CustomButton>
+      <CustomButton variant="save" onClick={() => setIsThermalBridgeModalOpen(true)}>
+        Nuevo Puente Térmico
+      </CustomButton>
+    </div>
+  </div>
+);
+
+  
+  
 
   return (
     <div className="container-fluid">

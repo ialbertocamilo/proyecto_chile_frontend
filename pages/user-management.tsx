@@ -97,7 +97,7 @@ const UserManagement = () => {
     },
     {
       id: "ubigeo",
-      label: "Ubigeo",
+      label: "Codigo Postal",
       minWidth: "2em",
       format: (value: string) => value || "No disponible"
     },

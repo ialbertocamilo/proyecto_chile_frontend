@@ -320,12 +320,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                             </ul>
                           )}
                         </li>
-                        <li className="nav-item">
-                          <Link href="/ifc" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
-                            <span style={iconStyle("/ifc")} className="material-icons">apartment</span>
-                            <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>IFC</span>
-                          </Link>
-                        </li>
                       </div>
                     </div>
                   </>

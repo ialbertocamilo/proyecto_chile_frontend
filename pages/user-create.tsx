@@ -5,7 +5,7 @@ import useAuth from "../src/hooks/useAuth";
 import Card from "@/components/common/Card";
 import Title from "@/components/Title";
 import CreateButton from "@/components/CreateButton";
-import { notify } from "@/utils/notify"; // Importamosfds notify
+import { notify } from "@/utils/notify"; 
 import Breadcrumb from "../src/components/common/Breadcrumb";
 
 interface UserFormData {
@@ -309,7 +309,7 @@ const UserCreate = () => {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label>{renderLabel("Ubigeo", "ubigeo")}</label>
+                    <label>{renderLabel("Codigo Postal", "ubigeo")}</label>
                     <input
                       type="text"
                       name="ubigeo"

@@ -53,11 +53,11 @@ const ProjectListPage = () => {
   const [, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Estados para controlar el modal de eliminación aa
+  // Estados para controlar el modal de eliminación
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: number; name: string } | null>(null);
 
-  const { get } =useApiNext();
+  const { get } = useApiNext();
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -190,13 +190,28 @@ const ProjectListPage = () => {
       label: "Acciones",
       minWidth: 100,
       cell: ({ row }: { row: Project }) => (
-        <div className="buttons-container">
+        <div className="buttons-container" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Botón de IFC */}
+          <CustomButton
+            className="btn-table-list"
+            onClick={() => router.push("/ifc")}
+            title="Ir a IFC"
+          >
+            <span className="material-icons" style={{ fontSize: "24px" }}>
+              apartment
+            </span>
+            <span style={{ marginLeft: "5px" }}>IFC</span>
+          </CustomButton>
+
+          {/* Botón de Editar */}
           <CustomButton
             variant="editIcon"
             className="btn-table-list"
             onClick={() => handleGoToWorkflow(row)}
             title="Editar en Workflow"
           />
+
+          {/* Botón de Eliminar */}
           <CustomButton
             variant="deleteIcon"
             className="btn-table-list"
@@ -227,7 +242,7 @@ const ProjectListPage = () => {
         />
 
         {/* Sección para los nuevos componentes en columnas laterales */}
-        <div className="row mt-4 mb-4 ">
+        <div className="row mt-4 mb-4">
           <div className="col-md-6 col-xl-6">
             <ChartProjectCreated />
           </div>
@@ -249,8 +264,7 @@ const ProjectListPage = () => {
           saveLabel="Eliminar"
         >
           <p>
-            ¿Estás seguro de eliminar el proyecto{" "}
-            <strong>{projectToDelete.name}</strong> (ID: {projectToDelete.id})? <br />
+            ¿Estás seguro de eliminar el proyecto <strong>{projectToDelete.name}</strong> (ID: {projectToDelete.id})? <br />
             Esta acción no se puede deshacer.
           </p>
         </ModalCreate>

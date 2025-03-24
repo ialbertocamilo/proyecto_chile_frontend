@@ -57,7 +57,7 @@ const TablePagination: React.FC<{
       <span className="text-nowrap">
         Página {page + 1} de {totalPages}
       </span>
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 primary-db">
         <IconButton
           onClick={() => onPageChange(page + 1)}
           icon={ChevronRight}
@@ -68,22 +68,23 @@ const TablePagination: React.FC<{
   </div>
 );
 
-export default function DataTable<T extends { [key: string]: any }>(
-  {
-    data,
-    columns,
-    loading = false,
-    pageSize = 10,
-    createText,
-    createUrl,
-  }: DataTableProps<T>
-) {
+export default function DataTable<T extends { [key: string]: any }>({
+  data,
+  columns,
+  loading = false,
+  pageSize = 10,
+  createText,
+  createUrl,
+}: DataTableProps<T>) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleChangePage = (newPage: number) => {
-    if (newPage >= 0 && newPage < Math.ceil(filteredData.length / rowsPerPage)) {
+    if (
+      newPage >= 0 &&
+      newPage < Math.ceil(filteredData.length / rowsPerPage)
+    ) {
       setPage(newPage);
     }
   };
@@ -145,7 +146,7 @@ export default function DataTable<T extends { [key: string]: any }>(
                 display: "block",
                 width: "100%",
                 maxWidth: "100%",
-                position: "relative" // Added for the :after pseudo-element
+                position: "relative", // Added for the :after pseudo-element
               }}
             >
               <table
@@ -223,6 +224,11 @@ export default function DataTable<T extends { [key: string]: any }>(
           </div>
         </div>
       </div>
+      <style jsx>{`
+        .primary-db {
+          background-color: var(--primary-color) !important;
+        }
+      `}</style>
     </Card>
   );
 }

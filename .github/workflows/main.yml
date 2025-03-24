@@ -53,4 +53,4 @@ jobs:
             docker pull ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:latest
             docker stack deploy -c docker-compose.yml bytestone
             docker service update --image ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:latest bytestone_chile_web
-            docker service update --force bytestone_chile_web
+            docker exec bytestone_caddy caddy reload

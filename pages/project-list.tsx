@@ -200,7 +200,6 @@ const ProjectListPage = () => {
             <span className="material-icons" style={{ fontSize: "24px" }}>
               apartment
             </span>
-            <span style={{ marginLeft: "5px" }}>IFC</span>
           </CustomButton>
 
           {/* Botón de Editar */}

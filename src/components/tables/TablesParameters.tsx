@@ -33,39 +33,44 @@ export default function TablesParameters({
   data,
   multiHeader,
 }: TablesParametersProps) {
-  // Altura fija para cada fila de encabezado
-  const headerRowHeight = 40;
-
-  // Estilo base para los encabezados sticky
+  // Estilo base para los encabezados sticky.
+  // (Si tienes múltiples filas sticky, deberás ajustar manualmente el `top`
+  // de cada una para evitar que se superpongan).
   const baseStickyStyle: React.CSSProperties = {
     position: "sticky",
+    top: 0,                // Mantén la primera fila fija arriba. Para más filas, necesitarás ajustar esto.
     backgroundColor: "#fff",
     zIndex: 500,
     textAlign: "center",
-    verticalAlign: "top",
+    verticalAlign: "middle",
     color: "var(--primary-color)",
   };
 
   // Función para calcular el total de colSpan en una fila (si no se indica, se asume 1)
   const getTotalColSpan = (row: HeaderRow) =>
-    row.reduce((acc, cell) => acc + (cell.colSpan ? cell.colSpan : 1), 0);
+    row.reduce((acc, cell) => acc + (cell.colSpan ?? 1), 0);
 
   return (
-    <div style={{ height: "400px", overflowY: "scroll", overflowX: "auto" }}>
+    <div
+      style={{
+        maxHeight: "400px",
+        overflowY: "auto",
+        overflowX: "auto",
+      }}
+    >
       <table
         className="table table-bordered"
         style={{
-          width: "100%",
-          minWidth: "800px",
-          textAlign: "center",
-          margin: "auto",
+          tableLayout: "auto",    // Ajusta el ancho de las celdas al contenido
+          margin: "auto",         // Centra la tabla horizontalmente
+          borderCollapse: "collapse",
         }}
       >
         <thead>
           {multiHeader ? (
             <>
               {multiHeader.rows.map((row, rowIndex) => (
-                <tr key={rowIndex}>
+                <tr key={rowIndex} style={{ height: "auto" }}>
                   {row.map((cell, cellIndex) => (
                     <th
                       key={cellIndex}
@@ -73,7 +78,9 @@ export default function TablesParameters({
                       rowSpan={cell.rowSpan}
                       style={{
                         ...baseStickyStyle,
-                        top: `${rowIndex * headerRowHeight}px`,
+                        // Si deseas que cada fila de encabezado sticky tenga
+                        // un `top` distinto, ajusta aquí según rowIndex:
+                        // top: rowIndex * 40, etc.
                         ...cell.style,
                       }}
                     >
@@ -86,21 +93,19 @@ export default function TablesParameters({
                       colSpan={columns.length - getTotalColSpan(row)}
                       style={{
                         ...baseStickyStyle,
-                        top: "0px",
                       }}
-                    ></th>
+                    />
                   )}
                 </tr>
               ))}
             </>
           ) : (
-            <tr>
+            <tr style={{ height: "auto" }}>
               {columns.map((col) => (
                 <th
                   key={col.field}
                   style={{
                     ...baseStickyStyle,
-                    top: "0px",
                     ...col.headerStyle,
                   }}
                 >
@@ -110,11 +115,19 @@ export default function TablesParameters({
             </tr>
           )}
         </thead>
+
         <tbody>
           {data.map((row, rowIndex) => (
-            <tr key={rowIndex}>
+            <tr key={rowIndex} style={{ height: "auto" }}>
               {columns.map((col) => (
-                <td key={col.field}>
+                <td
+                  key={col.field}
+                  style={{
+                    verticalAlign: "middle", // Centra verticalmente
+                    textAlign: "center",     // Centra horizontalmente
+                    padding: "8px",          // Añade algo de padding para mejorar la legibilidad
+                  }}
+                >
                   {col.renderCell ? col.renderCell(row) : row[col.field]}
                 </td>
               ))}

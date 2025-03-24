@@ -36,7 +36,7 @@ const ChartProjectCreated: React.FC = () => {
         setChartData(counts);
     };
 
-    // Se actualiza el chartData cada vez que cambien los proyectos o el año seleccionado.
+    // Actualiza el chartData cada vez que cambien los proyectos o el año seleccionado.
     useEffect(() => {
         filterProjectsByYear(selectedYear);
     }, [projects, selectedYear]);
@@ -55,16 +55,22 @@ const ChartProjectCreated: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    useEffect(() => {
-        filterProjectsByYear(selectedYear);
-    }, [projects, selectedYear]);
-
-    const chartOptions: ApexOptions = {
+    // Opciones del gráfico con habilitación de zoom y movimiento.
+    const chartOptions: ApexOptions = useMemo(() => ({
         chart: {
             height: 335,
             type: 'area',
             stacked: false,
-            toolbar: { show: false },
+            toolbar: {
+                show: true,
+                tools: {
+                    pan: true,
+                    zoom: true,
+                    zoomin: true,
+                    zoomout: true,
+                    reset: true,
+                }
+            },
             dropShadow: {
                 enabled: true,
                 color: '#64748B',
@@ -83,6 +89,22 @@ const ChartProjectCreated: React.FC = () => {
                 dynamicAnimation: {
                     enabled: true,
                     speed: 350
+                }
+            },
+            zoom: {
+                enabled: true,
+                type: 'x',
+                autoScaleYaxis: true,
+                zoomedArea: {
+                    fill: {
+                        color: '#90E0EF',
+                        opacity: 0.4
+                    },
+                    stroke: {
+                        color: '#00B4D8',
+                        opacity: 0.6,
+                        width: 1
+                    }
                 }
             }
         },
@@ -124,8 +146,16 @@ const ChartProjectCreated: React.FC = () => {
             borderColor: '#E2E8F0',
             strokeDashArray: 0,
             position: 'back',
-            xaxis: { lines: { show: true } },
-            yaxis: { lines: { show: true } },
+            xaxis: {
+                lines: {
+                    show: true
+                }
+            },
+            yaxis: {
+                lines: {
+                    show: true
+                }
+            },
             row: {
                 colors: ['transparent', 'rgba(0, 0, 0, 0.02)'],
                 opacity: 0.5
@@ -134,31 +164,41 @@ const ChartProjectCreated: React.FC = () => {
                 colors: ['transparent', 'rgba(0, 0, 0, 0.02)'],
                 opacity: 0.5
             },
-            padding: { top: 10, right: 10, bottom: 10, left: 10 }
+            padding: {
+                top: 10,
+                right: 10,
+                bottom: 10,
+                left: 10
+            },
         },
         markers: {
             size: 5,
             colors: ['#00B4D8'],
             strokeColors: '#fff',
             strokeWidth: 2,
-            hover: { size: 7 }
+            hover: {
+                size: 7
+            }
         },
         xaxis: {
             categories: months,
-            axisBorder: { show: false },
-            axisTicks: { show: false },
+            axisBorder: {
+                show: false
+            },
+            axisTicks: {
+                show: false
+            },
             labels: {
                 style: {
                     fontSize: '12px',
                     fontWeight: 500,
                     colors: '#64748B',
-                    fontFamily: 'Outfit, sans-serif'
+                    fontFamily: 'Outfit, sans-serif',
                 },
                 offsetY: 5
-            }
+            },
         },
         yaxis: {
-            // Se define un mínimo de 0 y se establece un máximo dinámico para que se note el gráfico aun con pocos proyectos
             min: 0,
             max: Math.max(...chartData, 5),
             labels: {
@@ -166,24 +206,33 @@ const ChartProjectCreated: React.FC = () => {
                     fontSize: '12px',
                     fontWeight: 500,
                     colors: '#64748B',
-                    fontFamily: 'Noto Sans, sans-serif'
+                    fontFamily: 'Noto Sans, sans-serif',
                 },
                 formatter: function (value) {
                     return Math.round(value).toString();
                 }
-            }
+            },
         },
-        dataLabels: { enabled: false },
-        legend: { show: false },
+        dataLabels: {
+            enabled: false,
+        },
+        legend: {
+            show: false,
+        },
         tooltip: {
-            style: { fontSize: '12px', fontFamily: 'Outfit, sans-serif' },
+            style: {
+                fontSize: '12px',
+                fontFamily: 'Outfit, sans-serif',
+            },
             y: {
                 formatter: function (value) {
                     return value + ' proyectos';
                 }
             },
-            marker: { show: false }
-        }
+            marker: {
+                show: false
+            }
+        },
     }), [chartData]);
 
     const series = [

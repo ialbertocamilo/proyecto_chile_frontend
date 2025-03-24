@@ -1354,7 +1354,7 @@ const DataEntryPage: React.FC = () => {
               />
             </div>
             <div className="form-group mb-3">
-              <label>Nombre Ventana</label>
+              <label>Ventana Asociada</label>
               <input
                 type="text"
                 className="form-control"

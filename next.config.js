@@ -1,7 +1,4 @@
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
-
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   webpack: (config) => {
     config.resolve.fallback = {
@@ -12,16 +9,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withBundleAnalyzer({
-...nextConfig,
-  reactStrictMode: true,
-  compress: true,
-  output: 'standalone',
-  experimental: {
-    optimizeCss: true, 
-    scrollRestoration: true, 
-  },
-  images: {
-    formats: ['image/avif', 'image/webp'],
-  },
-});
+module.exports = nextConfig;

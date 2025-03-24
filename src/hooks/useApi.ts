@@ -17,10 +17,12 @@ export function useApi() {
       Authorization: token ? `Bearer ${token}` : "",
     };
 
+    const reformattedEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+    const fullUrl=`${API_BASE_URL}/${reformattedEndpoint}`
     try {
       const response = await axios({
         method,
-        url: `${API_BASE_URL}/${endpoint}`,
+        url: fullUrl,
         data,
         ...config,
         headers,

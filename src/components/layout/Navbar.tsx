@@ -1,5 +1,3 @@
-
-
 'use client'
 import "bootstrap/dist/css/bootstrap.min.css";
 import Image from "next/image";
@@ -295,23 +293,21 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                         <span style={{ color: "#fff", fontSize: "0.8rem", opacity: 0.7 }}>Proyecto</span>
                       </div>
                       <div style={{ display: 'block' }}>
-                        <li className="nav-item">
-                          <Link href="/project-list" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
-                            <span style={iconStyle("/project-list")} className="material-icons">dns</span>
-                            <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>Listado</span>
-                          </Link>
-                        </li>
-                        <li className="nav-item">
+                        <li className={`nav-item ${isNavOpen ? 'open' : ''}`}>
                           <Link href="/workflow-part1-create" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
                             <span style={iconStyle("/workflow-part1-create")} className="material-icons">note_add</span>
                             <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>Crear Proyecto</span>
                           </Link>
-                        </li>
-                        <li className="nav-item">
-                          <Link href="/workflow-part2-create" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
-                            <span style={iconStyle("/workflow-part2-create")} className="material-icons">ballot</span>
-                            <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>Desarrollo de proyecto</span>
-                          </Link>
+                          {isNavOpen && (
+                            <ul className="nav flex-column" style={{ paddingLeft: isNavOpen ? "20px" : "10px" }}>
+                              <li className="nav-item">
+                                <Link href="/workflow-part2-create" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
+                                  <span style={iconStyle("/workflow-part2-create")} className="material-icons">ballot</span>
+                                  <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>Desarrollo de proyecto</span>
+                                </Link>
+                              </li>
+                            </ul>
+                          )}
                         </li>
                         <li className="nav-item">
                           <Link href="/ifc" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>

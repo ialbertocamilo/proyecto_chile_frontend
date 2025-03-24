@@ -16,10 +16,11 @@ export function useApiNext() {
       Authorization: token ? `Bearer ${token}` : "",
     };
 
+    const reformattedEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
     try {
       const response = await axios({
         method,
-        url: `${endpoint}`,
+        url: `${reformattedEndpoint}`,
         data,
         ...config,
         headers,

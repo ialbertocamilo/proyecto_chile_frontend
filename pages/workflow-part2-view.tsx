@@ -182,7 +182,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         Swal.fire("Token no encontrado", "Inicia sesión.");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/user/details/?project_id=${projectId}`;
+      const url = `${constantUrlApiEndpoint}/admin/details/?project_id=${projectId}`;
       const headers = { Authorization: `Bearer ${token}` };
       console.log("Fetching details with project ID:", projectId);
       const response = await axios.get(url, { headers });
@@ -205,7 +205,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return;
     }
     try {
-      const url = `${constantUrlApiEndpoint}/project/${projectId}/details/Muro`;
+      const url = `${constantUrlApiEndpoint}/admin/project/${projectId}/details/Muro`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setMurosTabList(response.data);
@@ -222,7 +222,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return;
     }
     try {
-      const url = `${constantUrlApiEndpoint}/project/${projectId}/details/Techo`;
+      const url = `${constantUrlApiEndpoint}/admin/project/${projectId}/details/Techo`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setTechumbreTabList(response.data);
@@ -239,7 +239,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return;
     }
     try {
-      const url = `${constantUrlApiEndpoint}/project/${projectId}/details/Piso`;
+      const url = `${constantUrlApiEndpoint}/admin/project/${projectId}/details/Piso`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setPisosTabList(response.data);
@@ -285,7 +285,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
   // ==================== EFECTOS SEGÚN STEP ====================
   useEffect(() => {
     if (step === 4 && projectId !== null) {
-      
+      // Aquí se podría llamar a alguna función si se necesita al iniciar el step 4
     }
   }, [step, projectId]);
 
@@ -319,6 +319,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
     fetchVentanasDetails,
     fetchPuertasDetails,
   ]);
+
+  // ==================== NUEVO EFECTO: FETCH PARA DETALLES GENERALES ====================
+  useEffect(() => {
+    if (showGeneralDetailsModal && projectId) {
+      fetchFetchedDetails();
+    }
+  }, [showGeneralDetailsModal, projectId]);
 
   // ==================== RENDER CABECERA ====================
   const renderMainHeader = () =>
@@ -370,6 +377,17 @@ const WorkFlowpar2viewPage: React.FC = () => {
   };
 
   const renderPisosTable = () => {
+    // Función helper para formatear valores numéricos
+    const formatValue = (value: any, fixed?: number): string => {
+      if (value === undefined || value === null || value === 0) {
+        return "-";
+      }
+      if (typeof value === "number" && fixed !== undefined) {
+        return value.toFixed(fixed);
+      }
+      return value.toString();
+    };
+
     const columnsPisos = [
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
@@ -411,15 +429,15 @@ const WorkFlowpar2viewPage: React.FC = () => {
       const horiz = item.info?.ref_aisl_horizontal || {};
       return {
         nombre: item.name_detail,
-        uValue: item.value_u?.toFixed(3) ?? "--",
-        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
-        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
-        vertEAisl: vert.e_aisl ?? "N/A",
-        vertD: vert.d ?? "N/A",
-        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
-        horizEAisl: horiz.e_aisl ?? "N/A",
-        horizD: horiz.d ?? "N/A",
+        uValue: formatValue(item.value_u, 3),
+        bajoPisoLambda: formatValue(bajoPiso.lambda, 3),
+        bajoPisoEAisl: formatValue(bajoPiso.e_aisl),
+        vertLambda: formatValue(vert.lambda, 3),
+        vertEAisl: formatValue(vert.e_aisl),
+        vertD: formatValue(vert.d),
+        horizLambda: formatValue(horiz.lambda, 3),
+        horizEAisl: formatValue(horiz.e_aisl),
+        horizD: formatValue(horiz.d),
       };
     });
 
@@ -620,7 +638,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
       </div>
     );
   };
-  
 
   // ==================== RENDER RECINTO ===================
   const renderRecinto = () => {

@@ -293,6 +293,17 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                         <span style={{ color: "#fff", fontSize: "0.8rem", opacity: 0.7 }}>Proyecto</span>
                       </div>
                       <div style={{ display: 'block' }}>
+
+                      <li className="nav-item">
+                          <Link 
+                            href="/project-list" 
+                            className="nav-link text-white" 
+                            style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}
+                          >
+                            <span style={iconStyle("/project-list")} className="material-icons">dns</span>
+                            <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>Proyectos</span>
+                          </Link>
+                        </li>
                         <li className={`nav-item ${isNavOpen ? 'open' : ''}`}>
                           <Link href="/workflow-part1-create" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
                             <span style={iconStyle("/workflow-part1-create")} className="material-icons">note_add</span>
@@ -308,12 +319,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                               </li>
                             </ul>
                           )}
-                        </li>
-                        <li className="nav-item">
-                          <Link href="/ifc" className="nav-link text-white" style={{ ...navLinkStyle, flexDirection: isNavOpen ? "row" : "column", justifyContent: isNavOpen ? "flex-start" : "center", padding: isNavOpen ? "10px 20px" : "10px 5px" }}>
-                            <span style={iconStyle("/ifc")} className="material-icons">apartment</span>
-                            <span style={{ marginLeft: isNavOpen ? "10px" : "0", display: !isMobile && !isNavOpen ? "none" : "block" }}>IFC</span>
-                          </Link>
                         </li>
                       </div>
                     </div>

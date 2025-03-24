@@ -269,7 +269,7 @@ const TabWindowCreate: React.FC = () => {
       fetchWindowEnclosures();
     } catch (error) {
       console.error(error);
-      alert("Error al crear la ventana");
+      notify("Error al crear la ventana");
     }
   };
 
@@ -299,7 +299,7 @@ const TabWindowCreate: React.FC = () => {
       fetchWindowEnclosures();
     } catch (error) {
       console.error(error);
-      alert("Error al eliminar la ventana");
+      notify("Error al eliminar la ventana");
     }
   };
 
@@ -355,7 +355,7 @@ const TabWindowCreate: React.FC = () => {
       fetchWindowEnclosures();
     } catch (error) {
       console.error(error);
-      alert("Error al actualizar la ventana");
+      notify("Error al actualizar la ventana");
     }
   };
 
@@ -422,7 +422,7 @@ const TabWindowCreate: React.FC = () => {
       fetchWindowEnclosures();
     } catch (error) {
       console.error(error);
-      alert("Error al actualizar los favs");
+      notify("Error al actualizar los favs");
     }
   };
 

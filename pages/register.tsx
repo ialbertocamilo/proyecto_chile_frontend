@@ -510,7 +510,7 @@ const Register: NextPageWithLayout = () => {
                         color: isError("ubigeo") ? "red" : "#000",
                       }}
                     >
-                      Ubigeo {isError("ubigeo") && <span>*</span>}
+                      Código Postal {isError("ubigeo") && <span>*</span>}
                     </label>
                     <input
                       type="text"

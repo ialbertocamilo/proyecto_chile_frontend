@@ -8,16 +8,16 @@ interface TopBarProps {
   sidebarWidth: string;
 }
 
-// Función para convertir el valor del rol a texto (se retorna directamente si ya es "Administrador" u "Operador")
+// Función para convertir el valor del rol a texto (se retorna directamente si ya es "Administrador" u "Desarrollador")
 const getUserTypeText = (role: string): string => {
-  if (role === "Administrador" || role === "Operador") return role;
+  if (role === "Administrador" || role === "Desarrollador") return role;
   switch (role) {
     case "1":
       return "Administrador";
     case "2":
-      return "Operador";
+      return "Desarrollador";
     default:
-      return "Operador";
+      return "Desarrollador";
   }
 };
 

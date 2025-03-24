@@ -339,7 +339,7 @@ const EditProfile = () => {
                     <div className="row">
                       <div className="col-md-6" style={fieldContainerStyle}>
                         <label style={labelStyle}>
-                          Ubigeo <span style={{ color: "red" }}>*</span>
+                          Codigo postal <span style={{ color: "red" }}>*</span>
                         </label>
                         <input
                           type="text"

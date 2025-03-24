@@ -642,7 +642,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
   // PISOS
   const renderPisosTable = () => {
-    // Multi-encabezados (si deseas mantenerlo para agrupar columnas)
     const columnsPisos = [
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
@@ -678,6 +677,13 @@ const ConstructiveDetailsComponent: React.FC = () => {
       ],
     };
 
+    const formatValue = (val: any, decimals: number = 3) => {
+      if (val === 0 || val === null || val === undefined) {
+        return "-";
+      }
+      return typeof val === "number" ? val.toFixed(decimals) : val;
+    };
+
     const pisosData = pisosTabList.map((item) => {
       const bajoPiso = item.info?.aislacion_bajo_piso || {};
       const vert = item.info?.ref_aisl_vertical || {};
@@ -685,15 +691,15 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
       return {
         nombre: item.name_detail,
-        uValue: item.value_u ? item.value_u.toFixed(3) : "--",
-        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
-        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
-        vertEAisl: vert.e_aisl ?? "N/A",
-        vertD: vert.d ?? "N/A",
-        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
-        horizEAisl: horiz.e_aisl ?? "N/A",
-        horizD: horiz.d ?? "N/A",
+        uValue: formatValue(item.value_u),
+        bajoPisoLambda: formatValue(bajoPiso.lambda),
+        bajoPisoEAisl: formatValue(bajoPiso.e_aisl, 0),
+        vertLambda: formatValue(vert.lambda),
+        vertEAisl: formatValue(vert.e_aisl, 0),
+        vertD: formatValue(vert.d, 0),
+        horizLambda: formatValue(horiz.lambda),
+        horizEAisl: formatValue(horiz.e_aisl, 0),
+        horizD: formatValue(horiz.d, 0),
       };
     });
 

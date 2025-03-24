@@ -21,7 +21,7 @@ import TablesParameters from "../src/components/tables/TablesParameters";
 import { NewDetailModal } from "@/components/modals/NewDetailModal";
 // Importamos nuestro nuevo componente de modales
 import ModalCreate from "@/components/common/ModalCreate";
-import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataEdit";
+import TabRecintDataCreate from "../src/components/tab_recint_data/TabRecintDataEdit";
 
 // -----------------------
 // Componente para el Modal de Detalles (detalles individuales de un registro)
@@ -245,7 +245,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     ref_aisl_horizontal: { lambda: "", e_aisl: "", d: "" },
   });
 
-  // ===================== NUEVOS ESTADOS PARA LOS MODALES ======================
+  // ===================== ESTADOS PARA MODALES ======================
   const [selectedDetail, setSelectedDetail] = useState<Detail | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -255,6 +255,10 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== ESTADOS PARA EDICIÓN DE VENTANAS Y PUERTAS ======================
   const [editingVentana, setEditingVentana] = useState<Ventana | null>(null);
   const [editingPuerta, setEditingPuerta] = useState<Puerta | null>(null);
+
+  // ===================== NUEVOS ESTADOS PARA MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ======================
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteItem, setDeleteItem] = useState<{ id: number; type: "window" | "door" } | null>(null);
 
   // ===================== INIT ======================
   useEffect(() => {
@@ -777,6 +781,37 @@ const WorkFlowpar2editPage: React.FC = () => {
     setShowDetailModal(true);
   };
 
+  // ===================== FUNCIONES PARA EL MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ======================
+  const openDeleteModal = (id: number, type: "window" | "door") => {
+    setDeleteItem({ id, type });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteItem || !projectId) return;
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/elements/${deleteItem.id}/delete?type=${deleteItem.type}`;
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.delete(url, { headers });
+      notify(
+        `${deleteItem.type === "window" ? "Ventana" : "Puerta"} eliminada exitosamente.`
+      );
+      if (deleteItem.type === "window") {
+        setVentanasTabList((prev) => prev.filter((v: any) => v.id !== deleteItem.id));
+      } else {
+        setPuertasTabList((prev) => prev.filter((p: any) => p.id !== deleteItem.id));
+      }
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      notify("Error al eliminar");
+    } finally {
+      setShowDeleteModal(false);
+      setDeleteItem(null);
+    }
+  };
+
   // ===================== RENDER DEL MODAL PARA DETALLES GENERALES (TABLA) ======================
   const renderDetallesModalContent = () => {
     const detailTypeMapping: { [key in TabStep4]?: string } = {
@@ -901,7 +936,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       return {
         __detail: item,
         nombreAbreviado: item.name_detail,
-        valorU: item.value_u?.toFixed(3) ?? "--",
+        valorU: item.value_u !== undefined && item.value_u !== 0 ? item.value_u.toFixed(3) : "-",
         colorExterior: isEditing ? (
           <select
             value={editingColors.exterior}
@@ -989,7 +1024,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       return {
         __detail: item,
         nombreAbreviado: item.name_detail,
-        valorU: item.value_u?.toFixed(3) ?? "--",
+        valorU: item.value_u !== undefined && item.value_u !== 0 ? item.value_u.toFixed(3) : "-",
         colorExterior: isEditing ? (
           <select
             value={editingTechColors.exterior}
@@ -1112,11 +1147,20 @@ const WorkFlowpar2editPage: React.FC = () => {
         __detail: item,
         id: item.id,
         nombre: item.name_detail,
-        uValue: item.value_u?.toFixed(3) ?? "--",
-        bajoPisoLambda: item.info?.aislacion_bajo_piso?.lambda
-          ? item.info.aislacion_bajo_piso.lambda.toFixed(3)
-          : "N/A",
-        bajoPisoEAisl: item.info?.aislacion_bajo_piso?.e_aisl ?? "N/A",
+        uValue:
+          item.value_u !== undefined && item.value_u !== 0
+            ? item.value_u.toFixed(3)
+            : "-",
+        bajoPisoLambda:
+          item.info?.aislacion_bajo_piso?.lambda !== undefined &&
+          item.info.aislacion_bajo_piso.lambda !== 0
+            ? item.info.aislacion_bajo_piso.lambda.toFixed(3)
+            : "-",
+        bajoPisoEAisl:
+          item.info?.aislacion_bajo_piso?.e_aisl !== undefined &&
+          item.info.aislacion_bajo_piso.e_aisl !== 0
+            ? item.info.aislacion_bajo_piso.e_aisl
+            : "-",
         vertLambda: isEditing ? (
           <input
             type="number"
@@ -1132,10 +1176,12 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : vertical.lambda !== undefined && vertical.lambda !== null ? (
+        ) : vertical.lambda !== undefined &&
+          vertical.lambda !== null &&
+          Number(vertical.lambda) !== 0 ? (
           Number(vertical.lambda).toFixed(3)
         ) : (
-          "N/A"
+          "-"
         ),
         vertEAisl: isEditing ? (
           <input
@@ -1152,7 +1198,13 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : vertical.e_aisl ?? "N/A",
+        ) : vertical.e_aisl !== undefined &&
+          vertical.e_aisl !== null &&
+          Number(vertical.e_aisl) !== 0 ? (
+          vertical.e_aisl
+        ) : (
+          "-"
+        ),
         vertD: isEditing ? (
           <input
             type="number"
@@ -1168,7 +1220,13 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : vertical.d ?? "N/A",
+        ) : vertical.d !== undefined &&
+          vertical.d !== null &&
+          Number(vertical.d) !== 0 ? (
+          vertical.d
+        ) : (
+          "-"
+        ),
         horizLambda: isEditing ? (
           <input
             type="number"
@@ -1184,10 +1242,12 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : horizontal.lambda !== undefined && horizontal.lambda !== null ? (
+        ) : horizontal.lambda !== undefined &&
+          horizontal.lambda !== null &&
+          Number(horizontal.lambda) !== 0 ? (
           Number(horizontal.lambda).toFixed(3)
         ) : (
-          "N/A"
+          "-"
         ),
         horizEAisl: isEditing ? (
           <input
@@ -1204,7 +1264,13 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : horizontal.e_aisl ?? "N/A",
+        ) : horizontal.e_aisl !== undefined &&
+          horizontal.e_aisl !== null &&
+          Number(horizontal.e_aisl) !== 0 ? (
+          horizontal.e_aisl
+        ) : (
+          "-"
+        ),
         horizD: isEditing ? (
           <input
             type="number"
@@ -1220,7 +1286,13 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : horizontal.d ?? "N/A",
+        ) : horizontal.d !== undefined &&
+          horizontal.d !== null &&
+          Number(horizontal.d) !== 0 ? (
+          horizontal.d
+        ) : (
+          "-"
+        ),
         acciones: isEditing ? (
           <>
             <CustomButton
@@ -1301,8 +1373,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             variant="deleteIcon"
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
-              // Llamamos a la función para eliminar ventana
-              handleDeleteVentana(item.id);
+              openDeleteModal(item.id, "window");
             }}
           >
             <span className="material-icons">delete</span>
@@ -1356,7 +1427,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             variant="deleteIcon"
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
-              handleDeletePuerta(item.id);
+              openDeleteModal(item.id, "door");
             }}
           >
             <span className="material-icons">delete</span>
@@ -1432,7 +1503,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     );
   };
 
-  // ===================== RENDER RECINTO =====================
+  // ===================== RENDER RECINTO ======================
   const renderRecinto = () => {
     return (
       <>
@@ -1480,22 +1551,6 @@ const WorkFlowpar2editPage: React.FC = () => {
   ];
 
   // ===================== FUNCIONES PARA VENTANAS Y PUERTAS ======================
-  // Función para eliminar ventana
-  const handleDeleteVentana = async (id: number) => {
-    const token = getToken();
-    if (!token || !projectId) return;
-    try {
-      const url = `${constantUrlApiEndpoint}/elements/${id}/delete?type=window`;
-      const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(url, { headers });
-      notify("Ventana eliminada exitosamente.");
-      setVentanasTabList((prev) => prev.filter((v: any) => v.id !== id));
-    } catch (error) {
-      console.error("Error al eliminar ventana:", error);
-      notify("Error al eliminar ventana.");
-    }
-  };
-
   // Función para confirmar edición de ventana
   const handleConfirmVentanaEdit = async () => {
     if (!editingVentana || !projectId) return;
@@ -1518,22 +1573,6 @@ const WorkFlowpar2editPage: React.FC = () => {
     } catch (error) {
       console.error("Error al actualizar ventana:", error);
       notify("Error al actualizar ventana.");
-    }
-  };
-
-  // Función para eliminar puerta
-  const handleDeletePuerta = async (id: number) => {
-    const token = getToken();
-    if (!token || !projectId) return;
-    try {
-      const url = `${constantUrlApiEndpoint}/elements/${id}/delete?type=door`;
-      const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(url, { headers });
-      notify("Puerta eliminada exitosamente.");
-      setPuertasTabList((prev) => prev.filter((p: any) => p.id !== id));
-    } catch (error) {
-      console.error("Error al eliminar puerta:", error);
-      notify("Error al eliminar puerta.");
     }
   };
 
@@ -1624,15 +1663,15 @@ const WorkFlowpar2editPage: React.FC = () => {
       {/* Modal para mostrar la tabla de Detalles Generales al hacer clic en el área */}
       <ModalCreate
         detail={null}
-        isOpen={showDetallesModal} // Usa el estado para controlar la visibilidad
+        isOpen={showDetallesModal}
         title="Detalles Generales"
         onClose={() => setShowDetallesModal(false)}
         onSave={() => {}}
         hideFooter={true}
         modalStyle={{
-          maxWidth: '70%',
-          width: '70%',
-          padding: '32px',
+          maxWidth: "70%",
+          width: "70%",
+          padding: "32px",
         }}
       >
         {renderDetallesModalContent()}
@@ -1660,7 +1699,116 @@ const WorkFlowpar2editPage: React.FC = () => {
                 }
               />
             </div>
-            {/* Aquí se pueden agregar más campos para editar otros atributos */}
+            <div className="form-group">
+              <label>U Vidrio [W/m²K]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingVentana.atributs?.u_vidrio || ""}
+                onChange={(e) =>
+                  setEditingVentana((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_vidrio: parseFloat(e.target.value),
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>FS Vidrio</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingVentana.atributs?.fs_vidrio || ""}
+                onChange={(e) =>
+                  setEditingVentana((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            fs_vidrio: parseFloat(e.target.value),
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>Tipo Marco</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editingVentana.atributs?.frame_type || ""}
+                onChange={(e) =>
+                  setEditingVentana((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            frame_type: e.target.value,
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>Tipo Cierre</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editingVentana.atributs?.clousure_type || ""}
+                onChange={(e) =>
+                  setEditingVentana((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            clousure_type: e.target.value,
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>U Marco [W/m²K]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingVentana.u_marco || ""}
+                onChange={(e) =>
+                  setEditingVentana((prev) =>
+                    prev ? { ...prev, u_marco: parseFloat(e.target.value) } : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>FV [%]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingVentana.fm || ""}
+                onChange={(e) =>
+                  setEditingVentana((prev) =>
+                    prev ? { ...prev, fm: parseFloat(e.target.value) } : prev
+                  )
+                }
+              />
+            </div>
           </form>
         </ModalCreate>
       )}
@@ -1687,8 +1835,117 @@ const WorkFlowpar2editPage: React.FC = () => {
                 }
               />
             </div>
-            {/* Aquí se pueden agregar más campos para editar otros atributos */}
+            <div className="form-group">
+              <label>U Puerta Opaca [W/m²K]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingPuerta.atributs?.u_puerta_opaca || ""}
+                onChange={(e) =>
+                  setEditingPuerta((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_puerta_opaca: parseFloat(e.target.value),
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>Nombre Ventana</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editingPuerta.atributs?.name_ventana || ""}
+                onChange={(e) =>
+                  setEditingPuerta((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            name_ventana: e.target.value,
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>% Vidrio</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingPuerta.atributs?.porcentaje_vidrio || ""}
+                onChange={(e) =>
+                  setEditingPuerta((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: parseFloat(e.target.value),
+                          },
+                        }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>U Marco [W/m²K]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingPuerta.u_marco || ""}
+                onChange={(e) =>
+                  setEditingPuerta((prev) =>
+                    prev ? { ...prev, u_marco: parseFloat(e.target.value) } : prev
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>FM [%]</label>
+              <input
+                type="number"
+                className="form-control"
+                value={editingPuerta.fm || ""}
+                onChange={(e) =>
+                  setEditingPuerta((prev) =>
+                    prev ? { ...prev, fm: parseFloat(e.target.value) } : prev
+                  )
+                }
+              />
+            </div>
           </form>
+        </ModalCreate>
+      )}
+      {/* Modal de confirmación de eliminación */}
+      {showDeleteModal && deleteItem && (
+        <ModalCreate
+          isOpen={showDeleteModal}
+          title="Confirmar Eliminación"
+          onClose={() => setShowDeleteModal(false)}
+          onSave={confirmDelete}
+          detail={null} // Pass null detail to use default delete confirmation
+          hideFooter={false}
+          modalStyle={{
+            maxWidth: "500px",
+            width: "500px",
+            padding: "24px",
+          }}
+          saveLabel="Confirmar"
+        >
+          <p>
+            ¿Estás seguro de que deseas eliminar este {deleteItem.type === "window" ? "ventana" : "puerta"}?
+          </p>
         </ModalCreate>
       )}
     </>

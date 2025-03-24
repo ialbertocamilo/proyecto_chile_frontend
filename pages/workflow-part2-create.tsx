@@ -18,7 +18,6 @@ import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import ModalCreate from "@/components/common/ModalCreate";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataCreate";
 
-
 interface Detail {
   id_detail: number;
   scantilon_location: string;
@@ -385,8 +384,9 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // Nueva función para manejar la edición y asignar el material predefinido
+  // Función para editar detalle: se cierra el modal de Detalles Generales y se abre el modal de edición.
   const handleEditDetail = (detail: Detail) => {
+    setShowDetallesModal(false); // Se cierra el modal de Detalles Generales
     // Si no existe material_id pero sí el nombre, se busca en la lista de materiales
     if ((!detail.material_id || detail.material_id === 0) && detail.material) {
       const foundMaterial = materials.find((mat) => mat.name === detail.material);
@@ -441,6 +441,16 @@ const WorkFlowpar2createPage: React.FC = () => {
       } else {
         notify("No se añadió el Detalle al proyecto (ID de proyecto no disponible).");
       }
+      // Actualiza inmediatamente la tabla según el tipo del detalle
+      const tipo = newDetailForm.scantilon_location.toLowerCase();
+      if (tipo === "muro") {
+        fetchMurosDetails();
+      } else if (tipo === "techo") {
+        fetchTechumbreDetails();
+      } else if (tipo === "piso") {
+        fetchPisosDetails();
+      }
+      // Actualizamos también la lista general de detalles
       fetchFetchedDetails();
       setShowNewDetailRow(false);
       setNewDetailForm({
@@ -458,6 +468,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       }
     }
   };
+  
 
   // Función que se ejecuta al hacer clic en + Nuevo, tanto en Detalles Generales como en las pestañas
   const handleNewButtonClick = () => {
@@ -470,59 +481,100 @@ const WorkFlowpar2createPage: React.FC = () => {
     setTabStep4("muros");
   };
 
-  // --- Función para confirmar la edición del detalle desde el modal ---
-  const handleConfirmEditDetail = async () => {
-    if (!editingDetail) return;
-    if (!editingDetail.scantilon_location.trim() || !editingDetail.name_detail.trim()) {
-      notify("Los campos 'Ubicación Detalle' y 'Nombre Detalle' no pueden estar vacíos.");
-      return;
-    }
-    if (!editingDetail.material_id || editingDetail.material_id <= 0) {
-      notify("Por favor, seleccione un material válido.");
-      return;
-    }
-    if (editingDetail.layer_thickness === null || editingDetail.layer_thickness <= 0) {
-      notify("El 'Espesor de la capa' debe ser un valor mayor a 0.");
-      return;
-    }
-    const token = getToken();
-    if (!token || !projectId) return;
-    try {
-      const url = `${constantUrlApiEndpoint}/user/details/${editingDetail.id_detail}/update?project_id=${projectId}`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-      const payload = {
-        scantilon_location: editingDetail.scantilon_location,
-        name_detail: editingDetail.name_detail,
-        material_id: editingDetail.material_id,
-        layer_thickness: editingDetail.layer_thickness,
-      };
-      const response = await axios.put(url, payload, { headers });
-      notify(response.data.success);
-      fetchFetchedDetails();
-      setEditingDetail(null);
-    } catch (error: unknown) {
-      console.error("Error al actualizar el detalle:", error);
-      notify("Error al actualizar el Detalle.");
-    }
-  };
+  // Función para confirmar la edición del detalle desde el modal
+  // Función para confirmar la edición del detalle desde el modal
+const handleConfirmEditDetail = async () => {
+  if (!editingDetail) return;
+  if (!editingDetail.scantilon_location.trim() || !editingDetail.name_detail.trim()) {
+    notify("Los campos 'Ubicación Detalle' y 'Nombre Detalle' no pueden estar vacíos.");
+    return;
+  }
+  if (!editingDetail.material_id || editingDetail.material_id <= 0) {
+    notify("Por favor, seleccione un material válido.");
+    return;
+  }
+  if (editingDetail.layer_thickness === null || editingDetail.layer_thickness <= 0) {
+    notify("El 'Espesor de la capa' debe ser un valor mayor a 0.");
+    return;
+  }
+  const token = getToken();
+  if (!token || !projectId) return;
+  try {
+    const url = `${constantUrlApiEndpoint}/user/details/${editingDetail.id_detail}/update?project_id=${projectId}`;
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+    const payload = {
+      scantilon_location: editingDetail.scantilon_location,
+      name_detail: editingDetail.name_detail,
+      material_id: editingDetail.material_id,
+      layer_thickness: editingDetail.layer_thickness,
+    };
+    const response = await axios.put(url, payload, { headers });
+    notify(response.data.success);
 
-  // --- Funciones para eliminar detalles y elementos ---
+    // Actualización inmediata de la tabla según el tipo (Muro, Techo o Piso)
+    const tipo = editingDetail.scantilon_location.toLowerCase();
+    if (tipo === "muro") {
+      fetchMurosDetails();
+    } else if (tipo === "techo") {
+      fetchTechumbreDetails();
+    } else if (tipo === "piso") {
+      fetchPisosDetails();
+    }
+    // Actualizamos también la lista general, en caso de ser necesaria
+    fetchFetchedDetails();
+    setEditingDetail(null);
+  } catch (error: unknown) {
+    console.error("Error al actualizar el detalle:", error);
+    notify("Error al actualizar el Detalle.");
+  }
+};
+
+
+  // Funciones para eliminar detalles y elementos
   const handleDeleteDetail = async (detailId: number) => {
     const token = getToken();
     if (!token || !projectId) return;
     try {
+      // Se obtiene el detalle para identificar su tipo
+      const detail = fetchedDetails.find((d) => d.id_detail === detailId);
+      const tipo = detail ? detail.scantilon_location.toLowerCase() : "";
       const url = `${constantUrlApiEndpoint}/user/details/${detailId}/delete?project_id=${projectId}`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.delete(url, { headers });
       notify(response.data.message);
+  
+      // Actualiza inmediatamente la tabla según el tipo
+      if (tipo === "muro") {
+        fetchMurosDetails();
+      } else if (tipo === "techo") {
+        fetchTechumbreDetails();
+      } else if (tipo === "piso") {
+        fetchPisosDetails();
+      }
+      // Actualiza la lista general de detalles
       fetchFetchedDetails();
     } catch (error: unknown) {
       console.error("Error al eliminar el detalle:", error);
       notify("Error al eliminar el detalle.");
     }
+  };
+  
+
+  // Al confirmar eliminación se cierra el modal de Detalles Generales antes de mostrar el de confirmación
+  const confirmDeleteDetail = (detailId: number) => {
+    setShowDetallesModal(false); // Cierra el modal de Detalles Generales
+    setDeleteAction(() => () => handleDeleteDetail(detailId));
+    setShowConfirmModal(true);
+  };
+
+  // Para eliminación de elementos (Ventanas o Puertas)
+  const confirmDeleteElement = (elementId: number, type: string) => {
+    setShowDetallesModal(false); // Cierra el modal de Detalles Generales si está abierto
+    setDeleteAction(() => () => handleDeleteElement(elementId, type));
+    setShowConfirmModal(true);
   };
 
   const handleDeleteElement = async (elementId: number, type: string) => {
@@ -544,17 +596,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
-  const confirmDeleteDetail = (detailId: number) => {
-    setDeleteAction(() => () => handleDeleteDetail(detailId));
-    setShowConfirmModal(true);
-  };
-
-  const confirmDeleteElement = (elementId: number, type: string) => {
-    setDeleteAction(() => () => handleDeleteElement(elementId, type));
-    setShowConfirmModal(true);
-  };
-
-  // --- Funciones de edición para otras secciones (Muros, Techumbre, Pisos, etc.) ---
+  // Funciones de edición para otras secciones (Muros, Techumbre, Pisos, etc.)
   const handleEditClick = (detail: TabItem) => {
     setEditingRowId(detail.id || null);
     setEditingColors({
@@ -883,7 +925,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       </div>
     );
   };
-  
 
   const renderInitialDetails = () => {
     return (
@@ -1130,7 +1171,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "D [cm] (horiz)", field: "horizD" },
       { headerName: "Acciones", field: "acciones" },
     ];
-
+  
     const multiHeaderPisos = {
       rows: [
         [
@@ -1153,7 +1194,11 @@ const WorkFlowpar2createPage: React.FC = () => {
         ],
       ],
     };
-
+  
+    const formatNumber = (num: number | undefined, decimals = 3) => {
+      return num != null && num !== 0 ? num.toFixed(decimals) : "-";
+    };
+  
     const pisosData = pisosTabList.map((item) => {
       const bajoPiso = item.info?.aislacion_bajo_piso || {};
       const vert = item.info?.ref_aisl_vertical || {};
@@ -1161,9 +1206,9 @@ const WorkFlowpar2createPage: React.FC = () => {
       const isEditing = editingPisoRowId === item.id;
       return {
         nombre: item.name_detail,
-        uValue: item.value_u?.toFixed(3) ?? "--",
-        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
+        uValue: formatNumber(item.value_u),
+        bajoPisoLambda: formatNumber(bajoPiso.lambda),
+        bajoPisoEAisl: bajoPiso.e_aisl != null && bajoPiso.e_aisl !== 0 ? bajoPiso.e_aisl : "-",
         vertLambda: isEditing ? (
           <input
             type="number"
@@ -1177,7 +1222,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             }
           />
         ) : (
-          vert.lambda ? vert.lambda.toFixed(3) : "N/A"
+          formatNumber(vert.lambda)
         ),
         vertEAisl: isEditing ? (
           <input
@@ -1192,7 +1237,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             }
           />
         ) : (
-          vert.e_aisl ?? "N/A"
+          vert.e_aisl != null && vert.e_aisl !== 0 ? vert.e_aisl : "-"
         ),
         vertD: isEditing ? (
           <input
@@ -1207,7 +1252,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             }
           />
         ) : (
-          vert.d ?? "N/A"
+          vert.d != null && vert.d !== 0 ? vert.d : "-"
         ),
         horizLambda: isEditing ? (
           <input
@@ -1222,7 +1267,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             }
           />
         ) : (
-          horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"
+          formatNumber(horiz.lambda)
         ),
         horizEAisl: isEditing ? (
           <input
@@ -1237,7 +1282,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             }
           />
         ) : (
-          horiz.e_aisl ?? "N/A"
+          horiz.e_aisl != null && horiz.e_aisl !== 0 ? horiz.e_aisl : "-"
         ),
         horizD: isEditing ? (
           <input
@@ -1252,7 +1297,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             }
           />
         ) : (
-          horiz.d ?? "N/A"
+          horiz.d != null && horiz.d !== 0 ? horiz.d : "-"
         ),
         acciones: isEditing ? (
           <>
@@ -1291,7 +1336,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         ),
       };
     });
-
+  
     return (
       <div onClick={openDetallesModal} style={{ minWidth: "600px" }}>
         {pisosTabList.length > 0 ? (
@@ -1302,6 +1347,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       </div>
     );
   };
+  
 
   const renderVentanasTable = () => {
     const columnsVentanas = [
@@ -1774,7 +1820,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <label>Nombre Ventana</label>
+              <label>Ventana Asociada</label>
               <input
                 type="text"
                 className="form-control"

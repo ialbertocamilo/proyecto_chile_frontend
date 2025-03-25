@@ -73,9 +73,9 @@ const RecintoCreate: React.FC = () => {
   //  Recuperar datos del proyecto y del formulario (si existen) del localStorage
   // ---------------------------
   useEffect(() => {
-    const name = localStorage.getItem("project_name") || "Nombre del Proyecto";
-    const department = localStorage.getItem("project_department") || "Región";
-    const pid = localStorage.getItem("project_id") || "";
+    const name = localStorage.getItem("project_name_edit") || "Nombre del Proyecto";
+    const department = localStorage.getItem("project_department_edit") || "Región";
+    const pid = localStorage.getItem("project_id_edit") || "";
     setProjectName(name);
     setProjectDepartment(department);
     setProjectId(pid);
@@ -304,7 +304,7 @@ const RecintoCreate: React.FC = () => {
       {/* Card del título y encabezado del proyecto */}
       <Card>
         <div>
-          <Title text="Nuevo Recinto" />
+          <Title text="Crear Nuevo Recinto" />
           <ProjectInfoHeader
             projectName={projectName}
             region={projectDepartment}
@@ -476,7 +476,7 @@ const RecintoCreate: React.FC = () => {
             </div>
           </div>
 
-          {/* Botones Regresar y Guardar */}
+          {/* Botones: Regresar a la izquierda y Guardar a la derecha */}
           <div className="d-flex justify-content-between">
             <CustomButton variant="back" onClick={handleBack}>
               Regresar

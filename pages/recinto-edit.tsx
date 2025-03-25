@@ -1,4 +1,3 @@
-// recinto-create.tsx
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import { notify } from "@/utils/notify";
@@ -29,7 +28,7 @@ interface IEnclosureProfile {
   // ... otros campos que pudiera tener la respuesta
 }
 
-interface IFormData {
+export interface IFormData {
   selectedRegion: string;
   selectedComuna: string;
   selectedZonaTermica: string;
@@ -41,7 +40,7 @@ interface IFormData {
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
-const RecintoCreate: React.FC = () => {
+const RecintoEdit: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("Nombre del Proyecto");
   const [projectDepartment, setProjectDepartment] = useState<string>("Región");
   const [projectId, setProjectId] = useState<string>("");
@@ -73,14 +72,14 @@ const RecintoCreate: React.FC = () => {
   //  Recuperar datos del proyecto y del formulario (si existen) del localStorage
   // ---------------------------
   useEffect(() => {
-    const name = localStorage.getItem("project_name") || "Nombre del Proyecto";
-    const department = localStorage.getItem("project_department") || "Región";
-    const pid = localStorage.getItem("project_id") || "";
+    const name = localStorage.getItem("project_name_edit") || "Nombre del Proyecto";
+    const department = localStorage.getItem("project_department_edit") || "Región";
+    const pid = localStorage.getItem("project_id_edit") || "";
     setProjectName(name);
     setProjectDepartment(department);
     setProjectId(pid);
 
-    // Recuperar datos del formulario guardados
+    // Recuperar datos del formulario guardados en "recintoFormData"
     const savedFormData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (savedFormData) {
       const data: IFormData = JSON.parse(savedFormData);
@@ -249,6 +248,12 @@ const RecintoCreate: React.FC = () => {
         return;
       }
 
+      const recintoId = localStorage.getItem("recinto_id");
+      if (!recintoId) {
+        notify("ID del recinto no encontrado");
+        return;
+      }
+
       const payload = {
         name_enclosure: nombreRecinto,
         region_id: parseInt(selectedRegion),
@@ -262,9 +267,9 @@ const RecintoCreate: React.FC = () => {
       console.log("Payload a enviar:", payload);
 
       const response = await fetch(
-        `${constantUrlApiEndpoint}/enclosure-generals-create/${projectId}`,
+        `${constantUrlApiEndpoint}/enclosure-generals-update/${projectId}/${recintoId}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             accept: "application/json",
@@ -279,19 +284,16 @@ const RecintoCreate: React.FC = () => {
       console.log("Respuesta del servidor:", result);
 
       if (!response.ok) {
-        notify(result.detail || "Error al guardar los datos");
+        notify(result.detail || "Error al actualizar los datos");
         return;
       }
 
-      // Se guarda el id del recinto en el localStorage con la llave "recinto_id"
-      localStorage.setItem("recinto_id", result.id.toString());
-
-      notify("Recinto creado correctamente");
+      notify("Recinto actualizado correctamente");
       // Recargar la página por completo (manteniendo los datos del formulario en localStorage)
       window.location.reload();
     } catch (error) {
       console.error("Error en handleSave:", error);
-      notify("Error al guardar los datos");
+      notify("Error al actualizar los datos");
     }
   };
 
@@ -304,7 +306,7 @@ const RecintoCreate: React.FC = () => {
       {/* Card del título y encabezado del proyecto */}
       <Card>
         <div>
-          <Title text="Nuevo Recinto" />
+          <Title text="Edicion de Recinto" />
           <ProjectInfoHeader
             projectName={projectName}
             region={projectDepartment}
@@ -452,14 +454,14 @@ const RecintoCreate: React.FC = () => {
                 onChange={(e) => {
                   const value = e.target.value;
                   const regex = /^\d*(\.\d{0,2})?$/;
-                  if (regex.test(value) || value === '') {
+                  if (regex.test(value) || value === "") {
                     setAlturaPromedio(value);
                   }
                 }}
               />
             </div>
 
-            {/* 8. Sensor CO2 */}
+            {/* Sensor CO2 */}
             <div className="col-6 mb-3">
               <label htmlFor="sensorCo2" className="form-label">
                 Sensor CO2
@@ -476,19 +478,19 @@ const RecintoCreate: React.FC = () => {
             </div>
           </div>
 
-          {/* Botones Regresar y Guardar */}
+          {/* Botones: Regresar a la izquierda y Actualizar Datos a la derecha */}
           <div className="d-flex justify-content-between">
             <CustomButton variant="back" onClick={handleBack}>
               Regresar
             </CustomButton>
             <CustomButton variant="save" onClick={handleSave}>
-              Guardar
+              Actualizar Datos
             </CustomButton>
           </div>
         </div>
       </Card>
 
-      {/* Nueva Card para "Características térmicas de la envolvente" */}
+      {/* Card para "Características térmicas de la envolvente" */}
       <Card>
         <div>
           <Title text="Características térmicas de la envolvente" />
@@ -499,4 +501,4 @@ const RecintoCreate: React.FC = () => {
   );
 };
 
-export default RecintoCreate;
+export default RecintoEdit;

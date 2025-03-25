@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import TablesParameters from "@/components/tables/TablesParameters";
 import ActionButtons from "@/components/common/ActionButtons";
-import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import CustomButton from "@/components/common/CustomButton";
 import ModalCreate from "@/components/common/ModalCreate";
 import { notify } from "@/utils/notify";
@@ -19,12 +18,10 @@ interface EnclosureGeneralData {
   comuna_id: number;
 }
 
-// Interfaz para los perfiles de ocupación
 interface OccupationProfile {
   id: number;
-  code: string; // Si tu endpoint también devuelve code (ES, AU, BA, etc.), lo puedes agregar
+  code: string;
   name: string;
-  // Agrega los campos que retorne tu endpoint para cada perfil de ocupación
 }
 
 interface Region {
@@ -41,6 +38,18 @@ interface Comuna {
   longitud: number;
 }
 
+interface IFormData {
+  selectedRegion: string;
+  selectedComuna: string;
+  selectedZonaTermica: string;
+  nombreRecinto: string;
+  perfilOcupacion: number;
+  alturaPromedio: string;
+  sensorCo2: boolean;
+}
+
+const LOCAL_STORAGE_KEY = "recintoFormData";
+
 const TabEnclosureGenerals: React.FC = () => {
   const router = useRouter();
   const projectId = localStorage.getItem("project_id_edit") || "44";
@@ -48,36 +57,19 @@ const TabEnclosureGenerals: React.FC = () => {
 
   // Estados para la tabla principal
   const [data, setData] = useState<EnclosureGeneralData[]>([]);
-  // Estados para regiones, comunas, zonas térmicas
+  // Estados para regiones, comunas, zonas térmicas y perfiles de ocupación
   const [regiones, setRegiones] = useState<Region[]>([]);
   const [comunas, setComunas] = useState<Comuna[]>([]);
   const [zonasTermicas, setZonasTermicas] = useState<string[]>([]);
-
-  // Estado para los perfiles de ocupación
   const [occupationProfiles, setOccupationProfiles] = useState<OccupationProfile[]>([]);
 
-  // Estados para edición en la tabla
-  const [editingRowId, setEditingRowId] = useState<number | null>(null);
-  const [editingValues, setEditingValues] = useState<Omit<EnclosureGeneralData, "id">>({
-    occupation_profile_id: 0,
-    height: 0,
-    co2_sensor: "",
-    project_id: Number(projectId),
-    region_id: 0,
-    zona_termica: "",
-    name_enclosure: "",
-    comuna_id: 0,
-  });
-
-  // Modal de confirmación para eliminar
+  // Modal de confirmación para eliminación
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<EnclosureGeneralData | null>(null);
 
   // ===========================================================
   // 1. Funciones para fetch de datos
   // ===========================================================
-
-  // Obtener datos de la tabla de Enclosure Generals
   const fetchEnclosureGenerals = async () => {
     const url = `https://ceela-backend.svgdev.tech/enclosure-generals/${projectId}`;
     const response = await fetch(url, {
@@ -90,10 +82,8 @@ const TabEnclosureGenerals: React.FC = () => {
     if (!response.ok) return;
     const responseData: EnclosureGeneralData[] = await response.json();
     setData(responseData);
-
   };
 
-  // Obtener datos de Regiones
   const fetchRegiones = async () => {
     try {
       const url = "https://ceela-backend.svgdev.tech/regiones";
@@ -113,10 +103,8 @@ const TabEnclosureGenerals: React.FC = () => {
     }
   };
 
-  // Obtener datos de Comunas (puedes ajustar la región según necesites)
   const fetchComunas = async () => {
     try {
-      // Ajusta la región en esta URL si lo requieres (ahora está fija con id 4, a modo de ejemplo).
       const url = "https://ceela-backend.svgdev.tech/comunas/4";
       const response = await fetch(url, {
         method: "GET",
@@ -134,10 +122,8 @@ const TabEnclosureGenerals: React.FC = () => {
     }
   };
 
-  // Obtener opciones para Zona Térmica (puedes ajustar la comuna si lo requieres)
   const fetchZonasTermicas = async () => {
     try {
-      // Ajusta la comuna en esta URL si lo requieres (ahora está fija con id 24, a modo de ejemplo).
       const url = "https://ceela-backend.svgdev.tech/zonas-termicas/24";
       const response = await fetch(url, {
         method: "GET",
@@ -155,7 +141,6 @@ const TabEnclosureGenerals: React.FC = () => {
     }
   };
 
-  // Obtener perfiles de ocupación (endpoint que tú indicaste)
   const fetchOccupationProfiles = async () => {
     try {
       const url = "https://ceela-backend.svgdev.tech/user/enclosures-typing/";
@@ -183,61 +168,28 @@ const TabEnclosureGenerals: React.FC = () => {
     fetchRegiones();
     fetchComunas();
     fetchZonasTermicas();
-    fetchOccupationProfiles(); // <-- Importante: llamada para los perfiles
+    fetchOccupationProfiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ===========================================================
-  // 3. Funciones para edición
+  // 3. Función para redirigir a la página de edición
   // ===========================================================
-  const handleEdit = (row: EnclosureGeneralData) => {
-    setEditingRowId(row.id);
-    setEditingValues({
-      occupation_profile_id: row.occupation_profile_id,
-      height: row.height,
-      co2_sensor: row.co2_sensor,
-      project_id: row.project_id,
-      region_id: row.region_id,
-      zona_termica: row.zona_termica,
-      name_enclosure: row.name_enclosure,
-      comuna_id: row.comuna_id,
-    });
-  };
-
-  const handleAccept = async (row: EnclosureGeneralData) => {
-    if (!editingRowId) return;
-    const url = `https://ceela-backend.svgdev.tech/enclosure-generals-update/${projectId}/${row.id}`;
-    const payload = {
-      name_enclosure: editingValues.name_enclosure,
-      region_id: editingValues.region_id,
-      comuna_id: editingValues.comuna_id,
-      zona_termica: editingValues.zona_termica,
-      occupation_profile_id: editingValues.occupation_profile_id,
-      height: editingValues.height,
-      co2_sensor: editingValues.co2_sensor,
+  const handleNewFunction = (row: EnclosureGeneralData) => {
+    // Crear el objeto con los datos del recinto para precargar el formulario
+    const formData: IFormData = {
+      selectedRegion: row.region_id.toString(),
+      selectedComuna: row.comuna_id.toString(),
+      selectedZonaTermica: row.zona_termica,
+      nombreRecinto: row.name_enclosure,
+      perfilOcupacion: row.occupation_profile_id,
+      alturaPromedio: row.height.toString(),
+      sensorCo2: row.co2_sensor === "Si",
     };
-
-    try {
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) throw new Error("Error al actualizar el recinto");
-      notify("Registro actualizado con éxito");
-      setEditingRowId(null);
-      await fetchEnclosureGenerals();
-    } catch (error) {
-      console.error(error);
-      notify("Error al guardar los cambios");
-    }
-  };
-
-  const handleCancel = () => {
-    setEditingRowId(null);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
+    localStorage.setItem("recinto_id", row.id.toString());
+    notify("Datos del recinto cargados para edición");
+    router.push("/recinto-edit"); // Asegúrate de que la ruta coincida con la de tu página de edición
   };
 
   // ===========================================================
@@ -276,10 +228,12 @@ const TabEnclosureGenerals: React.FC = () => {
   };
 
   // ===========================================================
-  // 5. Función para crear nuevo registro
+  // 5. Función para crear nuevo registro (limpia el formulario)
   // ===========================================================
   const handleCreate = () => {
-    router.push("/recinto-create");
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem("recinto_id");
+    router.push("/recinto-create-edit");
   };
 
   // ===========================================================
@@ -294,186 +248,51 @@ const TabEnclosureGenerals: React.FC = () => {
     {
       headerName: "Nombre Recinto",
       field: "name_enclosure",
-      renderCell: (row: EnclosureGeneralData) =>
-        editingRowId === row.id ? (
-          <input
-            type="text"
-            className="form-control"
-            value={editingValues.name_enclosure}
-            onChange={(e) =>
-              setEditingValues({ ...editingValues, name_enclosure: e.target.value })
-            }
-          />
-        ) : (
-          row.name_enclosure
-        ),
+      renderCell: (row: EnclosureGeneralData) => row.name_enclosure,
     },
     {
       headerName: "Perfil Ocupación",
       field: "occupation_profile_id",
       renderCell: (row: EnclosureGeneralData) =>
-        editingRowId === row.id ? (
-          // MODO EDICIÓN: combo con los perfiles disponibles
-          <select
-            className="form-control"
-            value={editingValues.occupation_profile_id}
-            onChange={(e) =>
-              setEditingValues({
-                ...editingValues,
-                occupation_profile_id: Number(e.target.value),
-              })
-            }
-          >
-            <option value="">Seleccione perfil</option>
-            {occupationProfiles.map((profile) => (
-              <option key={profile.id} value={profile.id}>
-                {profile.name}
-              </option>
-            ))}
-          </select>
-        ) : (
-          // MODO LECTURA: mostrar el "name" del perfil, en vez del ID
-          occupationProfiles.find(
-            (p) => p.id === row.occupation_profile_id
-          )?.name || row.occupation_profile_id
-        ),
+        occupationProfiles.find((p) => p.id === row.occupation_profile_id)?.name ||
+        row.occupation_profile_id,
     },
     {
       headerName: "Altura (m)",
       field: "height",
-      renderCell: (row: EnclosureGeneralData) =>
-        editingRowId === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            value={editingValues.height}
-            onChange={(e) =>
-              setEditingValues({
-                ...editingValues,
-                height: Number(e.target.value),
-              })
-            }
-          />
-        ) : (
-          row.height
-        ),
+      renderCell: (row: EnclosureGeneralData) => row.height,
     },
     {
       headerName: "Sensor CO2",
       field: "co2_sensor",
-      renderCell: (row: EnclosureGeneralData) =>
-        editingRowId === row.id ? (
-          <select
-            className="form-control"
-            value={editingValues.co2_sensor}
-            onChange={(e) =>
-              setEditingValues({
-                ...editingValues,
-                co2_sensor: e.target.value,
-              })
-            }
-          >
-            <option value="">Seleccione</option>
-            <option value="Si">Si</option>
-            <option value="No">No</option>
-          </select>
-        ) : (
-          row.co2_sensor
-        ),
+      renderCell: (row: EnclosureGeneralData) => row.co2_sensor,
     },
     {
       headerName: "Región",
       field: "region_id",
       renderCell: (row: EnclosureGeneralData) =>
-        editingRowId === row.id ? (
-          <select
-            className="form-control"
-            value={editingValues.region_id}
-            onChange={(e) =>
-              setEditingValues({
-                ...editingValues,
-                region_id: Number(e.target.value),
-              })
-            }
-          >
-            <option value="">Seleccione región</option>
-            {regiones.map((region) => (
-              <option key={region.id} value={region.id}>
-                {region.nombre_region}
-              </option>
-            ))}
-          </select>
-        ) : (
-          // Muestra el nombre de la región o el ID si no se encuentra
-          regiones.find((r) => r.id === row.region_id)?.nombre_region || row.region_id
-        ),
+        regiones.find((r) => r.id === row.region_id)?.nombre_region || row.region_id,
     },
     {
       headerName: "Zona Térmica",
       field: "zona_termica",
-      renderCell: (row: EnclosureGeneralData) =>
-        editingRowId === row.id ? (
-          <select
-            className="form-control"
-            value={editingValues.zona_termica}
-            onChange={(e) =>
-              setEditingValues({
-                ...editingValues,
-                zona_termica: e.target.value,
-              })
-            }
-          >
-            <option value="">Seleccione zona</option>
-            {zonasTermicas.map((zona) => (
-              <option key={zona} value={zona}>
-                {zona}
-              </option>
-            ))}
-          </select>
-        ) : (
-          row.zona_termica
-        ),
+      renderCell: (row: EnclosureGeneralData) => row.zona_termica,
     },
     {
       headerName: "Comuna",
       field: "comuna_id",
       renderCell: (row: EnclosureGeneralData) =>
-        editingRowId === row.id ? (
-          <select
-            className="form-control"
-            value={editingValues.comuna_id}
-            onChange={(e) =>
-              setEditingValues({
-                ...editingValues,
-                comuna_id: Number(e.target.value),
-              })
-            }
-          >
-            <option value="">Seleccione comuna</option>
-            {comunas.map((comuna) => (
-              <option key={comuna.id} value={comuna.id}>
-                {comuna.nombre_comuna}
-              </option>
-            ))}
-          </select>
-        ) : (
-          comunas.find((c) => c.id === row.comuna_id)?.nombre_comuna || row.comuna_id
-        ),
+        comunas.find((c) => c.id === row.comuna_id)?.nombre_comuna || row.comuna_id,
     },
     {
       headerName: "Acciones",
       field: "acciones",
       renderCell: (row: EnclosureGeneralData) => {
-        if (editingRowId === row.id) {
-          return (
-            <ActionButtonsConfirm
-              onAccept={() => handleAccept(row)}
-              onCancel={handleCancel}
-            />
-          );
-        }
         return (
-          <ActionButtons onEdit={() => handleEdit(row)} onDelete={() => handleDelete(row)} />
+          <ActionButtons
+            onEdit={() => handleNewFunction(row)}
+            onDelete={() => handleDelete(row)}
+          />
         );
       },
     },

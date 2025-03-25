@@ -22,7 +22,7 @@ export const useAdministration = () => {
         handleLogout();
         return;
       }
-      const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=500`;
+      const url = `${constantUrlApiEndpoint}/admin/constants/?page=${page}&per_page=500`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       console.log("[fetchMaterialsList] Materiales recibidos:", response.data);
@@ -79,7 +79,7 @@ export const useAdministration = () => {
         handleLogout();
         return;
       }
-      const url = `${constantUrlApiEndpoint}/elements/`;
+      const url = `${constantUrlApiEndpoint}/admin/elements/`;
       const headers = { Authorization: `Bearer ${token}`, Accept: "application/json" };
       const response = await axios.get(url, { headers });
       console.log("[fetchElements] Elementos recibidos:", response.data);

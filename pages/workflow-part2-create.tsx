@@ -300,7 +300,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     axios
-      .get(`${constantUrlApiEndpoint}/elements/?type=window`, {
+      .get(`${constantUrlApiEndpoint}/user/elements/?type=window`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => setVentanasTabList(response.data))
@@ -314,7 +314,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     axios
-      .get(`${constantUrlApiEndpoint}/elements/?type=door`, {
+      .get(`${constantUrlApiEndpoint}/user/elements/?type=door`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => setPuertasTabList(response.data))
@@ -328,7 +328,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     try {
-      const url = `${constantUrlApiEndpoint}/constants/?page=1&per_page=700`;
+      const url = `${constantUrlApiEndpoint}/user/constants/?page=1&per_page=700`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       const allConstants: Constant[] = response.data.constants || [];
@@ -581,7 +581,7 @@ const handleConfirmEditDetail = async () => {
     const token = getToken();
     if (!token || !projectId) return;
     try {
-      const url = `${constantUrlApiEndpoint}/elements/${elementId}/delete?type=${type}`;
+      const url = `${constantUrlApiEndpoint}/user/elements/${elementId}/delete?type=${type}`;
       const headers = { Authorization: `Bearer ${token}` };
       await axios.delete(url, { headers });
       notify("Elemento eliminado exitosamente.");
@@ -795,7 +795,7 @@ const handleConfirmEditDetail = async () => {
     const token = getToken();
     if (!token) return;
     try {
-      const url = `${constantUrlApiEndpoint}/elements/${puerta.id}/update`;
+      const url = `${constantUrlApiEndpoint}/user/elements/${puerta.id}/update`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -826,7 +826,7 @@ const handleConfirmEditDetail = async () => {
     const token = getToken();
     if (!token) return;
     try {
-      const url = `${constantUrlApiEndpoint}/elements/${ventana.id}/update`;
+      const url = `${constantUrlApiEndpoint}/user/elements/${ventana.id}/update`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",

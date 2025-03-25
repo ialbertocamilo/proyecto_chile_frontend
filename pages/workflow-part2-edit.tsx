@@ -383,7 +383,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     axios
-      .get(`${constantUrlApiEndpoint}/elements/?type=window`, {
+      .get(`${constantUrlApiEndpoint}/user/elements/?type=window`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => setVentanasTabList(response.data))
@@ -397,7 +397,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     axios
-      .get(`${constantUrlApiEndpoint}/elements/?type=door`, {
+      .get(`${constantUrlApiEndpoint}/user/elements/?type=door`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => setPuertasTabList(response.data))
@@ -411,7 +411,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     try {
-      const url = `${constantUrlApiEndpoint}/constants/?page=1&per_page=700`;
+      const url = `${constantUrlApiEndpoint}/user/constants/?page=1&per_page=700`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       const allConstants: Constant[] = response.data.constants || [];
@@ -595,7 +595,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       if (deleteItem.type === "detail") {
         url = `${constantUrlApiEndpoint}/user/details/${deleteItem.id}/delete?project_id=${projectId}`;
       } else {
-        url = `${constantUrlApiEndpoint}/elements/${deleteItem.id}/delete?type=${deleteItem.type}`;
+        url = `${constantUrlApiEndpoint}/user/elements/${deleteItem.id}/delete?type=${deleteItem.type}`;
       }
       const headers = { Authorization: `Bearer ${token}` };
       await axios.delete(url, { headers });
@@ -1445,7 +1445,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     if (!editingVentana || !projectId) return;
     const token = getToken();
     if (!token) return;
-    const url = `${constantUrlApiEndpoint}/elements/${editingVentana.id}/update`;
+    const url = `${constantUrlApiEndpoint}/user/elements/${editingVentana.id}/update`;
     const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
     const payload = {
       name_element: editingVentana.name_element,
@@ -1469,7 +1469,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     if (!editingPuerta || !projectId) return;
     const token = getToken();
     if (!token) return;
-    const url = `${constantUrlApiEndpoint}/elements/${editingPuerta.id}/update`;
+    const url = `${constantUrlApiEndpoint}/user/elements/${editingPuerta.id}/update`;
     const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
     const payload = {
       name_element: editingPuerta.name_element,

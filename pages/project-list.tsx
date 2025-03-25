@@ -1,5 +1,8 @@
+import WelcomeCard from "@/components/CardWelcome";
+import ChartProjectCreated from "@/components/ChartProjectCreated";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import ModalCreate from "@/components/common/ModalCreate";
+import { useApiNext } from "@/hooks/useApiNext";
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -10,9 +13,6 @@ import DataTable from "../src/components/DataTable";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import WelcomeCard from "@/components/CardWelcome";
-import ChartProjectCreated from "@/components/ChartProjectCreated";
-import { useApiNext } from "@/hooks/useApiNext";
 
 interface Divisions {
   department?: string;
@@ -230,6 +230,15 @@ const ProjectListPage = () => {
             <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: true }]} />
           </div>
         </Card>
+        {/* Sección para los nuevos componentes en columnas laterales */}
+        <div className="row mt-4 mb-4">
+          <div className="col-md-6 col-xl-6">
+            <WelcomeCard />
+          </div>
+          <div className="col-md-6 col-xl-6">
+            <ChartProjectCreated />
+          </div>
+        </div>
         <DataTable
           data={projects}
           columns={tableColumns}
@@ -240,15 +249,6 @@ const ProjectListPage = () => {
           showButton={true}
         />
 
-        {/* Sección para los nuevos componentes en columnas laterales */}
-        <div className="row mt-4 mb-4">
-          <div className="col-md-6 col-xl-6">
-            <ChartProjectCreated />
-          </div>
-          <div className="col-md-6 col-xl-6">
-            <WelcomeCard />
-          </div>
-        </div>
       </div>
 
       {showDeleteModal && projectToDelete && (

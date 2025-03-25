@@ -3,10 +3,10 @@ import DataTable from "@/components/DataTable";
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import { useCallback, useEffect, useState } from "react";
+import Breadcrumb from "../src/components/common/Breadcrumb";
 import Card from "../src/components/common/Card";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
-import Breadcrumb from "../src/components/common/Breadcrumb";
 
 interface User {
   id: number;
@@ -47,7 +47,7 @@ const UserManagement = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, []);
 
   const getRoleText = (role_id: number) => {
     return role_id === 1 ? "Administrador" : role_id === 2 ? "Desarrollador" : "Desconocido";
@@ -87,6 +87,12 @@ const UserManagement = () => {
 
   const columns = [
     { id: "id", label: "ID", minWidth: "2em" },
+    { 
+      id: "fullname", 
+      label: "Nombre de usuario", 
+      minWidth: "2em",
+      cell: ({ row }: { row: User }) => `${row.name} ${row.lastname}`
+    },
     { id: "email", label: "Correo Electrónico", minWidth: "2em" },
     {
       id: "birthdate",

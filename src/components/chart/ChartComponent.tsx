@@ -1,4 +1,4 @@
-import { Line, Bar, Pie, Doughnut, PolarArea, Radar } from 'react-chartjs-2';
+import { Bar, Doughnut, Line, Pie, PolarArea, Radar } from 'react-chartjs-2';
 
 interface ChartComponentProps {
     title: string;
@@ -16,11 +16,19 @@ const ChartComponent: React.FC<ChartComponentProps> = ({
     options = {} 
 }) => {
     const defaultOptions = {
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
         responsive: true,
         plugins: {
             legend: {
                 display: false
+            }
+        },
+        layout: {
+            padding: {
+                top: 20,
+                bottom: 20,
+                left: 20,
+                right: 20
             }
         }
     };
@@ -51,10 +59,31 @@ const ChartComponent: React.FC<ChartComponentProps> = ({
                 <h3 className="title-chart">
                     {title}
                 </h3>
-                <div className="chart-wrapper">
+                <div className="chart-wrapper" style={{ height: '300px', position: 'relative' }}>
                     {renderChart()}
                 </div>
             </div>
+            <style jsx>{`
+                .chart-container {
+                    background: #fff;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .title-chart {
+                    font-size: 1rem;
+                    font-weight: 600;
+                    margin-bottom: 1rem;
+                    text-align: center;
+                }
+                .chart-wrapper {
+                    flex: 1;
+                    min-height: 0;
+                }
+            `}</style>
         </div>
     );
 };

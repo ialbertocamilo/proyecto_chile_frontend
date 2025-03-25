@@ -1,5 +1,3 @@
-
-
 'use client'
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
@@ -26,11 +24,10 @@ const WelcomeCard: React.FC = () => {
 
   return (
     <div
-      className="card h-100"
       style={{
-        borderRadius: '8px',
+        borderRadius: '6px',
         overflow: 'hidden',
-        boxShadow: '0 10px 20px rgba(60, 167, 183, 0.15)',
+        boxShadow: '0 4px 12px rgba(60, 167, 183, 0.12)',
         transition: 'transform 0.3s ease',
         cursor: 'pointer'
       }}
@@ -42,28 +39,28 @@ const WelcomeCard: React.FC = () => {
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
-          padding: '2.5rem',
+          padding: '1rem',
           position: 'relative',
           zIndex: 1
         }}
       >
-        <div className="d-flex align-items-center justify-content-center h-100">
+        <div className="d-flex align-items-center justify-content-center">
           <div className="text-start">
-            <h1 style={{ color: '#fff', fontSize: '2.5rem', fontWeight: 600, marginBottom: '1rem', textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}>Hola 👋, {name} {lastname}</h1>
-            <p style={{ color: '#fff', fontSize: '1.2rem', opacity: 0.9, marginBottom: '0.5rem' }}>¡Bienvenidos de nuevo! 🎉</p>
-            <p style={{ color: '#fff', fontSize: '1.2rem', opacity: 0.9, marginBottom: '2rem' }}>Empecemos desde donde lo dejaste.</p>
+            <h1 style={{ color: '#fff', fontSize: '1.4rem', fontWeight: 600, marginBottom: '0.5rem', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Hola 👋, {name} {lastname}</h1>
+            <p style={{ color: '#fff', fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.25rem' }}>¡Bienvenidos de nuevo! 🎉</p>
+            <p style={{ color: '#fff', fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.75rem' }}>Empecemos desde donde lo dejaste.</p>
             <button
               className="btn profile-btn"
               onClick={handleViewProfile}
               style={{
-                border: '2px solid rgba(255,255,255,0.8)',
+                border: '1.5px solid rgba(255,255,255,0.8)',
                 color: '#fff',
                 background: 'rgba(255,255,255,0.1)',
-                padding: '12px 30px',
-                borderRadius: '30px',
-                fontSize: '1.1rem',
+                padding: '6px 16px',
+                borderRadius: '20px',
+                fontSize: '0.85rem',
                 fontWeight: 500,
-                letterSpacing: '0.5px',
+                letterSpacing: '0.2px',
                 transition: 'all 0.3s ease'
               }}
             >

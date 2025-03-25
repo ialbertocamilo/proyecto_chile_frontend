@@ -1,5 +1,6 @@
 import WelcomeCard from "@/components/CardWelcome";
 import ChartProjectCreated from "@/components/ChartProjectCreated";
+import ChartProjectsByRegion from "@/components/ChartProjectsByRegion";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import ModalCreate from "@/components/common/ModalCreate";
 import { useApiNext } from "@/hooks/useApiNext";
@@ -230,13 +231,16 @@ const ProjectListPage = () => {
             <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: true }]} />
           </div>
         </Card>
-        {/* Sección para los nuevos componentes en columnas laterales */}
         <div className="row mt-4 mb-4">
-          <div className="col-md-6 col-xl-6">
-            <WelcomeCard />
+          <div className="col-md-6">
+              <WelcomeCard />
+              <hr />
+              {projects && <ChartProjectsByRegion data={{ projects }} />}
           </div>
-          <div className="col-md-6 col-xl-6">
-            <ChartProjectCreated />
+          <div className="col-md-6">
+            <div  >
+              <ChartProjectCreated />
+            </div>
           </div>
         </div>
         <DataTable

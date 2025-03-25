@@ -55,7 +55,6 @@ const ChartProjectCreated: React.FC = () => {
 
     const chartOptions: ApexOptions = {
         chart: {
-            height: 335,
             type: 'area',
             stacked: false,
             toolbar: {
@@ -243,14 +242,15 @@ const ChartProjectCreated: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="card-body p-0 mb-0">
-                <div id="revenuegrowth-1" style={{ minHeight: '350px' }}>
-                    <div id="chart">
+            <div className="card-body">
+                <div style={{ minHeight: '100px', maxHeight: '600px', width: '100%', overflow: 'hidden' }} >
+                    <div id="chart" style={{ width: '100%' }}>
                         <ReactApexChart
                             options={chartOptions}
                             series={series}
                             type="line"
-                            height={350}
+                            height={300}
+                            width="100%"
                         />
                     </div>
                 </div>

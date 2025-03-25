@@ -628,9 +628,9 @@ const WorkFlowpar2editPage: React.FC = () => {
     const detailType = detailTypeMapping[tabStep4];
     const filteredDetails = detailType
       ? fetchedDetails.filter(
-          (det) =>
-            det.scantilon_location.toLowerCase() === detailType.toLowerCase()
-        )
+        (det) =>
+          det.scantilon_location.toLowerCase() === detailType.toLowerCase()
+      )
       : fetchedDetails;
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
@@ -1016,12 +1016,12 @@ const WorkFlowpar2editPage: React.FC = () => {
           item.value_u !== undefined && item.value_u !== 0 ? item.value_u.toFixed(3) : "-",
         bajoPisoLambda:
           item.info?.aislacion_bajo_piso?.lambda !== undefined &&
-          item.info.aislacion_bajo_piso.lambda !== 0
+            item.info.aislacion_bajo_piso.lambda !== 0
             ? item.info.aislacion_bajo_piso.lambda.toFixed(3)
             : "-",
         bajoPisoEAisl:
           item.info?.aislacion_bajo_piso?.e_aisl !== undefined &&
-          item.info.aislacion_bajo_piso.e_aisl !== 0
+            item.info.aislacion_bajo_piso.e_aisl !== 0
             ? item.info.aislacion_bajo_piso.e_aisl
             : "-",
         vertLambda: isEditing ? (
@@ -1538,7 +1538,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         isOpen={showDetallesModal}
         title="Detalles Generales"
         onClose={() => setShowDetallesModal(false)}
-        onSave={() => {}}
+        onSave={() => { }}
         hideFooter={true}
         modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
       >
@@ -1560,11 +1560,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="text"
                 className="form-control"
                 value={editingDetail.scantilon_location}
-                onChange={(e) =>
-                  setEditingDetail((prev) =>
-                    prev ? { ...prev, scantilon_location: e.target.value } : prev
-                  )
-                }
+                readOnly
               />
             </div>
             <div className="form-group">
@@ -1642,9 +1638,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: { ...prev.atributs, u_vidrio: parseFloat(e.target.value) },
-                        }
+                        ...prev,
+                        atributs: { ...prev.atributs, u_vidrio: parseFloat(e.target.value) },
+                      }
                       : prev
                   )
                 }
@@ -1660,9 +1656,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: { ...prev.atributs, fs_vidrio: parseFloat(e.target.value) },
-                        }
+                        ...prev,
+                        atributs: { ...prev.atributs, fs_vidrio: parseFloat(e.target.value) },
+                      }
                       : prev
                   )
                 }
@@ -1760,9 +1756,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: { ...prev.atributs, u_puerta_opaca: parseFloat(e.target.value) },
-                        }
+                        ...prev,
+                        atributs: { ...prev.atributs, u_puerta_opaca: parseFloat(e.target.value) },
+                      }
                       : prev
                   )
                 }
@@ -1793,9 +1789,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: { ...prev.atributs, porcentaje_vidrio: parseFloat(e.target.value) },
-                        }
+                        ...prev,
+                        atributs: { ...prev.atributs, porcentaje_vidrio: parseFloat(e.target.value) },
+                      }
                       : prev
                   )
                 }
@@ -1846,8 +1842,8 @@ const WorkFlowpar2editPage: React.FC = () => {
             {deleteItem.type === "detail"
               ? "¿Estás seguro de que deseas eliminar este detalle?"
               : deleteItem.type === "window"
-              ? "¿Estás seguro de que deseas eliminar esta ventana?"
-              : "¿Estás seguro de que deseas eliminar esta puerta?"}
+                ? "¿Estás seguro de que deseas eliminar esta ventana?"
+                : "¿Estás seguro de que deseas eliminar esta puerta?"}
           </p>
         </ModalCreate>
       )}

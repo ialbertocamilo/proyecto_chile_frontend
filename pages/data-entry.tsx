@@ -35,7 +35,7 @@ export interface ElementBase {
   type: "window" | "door";
   name_element: string;
   u_marco: number;
-  fm: number;
+  fm: number; // Se maneja como [0..100]
   atributs: {
     u_vidrio?: number;
     fs_vidrio?: number;
@@ -48,6 +48,7 @@ export interface ElementBase {
   };
 }
 
+// Función para leer el valor de CSS (en caso de necesitarlo para colores, etc.)
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement)
@@ -55,6 +56,8 @@ function getCssVarValue(varName: string, fallback: string) {
     .trim();
   return value || fallback;
 }
+
+// Forzar que un número esté entre 0 y 100
 const validatePercentage = (value: number) => {
   if (isNaN(value)) return 0;
   if (value < 0) return 0;
@@ -382,6 +385,9 @@ const DataEntryPage: React.FC = () => {
 
   // === CREAR ELEMENTO TIPO VENTANA ===
   const handleCreateWindowElement = async (): Promise<boolean> => {
+    // convertimos fm a número y lo validamos
+    const fmNumber = validatePercentage(parseFloat(windowData.fm));
+
     if (
       windowData.name_element.trim() === "" ||
       !windowData.u_vidrio ||
@@ -390,18 +396,18 @@ const DataEntryPage: React.FC = () => {
       parseFloat(windowData.fs_vidrio) <= 0 ||
       !windowData.u_marco ||
       parseFloat(windowData.u_marco) <= 0 ||
-      windowData.fm === "" ||
-      parseFloat(windowData.fm) < 0 ||
-      parseFloat(windowData.fm) > 100 ||
+      isNaN(fmNumber) ||
       windowData.clousure_type.trim() === "" ||
       windowData.frame_type.trim() === ""
     ) {
       notify("Por favor complete todos los campos de la ventana correctamente");
       return false;
     }
+
     try {
       const token = localStorage.getItem("token");
       if (!token) return false;
+
       const body = {
         name_element: windowData.name_element,
         type: "window",
@@ -412,8 +418,10 @@ const DataEntryPage: React.FC = () => {
           frame_type: windowData.frame_type,
         },
         u_marco: parseFloat(windowData.u_marco),
-        fm: parseFloat(windowData.fm),
+        // Guardamos fm como 0..100
+        fm: fmNumber,
       };
+
       const response = await axios.post(
         `${constantUrlApiEndpoint}/user/elements/create`,
         body,
@@ -455,22 +463,31 @@ const DataEntryPage: React.FC = () => {
 
   // === CREAR ELEMENTO TIPO PUERTA ===
   const handleCreateDoorElement = async (): Promise<boolean> => {
+    const fmNumber = validatePercentage(parseFloat(doorData.fm));
+
     if (
       doorData.name_element.trim() === "" ||
       !doorData.u_puerta_opaca ||
       parseFloat(doorData.u_puerta_opaca) <= 0 ||
       !doorData.u_marco ||
       parseFloat(doorData.u_marco) <= 0 ||
-      doorData.fm === "" ||
-      parseFloat(doorData.fm) < 0 ||
-      parseFloat(doorData.fm) > 100
+      isNaN(fmNumber)
     ) {
       notify("Por favor complete todos los campos de la puerta correctamente");
       return false;
     }
+
     try {
       const token = localStorage.getItem("token");
       if (!token) return false;
+
+      let porcentajeVidrioNumber = 0;
+      if (doorData.ventana_id) {
+        porcentajeVidrioNumber = validatePercentage(
+          parseFloat(doorData.porcentaje_vidrio)
+        );
+      }
+
       const body = {
         name_element: doorData.name_element,
         type: "door",
@@ -478,13 +495,12 @@ const DataEntryPage: React.FC = () => {
           ventana_id: doorData.ventana_id ? parseInt(doorData.ventana_id) : 0,
           name_ventana: doorData.ventana_id ? doorData.name_ventana : "",
           u_puerta_opaca: parseFloat(doorData.u_puerta_opaca),
-          porcentaje_vidrio: doorData.ventana_id
-            ? parseFloat(doorData.porcentaje_vidrio)
-            : 0,
+          porcentaje_vidrio: porcentajeVidrioNumber,
         },
         u_marco: parseFloat(doorData.u_marco),
-        fm: parseFloat(doorData.fm),
+        fm: fmNumber,
       };
+
       const response = await axios.post(
         `${constantUrlApiEndpoint}/user/elements/create`,
         body,
@@ -549,6 +565,9 @@ const DataEntryPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
+      // Clampeamos su fm
+      const clampedFm = validatePercentage(element.fm);
+
       const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
       const headers = {
         "Content-Type": "application/json",
@@ -560,7 +579,8 @@ const DataEntryPage: React.FC = () => {
         type: "window",
         atributs: element.atributs,
         u_marco: element.u_marco,
-        fm: element.fm,
+        // Guardamos fm en [0..100]
+        fm: clampedFm,
       };
       await axios.put(url, body, { headers });
       notify("Ventana actualizada con éxito");
@@ -578,6 +598,9 @@ const DataEntryPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
+      // Clampeamos su fm
+      const clampedFm = validatePercentage(element.fm);
+
       const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
       const headers = {
         "Content-Type": "application/json",
@@ -589,7 +612,8 @@ const DataEntryPage: React.FC = () => {
         type: "door",
         atributs: element.atributs,
         u_marco: element.u_marco,
-        fm: element.fm,
+        // Guardamos fm en [0..100]
+        fm: clampedFm,
       };
       await axios.put(url, body, { headers });
       notify("Puerta actualizada con éxito");
@@ -741,6 +765,7 @@ const DataEntryPage: React.FC = () => {
         { headerName: "Acciones", field: "acciones" },
       ];
 
+      // NOTA: Se quitó el * 100, ahora solo mostramos el valor en fm
       const ventanasData = elementsList
         .filter(
           (el) =>
@@ -760,7 +785,7 @@ const DataEntryPage: React.FC = () => {
           clousure_type: el.atributs.clousure_type ?? "--",
           frame_type: el.atributs.frame_type ?? "--",
           u_marco: el.u_marco,
-          fm: (el.fm * 100).toFixed(0) + "%",
+          fm: el.fm.toFixed(0) + "%", // Se muestra tal cual
           acciones: (
             <ActionButtons
               onEdit={() => setEditingWindowData(el)}
@@ -823,12 +848,13 @@ const DataEntryPage: React.FC = () => {
               ? el.atributs.u_puerta_opaca
               : "--",
           name_ventana: el.atributs.name_ventana ?? "--",
+          // Si porcentaje_vidrio es, p.ej, 30, lo muestra como 30%
           porcentaje_vidrio:
             el.atributs.porcentaje_vidrio !== undefined
-              ? (el.atributs.porcentaje_vidrio).toFixed(0) + "%"
+              ? el.atributs.porcentaje_vidrio.toFixed(0) + "%"
               : "0%",
           u_marco: el.u_marco,
-          fm: (el.fm * 100).toFixed(0) + "%",
+          fm: el.fm.toFixed(0) + "%",
           acciones: (
             <ActionButtons
               onEdit={() => setEditingDoorData(el)}
@@ -965,7 +991,10 @@ const DataEntryPage: React.FC = () => {
                 placeholder="Conductividad"
                 value={newMaterialData.conductivity}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({ ...prev, conductivity: e.target.value }))
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    conductivity: e.target.value,
+                  }))
                 }
                 onKeyDown={handleNumberKeyDown}
               />
@@ -982,7 +1011,10 @@ const DataEntryPage: React.FC = () => {
                 placeholder="Calor específico"
                 value={newMaterialData.specific_heat}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({ ...prev, specific_heat: e.target.value }))
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    specific_heat: e.target.value,
+                  }))
                 }
                 onKeyDown={handleNumberKeyDown}
               />
@@ -999,7 +1031,10 @@ const DataEntryPage: React.FC = () => {
                 placeholder="Densidad"
                 value={newMaterialData.density}
                 onChange={(e) =>
-                  setNewMaterialData((prev) => ({ ...prev, density: e.target.value }))
+                  setNewMaterialData((prev) => ({
+                    ...prev,
+                    density: e.target.value,
+                  }))
                 }
                 onKeyDown={handleNumberKeyDown}
               />
@@ -1155,7 +1190,10 @@ const DataEntryPage: React.FC = () => {
                       setWindowData((prev) => ({ ...prev, fm: "" }));
                     } else {
                       const validated = validatePercentage(value);
-                      setWindowData((prev) => ({ ...prev, fm: validated.toString() }));
+                      setWindowData((prev) => ({
+                        ...prev,
+                        fm: validated.toString(),
+                      }));
                     }
                   }}
                   onKeyDown={handleNumberKeyDown}
@@ -1177,7 +1215,10 @@ const DataEntryPage: React.FC = () => {
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk label="U Puerta opaca [W/m2K]" value={doorData.u_puerta_opaca} />
+                <LabelWithAsterisk
+                  label="U Puerta opaca [W/m2K]"
+                  value={doorData.u_puerta_opaca}
+                />
                 <input
                   type="number"
                   min="0"
@@ -1185,23 +1226,34 @@ const DataEntryPage: React.FC = () => {
                   placeholder="U Puerta opaca"
                   value={doorData.u_puerta_opaca}
                   onChange={(e) =>
-                    setDoorData((prev) => ({ ...prev, u_puerta_opaca: e.target.value }))
+                    setDoorData((prev) => ({
+                      ...prev,
+                      u_puerta_opaca: e.target.value,
+                    }))
                   }
                   onKeyDown={handleNumberKeyDown}
                 />
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk label="Ventana Asociada" value={doorData.ventana_id} required={false} />
+                <LabelWithAsterisk
+                  label="Ventana Asociada"
+                  value={doorData.ventana_id}
+                  required={false}
+                />
                 <select
                   className="form-control"
                   value={doorData.ventana_id}
                   onChange={(e) => {
                     const winId = e.target.value;
-                    const selectedWindow = allWindowsForDoor.find((win) => win.id === parseInt(winId));
+                    const selectedWindow = allWindowsForDoor.find(
+                      (win) => win.id === parseInt(winId)
+                    );
                     setDoorData((prev) => ({
                       ...prev,
                       ventana_id: winId,
-                      name_ventana: selectedWindow ? selectedWindow.name_element : "",
+                      name_ventana: selectedWindow
+                        ? selectedWindow.name_element
+                        : "",
                     }));
                   }}
                 >
@@ -1214,7 +1266,11 @@ const DataEntryPage: React.FC = () => {
                 </select>
               </div>
               <div className="form-group mb-3">
-                <LabelWithAsterisk label="% Vidrio" value={doorData.porcentaje_vidrio} required={false} />
+                <LabelWithAsterisk
+                  label="% Vidrio"
+                  value={doorData.porcentaje_vidrio}
+                  required={false}
+                />
                 <input
                   type="number"
                   min="0"
@@ -1228,7 +1284,10 @@ const DataEntryPage: React.FC = () => {
                       setDoorData((prev) => ({ ...prev, porcentaje_vidrio: "" }));
                     } else {
                       const validated = validatePercentage(value);
-                      setDoorData((prev) => ({ ...prev, porcentaje_vidrio: validated.toString() }));
+                      setDoorData((prev) => ({
+                        ...prev,
+                        porcentaje_vidrio: validated.toString(),
+                      }));
                     }
                   }}
                   onKeyDown={handleNumberKeyDown}
@@ -1264,7 +1323,10 @@ const DataEntryPage: React.FC = () => {
                       setDoorData((prev) => ({ ...prev, fm: "" }));
                     } else {
                       const validated = validatePercentage(value);
-                      setDoorData((prev) => ({ ...prev, fm: validated.toString() }));
+                      setDoorData((prev) => ({
+                        ...prev,
+                        fm: validated.toString(),
+                      }));
                     }
                   }}
                   onKeyDown={handleNumberKeyDown}
@@ -1414,13 +1476,22 @@ const DataEntryPage: React.FC = () => {
               <label>FM [%]</label>
               <input
                 type="number"
+                min="0"
+                max="100"
                 className="form-control"
                 value={editingWindowData.fm || ""}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const rawValue = parseFloat(e.target.value);
+                  if (isNaN(rawValue)) {
+                    return setEditingWindowData((prev) =>
+                      prev ? { ...prev, fm: 0 } : prev
+                    );
+                  }
+                  const clampedValue = validatePercentage(rawValue);
                   setEditingWindowData((prev) =>
-                    prev ? { ...prev, fm: parseFloat(e.target.value) } : prev
-                  )
-                }
+                    prev ? { ...prev, fm: clampedValue } : prev
+                  );
+                }}
               />
             </div>
           </div>
@@ -1489,7 +1560,9 @@ const DataEntryPage: React.FC = () => {
                           atributs: {
                             ...prev.atributs,
                             ventana_id: selectedId ? parseInt(selectedId) : 0,
-                            name_ventana: selectedWindow ? selectedWindow.name_element : "",
+                            name_ventana: selectedWindow
+                              ? selectedWindow.name_element
+                              : "",
                           },
                         }
                       : prev
@@ -1508,25 +1581,29 @@ const DataEntryPage: React.FC = () => {
               <label>% Vidrio</label>
               <input
                 type="number"
+                min="0"
+                max="100"
                 className="form-control"
                 value={
                   editingDoorData.atributs.porcentaje_vidrio !== undefined
                     ? editingDoorData.atributs.porcentaje_vidrio
                     : ""
                 }
-                onChange={(e) =>
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  const clamped = validatePercentage(val);
                   setEditingDoorData((prev) =>
                     prev
                       ? {
                           ...prev,
                           atributs: {
                             ...prev.atributs,
-                            porcentaje_vidrio: parseFloat(e.target.value),
+                            porcentaje_vidrio: isNaN(clamped) ? 0 : clamped,
                           },
                         }
                       : prev
-                  )
-                }
+                  );
+                }}
               />
             </div>
             <div className="form-group mb-3">
@@ -1546,13 +1623,22 @@ const DataEntryPage: React.FC = () => {
               <label>FM [%]</label>
               <input
                 type="number"
+                min="0"
+                max="100"
                 className="form-control"
                 value={editingDoorData.fm || ""}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const rawValue = parseFloat(e.target.value);
+                  if (isNaN(rawValue)) {
+                    return setEditingDoorData((prev) =>
+                      prev ? { ...prev, fm: 0 } : prev
+                    );
+                  }
+                  const clampedValue = validatePercentage(rawValue);
                   setEditingDoorData((prev) =>
-                    prev ? { ...prev, fm: parseFloat(e.target.value) } : prev
-                  )
-                }
+                    prev ? { ...prev, fm: clampedValue } : prev
+                  );
+                }}
               />
             </div>
           </div>

@@ -12,6 +12,7 @@ permissions:
 
 env:
   IMAGE_NAME: ceela_web
+  TAG: qa
 
 jobs:
   build:
@@ -32,11 +33,11 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:qa .
+          docker build --build-arg BUILD_ENV=qa -t ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:${{env.TAG}} .
       
       - name: Push Docker image to GitHub Container Registry
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:qa
+          docker push ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:${{env.TAG}}
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,6 +51,6 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-            docker pull ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:qa
+            docker pull ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:${{env.TAG}}
             docker stack deploy -c docker-compose.yml bytestone
             docker service update --force bytestone_ceela_web

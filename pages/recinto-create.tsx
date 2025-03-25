@@ -438,7 +438,6 @@ const RecintoCreate: React.FC = () => {
               Altura Promedio Recinto
               </label>
               <input
-<<<<<<< Updated upstream
               id="alturaPromedio"
               type="number"
               step="0.01"
@@ -454,45 +453,6 @@ const RecintoCreate: React.FC = () => {
                 }
               }}
               />
-=======
-  id="alturaPromedio"
-  type="text"
-  className="form-control"
-  placeholder="Ej: 2.5 (en metros)"
-  value={alturaPromedio}
-  onKeyDown={(e) => {
-    const allowedKeys = [
-      "Backspace",
-      "Tab",
-      "ArrowLeft",
-      "ArrowRight",
-      "Delete",
-      "Home",
-      "End",
-    ];
-    if (allowedKeys.includes(e.key)) return;
-
-    if (!/[\d\.,]/.test(e.key)) {
-      e.preventDefault();
-    }
-  }}
-  onChange={(e) => {
-    const value = e.target.value;
-    if (value === "") {
-      setAlturaPromedio("");
-      return;
-    }
-    if (!/^[\d\.,]+$/.test(value)) {
-      return;
-    }
-    setAlturaPromedio(value);
-  }}
-  step="any"
-/>
-
-
-
->>>>>>> Stashed changes
             </div>
 
             {/* 8. Sensor CO2 */}

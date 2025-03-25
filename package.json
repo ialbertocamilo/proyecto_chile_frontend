@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "cp .env .env.production && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:qa": "cp .env.qa .env.production && next build"
   },
   "dependencies": {
     "@bytestone/ifc-component": "^0.0.2",
@@ -29,6 +30,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "critters": "^0.0.25",
+    "dotenv-cli": "^8.0.0",
     "formidable": "^3.5.2",
     "gulp-autoprefixer": "^8.0.0",
     "gulp-livereload": "^4.0.2",

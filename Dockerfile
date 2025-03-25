@@ -6,7 +6,10 @@ COPY package.json yarn.lock ./
 RUN yarn install && yarn cache clean
 
 COPY . . 
-RUN yarn build 
+# Define ARG para seleccionar el build
+ARG BUILD_ENV=production
+RUN if [ "$BUILD_ENV" = "qa" ]; then yarn build:qa; else yarn build; fi
+
 
 # Etapa 2: Ejecución
 FROM node:20-slim

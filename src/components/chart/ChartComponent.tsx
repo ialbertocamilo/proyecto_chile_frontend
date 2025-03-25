@@ -12,7 +12,7 @@ const ChartComponent: React.FC<ChartComponentProps> = ({
     title, 
     chartData, 
     chartType,
-    className = "col-xl-4 col-lg-6 col-md-6 col-sm-12",
+    className = "",
     options = {} 
 }) => {
     const defaultOptions = {

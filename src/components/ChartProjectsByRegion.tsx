@@ -102,11 +102,11 @@ const ChartProjectsByRegion = ({ data }: ChartProps): ReactElement => {
     }];
 
     return (
-        <div className="card mb-0">
+        <div className="card ">
             <div className="card-header">
                 <Title text="Distribución por Región" />
             </div>
-            <div className="card-body p-0 mb-0">
+            <div className="card-body ">
                 <div style={{ minHeight: '50px', maxHeight: '300px', width: '100%', overflow: 'hidden' }}>
                     <div id="chart" style={{ width: '100%' }}>
                         <ReactApexChart

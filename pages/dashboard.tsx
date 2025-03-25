@@ -19,6 +19,7 @@ import Card from "../src/components/common/Card";
 import Title from "../src/components/Title"; // Componente creado para mostrar títulos
 import { useApi } from "../src/hooks/useApi";
 import useAuth from "../src/hooks/useAuth";
+import WelcomeCard from "@/components/CardWelcome";
 
 ChartJS.register(
     CategoryScale,
@@ -72,10 +73,10 @@ interface ProjectsByUserReport {
 // Función para convertir datos de objeto a array
 function convertObjectToArrays(data: any): any {
     if (!data) return null;
-    
+
     // Crear un objeto con la misma estructura pero con arrays
     const result: any = {};
-    
+
     // Para cada propiedad del objeto
     Object.keys(data).forEach(key => {
         // Si la propiedad es un objeto (como los que vienen de pandas.to_dict())
@@ -87,12 +88,12 @@ function convertObjectToArrays(data: any): any {
             result[key] = data[key];
         }
     });
-    
+
     return result;
 }
 
 function hexToRgba(hex: string, alpha: number) {
-    
+
     const cleanHex = hex.replace("#", "")
     const r = parseInt(cleanHex.substring(0, 2), 16)
     const g = parseInt(cleanHex.substring(2, 4), 16)
@@ -121,19 +122,19 @@ function generateColorPalette(numColors: number) {
         "#e056fd", // Magenta
         "#f368e0", // Rosa fuerte
     ];
-    
+
     // Si necesitamos más colores de los que tenemos en la base, generamos más
     const colors = [...baseColors];
-    
+
     // Si necesitamos más colores, generamos variaciones
     if (numColors > colors.length) {
         for (let i = 0; i < numColors - colors.length; i++) {
             // Generamos un color aleatorio en formato hex
-            const randomColor = "#" + Math.floor(Math.random()*16777215).toString(16);
+            const randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
             colors.push(randomColor);
         }
     }
-    
+
     // Devolvemos solo los colores necesarios
     return colors.slice(0, numColors);
 }
@@ -150,7 +151,7 @@ const DashboardPage: React.FC = () => {
     useAuth()
     const [primaryColor, setPrimaryColor] = useState("#3ca7b7")
     const api = useApi();
-    
+
     // Individual loading states for each chart
     const [loadingUsers, setLoadingUsers] = useState(true);
     const [loadingProjectsByCountry, setLoadingProjectsByCountry] = useState(true);
@@ -159,7 +160,7 @@ const DashboardPage: React.FC = () => {
     const [loadingTotalSurface, setLoadingTotalSurface] = useState(true);
     const [loadingBuildingTypes, setLoadingBuildingTypes] = useState(true);
     const [loadingProjectsByUser, setLoadingProjectsByUser] = useState(true);
-    
+
     // State variables for report data
     const [usersReport, setUsersReport] = useState<UsersReport | null>(null);
     const [projectsByCountry, setProjectsByCountry] = useState<ProjectsByCountryReport | null>(null);
@@ -173,7 +174,7 @@ const DashboardPage: React.FC = () => {
         const pColor = getCssVarValue("--primary-color", "#3ca7b7")
         setPrimaryColor(pColor)
     }, [])
-    
+
     // Fetch all report data concurrently
     useEffect(() => {
         const fetchReportData = async () => {
@@ -190,7 +191,7 @@ const DashboardPage: React.FC = () => {
                         console.error("Error fetching users report:", error);
                         setLoadingUsers(false);
                     }),
-                    
+
                     // Projects by country
                     api.get('reports/projects_by_country').then(response => {
                         if (response?.status === 'success') {
@@ -201,7 +202,7 @@ const DashboardPage: React.FC = () => {
                         console.error("Error fetching projects by country:", error);
                         setLoadingProjectsByCountry(false);
                     }),
-                    
+
                     // Projects status
                     api.get('reports/projects_status').then(response => {
                         if (response?.status === 'success') {
@@ -212,7 +213,7 @@ const DashboardPage: React.FC = () => {
                         console.error("Error fetching projects status:", error);
                         setLoadingProjectsStatus(false);
                     }),
-                    
+
                     // Building levels distribution
                     api.get('reports/building_levels_distribution').then(response => {
                         if (response?.status === 'success') {
@@ -223,7 +224,7 @@ const DashboardPage: React.FC = () => {
                         console.error("Error fetching building levels:", error);
                         setLoadingBuildingLevels(false);
                     }),
-                    
+
                     // Total surface by country
                     api.get('reports/total_surface_by_country').then(response => {
                         if (response?.status === 'success') {
@@ -234,7 +235,7 @@ const DashboardPage: React.FC = () => {
                         console.error("Error fetching surface by country:", error);
                         setLoadingTotalSurface(false);
                     }),
-                    
+
                     // Building type distribution
                     api.get('reports/building_type_distribution').then(response => {
                         if (response?.status === 'success') {
@@ -245,7 +246,7 @@ const DashboardPage: React.FC = () => {
                         console.error("Error fetching building types:", error);
                         setLoadingBuildingTypes(false);
                     }),
-                    
+
                     // Projects by user distribution
                     api.get('reports/projects_by_user').then(response => {
                         if (response?.status === 'success') {
@@ -257,10 +258,10 @@ const DashboardPage: React.FC = () => {
                         setLoadingProjectsByUser(false);
                     }),
                 ];
-                
+
                 // Execute all requests concurrently
                 await Promise.all(requests);
-                
+
             } catch (error) {
                 console.error("Error fetching report data:", error);
                 // Set all loading states to false on error
@@ -272,7 +273,7 @@ const DashboardPage: React.FC = () => {
                 setLoadingBuildingTypes(false);
             }
         };
-        
+
         fetchReportData();
     }, []);
 
@@ -307,7 +308,7 @@ const DashboardPage: React.FC = () => {
             {
                 label: "Usuarios",
                 data: Array.isArray(usersReport?.total) ? usersReport?.total : [],
-                backgroundColor: usersReport?.active?.map((status) => 
+                backgroundColor: usersReport?.active?.map((status) =>
                     status === "Activo" || status === "Activos" ? "#1dd1a1" : "#8395a7" // Verde para activos, gris para inactivos
                 ),
             },
@@ -368,8 +369,8 @@ const DashboardPage: React.FC = () => {
     }
 
     const buildingLevelsChartData = buildingLevels ? {
-        labels: Array.isArray(buildingLevels?.number_levels) 
-            ? buildingLevels?.number_levels?.map(level => `${level} Niveles`) 
+        labels: Array.isArray(buildingLevels?.number_levels)
+            ? buildingLevels?.number_levels?.map(level => `${level} Niveles`)
             : [],
         datasets: [
             {
@@ -449,7 +450,7 @@ const DashboardPage: React.FC = () => {
     // Componente de carga para cada gráfico
     const ChartLoader = ({ title }: { title: string }) => (
         <div className="col-md-6 col-lg-4">
-            <Card className="chart-card p-4 text-center">
+            <Card className="chart-card p-4 text-center h-100">
                 <h5>{title}</h5>
                 <div className="spinner-border text-primary mt-4" role="status">
                     <span className="visually-hidden">Cargando...</span>
@@ -469,94 +470,130 @@ const DashboardPage: React.FC = () => {
                     ]} />
                 </div>
             </Card>
-            
+
             <Card className="charts-card p-2">
-                <div className="row g-4">
+                <div className="row g-3">
+                    <div className="col-sm-12 col-lg-4">
+                        <WelcomeCard />
+                    </div>
+                </div>
+                <div className="row g-3 mt-1">
                     {loadingBuildingLevels ? (
                         <ChartLoader title="Distribución de Niveles de Edificios" />
                     ) : (
-                        <ChartComponent 
-                            title="Distribución de Niveles de Edificios" 
-                            chartData={buildingLevelsChartData} 
-                            chartType="Line" 
-                        />
+                        <div className="col-md-6 col-lg-4">
+                            <ChartComponent
+                                title="Distribución de Niveles de Edificios"
+                                chartData={buildingLevelsChartData}
+                                chartType="Line"
+                                options={{
+                                    maintainAspectRatio: false,
+                                    responsive: true,
+                                    aspectRatio: 1.5
+                                }}
+                            />
+                        </div>
                     )}
-                    
+
+                    {/* Apply the same pattern to all other chart components */}
                     {loadingUsers ? (
                         <ChartLoader title="Usuarios Activos vs Inactivos" />
                     ) : (
-                        <ChartComponent
-                            title="Usuarios Activos vs Inactivos"
-                            chartData={userReportChartData}
-                            chartType="Bar"
-                        />
+                        <div className="col-md-6 col-lg-4">
+                            <ChartComponent
+                                title="Usuarios Activos vs Inactivos"
+                                chartData={userReportChartData}
+                                chartType="Bar"
+                                options={{
+                                    maintainAspectRatio: false,
+                                    responsive: true
+                                }}
+                            />
+                        </div>
                     )}
-                    
+
                     {loadingProjectsByCountry ? (
                         <ChartLoader title="Proyectos por País" />
                     ) : (
-                        <ChartComponent
-                            title="Proyectos por País"
-                            chartData={projectsByCountryChartData}
-                            chartType="Pie"
-                        />
+                        <div className="col-md-6 col-lg-4">
+                            <ChartComponent
+                                title="Proyectos por País"
+                                chartData={projectsByCountryChartData}
+                                chartType="Pie"
+                                options={{
+                                    maintainAspectRatio: false,
+                                    responsive: true
+                                }}
+                            />
+                        </div>
                     )}
-                    
+
                     {loadingProjectsStatus ? (
                         <ChartLoader title="Estado de Proyectos" />
                     ) : (
-                        <ChartComponent
-                            title="Estado de Proyectos"
-                            chartData={projectsStatusChartData}
-                            chartType="Doughnut"
-                            options={{ maintainAspectRatio: false, responsive: true }}
-                        />
+                        <div className="col-md-6 col-lg-4">
+                            <ChartComponent
+                                title="Estado de Proyectos"
+                                chartData={projectsStatusChartData}
+                                chartType="Doughnut"
+                                options={{
+                                    maintainAspectRatio: false,
+                                    responsive: true
+                                }}
+                            />
+                        </div>
                     )}
-                    
-                    
+
                     {loadingBuildingTypes ? (
                         <ChartLoader title="Distribución de Tipos de Edificios" />
                     ) : (
-                        <ChartComponent
-                            title="Distribución de Tipos de Edificios"
-                            chartData={buildingTypesChartData}
-                            chartType="Bar"
-                            options={{ maintainAspectRatio: false, responsive: true }}
-                        />
+                        <div className="col-md-6 col-lg-4">
+                            <ChartComponent
+                                title="Distribución de Tipos de Edificios"
+                                chartData={buildingTypesChartData}
+                                chartType="Bar"
+                                options={{
+                                    maintainAspectRatio: false,
+                                    responsive: true
+                                }}
+                            />
+                        </div>
                     )}
-                    
+
                     {loadingProjectsByUser ? (
                         <ChartLoader title="Proyectos por Usuario" />
                     ) : (
-                        <ChartComponent
-                            title="Proyectos por Usuario"
-                            chartData={projectsByUserChartData}
-                            chartType="Bar"
-                            options={{ 
-                                maintainAspectRatio: false, 
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        title: {
-                                            display: true,
-                                            text: 'Número de Proyectos'
+                        <div className="col-md-6 col-lg-4">
+                            <ChartComponent
+                                title="Proyectos por Usuario"
+                                chartData={projectsByUserChartData}
+                                chartType="Bar"
+                                options={{
+                                    maintainAspectRatio: false,
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            display: false
                                         }
                                     },
-                                    x: {
-                                        ticks: {
-                                            maxRotation: 45,
-                                            minRotation: 45
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            title: {
+                                                display: true,
+                                                text: 'Número de Proyectos'
+                                            }
+                                        },
+                                        x: {
+                                            ticks: {
+                                                maxRotation: 45,
+                                                minRotation: 45
+                                            }
                                         }
                                     }
-                                }
-                            }}
-                        />
+                                }}
+                            />
+                        </div>
                     )}
                 </div>
             </Card>

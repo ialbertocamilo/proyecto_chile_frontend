@@ -29,7 +29,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             multiples: true,
         });
         const files: ProcessedFiles = [];
-        form.on('file', function (field, file) {
+        form.on('file', function (field: string, file: File) {
             files.push([field, file]);
         });
         form.on('end', () => resolve(files));

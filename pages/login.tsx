@@ -1,8 +1,3 @@
-<<<<<<< Updated upstream
-;
-import { notify } from "@/utils/notify";
-=======
->>>>>>> Stashed changes
 import { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
@@ -48,16 +43,10 @@ const Login: NextPageWithLayout = () => {
 
       const data = await response.json();
 
-<<<<<<< Updated upstream
       console.log(data)
       if (data?.detail){
         throw new Error(data?.detail)
       }
-=======
-      // Imprime en consola para verificar la estructura de la respuesta
-      console.log("Respuesta del servidor:", data);
-
->>>>>>> Stashed changes
       if (!response.ok) {
         // Usa 'detail' si existe, de lo contrario 'message', 'error', etc.
         throw new Error(data.detail || data.message || data.error || "Credenciales incorrectas.");

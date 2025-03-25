@@ -375,7 +375,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
     const values = isEditing
       ? editingRow.values
       : {
-          // rPers se utiliza el valor directo obtenido
           rPers: rPersValue,
           ida: minSalubridad.ida || "N/A",
           ocupacion: minSalubridad.ocupacion || "N/A",
@@ -385,9 +384,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
     return {
       codigoRecinto: enclosure.code,
       tipologiaRecinto: enclosure.name,
-      // R-pers se muestra siempre igual, sin importar el modo de edición
       rPers: rPersValue,
-      // Campo IDA se renderiza como desplegable en modo edición
       ida: isEditing ? (
         <select
           className="form-control form-control-sm"
@@ -401,7 +398,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
       ) : (
         values.ida
       ),
-      // Campo Ocupacion se renderiza como desplegable en modo edición
       ocupacion: isEditing ? (
         <select
           className="form-control form-control-sm"
@@ -492,16 +488,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
       ) : (
         values.estrategia
       ),
-      potenciaPropuesta: isEditing ? (
-        <input
-          type="number"
-          className="form-control form-control-sm"
-          value={editingRow.values.potenciaPropuesta}
-          onChange={(e) => handleEditChange("potenciaPropuesta", e.target.value)}
-        />
-      ) : (
-        values.potenciaPropuesta
-      ),
+      // La columna "Potencia Propuesta [W/m2]" se muestra siempre como texto, sin opción de edición.
+      potenciaPropuesta: values.potenciaPropuesta,
       accion: isEditing ? (
         <ActionButtonsConfirm
           onAccept={() => handleSave("iluminacion", enclosure)}
@@ -875,7 +863,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
       >
         <div>
           <p>¿Está seguro que desea eliminar el recinto <strong>{itemToDelete?.name}</strong>?</p>
-         
         </div>
       </ModalCreate>
     </div>

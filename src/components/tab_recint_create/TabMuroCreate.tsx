@@ -11,9 +11,9 @@ import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
 // Interfaz para muros
 interface Wall {
-  id?: number; 
+  id?: number;
   wall_id: number;
-  name: string; 
+  name: string;
   characteristics: string;
   angulo_azimut: string;
   area: number;
@@ -492,16 +492,45 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="area"
+              min="0"
+              step="0.01"
               value={editingWallData.area}
               onChange={handleEditWallChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingWallData({ ...editingWallData, area: Number(rounded) });
+              }}
               className="form-control form-control-sm"
             />
           );
         }
-        return row.area;
+        return Number(row.area).toFixed(2);
       },
     },
-    { headerName: "U [W/m2K]", field: "u" },
+    {
+      headerName: "U [W/m2K]",
+      field: "u",
+      renderCell: (row: Wall) => {
+        if (row.wall_id === editingWallId && editingWallData) {
+          return (
+            <input
+              type="number"
+              name="u"
+              min="0"
+              step="0.01"
+              value={editingWallData.u || ""}
+              onChange={handleEditWallChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingWallData({ ...editingWallData, u: Number(rounded) });
+              }}
+              className="form-control form-control-sm"
+            />
+          );
+        }
+        return row.u ? Number(row.u).toFixed(2) : "";
+      },
+    },
     {
       headerName: "Acciones",
       field: "acciones",
@@ -533,13 +562,19 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po1_length"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po1_length}
               onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({ ...editingBridgeData, po1_length: Number(rounded) });
+              }}
               className="form-control form-control-sm"
             />
           );
         }
-        return row.po1_length;
+        return Number(row.po1_length).toFixed(2);
       },
     },
     {
@@ -750,7 +785,7 @@ const TabMuroCreate: React.FC = () => {
         { label: "L[m]" },
         { label: "e Aislación [cm]" },
         { label: "Elemento 2" },
-        
+
       ],
     ],
   };
@@ -833,35 +868,35 @@ const TabMuroCreate: React.FC = () => {
   // Ahora se renderiza directamente el contenido correspondiente a "muros" (sin pestañas)
   // ... (resto del código permanece igual)
 
-const renderContent = () => (
-  <div className="d-flex flex-column gap-4">
-    <div className="table-responsive">
-      <div className="d-flex" style={{ minWidth: "1200px" }}>
-        <div className="p-2" style={{ flex: 1 }}>
-          <TablesParameters columns={murosColumns} data={murosData} />
-        </div>
-        <div className="p-2" style={{ flex: 1 }}>
-          <TablesParameters
-            columns={puentesColumns}
-            data={puentesData}
-            multiHeader={puentesMultiHeader}
-          />
+  const renderContent = () => (
+    <div className="d-flex flex-column gap-4">
+      <div className="table-responsive">
+        <div className="d-flex" style={{ minWidth: "1200px" }}>
+          <div className="p-2" style={{ flex: 1 }}>
+            <TablesParameters columns={murosColumns} data={murosData} />
+          </div>
+          <div className="p-2" style={{ flex: 1 }}>
+            <TablesParameters
+              columns={puentesColumns}
+              data={puentesData}
+              multiHeader={puentesMultiHeader}
+            />
+          </div>
         </div>
       </div>
+      <div className="d-flex justify-content-end gap-2 w-100">
+        <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
+          Nuevo Muro
+        </CustomButton>
+        <CustomButton variant="save" onClick={() => setIsThermalBridgeModalOpen(true)}>
+          Nuevo Puente Térmico
+        </CustomButton>
+      </div>
     </div>
-    <div className="d-flex justify-content-end gap-2">
-      <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
-        Nuevo Muro
-      </CustomButton>
-      <CustomButton variant="save" onClick={() => setIsThermalBridgeModalOpen(true)}>
-        Nuevo Puente Térmico
-      </CustomButton>
-    </div>
-  </div>
-);
+  );
 
-  
-  
+
+
 
   return (
     <div className="container-fluid">

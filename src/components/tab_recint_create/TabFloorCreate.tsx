@@ -135,7 +135,7 @@ const TabFloorCreate: React.FC = () => {
       }
 
       const data: FloorEnclosure[] = await response.json();
-      
+
       // Transformar los datos de la API al formato de la tabla
       const formattedData: FloorData[] = data.map((item, index) => ({
         id: item.id,
@@ -149,7 +149,7 @@ const TabFloorCreate: React.FC = () => {
         pisoVentilado: item.is_ventilated,
         ptP06L: item.po6_l
       }));
-      
+
       setTableData(formattedData);
     } catch (error) {
       console.error("Error:", error);
@@ -186,7 +186,7 @@ const TabFloorCreate: React.FC = () => {
   // Maneja la eliminación: se remueve la fila y se muestra una notificación
   const handleDeleteRow = async () => {
     if (!rowToDelete) return;
-    
+
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/floor-enclosures-delete/${rowToDelete.id}`,
@@ -217,12 +217,12 @@ const TabFloorCreate: React.FC = () => {
   // Valida los datos de edición
   const validateEditForm = () => {
     if (
-      editValues.floor_id === 0 || 
-      !editValues.characteristic || 
-      !editValues.area || 
-      editValues.area <= 0 || 
-      !editValues.parameter || 
-      editValues.parameter <= 0 || 
+      editValues.floor_id === 0 ||
+      !editValues.characteristic ||
+      !editValues.area ||
+      editValues.area <= 0 ||
+      !editValues.parameter ||
+      editValues.parameter <= 0 ||
       !editValues.is_ventilated
     ) {
       notify("Debe completar todos los campos del formulario correctamente");
@@ -359,37 +359,37 @@ const TabFloorCreate: React.FC = () => {
 
   // Definición de columnas para la tabla
   const columns = [
-    { 
-      headerName: "Pisos", 
+    {
+      headerName: "Pisos",
       field: "pisos",
       renderCell: (row: FloorData) => {
         return editingRowIndex === row.index ? renderEditableCell("pisos", row) : row.pisos;
       }
     },
-    { 
-      headerName: "Características espacio contiguo al elemento", 
+    {
+      headerName: "Características espacio contiguo al elemento",
       field: "caracteristicas",
       renderCell: (row: FloorData) => {
         return editingRowIndex === row.index ? renderEditableCell("caracteristicas", row) : row.caracteristicas;
       }
     },
-    { 
-      headerName: "Área [m²]", 
+    {
+      headerName: "Área [m²]",
       field: "area",
       renderCell: (row: FloorData) => {
         return editingRowIndex === row.index ? renderEditableCell("area", row) : row.area;
       }
     },
     { headerName: "U [W/m²K]", field: "uValue" },
-    { 
-      headerName: "Perímetro Suelo [m]", 
+    {
+      headerName: "Perímetro Suelo [m]",
       field: "perimetroSuelo",
       renderCell: (row: FloorData) => {
         return editingRowIndex === row.index ? renderEditableCell("perimetroSuelo", row) : row.perimetroSuelo;
       }
     },
-    { 
-      headerName: "Piso ventilado [¿?]", 
+    {
+      headerName: "Piso ventilado [¿?]",
       field: "pisoVentilado",
       renderCell: (row: FloorData) => {
         return editingRowIndex === row.index ? renderEditableCell("pisoVentilado", row) : row.pisoVentilado;
@@ -486,11 +486,13 @@ const TabFloorCreate: React.FC = () => {
         <TablesParameters columns={columns} data={tableData} />
       )}
       <div style={{ marginTop: "20px" }}>
-        <CustomButton variant="save" onClick={() => setShowModal(true)}>
-          Crear
-        </CustomButton>
+        <div className="d-flex justify-content-end gap-2 w-100">
+          <CustomButton variant="save" onClick={() => setShowModal(true)}>
+            Crear
+          </CustomButton>
+        </div>
       </div>
-      
+
       {/* Modal de Creación */}
       <ModalCreate
         isOpen={showModal}
@@ -587,7 +589,7 @@ const TabFloorCreate: React.FC = () => {
           </div>
         </div>
       </ModalCreate>
-      
+
       {/* Modal de Confirmación de Eliminación */}
       <ModalCreate
         isOpen={showDeleteModal}
@@ -600,7 +602,7 @@ const TabFloorCreate: React.FC = () => {
           <div className="row mb-3">
             <div className="col-12 text-center">
               <p>¿Está seguro que desea eliminar el piso <strong>{rowToDelete?.pisos}</strong>?</p>
-             
+
             </div>
           </div>
         </div>

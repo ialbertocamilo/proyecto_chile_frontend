@@ -48,12 +48,12 @@ const TabCeilingCreate: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [itemToDelete, setItemToDelete] = useState<CeilingData | null>(null);
   const [techosOptions, setTechosOptions] = useState<Techo[]>([]);
-  
+
   // Estados para el modal de creación
   const [roofId, setRoofId] = useState<number>(0);
   const [characteristic, setCharacteristic] = useState<string>("");
   const [area, setArea] = useState<number>(0);
-  
+
   // Estado para los valores de edición en línea
   const [editingValues, setEditingValues] = useState<EditingValues>({
     roof_id: 0,
@@ -146,11 +146,11 @@ const TabCeilingCreate: React.FC = () => {
     setItemToDelete(row);
     setShowDeleteModal(true);
   };
-  
+
   // Eliminar una fila
   const confirmDelete = async () => {
     if (!itemToDelete) return;
-    
+
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/roof-enclosures-delete/${itemToDelete.id}`,
@@ -175,7 +175,7 @@ const TabCeilingCreate: React.FC = () => {
       console.error("Error:", error);
     }
   };
-  
+
   // Cancelar eliminación
   const cancelDelete = () => {
     setShowDeleteModal(false);
@@ -191,12 +191,12 @@ const TabCeilingCreate: React.FC = () => {
       notify("Debe seleccionar un techo");
       return;
     }
-    
+
     if (!editingValues.characteristic) {
       notify("Debe seleccionar una característica");
       return;
     }
-    
+
     if (!editingValues.area || editingValues.area <= 0) {
       notify("Debe ingresar un área válida");
       return;
@@ -245,8 +245,8 @@ const TabCeilingCreate: React.FC = () => {
   };
 
   const columns = [
-    { 
-      headerName: "Techos", 
+    {
+      headerName: "Techos",
       field: "techos",
       renderCell: (row: CeilingData) => {
         if (editingRowId === row.id) {
@@ -254,7 +254,7 @@ const TabCeilingCreate: React.FC = () => {
             <select
               className="form-control"
               value={editingValues.roof_id}
-              onChange={(e) => setEditingValues({...editingValues, roof_id: Number(e.target.value)})}
+              onChange={(e) => setEditingValues({ ...editingValues, roof_id: Number(e.target.value) })}
             >
               {techosOptions.map((techo) => (
                 <option key={techo.id} value={techo.id}>
@@ -267,8 +267,8 @@ const TabCeilingCreate: React.FC = () => {
         return row.techos;
       }
     },
-    { 
-      headerName: "Características espacio contiguo al elemento", 
+    {
+      headerName: "Características espacio contiguo al elemento",
       field: "caracteristicas",
       renderCell: (row: CeilingData) => {
         if (editingRowId === row.id) {
@@ -276,7 +276,7 @@ const TabCeilingCreate: React.FC = () => {
             <select
               className="form-control"
               value={editingValues.characteristic}
-              onChange={(e) => setEditingValues({...editingValues, characteristic: e.target.value})}
+              onChange={(e) => setEditingValues({ ...editingValues, characteristic: e.target.value })}
             >
               <option value="Exterior">Exterior</option>
               <option value="Inter Recintos Clim">Inter Recintos Clim</option>
@@ -287,8 +287,8 @@ const TabCeilingCreate: React.FC = () => {
         return row.caracteristicas;
       }
     },
-    { 
-      headerName: "Área [m2]", 
+    {
+      headerName: "Área [m2]",
       field: "area",
       renderCell: (row: CeilingData) => {
         if (editingRowId === row.id) {
@@ -297,7 +297,7 @@ const TabCeilingCreate: React.FC = () => {
               type="number"
               className="form-control"
               value={editingValues.area}
-              onChange={(e) => setEditingValues({...editingValues, area: Number(e.target.value)})}
+              onChange={(e) => setEditingValues({ ...editingValues, area: Number(e.target.value) })}
             />
           );
         }
@@ -342,12 +342,12 @@ const TabCeilingCreate: React.FC = () => {
       notify("Debe seleccionar un techo");
       return;
     }
-    
+
     if (!characteristic) {
       notify("Debe seleccionar una característica");
       return;
     }
-    
+
     if (!area || area <= 0) {
       notify("Debe ingresar un área válida");
       return;
@@ -394,9 +394,11 @@ const TabCeilingCreate: React.FC = () => {
     <div>
       <TablesParameters columns={columns} data={data} />
       <div style={{ marginTop: "20px" }}>
-        <CustomButton variant="save" onClick={handleCreate}>
-          Crear
-        </CustomButton>
+        <div className="d-flex justify-content-end gap-2 w-100">
+          <CustomButton variant="save" onClick={handleCreate}>
+            Crear
+          </CustomButton>
+        </div>
       </div>
       <ModalCreate
         isOpen={showModal}
@@ -460,7 +462,7 @@ const TabCeilingCreate: React.FC = () => {
           </div>
         </div>
       </ModalCreate>
-      
+
       {/* Modal de confirmación para eliminar */}
       <ModalCreate
         isOpen={showDeleteModal}

@@ -50,7 +50,7 @@ const UserManagement = () => {
   }, [fetchUsers]);
 
   const getRoleText = (role_id: number) => {
-    return role_id === 1 ? "Administrador" : role_id === 2 ? "Operador" : "Desconocido";
+    return role_id === 1 ? "Administrador" : role_id === 2 ? "Desarrollador" : "Desconocido";
   };
 
   const handleRoleChange = async (userId: number, newRoleId: number) => {
@@ -121,7 +121,7 @@ const UserManagement = () => {
             Administrador
           </option>
           <option value={2} className="py-2 text-muted">
-            Operador
+            Desarrollador
           </option>
         </select>
       )

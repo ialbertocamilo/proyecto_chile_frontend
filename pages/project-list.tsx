@@ -140,7 +140,7 @@ const ProjectListPage = () => {
     return {};
   };
 
-  // Definición de columnas para el DataTable
+  // Definición de columnas pafdra el DataTable
   const tableColumns = [
     { id: "id", label: "ID", minWidth: 50 },
     {

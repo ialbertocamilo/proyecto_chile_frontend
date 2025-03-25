@@ -26,7 +26,7 @@ interface ProfileData {
 // Función para convertir el ID de rol a texto (solo para mostrar en este componente)
 const getUserTypeText = (roleId: string): string => {
   if (roleId === "1") return "Administrador";
-  if (roleId === "2") return "Operador";
+  if (roleId === "2") return "Desarrollador";
   return "Desconocido";
 };
 

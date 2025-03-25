@@ -32,7 +32,7 @@ const TablePagination: React.FC<{
   onPageChange: (page: number) => void;
   onRowsPerPageChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }> = ({ page, rowsPerPage, totalPages, onPageChange, onRowsPerPageChange }) => (
-  <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 mt-3">
+  <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 mt-1">
     <div
       className="w-100 w-sm-auto mb-2 mb-sm-0 mx-auto mx-sm-0"
       style={{ maxWidth: "180px" }}
@@ -138,7 +138,7 @@ export default function DataTable<T extends { [key: string]: any }>({
         <div className="row">
           <div className="col-md-12">
             <div
-              className="table-responsive"
+              className="table-responsive mb-0 pb-0"
               style={{
                 overflowX: "auto",
                 WebkitOverflowScrolling: "touch",
@@ -212,8 +212,8 @@ export default function DataTable<T extends { [key: string]: any }>({
             </div>
           </div>
         </div>
-        <div className="row mt-3">
-          <div className="col-md-12">
+        <div className="row">
+          <div className="col-md-12 ">
             <TablePagination
               page={page}
               rowsPerPage={rowsPerPage}

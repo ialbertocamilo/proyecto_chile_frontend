@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 
 interface CardProps {
   children: React.ReactNode;
@@ -17,8 +17,8 @@ const Card: React.FC<CardProps> = ({ children, className = "", style }) => {
     ...style,
   };
   return <div className="col-xxl-12 col-xl-12 box-col-12 order-xl-1 col-sm-12 col-md-12">
-    <div className={`card news-update  rounded-2 ${className}`} style={cardStyle}>
-      <div className={"card-body "}>
+    <div className={`card rounded-2 mb-2 ${className}`} style={cardStyle}>
+      <div className={"card-body pb-0 pt-0"}>
         {children}
       </div>
     </div>

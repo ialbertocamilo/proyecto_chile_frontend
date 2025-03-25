@@ -103,7 +103,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               }}
             >
               {!hideNavRoutes.includes(router.pathname) ? (
-                <div style={{ paddingRight: '1.2em' }}>
+                <div >
                   {page}
                 </div>
               ) : (

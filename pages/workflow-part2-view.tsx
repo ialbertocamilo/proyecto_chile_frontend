@@ -255,7 +255,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return;
     }
     try {
-      const url = `${constantUrlApiEndpoint}/elements/?type=window`;
+      const url = `${constantUrlApiEndpoint}/user/elements/?type=window`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setVentanasTabList(response.data);
@@ -272,7 +272,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return;
     }
     try {
-      const url = `${constantUrlApiEndpoint}/elements/?type=door`;
+      const url = `${constantUrlApiEndpoint}/user/elements/?type=door`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(url, { headers });
       setPuertasTabList(response.data);

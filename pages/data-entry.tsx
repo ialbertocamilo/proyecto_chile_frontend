@@ -14,7 +14,7 @@ import SearchParameters from "../src/components/inputs/SearchParameters";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Breadcrumb from "@/components/common/Breadcrumb";
-import TablesParameters from "@/components/tables/TablesParameters";
+import TablesParameters from "../src/components/tables/TablesParameters";
 import UseProfileTab from "../src/components/UseProfileTab";
 import ActionButtons from "@/components/common/ActionButtons";
 
@@ -119,6 +119,8 @@ const DataEntryPage: React.FC = () => {
     specific_heat: "",
     density: "",
   });
+  // Nuevo estado para saber si se está editando (almacena el id del material)
+  const [editingMaterialId, setEditingMaterialId] = useState<number | null>(null);
   const [materialSearch, setMaterialSearch] = useState("");
 
   /** Estados para Elementos translúcidos (Step 5) **/
@@ -193,7 +195,7 @@ const DataEntryPage: React.FC = () => {
       let page = 1;
       let hasMore = true;
       while (hasMore) {
-        const url = `${constantUrlApiEndpoint}/constants/?page=${page}&per_page=100`;
+        const url = `${constantUrlApiEndpoint}/user/constants/?page=${page}&per_page=500`;
         const headers = { Authorization: `Bearer ${token}` };
         const response = await axios.get(url, { headers });
         const currentData = response.data.constants || [];
@@ -215,7 +217,7 @@ const DataEntryPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const url = `${constantUrlApiEndpoint}/elements/?type=${type}`;
+      const url = `${constantUrlApiEndpoint}/user/elements/?type=${type}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         accept: "application/json",
@@ -234,7 +236,7 @@ const DataEntryPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const url = `${constantUrlApiEndpoint}/elements/?type=window`;
+      const url = `${constantUrlApiEndpoint}/user/elements/?type=window`;
       const headers = {
         Authorization: `Bearer ${token}`,
         accept: "application/json",
@@ -273,7 +275,7 @@ const DataEntryPage: React.FC = () => {
         name: "materials",
         type: "definition materials",
       };
-      const url = `${constantUrlApiEndpoint}/constants/create`;
+      const url = `${constantUrlApiEndpoint}/user/constants/create`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -304,6 +306,77 @@ const DataEntryPage: React.FC = () => {
       }
       console.error("Error al crear material:", error);
       return false;
+    }
+  };
+
+  // === EDITAR MATERIAL ===
+  const handleEditMaterial = async (): Promise<boolean> => {
+    if (!editingMaterialId) return false;
+    if (
+      newMaterialData.name.trim() === "" ||
+      !newMaterialData.conductivity ||
+      parseFloat(newMaterialData.conductivity) <= 0 ||
+      !newMaterialData.specific_heat ||
+      parseFloat(newMaterialData.specific_heat) <= 0 ||
+      !newMaterialData.density ||
+      parseFloat(newMaterialData.density) <= 0
+    ) {
+      notify("Por favor complete todos los campos del material correctamente");
+      return false;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return false;
+      const requestBody = {
+        atributs: {
+          name: newMaterialData.name,
+          density: parseFloat(newMaterialData.density),
+          conductivity: parseFloat(newMaterialData.conductivity),
+          specific_heat: parseFloat(newMaterialData.specific_heat),
+        },
+        name: "materials",
+        type: "definition materials",
+      };
+      const url = `${constantUrlApiEndpoint}/user/constant/${editingMaterialId}/update`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        accept: "application/json",
+      };
+      const response = await axios.put(url, requestBody, { headers });
+      if (response.status === 200) {
+        await fetchMaterialsList();
+        notify(`El material "${newMaterialData.name}" fue actualizado exitosamente`);
+        setNewMaterialData({
+          name: "",
+          conductivity: "",
+          specific_heat: "",
+          density: "",
+        });
+        setEditingMaterialId(null);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error al actualizar material:", error);
+      notify("Error al actualizar el material");
+      return false;
+    }
+  };
+
+  // === ELIMINAR MATERIAL ===
+  const handleDeleteMaterial = async (materialId: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const url = `${constantUrlApiEndpoint}/user/constant/${materialId}/delete`;
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.delete(url, { headers });
+      notify("Material eliminado exitosamente");
+      setMaterialsList((prev) => prev.filter((mat) => mat.id !== materialId));
+    } catch (error) {
+      console.error("Error al eliminar material:", error);
+      notify("Error al eliminar el material");
     }
   };
 
@@ -342,7 +415,7 @@ const DataEntryPage: React.FC = () => {
         fm: parseFloat(windowData.fm),
       };
       const response = await axios.post(
-        `${constantUrlApiEndpoint}/elements/create`,
+        `${constantUrlApiEndpoint}/user/elements/create`,
         body,
         {
           headers: {
@@ -413,7 +486,7 @@ const DataEntryPage: React.FC = () => {
         fm: parseFloat(doorData.fm),
       };
       const response = await axios.post(
-        `${constantUrlApiEndpoint}/elements/create`,
+        `${constantUrlApiEndpoint}/user/elements/create`,
         body,
         {
           headers: {
@@ -455,7 +528,7 @@ const DataEntryPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const url = `${constantUrlApiEndpoint}/elements/${elementId}/delete?type=${type}`;
+      const url = `${constantUrlApiEndpoint}/user/elements/${elementId}/delete`;
       const headers = { Authorization: `Bearer ${token}` };
       await axios.delete(url, { headers });
       notify("Elemento eliminado exitosamente");
@@ -476,7 +549,7 @@ const DataEntryPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const url = `${constantUrlApiEndpoint}/elements/${element.id}/update`;
+      const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
       const headers = {
         "Content-Type": "application/json",
         accept: "application/json",
@@ -505,7 +578,7 @@ const DataEntryPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const url = `${constantUrlApiEndpoint}/elements/${element.id}/update`;
+      const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
       const headers = {
         "Content-Type": "application/json",
         accept: "application/json",
@@ -586,13 +659,14 @@ const DataEntryPage: React.FC = () => {
         parseFloat(doorData.porcentaje_vidrio) >= 0 &&
         parseFloat(doorData.porcentaje_vidrio) <= 100));
 
-  // === RENDER DE STEP 3: Lista de Materiales (SIN multiheader)
+  // === RENDER DE STEP 3: Lista de Materiales (CON botones de edición y eliminación)
   const renderStep3Materials = () => {
     const columnsMaterials = [
       { headerName: "Nombre Material", field: "materialName" },
       { headerName: "Conductividad (W/m2K)", field: "conductivity" },
       { headerName: "Calor específico (J/kgK)", field: "specific_heat" },
       { headerName: "Densidad (kg/m3)", field: "density" },
+      { headerName: "Acción", field: "action" },
     ];
 
     const filteredMaterialData = materialsList
@@ -604,6 +678,25 @@ const DataEntryPage: React.FC = () => {
         conductivity: mat.atributs.conductivity,
         specific_heat: mat.atributs.specific_heat,
         density: mat.atributs.density,
+        action: (
+          <ActionButtons
+            onEdit={() => {
+              // Al editar se carga la data en el modal y se marca el id en edición
+              setEditingMaterialId(mat.id);
+              setNewMaterialData({
+                name: mat.atributs.name,
+                conductivity: mat.atributs.conductivity.toString(),
+                specific_heat: mat.atributs.specific_heat.toString(),
+                density: mat.atributs.density.toString(),
+              });
+              setShowMaterialModal(true);
+            }}
+            onDelete={() => {
+              setDeleteAction(() => () => handleDeleteMaterial(mat.id));
+              setShowConfirmModal(true);
+            }}
+          />
+        ),
       }));
 
     return (
@@ -613,7 +706,17 @@ const DataEntryPage: React.FC = () => {
             value={materialSearch}
             onChange={setMaterialSearch}
             placeholder="Buscar material..."
-            onNew={() => setShowMaterialModal(true)}
+            onNew={() => {
+              setShowMaterialModal(true);
+              // Si se abre el modal para nuevo material, se limpia el estado de edición
+              setEditingMaterialId(null);
+              setNewMaterialData({
+                name: "",
+                conductivity: "",
+                specific_heat: "",
+                density: "",
+              });
+            }}
           />
         </div>
         <div className="border rounded overflow-hidden">
@@ -722,7 +825,7 @@ const DataEntryPage: React.FC = () => {
           name_ventana: el.atributs.name_ventana ?? "--",
           porcentaje_vidrio:
             el.atributs.porcentaje_vidrio !== undefined
-              ? (el.atributs.porcentaje_vidrio * 100).toFixed(0) + "%"
+              ? (el.atributs.porcentaje_vidrio).toFixed(0) + "%"
               : "0%",
           u_marco: el.u_marco,
           fm: (el.fm * 100).toFixed(0) + "%",
@@ -780,9 +883,7 @@ const DataEntryPage: React.FC = () => {
         <div className="d-flex align-items-center w-100">
           <Title text="Ingreso de datos de entrada" />
           <Breadcrumb
-            items={[
-              { title: "Datos de entrada", href: "/data-entry", active: true },
-            ]}
+            items={[{ title: "Datos de entrada", href: "/data-entry", active: true }]}
           />
         </div>
       </Card>
@@ -811,7 +912,7 @@ const DataEntryPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Modal para crear Material */}
+      {/* Modal para crear o editar Material */}
       {showMaterialModal && (
         <ModalCreate
           isOpen={showMaterialModal}
@@ -823,15 +924,21 @@ const DataEntryPage: React.FC = () => {
               specific_heat: "",
               density: "",
             });
+            setEditingMaterialId(null);
           }}
           onSave={async () => {
-            const success = await handleCreateMaterial();
+            let success = false;
+            if (editingMaterialId) {
+              success = await handleEditMaterial();
+            } else {
+              success = await handleCreateMaterial();
+            }
             if (success) {
               setShowMaterialModal(false);
             }
           }}
-          title="Nuevo Material"
-          saveLabel="Crear Material"
+          title={editingMaterialId ? "Editar Material" : "Nuevo Material"}
+          saveLabel={editingMaterialId ? "Guardar Cambios" : "Crear Material"}
         >
           <div>
             <div className="form-group mb-3">
@@ -1090,11 +1197,11 @@ const DataEntryPage: React.FC = () => {
                   value={doorData.ventana_id}
                   onChange={(e) => {
                     const winId = e.target.value;
+                    const selectedWindow = allWindowsForDoor.find((win) => win.id === parseInt(winId));
                     setDoorData((prev) => ({
                       ...prev,
                       ventana_id: winId,
-                      name_ventana:
-                        allWindowsForDoor.find((win) => win.id === parseInt(winId))?.name_element || "",
+                      name_ventana: selectedWindow ? selectedWindow.name_element : "",
                     }));
                   }}
                 >
@@ -1236,8 +1343,7 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>Tipo Cierre</label>
-              <input
-                type="text"
+              <select
                 className="form-control"
                 value={editingWindowData.atributs.clousure_type || ""}
                 onChange={(e) =>
@@ -1253,12 +1359,18 @@ const DataEntryPage: React.FC = () => {
                       : prev
                   )
                 }
-              />
+              >
+                <option value="">Seleccione</option>
+                <option value="Abatir">Abatir</option>
+                <option value="Corredera">Corredera</option>
+                <option value="Fija">Fija</option>
+                <option value="Guillotina">Guillotina</option>
+                <option value="Proyectante">Proyectante</option>
+              </select>
             </div>
             <div className="form-group mb-3">
               <label>Tipo Marco</label>
-              <input
-                type="text"
+              <select
                 className="form-control"
                 value={editingWindowData.atributs.frame_type || ""}
                 onChange={(e) =>
@@ -1274,7 +1386,16 @@ const DataEntryPage: React.FC = () => {
                       : prev
                   )
                 }
-              />
+              >
+                <option value="">Seleccione</option>
+                <option value="Fierro">Fierro</option>
+                <option value="Madera Con RPT">Madera Con RPT</option>
+                <option value="Madera Sin RPT">Madera Sin RPT</option>
+                <option value="Metalico Con RPT">Metalico Con RPT</option>
+                <option value="Metalico Sin RPT">Metalico Sin RPT</option>
+                <option value="PVC Con RPT">PVC Con RPT</option>
+                <option value="PVC Sin RPT">PVC Sin RPT</option>
+              </select>
             </div>
             <div className="form-group mb-3">
               <label>U Marco [W/m²K]</label>
@@ -1284,9 +1405,7 @@ const DataEntryPage: React.FC = () => {
                 value={editingWindowData.u_marco || ""}
                 onChange={(e) =>
                   setEditingWindowData((prev) =>
-                    prev
-                      ? { ...prev, u_marco: parseFloat(e.target.value) }
-                      : prev
+                    prev ? { ...prev, u_marco: parseFloat(e.target.value) } : prev
                   )
                 }
               />
@@ -1355,31 +1474,46 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>Ventana Asociada</label>
-              <input
-                type="text"
+              <select
                 className="form-control"
-                value={editingDoorData.atributs.name_ventana || ""}
-                onChange={(e) =>
+                value={editingDoorData.atributs.ventana_id || ""}
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  const selectedWindow = allWindowsForDoor.find(
+                    (win) => win.id === parseInt(selectedId)
+                  );
                   setEditingDoorData((prev) =>
                     prev
                       ? {
                           ...prev,
                           atributs: {
                             ...prev.atributs,
-                            name_ventana: e.target.value,
+                            ventana_id: selectedId ? parseInt(selectedId) : 0,
+                            name_ventana: selectedWindow ? selectedWindow.name_element : "",
                           },
                         }
                       : prev
-                  )
-                }
-              />
+                  );
+                }}
+              >
+                <option value="">Seleccione</option>
+                {allWindowsForDoor.map((win) => (
+                  <option key={win.id} value={win.id}>
+                    {win.name_element}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-group mb-3">
               <label>% Vidrio</label>
               <input
                 type="number"
                 className="form-control"
-                value={editingDoorData.atributs.porcentaje_vidrio !== undefined ? editingDoorData.atributs.porcentaje_vidrio : ""}
+                value={
+                  editingDoorData.atributs.porcentaje_vidrio !== undefined
+                    ? editingDoorData.atributs.porcentaje_vidrio
+                    : ""
+                }
                 onChange={(e) =>
                   setEditingDoorData((prev) =>
                     prev
@@ -1403,9 +1537,7 @@ const DataEntryPage: React.FC = () => {
                 value={editingDoorData.u_marco || ""}
                 onChange={(e) =>
                   setEditingDoorData((prev) =>
-                    prev
-                      ? { ...prev, u_marco: parseFloat(e.target.value) }
-                      : prev
+                    prev ? { ...prev, u_marco: parseFloat(e.target.value) } : prev
                   )
                 }
               />

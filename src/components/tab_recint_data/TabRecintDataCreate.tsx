@@ -7,6 +7,9 @@ import CustomButton from "@/components/common/CustomButton";
 import ModalCreate from "@/components/common/ModalCreate";
 import { notify } from "@/utils/notify";
 
+// ===========================================================
+// Interfaces
+// ===========================================================
 interface EnclosureGeneralData {
   id: number;
   occupation_profile_id: number;
@@ -19,12 +22,11 @@ interface EnclosureGeneralData {
   comuna_id: number;
 }
 
-// Interfaz para los perfiles de ocupación
 interface OccupationProfile {
   id: number;
-  code: string; // Si tu endpoint también devuelve code (ES, AU, BA, etc.), lo puedes agregar
+  code?: string;
   name: string;
-  // Agrega los campos que retorne tu endpoint para cada perfil de ocupación
+  // Otros campos según el endpoint
 }
 
 interface Region {
@@ -41,10 +43,37 @@ interface Comuna {
   longitud: number;
 }
 
+// ===========================================================
+// Hook para obtener el token de autenticación de forma segura en cliente
+// ===========================================================
+const useAuthToken = () => {
+  const [token, setToken] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        setToken(storedToken);
+      }
+    }
+  }, []);
+  return token;
+};
+
+// ===========================================================
+// Componente principal
+// ===========================================================
 const TabEnclosureGenerals: React.FC = () => {
   const router = useRouter();
-  const projectId = localStorage.getItem("project_id") || "44";
-  const token = localStorage.getItem("token") || "";
+  const token = useAuthToken();
+
+  // Mover la obtención de projectId al useEffect para asegurarnos de que se ejecute solo en el cliente
+  const [projectId, setProjectId] = useState("44");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedProjectId = localStorage.getItem("project_id") || "44";
+      setProjectId(storedProjectId);
+    }
+  }, []);
 
   // Estados para la tabla principal
   const [data, setData] = useState<EnclosureGeneralData[]>([]);
@@ -52,10 +81,8 @@ const TabEnclosureGenerals: React.FC = () => {
   const [regiones, setRegiones] = useState<Region[]>([]);
   const [comunas, setComunas] = useState<Comuna[]>([]);
   const [zonasTermicas, setZonasTermicas] = useState<string[]>([]);
-
   // Estado para los perfiles de ocupación
   const [occupationProfiles, setOccupationProfiles] = useState<OccupationProfile[]>([]);
-
   // Estados para edición en la tabla
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [editingValues, setEditingValues] = useState<Omit<EnclosureGeneralData, "id">>({
@@ -68,7 +95,6 @@ const TabEnclosureGenerals: React.FC = () => {
     name_enclosure: "",
     comuna_id: 0,
   });
-
   // Modal de confirmación para eliminar
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<EnclosureGeneralData | null>(null);
@@ -76,26 +102,30 @@ const TabEnclosureGenerals: React.FC = () => {
   // ===========================================================
   // 1. Funciones para fetch de datos
   // ===========================================================
+  // Se verificará que tanto el token como el projectId estén disponibles antes de hacer los fetch
 
-  // Obtener datos de la tabla de Enclosure Generals
   const fetchEnclosureGenerals = async () => {
-    
+    if (!token || !projectId) return;
     const url = `https://ceela-backend.svgdev.tech/enclosure-generals/${projectId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!response.ok) return;
-    const responseData: EnclosureGeneralData[] = await response.json();
-    setData(responseData);
-    
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Error al obtener recintos");
+      const responseData: EnclosureGeneralData[] = await response.json();
+      setData(responseData);
+    } catch (error) {
+      console.error(error);
+      notify("Error al cargar recintos");
+    }
   };
 
-  // Obtener datos de Regiones
   const fetchRegiones = async () => {
+    if (!token) return;
     try {
       const url = "https://ceela-backend.svgdev.tech/regiones";
       const response = await fetch(url, {
@@ -114,10 +144,9 @@ const TabEnclosureGenerals: React.FC = () => {
     }
   };
 
-  // Obtener datos de Comunas (puedes ajustar la región según necesites)
   const fetchComunas = async () => {
+    if (!token) return;
     try {
-      // Ajusta la región en esta URL si lo requieres (ahora está fija con id 4, a modo de ejemplo).
       const url = "https://ceela-backend.svgdev.tech/comunas/4";
       const response = await fetch(url, {
         method: "GET",
@@ -135,10 +164,9 @@ const TabEnclosureGenerals: React.FC = () => {
     }
   };
 
-  // Obtener opciones para Zona Térmica (puedes ajustar la comuna si lo requieres)
   const fetchZonasTermicas = async () => {
+    if (!token) return;
     try {
-      // Ajusta la comuna en esta URL si lo requieres (ahora está fija con id 24, a modo de ejemplo).
       const url = "https://ceela-backend.svgdev.tech/zonas-termicas/24";
       const response = await fetch(url, {
         method: "GET",
@@ -156,8 +184,8 @@ const TabEnclosureGenerals: React.FC = () => {
     }
   };
 
-  // Obtener perfiles de ocupación (endpoint que tú indicaste)
   const fetchOccupationProfiles = async () => {
+    if (!token) return;
     try {
       const url = "https://ceela-backend.svgdev.tech/user/enclosures-typing/";
       const response = await fetch(url, {
@@ -180,13 +208,16 @@ const TabEnclosureGenerals: React.FC = () => {
   // 2. useEffect para cargar todos los datos al inicio
   // ===========================================================
   useEffect(() => {
-    fetchEnclosureGenerals();
-    fetchRegiones();
-    fetchComunas();
-    fetchZonasTermicas();
-    fetchOccupationProfiles(); // <-- Importante: llamada para los perfiles
+    // Se ejecuta cuando ya se tiene el token (y projectId)
+    if (token && projectId) {
+      fetchEnclosureGenerals();
+      fetchRegiones();
+      fetchComunas();
+      fetchZonasTermicas();
+      fetchOccupationProfiles();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [token, projectId]);
 
   // ===========================================================
   // 3. Funciones para edición
@@ -314,7 +345,6 @@ const TabEnclosureGenerals: React.FC = () => {
       field: "occupation_profile_id",
       renderCell: (row: EnclosureGeneralData) =>
         editingRowId === row.id ? (
-          // MODO EDICIÓN: combo con los perfiles disponibles
           <select
             className="form-control"
             value={editingValues.occupation_profile_id}
@@ -333,10 +363,8 @@ const TabEnclosureGenerals: React.FC = () => {
             ))}
           </select>
         ) : (
-          // MODO LECTURA: mostrar el "name" del perfil, en vez del ID
-          occupationProfiles.find(
-            (p) => p.id === row.occupation_profile_id
-          )?.name || row.occupation_profile_id
+          occupationProfiles.find((p) => p.id === row.occupation_profile_id)
+            ?.name || row.occupation_profile_id
         ),
     },
     {
@@ -405,7 +433,6 @@ const TabEnclosureGenerals: React.FC = () => {
             ))}
           </select>
         ) : (
-          // Muestra el nombre de la región o el ID si no se encuentra
           regiones.find((r) => r.id === row.region_id)?.nombre_region || row.region_id
         ),
     },
@@ -474,7 +501,10 @@ const TabEnclosureGenerals: React.FC = () => {
           );
         }
         return (
-          <ActionButtons onEdit={() => handleEdit(row)} onDelete={() => handleDelete(row)} />
+          <ActionButtons
+            onEdit={() => handleEdit(row)}
+            onDelete={() => handleDelete(row)}
+          />
         );
       },
     },

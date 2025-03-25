@@ -170,7 +170,7 @@ async () => {
           onDelete={() => {
             confirmDelete(
               mat.id,
-              "constant",
+              "admin/constant",
               `el material "${mat.atributs.name}"`,
               () => fetchMaterialsList(1)
             );
@@ -222,7 +222,7 @@ async () => {
           onDelete={() => {
             confirmDelete(
               el.id,
-              "elements",
+              "admin/elements",
               `la ventana "${el.name_element}"`,
               fetchElements
             );
@@ -274,7 +274,7 @@ async () => {
           onDelete={() => {
             confirmDelete(
               el.id,
-              "elements",
+              "admin/elements",
               `la puerta "${el.name_element}"`,
               fetchElements
             );
@@ -327,7 +327,7 @@ async () => {
 
     const success = await handleCreate(
       payload,
-      "constants/create",
+      "admin/constants/create",
       `El material "${newMaterialData.name}" fue creado correctamente`,
       () => fetchMaterialsList(1)
     );
@@ -360,7 +360,7 @@ async () => {
     await handleEdit(
       selectedMaterialId,
       payload,
-      "constant",
+      "admin/constant",
       `El material "${newMaterialData.name}" fue actualizado correctamente`,
       () => fetchMaterialsList(1)
     );
@@ -420,7 +420,7 @@ async () => {
 
       const success = await handleCreate(
         payload,
-        "elements/create",
+        "admin/elements/create",
         `La ventana "${newWindow.name_element}" fue creada correctamente`,
         fetchElements
       );
@@ -489,7 +489,7 @@ async () => {
 
       const success = await handleCreate(
         payload,
-        "elements/create",
+        "admin/elements/create",
         `La puerta "${newDoor.name_element}" fue creada correctamente`,
         fetchElements
       );
@@ -527,7 +527,7 @@ async () => {
     await handleEdit(
       selectedWindowId,
       payload,
-      "elements",
+      "admin/elements",
       `La ventana "${newWindow.name_element}" fue actualizada correctamente`,
       fetchElements
     );
@@ -567,7 +567,7 @@ async () => {
     await handleEdit(
       selectedDoorId,
       payload,
-      "elements",
+      "admin/elements",
       `La puerta "${newDoor.name_element}" fue actualizada correctamente`,
       fetchElements
     );

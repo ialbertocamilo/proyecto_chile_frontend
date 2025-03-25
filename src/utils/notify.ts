@@ -3,7 +3,6 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export function notify(message: string, type: string = 'default') {
-    console.log('Notify', message, type);
     if (type == "modal")
         Swal.fire({
             title: message,

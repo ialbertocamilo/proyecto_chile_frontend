@@ -1,4 +1,5 @@
 ;
+import { notify } from "@/utils/notify";
 import { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
@@ -44,9 +45,14 @@ const Login: NextPageWithLayout = () => {
 
       const data = await response.json();
 
+      console.log(data)
+      if (data?.detail){
+        throw new Error(data?.detail)
+      }
       if (!response.ok) {
         throw new Error(data.message || "Credenciales incorrectas.");
       }
+    
 
       localStorage.setItem("User", data.token);
       localStorage.setItem("email", email);

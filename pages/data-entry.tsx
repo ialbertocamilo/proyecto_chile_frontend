@@ -379,7 +379,7 @@ const DataEntryPage: React.FC = () => {
       setMaterialsList((prev) => prev.filter((mat) => mat.id !== materialId));
     } catch (error) {
       console.error("Error al eliminar material:", error);
-      notify("Error al eliminar el material");
+      notify("No se puede eliminar el material");
     }
   };
 

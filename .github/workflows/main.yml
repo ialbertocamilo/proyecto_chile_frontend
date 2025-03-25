@@ -51,7 +51,7 @@ jobs:
           script: |
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             cd /root/server/container
-            # docker pull ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:latest
-            # docker stack deploy -c docker-compose.yml bytestone
-            # docker service update --image ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:latest bytestone_chile_web
-            # docker service update --force bytestone_chile_web
+            docker pull ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:latest
+            docker stack deploy -c docker-compose.yml bytestone
+            docker service update --image ghcr.io/${{ github.repository_owner }}/proyecto_chile_frontend/${{ env.IMAGE_NAME }}:latest bytestone_chile_web
+            docker service update --force bytestone_chile_web

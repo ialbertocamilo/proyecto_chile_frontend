@@ -1,12 +1,12 @@
 // recinto-create.tsx
-import React, { useEffect, useState } from "react";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
-import Card from "../src/components/common/Card";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
-import Title from "../src/components/Title";
-import CustomButton from "../src/components/common/CustomButton";
 import { notify } from "@/utils/notify";
+import React, { useEffect, useState } from "react";
+import Title from "../src/components/Title";
+import Card from "../src/components/common/Card";
+import CustomButton from "../src/components/common/CustomButton";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 interface IRegion {
   id: number;
@@ -392,15 +392,23 @@ const handleSave = async () => {
             {/* 7. Altura Promedio Recinto */}
             <div className="col-6 mb-3">
               <label htmlFor="alturaPromedio" className="form-label">
-                Altura Promedio Recinto
+              Altura Promedio Recinto
               </label>
               <input
-                id="alturaPromedio"
-                type="text"
-                className="form-control"
-                placeholder="Ej: 2.5 (en metros)"
-                value={alturaPromedio}
-                onChange={(e) => setAlturaPromedio(e.target.value)}
+              id="alturaPromedio"
+              type="number"
+              step="0.01"
+              min="0"
+              className="form-control"
+              placeholder="Ej: 2.5 (en metros)"
+              value={alturaPromedio}
+              onChange={(e) => {
+                const value = e.target.value;
+                const regex = /^\d*(\.\d{0,2})?$/;
+                if (regex.test(value) || value === '') {
+                setAlturaPromedio(value);
+                }
+              }}
               />
             </div>
 

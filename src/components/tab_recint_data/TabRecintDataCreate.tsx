@@ -115,12 +115,12 @@ const TabEnclosureGenerals: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error("Error al obtener recintos");
+      if (!response.ok) return;
       const responseData: EnclosureGeneralData[] = await response.json();
       setData(responseData);
     } catch (error) {
       console.error(error);
-      notify("Error al cargar recintos");
+     
     }
   };
 
@@ -135,12 +135,12 @@ const TabEnclosureGenerals: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error("Error al obtener regiones");
+      if (!response.ok) return;
       const responseData: Region[] = await response.json();
       setRegiones(responseData);
     } catch (error) {
       console.error(error);
-      notify("Error al cargar las regiones");
+      
     }
   };
 
@@ -155,12 +155,12 @@ const TabEnclosureGenerals: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error("Error al obtener comunas");
+      if (!response.ok) return;
       const responseData: Comuna[] = await response.json();
       setComunas(responseData);
     } catch (error) {
       console.error(error);
-      notify("Error al cargar las comunas");
+      
     }
   };
 
@@ -175,12 +175,12 @@ const TabEnclosureGenerals: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error("Error al obtener zonas térmicas");
+      if (!response.ok) return;
       const responseData: string[] = await response.json();
       setZonasTermicas(responseData);
     } catch (error) {
       console.error(error);
-      notify("Error al cargar las zonas térmicas");
+    
     }
   };
 
@@ -195,12 +195,12 @@ const TabEnclosureGenerals: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error("Error al obtener los perfiles de ocupación");
+      if (!response.ok) return;
       const responseData: OccupationProfile[] = await response.json();
       setOccupationProfiles(responseData);
     } catch (error) {
       console.error(error);
-      notify("Error al cargar los perfiles de ocupación");
+     
     }
   };
 

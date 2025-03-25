@@ -150,7 +150,7 @@ const TabDoorCreate: React.FC = () => {
         setAngleOptions(angleOpts);
 
         // Obtener opciones de puerta
-        const doorResponse = await fetch(`${constantUrlApiEndpoint}/elements/?type=door`, {
+        const doorResponse = await fetch(`${constantUrlApiEndpoint}/user/elements/?type=door`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

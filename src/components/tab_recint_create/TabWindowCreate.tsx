@@ -99,7 +99,7 @@ const TabWindowCreate: React.FC = () => {
     const fetchWindowOptions = async () => {
       try {
         const response = await fetch(
-          `${constantUrlApiEndpoint}/elements/?type=window`,
+          `${constantUrlApiEndpoint}/user/elements/?type=window`,
           {
             headers: {
               accept: "application/json",

@@ -345,7 +345,7 @@ const UserCreate = () => {
                       onChange={handleChange}
                     >
                       <option value="1">Administrador</option>
-                      <option value="2">Operador</option>
+                      <option value="2">Desarrollador</option>
                     </select>
                   </div>
                 </div>

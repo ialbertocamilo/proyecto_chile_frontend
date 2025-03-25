@@ -70,22 +70,18 @@ const TabEnclosureGenerals: React.FC = () => {
   // 1. Funciones para fetch de datos
   // ===========================================================
   const fetchEnclosureGenerals = async () => {
-    try {
-      const url = `https://ceela-backend.svgdev.tech/enclosure-generals/${projectId}`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al obtener datos de enclosure-generals");
-      const responseData: EnclosureGeneralData[] = await response.json();
-      setData(responseData);
-    } catch (error) {
-      console.error(error);
-      notify("Error al cargar los datos");
-    }
+    const url = `https://ceela-backend.svgdev.tech/enclosure-generals/${projectId}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) return;
+    const responseData: EnclosureGeneralData[] = await response.json();
+    setData(responseData);
+    
   };
 
   const fetchRegiones = async () => {

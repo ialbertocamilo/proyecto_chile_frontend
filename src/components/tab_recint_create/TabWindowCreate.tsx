@@ -24,7 +24,6 @@ const TabWindowCreate: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [rowToDelete, setRowToDelete] = useState<any>(null);
 
-  // NOTA: Se elimina "tipoCierre" del formulario de creación y edición, ya que se obtendrá de la DB.
   const initialFormData = {
     window_id: 0,
     characteristics: "",
@@ -42,13 +41,6 @@ const TabWindowCreate: React.FC = () => {
     "Inter Recintos Clim",
     "Inter Recintos No Clim",
   ];
-  const tipoCierreOptions = [
-    "Abatir",
-    "Corredera",
-    "Fija",
-    "Guillotina",
-    "Proyectante",
-  ]; // Se conserva solo para referencia, pero no se utiliza en formularios.
   const withNoReturnOptions = ["Sin", "Con"];
   const positionOptions = ["Interior", "Centrada", "Exterior"];
 
@@ -85,15 +77,12 @@ const TabWindowCreate: React.FC = () => {
   useEffect(() => {
     const fetchAngleOptions = async () => {
       try {
-        const response = await fetch(
-          `${constantUrlApiEndpoint}/angle-azimut`,
-          {
-            headers: {
-              accept: "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!response.ok)
           throw new Error("Error al obtener las opciones de ángulo");
         const data = await response.json();
@@ -129,7 +118,7 @@ const TabWindowCreate: React.FC = () => {
     fetchWindowOptions();
   }, [token]);
 
-  // Obtener ventanas y fusionar datos de FAVs
+  // Obtener ventanas y FAVs
   const fetchWindowEnclosures = async () => {
     try {
       const response = await fetch(
@@ -143,6 +132,7 @@ const TabWindowCreate: React.FC = () => {
       );
       if (!response.ok) throw new Error("Error al obtener las ventanas");
       const windowsData = await response.json();
+
       let mappedData = windowsData.map((item: any) => ({
         id: item.id,
         window_id: item.window_id,
@@ -151,13 +141,13 @@ const TabWindowCreate: React.FC = () => {
         anguloAzimut: item.angulo_azimut,
         orientacion: item.orientation,
         alojadoEn: item.housed_in,
-        tipoCierre: item.clousure_type, // Se conserva para mostrar en la tabla
+        tipoCierre: item.clousure_type, // lectura
         posicionVentanal: item.position,
         aislacion: item.with_no_return,
         alto: item.high,
         ancho: item.broad,
         marco: item.frame,
-        // Inicializamos los campos FAV y fav_id
+        // Inicializamos FAV
         fav1_D: "",
         fav1_L: "",
         fav2izq_P: "",
@@ -180,9 +170,9 @@ const TabWindowCreate: React.FC = () => {
           },
         }
       );
-      if (!favResponse.ok)
-        throw new Error("Error al obtener los favs de ventana");
+      if (!favResponse.ok) throw new Error("Error al obtener los favs de ventana");
       const favsData = await favResponse.json();
+
       mappedData = mappedData.map((row: any) => {
         const fav = favsData.find((f: any) => f.item_id === row.id);
         if (fav) {
@@ -198,11 +188,12 @@ const TabWindowCreate: React.FC = () => {
             fav3_T: fav.fav3.t,
             fav3_beta: fav.fav3.beta,
             fav3_alpha: fav.fav3.alfa,
-            fav_id: fav.id, // Se guarda el id del FAV
+            fav_id: fav.id,
           };
         }
         return row;
       });
+
       setTableData(mappedData);
     } catch (error) {
       console.error(error);
@@ -211,6 +202,7 @@ const TabWindowCreate: React.FC = () => {
 
   useEffect(() => {
     fetchWindowEnclosures();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enclosure_id, token]);
 
   const validateForm = () => {
@@ -220,12 +212,12 @@ const TabWindowCreate: React.FC = () => {
     if (!formData.housed_in || formData.housed_in === 0) return false;
     if (!formData.position) return false;
     if (!formData.with_no_return) return false;
-    if (!formData.high || formData.high <= 0) return false;
-    if (!formData.broad || formData.broad <= 0) return false;
+    if (!formData.high || formData.high < 0) return false;
+    if (!formData.broad || formData.broad < 0) return false;
     return true;
   };
 
-  // Modal de creación y funciones relacionadas
+  // Modal de creación
   const handleCreateWindow = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
 
@@ -244,7 +236,7 @@ const TabWindowCreate: React.FC = () => {
 
   const handleSaveModal = async () => {
     if (!validateForm()) {
-      notify("Por favor, complete todos los campos. Todos son obligatorios");
+      notify("Por favor, complete todos los campos (sin números negativos).");
       return;
     }
     const url = `${constantUrlApiEndpoint}/window-enclosures-create/${enclosure_id}`;
@@ -256,11 +248,9 @@ const TabWindowCreate: React.FC = () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        // Se omite "tipoCierre" ya que su valor se obtendrá de la DB
         body: JSON.stringify(formData),
       });
-      if (!response.ok)
-        throw new Error("Error en la creación de la ventana");
+      if (!response.ok) throw new Error("Error en la creación de la ventana");
       const dataResponse = await response.json();
       console.log("Ventana creada:", dataResponse);
       notify("Ventana creada exitosamente");
@@ -273,6 +263,7 @@ const TabWindowCreate: React.FC = () => {
     }
   };
 
+  // Eliminar ventana
   const handleDeleteClick = (row: any) => {
     setRowToDelete(row);
     setShowDeleteModal(true);
@@ -289,8 +280,7 @@ const TabWindowCreate: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok)
-        throw new Error("Error al eliminar la ventana");
+      if (!response.ok) throw new Error("Error al eliminar la ventana");
       const dataResponse = await response.json();
       console.log("Eliminación:", dataResponse);
       notify(dataResponse.detail || "Ventana eliminada exitosamente");
@@ -303,10 +293,9 @@ const TabWindowCreate: React.FC = () => {
     }
   };
 
-  // Edición de ventana (separada de la edición de FAV)
+  // Edición de ventana
   const handleEditClick = (row: any) => {
     setEditingRow(row.id);
-    // Se omite "tipoCierre" en la edición (su valor se mostrará como solo lectura en la tabla)
     setEditData({
       window_id: row.window_id,
       characteristics: row.caracteristicas,
@@ -326,6 +315,14 @@ const TabWindowCreate: React.FC = () => {
   const handleConfirmEditWindow = async (id: number) => {
     const url = `${constantUrlApiEndpoint}/window-enclosures-update/${id}`;
     try {
+      // Validar que no tengamos valores negativos
+      if (
+        editData.high < 0 ||
+        editData.broad < 0
+      ) {
+        notify("No se permiten valores negativos en altura o ancho");
+        return;
+      }
       const response = await fetch(url, {
         method: "PUT",
         headers: {
@@ -333,7 +330,6 @@ const TabWindowCreate: React.FC = () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        // Se omite "tipoCierre" del payload de actualización
         body: JSON.stringify({
           window_id: editData.window_id,
           characteristics: editData.characteristics,
@@ -345,8 +341,7 @@ const TabWindowCreate: React.FC = () => {
           broad: editData.broad,
         }),
       });
-      if (!response.ok)
-        throw new Error("Error al actualizar la ventana");
+      if (!response.ok) throw new Error("Error al actualizar la ventana");
       const dataResponse = await response.json();
       console.log("Actualización ventana:", dataResponse);
       notify("Ventana actualizada exitosamente");
@@ -359,7 +354,7 @@ const TabWindowCreate: React.FC = () => {
     }
   };
 
-  // Edición de FAV: iniciar edición
+  // Edición de FAV
   const handleFavEditClick = (row: any) => {
     setEditingFavRow(row.id);
     setFavEditData({
@@ -382,6 +377,23 @@ const TabWindowCreate: React.FC = () => {
   };
 
   const handleConfirmEditFav = async () => {
+    const {
+      fav1_D, fav1_L, fav2izq_P, fav2izq_S, fav2der_P, fav2der_S,
+      fav3_E, fav3_T, fav3_beta, fav3_alpha
+    } = favEditData;
+
+    // Validar que ninguno sea negativo
+    if (
+      fav1_D < 0 || fav1_L < 0 ||
+      fav2izq_P < 0 || fav2izq_S < 0 ||
+      fav2der_P < 0 || fav2der_S < 0 ||
+      fav3_E < 0 || fav3_T < 0 ||
+      fav3_beta < 0 || fav3_alpha < 0
+    ) {
+      notify("No se permiten valores negativos en FAV");
+      return;
+    }
+
     const favUrl = `${constantUrlApiEndpoint}/window/fav-enclosures-update/${favEditData.fav_id}`;
     try {
       const response = await fetch(favUrl, {
@@ -393,27 +405,26 @@ const TabWindowCreate: React.FC = () => {
         },
         body: JSON.stringify({
           fav1: {
-            d: favEditData.fav1_D,
-            l: favEditData.fav1_L,
+            d: fav1_D,
+            l: fav1_L,
           },
           fav2_izq: {
-            p: favEditData.fav2izq_P,
-            s: favEditData.fav2izq_S,
+            p: fav2izq_P,
+            s: fav2izq_S,
           },
           fav2_der: {
-            p: favEditData.fav2der_P,
-            s: favEditData.fav2der_S,
+            p: fav2der_P,
+            s: fav2der_S,
           },
           fav3: {
-            e: favEditData.fav3_E,
-            t: favEditData.fav3_T,
-            beta: favEditData.fav3_beta,
-            alfa: favEditData.fav3_alpha,
+            e: fav3_E,
+            t: fav3_T,
+            beta: fav3_beta,
+            alfa: fav3_alpha,
           },
         }),
       });
-      if (!response.ok)
-        throw new Error("Error al actualizar los favs");
+      if (!response.ok) throw new Error("Error al actualizar los favs");
       const favDataResponse = await response.json();
       console.log("Actualización FAV:", favDataResponse);
       notify("FAV actualizado exitosamente");
@@ -426,8 +437,12 @@ const TabWindowCreate: React.FC = () => {
     }
   };
 
-  // Estilo para inputs de FAV, alargados (para que quepan 6 dígitos)
-  const favInputStyle = { height: "20px", fontSize: "14px", width: "120px" };
+  // Estilo para inputs de FAV
+  const favInputStyle = {
+    height: "20px",
+    fontSize: "14px",
+    width: "120px",
+  };
 
   const columns = [
     {
@@ -438,12 +453,10 @@ const TabWindowCreate: React.FC = () => {
           <select
             className="form-control"
             value={editData.window_id}
-            onChange={(e) =>
-              handleEditChange("window_id", Number(e.target.value))
-            }
+            onChange={(e) => handleEditChange("window_id", Number(e.target.value))}
           >
             <option value={0}>Seleccione un elemento</option>
-            {windowOptions.map((element) => (
+            {windowOptions.map((element: any) => (
               <option key={element.id} value={element.id}>
                 {element.name_element}
               </option>
@@ -461,9 +474,7 @@ const TabWindowCreate: React.FC = () => {
           <select
             className="form-control"
             value={editData.characteristics}
-            onChange={(e) =>
-              handleEditChange("characteristics", e.target.value)
-            }
+            onChange={(e) => handleEditChange("characteristics", e.target.value)}
           >
             <option value="">Seleccione una opción</option>
             {characteristicsOptions.map((option, index) => (
@@ -484,9 +495,7 @@ const TabWindowCreate: React.FC = () => {
           <select
             className="form-control"
             value={editData.angulo_azimut}
-            onChange={(e) =>
-              handleEditChange("angulo_azimut", e.target.value)
-            }
+            onChange={(e) => handleEditChange("angulo_azimut", e.target.value)}
           >
             <option value="">Seleccione un ángulo</option>
             {angleOptions.map((option, index) => (
@@ -512,12 +521,10 @@ const TabWindowCreate: React.FC = () => {
           <select
             className="form-control"
             value={editData.housed_in}
-            onChange={(e) =>
-              handleEditChange("housed_in", Number(e.target.value))
-            }
+            onChange={(e) => handleEditChange("housed_in", Number(e.target.value))}
           >
             <option value={0}>Seleccione un detalle</option>
-            {details.map((detail) => (
+            {details.map((detail: any) => (
               <option key={detail.id} value={detail.id}>
                 {detail.name_detail}
               </option>
@@ -530,7 +537,6 @@ const TabWindowCreate: React.FC = () => {
     {
       headerName: "Tipo de Cierre",
       field: "tipoCierre",
-      // Se muestra como solo lectura (no se edita en el formulario)
       renderCell: (row: any) => row.tipoCierre,
     },
     {
@@ -541,9 +547,7 @@ const TabWindowCreate: React.FC = () => {
           <select
             className="form-control"
             value={editData.position}
-            onChange={(e) =>
-              handleEditChange("position", e.target.value)
-            }
+            onChange={(e) => handleEditChange("position", e.target.value)}
           >
             <option value="">Seleccione una opción</option>
             {positionOptions.map((option, index) => (
@@ -564,9 +568,7 @@ const TabWindowCreate: React.FC = () => {
           <select
             className="form-control"
             value={editData.with_no_return}
-            onChange={(e) =>
-              handleEditChange("with_no_return", e.target.value)
-            }
+            onChange={(e) => handleEditChange("with_no_return", e.target.value)}
           >
             <option value="">Seleccione una opción</option>
             {withNoReturnOptions.map((option, index) => (
@@ -585,15 +587,20 @@ const TabWindowCreate: React.FC = () => {
       renderCell: (row: any) =>
         editingRow === row.id ? (
           <input
-            className="form-control"
             type="number"
+            min="0"
+            step="any"
+            className="form-control"
             value={editData.high}
-            onChange={(e) =>
-              handleEditChange("high", Number(e.target.value))
-            }
+            onChange={(e) => handleEditChange("high", Number(e.target.value))}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
-          row.alto
+          Number(row.alto).toFixed(2)
         ),
     },
     {
@@ -602,15 +609,20 @@ const TabWindowCreate: React.FC = () => {
       renderCell: (row: any) =>
         editingRow === row.id ? (
           <input
-            className="form-control"
             type="number"
+            min="0"
+            step="any"
+            className="form-control"
             value={editData.broad}
-            onChange={(e) =>
-              handleEditChange("broad", Number(e.target.value))
-            }
+            onChange={(e) => handleEditChange("broad", Number(e.target.value))}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
-          row.ancho
+          Number(row.ancho).toFixed(2)
         ),
     },
     {
@@ -637,7 +649,8 @@ const TabWindowCreate: React.FC = () => {
           />
         ),
     },
-    // Columnas de FAV con inputs alargados para 6 dígitos
+    // ========================================
+    // FAV (con inputs sin permitir negativos)
     {
       headerName: "D [m]",
       field: "fav1_D",
@@ -645,17 +658,29 @@ const TabWindowCreate: React.FC = () => {
         editingFavRow === row.id ? (
           <input
             type="number"
+            min="0"
+            step="any"
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav1_D}
             onChange={(e) =>
               handleFavEditChange("fav1_D", Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
           row.fav1_D
         ),
-      cellStyle: { position: "sticky", right: "840px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "840px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "L [m]",
@@ -664,17 +689,29 @@ const TabWindowCreate: React.FC = () => {
         editingFavRow === row.id ? (
           <input
             type="number"
+            min="0"
+            step="any"
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav1_L}
             onChange={(e) =>
               handleFavEditChange("fav1_L", Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
           row.fav1_L
         ),
-      cellStyle: { position: "sticky", right: "760px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "760px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "P [m]",
@@ -683,17 +720,29 @@ const TabWindowCreate: React.FC = () => {
         editingFavRow === row.id ? (
           <input
             type="number"
+            min="0"
+            step="any"
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2izq_P}
             onChange={(e) =>
               handleFavEditChange("fav2izq_P", Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
           row.fav2izq_P
         ),
-      cellStyle: { position: "sticky", right: "680px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "680px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "S [m]",
@@ -702,17 +751,29 @@ const TabWindowCreate: React.FC = () => {
         editingFavRow === row.id ? (
           <input
             type="number"
+            min="0"
+            step="any"
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2izq_S}
             onChange={(e) =>
               handleFavEditChange("fav2izq_S", Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
           row.fav2izq_S
         ),
-      cellStyle: { position: "sticky", right: "600px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "600px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "P [m]",
@@ -721,17 +782,29 @@ const TabWindowCreate: React.FC = () => {
         editingFavRow === row.id ? (
           <input
             type="number"
+            min="0"
+            step="any"
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2der_P}
             onChange={(e) =>
               handleFavEditChange("fav2der_P", Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
           row.fav2der_P
         ),
-      cellStyle: { position: "sticky", right: "520px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "520px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "S [m]",
@@ -740,17 +813,29 @@ const TabWindowCreate: React.FC = () => {
         editingFavRow === row.id ? (
           <input
             type="number"
+            min="0"
+            step="any"
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2der_S}
             onChange={(e) =>
               handleFavEditChange("fav2der_S", Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
           row.fav2der_S
         ),
-      cellStyle: { position: "sticky", right: "440px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "440px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "E [m]",
@@ -759,17 +844,29 @@ const TabWindowCreate: React.FC = () => {
         editingFavRow === row.id ? (
           <input
             type="number"
+            min="0"
+            step="any"
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3_E}
             onChange={(e) =>
               handleFavEditChange("fav3_E", Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
           row.fav3_E
         ),
-      cellStyle: { position: "sticky", right: "360px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "360px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "T [m]",
@@ -778,17 +875,29 @@ const TabWindowCreate: React.FC = () => {
         editingFavRow === row.id ? (
           <input
             type="number"
+            min="0"
+            step="any"
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3_T}
             onChange={(e) =>
               handleFavEditChange("fav3_T", Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
           row.fav3_T
         ),
-      cellStyle: { position: "sticky", right: "280px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "280px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "β [°]",
@@ -797,17 +906,29 @@ const TabWindowCreate: React.FC = () => {
         editingFavRow === row.id ? (
           <input
             type="number"
+            min="0"
+            step="any"
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3_beta}
             onChange={(e) =>
               handleFavEditChange("fav3_beta", Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
           row.fav3_beta
         ),
-      cellStyle: { position: "sticky", right: "200px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "200px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "α [°]",
@@ -816,19 +937,30 @@ const TabWindowCreate: React.FC = () => {
         editingFavRow === row.id ? (
           <input
             type="number"
+            min="0"
+            step="any"
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3_alpha}
             onChange={(e) =>
               handleFavEditChange("fav3_alpha", Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
           />
         ) : (
           row.fav3_alpha
         ),
-      cellStyle: { position: "sticky", right: "120px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "120px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
-    // Columna de Acciones FAV: siempre visible
     {
       headerName: "Acciones FAV",
       field: "acciones_fav",
@@ -846,7 +978,12 @@ const TabWindowCreate: React.FC = () => {
             Editar FAV
           </CustomButton>
         ),
-      cellStyle: { position: "sticky", right: "0px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "0px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
   ];
 
@@ -888,7 +1025,11 @@ const TabWindowCreate: React.FC = () => {
 
   return (
     <div>
-      <TablesParameters columns={columns} data={tableData} multiHeader={multiHeader} />
+      <TablesParameters
+        columns={columns}
+        data={tableData}
+        multiHeader={multiHeader}
+      />
       <div
         style={{
           marginTop: "1rem",
@@ -898,6 +1039,7 @@ const TabWindowCreate: React.FC = () => {
           gap: "1rem",
         }}
       >
+        <div className="d-flex justify-content-end gap-2 w-100"></div>
         <CustomButton variant="save" onClick={handleCreateWindow}>
           Crear Ventana
         </CustomButton>
@@ -924,7 +1066,7 @@ const TabWindowCreate: React.FC = () => {
                 onChange={handleInputChange}
               >
                 <option value={0}>Seleccione un elemento</option>
-                {windowOptions.map((element) => (
+                {windowOptions.map((element: any) => (
                   <option key={element.id} value={element.id}>
                     {element.name_element}
                   </option>
@@ -933,7 +1075,10 @@ const TabWindowCreate: React.FC = () => {
             </div>
           </div>
           <div className="row mb-3">
-            <label htmlFor="characteristics" className="col-sm-5 col-form-label">
+            <label
+              htmlFor="characteristics"
+              className="col-sm-5 col-form-label"
+            >
               Características
             </label>
             <div className="col-sm-6">
@@ -974,7 +1119,7 @@ const TabWindowCreate: React.FC = () => {
               </select>
             </div>
           </div>
-          {/* Se omite el campo "Tipo de Cierre" en el modal de creación */}
+          {/* Tipo de cierre se omite (viene de la DB) */}
           <div className="row mb-3">
             <label htmlFor="housed_in" className="col-sm-5 col-form-label">
               Alojada en
@@ -988,7 +1133,7 @@ const TabWindowCreate: React.FC = () => {
                 onChange={handleInputChange}
               >
                 <option value={0}>Seleccione un detalle</option>
-                {details.map((detail) => (
+                {details.map((detail: any) => (
                   <option key={detail.id} value={detail.id}>
                     {detail.name_detail}
                   </option>
@@ -1045,12 +1190,18 @@ const TabWindowCreate: React.FC = () => {
             <div className="col-sm-6">
               <input
                 type="number"
+                min="0"
                 step="any"
                 id="high"
                 name="high"
                 className="form-control"
                 value={formData.high}
                 onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
           </div>
@@ -1061,12 +1212,18 @@ const TabWindowCreate: React.FC = () => {
             <div className="col-sm-6">
               <input
                 type="number"
+                min="0"
                 step="any"
                 id="broad"
                 name="broad"
                 className="form-control"
                 value={formData.broad}
                 onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
           </div>

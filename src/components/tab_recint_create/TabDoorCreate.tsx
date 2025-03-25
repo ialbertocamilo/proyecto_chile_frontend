@@ -798,9 +798,11 @@ const TabDoorCreate: React.FC = () => {
     <div>
       <TablesParameters columns={columns} data={data} multiHeader={multiHeader} />
       <div style={{ marginTop: "20px" }}>
-        <CustomButton variant="save" onClick={handleCreate}>
-          Crear Puerta
-        </CustomButton>
+        <div className="d-flex justify-content-end gap-2 w-100">
+          <CustomButton variant="save" onClick={handleCreate}>
+            Crear Puerta
+          </CustomButton>
+        </div>
       </div>
 
       {/* Modal para crear nueva puerta */}

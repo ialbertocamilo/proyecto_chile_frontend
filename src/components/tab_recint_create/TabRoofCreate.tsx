@@ -288,7 +288,7 @@ const TabCeilingCreate: React.FC = () => {
       }
     },
     {
-      headerName: "Área [m2]",
+      headerName: "Área [m²]",
       field: "area",
       renderCell: (row: CeilingData) => {
         if (editingRowId === row.id) {
@@ -304,7 +304,11 @@ const TabCeilingCreate: React.FC = () => {
         return row.area;
       }
     },
-    { headerName: "U [W/m2𝐾]", field: "u" },
+    {
+      headerName: "U [W/m²K]",
+      field: "u",
+      renderCell: (row: CeilingData) => row.u.toFixed(2)
+    },
     {
       headerName: "Acciones",
       field: "acciones",
@@ -410,7 +414,7 @@ const TabCeilingCreate: React.FC = () => {
         <div className="container">
           <div className="row mb-3">
             <div className="col-md-4">
-              <label htmlFor="roofId">ID del Techo</label>
+              <label htmlFor="roofId">Techo</label>
             </div>
             <div className="col-md-8">
               <select
@@ -448,7 +452,7 @@ const TabCeilingCreate: React.FC = () => {
           </div>
           <div className="row mb-3">
             <div className="col-md-4">
-              <label htmlFor="area">Área</label>
+              <label htmlFor="area">Área [m²]</label>
             </div>
             <div className="col-md-8">
               <input

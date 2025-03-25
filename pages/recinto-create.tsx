@@ -29,20 +29,30 @@ interface IEnclosureProfile {
   // ... otros campos que pudiera tener la respuesta
 }
 
+interface IFormData {
+  selectedRegion: string;
+  selectedComuna: string;
+  selectedZonaTermica: string;
+  nombreRecinto: string;
+  perfilOcupacion: number;
+  alturaPromedio: string;
+  sensorCo2: boolean;
+}
+
+const LOCAL_STORAGE_KEY = "recintoFormData";
+
 const RecintoCreate: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("Nombre del Proyecto");
   const [projectDepartment, setProjectDepartment] = useState<string>("Región");
   const [projectId, setProjectId] = useState<string>("");
 
   // ---------------------------
-  //  Estados para los desplegables
+  //  Estados para los desplegables y formulario
   // ---------------------------
   const [regions, setRegions] = useState<IRegion[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
-
   const [comunas, setComunas] = useState<IComuna[]>([]);
   const [selectedComuna, setSelectedComuna] = useState<string>("");
-
   const [zonasTermicas, setZonasTermicas] = useState<string[]>([]);
   const [selectedZonaTermica, setSelectedZonaTermica] = useState<string>("");
 
@@ -50,17 +60,18 @@ const RecintoCreate: React.FC = () => {
   //  Perfiles de ocupación (desplegable)
   // ---------------------------
   const [enclosureProfiles, setEnclosureProfiles] = useState<IEnclosureProfile[]>([]);
-  // Se almacena el id del perfil
   const [perfilOcupacion, setPerfilOcupacion] = useState<number>(0);
 
   // ---------------------------
-  //  Otros campos solicitados
+  //  Otros campos del formulario
   // ---------------------------
   const [nombreRecinto, setNombreRecinto] = useState<string>("");
   const [alturaPromedio, setAlturaPromedio] = useState<string>(""); // Se enviará como número
   const [sensorCo2, setSensorCo2] = useState<boolean>(false);
 
-  // Al montar el componente, leemos project_name, project_department y project_id del localStorage
+  // ---------------------------
+  //  Recuperar datos del proyecto y del formulario (si existen) del localStorage
+  // ---------------------------
   useEffect(() => {
     const name = localStorage.getItem("project_name") || "Nombre del Proyecto";
     const department = localStorage.getItem("project_department") || "Región";
@@ -68,7 +79,36 @@ const RecintoCreate: React.FC = () => {
     setProjectName(name);
     setProjectDepartment(department);
     setProjectId(pid);
+
+    // Recuperar datos del formulario guardados
+    const savedFormData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedFormData) {
+      const data: IFormData = JSON.parse(savedFormData);
+      setSelectedRegion(data.selectedRegion);
+      setSelectedComuna(data.selectedComuna);
+      setSelectedZonaTermica(data.selectedZonaTermica);
+      setNombreRecinto(data.nombreRecinto);
+      setPerfilOcupacion(data.perfilOcupacion);
+      setAlturaPromedio(data.alturaPromedio);
+      setSensorCo2(data.sensorCo2);
+    }
   }, []);
+
+  // ---------------------------
+  //  Guardar cambios en el formulario en el localStorage
+  // ---------------------------
+  useEffect(() => {
+    const formData: IFormData = {
+      selectedRegion,
+      selectedComuna,
+      selectedZonaTermica,
+      nombreRecinto,
+      perfilOcupacion,
+      alturaPromedio,
+      sensorCo2,
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
+  }, [selectedRegion, selectedComuna, selectedZonaTermica, nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2]);
 
   // ---------------------------
   //  useEffect para cargar Regiones
@@ -184,73 +224,76 @@ const RecintoCreate: React.FC = () => {
     fetchProfiles();
   }, []);
 
- // ...
-const handleSave = async () => {
-  // Validación de campos obligatorios
-  if (
-    !selectedRegion ||
-    !selectedComuna ||
-    !selectedZonaTermica ||
-    !nombreRecinto.trim() ||
-    !perfilOcupacion ||
-    !alturaPromedio.trim() ||
-    isNaN(parseFloat(alturaPromedio))
-  ) {
-    notify("Por favor, complete todos los campos requeridos");
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
+  const handleSave = async () => {
+    // Validación de campos obligatorios
+    const altura = parseFloat(alturaPromedio);
+    if (
+      !selectedRegion ||
+      !selectedComuna ||
+      !selectedZonaTermica ||
+      !nombreRecinto.trim() ||
+      !perfilOcupacion ||
+      !alturaPromedio.trim() ||
+      isNaN(altura) ||
+      altura <= 0
+    ) {
+      notify(
+        "Por favor, complete todos los campos requeridos y asegúrese que la altura sea un número positivo"
+      );
       return;
     }
 
-    const payload = {
-      name_enclosure: nombreRecinto,
-      region_id: parseInt(selectedRegion),
-      comuna_id: parseInt(selectedComuna),
-      zona_termica: selectedZonaTermica,
-      occupation_profile_id: perfilOcupacion,
-      height: parseFloat(alturaPromedio),
-      co2_sensor: sensorCo2 ? "Si" : "No",
-    };
-
-    console.log("Payload a enviar:", payload);
-
-    const response = await fetch(
-      `${constantUrlApiEndpoint}/enclosure-generals-create/${projectId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return;
       }
-    );
 
-    const result = await response.json();
-    console.log("Status del response:", response.status);
-    console.log("Respuesta del servidor:", result);
+      const payload = {
+        name_enclosure: nombreRecinto,
+        region_id: parseInt(selectedRegion),
+        comuna_id: parseInt(selectedComuna),
+        zona_termica: selectedZonaTermica,
+        occupation_profile_id: perfilOcupacion,
+        height: altura,
+        co2_sensor: sensorCo2 ? "Si" : "No",
+      };
 
-    if (!response.ok) {
-      notify(result.detail || "Error al guardar los datos");
-      return;
+      console.log("Payload a enviar:", payload);
+
+      const response = await fetch(
+        `${constantUrlApiEndpoint}/enclosure-generals-create/${projectId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await response.json();
+      console.log("Status del response:", response.status);
+      console.log("Respuesta del servidor:", result);
+
+      if (!response.ok) {
+        notify(result.detail || "Error al guardar los datos");
+        return;
+      }
+
+      // Se guarda el id del recinto en el localStorage con la llave "recinto_id"
+      localStorage.setItem("recinto_id", result.id.toString());
+
+      notify("Recinto creado correctamente");
+      // Recargar la página por completo (manteniendo los datos del formulario en localStorage)
+      window.location.reload();
+    } catch (error) {
+      console.error("Error en handleSave:", error);
+      notify("Error al guardar los datos");
     }
-
-    // Se guarda el id del recinto en el localStorage con la llave "recinto_id"
-    localStorage.setItem("recinto_id", result.id.toString());
-
-    notify("Recinto creado correctamente");
-  } catch (error) {
-    console.error("Error en handleSave:", error);
-    notify("Error al guardar los datos");
-  }
-};
-// ...
-
+  };
 
   return (
     <>
@@ -296,6 +339,7 @@ const handleSave = async () => {
                 value={selectedRegion}
                 onChange={(e) => {
                   setSelectedRegion(e.target.value);
+                  // Limpiar campos dependientes
                   setSelectedComuna("");
                   setSelectedZonaTermica("");
                 }}
@@ -354,7 +398,6 @@ const handleSave = async () => {
               </select>
             </div>
 
-            {/* 5. Nombre Recinto */}
             <div className="col-6 mb-3">
               <label htmlFor="nombreRecinto" className="form-label">
                 Nombre Recinto
@@ -369,7 +412,6 @@ const handleSave = async () => {
               />
             </div>
 
-            {/* 6. Perfil de ocupación (desplegable con datos del endpoint) */}
             <div className="col-6 mb-3">
               <label htmlFor="perfilOcupacion" className="form-label">
                 Perfil de ocupación
@@ -378,7 +420,9 @@ const handleSave = async () => {
                 id="perfilOcupacion"
                 className="form-select"
                 value={perfilOcupacion || ""}
-                onChange={(e) => setPerfilOcupacion(parseInt(e.target.value))}
+                onChange={(e) =>
+                  setPerfilOcupacion(parseInt(e.target.value))
+                }
               >
                 <option value="">Seleccione un perfil de ocupación</option>
                 {enclosureProfiles.map((profile) => (
@@ -389,12 +433,12 @@ const handleSave = async () => {
               </select>
             </div>
 
-            {/* 7. Altura Promedio Recinto */}
             <div className="col-6 mb-3">
               <label htmlFor="alturaPromedio" className="form-label">
               Altura Promedio Recinto
               </label>
               <input
+<<<<<<< Updated upstream
               id="alturaPromedio"
               type="number"
               step="0.01"
@@ -410,9 +454,48 @@ const handleSave = async () => {
                 }
               }}
               />
+=======
+  id="alturaPromedio"
+  type="text"
+  className="form-control"
+  placeholder="Ej: 2.5 (en metros)"
+  value={alturaPromedio}
+  onKeyDown={(e) => {
+    const allowedKeys = [
+      "Backspace",
+      "Tab",
+      "ArrowLeft",
+      "ArrowRight",
+      "Delete",
+      "Home",
+      "End",
+    ];
+    if (allowedKeys.includes(e.key)) return;
+
+    if (!/[\d\.,]/.test(e.key)) {
+      e.preventDefault();
+    }
+  }}
+  onChange={(e) => {
+    const value = e.target.value;
+    if (value === "") {
+      setAlturaPromedio("");
+      return;
+    }
+    if (!/^[\d\.,]+$/.test(value)) {
+      return;
+    }
+    setAlturaPromedio(value);
+  }}
+  step="any"
+/>
+
+
+
+>>>>>>> Stashed changes
             </div>
 
-            {/* 8. Sensor CO2 (desplegable) */}
+            {/* 8. Sensor CO2 */}
             <div className="col-6 mb-3">
               <label htmlFor="sensorCo2" className="form-label">
                 Sensor CO2
@@ -429,7 +512,7 @@ const handleSave = async () => {
             </div>
           </div>
 
-          {/* Botón Guardar en la segunda Card, al final */}
+          {/* Botón Guardar */}
           <div className="d-flex justify-content-end">
             <CustomButton variant="save" onClick={handleSave}>
               Guardar
@@ -438,7 +521,7 @@ const handleSave = async () => {
         </div>
       </Card>
 
-      {/* Nueva Card agregada debajo de "Características de la edificación" */}
+      {/* Nueva Card para "Características térmicas de la envolvente" */}
       <Card>
         <div>
           <Title text="Características térmicas de la envolvente" />

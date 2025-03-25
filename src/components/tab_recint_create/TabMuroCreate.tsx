@@ -484,7 +484,7 @@ const TabMuroCreate: React.FC = () => {
     },
     { headerName: "Orientación", field: "orientation" },
     {
-      headerName: "Área [m2]",
+      headerName: "Área [m²]",
       field: "area",
       renderCell: (row: Wall) => {
         if (row.wall_id === editingWallId && editingWallData) {
@@ -508,7 +508,7 @@ const TabMuroCreate: React.FC = () => {
       },
     },
     {
-      headerName: "U [W/m2K]",
+      headerName: "U [W/m²K]",
       field: "u",
       renderCell: (row: Wall) => {
         if (row.wall_id === editingWallId && editingWallData) {
@@ -973,7 +973,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="area" className="col-sm-3 col-form-label">
-              Área
+              Área [m²]
             </label>
             <div className="col-sm-9">
               <input

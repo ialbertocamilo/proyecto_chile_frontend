@@ -1,5 +1,8 @@
+<<<<<<< Updated upstream
 ;
 import { notify } from "@/utils/notify";
+=======
+>>>>>>> Stashed changes
 import { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
@@ -7,7 +10,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { ReactElement, useEffect, useState } from "react";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactElement;
@@ -20,15 +22,15 @@ const Login: NextPageWithLayout = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const { push } = useRouter();
+  const router = useRouter();
 
-  // Verifica si el usuario está lofdsfgeado y redirige a /dashboard aa
+  // Verifica si el usuario está logueado y redirige a /dashboard
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      push("/dashboard");
+      router.push("/dashboard");
     }
-  }, [push]);
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +38,7 @@ const Login: NextPageWithLayout = () => {
     setLoading(true);
 
     const requestBody = { email, password };
+
     try {
       const response = await fetch(`${constantUrlApiEndpoint}/login`, {
         method: "POST",
@@ -45,23 +48,30 @@ const Login: NextPageWithLayout = () => {
 
       const data = await response.json();
 
+<<<<<<< Updated upstream
       console.log(data)
       if (data?.detail){
         throw new Error(data?.detail)
       }
+=======
+      // Imprime en consola para verificar la estructura de la respuesta
+      console.log("Respuesta del servidor:", data);
+
+>>>>>>> Stashed changes
       if (!response.ok) {
-        throw new Error(data.message || "Credenciales incorrectas.");
+        // Usa 'detail' si existe, de lo contrario 'message', 'error', etc.
+        throw new Error(data.detail || data.message || data.error || "Credenciales incorrectas.");
       }
     
 
+      // Si la respuesta es exitosa, guardamos datos y redirigimos
       localStorage.setItem("User", data.token);
       localStorage.setItem("email", email);
       localStorage.setItem("user_name", data.name || "Usuario");
 
       console.log("User data", data);
-
       setTimeout(() => {
-        push("/twofactorauth");
+        router.push("/twofactorauth");
       }, 200);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
@@ -76,25 +86,22 @@ const Login: NextPageWithLayout = () => {
     <div
       className="container-fluid"
       style={{
-        background:
-          "url('/assets/images/login_background.png') no-repeat center center/cover",
+        background: "url('/assets/images/login_background.png') no-repeat center center/cover",
       }}
     >
       <div className="row">
-
         <div className="col-12 p-0">
           <div className="login-card login-dark">
             <div>
-
               <div className="login-main">
                 <div className="col-12 p-0 d-flex justify-content-center">
                   <Image
-                  src="/assets/images/ceela.png"
-                  alt="Ceela Logo"
-                  width={120}
-                  height={120}
-                  className="img-fluid mt-4 mb-3"
-                  style={{ objectFit: 'contain' }}
+                    src="/assets/images/ceela.png"
+                    alt="Ceela Logo"
+                    width={120}
+                    height={120}
+                    className="img-fluid mt-4 mb-3"
+                    style={{ objectFit: "contain" }}
                   />
                 </div>
                 <br />
@@ -105,9 +112,7 @@ const Login: NextPageWithLayout = () => {
                   </h4>
                   <p>Ingresa tu email y contraseña para iniciar sesión</p>
 
-                  {error && (
-                    <p className="text-danger text-center fw-bold">{error}</p>
-                  )}
+                  {error && <p className="text-danger text-center fw-bold">{error}</p>}
 
                   <div className="form-group">
                     <label className="col-form-label">Dirección de correo</label>
@@ -120,6 +125,7 @@ const Login: NextPageWithLayout = () => {
                       required
                     />
                   </div>
+
                   <div className="form-group">
                     <label className="col-form-label">Contraseña</label>
                     <div className="form-input position-relative">
@@ -140,6 +146,7 @@ const Login: NextPageWithLayout = () => {
                       </div>
                     </div>
                   </div>
+
                   <div className="form-group mb-0">
                     <div className="checkbox p-0">
                       <input
@@ -194,6 +201,7 @@ const Login: NextPageWithLayout = () => {
     </div>
   );
 };
+
 Login.getLayout = function getLayout(page: React.ReactElement) {
   return (
     <>
@@ -204,4 +212,5 @@ Login.getLayout = function getLayout(page: React.ReactElement) {
     </>
   );
 };
+
 export default Login;

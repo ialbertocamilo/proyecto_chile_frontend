@@ -1185,7 +1185,7 @@ const TabWindowCreate: React.FC = () => {
           </div>
           <div className="row mb-3">
             <label htmlFor="high" className="col-sm-5 col-form-label">
-              Alto
+              Alto [m]
             </label>
             <div className="col-sm-6">
               <input
@@ -1207,7 +1207,7 @@ const TabWindowCreate: React.FC = () => {
           </div>
           <div className="row mb-3">
             <label htmlFor="broad" className="col-sm-5 col-form-label">
-              Ancho
+              Ancho [m]
             </label>
             <div className="col-sm-6">
               <input

@@ -544,7 +544,7 @@ const TabFloorCreate: React.FC = () => {
           </div>
           <div className="row mb-3">
             <div className="col-md-4">
-              <label htmlFor="area">Área</label>
+              <label htmlFor="area">Área [m²]</label>
             </div>
             <div className="col-md-8">
               <input
@@ -558,7 +558,7 @@ const TabFloorCreate: React.FC = () => {
           </div>
           <div className="row mb-3">
             <div className="col-md-4">
-              <label htmlFor="parameter">Parámetro</label>
+              <label htmlFor="parameter">Perímetro Suelo [m]</label>
             </div>
             <div className="col-md-8">
               <input

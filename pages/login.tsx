@@ -20,12 +20,18 @@ const Login: NextPageWithLayout = () => {
   const router = useRouter();
 
   // Verifica si el usuario está logueado y redirige a /dashboard
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  const roleId = localStorage.getItem("role_id");
+  
+  if (token) {
+    if (roleId === "1") {
       router.push("/dashboard");
+    } else {
+      router.push("/project-list");
     }
-  }, [router]);
+  }
+}, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

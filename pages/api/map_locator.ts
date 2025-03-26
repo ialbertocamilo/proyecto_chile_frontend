@@ -37,7 +37,7 @@ export default async function handler(
         }
 
         const command = new SearchPlaceIndexForPositionCommand({
-            IndexName: process.env.AWS_PLACE_INDEX_NAME,  
+            IndexName: process.env?.AWS_PLACE_INDEX_NAME || "CeelaIndex",  
             Position: [parseFloat(long), parseFloat(lat)] ,
             Key: process.env?.PLACES_API_KEY,
         });

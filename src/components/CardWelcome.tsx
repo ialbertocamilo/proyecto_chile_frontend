@@ -36,8 +36,8 @@ const WelcomeCard: React.FC = () => {
           padding: '1rem',
           position: 'relative',
           zIndex: 1,
-          height: '300px',
-          minHeight: '300px'
+          height: '250px',
+          minHeight: '250px'
         }}
       >
         <div className="d-flex align-items-center justify-content-center" style={{ height: '100%' }}>

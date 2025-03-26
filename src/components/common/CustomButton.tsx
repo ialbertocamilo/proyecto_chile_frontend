@@ -5,24 +5,24 @@ import { Tooltip } from 'react-tooltip';
 
 interface CustomButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
   variant?:
-  | 'save'
-  | 'back'
-  | 'delete'
-  | 'editIcon'
-  | 'deleteIcon'
-  | 'backIcon'
-  | 'forwardIcon'
-  | 'addIcon'
-  | 'listIcon'
-  | 'cancelIcon'
-  | 'viewIcon'
-  | 'closed'
-  | 'borderless';
+    | 'save'
+    | 'back'
+    | 'delete'
+    | 'editIcon'
+    | 'deleteIcon'
+    | 'backIcon'
+    | 'forwardIcon'
+    | 'addIcon'
+    | 'listIcon'
+    | 'cancelIcon'
+    | 'viewIcon'
+    | 'closed'
+    | 'borderless';
   type?: 'button' | 'submit';
   isLoading?: boolean;
   margin?: string;
   icon?: LucideIcon;
-  iconSize?: number;
+  iconSize?: number; // Tamaño en pixeles
 }
 
 const CustomButton: FC<CustomButtonProps> = ({
@@ -33,40 +33,90 @@ const CustomButton: FC<CustomButtonProps> = ({
   disabled,
   margin = '0.5rem',
   icon: Icon,
-  iconSize = 16,
+  iconSize = 24, // Puedes cambiar el valor por defecto aquí
   type = 'button',
   ...rest
 }) => {
+  // Función helper que renderiza un ícono animado (opcional)
+  const renderAnimatedIcon = (iconName: string) => (
+    <span
+      className="btn-icon-content material-icons animate__animated"
+      onMouseEnter={(e) => e.currentTarget.classList.add('animate__pulse')}
+      onAnimationEnd={(e) => e.currentTarget.classList.remove('animate__pulse')}
+      style={{ fontSize: `${iconSize}px` }}
+    >
+      {iconName}
+    </span>
+  );
+
   let content: React.ReactNode = children;
   let tooltipText = '';
 
   if (variant === 'editIcon') {
-    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>edit</span>;
+    content = renderAnimatedIcon('edit');
     tooltipText = 'Editar';
   } else if (variant === 'deleteIcon') {
-    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>delete</span>;
+    content = renderAnimatedIcon('delete');
     tooltipText = 'Eliminar';
   } else if (variant === 'backIcon') {
-    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>arrow_back</span>;
+    content = (
+      <span className="btn-icon-content material-icons" style={{ fontSize: `${iconSize}px` }}>
+        arrow_back
+      </span>
+    );
     tooltipText = 'Volver';
   } else if (variant === 'forwardIcon') {
-    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>arrow_forward</span>;
+    content = (
+      <span className="btn-icon-content material-icons" style={{ fontSize: `${iconSize}px` }}>
+        arrow_forward
+      </span>
+    );
     tooltipText = 'Siguiente';
   } else if (variant === 'addIcon') {
-    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>add</span>;
+    content = (
+      <span className="btn-icon-content material-icons" style={{ fontSize: `${iconSize}px` }}>
+        add
+      </span>
+    );
     tooltipText = 'Agregar';
   } else if (variant === 'listIcon') {
-    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>format_list_bulleted</span>;
+    content = (
+      <span className="btn-icon-content material-icons" style={{ fontSize: `${iconSize}px` }}>
+        format_list_bulleted
+      </span>
+    );
     tooltipText = 'Ver lista';
   } else if (variant === 'cancelIcon') {
-    content = <span className="btn-icon-content material-icons " style={{  fontSize: "1.5rem" }}>close</span>;
+    content = (
+      <span className="btn-icon-content material-icons" style={{ fontSize: `${iconSize}px` }}>
+        close
+      </span>
+    );
     tooltipText = 'Cancelar';
   } else if (variant === 'viewIcon') {
-    content = <span className="btn-icon-content material-icons" style={{ fontSize: "1.5rem" }}>visibility</span>;
+    content = (
+      <span className="btn-icon-content material-icons" style={{ fontSize: `${iconSize}px` }}>
+        visibility
+      </span>
+    );
     tooltipText = 'Ver detalles';
-  } 
+  }
 
-  const variantClass = variant === 'borderless' ? 'btn-borderless' : `btn-${variant}`;
+  // Determinamos si es un botón solo con ícono
+  const isIconOnly = variant === 'editIcon' || variant === 'deleteIcon';
+
+  // Asignamos clases específicas según el variant
+  const variantClass =
+    variant === 'deleteIcon'
+      ? 'btn-icon-only btn-deleteIcon'
+      : variant === 'editIcon'
+      ? 'btn-icon-only btn-editIcon'
+      : isIconOnly
+      ? 'btn-icon-only'
+      : variant === 'borderless'
+      ? 'btn-borderless'
+      : `btn-${variant}`;
+
   const disabledClass = disabled || isLoading ? 'disabled' : '';
   const buttonId = variant === 'cancelIcon' ? 'grabar-datos-btn' : undefined;
 
@@ -83,7 +133,9 @@ const CustomButton: FC<CustomButtonProps> = ({
         title={tooltipText}
         {...rest}
       >
-        {isLoading ? <span className="loading">Cargando...</span> : (
+        {isLoading ? (
+          <span className="loading">Cargando...</span>
+        ) : (
           <>
             {Icon && <Icon size={iconSize} className="me-2" />}
             {content}
@@ -114,6 +166,7 @@ const CustomButton: FC<CustomButtonProps> = ({
           white-space: normal;
           line-height: 1.5;
           height: auto;
+          color: white;
         }
 
         .btn-borderless {
@@ -137,7 +190,7 @@ const CustomButton: FC<CustomButtonProps> = ({
           padding: 12px 24px;
           font-size: 16px;
         }
-  
+
         .btn:hover {
           background-color: var(--btn-save-hover-bg) !important;
           transform: translateY(-1px);
@@ -154,73 +207,7 @@ const CustomButton: FC<CustomButtonProps> = ({
           align-items: center;
           justify-content: center;
           transition: transform 0.2s ease;
-          color: white;
-        }
-
-        .btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease-in-out;
-          background-color: var(--primary-color) !important;
-          border: none;
-          font-size: 14px;
-          border-radius: 8px;
-          padding: 10px 16px;
-          cursor: pointer;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          font-weight: 500;
-          letter-spacing: 0.3px;
-          min-width: max-content;
-          white-space: normal;
-          line-height: 1.5;
-          height: auto;
-          color: white;
-
-          svg {
-            color: white;
-          }
-        }
-
-        .btn-deleteIcon {
-          background-color: #dc3545 !important;
-        }
-
-        .btn-deleteIcon:hover {
-          background-color: #c82333 !important;
-        }
-
-        .btn-deleteIcon .btn-icon-content {
-          color: white;
-        }
-
-        .btn-cancelIcon {
-          background-color: #dc3545 !important;
-        }
-
-        .btn-cancelIcon:hover {
-          background-color: #c82333 !important;
-        }
-
-        .btn-cancelIcon .btn-icon-content {
-          color: white;
-        }
-
-        .btn-close, .btn-closed {
-          background-color: #dc3545 !important;
-          color: white !important;
-        }
-
-        .btn-close:hover, .btn-closed:hover {
-          background-color: #c82333 !important;
-        }
-
-        .btn-close svg, .btn-closed svg {
-          color: white !important;
-        }
-
-        .btn-icon-content:hover {
-          transform: rotate(360deg);
+          color: var(--primary-color);
         }
 
         .loading {
@@ -242,6 +229,50 @@ const CustomButton: FC<CustomButtonProps> = ({
           opacity: 0.65;
           cursor: not-allowed;
           pointer-events: none;
+        }
+
+        .btn-icon-only {
+          background: transparent !important;
+          border: none;
+          padding: 0;
+          box-shadow: none;
+        }
+
+        .btn-icon-only:hover {
+          background: transparent !important;
+          box-shadow: none !important;
+        }
+
+        .btn-icon-only:hover .btn-icon-content {
+          transform: scale(1.1);
+        }
+
+        .btn-deleteIcon .btn-icon-content,
+        .btn-deleteIcon {
+          color: #dc3545 !important;
+          background: transparent !important;
+          border: none;
+          padding: 0;
+          box-shadow: none;
+        }
+        .btn-deleteIcon:hover .btn-icon-content,
+        .btn-deleteIcon:hover {
+          color: #dc3545 !important;
+          background: transparent !important;
+        }
+
+        .btn-editIcon .btn-icon-content,
+        .btn-editIcon {
+          color: #2ab0c5 !important;
+          background: transparent !important;
+          border: none;
+          padding: 0;
+          box-shadow: none;
+        }
+        .btn-editIcon:hover .btn-icon-content,
+        .btn-editIcon:hover {
+          color: #2ab0c5 !important;
+          background: transparent !important;
         }
       `}</style>
     </>

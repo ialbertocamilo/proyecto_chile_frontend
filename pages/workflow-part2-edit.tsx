@@ -1481,7 +1481,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     } catch (error: any) {
       if (
         error?.response?.data?.detail ===
-        "El nombre del elemento ya existe dentro del tipo window"
+        "El nombre del elemento ya existe dentro del tipo door"
       ) {
         notify("El Nombre de la Puerta ya existe");
       } else {

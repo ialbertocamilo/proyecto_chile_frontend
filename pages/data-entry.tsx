@@ -144,14 +144,14 @@ const DataEntryPage: React.FC = () => {
     clousure_type: "",
     frame_type: "",
     u_marco: "",
-    fm: "", // Valor en porcentaje ingresado por el usuario
+    fm: "",
   });
   const [doorData, setDoorData] = useState({
     name_element: "",
     ventana_id: "",
     name_ventana: "",
     u_puerta_opaca: "",
-    porcentaje_vidrio: "", // Valor en porcentaje (ej. 12 para 12%)
+    porcentaje_vidrio: "",
     u_marco: "",
     fm: "",
   });
@@ -397,7 +397,7 @@ const DataEntryPage: React.FC = () => {
       notify("El valor de FM debe estar entre 0 y 100");
       return false;
     }
-    const fmNumber = fmInput;
+    const fmNumber = fmInput; // Se espera que el backend convierta la fracción
 
     if (
       windowData.name_element.trim() === "" ||
@@ -486,7 +486,6 @@ const DataEntryPage: React.FC = () => {
         notify("El valor de % Vidrio debe estar entre 0 y 100");
         return false;
       }
-      // Enviar el valor tal cual, ya que el backend lo divide
       porcentajeVidrioNumber = porcentajeInput;
     }
   
@@ -512,7 +511,6 @@ const DataEntryPage: React.FC = () => {
           ventana_id: doorData.ventana_id ? parseInt(doorData.ventana_id) : 0,
           name_ventana: doorData.ventana_id ? doorData.name_ventana : "",
           u_puerta_opaca: parseFloat(doorData.u_puerta_opaca),
-          // Se envía el valor en porcentaje sin modificar (el backend lo divide)
           porcentaje_vidrio: porcentajeVidrioNumber,
         },
         u_marco: parseFloat(doorData.u_marco),
@@ -530,11 +528,8 @@ const DataEntryPage: React.FC = () => {
           },
         }
       );
-      // Normalizamos la respuesta para puertas: si se trata de una puerta,
-      // asumimos que el backend ya almacenó el valor dividido y convertimos a fracción
       const newElement = response.data.element;
       if (newElement.type === "door" && newElement.atributs?.porcentaje_vidrio > 1) {
-        // Si el valor es mayor a 1, significa que no se normalizó, así que lo convertimos dividiéndolo por 100
         newElement.atributs.porcentaje_vidrio = newElement.atributs.porcentaje_vidrio / 100;
       }
       setElementsList((prev) => [...prev, newElement]);
@@ -587,12 +582,14 @@ const DataEntryPage: React.FC = () => {
   };
 
   // === Funciones para edición de elementos ===
+
+  // Al confirmar edición de ventana, se divide el valor ingresado entre 100 para enviar la fracción
   const handleConfirmWindowEdit = async (element: ElementBase) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
       const clampedFm = validatePercentage(element.fm);
-      const fmFraction = clampedFm;
+      const fmFraction = clampedFm / 100; // Convertir a fracción
   
       const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
       const headers = {
@@ -628,20 +625,18 @@ const DataEntryPage: React.FC = () => {
     }
   };
   
+  // Al confirmar edición de puerta, se convierte fm y % Vidrio a fracción
   const handleConfirmDoorEdit = async (element: ElementBase) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
       const clampedFm = validatePercentage(element.fm);
-      const fmFraction = clampedFm;
+      const fmFraction = clampedFm / 100;
   
       let porcentajeVidrioFraction = 0;
       if (element.atributs.ventana_id) {
-        const clampedPorcentaje = validatePercentage(
-          element.atributs.porcentaje_vidrio || 0
-        );
-        // Envíar el valor tal cual, sin dividir entre 100
-        porcentajeVidrioFraction = clampedPorcentaje;
+        const clampedPorcentaje = validatePercentage(element.atributs.porcentaje_vidrio || 0);
+        porcentajeVidrioFraction = clampedPorcentaje / 100;
       }
   
       const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
@@ -681,7 +676,7 @@ const DataEntryPage: React.FC = () => {
       console.error("Error al actualizar puerta:", error);
       if (
         error?.response?.data?.detail ===
-        "El nombre del elemento ya existe dentro del tipo window"
+        "El nombre del elemento ya existe dentro del tipo door"
       ) {
         notify("El Nombre de la Puerta ya existe");
       } else {
@@ -921,7 +916,7 @@ const DataEntryPage: React.FC = () => {
             acciones: (
               <ActionButtons
                 onEdit={() =>
-                  setEditingWindowData({ ...el, fm: el.fm * 100 })
+                  setEditingWindowData({ ...el, fm: Math.round(el.fm * 100) })
                 }
                 onDelete={() => confirmDeleteElement(el.id, "window")}
                 isDisabled={el.user_id == null}
@@ -1009,10 +1004,10 @@ const DataEntryPage: React.FC = () => {
               el.atributs.porcentaje_vidrio !== undefined ? (
                 !isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {el.atributs.porcentaje_vidrio * 100 + "%"}
+                    {Math.round(el.atributs.porcentaje_vidrio * 100) + "%"}
                   </span>
                 ) : (
-                  el.atributs.porcentaje_vidrio * 100 + "%"
+                  Math.round(el.atributs.porcentaje_vidrio * 100) + "%"
                 )
               ) : (
                 "0%"
@@ -1036,11 +1031,11 @@ const DataEntryPage: React.FC = () => {
                 onEdit={() =>
                   setEditingDoorData({
                     ...el,
-                    fm: el.fm * 100,
+                    fm: Math.round(el.fm * 100),
                     atributs: {
                       ...el.atributs,
                       porcentaje_vidrio: el.atributs.porcentaje_vidrio
-                        ? el.atributs.porcentaje_vidrio * 100
+                        ? Math.round(el.atributs.porcentaje_vidrio * 100)
                         : 0,
                     },
                   })
@@ -1381,7 +1376,7 @@ const DataEntryPage: React.FC = () => {
                       const validated = validatePercentage(value);
                       setWindowData((prev) => ({
                         ...prev,
-                        fm: validated.toString(),
+                        fm: Math.round(validated).toString(),
                       }));
                     }
                   }}
@@ -1469,7 +1464,7 @@ const DataEntryPage: React.FC = () => {
                       const validated = validatePercentage(value);
                       setDoorData((prev) => ({
                         ...prev,
-                        porcentaje_vidrio: validated.toString(),
+                        porcentaje_vidrio: Math.round(validated).toString(),
                       }));
                     }
                   }}
@@ -1508,7 +1503,7 @@ const DataEntryPage: React.FC = () => {
                       const validated = validatePercentage(value);
                       setDoorData((prev) => ({
                         ...prev,
-                        fm: validated.toString(),
+                        fm: Math.round(validated).toString(),
                       }));
                     }
                   }}
@@ -1672,7 +1667,7 @@ const DataEntryPage: React.FC = () => {
                   }
                   const clampedValue = validatePercentage(rawValue);
                   setEditingWindowData((prev) =>
-                    prev ? { ...prev, fm: clampedValue } : prev
+                    prev ? { ...prev, fm: Math.round(clampedValue) } : prev
                   );
                 }}
               />
@@ -1779,7 +1774,7 @@ const DataEntryPage: React.FC = () => {
                           ...prev,
                           atributs: {
                             ...prev.atributs,
-                            porcentaje_vidrio: isNaN(clamped) ? 0 : clamped,
+                            porcentaje_vidrio: Math.round(clamped),
                           },
                         }
                       : prev
@@ -1817,7 +1812,7 @@ const DataEntryPage: React.FC = () => {
                   }
                   const clampedValue = validatePercentage(rawValue);
                   setEditingDoorData((prev) =>
-                    prev ? { ...prev, fm: clampedValue } : prev
+                    prev ? { ...prev, fm: Math.round(clampedValue) } : prev
                   );
                 }}
               />

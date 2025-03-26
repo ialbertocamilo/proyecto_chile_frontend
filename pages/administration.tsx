@@ -663,7 +663,7 @@ const AdministrationPage: React.FC = () => {
       console.error("Error al actualizar puerta:", error);
       if (
         error?.response?.data?.detail ===
-        "El nombre del elemento ya existe dentro del tipo window"
+        "El nombre del elemento ya existe dentro del tipo door"
       ) {
         notify("El Nombre de la Puerta ya existe");
       } else {

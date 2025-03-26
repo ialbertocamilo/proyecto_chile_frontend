@@ -1,6 +1,5 @@
 import WelcomeCard from "@/components/CardWelcome";
 import ChartProjectCreated from "@/components/ChartProjectCreated";
-import ChartProjectsByRegion from "@/components/ChartProjectsByRegion";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import ModalCreate from "@/components/common/ModalCreate";
 import { useApiNext } from "@/hooks/useApiNext";
@@ -234,13 +233,9 @@ const ProjectListPage = () => {
         <div className="row mt-4 mb-4">
           <div className="col-md-6">
             <WelcomeCard />
-            <hr />
-            {projects && <ChartProjectsByRegion data={{ projects }} />}
           </div>
           <div className="col-md-6">
-            <div  >
-              <ChartProjectCreated />
-            </div>
+            <ChartProjectCreated />
           </div>
         </div>
         <DataTable
@@ -275,6 +270,10 @@ const ProjectListPage = () => {
       <style jsx>{`
         .status-badge {
           font-family: var(--font-family-base);
+        }
+        .row.mt-4.mb-4 {
+          max-height: calc(100vh - 200px);
+          overflow-y: auto;
         }
       `}</style>
     </>

@@ -31,42 +31,107 @@ const TablePagination: React.FC<{
   totalPages: number;
   onPageChange: (page: number) => void;
   onRowsPerPageChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
-}> = ({ page, rowsPerPage, totalPages, onPageChange, onRowsPerPageChange }) => (
-  <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 mt-1">
-    <div
-      className="w-100 w-sm-auto mb-2 mb-sm-0 mx-auto mx-sm-0"
-      style={{ maxWidth: "180px" }}
-    >
-      <select
-        className="form-select form-select-sm"
-        value={rowsPerPage}
-        onChange={onRowsPerPageChange}
+}> = ({ page, rowsPerPage, totalPages, onPageChange, onRowsPerPageChange }) => {
+  const getPageNumbers = () => {
+    const range = [];
+    const maxVisiblePages = 5; // Número máximo de páginas visibles (sin contar los extremos)
+
+    if (totalPages <= maxVisiblePages + 2) {
+      // Si hay pocas páginas, mostrar todas
+      for (let i = 0; i < totalPages; i++) {
+        range.push(i);
+      }
+      return range;
+    }
+  
+    // Siempre mostrar la primera página
+    range.push(0);
+  
+    // Calcular el rango central
+    let start = Math.max(page - Math.floor(maxVisiblePages / 2), 1);
+    const end = Math.min(start + maxVisiblePages - 1, totalPages - 2);
+  
+    // Ajustar el inicio si estamos cerca del final
+    if (end === totalPages - 2) {
+      start = Math.max(end - maxVisiblePages + 1, 1);
+    }
+  
+    // Agregar elipsis inicial si es necesario
+    if (start > 1) {
+      range.push('...');
+    }
+  
+    // Agregar páginas del rango central
+    for (let i = start; i <= end; i++) {
+      range.push(i);
+    }
+  
+    // Agregar elipsis final si es necesario
+    if (end < totalPages - 2) {
+      range.push('...');
+    }
+  
+    // Siempre mostrar la última página
+    range.push(totalPages - 1);
+  
+    return range;
+  };
+
+  return (
+    <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 mt-1">
+      <div
+        className="w-100 w-sm-auto mb-2 mb-sm-0 mx-auto mx-sm-0"
+        style={{ maxWidth: "180px" }}
       >
-        <option value={5}>5 por página</option>
-        <option value={10}>10 por página</option>
-        <option value={25}>25 por página</option>
-        <option value={50}>50 por página</option>
-      </select>
-    </div>
-    <div className="d-flex align-items-center justify-content-center gap-1 gap-sm-2 w-100 w-sm-auto">
-      <IconButton
-        onClick={() => onPageChange(page - 1)}
-        icon={ChevronLeft}
-        disabled={page === 0}
-      />
-      <span className="text-nowrap">
-        Página {page + 1} de {totalPages}
-      </span>
-      <div className="flex-shrink-0 primary-db">
+        <select
+          className="form-select form-select-sm"
+          value={rowsPerPage}
+          onChange={onRowsPerPageChange}
+        >
+          <option value={5}>5 por página</option>
+          <option value={10}>10 por página</option>
+          <option value={25}>25 por página</option>
+          <option value={50}>50 por página</option>
+        </select>
+      </div>
+      <div className="d-flex align-items-center justify-content-center gap-1 gap-sm-2 w-100 w-sm-auto">
         <IconButton
-          onClick={() => onPageChange(page + 1)}
-          icon={ChevronRight}
-          disabled={page >= totalPages - 1}
+          onClick={() => onPageChange(page - 1)}
+          icon={ChevronLeft}
+          disabled={page === 0}
         />
+        <div className="d-flex align-items-center gap-1">
+          {totalPages > 2 && getPageNumbers().map((pageNumber, index) => (
+            pageNumber === '...' ? (
+              <span key={`dots-${index}`} className="px-2">...</span>
+            ) : (
+              <button
+                key={`page-${pageNumber}`}
+                onClick={() => onPageChange(pageNumber as number)}
+                className={`btn btn-sm ${page === pageNumber ? '' : ''}`}
+                style={{
+                  minWidth: '32px',
+                  border: 'none',
+                  backgroundColor: page === pageNumber ? 'var(--primary-color)' : 'transparent',
+                  color: page === pageNumber ? '#fff' : 'var(--primary-color)'
+                }}
+              >
+                {(pageNumber as number) + 1}
+              </button>
+            )
+          ))}
+        </div>
+        <div className="flex-shrink-0 primary-db">
+          <IconButton
+            onClick={() => onPageChange(page + 1)}
+            icon={ChevronRight}
+            disabled={page >= totalPages - 1}
+          />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+}
 
 export default function DataTable<T extends { [key: string]: any }>({
   data,

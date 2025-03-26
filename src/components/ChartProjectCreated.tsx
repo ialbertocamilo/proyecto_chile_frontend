@@ -3,6 +3,7 @@ import axios from 'axios';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 import Title from './Title';
+import Card from './common/Card';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -116,34 +117,7 @@ const ChartProjectCreated: React.FC = () => {
             }
         },
         grid: {
-            show: true,
-            borderColor: '#E2E8F0',
-            strokeDashArray: 0,
-            position: 'back',
-            xaxis: {
-                lines: {
-                    show: true
-                }
-            },
-            yaxis: {
-                lines: {
-                    show: true
-                }
-            },
-            row: {
-                colors: ['transparent', 'rgba(0, 0, 0, 0.02)'],
-                opacity: 0.5
-            },
-            column: {
-                colors: ['transparent', 'rgba(0, 0, 0, 0.02)'],
-                opacity: 0.5
-            },
-            padding: {
-                top: 10,
-                right: 10,
-                bottom: 10,
-                left: 10
-            },
+            show: false,
         },
         markers: {
             size: 5,
@@ -223,7 +197,7 @@ const ChartProjectCreated: React.FC = () => {
     }
 
     return (
-        <div className="card mb-0">
+        <Card>
             <div className="card-header">
                 <Title text="Proyectos creados" />
                 <div className="header-top d-flex justify-content-between align-items-center">
@@ -243,19 +217,19 @@ const ChartProjectCreated: React.FC = () => {
                 </div>
             </div>
             <div className="card-body">
-                <div style={{ minHeight: '100px', maxHeight: '600px', width: '100%', overflow: 'hidden' }} >
+                <div style={{ minHeight: '100px', maxHeight: '200px', width: '100%', overflow: 'hidden' }} >
                     <div id="chart" style={{ width: '100%' }}>
                         <ReactApexChart
                             options={chartOptions}
                             series={series}
                             type="line"
-                            height={300}
+                            height={150}
                             width="100%"
                         />
                     </div>
                 </div>
             </div>
-        </div>
+        </Card>
     );
 };
 

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import TablesParameters from "@/components/tables/TablesParameters";
-import SearchParameters from "@/components/inputs/SearchParameters";
-import { constantUrlApiEndpoint } from "../utils/constant-url-endpoint";
-import ModalCreate from "../components/common/ModalCreate";
-import { notify } from "@/utils/notify";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
+import SearchParameters from "@/components/inputs/SearchParameters";
+import TablesParameters from "@/components/tables/TablesParameters";
+import { notify } from "@/utils/notify";
+import React, { useEffect, useState } from "react";
+import ModalCreate from "../components/common/ModalCreate";
+import { constantUrlApiEndpoint } from "../utils/constant-url-endpoint";
 
 // Interfaces originales de datos (como vienen de la API)
 interface Ventilacion {
@@ -511,7 +511,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) : (
         enclosure.name
       ),
-      potenciaBase: !isEditing ? (
+      potenciaBase: isEditing ? (
         <input
           type="number"
           className="form-control form-control-sm"
@@ -543,7 +543,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) : (
         values.estrategia
       ),
-      potenciaPropuesta: !isDefault ? (
+      potenciaPropuesta: isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.potenciaPropuesta}
         </span>

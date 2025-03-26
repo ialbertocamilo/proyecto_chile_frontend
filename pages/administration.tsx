@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
-import useAuth from "../src/hooks/useAuth";
-import { useAdministration } from "../src/hooks/useAdministration";
+import ActionButtons from "@/components/common/ActionButtons";
+import ConstructiveDetailsComponent from "@/components/ConstructiveDetailsComponent";
+import { notify } from "@/utils/notify";
+import React, { useEffect, useState } from "react";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-import Title from "../src/components/Title";
+import Breadcrumb from "../src/components/common/Breadcrumb";
 import Card from "../src/components/common/Card";
 import ModalCreate from "../src/components/common/ModalCreate";
-import { notify } from "@/utils/notify";
-import Breadcrumb from "../src/components/common/Breadcrumb";
-import TablesParameters from "../src/components/tables/TablesParameters";
-import ActionButtons from "@/components/common/ActionButtons";
 import SearchParameters from "../src/components/inputs/SearchParameters";
-import { useCrudOperations } from "../src/hooks/useCrudOperations";
-import ConstructiveDetailsComponent from "@/components/ConstructiveDetailsComponent";
+import TablesParameters from "../src/components/tables/TablesParameters";
+import Title from "../src/components/Title";
 import UseProfileTab from "../src/components/UseProfileTab";
+import { useAdministration } from "../src/hooks/useAdministration";
+import useAuth from "../src/hooks/useAuth";
+import { useCrudOperations } from "../src/hooks/useCrudOperations";
 
 // Se agrega create_status en el modelo de MaterialAttributes
 interface MaterialAttributes {
@@ -162,28 +162,28 @@ const AdministrationPage: React.FC = () => {
       // Se usa mat.atributs.create_status, ya que es donde se almacena el estado del material
       const isDefault = mat.create_status === "default";
       return {
-        name: isDefault ? (
+        name: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {mat.atributs.name}
           </span>
         ) : (
           mat.atributs.name
         ),
-        conductivity: isDefault ? (
+        conductivity: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {mat.atributs.conductivity}
           </span>
         ) : (
           mat.atributs.conductivity
         ),
-        specific_heat: isDefault ? (
+        specific_heat: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {mat.atributs.specific_heat}
           </span>
         ) : (
           mat.atributs.specific_heat
         ),
-        density: isDefault ? (
+        density: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {mat.atributs.density}
           </span>
@@ -236,49 +236,49 @@ const AdministrationPage: React.FC = () => {
     .map((el) => {
       const isDefault = (el as { created_status?: string }).created_status === "default";
       return {
-        name_element: isDefault ? (
+        name_element: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {el.name_element}
           </span>
         ) : (
           el.name_element
         ),
-        u_vidrio: isDefault ? (
+        u_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {(el.atributs as ElementAttributesWindow).u_vidrio}
           </span>
         ) : (
           (el.atributs as ElementAttributesWindow).u_vidrio
         ),
-        fs_vidrio: isDefault ? (
+        fs_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {(el.atributs as ElementAttributesWindow).fs_vidrio}
           </span>
         ) : (
           (el.atributs as ElementAttributesWindow).fs_vidrio
         ),
-        clousure_type: isDefault ? (
+        clousure_type: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {(el.atributs as ElementAttributesWindow).clousure_type}
           </span>
         ) : (
           (el.atributs as ElementAttributesWindow).clousure_type
         ),
-        frame_type: isDefault ? (
+        frame_type: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {(el.atributs as ElementAttributesWindow).frame_type}
           </span>
         ) : (
           (el.atributs as ElementAttributesWindow).frame_type
         ),
-        u_marco: isDefault ? (
+        u_marco: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {el.u_marco}
           </span>
         ) : (
           el.u_marco
         ),
-        fm: isDefault ? (
+        fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {(el.fm * 100).toFixed(0) + "%"}
           </span>
@@ -333,42 +333,42 @@ const AdministrationPage: React.FC = () => {
     .map((el) => {
       const isDefault = (el as { created_status?: string }).created_status === "default";
       return {
-        name_element: isDefault ? (
+        name_element: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {el.name_element}
           </span>
         ) : (
           el.name_element
         ),
-        u_puerta_opaca: isDefault ? (
+        u_puerta_opaca: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {(el.atributs as ElementAttributesDoor).u_puerta_opaca}
           </span>
         ) : (
           (el.atributs as ElementAttributesDoor).u_puerta_opaca
         ),
-        name_ventana: isDefault ? (
+        name_ventana: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {(el.atributs as ElementAttributesDoor).name_ventana}
           </span>
         ) : (
           (el.atributs as ElementAttributesDoor).name_ventana
         ),
-        porcentaje_vidrio: isDefault ? (
+        porcentaje_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"}
           </span>
         ) : (
           ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"
         ),
-        u_marco: isDefault ? (
+        u_marco: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {el.u_marco}
           </span>
         ) : (
           el.u_marco
         ),
-        fm: isDefault ? (
+        fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {(el.fm * 100).toFixed(0) + "%"}
           </span>

@@ -511,7 +511,7 @@ const DataEntryPage: React.FC = () => {
           ventana_id: doorData.ventana_id ? parseInt(doorData.ventana_id) : 0,
           name_ventana: doorData.ventana_id ? doorData.name_ventana : "",
           u_puerta_opaca: parseFloat(doorData.u_puerta_opaca),
-          porcentaje_vidrio: porcentajeVidrioNumber,
+          porcentaje_vidrio: parseFloat(doorData.porcentaje_vidrio),
         },
         u_marco: parseFloat(doorData.u_marco),
         fm: fmNumber,
@@ -916,7 +916,7 @@ const DataEntryPage: React.FC = () => {
             acciones: (
               <ActionButtons
                 onEdit={() =>
-                  setEditingWindowData({ ...el, fm: Math.round(el.fm * 100) })
+                  setEditingWindowData({ ...el, fm: el.fm * 100 })
                 }
                 onDelete={() => confirmDeleteElement(el.id, "window")}
                 isDisabled={el.user_id == null}
@@ -1004,10 +1004,10 @@ const DataEntryPage: React.FC = () => {
               el.atributs.porcentaje_vidrio !== undefined ? (
                 !isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {Math.round(el.atributs.porcentaje_vidrio * 100) + "%"}
+                    {(el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"}
                   </span>
                 ) : (
-                  Math.round(el.atributs.porcentaje_vidrio * 100) + "%"
+                  (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"
                 )
               ) : (
                 "0%"
@@ -1031,11 +1031,11 @@ const DataEntryPage: React.FC = () => {
                 onEdit={() =>
                   setEditingDoorData({
                     ...el,
-                    fm: Math.round(el.fm * 100),
+                    fm: el.fm * 100,
                     atributs: {
                       ...el.atributs,
                       porcentaje_vidrio: el.atributs.porcentaje_vidrio
-                        ? Math.round(el.atributs.porcentaje_vidrio * 100)
+                        ? el.atributs.porcentaje_vidrio * 100
                         : 0,
                     },
                   })
@@ -1376,7 +1376,7 @@ const DataEntryPage: React.FC = () => {
                       const validated = validatePercentage(value);
                       setWindowData((prev) => ({
                         ...prev,
-                        fm: Math.round(validated).toString(),
+                        fm: validated.toString(),
                       }));
                     }
                   }}
@@ -1464,7 +1464,7 @@ const DataEntryPage: React.FC = () => {
                       const validated = validatePercentage(value);
                       setDoorData((prev) => ({
                         ...prev,
-                        porcentaje_vidrio: Math.round(validated).toString(),
+                        porcentaje_vidrio: validated.toString(),
                       }));
                     }
                   }}
@@ -1503,7 +1503,7 @@ const DataEntryPage: React.FC = () => {
                       const validated = validatePercentage(value);
                       setDoorData((prev) => ({
                         ...prev,
-                        fm: Math.round(validated).toString(),
+                        fm: validated.toString(),
                       }));
                     }
                   }}
@@ -1667,7 +1667,7 @@ const DataEntryPage: React.FC = () => {
                   }
                   const clampedValue = validatePercentage(rawValue);
                   setEditingWindowData((prev) =>
-                    prev ? { ...prev, fm: Math.round(clampedValue) } : prev
+                    prev ? { ...prev, fm: clampedValue } : prev
                   );
                 }}
               />
@@ -1774,7 +1774,7 @@ const DataEntryPage: React.FC = () => {
                           ...prev,
                           atributs: {
                             ...prev.atributs,
-                            porcentaje_vidrio: Math.round(clamped),
+                            porcentaje_vidrio: clamped,
                           },
                         }
                       : prev
@@ -1812,7 +1812,7 @@ const DataEntryPage: React.FC = () => {
                   }
                   const clampedValue = validatePercentage(rawValue);
                   setEditingDoorData((prev) =>
-                    prev ? { ...prev, fm: Math.round(clampedValue) } : prev
+                    prev ? { ...prev, fm: clampedValue } : prev
                   );
                 }}
               />

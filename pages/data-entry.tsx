@@ -369,9 +369,14 @@ const DataEntryPage: React.FC = () => {
         return true;
       }
       return false;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al actualizar material:", error);
-      notify("Error al actualizar el material");
+      // Verificar si el backend devuelve {detail: "El material ya existe"}
+      if (error?.response?.data?.detail === "El material ya existe") {
+        notify("El Nombre del Material ya existe");
+      } else {
+        notify("Error al actualizar el material");
+      }
       return false;
     }
   };
@@ -590,7 +595,7 @@ const DataEntryPage: React.FC = () => {
       // Validamos FM (ingresado en %), redondeamos y convertimos a fracción
       const clampedFm = validatePercentage(element.fm);
       const fmFraction = clampedFm / 100;
-
+  
       const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
       const headers = {
         "Content-Type": "application/json",
@@ -612,12 +617,20 @@ const DataEntryPage: React.FC = () => {
         )
       );
       setEditingWindowData(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al actualizar ventana:", error);
-      notify("Error al actualizar la ventana");
+      // Si el mensaje de error del backend es el esperado, se notifica ese mensaje específico
+      if (
+        error?.response?.data?.detail ===
+        "El nombre del elemento ya existe dentro del tipo window"
+      ) {
+        notify("El Nombre de la Ventana ya existe");
+      } else {
+        notify("Error al actualizar la ventana");
+      }
     }
   };
-
+  
   const handleConfirmDoorEdit = async (element: ElementBase) => {
     try {
       const token = localStorage.getItem("token");
@@ -625,16 +638,16 @@ const DataEntryPage: React.FC = () => {
       // Validamos FM y convertimos de % a fracción
       const clampedFm = validatePercentage(element.fm);
       const fmFraction = clampedFm / 100;
-
+  
       // Si hay ventana asociada, convertimos también el % de vidrio de % a fracción
       let porcentajeVidrioFraction = 0;
       if (element.atributs.ventana_id) {
         const clampedPorcentaje = validatePercentage(
           element.atributs.porcentaje_vidrio || 0
         );
-        porcentajeVidrioFraction = clampedPorcentaje / 100;
+        porcentajeVidrioFraction = clampedPorcentaje;
       }
-
+  
       const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
       const headers = {
         "Content-Type": "application/json",
@@ -658,22 +671,30 @@ const DataEntryPage: React.FC = () => {
         prev.map((el) =>
           el.id === element.id
             ? {
-              ...element,
-              fm: fmFraction,
-              atributs: {
-                ...element.atributs,
-                porcentaje_vidrio: porcentajeVidrioFraction,
-              },
-            }
+                ...element,
+                fm: fmFraction,
+                atributs: {
+                  ...element.atributs,
+                  porcentaje_vidrio: porcentajeVidrioFraction,
+                },
+              }
             : el
         )
       );
       setEditingDoorData(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al actualizar puerta:", error);
-      notify("Error al actualizar la puerta");
+      if (
+        error?.response?.data?.detail ===
+        "El nombre del elemento ya existe dentro del tipo window"
+      ) {
+        notify("El Nombre de la Puerta ya existe");
+      } else {
+        notify("Error al actualizar la puerta");
+      }
     }
   };
+  
 
   // === useEffect para Step 3 (Materiales) ===
   useEffect(() => {
@@ -1035,7 +1056,7 @@ const DataEntryPage: React.FC = () => {
                     atributs: {
                       ...el.atributs,
                       porcentaje_vidrio: el.atributs.porcentaje_vidrio
-                        ? el.atributs.porcentaje_vidrio * 100
+                        ? el.atributs.porcentaje_vidrio
                         : 0,
                     },
                   })

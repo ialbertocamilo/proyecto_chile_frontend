@@ -169,7 +169,6 @@ const UserManagement = () => {
         enableFiltering
         enableColumnVisibility
         showButton={true}
-        createText="Crear usuario"
         createUrl="/user-create"
       />
     </>

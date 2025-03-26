@@ -1430,7 +1430,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "Tipo Marco", field: "frame_type" },
       { headerName: "Tipo Cierre", field: "clousure_type" },
       { headerName: "U Marco [W/m²K]", field: "u_marco" },
-      { headerName: "FV [%]", field: "fm" },
+      { headerName: "FM [%]", field: "fm" },
       { headerName: "Acciones", field: "acciones" },
     ];
 
@@ -1924,11 +1924,11 @@ const WorkFlowpar2createPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <label>FV [%]</label>
+              <label>FM [%]</label>
               <input
                 type="number"
                 className="form-control"
-                value={editingVentanaForm.fm || ""}
+                value={editingVentanaForm?.fm ? editingVentanaForm.fm * 100 : ""}
                 onChange={(e) =>
                   setEditingVentanaForm((prev) =>
                     prev ? { ...prev, fm: Number(e.target.value) } : prev
@@ -2010,7 +2010,9 @@ const WorkFlowpar2createPage: React.FC = () => {
               <input
                 type="number"
                 className="form-control"
-                value={editingPuertaForm.atributs?.porcentaje_vidrio || ""}
+                value={editingPuertaForm?.atributs?.porcentaje_vidrio !== undefined 
+                  ? editingPuertaForm.atributs.porcentaje_vidrio * 100 
+                  : ""}                
                 onChange={(e) =>
                   setEditingPuertaForm((prev) =>
                     prev
@@ -2044,7 +2046,9 @@ const WorkFlowpar2createPage: React.FC = () => {
               <input
                 type="number"
                 className="form-control"
-                value={editingPuertaForm.fm || ""}
+                value={editingPuertaForm?.fm !== undefined 
+                  ? editingPuertaForm.fm * 100 
+                  : ""}                
                 onChange={(e) =>
                   setEditingPuertaForm((prev) =>
                     prev ? { ...prev, fm: Number(e.target.value) } : prev

@@ -33,7 +33,7 @@ export interface Detail {
   is_deleted?: boolean;
 }
 
-// Se agrega create_status en los atributos de ElementAttributesDoor y ElementAttributesWindow si se requiriera
+// Atributos para puertas y ventanas (se incluye created_status si se requiere)
 interface ElementAttributesDoor {
   u_puerta_opaca: number;
   porcentaje_vidrio: number;
@@ -63,13 +63,12 @@ const AdministrationPage: React.FC = () => {
     elementsList,
     fetchMaterialsList,
     fetchElements,
-    handleLogout,
   } = useAdministration();
 
-  // Definición de la variable para el color primario
+  // Variable para el color primario
   const primaryColor = "var(--primary-color)";
 
-  // Función auxiliar para formatear porcentajes (multiplicando por 100)
+  // Función para formatear los porcentajes multiplicándolos por 100
   const formatPercentage = (value: number): string => {
     return (value * 100).toFixed(0) + "%";
   };
@@ -78,11 +77,11 @@ const AdministrationPage: React.FC = () => {
   const [step, setStep] = useState<number>(3);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
 
-  // Estados para búsqueda
+  // Estados para búsquedas
   const [searchMaterial, setSearchMaterial] = useState("");
   const [searchElement, setSearchElement] = useState("");
 
-  // Estados para modales de creación/edición
+  // Estados para modales de creación/edición de materiales
   const [showNewMaterialModal, setShowNewMaterialModal] = useState(false);
   const [newMaterialData, setNewMaterialData] = useState<MaterialAttributes>({
     name: "",
@@ -92,6 +91,7 @@ const AdministrationPage: React.FC = () => {
   });
   const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(null);
 
+  // Estados para modales de ventanas
   const [showNewWindowModal, setShowNewWindowModal] = useState(false);
   const [newWindow, setNewWindow] = useState({
     name_element: "",
@@ -100,22 +100,23 @@ const AdministrationPage: React.FC = () => {
     clousure_type: "Corredera",
     frame_type: "",
     u_marco: 0,
-    fm: 0, // Se espera el porcentaje completo (ej. 70)
+    fm: 0, // En la UI se muestra el porcentaje completo (ej. 70)
   });
   const [selectedWindowId, setSelectedWindowId] = useState<number | null>(null);
 
+  // Estados para modales de puertas
   const [showNewDoorModal, setShowNewDoorModal] = useState(false);
   const [newDoor, setNewDoor] = useState({
     name_element: "",
     u_puerta_opaca: 0,
     ventana_id: 0,
     u_marco: 0,
-    fm: 0, // Porcentaje completo en el modal (ej. 70)
-    porcentaje_vidrio: 0, // Porcentaje completo en el modal (ej. 30)
+    fm: 0, // En la UI se muestra el porcentaje completo (ej. 70)
+    porcentaje_vidrio: 0, // En la UI se muestra el porcentaje completo (ej. 30)
   });
   const [selectedDoorId, setSelectedDoorId] = useState<number | null>(null);
 
-  // Estados para el modal de confirmación
+  // Estado para modal de confirmación
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmModalProps, setConfirmModalProps] = useState<ConfirmModalProps>({
     onConfirm: async () => Promise.resolve(),
@@ -158,13 +159,11 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
-  // Se aplica estilo condicional a los materiales usando create_status
   const materialsData = materialsList
     .filter((mat: any) =>
       mat.atributs.name.toLowerCase().includes(searchMaterial.toLowerCase())
     )
     .map((mat: any) => {
-      // Se usa mat.create_status, ya que es donde se almacena el estado del material
       const isDefault = mat.create_status === "default";
       return {
         name: !isDefault ? (
@@ -232,7 +231,6 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
-  // Se aplica estilo condicional a las ventanas usando created_status
   const windowsData = elementsList
     .filter((el) => el.type === "window")
     .filter((el) =>
@@ -293,7 +291,7 @@ const AdministrationPage: React.FC = () => {
         action: (
           <ActionButtons
             onEdit={() => {
-              // Al editar, multiplicamos el valor de fm por 100 para mostrar el porcentaje completo
+              // Al editar, se carga el valor multiplicado por 100 para mostrar el porcentaje completo
               setSelectedWindowId(el.id);
               setNewWindow({
                 name_element: el.name_element,
@@ -330,7 +328,6 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
-  // Se aplica estilo condicional a las puertas usando created_status
   const doorsData = elementsList
     .filter((el) => el.type === "door")
     .filter((el) =>
@@ -384,7 +381,7 @@ const AdministrationPage: React.FC = () => {
         action: (
           <ActionButtons
             onEdit={() => {
-              // Al editar la puerta, multiplicamos fm y porcentaje_vidrio por 100 para mostrarlos completos
+              // Al editar la puerta se carga el valor multiplicado por 100 para mostrar el porcentaje completo
               setSelectedDoorId(el.id);
               setNewDoor({
                 name_element: el.name_element,
@@ -410,69 +407,9 @@ const AdministrationPage: React.FC = () => {
       };
     });
 
-  // Función para obtener el nombre del material (si la necesitas)
-  function getMaterialName(materialId: number) {
-    const mat = materialsList.find(
-      (m) => m.id === materialId || m.material_id === materialId
-    );
-    return mat ? mat.atributs.name : "Desconocido";
-  }
-
-  // Funciones para crear y editar materiales
-  const handleCreateMaterial = async () => {
-    if (
-      newMaterialData.name.trim() === "" ||
-      newMaterialData.conductivity <= 0 ||
-      newMaterialData.specific_heat <= 0 ||
-      newMaterialData.density <= 0
-    ) {
-      notify("Por favor complete todos los campos de material");
-      return;
-    }
-
-    const materialExists = materialsList.some(
-      (mat: any) =>
-        (mat.atributs.name as string).trim().toLowerCase() ===
-        newMaterialData.name.trim().toLowerCase()
-    );
-
-    if (materialExists) {
-      notify(`El Nombre del Material ya existe`);
-      return;
-    }
-
-    const payload = {
-      atributs: {
-        name: newMaterialData.name,
-        density: newMaterialData.density,
-        conductivity: newMaterialData.conductivity,
-        specific_heat: newMaterialData.specific_heat,
-      },
-      name: "materials",
-      type: "definition materials",
-    };
-
-    const success = await handleCreate(
-      payload,
-      "admin/constants/create",
-      `El material "${newMaterialData.name}" fue creado correctamente`,
-      () => fetchMaterialsList(1)
-    );
-
-    if (success) {
-      setShowNewMaterialModal(false);
-      setNewMaterialData({
-        name: "",
-        conductivity: 0,
-        specific_heat: 0,
-        density: 0,
-      });
-    }
-  };
-
+  // Función para editar material
   const handleEditMaterial = async () => {
     if (!selectedMaterialId) return;
-
     const payload = {
       atributs: {
         name: newMaterialData.name,
@@ -503,7 +440,6 @@ const AdministrationPage: React.FC = () => {
   };
 
   // Función para crear elementos (ventanas y puertas)
-  // Al crear, se divide entre 100 los porcentajes para enviarlos al backend
   const handleCreateElement = async () => {
     if (tabElementosOperables === "ventanas") {
       if (
@@ -537,7 +473,7 @@ const AdministrationPage: React.FC = () => {
         type: "window",
         name_element: newWindow.name_element,
         u_marco: newWindow.u_marco,
-        fm: newWindow.fm, // Dividimos el porcentaje
+        fm: newWindow.fm, // Se envía el valor tal como se ingresa en la UI
         atributs: {
           u_vidrio: newWindow.u_vidrio,
           fs_vidrio: newWindow.fs_vidrio,
@@ -606,12 +542,12 @@ const AdministrationPage: React.FC = () => {
         type: "door",
         name_element: newDoor.name_element,
         u_marco: newDoor.u_marco,
-        fm: newDoor.fm, // Dividimos el valor para el backend
+        fm: newDoor.fm, // Se envía el valor tal como se ingresa en la UI
         atributs: {
           ventana_id: newDoor.ventana_id,
           name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
           u_puerta_opaca: newDoor.u_puerta_opaca,
-          porcentaje_vidrio: newDoor.porcentaje_vidrio, // Dividimos el valor
+          porcentaje_vidrio: newDoor.porcentaje_vidrio,
         },
       };
 
@@ -636,6 +572,7 @@ const AdministrationPage: React.FC = () => {
     }
   };
 
+  // Función para editar ventana
   const handleEditWindow = async () => {
     if (!selectedWindowId) return;
     try {
@@ -643,7 +580,7 @@ const AdministrationPage: React.FC = () => {
         type: "window",
         name_element: newWindow.name_element,
         u_marco: newWindow.u_marco,
-        fm: newWindow.fm, // Convertimos a valor dividido
+        fm: newWindow.fm / 100, // Se envía el valor tal como se muestra en la UI
         atributs: {
           u_vidrio: newWindow.u_vidrio,
           fs_vidrio: newWindow.fs_vidrio,
@@ -651,7 +588,7 @@ const AdministrationPage: React.FC = () => {
           clousure_type: newWindow.clousure_type,
         },
       };
-  
+
       await handleEdit(
         selectedWindowId,
         payload,
@@ -659,7 +596,7 @@ const AdministrationPage: React.FC = () => {
         `La ventana "${newWindow.name_element}" fue actualizada correctamente`,
         fetchElements
       );
-  
+
       setShowNewWindowModal(false);
       setNewWindow({
         name_element: "",
@@ -683,7 +620,8 @@ const AdministrationPage: React.FC = () => {
       }
     }
   };
-  
+
+  // Función para editar puerta
   const handleEditDoor = async () => {
     if (!selectedDoorId) return;
     try {
@@ -694,15 +632,15 @@ const AdministrationPage: React.FC = () => {
         type: "door",
         name_element: newDoor.name_element,
         u_marco: newDoor.u_marco,
-        fm: newDoor.fm, // Convertimos a valor dividido
+        fm: newDoor.fm / 100, // Se envía el valor tal como se muestra en la UI
         atributs: {
           ventana_id: newDoor.ventana_id,
           name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
           u_puerta_opaca: newDoor.u_puerta_opaca,
-          porcentaje_vidrio: newDoor.porcentaje_vidrio, // Convertimos a valor dividido
+          porcentaje_vidrio: newDoor.porcentaje_vidrio / 100,
         },
       };
-  
+
       await handleEdit(
         selectedDoorId,
         payload,
@@ -710,7 +648,7 @@ const AdministrationPage: React.FC = () => {
         `La puerta "${newDoor.name_element}" fue actualizada correctamente`,
         fetchElements
       );
-  
+
       setShowNewDoorModal(false);
       setNewDoor({
         name_element: "",
@@ -733,7 +671,6 @@ const AdministrationPage: React.FC = () => {
       }
     }
   };
-  
 
   useEffect(() => {
     if (step === 3) fetchMaterialsList(1);
@@ -768,14 +705,14 @@ const AdministrationPage: React.FC = () => {
       {/* Card principal */}
       <Card>
         <div className="row">
-          {/* Columna para Sidebar */}
+          {/* Sidebar */}
           <div className="col-12 col-md-3">
             <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
           </div>
 
-          {/* Columna para Contenido principal */}
+          {/* Contenido principal */}
           <div className="col-12 col-md-9 p-4">
-            {/* Step 3: Tabla de Materiales */}
+            {/* Step 3: Materiales */}
             {step === 3 && (
               <>
                 <SearchParameters
@@ -884,7 +821,7 @@ const AdministrationPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Modales de creación/edición */}
+      {/* Modal Material */}
       {showNewMaterialModal && (
         <ModalCreate
           isOpen={showNewMaterialModal}
@@ -899,14 +836,65 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedMaterialId(null);
           }}
-          onSave={selectedMaterialId ? handleEditMaterial : handleCreateMaterial}
+          onSave={
+            selectedMaterialId ? handleEditMaterial : async () => {
+              if (
+                newMaterialData.name.trim() === "" ||
+                newMaterialData.conductivity <= 0 ||
+                newMaterialData.specific_heat <= 0 ||
+                newMaterialData.density <= 0
+              ) {
+                notify("Por favor complete todos los campos de material");
+                return;
+              }
+
+              const materialExists = materialsList.some(
+                (mat: any) =>
+                  (mat.atributs.name as string).trim().toLowerCase() ===
+                  newMaterialData.name.trim().toLowerCase()
+              );
+
+              if (materialExists) {
+                notify(`El Nombre del Material ya existe`);
+                return;
+              }
+
+              const payload = {
+                atributs: {
+                  name: newMaterialData.name,
+                  density: newMaterialData.density,
+                  conductivity: newMaterialData.conductivity,
+                  specific_heat: newMaterialData.specific_heat,
+                },
+                name: "materials",
+                type: "definition materials",
+              };
+
+              const success = await handleCreate(
+                payload,
+                "admin/constants/create",
+                `El material "${newMaterialData.name}" fue creado correctamente`,
+                () => fetchMaterialsList(1)
+              );
+
+              if (success) {
+                setShowNewMaterialModal(false);
+                setNewMaterialData({
+                  name: "",
+                  conductivity: 0,
+                  specific_heat: 0,
+                  density: 0,
+                });
+              }
+            }
+          }
           title={selectedMaterialId ? "Editar Material" : "Agregar Nuevo Material"}
           saveLabel={selectedMaterialId ? "Guardar Cambios" : "Crear Material"}
         >
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              selectedMaterialId ? handleEditMaterial() : handleCreateMaterial();
+              selectedMaterialId ? handleEditMaterial() : undefined;
             }}
           >
             <div className="form-group">
@@ -979,6 +967,7 @@ const AdministrationPage: React.FC = () => {
         </ModalCreate>
       )}
 
+      {/* Modal Ventana */}
       {showNewWindowModal && (
         <ModalCreate
           isOpen={showNewWindowModal}
@@ -996,14 +985,76 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedWindowId(null);
           }}
-          onSave={selectedWindowId ? handleEditWindow : handleCreateElement}
+          onSave={
+            selectedWindowId ? handleEditWindow : async () => {
+              if (
+                newWindow.name_element.trim() === "" ||
+                newWindow.u_vidrio <= 0 ||
+                newWindow.fs_vidrio <= 0 ||
+                newWindow.u_marco <= 0 ||
+                newWindow.fm < 0 ||
+                newWindow.fm > 100 ||
+                newWindow.clousure_type.trim() === "" ||
+                newWindow.frame_type.trim() === ""
+              ) {
+                notify("Por favor complete todos los campos de la ventana correctamente");
+                return;
+              }
+
+              const windowExists = elementsList
+                .filter((el) => el.type === "window")
+                .some(
+                  (el) =>
+                    el.name_element.trim().toLowerCase() ===
+                    newWindow.name_element.trim().toLowerCase()
+                );
+
+              if (windowExists) {
+                notify(`El Nombre de la Ventana ya existe`);
+                return;
+              }
+
+              const payload = {
+                type: "window",
+                name_element: newWindow.name_element,
+                u_marco: newWindow.u_marco,
+                fm: newWindow.fm,
+                atributs: {
+                  u_vidrio: newWindow.u_vidrio,
+                  fs_vidrio: newWindow.fs_vidrio,
+                  frame_type: newWindow.frame_type,
+                  clousure_type: newWindow.clousure_type,
+                },
+              };
+
+              const success = await handleCreate(
+                payload,
+                "admin/elements/create",
+                `La ventana "${newWindow.name_element}" fue creada correctamente`,
+                fetchElements
+              );
+
+              if (success) {
+                setShowNewWindowModal(false);
+                setNewWindow({
+                  name_element: "",
+                  u_vidrio: 0,
+                  fs_vidrio: 0,
+                  clousure_type: "Corredera",
+                  frame_type: "",
+                  u_marco: 0,
+                  fm: 0,
+                });
+              }
+            }
+          }
           title={selectedWindowId ? "Editar Ventana" : "Agregar Nueva Ventana"}
           saveLabel={selectedWindowId ? "Guardar Cambios" : "Crear Ventana"}
         >
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              selectedWindowId ? handleEditWindow() : handleCreateElement();
+              selectedWindowId ? handleEditWindow() : undefined;
             }}
           >
             <div className="form-group">
@@ -1135,6 +1186,7 @@ const AdministrationPage: React.FC = () => {
         </ModalCreate>
       )}
 
+      {/* Modal Puerta */}
       {showNewDoorModal && (
         <ModalCreate
           isOpen={showNewDoorModal}
@@ -1151,14 +1203,84 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedDoorId(null);
           }}
-          onSave={selectedDoorId ? handleEditDoor : handleCreateElement}
+          onSave={
+            selectedDoorId ? handleEditDoor : async () => {
+              if (
+                newDoor.name_element.trim() === "" ||
+                newDoor.u_puerta_opaca <= 0 ||
+                newDoor.u_marco <= 0 ||
+                newDoor.fm < 0 ||
+                newDoor.fm > 100
+              ) {
+                notify("Por favor complete todos los campos de la puerta correctamente");
+                return;
+              }
+
+              if (newDoor.ventana_id !== 0) {
+                if (newDoor.porcentaje_vidrio < 0 || newDoor.porcentaje_vidrio > 100) {
+                  notify("Asegúrese de que el % de vidrio esté entre 0 y 100");
+                  return;
+                }
+              } else {
+                newDoor.porcentaje_vidrio = 0;
+              }
+
+              const doorExists = elementsList
+                .filter((el) => el.type === "door")
+                .some(
+                  (el) =>
+                    el.name_element.trim().toLowerCase() ===
+                    newDoor.name_element.trim().toLowerCase()
+                );
+
+              if (doorExists) {
+                notify(`El Nombre de la Puerta ya existe`);
+                return;
+              }
+
+              const ventanaSeleccionada = windowsList.find(
+                (win) => win.id === newDoor.ventana_id
+              );
+              const payload = {
+                type: "door",
+                name_element: newDoor.name_element,
+                u_marco: newDoor.u_marco,
+                fm: newDoor.fm,
+                atributs: {
+                  ventana_id: newDoor.ventana_id,
+                  name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
+                  u_puerta_opaca: newDoor.u_puerta_opaca,
+                  porcentaje_vidrio: newDoor.porcentaje_vidrio,
+                },
+              };
+
+              const success = await handleCreate(
+                payload,
+                "admin/elements/create",
+                `La puerta "${newDoor.name_element}" fue creada correctamente`,
+                fetchElements
+              );
+
+              if (success) {
+                setShowNewDoorModal(false);
+                setNewDoor({
+                  name_element: "",
+                  u_puerta_opaca: 0,
+                  ventana_id: 0,
+                  u_marco: 0,
+                  fm: 0,
+                  porcentaje_vidrio: 0,
+                });
+              }
+            }
+          }
           title={selectedDoorId ? "Editar Puerta" : "Agregar Nueva Puerta"}
           saveLabel={selectedDoorId ? "Guardar Cambios" : "Crear Puerta"}
         >
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              selectedDoorId ? handleEditDoor() : handleCreateElement();
+              selectedDoorId ? handleEditDoor() : undefined;
             }}
           >
             <div className="form-group">

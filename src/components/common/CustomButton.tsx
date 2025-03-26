@@ -129,7 +129,7 @@ const CustomButton: FC<CustomButtonProps> = ({
         disabled={disabled || isLoading}
         aria-busy={isLoading}
         style={{ margin }}
-        className={`button btn-small px-4 btn btn-primary ${variantClass} ${className} ${disabledClass}`}
+        className={`button btn-small px-2 btn btn-primary ${variantClass} ${className} ${disabledClass}`}
         title={tooltipText}
         {...rest}
       >

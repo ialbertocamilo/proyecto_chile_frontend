@@ -51,90 +51,84 @@ export default function TablesParameters({
     row.reduce((acc, cell) => acc + (cell.colSpan ?? 1), 0);
 
   return (
-    <div
-      style={{
-        maxHeight: "400px",
-        overflowY: "auto",
-        overflowX: "auto",
-      }}
-    >
-      <table
-        className="table table-bordered"
-        style={{
-          tableLayout: "auto",    // Ajusta el ancho de las celdas al contenido
-          margin: "auto",         // Centra la tabla horizontalmente
-          borderCollapse: "collapse",
-        }}
-      >
-        <thead>
-          {multiHeader ? (
-            <>
-              {multiHeader.rows.map((row, rowIndex) => (
-                <tr key={rowIndex} style={{ height: "auto" }}>
-                  {row.map((cell, cellIndex) => (
-                    <th
-                      key={cellIndex}
-                      colSpan={cell.colSpan}
-                      rowSpan={cell.rowSpan}
-                      style={{
-                        ...baseStickyStyle,
-                        // Si deseas que cada fila de encabezado sticky tenga
-                        // un `top` distinto, ajusta aquí según rowIndex:
-                        // top: rowIndex * 40, etc.
-                        ...cell.style,
-                      }}
-                    >
-                      {cell.label}
-                    </th>
-                  ))}
-                  {/* En la primera fila, si el total de colSpan es menor al número de columnas, agregamos una celda extra */}
-                  {rowIndex === 0 && getTotalColSpan(row) < columns.length && (
-                    <th
-                      colSpan={columns.length - getTotalColSpan(row)}
-                      style={{
-                        ...baseStickyStyle,
-                      }}
-                    />
-                  )}
-                </tr>
-              ))}
-            </>
-          ) : (
-            <tr style={{ height: "auto" }}>
-              {columns.map((col) => (
-                <th
-                  key={col.field}
-                  style={{
-                    ...baseStickyStyle,
-                    ...col.headerStyle,
-                  }}
-                >
-                  {col.headerName}
-                </th>
-              ))}
-            </tr>
-          )}
-        </thead>
+    <div className="container-fluid p-0">
+      <div className="row g-0">
+        <div className="col-12 p-0">
+          <div className="table-responsive w-100" style={{ maxHeight: "400px" }}>
+            <table
+              className="table table-hover w-100 mb-0"
+              style={{
+                tableLayout: "auto",    // Ajusta el ancho de las celdas al contenido
+                borderCollapse: "collapse",
+              }}
+            >
+              <thead className="bg-light border-bottom">
+                {multiHeader ? (
+                  <>
+                    {multiHeader.rows.map((row, rowIndex) => (
+                      <tr key={rowIndex} style={{ height: "auto" }}>
+                        {row.map((cell, cellIndex) => (
+                          <th
+                            key={cellIndex}
+                            colSpan={cell.colSpan}
+                            rowSpan={cell.rowSpan}
+                            style={{
+                              ...baseStickyStyle,
+                              ...cell.style,
+                            }}
+                          >
+                            {cell.label}
+                          </th>
+                        ))}
+                        {rowIndex === 0 && getTotalColSpan(row) < columns.length && (
+                          <th
+                            colSpan={columns.length - getTotalColSpan(row)}
+                            style={{
+                              ...baseStickyStyle,
+                            }}
+                          />
+                        )}
+                      </tr>
+                    ))}
+                  </>
+                ) : (
+                  <tr style={{ height: "auto" }}>
+                    {columns.map((col) => (
+                      <th
+                        key={col.field}
+                        style={{
+                          ...baseStickyStyle,
+                          ...col.headerStyle,
+                        }}
+                      >
+                        {col.headerName}
+                      </th>
+                    ))}
+                  </tr>
+                )}
+              </thead>
 
-        <tbody>
-          {data.map((row, rowIndex) => (
-            <tr key={rowIndex} style={{ height: "auto" }}>
-              {columns.map((col) => (
-                <td
-                  key={col.field}
-                  style={{
-                    verticalAlign: "middle", // Centra verticalmente
-                    textAlign: "center",     // Centra horizontalmente
-                    padding: "8px",          // Añade algo de padding para mejorar la legibilidad
-                  }}
-                >
-                  {col.renderCell ? col.renderCell(row) : row[col.field]}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              <tbody>
+                {data.map((row, rowIndex) => (
+                  <tr key={rowIndex} style={{ height: "auto" }}>
+                    {columns.map((col) => (
+                      <td
+                        key={col.field}
+                        style={{
+                          verticalAlign: "middle", // Centra verticalmente
+                          textAlign: "center",     // Centra horizontalmente
+                          padding: "8px",          // Añade algo de padding para mejorar la legibilidad
+                        }}
+                      >
+                        {col.renderCell ? col.renderCell(row) : row[col.field]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div></div>
     </div>
   );
 }

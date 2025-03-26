@@ -1,6 +1,6 @@
-import React from "react";
-import { useRouter } from "next/router";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import React from "react";
 
 interface BreadcrumbItem {
   title: string;
@@ -33,7 +33,12 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
         <li className="breadcrumb-item">
           <a
             onClick={handleHomeClick}
-            style={{ textDecoration: "none", color: "#2ab0c5", cursor: "pointer" }}
+            style={{
+              textDecoration: "none",
+              color: "#2ab0c5",
+              cursor: "pointer",
+              fontWeight: "bold"
+            }}
           >
             <span className="material-icons" style={{ color: "#2ab0c5" }}>
               home
@@ -48,12 +53,17 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
             {item.href ? (
               <Link
                 href={item.href}
-                style={{ textDecoration: "none", color: "#2ab0c5" }}
+                style={{
+                  textDecoration: "none",
+                  color: "#2ab0c5",
+                  fontWeight: "bold",
+                  transition: "color 0.3s ease"
+                }}
               >
                 {item.title}
               </Link>
             ) : (
-              <span style={{ color: "#2ab0c5" }}>{item.title}</span>
+              <span style={{ color: "#2ab0c5", fontWeight: "bold" }}>{item.title}</span>
             )}
           </li>
         ))}

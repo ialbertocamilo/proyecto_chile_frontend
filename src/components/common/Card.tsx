@@ -16,7 +16,7 @@ const Card: React.FC<CardProps> = ({ children, className = "", style }) => {
     transition: 'all 0.3s ease',
     ...style,
   };
-  return <div className="col-xxl-12 col-xl-12 box-col-12 order-xl-1 col-sm-12 col-md-12">
+  return <div className="col-xxl-12 col-xl-12 box-col-12 order-xl-1 col-sm-12 col-md-12 pb-2 ">
     <div className={`card rounded-2 mb-2 ${className}`} style={cardStyle}>
       <div className={"card-body pb-0 pt-0"}>
         {children}

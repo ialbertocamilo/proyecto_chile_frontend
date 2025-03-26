@@ -191,7 +191,7 @@ const ProjectListPage = () => {
       label: "Acciones",
       minWidth: 100,
       cell: ({ row }: { row: Project }) => (
-        <div className="buttons-container" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div  >
           {/* Botón de IFC */}
           <CustomButton
             className="btn-table-list"
@@ -233,9 +233,9 @@ const ProjectListPage = () => {
         </Card>
         <div className="row mt-4 mb-4">
           <div className="col-md-6">
-              <WelcomeCard />
-              <hr />
-              {projects && <ChartProjectsByRegion data={{ projects }} />}
+            <WelcomeCard />
+            <hr />
+            {projects && <ChartProjectsByRegion data={{ projects }} />}
           </div>
           <div className="col-md-6">
             <div  >
@@ -252,7 +252,6 @@ const ProjectListPage = () => {
           pageSize={10}
           showButton={true}
         />
-
       </div>
 
       {showDeleteModal && projectToDelete && (

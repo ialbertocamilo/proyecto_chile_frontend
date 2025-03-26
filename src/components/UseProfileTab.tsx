@@ -386,21 +386,21 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         };
 
     return {
-      codigoRecinto: isDefault ? (
+      codigoRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.code}
         </span>
       ) : (
         enclosure.code
       ),
-      tipologiaRecinto: isDefault ? (
+      tipologiaRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.name}
         </span>
       ) : (
         enclosure.name
       ),
-      rPers: isDefault ? (
+      rPers: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {rPersValue}
         </span>
@@ -417,7 +417,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           <option value="IDA2">IDA2</option>
           <option value="IDA3">IDA3</option>
         </select>
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.ida}
         </span>
@@ -437,7 +437,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           <option value="Colegio">Colegio</option>
           <option value="Sedentario">Sedentario</option>
         </select>
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.ocupacion}
         </span>
@@ -451,7 +451,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           value={editingRow.values.caudalImpuestoVentNoct}
           onChange={(e) => handleEditChange("caudalImpuestoVentNoct", e.target.value)}
         />
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.caudalImpuestoVentNoct}
         </span>
@@ -497,28 +497,28 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         };
 
     return {
-      codigoRecinto: isDefault ? (
+      codigoRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.code}
         </span>
       ) : (
         enclosure.code
       ),
-      tipologiaRecinto: isDefault ? (
+      tipologiaRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.name}
         </span>
       ) : (
         enclosure.name
       ),
-      potenciaBase: isEditing ? (
+      potenciaBase: !isEditing ? (
         <input
           type="number"
           className="form-control form-control-sm"
-          value={editingRow.values.potenciaBase}
+          value={editingRow?.values.potenciaBase}
           onChange={(e) => handleEditChange("potenciaBase", e.target.value)}
         />
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.potenciaBase}
         </span>
@@ -528,7 +528,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       estrategia: isEditing ? (
         <select
           className="form-control form-control-sm"
-          value={editingRow.values.estrategia}
+          value={editingRow?.values.estrategia}
           onChange={(e) => handleEditChange("estrategia", e.target.value)}
         >
           <option value="Sin estrategia">Sin estrategia</option>
@@ -536,14 +536,14 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           <option value="Sectorizacion">Sectorizacion</option>
           <option value="Sensor de Luz Nat">Sensor de Luz Nat</option>
         </select>
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.estrategia}
         </span>
       ) : (
         values.estrategia
       ),
-      potenciaPropuesta: isDefault ? (
+      potenciaPropuesta: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.potenciaPropuesta}
         </span>
@@ -588,14 +588,14 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         };
 
     return {
-      codigoRecinto: isDefault ? (
+      codigoRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.code}
         </span>
       ) : (
         enclosure.code
       ),
-      tipologiaRecinto: isDefault ? (
+      tipologiaRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.name}
         </span>
@@ -609,7 +609,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           value={editingRow.values.usuarios}
           onChange={(e) => handleEditChange("usuarios", e.target.value)}
         />
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.usuarios}
         </span>
@@ -623,7 +623,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           value={editingRow.values.calorLatente}
           onChange={(e) => handleEditChange("calorLatente", e.target.value)}
         />
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.calorLatente}
         </span>
@@ -637,7 +637,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           value={editingRow.values.calorSensible}
           onChange={(e) => handleEditChange("calorSensible", e.target.value)}
         />
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.calorSensible}
         </span>
@@ -651,7 +651,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           value={editingRow.values.equipos}
           onChange={(e) => handleEditChange("equipos", e.target.value)}
         />
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.equipos}
         </span>
@@ -665,7 +665,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           value={editingRow.values.funcionamientoSemanal}
           onChange={(e) => handleEditChange("funcionamientoSemanal", e.target.value)}
         />
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.funcionamientoSemanal}
         </span>
@@ -710,14 +710,14 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         };
 
     return {
-      codigoRecinto: isDefault ? (
+      codigoRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.code}
         </span>
       ) : (
         enclosure.code
       ),
-      tipologiaRecinto: isDefault ? (
+      tipologiaRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.name}
         </span>
@@ -733,7 +733,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           <option value="Si">Si</option>
           <option value="No">No</option>
         </select>
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.climatizado}
         </span>
@@ -747,7 +747,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           value={editingRow.values.hrsDesfaseClimaInv}
           onChange={(e) => handleEditChange("hrsDesfaseClimaInv", e.target.value)}
         />
-      ) : isDefault ? (
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {values.hrsDesfaseClimaInv}
         </span>

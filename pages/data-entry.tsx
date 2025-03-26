@@ -1,4 +1,4 @@
-import ButtonTab from "@/components/common/ButtonTab"; 
+import ButtonTab from "@/components/common/ButtonTab";
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -17,6 +17,8 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import TablesParameters from "../src/components/tables/TablesParameters";
 import UseProfileTab from "../src/components/UseProfileTab";
 import ActionButtons from "@/components/common/ActionButtons";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "@/styles/css/breadcrumb.css";
 
 interface MaterialAtributs {
   name: string;
@@ -24,13 +26,14 @@ interface MaterialAtributs {
   specific_heat: number;
   density: number;
   // Aquí se usa create_status (sin "d" extra)
-  
+
 }
 
 export interface Material {
   id: number;
   atributs: MaterialAtributs;
   create_status?: string;
+  user_id?:string
 }
 
 export interface ElementBase {
@@ -51,6 +54,7 @@ export interface ElementBase {
     // Posible propiedad para determinar el estilo:
     created_status?: string;
   };
+  user_id?:string
 }
 
 // Función para leer el valor de CSS (en caso de necesitarlo para colores, etc.)
@@ -654,13 +658,13 @@ const DataEntryPage: React.FC = () => {
         prev.map((el) =>
           el.id === element.id
             ? {
-                ...element,
-                fm: fmFraction,
-                atributs: {
-                  ...element.atributs,
-                  porcentaje_vidrio: porcentajeVidrioFraction,
-                },
-              }
+              ...element,
+              fm: fmFraction,
+              atributs: {
+                ...element.atributs,
+                porcentaje_vidrio: porcentajeVidrioFraction,
+              },
+            }
             : el
         )
       );
@@ -736,7 +740,7 @@ const DataEntryPage: React.FC = () => {
       { headerName: "Densidad (kg/m3)", field: "density" },
       { headerName: "Acción", field: "action" },
     ];
-  
+
     const filteredMaterialData = materialsList
       .filter((mat) =>
         mat.atributs.name.toLowerCase().includes(materialSearch.toLowerCase())
@@ -747,7 +751,7 @@ const DataEntryPage: React.FC = () => {
           materialName: (
             <span
               style={
-                isDefault
+                !isDefault
                   ? { color: primaryColor, fontWeight: "bold" }
                   : undefined
               }
@@ -755,21 +759,21 @@ const DataEntryPage: React.FC = () => {
               {mat.atributs.name}
             </span>
           ),
-          conductivity: isDefault ? (
+          conductivity: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
               {mat.atributs.conductivity}
             </span>
           ) : (
             mat.atributs.conductivity
           ),
-          specific_heat: isDefault ? (
+          specific_heat: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
               {mat.atributs.specific_heat}
             </span>
           ) : (
             mat.atributs.specific_heat
           ),
-          density: isDefault ? (
+          density: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
               {mat.atributs.density}
             </span>
@@ -792,11 +796,12 @@ const DataEntryPage: React.FC = () => {
                 setDeleteAction(() => () => handleDeleteMaterial(mat.id));
                 setShowConfirmModal(true);
               }}
+              isDisabled={mat.user_id==null}
             />
           ),
         };
       });
-  
+
     return (
       <>
         <div className="mb-4">
@@ -822,7 +827,7 @@ const DataEntryPage: React.FC = () => {
       </>
     );
   };
-  
+
   // === RENDER DE STEP 5: Elementos Translúcidos (Ventanas / Puertas) CON ACCIONES
   const renderStep5Elements = () => {
     if (modalElementType === "ventanas") {
@@ -847,7 +852,7 @@ const DataEntryPage: React.FC = () => {
         .map((el) => {
           const isDefault = (el as any).created_status === "default" || (el as any).create_status === "global";
           return {
-            name_element: isDefault ? (
+            name_element: !isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.name_element}
               </span>
@@ -856,7 +861,7 @@ const DataEntryPage: React.FC = () => {
             ),
             u_vidrio:
               el.atributs.u_vidrio && el.atributs.u_vidrio > 0 ? (
-                isDefault ? (
+                !isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
                     {el.atributs.u_vidrio}
                   </span>
@@ -868,7 +873,7 @@ const DataEntryPage: React.FC = () => {
               ),
             fs_vidrio:
               el.atributs.fs_vidrio && el.atributs.fs_vidrio > 0 ? (
-                isDefault ? (
+                !isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
                     {el.atributs.fs_vidrio}
                   </span>
@@ -878,28 +883,28 @@ const DataEntryPage: React.FC = () => {
               ) : (
                 "--"
               ),
-            clousure_type: isDefault ? (
+            clousure_type: !isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.atributs.clousure_type ?? "--"}
               </span>
             ) : (
               el.atributs.clousure_type ?? "--"
             ),
-            frame_type: isDefault ? (
+            frame_type: !isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.atributs.frame_type ?? "--"}
               </span>
             ) : (
               el.atributs.frame_type ?? "--"
             ),
-            u_marco: isDefault ? (
+            u_marco: !isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.u_marco}
               </span>
             ) : (
               el.u_marco
             ),
-            fm: isDefault ? (
+            fm: !isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {(el.fm * 100).toFixed(2) + "%"}
               </span>
@@ -913,6 +918,7 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData({ ...el, fm: el.fm * 100 })
                 }
                 onDelete={() => confirmDeleteElement(el.id, "window")}
+                isDisabled={el.user_id==null}
               />
             ),
           };
@@ -968,7 +974,7 @@ const DataEntryPage: React.FC = () => {
         .map((el) => {
           const isDefault = (el as any).created_status === "default" || (el as any).create_status === "global";
           return {
-            name_element: isDefault ? (
+            name_element: !isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.name_element}
               </span>
@@ -977,7 +983,7 @@ const DataEntryPage: React.FC = () => {
             ),
             u_puerta_opaca:
               el.atributs.u_puerta_opaca && el.atributs.u_puerta_opaca > 0 ? (
-                isDefault ? (
+                !isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
                     {el.atributs.u_puerta_opaca}
                   </span>
@@ -987,7 +993,7 @@ const DataEntryPage: React.FC = () => {
               ) : (
                 "--"
               ),
-            name_ventana: isDefault ? (
+            name_ventana: !isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.atributs.name_ventana ?? "--"}
               </span>
@@ -996,7 +1002,7 @@ const DataEntryPage: React.FC = () => {
             ),
             porcentaje_vidrio:
               el.atributs.porcentaje_vidrio !== undefined ? (
-                isDefault ? (
+                !isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
                     {(el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"}
                   </span>
@@ -1006,14 +1012,14 @@ const DataEntryPage: React.FC = () => {
               ) : (
                 "0%"
               ),
-            u_marco: isDefault ? (
+            u_marco: !isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.u_marco}
               </span>
             ) : (
               el.u_marco
             ),
-            fm: isDefault ? (
+            fm: !isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {(el.fm * 100).toFixed(2) + "%"}
               </span>
@@ -1035,6 +1041,7 @@ const DataEntryPage: React.FC = () => {
                   })
                 }
                 onDelete={() => confirmDeleteElement(el.id, "door")}
+                isDisabled={el.user_id==null}
               />
             ),
           };
@@ -1544,12 +1551,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1565,12 +1572,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            fs_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          fs_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1585,12 +1592,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            clousure_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          clousure_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1612,12 +1619,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            frame_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          frame_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1705,12 +1712,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_puerta_opaca: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_puerta_opaca: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1729,13 +1736,13 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            ventana_id: selectedId ? parseInt(selectedId) : 0,
-                            name_ventana: selectedWindow ? selectedWindow.name_element : "",
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          ventana_id: selectedId ? parseInt(selectedId) : 0,
+                          name_ventana: selectedWindow ? selectedWindow.name_element : "",
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -1766,12 +1773,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: isNaN(clamped) ? 0 : clamped,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          porcentaje_vidrio: isNaN(clamped) ? 0 : clamped,
+                        },
+                      }
                       : prev
                   );
                 }}

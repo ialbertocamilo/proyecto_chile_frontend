@@ -105,61 +105,47 @@ export default function DataTable<T extends { [key: string]: any }>({
   // Filtrado global: se recorre cada fila y se combinan todas sus propiedades para realizar la búsqueda
   const filteredData = searchQuery.trim()
     ? data.filter((row) => {
-        const combined = Object.values(row)
-          .map((val) => {
-            if (val === undefined || val === null) return "";
-            if (typeof val === "object") return JSON.stringify(val);
-            return String(val);
-          })
-          .join(" ")
-          .toLowerCase();
-        return combined.includes(searchQuery.toLowerCase());
-      })
+      const combined = Object.values(row)
+        .map((val) => {
+          if (val === undefined || val === null) return "";
+          if (typeof val === "object") return JSON.stringify(val);
+          return String(val);
+        })
+        .join(" ")
+        .toLowerCase();
+      return combined.includes(searchQuery.toLowerCase());
+    })
     : data;
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
   return (
     <Card>
-      <div className="">
-        <div className="row mb-3 mt-3">
-          <div className="col-12">
-            <div className="d-flex flex-column flex-sm-row gap-2">
-              <SearchInput
-                searchQuery={searchQuery}
-                handleSearch={handleSearch}
-                createUrl={createUrl}
-                createText={createText}
-                showButton={createText ? true : false}
-              />
-            </div>
+      <div className="row mb-3 mt-3">
+        <div className="col-12">
+          <div className="d-flex flex-column flex-sm-row gap-2">
+            <SearchInput
+              searchQuery={searchQuery}
+              handleSearch={handleSearch}
+              createUrl={createUrl}
+              createText={createText}
+              showButton={createText ? true : false}
+            />
           </div>
         </div>
-        <div className="row">
-          <div className="col-md-12">
-            <div
-              className="table-responsive mb-0 pb-0"
-              style={{
-                overflowX: "auto",
-                WebkitOverflowScrolling: "touch",
-                borderRadius: "8px",
-                display: "block",
-                width: "100%",
-                maxWidth: "100%",
-                position: "relative", // Added for the :after pseudo-element
-              }}
-            >
-              <table
-                className="table table-hover table-mobile border rounded"
-                style={{ minWidth: "100%", borderColor: "#dee2e6" }}
-              >
+      </div>
+      <div className="container-fluid p-0">
+        <div className="row g-0">
+          <div className="col-12 p-0">
+            <div className="table-responsive w-100">
+              <table className="table table-hover w-100 mb-0 ">
                 <thead className="bg-light border-bottom">
                   <tr>
                     {columns.map((column) => (
                       <th
                         key={column.id.toString()}
-                        className="text-center"
                         style={{ color: "var(--primary-color)" }}
+                        className="text-start"
                       >
                         {column.label}
                       </th>
@@ -179,7 +165,7 @@ export default function DataTable<T extends { [key: string]: any }>({
                     </tr>
                   ) : filteredData.length === 0 ? (
                     <tr>
-                      <td colSpan={columns.length} className="text-center ">
+                      <td colSpan={columns.length} className="text-center">
                         <Inbox className="me-2 inline" size={18} />
                         No hay datos disponibles
                       </td>
@@ -195,13 +181,13 @@ export default function DataTable<T extends { [key: string]: any }>({
                           {columns.map((column) => (
                             <td
                               key={column.id.toString()}
-                              className="text-center p-2 p-md-3"
+                              className="text-start p-2 p-md-3"
                             >
                               {column.cell
                                 ? column.cell({ row })
                                 : column.format
-                                ? column.format(row[column.id], row)
-                                : row[column.id]}
+                                  ? column.format(row[column.id], row)
+                                  : row[column.id]}
                             </td>
                           ))}
                         </tr>
@@ -209,19 +195,17 @@ export default function DataTable<T extends { [key: string]: any }>({
                   )}
                 </tbody>
               </table>
-            </div>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-md-12 ">
-            <TablePagination
-              page={page}
-              rowsPerPage={rowsPerPage}
-              totalPages={totalPages}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </div>
+            </div></div></div>
+      </div>
+      <div className="row">
+        <div className="col-md-12 mb-2">
+          <TablePagination
+            page={page}
+            rowsPerPage={rowsPerPage}
+            totalPages={totalPages}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </div>
       </div>
       <style jsx>{`

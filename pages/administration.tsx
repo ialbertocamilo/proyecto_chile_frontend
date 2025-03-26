@@ -159,7 +159,7 @@ const AdministrationPage: React.FC = () => {
       mat.atributs.name.toLowerCase().includes(searchMaterial.toLowerCase())
     )
     .map((mat: any) => {
-      const isDefault = mat.create_status === "default";
+      const isDefault = (mat?.created_status ?? "") === "default";
       return {
         name: isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -330,7 +330,7 @@ const AdministrationPage: React.FC = () => {
       el.name_element.toLowerCase().includes(searchElement.toLowerCase())
     )
     .map((el) => {
-      const isDefault = el.created_status === "default";
+      const isDefault = (el as { created_status?: string }).created_status === "default";
       return {
         name_element: isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>

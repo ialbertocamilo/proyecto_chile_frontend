@@ -380,7 +380,11 @@ const TabFloorCreate: React.FC = () => {
         return editingRowIndex === row.index ? renderEditableCell("area", row) : row.area;
       }
     },
-    { headerName: "U [W/m²K]", field: "uValue" },
+    {
+      headerName: "U [W/m²K]",
+      field: "uValue",
+      renderCell: (row: FloorData) => row.uValue.toFixed(2)
+    },
     {
       headerName: "Perímetro Suelo [m]",
       field: "perimetroSuelo",
@@ -602,7 +606,6 @@ const TabFloorCreate: React.FC = () => {
           <div className="row mb-3">
             <div className="col-12 text-center">
               <p>¿Está seguro que desea eliminar el piso <strong>{rowToDelete?.pisos}</strong>?</p>
-
             </div>
           </div>
         </div>

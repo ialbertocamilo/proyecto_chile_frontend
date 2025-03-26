@@ -511,23 +511,7 @@ const TabMuroCreate: React.FC = () => {
       headerName: "U [W/m²K]",
       field: "u",
       renderCell: (row: Wall) => {
-        if (row.wall_id === editingWallId && editingWallData) {
-          return (
-            <input
-              type="number"
-              name="u"
-              min="0"
-              step="0.01"
-              value={editingWallData.u || ""}
-              onChange={handleEditWallChange}
-              onBlur={(e) => {
-                const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingWallData({ ...editingWallData, u: Number(rounded) });
-              }}
-              className="form-control form-control-sm"
-            />
-          );
-        }
+        // Se muestra el valor de U como solo lectura, incluso en modo edición
         return row.u ? Number(row.u).toFixed(2) : "";
       },
     },
@@ -785,7 +769,6 @@ const TabMuroCreate: React.FC = () => {
         { label: "L[m]" },
         { label: "e Aislación [cm]" },
         { label: "Elemento 2" },
-
       ],
     ],
   };
@@ -894,9 +877,6 @@ const TabMuroCreate: React.FC = () => {
       </div>
     </div>
   );
-
-
-
 
   return (
     <div className="container-fluid">

@@ -1,4 +1,4 @@
-import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
+import RecintoCaractersComponent from "@/components/RecintoCaractersComponentEdit";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";

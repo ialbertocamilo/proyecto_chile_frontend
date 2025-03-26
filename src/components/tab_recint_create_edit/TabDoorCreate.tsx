@@ -262,7 +262,10 @@ const TabDoorCreate: React.FC = () => {
 
   // Funciones para edición de la fila general
   const handleEdit = (row: DoorData) => {
-    setEditingRow({ ...row });
+    // Al iniciar la edición, se actualiza el valor de tipoPuente con el nombre correspondiente de doorOptions
+    const doorInfo = doorOptions.find((door: any) => door.id === row.door_id);
+    const tipoPuente = doorInfo ? doorInfo.name_element : row.tipoPuente;
+    setEditingRow({ ...row, tipoPuente });
   };
 
   const handleRowFieldChange = (field: keyof DoorData, value: string | number) => {
@@ -766,7 +769,7 @@ const TabDoorCreate: React.FC = () => {
   const multiHeader = {
     rows: [
       [
-        { label: "Tipo Puente", rowSpan: 2 },
+        { label: "Tipo de Puerta", rowSpan: 2 },
         { label: "Características", rowSpan: 2 },
         { label: "Ángulo Azimut", rowSpan: 2 },
         { label: "Orientación", rowSpan: 2 },
@@ -789,7 +792,7 @@ const TabDoorCreate: React.FC = () => {
         { label: "E [m]" },
         { label: "T [m]" },
         { label: "β [°]" },
-        { label: "α [°]" },
+        { label: "α [m]" },
       ],
     ],
   };

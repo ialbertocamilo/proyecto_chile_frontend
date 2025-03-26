@@ -233,7 +233,7 @@ const TabDoorCreate: React.FC = () => {
       }
       const favsData = await favResponse.json();
 
-      const mergedData = tableData.map((row) => {
+      let mergedData = tableData.map((row) => {
         const fav = favsData.find((f: any) => f.item_id === row.id);
         if (fav) {
           return {
@@ -253,6 +253,16 @@ const TabDoorCreate: React.FC = () => {
         }
         return row;
       });
+
+      // Actualizar el nombre de la puerta usando doorOptions
+      mergedData = mergedData.map((row) => {
+        const doorInfo = doorOptions.find((door: any) => door.id === row.door_id);
+        if (doorInfo) {
+          return { ...row, tipoPuente: doorInfo.name_element };
+        }
+        return row;
+      });
+
       setData(mergedData);
     } catch (error) {
       console.error("Error fetching door data:", error);
@@ -766,7 +776,7 @@ const TabDoorCreate: React.FC = () => {
   const multiHeader = {
     rows: [
       [
-        { label: "Tipo Puente", rowSpan: 2 },
+        { label: "Tipo de Puerta", rowSpan: 2 },
         { label: "Características", rowSpan: 2 },
         { label: "Ángulo Azimut", rowSpan: 2 },
         { label: "Orientación", rowSpan: 2 },

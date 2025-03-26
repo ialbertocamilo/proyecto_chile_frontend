@@ -69,6 +69,11 @@ const AdministrationPage: React.FC = () => {
   // Definición de la variable para el color primario
   const primaryColor = "var(--primary-color)";
 
+  // Función auxiliar para formatear porcentajes (multiplicando por 100)
+  const formatPercentage = (value: number): string => {
+    return (value * 100).toFixed(0) + "%";
+  };
+
   // Estados para steps y tabs
   const [step, setStep] = useState<number>(3);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
@@ -95,7 +100,7 @@ const AdministrationPage: React.FC = () => {
     clousure_type: "Corredera",
     frame_type: "",
     u_marco: 0,
-    fm: 0,
+    fm: 0, // Se espera el porcentaje completo (ej. 70)
   });
   const [selectedWindowId, setSelectedWindowId] = useState<number | null>(null);
 
@@ -105,8 +110,8 @@ const AdministrationPage: React.FC = () => {
     u_puerta_opaca: 0,
     ventana_id: 0,
     u_marco: 0,
-    fm: 0,
-    porcentaje_vidrio: 0,
+    fm: 0, // Porcentaje completo en el modal (ej. 70)
+    porcentaje_vidrio: 0, // Porcentaje completo en el modal (ej. 30)
   });
   const [selectedDoorId, setSelectedDoorId] = useState<number | null>(null);
 
@@ -159,7 +164,7 @@ const AdministrationPage: React.FC = () => {
       mat.atributs.name.toLowerCase().includes(searchMaterial.toLowerCase())
     )
     .map((mat: any) => {
-      // Se usa mat.atributs.create_status, ya que es donde se almacena el estado del material
+      // Se usa mat.create_status, ya que es donde se almacena el estado del material
       const isDefault = mat.create_status === "default";
       return {
         name: !isDefault ? (
@@ -280,14 +285,15 @@ const AdministrationPage: React.FC = () => {
         ),
         fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.fm * 100).toFixed(0) + "%"}
+            {formatPercentage(el.fm)}
           </span>
         ) : (
-          (el.fm * 100).toFixed(0) + "%"
+          formatPercentage(el.fm)
         ),
         action: (
           <ActionButtons
             onEdit={() => {
+              // Al editar, multiplicamos el valor de fm por 100 para mostrar el porcentaje completo
               setSelectedWindowId(el.id);
               setNewWindow({
                 name_element: el.name_element,
@@ -296,7 +302,7 @@ const AdministrationPage: React.FC = () => {
                 clousure_type: (el.atributs as ElementAttributesWindow).clousure_type,
                 frame_type: (el.atributs as ElementAttributesWindow).frame_type,
                 u_marco: el.u_marco,
-                fm: el.fm,
+                fm: el.fm * 100,
               });
               setShowNewWindowModal(true);
             }}
@@ -356,10 +362,10 @@ const AdministrationPage: React.FC = () => {
         ),
         porcentaje_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"}
+            {formatPercentage((el.atributs as ElementAttributesDoor).porcentaje_vidrio)}
           </span>
         ) : (
-          ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"
+          formatPercentage((el.atributs as ElementAttributesDoor).porcentaje_vidrio)
         ),
         u_marco: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -370,22 +376,24 @@ const AdministrationPage: React.FC = () => {
         ),
         fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.fm * 100).toFixed(0) + "%"}
+            {formatPercentage(el.fm)}
           </span>
         ) : (
-          (el.fm * 100).toFixed(0) + "%"
+          formatPercentage(el.fm)
         ),
         action: (
           <ActionButtons
             onEdit={() => {
+              // Al editar la puerta, multiplicamos fm y porcentaje_vidrio por 100 para mostrarlos completos
               setSelectedDoorId(el.id);
               setNewDoor({
                 name_element: el.name_element,
                 u_puerta_opaca: (el.atributs as ElementAttributesDoor).u_puerta_opaca,
                 ventana_id: (el.atributs as ElementAttributesDoor).ventana_id,
                 u_marco: el.u_marco,
-                fm: el.fm,
-                porcentaje_vidrio: (el.atributs as ElementAttributesDoor).porcentaje_vidrio,
+                fm: el.fm * 100,
+                porcentaje_vidrio:
+                  (el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100,
               });
               setShowNewDoorModal(true);
             }}
@@ -495,6 +503,7 @@ const AdministrationPage: React.FC = () => {
   };
 
   // Función para crear elementos (ventanas y puertas)
+  // Al crear, se divide entre 100 los porcentajes para enviarlos al backend
   const handleCreateElement = async () => {
     if (tabElementosOperables === "ventanas") {
       if (
@@ -528,7 +537,7 @@ const AdministrationPage: React.FC = () => {
         type: "window",
         name_element: newWindow.name_element,
         u_marco: newWindow.u_marco,
-        fm: newWindow.fm,
+        fm: newWindow.fm, // Dividimos el porcentaje
         atributs: {
           u_vidrio: newWindow.u_vidrio,
           fs_vidrio: newWindow.fs_vidrio,
@@ -597,12 +606,12 @@ const AdministrationPage: React.FC = () => {
         type: "door",
         name_element: newDoor.name_element,
         u_marco: newDoor.u_marco,
-        fm: newDoor.fm,
+        fm: newDoor.fm, // Dividimos el valor para el backend
         atributs: {
           ventana_id: newDoor.ventana_id,
           name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
           u_puerta_opaca: newDoor.u_puerta_opaca,
-          porcentaje_vidrio: newDoor.porcentaje_vidrio,
+          porcentaje_vidrio: newDoor.porcentaje_vidrio, // Dividimos el valor
         },
       };
 
@@ -629,79 +638,102 @@ const AdministrationPage: React.FC = () => {
 
   const handleEditWindow = async () => {
     if (!selectedWindowId) return;
-
-    const payload = {
-      type: "window",
-      name_element: newWindow.name_element,
-      u_marco: newWindow.u_marco,
-      fm: newWindow.fm,
-      atributs: {
-        u_vidrio: newWindow.u_vidrio,
-        fs_vidrio: newWindow.fs_vidrio,
-        frame_type: newWindow.frame_type,
-        clousure_type: newWindow.clousure_type,
-      },
-    };
-
-    await handleEdit(
-      selectedWindowId,
-      payload,
-      "admin/elements",
-      `La ventana "${newWindow.name_element}" fue actualizada correctamente`,
-      fetchElements
-    );
-
-    setShowNewWindowModal(false);
-    setNewWindow({
-      name_element: "",
-      u_vidrio: 0,
-      fs_vidrio: 0,
-      clousure_type: "Corredera",
-      frame_type: "",
-      u_marco: 0,
-      fm: 0,
-    });
-    setSelectedWindowId(null);
+    try {
+      const payload = {
+        type: "window",
+        name_element: newWindow.name_element,
+        u_marco: newWindow.u_marco,
+        fm: newWindow.fm, // Convertimos a valor dividido
+        atributs: {
+          u_vidrio: newWindow.u_vidrio,
+          fs_vidrio: newWindow.fs_vidrio,
+          frame_type: newWindow.frame_type,
+          clousure_type: newWindow.clousure_type,
+        },
+      };
+  
+      await handleEdit(
+        selectedWindowId,
+        payload,
+        "admin/elements",
+        `La ventana "${newWindow.name_element}" fue actualizada correctamente`,
+        fetchElements
+      );
+  
+      setShowNewWindowModal(false);
+      setNewWindow({
+        name_element: "",
+        u_vidrio: 0,
+        fs_vidrio: 0,
+        clousure_type: "Corredera",
+        frame_type: "",
+        u_marco: 0,
+        fm: 0,
+      });
+      setSelectedWindowId(null);
+    } catch (error: any) {
+      console.error("Error al actualizar ventana:", error);
+      if (
+        error?.response?.data?.detail ===
+        "El nombre del elemento ya existe dentro del tipo window"
+      ) {
+        notify("El Nombre de la Ventana ya existe");
+      } else {
+        notify("Error al actualizar la ventana");
+      }
+    }
   };
-
+  
   const handleEditDoor = async () => {
     if (!selectedDoorId) return;
-
-    const ventanaSeleccionada = windowsList.find(
-      (win) => win.id === newDoor.ventana_id
-    );
-    const payload = {
-      type: "door",
-      name_element: newDoor.name_element,
-      u_marco: newDoor.u_marco,
-      fm: newDoor.fm,
-      atributs: {
-        ventana_id: newDoor.ventana_id,
-        name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
-        u_puerta_opaca: newDoor.u_puerta_opaca,
-        porcentaje_vidrio: newDoor.porcentaje_vidrio,
-      },
-    };
-
-    await handleEdit(
-      selectedDoorId,
-      payload,
-      "admin/elements",
-      `La puerta "${newDoor.name_element}" fue actualizada correctamente`,
-      fetchElements
-    );
-
-    setShowNewDoorModal(false);
-    setNewDoor({
-      name_element: "",
-      u_puerta_opaca: 0,
-      ventana_id: 0,
-      u_marco: 0,
-      fm: 0,
-      porcentaje_vidrio: 0,
-    });
-    setSelectedDoorId(null);
+    try {
+      const ventanaSeleccionada = windowsList.find(
+        (win) => win.id === newDoor.ventana_id
+      );
+      const payload = {
+        type: "door",
+        name_element: newDoor.name_element,
+        u_marco: newDoor.u_marco,
+        fm: newDoor.fm, // Convertimos a valor dividido
+        atributs: {
+          ventana_id: newDoor.ventana_id,
+          name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
+          u_puerta_opaca: newDoor.u_puerta_opaca,
+          porcentaje_vidrio: newDoor.porcentaje_vidrio, // Convertimos a valor dividido
+        },
+      };
+  
+      await handleEdit(
+        selectedDoorId,
+        payload,
+        "admin/elements",
+        `La puerta "${newDoor.name_element}" fue actualizada correctamente`,
+        fetchElements
+      );
+  
+      setShowNewDoorModal(false);
+      setNewDoor({
+        name_element: "",
+        u_puerta_opaca: 0,
+        ventana_id: 0,
+        u_marco: 0,
+        fm: 0,
+        porcentaje_vidrio: 0,
+      });
+      setSelectedDoorId(null);
+    } catch (error: any) {
+      console.error("Error al actualizar puerta:", error);
+      if (
+        error?.response?.data?.detail ===
+        "El nombre del elemento ya existe dentro del tipo window"
+      ) {
+        notify("El Nombre de la Puerta ya existe");
+      } else {
+        notify("Error al actualizar la puerta");
+      }
+    }
   };
+  
 
   useEffect(() => {
     if (step === 3) fetchMaterialsList(1);
@@ -834,9 +866,7 @@ const AdministrationPage: React.FC = () => {
                   </div>
                   <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
                     <TablesParameters
-                      columns={
-                        tabElementosOperables === "ventanas" ? windowsColumns : doorsColumns
-                      }
+                      columns={tabElementosOperables === "ventanas" ? windowsColumns : doorsColumns}
                       data={tabElementosOperables === "ventanas" ? windowsData : doorsData}
                     />
                   </div>
@@ -976,146 +1006,130 @@ const AdministrationPage: React.FC = () => {
               selectedWindowId ? handleEditWindow() : handleCreateElement();
             }}
           >
-            <div className="row">
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Nombre del Elemento</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Nombre"
-                    value={newWindow.name_element}
-                    onChange={(e) =>
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        name_element: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>U Vidrio [W/m2K]</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="U Vidrio"
-                    value={newWindow.u_vidrio}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        u_vidrio: isNaN(value) ? 0 : value,
-                      }));
-                    }}
-                    min="0"
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>FS Vidrio</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="FS Vidrio"
-                    value={newWindow.fs_vidrio}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        fs_vidrio: isNaN(value) ? 0 : value,
-                      }));
-                    }}
-                    min="0"
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Tipo de Cierre</label>
-                  <select
-                    className="form-control"
-                    value={newWindow.clousure_type}
-                    onChange={(e) =>
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        clousure_type: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="Corredera">Corredera</option>
-                    <option value="Abatir">Abatir</option>
-                    <option value="Fija">Fija</option>
-                    <option value="Guillotina">Guillotina</option>
-                    <option value="Proyectante">Proyectante</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Tipo de Marco</label>
-                  <select
-                    className="form-control"
-                    value={newWindow.frame_type}
-                    onChange={(e) =>
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        frame_type: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">Seleccione</option>
-                    <option value="Fierro">Fierro</option>
-                    <option value="Madera Con RPT">Madera Con RPT</option>
-                    <option value="Madera Sin RPT">Madera Sin RPT</option>
-                    <option value="Metalico Con RPT">Metálico Con RPT</option>
-                    <option value="Metalico Sin RPT">Metálico Sin RPT</option>
-                    <option value="PVC Con RPT">PVC Con RPT</option>
-                    <option value="PVC Sin RPT">PVC Sin RPT</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>U Marco [W/m2K]</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="U Marco"
-                    value={newWindow.u_marco}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        u_marco: isNaN(value) ? 0 : value,
-                      }));
-                    }}
-                    min="0"
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>FM [%]</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="FM (%)"
-                    value={newWindow.fm}
-                    onChange={(e) => {
-                      let value = parseFloat(e.target.value);
-                      if (isNaN(value)) value = 0;
-                      if (value < 0) value = 0;
-                      if (value > 100) value = 100;
-                      setNewWindow((prev) => ({ ...prev, fm: value }));
-                    }}
-                    min="0"
-                    max="100"
-                  />
-                </div>
-              </div>
+            <div className="form-group">
+              <label>Nombre del Elemento</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Nombre"
+                value={newWindow.name_element}
+                onChange={(e) =>
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    name_element: e.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>U Vidrio [W/m2K]</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="U Vidrio"
+                value={newWindow.u_vidrio}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    u_vidrio: isNaN(value) ? 0 : value,
+                  }));
+                }}
+                min="0"
+              />
+            </div>
+            <div className="form-group">
+              <label>FS Vidrio</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="FS Vidrio"
+                value={newWindow.fs_vidrio}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    fs_vidrio: isNaN(value) ? 0 : value,
+                  }));
+                }}
+                min="0"
+              />
+            </div>
+            <div className="form-group">
+              <label>Tipo de Cierre</label>
+              <select
+                className="form-control"
+                value={newWindow.clousure_type}
+                onChange={(e) =>
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    clousure_type: e.target.value,
+                  }))
+                }
+              >
+                <option value="Corredera">Corredera</option>
+                <option value="Abatir">Abatir</option>
+                <option value="Fija">Fija</option>
+                <option value="Guillotina">Guillotina</option>
+                <option value="Proyectante">Proyectante</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Tipo de Marco</label>
+              <select
+                className="form-control"
+                value={newWindow.frame_type}
+                onChange={(e) =>
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    frame_type: e.target.value,
+                  }))
+                }
+              >
+                <option value="">Seleccione</option>
+                <option value="Fierro">Fierro</option>
+                <option value="Madera Con RPT">Madera Con RPT</option>
+                <option value="Madera Sin RPT">Madera Sin RPT</option>
+                <option value="Metalico Con RPT">Metálico Con RPT</option>
+                <option value="Metalico Sin RPT">Metálico Sin RPT</option>
+                <option value="PVC Con RPT">PVC Con RPT</option>
+                <option value="PVC Sin RPT">PVC Sin RPT</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>U Marco [W/m2K]</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="U Marco"
+                value={newWindow.u_marco}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    u_marco: isNaN(value) ? 0 : value,
+                  }));
+                }}
+                min="0"
+              />
+            </div>
+            <div className="form-group">
+              <label>FM [%]</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="FM (%)"
+                value={newWindow.fm}
+                onChange={(e) => {
+                  let value = parseFloat(e.target.value);
+                  if (isNaN(value)) value = 0;
+                  if (value < 0) value = 0;
+                  if (value > 100) value = 100;
+                  setNewWindow((prev) => ({ ...prev, fm: value }));
+                }}
+                min="0"
+                max="100"
+              />
             </div>
           </form>
         </ModalCreate>

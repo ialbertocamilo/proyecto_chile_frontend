@@ -183,14 +183,13 @@ const WorkFlowpar2createPage: React.FC = () => {
     horizontal: { lambda: "", e_aisl: "", d: "" },
   });
 
-  // Estado para edición de ventana usando ModalCreate
-  const [editingVentanaForm, setEditingVentanaForm] = useState<Ventana | null>(
-    null
-  );
-  // Estado para edición de puerta usando ModalCreate
-  const [editingPuertaForm, setEditingPuertaForm] = useState<Puerta | null>(
-    null
-  );
+  // Estados para edición de ventana y puerta usando ModalCreate
+  const [editingVentanaForm, setEditingVentanaForm] = useState<Ventana | null>(null);
+  const [editingPuertaForm, setEditingPuertaForm] = useState<Puerta | null>(null);
+
+  // Estados locales para manejar el input de porcentaje como cadena
+  const [ventanaFmInput, setVentanaFmInput] = useState<string>("");
+  const [puertaPorcentajeInput, setPuertaPorcentajeInput] = useState<string>("");
 
   // Estado para el formulario de creación de detalle
   const [showNewDetailRow, setShowNewDetailRow] = useState(false);
@@ -257,6 +256,28 @@ const WorkFlowpar2createPage: React.FC = () => {
     const pColor = getCssVarValue("--primary-color", "#3ca7b7");
     setPrimaryColor(pColor);
   }, []);
+
+  // Cuando se abra el modal de Ventana, inicializamos el input con el valor actual
+  useEffect(() => {
+    if (editingVentanaForm) {
+      setVentanaFmInput(
+        editingVentanaForm.fm !== undefined
+          ? String(editingVentanaForm.fm * 100)
+          : ""
+      );
+    }
+  }, [editingVentanaForm]);
+
+  // Cuando se abra el modal de Puerta, inicializamos el input de porcentaje
+  useEffect(() => {
+    if (editingPuertaForm && editingPuertaForm.atributs) {
+      setPuertaPorcentajeInput(
+        editingPuertaForm.atributs.porcentaje_vidrio !== undefined
+          ? String(editingPuertaForm.atributs.porcentaje_vidrio * 100)
+          : ""
+      );
+    }
+  }, [editingPuertaForm]);
 
   const getToken = () => {
     const token = localStorage.getItem("token");
@@ -839,9 +860,16 @@ const WorkFlowpar2createPage: React.FC = () => {
         )
       );
       setEditingPuertaForm(null);
-    } catch (error: unknown) {
-      console.error("Error al actualizar Detalle de Puerta:", error);
-      notify("Error al actualizar Detalle de Puerta. Ver consola.");
+    } catch (error: any) {
+      console.error("Error al actualizar ventana:", error);
+      if (
+        error?.response?.data?.detail ===
+        "El nombre del elemento ya existe dentro del tipo window"
+      ) {
+        notify("El Nombre de la Ventana ya existe");
+      } else {
+        notify("Error al actualizar la ventana");
+      }
     }
   };
 
@@ -870,9 +898,16 @@ const WorkFlowpar2createPage: React.FC = () => {
         )
       );
       setEditingVentanaForm(null);
-    } catch (error: unknown) {
-      console.error("Error al actualizar Detalle de Ventana:", error);
-      notify("Error al actualizar Detalle de Ventana. Ver consola.");
+    } catch (error: any) {
+      console.error("Error al actualizar ventana:", error);
+      if (
+        error?.response?.data?.detail ===
+        "El nombre del elemento ya existe dentro del tipo window"
+      ) {
+        notify("El Nombre de la Ventana ya existe");
+      } else {
+        notify("Error al actualizar la ventana");
+      }
     }
   };
 
@@ -1216,6 +1251,33 @@ const WorkFlowpar2createPage: React.FC = () => {
     );
   };
 
+  const multiHeaderPisos = {
+    rows: [
+      [
+        { label: "Nombre", rowSpan: 2 },
+        { label: "U [W/m²K]", rowSpan: 2 },
+        { label: "Aislamiento bajo piso", colSpan: 2 },
+        { label: "Ref Aisl Vert.", colSpan: 3 },
+        { label: "Ref Aisl Horiz.", colSpan: 3 },
+        { label: "Acciones", rowSpan: 2 },
+      ],
+      [
+        { label: "I [W/mK]" },
+        { label: "e Aisl [cm]" },
+        { label: "I [W/mK]" },
+        { label: "e Aisl [cm]" },
+        { label: "D [cm]" },
+        { label: "I [W/mK]" },
+        { label: "e Aisl [cm]" },
+        { label: "D [cm]" },
+      ],
+    ],
+  };
+
+  const formatNumber = (num: number | undefined, decimals = 3) => {
+    return num != null && num !== 0 ? num.toFixed(decimals) : "-";
+  };
+
   const renderPisosTable = () => {
     const columnsPisos = [
       { headerName: "Nombre", field: "nombre" },
@@ -1230,33 +1292,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "D [cm] (horiz)", field: "horizD" },
       { headerName: "Acciones", field: "acciones" },
     ];
-
-    const multiHeaderPisos = {
-      rows: [
-        [
-          { label: "Nombre", rowSpan: 2 },
-          { label: "U [W/m²K]", rowSpan: 2 },
-          { label: "Aislamiento bajo piso", colSpan: 2 },
-          { label: "Ref Aisl Vert.", colSpan: 3 },
-          { label: "Ref Aisl Horiz.", colSpan: 3 },
-          { label: "Acciones", rowSpan: 2 },
-        ],
-        [
-          { label: "I [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "I [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "D [cm]" },
-          { label: "I [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "D [cm]" },
-        ],
-      ],
-    };
-
-    const formatNumber = (num: number | undefined, decimals = 3) => {
-      return num != null && num !== 0 ? num.toFixed(decimals) : "-";
-    };
 
     const pisosData = pisosTabList.map((item) => {
       const bajoPiso = item.info?.aislacion_bajo_piso || {};
@@ -1274,6 +1309,9 @@ const WorkFlowpar2createPage: React.FC = () => {
         vertLambda: isEditing ? (
           <input
             type="number"
+            min="0"
+            max="100"
+            step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.vertical.lambda}
             onChange={(e) =>
@@ -1289,6 +1327,9 @@ const WorkFlowpar2createPage: React.FC = () => {
         vertEAisl: isEditing ? (
           <input
             type="number"
+            min="0"
+            max="100"
+            step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.vertical.e_aisl}
             onChange={(e) =>
@@ -1306,6 +1347,9 @@ const WorkFlowpar2createPage: React.FC = () => {
         vertD: isEditing ? (
           <input
             type="number"
+            min="0"
+            max="100"
+            step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.vertical.d}
             onChange={(e) =>
@@ -1323,6 +1367,9 @@ const WorkFlowpar2createPage: React.FC = () => {
         horizLambda: isEditing ? (
           <input
             type="number"
+            min="0"
+            max="100"
+            step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.horizontal.lambda}
             onChange={(e) =>
@@ -1338,6 +1385,9 @@ const WorkFlowpar2createPage: React.FC = () => {
         horizEAisl: isEditing ? (
           <input
             type="number"
+            min="0"
+            max="100"
+            step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.horizontal.e_aisl}
             onChange={(e) =>
@@ -1355,6 +1405,9 @@ const WorkFlowpar2createPage: React.FC = () => {
         horizD: isEditing ? (
           <input
             type="number"
+            min="0"
+            max="100"
+            step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.horizontal.d}
             onChange={(e) =>
@@ -1927,13 +1980,21 @@ const WorkFlowpar2createPage: React.FC = () => {
               <label>FM [%]</label>
               <input
                 type="number"
+                min="0"
+                max="100"
+                step="any"
                 className="form-control"
-                value={editingVentanaForm?.fm ? editingVentanaForm.fm * 100 : ""}
-                onChange={(e) =>
+                value={ventanaFmInput}
+                onChange={(e) => setVentanaFmInput(e.target.value)}
+                onBlur={() => {
+                  let val = Number(ventanaFmInput);
+                  if (isNaN(val)) val = 0;
+                  if (val < 0) val = 0;
+                  if (val > 100) val = 100;
                   setEditingVentanaForm((prev) =>
-                    prev ? { ...prev, fm: Number(e.target.value) } : prev
-                  )
-                }
+                    prev ? { ...prev, fm: val / 100 } : prev
+                  );
+                }}
               />
             </div>
           </form>
@@ -2009,23 +2070,29 @@ const WorkFlowpar2createPage: React.FC = () => {
               <label>% Vidrio</label>
               <input
                 type="number"
+                min="0"
+                max="100"
+                step="any"
                 className="form-control"
-                value={editingPuertaForm?.atributs?.porcentaje_vidrio !== undefined 
-                  ? editingPuertaForm.atributs.porcentaje_vidrio * 100 
-                  : ""}                
-                onChange={(e) =>
+                value={puertaPorcentajeInput}
+                onChange={(e) => setPuertaPorcentajeInput(e.target.value)}
+                onBlur={() => {
+                  let val = Number(puertaPorcentajeInput);
+                  if (isNaN(val)) val = 0;
+                  if (val < 0) val = 0;
+                  if (val > 100) val = 100;
                   setEditingPuertaForm((prev) =>
-                    prev
+                    prev && prev.atributs
                       ? {
                           ...prev,
                           atributs: {
                             ...prev.atributs,
-                            porcentaje_vidrio: Number(e.target.value),
+                            porcentaje_vidrio: val / 100,
                           },
                         }
                       : prev
-                  )
-                }
+                  );
+                }}
               />
             </div>
             <div className="form-group">
@@ -2045,15 +2112,29 @@ const WorkFlowpar2createPage: React.FC = () => {
               <label>FM [%]</label>
               <input
                 type="number"
+                min="0"
+                max="100"
+                step="any"
                 className="form-control"
-                value={editingPuertaForm?.fm !== undefined 
-                  ? editingPuertaForm.fm * 100 
-                  : ""}                
-                onChange={(e) =>
-                  setEditingPuertaForm((prev) =>
-                    prev ? { ...prev, fm: Number(e.target.value) } : prev
-                  )
+                value={
+                  editingPuertaForm.fm !== undefined
+                    ? editingPuertaForm.fm * 100
+                    : ""
                 }
+                onChange={(e) => {
+                  let val = Number(e.target.value);
+                  if (isNaN(val)) {
+                    setEditingPuertaForm((prev) =>
+                      prev ? { ...prev, fm: 0 } : prev
+                    );
+                    return;
+                  }
+                  if (val < 0) val = 0;
+                  if (val > 100) val = 100;
+                  setEditingPuertaForm((prev) =>
+                    prev ? { ...prev, fm: val / 100 } : prev
+                  );
+                }}
               />
             </div>
           </form>

@@ -64,6 +64,16 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
                     }}
                     initialLat={formData.latitude}
                     initialLng={formData.longitude}
+                    onLocationDetails={(locationDetails) => {
+                        console.log("Detalles de la ubicación:", locationDetails);
+                        const details = [
+                            `Dirección: ${locationDetails?.Label || "N/A"}`,
+                        ].join("\n");
+                        const detailsTextArea = document.getElementById("locationDetails") as HTMLTextAreaElement;
+                        if (detailsTextArea) {
+                            detailsTextArea.value = details;
+                        }
+                    }}
                 />
             </div>
             <div className="col-12 col-md-4">
@@ -77,9 +87,20 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
                     Datos de ubicaciones encontradas
                 </label>
                 <textarea
-                    className="form-control"
-                    rows={3}
+                    className="form-control mb-3"
+                    rows={2}
                     value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
+                    readOnly
+                    style={{
+                        width: "100%",
+                        resize: "none"
+                    }}
+                />
+                <label className="form-label">Detalles de la ubicación</label>
+                <textarea
+                    id="locationDetails"
+                    className="form-control"
+                    rows={6}
                     readOnly
                     style={{
                         width: "100%",

@@ -31,7 +31,7 @@ export default async function handler(
             `https://places.geo.us-east-1.amazonaws.com/v2/search-text?key=${placesApiKey}`,
             {
                 QueryText: q,
-                BiasPosition: [lat, long]
+                BiasPosition: [lat, long],
             },
             {
                 headers: {

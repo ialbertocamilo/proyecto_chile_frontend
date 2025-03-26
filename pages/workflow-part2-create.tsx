@@ -82,6 +82,7 @@ type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "pue
 interface Ventana {
   id: number;
   name_element: string;
+  created_status?: string;
   atributs?: {
     u_vidrio?: number;
     fs_vidrio?: number;
@@ -95,6 +96,7 @@ interface Ventana {
 interface Puerta {
   id?: number;
   name_element: string;
+  created_status?: string;
   atributs?: {
     u_puerta_opaca?: number;
     name_ventana?: string;
@@ -386,13 +388,11 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   // Función para editar detalle: se cierra el modal de Detalles Generales y se abre el modal de edición.
   const handleEditDetail = (detail: Detail) => {
-    setShowDetallesModal(false); // Se cierra el modal de Detalles Generales
-    // Si no existe material_id pero sí el nombre, se busca en la lista de materiales
+    setShowDetallesModal(false);
     if ((!detail.material_id || detail.material_id === 0) && detail.material) {
       const foundMaterial = materials.find((mat) => mat.name === detail.material);
       detail.material_id = foundMaterial ? foundMaterial.id : 0;
     }
-    // Se carga la lista de materiales para que el select los muestre correctamente
     fetchMaterials();
     setEditingDetail(detail);
   };
@@ -441,7 +441,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       } else {
         notify("No se añadió el Detalle al proyecto (ID de proyecto no disponible).");
       }
-      // Actualiza inmediatamente la tabla según el tipo del detalle
       const tipo = newDetailForm.scantilon_location.toLowerCase();
       if (tipo === "muro") {
         fetchMurosDetails();
@@ -450,7 +449,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       } else if (tipo === "piso") {
         fetchPisosDetails();
       }
-      // Actualizamos también la lista general de detalles
       fetchFetchedDetails();
       setShowNewDetailRow(false);
       setNewDetailForm({
@@ -468,9 +466,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       }
     }
   };
-  
 
-  // Función que se ejecuta al hacer clic en + Nuevo, tanto en Detalles Generales como en las pestañas
   const handleNewButtonClick = () => {
     setShowNewDetailRow(true);
     fetchMaterials();
@@ -481,72 +477,37 @@ const WorkFlowpar2createPage: React.FC = () => {
     setTabStep4("muros");
   };
 
-  // Función para confirmar la edición del detalle desde el modal
-  // Función para confirmar la edición del detalle desde el modal
-const handleConfirmEditDetail = async () => {
-  if (!editingDetail) return;
-  if (!editingDetail.scantilon_location.trim() || !editingDetail.name_detail.trim()) {
-    notify("Los campos 'Ubicación Detalle' y 'Nombre Detalle' no pueden estar vacíos.");
-    return;
-  }
-  if (!editingDetail.material_id || editingDetail.material_id <= 0) {
-    notify("Por favor, seleccione un material válido.");
-    return;
-  }
-  if (editingDetail.layer_thickness === null || editingDetail.layer_thickness <= 0) {
-    notify("El 'Espesor de la capa' debe ser un valor mayor a 0.");
-    return;
-  }
-  const token = getToken();
-  if (!token || !projectId) return;
-  try {
-    const url = `${constantUrlApiEndpoint}/user/details/${editingDetail.id_detail}/update?project_id=${projectId}`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-    const payload = {
-      scantilon_location: editingDetail.scantilon_location,
-      name_detail: editingDetail.name_detail,
-      material_id: editingDetail.material_id,
-      layer_thickness: editingDetail.layer_thickness,
-    };
-    const response = await axios.put(url, payload, { headers });
-    notify(response.data.success);
-
-    // Actualización inmediata de la tabla según el tipo (Muro, Techo o Piso)
-    const tipo = editingDetail.scantilon_location.toLowerCase();
-    if (tipo === "muro") {
-      fetchMurosDetails();
-    } else if (tipo === "techo") {
-      fetchTechumbreDetails();
-    } else if (tipo === "piso") {
-      fetchPisosDetails();
+  const handleConfirmEditDetail = async () => {
+    if (!editingDetail) return;
+    if (!editingDetail.scantilon_location.trim() || !editingDetail.name_detail.trim()) {
+      notify("Los campos 'Ubicación Detalle' y 'Nombre Detalle' no pueden estar vacíos.");
+      return;
     }
-    // Actualizamos también la lista general, en caso de ser necesaria
-    fetchFetchedDetails();
-    setEditingDetail(null);
-  } catch (error: unknown) {
-    console.error("Error al actualizar el detalle:", error);
-    notify("Error al actualizar el Detalle.");
-  }
-};
-
-
-  // Funciones para eliminar detalles y elementos
-  const handleDeleteDetail = async (detailId: number) => {
+    if (!editingDetail.material_id || editingDetail.material_id <= 0) {
+      notify("Por favor, seleccione un material válido.");
+      return;
+    }
+    if (editingDetail.layer_thickness === null || editingDetail.layer_thickness <= 0) {
+      notify("El 'Espesor de la capa' debe ser un valor mayor a 0.");
+      return;
+    }
     const token = getToken();
     if (!token || !projectId) return;
     try {
-      // Se obtiene el detalle para identificar su tipo
-      const detail = fetchedDetails.find((d) => d.id_detail === detailId);
-      const tipo = detail ? detail.scantilon_location.toLowerCase() : "";
-      const url = `${constantUrlApiEndpoint}/user/details/${detailId}/delete?project_id=${projectId}`;
-      const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.delete(url, { headers });
-      notify(response.data.message);
-  
-      // Actualiza inmediatamente la tabla según el tipo
+      const url = `${constantUrlApiEndpoint}/user/details/${editingDetail.id_detail}/update?project_id=${projectId}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+      const payload = {
+        scantilon_location: editingDetail.scantilon_location,
+        name_detail: editingDetail.name_detail,
+        material_id: editingDetail.material_id,
+        layer_thickness: editingDetail.layer_thickness,
+      };
+      const response = await axios.put(url, payload, { headers });
+      notify(response.data.success);
+      const tipo = editingDetail.scantilon_location.toLowerCase();
       if (tipo === "muro") {
         fetchMurosDetails();
       } else if (tipo === "techo") {
@@ -554,25 +515,46 @@ const handleConfirmEditDetail = async () => {
       } else if (tipo === "piso") {
         fetchPisosDetails();
       }
-      // Actualiza la lista general de detalles
+      fetchFetchedDetails();
+      setEditingDetail(null);
+    } catch (error: unknown) {
+      console.error("Error al actualizar el detalle:", error);
+      notify("Error al actualizar el Detalle.");
+    }
+  };
+
+  const handleDeleteDetail = async (detailId: number) => {
+    const token = getToken();
+    if (!token || !projectId) return;
+    try {
+      const detail = fetchedDetails.find((d) => d.id_detail === detailId);
+      const tipo = detail ? detail.scantilon_location.toLowerCase() : "";
+      const url = `${constantUrlApiEndpoint}/user/details/${detailId}/delete?project_id=${projectId}`;
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.delete(url, { headers });
+      notify(response.data.message);
+      if (tipo === "muro") {
+        fetchMurosDetails();
+      } else if (tipo === "techo") {
+        fetchTechumbreDetails();
+      } else if (tipo === "piso") {
+        fetchPisosDetails();
+      }
       fetchFetchedDetails();
     } catch (error: unknown) {
       console.error("Error al eliminar el detalle:", error);
       notify("Error al eliminar el detalle.");
     }
   };
-  
 
-  // Al confirmar eliminación se cierra el modal de Detalles Generales antes de mostrar el de confirmación
   const confirmDeleteDetail = (detailId: number) => {
-    setShowDetallesModal(false); // Cierra el modal de Detalles Generales
+    setShowDetallesModal(false);
     setDeleteAction(() => () => handleDeleteDetail(detailId));
     setShowConfirmModal(true);
   };
 
-  // Para eliminación de elementos (Ventanas o Puertas)
   const confirmDeleteElement = (elementId: number, type: string) => {
-    setShowDetallesModal(false); // Cierra el modal de Detalles Generales si está abierto
+    setShowDetallesModal(false);
     setDeleteAction(() => () => handleDeleteElement(elementId, type));
     setShowConfirmModal(true);
   };
@@ -596,7 +578,6 @@ const handleConfirmEditDetail = async () => {
     }
   };
 
-  // Funciones de edición para otras secciones (Muros, Techumbre, Pisos, etc.)
   const handleEditClick = (detail: TabItem) => {
     setEditingRowId(detail.id || null);
     setEditingColors({
@@ -760,7 +741,9 @@ const handleConfirmEditDetail = async () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify(`Se actualizó correctamente el detalle con ID '${detail.id}' en el proyecto '${projectId}' de tipo 'Piso'.`);
+      notify(
+        `Se actualizó correctamente el detalle con ID '${detail.id}' en el proyecto '${projectId}' de tipo 'Piso'.`
+      );
       setPisosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -810,9 +793,7 @@ const handleConfirmEditDetail = async () => {
       await axios.put(url, payload, { headers });
       notify("Detalle tipo Puerta actualizado con éxito.");
       setPuertasTabList((prev) =>
-        prev.map((item) =>
-          item.id === puerta.id ? { ...item, ...puerta } : item
-        )
+        prev.map((item) => (item.id === puerta.id ? { ...item, ...puerta } : item))
       );
       setEditingPuertaForm(null);
     } catch (error: unknown) {
@@ -841,9 +822,7 @@ const handleConfirmEditDetail = async () => {
       await axios.put(url, payload, { headers });
       notify("Detalle tipo Ventana actualizado con éxito.");
       setVentanasTabList((prev) =>
-        prev.map((item) =>
-          item.id === ventana.id ? { ...item, ...ventana } : item
-        )
+        prev.map((item) => (item.id === ventana.id ? { ...item, ...ventana } : item))
       );
       setEditingVentanaForm(null);
     } catch (error: unknown) {
@@ -852,27 +831,23 @@ const handleConfirmEditDetail = async () => {
     }
   };
 
-  // Función para abrir el modal de Detalles Generales
   const openDetallesModal = (e: React.MouseEvent<HTMLDivElement>) => {
     const targetTag = (e.target as HTMLElement).tagName.toLowerCase();
     if (targetTag === "input" || targetTag === "select" || targetTag === "textarea") {
-      return; // No abrimos el modal si se clickea en un campo editable
+      return;
     }
     setShowDetallesModal(true);
   };
 
   const renderMainHeader = () => <Title text="Desarrollo de proyecto" />;
 
-  // Mapeo para convertir la pestaña actual en el valor del tipo de detalle
   const detailTypeMapping: { [key in TabStep4]?: string } = {
     muros: "Muro",
     techumbre: "Techo",
     pisos: "Piso",
   };
 
-  // Función para renderizar la tabla de detalles filtrada según el tipo
   const renderDetallesModalContent = () => {
-    // Se obtiene el valor del tipo según la pestaña actual
     const detailType = detailTypeMapping[tabStep4];
     const filteredDetails = detailType
       ? fetchedDetails.filter(
@@ -880,8 +855,7 @@ const handleConfirmEditDetail = async () => {
             det.scantilon_location.toLowerCase() === detailType.toLowerCase()
         )
       : fetchedDetails;
-  
-    // Se agrega la columna "Acción"
+
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
       { headerName: "Nombre Detalle", field: "name_detail" },
@@ -889,10 +863,12 @@ const handleConfirmEditDetail = async () => {
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
       { headerName: "Acción", field: "accion" },
     ];
-  
-    // Mapeo incluyendo la propiedad "accion"
+
     const data = filteredDetails.map((det) => {
-      const textStyle = det.created_status === "default" ? { color: "blue" } : {};
+      const textStyle =
+        det.created_status === "default" || det.created_status === "global"
+          ? { color: "var(--primary-color)", fontWeight: "bold" }
+          : {};
       return {
         scantilon_location: <span style={textStyle}>{det.scantilon_location}</span>,
         name_detail: <span style={textStyle}>{det.name_detail}</span>,
@@ -918,7 +894,7 @@ const handleConfirmEditDetail = async () => {
         ),
       };
     });
-  
+
     return (
       <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
         <TablesParameters columns={columnsDetails} data={data} />
@@ -946,37 +922,38 @@ const handleConfirmEditDetail = async () => {
               { headerName: "Espesor capa (cm)", field: "layer_thickness" },
               { headerName: "Acción", field: "accion" },
             ]}
-            data={
-              fetchedDetails
-                .filter((det) => {
-                  const searchLower = searchQuery.toLowerCase();
-                  return (
-                    det.scantilon_location.toLowerCase().includes(searchLower) ||
-                    det.name_detail.toLowerCase().includes(searchLower) ||
-                    det.material.toLowerCase().includes(searchLower) ||
-                    det.layer_thickness.toString().includes(searchLower)
-                  );
-                })
-                .map((det) => {
-                  const textStyle = det.created_status === "default" ? { color: "blue" } : {};
-                  return {
-                    scantilon_location: <span style={textStyle}>{det.scantilon_location}</span>,
-                    name_detail: <span style={textStyle}>{det.name_detail}</span>,
-                    material: <span style={textStyle}>{det.material}</span>,
-                    layer_thickness: <span style={textStyle}>{det.layer_thickness}</span>,
-                    accion: (
-                      <>
-                        <CustomButton variant="editIcon" onClick={() => handleEditDetail(det)}>
-                          Editar
-                        </CustomButton>
-                        <CustomButton variant="deleteIcon" onClick={() => confirmDeleteDetail(det.id_detail)}>
-                          <span className="material-icons">delete</span>
-                        </CustomButton>
-                      </>
-                    ),
-                  };
-                })
-            }
+            data={fetchedDetails
+              .filter((det) => {
+                const searchLower = searchQuery.toLowerCase();
+                return (
+                  det.scantilon_location.toLowerCase().includes(searchLower) ||
+                  det.name_detail.toLowerCase().includes(searchLower) ||
+                  det.material.toLowerCase().includes(searchLower) ||
+                  det.layer_thickness.toString().includes(searchLower)
+                );
+              })
+              .map((det) => {
+                const textStyle =
+                  det.created_status === "default" || det.created_status === "global"
+                    ? { color: "var(--primary-color)", fontWeight: "bold" }
+                    : {};
+                return {
+                  scantilon_location: <span style={textStyle}>{det.scantilon_location}</span>,
+                  name_detail: <span style={textStyle}>{det.name_detail}</span>,
+                  material: <span style={textStyle}>{det.material}</span>,
+                  layer_thickness: <span style={textStyle}>{det.layer_thickness}</span>,
+                  accion: (
+                    <>
+                      <CustomButton variant="editIcon" onClick={() => handleEditDetail(det)}>
+                        Editar
+                      </CustomButton>
+                      <CustomButton variant="deleteIcon" onClick={() => confirmDeleteDetail(det.id_detail)}>
+                        <span className="material-icons">delete</span>
+                      </CustomButton>
+                    </>
+                  ),
+                };
+              })}
           />
         </div>
       </>
@@ -1171,7 +1148,7 @@ const handleConfirmEditDetail = async () => {
       { headerName: "D [cm] (horiz)", field: "horizD" },
       { headerName: "Acciones", field: "acciones" },
     ];
-  
+
     const multiHeaderPisos = {
       rows: [
         [
@@ -1194,11 +1171,11 @@ const handleConfirmEditDetail = async () => {
         ],
       ],
     };
-  
+
     const formatNumber = (num: number | undefined, decimals = 3) => {
       return num != null && num !== 0 ? num.toFixed(decimals) : "-";
     };
-  
+
     const pisosData = pisosTabList.map((item) => {
       const bajoPiso = item.info?.aislacion_bajo_piso || {};
       const vert = item.info?.ref_aisl_vertical || {};
@@ -1336,7 +1313,7 @@ const handleConfirmEditDetail = async () => {
         ),
       };
     });
-  
+
     return (
       <div onClick={openDetallesModal} style={{ minWidth: "600px" }}>
         {pisosTabList.length > 0 ? (
@@ -1347,7 +1324,6 @@ const handleConfirmEditDetail = async () => {
       </div>
     );
   };
-  
 
   const renderVentanasTable = () => {
     const columnsVentanas = [
@@ -1361,39 +1337,49 @@ const handleConfirmEditDetail = async () => {
       { headerName: "Acciones", field: "acciones" },
     ];
 
-    const ventanasData = ventanasTabList.map((item) => ({
-      name_element: item.name_element,
-      u_vidrio: item.atributs?.u_vidrio ? item.atributs.u_vidrio.toFixed(3) : "--",
-      fs_vidrio: item.atributs?.fs_vidrio ?? "--",
-      frame_type: item.atributs?.frame_type ?? "--",
-      clousure_type: item.atributs?.clousure_type ?? "--",
-      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
-      fm: item.fm ?? "--",
-      acciones: (
-        <>
-          <CustomButton
-            className="btn-table"
-            variant="editIcon"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingVentanaForm(item);
-            }}
-          >
-            Editar
-          </CustomButton>
-          <CustomButton
-            className="btn-table"
-            variant="deleteIcon"
-            onClick={(e) => {
-              e.stopPropagation();
-              confirmDeleteElement(item.id, "window");
-            }}
-          >
-            <span className="material-icons">delete</span>
-          </CustomButton>
-        </>
-      ),
-    }));
+    const ventanasData = ventanasTabList.map((item) => {
+      const textStyle =
+        item.created_status === "default" || item.created_status === "global"
+          ? { color: "var(--primary-color)", fontWeight: "bold" }
+          : {};
+      return {
+        name_element: <span style={textStyle}>{item.name_element}</span>,
+        u_vidrio: item.atributs?.u_vidrio ? <span style={textStyle}>{item.atributs.u_vidrio.toFixed(3)}</span> : <span style={textStyle}>--</span>,
+        fs_vidrio: <span style={textStyle}>{item.atributs?.fs_vidrio ?? "--"}</span>,
+        frame_type: <span style={textStyle}>{item.atributs?.frame_type ?? "--"}</span>,
+        clousure_type: <span style={textStyle}>{item.atributs?.clousure_type ?? "--"}</span>,
+        u_marco: item.u_marco ? <span style={textStyle}>{item.u_marco.toFixed(3)}</span> : <span style={textStyle}>--</span>,
+        fm: (
+          <span style={textStyle}>
+            {item.fm != null ? (item.fm * 100).toFixed(2) + "%" : "--"}
+          </span>
+        ),
+        acciones: (
+          <div style={textStyle}>
+            <CustomButton
+              className="btn-table"
+              variant="editIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingVentanaForm(item);
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="deleteIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                confirmDeleteElement(item.id, "window");
+              }}
+            >
+              <span className="material-icons">delete</span>
+            </CustomButton>
+          </div>
+        ),
+      };
+    });
 
     return (
       <div style={{ minWidth: "600px" }}>
@@ -1417,38 +1403,54 @@ const handleConfirmEditDetail = async () => {
       { headerName: "Acciones", field: "acciones" },
     ];
 
-    const puertasData = puertasTabList.map((item) => ({
-      name_element: item.name_element,
-      u_puerta: item.atributs?.u_puerta_opaca ? item.atributs.u_puerta_opaca.toFixed(3) : "--",
-      name_ventana: item.atributs?.name_ventana ?? "--",
-      porcentaje_vidrio: item.atributs?.porcentaje_vidrio ?? "--",
-      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
-      fm: item.fm ?? "--",
-      acciones: (
-        <>
-          <CustomButton
-            className="btn-table"
-            variant="editIcon"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingPuertaForm(item);
-            }}
-          >
-            Editar
-          </CustomButton>
-          <CustomButton
-            className="btn-table"
-            variant="deleteIcon"
-            onClick={(e) => {
-              e.stopPropagation();
-              confirmDeleteElement(item.id as number, "door");
-            }}
-          >
-            <span className="material-icons">delete</span>
-          </CustomButton>
-        </>
-      ),
-    }));
+    const puertasData = puertasTabList.map((item) => {
+      const textStyle = 
+        item.created_status === "default" || item.created_status === "global"
+          ? { color: "var(--primary-color)", fontWeight: "bold" }
+          : {};
+      return {
+        name_element: <span style={textStyle}>{item.name_element}</span>,
+        u_puerta: item.atributs?.u_puerta_opaca ? <span style={textStyle}>{item.atributs.u_puerta_opaca.toFixed(3)}</span> : <span style={textStyle}>--</span>,
+        name_ventana: <span style={textStyle}>{item.atributs?.name_ventana ?? "--"}</span>,
+        porcentaje_vidrio: (
+          <span style={textStyle}>
+            {item.atributs?.porcentaje_vidrio != null
+              ? (item.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"
+              : "--"}
+          </span>
+        ),
+        u_marco: item.u_marco ? <span style={textStyle}>{item.u_marco.toFixed(3)}</span> : <span style={textStyle}>--</span>,
+        fm: (
+          <span style={textStyle}>
+            {item.fm != null ? (item.fm * 100).toFixed(2) + "%" : "--"}
+          </span>
+        ),
+        acciones: (
+          <div style={textStyle}>
+            <CustomButton
+              className="btn-table"
+              variant="editIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingPuertaForm(item);
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="deleteIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                confirmDeleteElement(item.id as number, "door");
+              }}
+            >
+              <span className="material-icons">delete</span>
+            </CustomButton>
+          </div>
+        ),
+      };
+    });
 
     return (
       <div style={{ minWidth: "600px" }}>
@@ -1461,7 +1463,6 @@ const handleConfirmEditDetail = async () => {
     );
   };
 
-  // Render de las pestañas del Step 4 (se mantiene la navegación de pestañas)
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
     const tabs = [
@@ -1998,9 +1999,9 @@ const handleConfirmEditDetail = async () => {
           onSave={() => {}}
           hideFooter={true}
           modalStyle={{
-            maxWidth: '70%', // aumenta el ancho máximo
-            width: '70%',    // ocupa el 70% del ancho del viewport
-            padding: '32px', // puedes ajustar el padding para que se vea ordenado
+            maxWidth: '70%',
+            width: '70%',
+            padding: '32px',
           }}
         >
           {renderDetallesModalContent()}

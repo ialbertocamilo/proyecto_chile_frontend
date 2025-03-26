@@ -123,9 +123,9 @@ const AdministrationPage: React.FC = () => {
           id,
           type,
           `El ${itemLabel} fue eliminado correctamente`,
-async () => {
-  await refreshCallback();
-}
+          async () => {
+            await refreshCallback();
+          }
         );
         setShowConfirmModal(false);
       },
@@ -203,7 +203,7 @@ async () => {
       clousure_type: (el.atributs as ElementAttributesWindow).clousure_type,
       frame_type: (el.atributs as ElementAttributesWindow).frame_type,
       u_marco: el.u_marco,
-      fm: (el.fm * 100).toFixed(0) + "%",
+      fm: (el.fm * 100).toFixed(2) + "%",
       action: (
         <ActionButtons
           onEdit={() => {
@@ -252,10 +252,10 @@ async () => {
       u_puerta_opaca: (el.atributs as ElementAttributesDoor).u_puerta_opaca,
       name_ventana: (el.atributs as ElementAttributesDoor).name_ventana,
       porcentaje_vidrio:
-        ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) +
+        ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(2) +
         "%",
       u_marco: el.u_marco,
-      fm: (el.fm * 100).toFixed(0) + "%",
+      fm: (el.fm * 100).toFixed(2) + "%",
       action: (
         <ActionButtons
           onEdit={() => {
@@ -266,8 +266,7 @@ async () => {
               ventana_id: (el.atributs as ElementAttributesDoor).ventana_id,
               u_marco: el.u_marco,
               fm: el.fm,
-              porcentaje_vidrio: (el.atributs as ElementAttributesDoor)
-                .porcentaje_vidrio,
+              porcentaje_vidrio: (el.atributs as ElementAttributesDoor).porcentaje_vidrio,
             });
             setShowNewDoorModal(true);
           }}
@@ -729,7 +728,6 @@ async () => {
             {step === 6 && (
               <div className="px-3">
                 <UseProfileTab />
-                
               </div>
             )}
           </div>

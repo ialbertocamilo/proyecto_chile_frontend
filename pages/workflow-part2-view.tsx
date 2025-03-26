@@ -12,7 +12,7 @@ import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import TablesParameters from "../src/components/tables/TablesParameters";
 import Breadcrumb from "@/components/common/Breadcrumb";
-import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 import ModalCreate from "../src/components/common/ModalCreate";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataView";
 
@@ -23,6 +23,7 @@ interface Detail {
   id_material: number;
   material: string;
   layer_thickness: number;
+  created_status?: string;
 }
 
 interface TabItem {
@@ -466,26 +467,81 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { headerName: "U Marco [W/m²K]", field: "u_marco" },
       { headerName: "FV [%]", field: "fm" },
     ];
-
-    const ventanasData = ventanasTabList.map((item) => ({
-      name_element: item.name_element,
-      u_vidrio: item.atributs?.u_vidrio
-        ? item.atributs.u_vidrio.toFixed(3)
-        : "--",
-      fs_vidrio: item.atributs?.fs_vidrio ?? "--",
-      frame_type: item.atributs?.frame_type ?? "--",
-      clousure_type: item.atributs?.clousure_type ?? "--",
-      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
-      fm: item.fm ?? "--",
-    }));
-
+  
+    const ventanasData = ventanasTabList.map((item) => {
+      // Verificamos si el registro tiene created_status igual a "default"
+      if ((item as any).created_status === "default" || (item as any).created_status === "global") {
+        return {
+          name_element: (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.name_element}
+            </span>
+          ),
+          u_vidrio: item.atributs?.u_vidrio ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.atributs.u_vidrio.toFixed(3)}
+            </span>
+          ) : (
+            "--"
+          ),
+          fs_vidrio: item.atributs?.fs_vidrio ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.atributs.fs_vidrio}
+            </span>
+          ) : (
+            "--"
+          ),
+          frame_type: item.atributs?.frame_type ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.atributs.frame_type}
+            </span>
+          ) : (
+            "--"
+          ),
+          clousure_type: item.atributs?.clousure_type ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.atributs.clousure_type}
+            </span>
+          ) : (
+            "--"
+          ),
+          u_marco: item.u_marco ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.u_marco.toFixed(3)}
+            </span>
+          ) : (
+            "--"
+          ),
+          fm: item.fm ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.fm}
+            </span>
+          ) : (
+            "--"
+          ),
+        };
+      } else {
+        return {
+          name_element: item.name_element,
+          u_vidrio: item.atributs?.u_vidrio
+            ? item.atributs.u_vidrio.toFixed(3)
+            : "--",
+          fs_vidrio: item.atributs?.fs_vidrio ?? "--",
+          frame_type: item.atributs?.frame_type ?? "--",
+          clousure_type: item.atributs?.clousure_type ?? "--",
+          u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+          fm: item.fm ?? "--",
+        };
+      }
+    });
+  
     return ventanasTabList.length > 0 ? (
       <TablesParameters columns={columnsVentanas} data={ventanasData} />
     ) : (
       <p>No hay datos</p>
     );
   };
-
+  
   const renderPuertasTable = () => {
     const columnsPuertas = [
       { headerName: "Nombre Elemento", field: "name_element" },
@@ -495,24 +551,73 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { headerName: "U Marco [W/m²K]", field: "u_marco" },
       { headerName: "FM [%]", field: "fm" },
     ];
-
-    const puertasData = puertasTabList.map((item) => ({
-      name_element: item.name_element,
-      u_puerta: item.atributs?.u_puerta_opaca
-        ? item.atributs.u_puerta_opaca.toFixed(3)
-        : "--",
-      name_ventana: item.atributs?.name_ventana ?? "--",
-      porcentaje_vidrio: item.atributs?.porcentaje_vidrio ?? "--",
-      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
-      fm: item.fm ?? "--",
-    }));
-
+  
+    const puertasData = puertasTabList.map((item) => {
+      // Verificamos si el registro tiene created_status igual a "default"
+      if ((item as any).created_status === "default" || (item as any).created_status === "global") {
+        return {
+          name_element: (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.name_element}
+            </span>
+          ),
+          u_puerta: item.atributs?.u_puerta_opaca ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.atributs.u_puerta_opaca.toFixed(3)}
+            </span>
+          ) : (
+            "--"
+          ),
+          name_ventana: item.atributs?.name_ventana ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.atributs.name_ventana}
+            </span>
+          ) : (
+            "--"
+          ),
+          porcentaje_vidrio: item.atributs?.porcentaje_vidrio ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.atributs.porcentaje_vidrio}
+            </span>
+          ) : (
+            "--"
+          ),
+          u_marco: item.u_marco ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.u_marco.toFixed(3)}
+            </span>
+          ) : (
+            "--"
+          ),
+          fm: item.fm ? (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {item.fm}
+            </span>
+          ) : (
+            "--"
+          ),
+        };
+      } else {
+        return {
+          name_element: item.name_element,
+          u_puerta: item.atributs?.u_puerta_opaca
+            ? item.atributs.u_puerta_opaca.toFixed(3)
+            : "--",
+          name_ventana: item.atributs?.name_ventana ?? "--",
+          porcentaje_vidrio: item.atributs?.porcentaje_vidrio ?? "--",
+          u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+          fm: item.fm ?? "--",
+        };
+      }
+    });
+  
     return puertasTabList.length > 0 ? (
       <TablesParameters columns={columnsPuertas} data={puertasData} />
     ) : (
       <p>No hay datos</p>
     );
   };
+  
 
   // ==================== RENDER PESTAÑAS (DATOS CONSTRUCTIVOS) ====================
   const renderStep4Tabs = () => {
@@ -622,6 +727,37 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return typeMatch && searchMatch;
     });
   
+    // Mapeamos para transformar TODOS los campos a color primario cuando created_status es "default"
+    const detailsData = filteredDetails.map((det) => {
+      if (det.created_status === "default" || det.created_status === "global") {
+        return {
+          ...det,
+          scantilon_location: (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {det.scantilon_location}
+            </span>
+          ),
+          name_detail: (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {det.name_detail}
+            </span>
+          ),
+          material: (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {det.material}
+            </span>
+          ),
+          layer_thickness: (
+            <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
+              {det.layer_thickness}
+            </span>
+          ),
+        };
+      } else {
+        return det;
+      }
+    });
+  
     return (
       <div className="mb-3">
         <div style={{ height: "400px", overflowY: "scroll" }}>
@@ -632,13 +768,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
               { headerName: "Material", field: "material" },
               { headerName: "Espesor capa (cm)", field: "layer_thickness" },
             ]}
-            data={filteredDetails}
+            data={detailsData}
           />
         </div>
       </div>
     );
   };
-
+  
   // ==================== RENDER RECINTO ===================
   const renderRecinto = () => {
     return (
@@ -737,10 +873,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
         title="Detalles Generales"
         hideFooter={true}
         modalStyle={{
-          maxWidth: '70%',
-          width: '70%',
-          padding: '32px',
-        }}	
+          maxWidth: "70%",
+          width: "70%",
+          padding: "32px",
+        }}
       >
         {renderGeneralDetailsContent()}
       </ModalCreate>

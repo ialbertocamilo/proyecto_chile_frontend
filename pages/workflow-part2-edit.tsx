@@ -27,7 +27,7 @@ import TabRecintDataCreate from "../src/components/tab_recint_data/TabRecintData
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
 // -----------------------
-// Componente para el Modal de Detalles (detalles individuales de un registro)
+// Modal de Detalles Individuales
 // -----------------------
 export interface Detail {
   id_detail: number;
@@ -47,26 +47,30 @@ interface DetailModalProps {
 
 export const DetailModal: React.FC<DetailModalProps> = ({ detail, show, onClose }) => {
   if (!detail) return null;
+  const textStyle =
+    detail.created_status === "default" || detail.created_status === "global"
+      ? { color: "var(--primary-color)", fontWeight: "bold" }
+      : {};
   return (
     <ModalCreate
       detail={null}
       isOpen={show}
       onClose={onClose}
-      onSave={onClose} // Se usa la misma acción para cerrar
+      onSave={onClose} // Se cierra el modal
       title="Detalles Generales"
       hideFooter={false}
     >
       <p>
-        <strong>Ubicación:</strong> {detail.scantilon_location}
+        <strong>Ubicación:</strong> <span style={textStyle}>{detail.scantilon_location}</span>
       </p>
       <p>
-        <strong>Nombre:</strong> {detail.name_detail}
+        <strong>Nombre:</strong> <span style={textStyle}>{detail.name_detail}</span>
       </p>
       <p>
-        <strong>Material:</strong> {detail.material}
+        <strong>Material:</strong> <span style={textStyle}>{detail.material}</span>
       </p>
       <p>
-        <strong>Espesor de capa:</strong> {detail.layer_thickness} cm
+        <strong>Espesor de capa:</strong> <span style={textStyle}>{detail.layer_thickness} cm</span>
       </p>
     </ModalCreate>
   );
@@ -135,6 +139,7 @@ type TabStep4 =
 interface Ventana {
   id: number;
   name_element: string;
+  created_status?: string;
   atributs?: {
     u_vidrio?: number;
     fs_vidrio?: number;
@@ -148,6 +153,7 @@ interface Ventana {
 interface Puerta {
   id: number;
   name_element: string;
+  created_status?: string;
   atributs?: {
     u_puerta_opaca?: number;
     name_ventana?: string;
@@ -158,7 +164,7 @@ interface Puerta {
 }
 
 // -----------------------
-// Constantes para estilos de cabeceras fijas
+// Constantes para estilos de cabeceras fijas (si fueran necesarios)
 // -----------------------
 const stickyHeaderStyle1 = {
   position: "sticky" as const,
@@ -214,14 +220,10 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== ESTADOS PARA MODALES Y EDICIÓN ======================
   const [selectedDetail, setSelectedDetail] = useState<Detail | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-
-  // Modal que muestra la tabla de Detalles Generales
   const [showDetallesModal, setShowDetallesModal] = useState(false);
-
-  // Modal para editar un detalle (todos los apartados)
   const [editingDetail, setEditingDetail] = useState<Detail | null>(null);
 
-  // Estados para ventanas, puertas y demás secciones (se mantienen sin cambios)
+  // ===================== ESTADOS PARA VENTANAS, PUERTAS Y DEMÁS ======================
   const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
   const [techumbreTabList, setTechumbreTabList] = useState<TabItem[]>([]);
   const [pisosTabList, setPisosTabList] = useState<TabItem[]>([]);
@@ -255,18 +257,14 @@ const WorkFlowpar2editPage: React.FC = () => {
   const [editingPuerta, setEditingPuerta] = useState<Puerta | null>(null);
 
   // ===================== ESTADOS PARA MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ======================
-  // Se amplía el tipo para incluir "detail"
   const [deleteItem, setDeleteItem] = useState<{ id: number; type: "window" | "door" | "detail" } | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // ===================== INIT ======================
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id_edit");
-    console.log("Cargando ID del proyecto:", storedProjectId);
     if (storedProjectId) {
       setProjectId(Number(storedProjectId));
-    } else {
-      console.warn("No se encontró ID del proyecto en localStorage");
     }
     const storedProjectName = localStorage.getItem("project_name_edit") || "";
     const storedRegion = localStorage.getItem("project_department_edit") || "";
@@ -315,22 +313,15 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   const fetchData = useCallback(
     async <T,>(endpoint: string, setter: (data: T) => void) => {
-      if (!projectId) {
-        console.log("No se puede obtener datos sin un ID de proyecto");
-        return;
-      }
+      if (!projectId) return;
       const token = getToken();
       if (!token) return;
       try {
-        console.log("Fetching data from:", endpoint);
         const headers = { Authorization: `Bearer ${token}` };
         const response = await axios.get(endpoint, { headers });
         setter(response.data);
       } catch (error: unknown) {
         console.error(`Error al obtener datos desde ${endpoint}:`, error);
-        if (axios.isAxiosError(error) && error.response?.status !== 404) {
-          console.error("Error status:", error.response?.status);
-        }
       }
     },
     [projectId]
@@ -347,10 +338,6 @@ const WorkFlowpar2editPage: React.FC = () => {
       setFetchedDetails(response.data || []);
     } catch (error: unknown) {
       console.error("Error al obtener detalles:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
       Swal.fire("Error", "Error al obtener detalles. Ver consola.");
     }
   }, [projectId]);
@@ -546,9 +533,8 @@ const WorkFlowpar2editPage: React.FC = () => {
     setTabStep4("muros");
   };
 
-  // ===================== EDICIÓN DE DETALLE (Modal de edición de todos los apartados) ======================
+  // ===================== EDICIÓN DE DETALLE ======================
   const handleEditDetail = (detail: Detail) => {
-    // Abre el modal para editar el detalle
     setEditingDetail(detail);
   };
 
@@ -578,14 +564,12 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
   };
 
-  // ===================== ELIMINACIÓN DE DETALLE CON MODAL DE CONFIRMACIÓN ======================
+  // ===================== ELIMINACIÓN DE DETALLE ======================
   const handleDeleteDetail = (detail: Detail) => {
-    // En lugar de usar confirm(), se abre el modal de confirmación
     setDeleteItem({ id: detail.id_detail, type: "detail" });
     setShowDeleteModal(true);
   };
 
-  // ===================== CONFIRMAR ELIMINACIÓN (Modal) ======================
   const confirmDelete = async () => {
     if (!deleteItem || !projectId) return;
     const token = getToken();
@@ -618,7 +602,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
   };
 
-  // ===================== RENDER DEL MODAL PARA DETALLES GENERALES (TABLA) ======================
+  // ===================== RENDER DEL MODAL PARA DETALLES GENERALES ======================
   const renderDetallesModalContent = () => {
     const detailTypeMapping: { [key in TabStep4]?: string } = {
       muros: "Muro",
@@ -628,56 +612,59 @@ const WorkFlowpar2editPage: React.FC = () => {
     const detailType = detailTypeMapping[tabStep4];
     const filteredDetails = detailType
       ? fetchedDetails.filter(
-        (det) =>
-          det.scantilon_location.toLowerCase() === detailType.toLowerCase()
-      )
+          (det) =>
+            det.scantilon_location.toLowerCase() === detailType.toLowerCase()
+        )
       : fetchedDetails;
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
       { headerName: "Nombre Detalle", field: "name_detail" },
       { headerName: "Material", field: "material" },
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
-      { headerName: "Acciones", field: "acciones" },
+      { headerName: "Acción", field: "acciones" },
     ];
-    const data = filteredDetails.map((det) => ({
-      scantilon_location: det.scantilon_location,
-      name_detail: det.name_detail,
-      material: det.material,
-      layer_thickness: det.layer_thickness,
-      acciones: (
-        <>
-          <CustomButton
-            variant="editIcon"
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              handleEditDetail(det);
-            }}
-          >
-            Editar
-          </CustomButton>
-          <CustomButton
-            variant="deleteIcon"
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              handleDeleteDetail(det);
-            }}
-          >
-            Eliminar
-          </CustomButton>
-        </>
-      ),
-    }));
+    const data = filteredDetails.map((det) => {
+      const textStyle =
+        det.created_status === "default" || det.created_status === "global"
+          ? { color: "var(--primary-color)", fontWeight: "bold" }
+          : {};
+      return {
+        scantilon_location: <span style={textStyle}>{det.scantilon_location}</span>,
+        name_detail: <span style={textStyle}>{det.name_detail}</span>,
+        material: <span style={textStyle}>{det.material}</span>,
+        layer_thickness: <span style={textStyle}>{det.layer_thickness}</span>,
+        acciones: (
+          <>
+            <CustomButton
+              variant="editIcon"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                handleEditDetail(det);
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              variant="deleteIcon"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                handleDeleteDetail(det);
+              }}
+            >
+              <span className="material-icons">delete</span>
+            </CustomButton>
+          </>
+        ),
+      };
+    });
     return (
-      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+      <div style={{ maxHeight: "400px", overflowY: "auto", overflowX: "auto" }}>
         <TablesParameters columns={columnsDetails} data={data} />
       </div>
     );
   };
 
-  // ===================== RENDER CABECERA PRINCIPAL ======================
-  const renderMainHeader = () => <Title text="Edición de Proyecto" />;
-
-  // ===================== RENDER INICIAL DETALLES ======================
+  // ===================== RENDER INICIAL DETALLES (sin pestañas) ======================
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
     const filteredData = fetchedDetails.filter((det) => {
@@ -689,65 +676,28 @@ const WorkFlowpar2editPage: React.FC = () => {
         det.layer_thickness.toString().includes(searchLower)
       );
     });
+    const columns = [
+      { headerName: "Ubicación Detalle", field: "scantilon_location" },
+      { headerName: "Nombre Detalle", field: "name_detail" },
+      { headerName: "Material", field: "material" },
+      { headerName: "Espesor capa (cm)", field: "layer_thickness" },
+    ];
+    const data = filteredData.map((det) => {
+      const textStyle =
+        det.created_status === "default" || det.created_status === "global"
+          ? { color: "var(--primary-color)", fontWeight: "bold" }
+          : {};
+      return {
+        scantilon_location: <span style={textStyle}>{det.scantilon_location}</span>,
+        name_detail: <span style={textStyle}>{det.name_detail}</span>,
+        material: <span style={textStyle}>{det.material}</span>,
+        layer_thickness: <span style={textStyle}>{det.layer_thickness}</span>,
+      };
+    });
     return (
-      <>
-        <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                <th>Ubicación Detalle</th>
-                <th>Nombre Detalle</th>
-                <th>Material</th>
-                <th>Espesor capa (cm)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((det) => (
-                <tr
-                  key={det.id_detail}
-                  onClick={() => setSelectedDetail(det)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <td>{det.scantilon_location}</td>
-                  <td>{det.name_detail}</td>
-                  <td>{det.material}</td>
-                  <td>{det.layer_thickness}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            gap: "10px",
-            marginTop: "30px",
-            marginBottom: "10px",
-          }}
-        >
-          <div>
-            <div style={{ marginTop: "30px", marginBottom: "10px", width: "100%" }}>
-              <CustomButton
-                id="mostrar-datos-btn"
-                variant="save"
-                onClick={saveDetails}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "clamp(0.5rem, 1vw, 1rem) clamp(1rem, 4vw, 2rem)",
-                  height: "min(3rem, 8vh)",
-                  minWidth: "6rem",
-                }}
-              >
-                <span className="material-icons">arrow_back</span> Volver
-              </CustomButton>
-            </div>
-          </div>
-        </div>
-      </>
+      <div style={{ maxHeight: "400px", overflowY: "auto", overflowX: "auto" }}>
+        <TablesParameters columns={columns} data={data} />
+      </div>
     );
   };
 
@@ -771,9 +721,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           <select
             value={editingColors.exterior}
             onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingColors((prev) => ({ ...prev, exterior: e.target.value }))
-            }
+            onChange={(e) => setEditingColors((prev) => ({ ...prev, exterior: e.target.value }))}
           >
             <option value="Claro">Claro</option>
             <option value="Oscuro">Oscuro</option>
@@ -784,9 +732,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           <select
             value={editingColors.interior}
             onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingColors((prev) => ({ ...prev, interior: e.target.value }))
-            }
+            onChange={(e) => setEditingColors((prev) => ({ ...prev, interior: e.target.value }))}
           >
             <option value="Claro">Claro</option>
             <option value="Oscuro">Oscuro</option>
@@ -877,9 +823,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           <select
             value={editingTechColors.exterior}
             onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingTechColors((prev) => ({ ...prev, exterior: e.target.value }))
-            }
+            onChange={(e) => setEditingTechColors((prev) => ({ ...prev, exterior: e.target.value }))}
           >
             <option value="Claro">Claro</option>
             <option value="Oscuro">Oscuro</option>
@@ -890,9 +834,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           <select
             value={editingTechColors.interior}
             onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingTechColors((prev) => ({ ...prev, interior: e.target.value }))
-            }
+            onChange={(e) => setEditingTechColors((prev) => ({ ...prev, interior: e.target.value }))}
           >
             <option value="Claro">Claro</option>
             <option value="Oscuro">Oscuro</option>
@@ -936,8 +878,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           </div>
         ) : (
           <CustomButton
-            className="btn-table"
             variant="editIcon"
+            className="btn-table"
             onClick={(e) => {
               e.stopPropagation();
               setEditingTechRowId(item.id || null);
@@ -1237,40 +1179,46 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "FV [%]", field: "fm" },
       { headerName: "Acciones", field: "acciones" },
     ];
-    const ventanasData = ventanasTabList.map((item) => ({
-      name_element: item.name_element,
-      u_vidrio: item.atributs?.u_vidrio ? item.atributs.u_vidrio.toFixed(3) : "--",
-      fs_vidrio: item.atributs?.fs_vidrio ?? "--",
-      frame_type: item.atributs?.frame_type ?? "--",
-      clousure_type: item.atributs?.clousure_type ?? "--",
-      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
-      fm: item.fm ?? "--",
-      acciones: (
-        <>
-          <CustomButton
-            className="btn-table"
-            variant="editIcon"
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              setEditingVentana(item);
-            }}
-          >
-            Editar
-          </CustomButton>
-          <CustomButton
-            className="btn-table"
-            variant="deleteIcon"
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              setDeleteItem({ id: item.id, type: "window" });
-              setShowDeleteModal(true);
-            }}
-          >
-            <span className="material-icons">delete</span>
-          </CustomButton>
-        </>
-      ),
-    }));
+    const ventanasData = ventanasTabList.map((item) => {
+      const textStyle =
+        item.created_status === "default" || item.created_status === "global"
+          ? { color: "var(--primary-color)", fontWeight: "bold" }
+          : {};
+      return {
+        name_element: <span style={textStyle}>{item.name_element}</span>,
+        u_vidrio: item.atributs?.u_vidrio ? <span style={textStyle}>{item.atributs.u_vidrio.toFixed(3)}</span> : <span style={textStyle}>--</span>,
+        fs_vidrio: <span style={textStyle}>{item.atributs?.fs_vidrio ?? "--"}</span>,
+        frame_type: <span style={textStyle}>{item.atributs?.frame_type ?? "--"}</span>,
+        clousure_type: <span style={textStyle}>{item.atributs?.clousure_type ?? "--"}</span>,
+        u_marco: item.u_marco ? <span style={textStyle}>{item.u_marco.toFixed(3)}</span> : <span style={textStyle}>--</span>,
+        fm: <span style={textStyle}>{item.fm ?? "--"}</span>,
+        acciones: (
+          <div style={textStyle}>
+            <CustomButton
+              className="btn-table"
+              variant="editIcon"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                setEditingVentana(item);
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="deleteIcon"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                setDeleteItem({ id: item.id, type: "window" });
+                setShowDeleteModal(true);
+              }}
+            >
+              <span className="material-icons">delete</span>
+            </CustomButton>
+          </div>
+        ),
+      };
+    });
     return (
       <div style={{ overflowX: "auto" }}>
         {ventanasTabList.length > 0 ? (
@@ -1293,39 +1241,45 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "FM [%]", field: "fm" },
       { headerName: "Acciones", field: "acciones" },
     ];
-    const puertasData = puertasTabList.map((item) => ({
-      name_element: item.name_element,
-      u_puerta: item.atributs?.u_puerta_opaca ? item.atributs.u_puerta_opaca.toFixed(3) : "--",
-      name_ventana: item.atributs?.name_ventana ?? "--",
-      porcentaje_vidrio: item.atributs?.porcentaje_vidrio ?? "--",
-      u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
-      fm: item.fm ?? "--",
-      acciones: (
-        <>
-          <CustomButton
-            className="btn-table"
-            variant="editIcon"
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              setEditingPuerta(item);
-            }}
-          >
-            Editar
-          </CustomButton>
-          <CustomButton
-            className="btn-table"
-            variant="deleteIcon"
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              setDeleteItem({ id: item.id, type: "door" });
-              setShowDeleteModal(true);
-            }}
-          >
-            <span className="material-icons">delete</span>
-          </CustomButton>
-        </>
-      ),
-    }));
+    const puertasData = puertasTabList.map((item) => {
+      const textStyle =
+        item.created_status === "default" || item.created_status === "global"
+          ? { color: "var(--primary-color)", fontWeight: "bold" }
+          : {};
+      return {
+        name_element: <span style={textStyle}>{item.name_element}</span>,
+        u_puerta: item.atributs?.u_puerta_opaca ? <span style={textStyle}>{item.atributs.u_puerta_opaca.toFixed(3)}</span> : <span style={textStyle}>--</span>,
+        name_ventana: <span style={textStyle}>{item.atributs?.name_ventana ?? "--"}</span>,
+        porcentaje_vidrio: <span style={textStyle}>{item.atributs?.porcentaje_vidrio ?? "--"}</span>,
+        u_marco: item.u_marco ? <span style={textStyle}>{item.u_marco.toFixed(3)}</span> : <span style={textStyle}>--</span>,
+        fm: <span style={textStyle}>{item.fm ?? "--"}</span>,
+        acciones: (
+          <div style={textStyle}>
+            <CustomButton
+              className="btn-table"
+              variant="editIcon"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                setEditingPuerta(item);
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="deleteIcon"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                setDeleteItem({ id: item.id, type: "door" });
+                setShowDeleteModal(true);
+              }}
+            >
+              <span className="material-icons">delete</span>
+            </CustomButton>
+          </div>
+        ),
+      };
+    });
     return (
       <div style={{ overflowX: "auto" }}>
         {puertasTabList.length > 0 ? (
@@ -1496,7 +1450,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       <div>
         <Card>
           <div>
-            {renderMainHeader()}
+            <Title text="Edición de Proyecto" />
             <div className="d-flex align-items-center" style={{ gap: "10px" }}>
               <ProjectInfoHeader projectName={projectName} region={region} />
               <Breadcrumb items={[{ title: "Editar", href: "/", active: true }]} />
@@ -1506,7 +1460,11 @@ const WorkFlowpar2editPage: React.FC = () => {
         <Card>
           <div className="row">
             <div className="col-12 col-lg-3">
-              <AdminSidebar activeStep={step} onStepChange={handleSidebarStepChange} steps={sidebarSteps} />
+              <AdminSidebar
+                activeStep={step}
+                onStepChange={handleSidebarStepChange}
+                steps={sidebarSteps}
+              />
             </div>
             <div className="col-12 col-lg-9">
               <div className="w-100">
@@ -1538,13 +1496,13 @@ const WorkFlowpar2editPage: React.FC = () => {
         isOpen={showDetallesModal}
         title="Detalles Generales"
         onClose={() => setShowDetallesModal(false)}
-        onSave={() => { }}
+        onSave={() => {}}
         hideFooter={true}
         modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
       >
         {renderDetallesModalContent()}
       </ModalCreate>
-      {/* Modal para editar un Detalle (todos los apartados) */}
+      {/* Modal para editar un Detalle */}
       {editingDetail && (
         <ModalCreate
           isOpen={true}
@@ -1638,9 +1596,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: { ...prev.atributs, u_vidrio: parseFloat(e.target.value) },
-                      }
+                          ...prev,
+                          atributs: { ...prev.atributs, u_vidrio: parseFloat(e.target.value) },
+                        }
                       : prev
                   )
                 }
@@ -1656,9 +1614,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: { ...prev.atributs, fs_vidrio: parseFloat(e.target.value) },
-                      }
+                          ...prev,
+                          atributs: { ...prev.atributs, fs_vidrio: parseFloat(e.target.value) },
+                        }
                       : prev
                   )
                 }
@@ -1747,7 +1705,7 @@ const WorkFlowpar2editPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <label>U Puerta Opaca [W/m²K]</label>
+              <label>U puerta opaca [W/m²K]</label>
               <input
                 type="number"
                 className="form-control"
@@ -1756,9 +1714,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: { ...prev.atributs, u_puerta_opaca: parseFloat(e.target.value) },
-                      }
+                          ...prev,
+                          atributs: { ...prev.atributs, u_puerta_opaca: parseFloat(e.target.value) },
+                        }
                       : prev
                   )
                 }
@@ -1789,9 +1747,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: { ...prev.atributs, porcentaje_vidrio: parseFloat(e.target.value) },
-                      }
+                          ...prev,
+                          atributs: { ...prev.atributs, porcentaje_vidrio: parseFloat(e.target.value) },
+                        }
                       : prev
                   )
                 }
@@ -1826,7 +1784,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           </form>
         </ModalCreate>
       )}
-      {/* Modal de confirmación de eliminación (para ventanas, puertas y detalles) */}
+      {/* Modal de confirmación para eliminar */}
       {showDeleteModal && deleteItem && (
         <ModalCreate
           isOpen={showDeleteModal}
@@ -1842,8 +1800,8 @@ const WorkFlowpar2editPage: React.FC = () => {
             {deleteItem.type === "detail"
               ? "¿Estás seguro de que deseas eliminar este detalle?"
               : deleteItem.type === "window"
-                ? "¿Estás seguro de que deseas eliminar esta ventana?"
-                : "¿Estás seguro de que deseas eliminar esta puerta?"}
+              ? "¿Estás seguro de que deseas eliminar esta ventana?"
+              : "¿Estás seguro de que deseas eliminar esta puerta?"}
           </p>
         </ModalCreate>
       )}

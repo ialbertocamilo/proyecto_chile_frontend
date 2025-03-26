@@ -54,7 +54,10 @@ interface ItemToDelete {
   tab: TabKey;
 }
 
-const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger = 0 }) => {
+const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: string }> = ({
+  refreshTrigger = 0,
+  primaryColorProp,
+}) => {
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [activeTab, setActiveTab] = useState<TabKey>("ventilacion");
   const [rolUser, setRolUser] = useState<string>("");
@@ -100,17 +103,17 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
   // Función para realizar el DELETE y eliminar un recinto
   const handleDeleteConfirm = () => {
     if (!itemToDelete) return;
-    
+
     const token = localStorage.getItem("token");
     if (!token || !rolUser) return;
-    
+
     const url = `${constantUrlApiEndpoint}/enclosures-typing/${itemToDelete.id}/delete?section=${rolUser}`;
-    
+
     fetch(url, {
       method: "DELETE",
       headers: {
-        "accept": "application/json",
-        "Authorization": `Bearer ${token}`,
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => res.json())
@@ -135,8 +138,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
     fetch(url, {
       method: "POST",
       headers: {
-        "accept": "application/json",
-        "Authorization": `Bearer ${token}`,
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ name: newRecintoName }),
@@ -163,21 +166,21 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
 
   // Se ejecuta una sola vez para obtener el rol del usuario y el color primario
   useEffect(() => {
-    setPrimaryColor(getCssVarValue("--primary-color", "#3ca7b7"));
+    setPrimaryColor(primaryColorProp || getCssVarValue("--primary-color", "#3ca7b7"));
     const roleId = localStorage.getItem("role_id");
     if (roleId === "1") {
       setRolUser("admin");
     } else if (roleId === "2") {
       setRolUser("user");
     }
-  }, []);
+  }, [primaryColorProp]);
 
   // 1. Ventilación y caudales
   useEffect(() => {
     if (!rolUser) return;
     const token = localStorage.getItem("token");
     const url = `${constantUrlApiEndpoint}/${rolUser}/enclosures-typing/?type=ventilation_flows`;
-    fetch(url, { headers: { "Authorization": `Bearer ${token}` } })
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((data) => {
         let enclosures: any[] = [];
@@ -191,14 +194,14 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
         setVentilacionRaw(enclosures);
       })
       .catch((err) => console.error("Error al obtener ventilacion:", err));
-  }, [rolUser, refresh]);
+  }, [rolUser, refresh, refreshTrigger]);
 
   // 2. Iluminación
   useEffect(() => {
     if (!rolUser) return;
     const token = localStorage.getItem("token");
     const url = `${constantUrlApiEndpoint}/${rolUser}/enclosures-typing/?type=lightning`;
-    fetch(url, { headers: { "Authorization": `Bearer ${token}` } })
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((data) => {
         let enclosures: any[] = [];
@@ -212,14 +215,14 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
         setIluminacionRaw(enclosures);
       })
       .catch((err) => console.error("Error al obtener iluminacion:", err));
-  }, [rolUser, refresh]);
+  }, [rolUser, refresh, refreshTrigger]);
 
   // 3. Cargas internas
   useEffect(() => {
     if (!rolUser) return;
     const token = localStorage.getItem("token");
     const url = `${constantUrlApiEndpoint}/${rolUser}/enclosures-typing/?type=internal_loads`;
-    fetch(url, { headers: { "Authorization": `Bearer ${token}` } })
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((data) => {
         let enclosures: any[] = [];
@@ -233,14 +236,14 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
         setCargasRaw(enclosures);
       })
       .catch((err) => console.error("Error al obtener cargas internas:", err));
-  }, [rolUser, refresh]);
+  }, [rolUser, refresh, refreshTrigger]);
 
   // 4. Horario y Clima
   useEffect(() => {
     if (!rolUser) return;
     const token = localStorage.getItem("token");
     const url = `${constantUrlApiEndpoint}/${rolUser}/enclosures-typing/?type=schedule_weather`;
-    fetch(url, { headers: { "Authorization": `Bearer ${token}` } })
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((data) => {
         let enclosures: any[] = [];
@@ -254,18 +257,18 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
         setHorarioRaw(enclosures);
       })
       .catch((err) => console.error("Error al obtener horario y clima:", err));
-  }, [rolUser, refresh]);
+  }, [rolUser, refresh, refreshTrigger]);
 
   // Handlers para edición
   const handleStartEdit = (tab: TabKey, enclosure: any, initialValues: any) => {
-    // Incluimos el valor de rPers para que se muestre igual que "Tipologia de Recinto"
+    // Se fuerza el valor de rPers a lo que muestra la API
     setEditingRow({
       id: enclosure.id,
       tab,
       values: {
         ...initialValues,
-        // Se fuerza el valor de rPers a lo que muestra la API
-        rPers: (enclosure.building_conditions[0]?.details?.cauldal_min_salubridad?.r_pers ?? 0).toFixed(2)
+        rPers:
+          (enclosure.building_conditions[0]?.details?.cauldal_min_salubridad?.r_pers ?? 0).toFixed(2),
       },
       original: enclosure,
     });
@@ -346,8 +349,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
     fetch(url, {
       method: "PUT",
       headers: {
-        "accept": "application/json",
-        "Authorization": `Bearer ${token}`,
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
@@ -364,13 +367,14 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
   // Funciones para construir cada fila de tabla según el tipo de dato
 
   const mapVentilacionRow = (enclosure: any) => {
+    // Se asume que si el primer building_conditions tiene created_status === "default", es por defecto.
+    const isDefault = enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions[0]?.details || {};
     const minSalubridad = condition.cauldal_min_salubridad || {};
     const isEditing =
       editingRow &&
       editingRow.id === enclosure.id &&
       editingRow.tab === "ventilacion";
-    // Se obtiene el valor de R-pers directamente de la API, sin condicionar la edición
     const rPersValue = (minSalubridad.r_pers ?? 0).toFixed(2);
     const values = isEditing
       ? editingRow.values
@@ -382,9 +386,27 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
         };
 
     return {
-      codigoRecinto: enclosure.code,
-      tipologiaRecinto: enclosure.name,
-      rPers: rPersValue,
+      codigoRecinto: isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {enclosure.code}
+        </span>
+      ) : (
+        enclosure.code
+      ),
+      tipologiaRecinto: isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {enclosure.name}
+        </span>
+      ) : (
+        enclosure.name
+      ),
+      rPers: isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {rPersValue}
+        </span>
+      ) : (
+        rPersValue
+      ),
       ida: isEditing ? (
         <select
           className="form-control form-control-sm"
@@ -395,6 +417,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           <option value="IDA2">IDA2</option>
           <option value="IDA3">IDA3</option>
         </select>
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.ida}
+        </span>
       ) : (
         values.ida
       ),
@@ -411,6 +437,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           <option value="Colegio">Colegio</option>
           <option value="Sedentario">Sedentario</option>
         </select>
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.ocupacion}
+        </span>
       ) : (
         values.ocupacion
       ),
@@ -421,6 +451,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           value={editingRow.values.caudalImpuestoVentNoct}
           onChange={(e) => handleEditChange("caudalImpuestoVentNoct", e.target.value)}
         />
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.caudalImpuestoVentNoct}
+        </span>
       ) : (
         values.caudalImpuestoVentNoct
       ),
@@ -445,6 +479,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
   };
 
   const mapIluminacionRow = (enclosure: any) => {
+    const isDefault = enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions.find(
       (cond: any) => cond.type === "lightning"
     );
@@ -462,8 +497,20 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
         };
 
     return {
-      codigoRecinto: enclosure.code,
-      tipologiaRecinto: enclosure.name,
+      codigoRecinto: isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {enclosure.code}
+        </span>
+      ) : (
+        enclosure.code
+      ),
+      tipologiaRecinto: isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {enclosure.name}
+        </span>
+      ) : (
+        enclosure.name
+      ),
       potenciaBase: isEditing ? (
         <input
           type="number"
@@ -471,6 +518,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           value={editingRow.values.potenciaBase}
           onChange={(e) => handleEditChange("potenciaBase", e.target.value)}
         />
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.potenciaBase}
+        </span>
       ) : (
         values.potenciaBase
       ),
@@ -485,11 +536,20 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           <option value="Sectorizacion">Sectorizacion</option>
           <option value="Sensor de Luz Nat">Sensor de Luz Nat</option>
         </select>
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.estrategia}
+        </span>
       ) : (
         values.estrategia
       ),
-      // La columna "Potencia Propuesta [W/m2]" se muestra siempre como texto, sin opción de edición.
-      potenciaPropuesta: values.potenciaPropuesta,
+      potenciaPropuesta: isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.potenciaPropuesta}
+        </span>
+      ) : (
+        values.potenciaPropuesta
+      ),
       accion: isEditing ? (
         <ActionButtonsConfirm
           onAccept={() => handleSave("iluminacion", enclosure)}
@@ -511,6 +571,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
   };
 
   const mapCargasRow = (enclosure: any) => {
+    const isDefault = enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions[0]?.details || {};
     const isEditing =
       editingRow &&
@@ -527,8 +588,20 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
         };
 
     return {
-      codigoRecinto: enclosure.code,
-      tipologiaRecinto: enclosure.name,
+      codigoRecinto: isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {enclosure.code}
+        </span>
+      ) : (
+        enclosure.code
+      ),
+      tipologiaRecinto: isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {enclosure.name}
+        </span>
+      ) : (
+        enclosure.name
+      ),
       usuarios: isEditing ? (
         <input
           type="number"
@@ -536,6 +609,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           value={editingRow.values.usuarios}
           onChange={(e) => handleEditChange("usuarios", e.target.value)}
         />
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.usuarios}
+        </span>
       ) : (
         values.usuarios
       ),
@@ -546,6 +623,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           value={editingRow.values.calorLatente}
           onChange={(e) => handleEditChange("calorLatente", e.target.value)}
         />
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.calorLatente}
+        </span>
       ) : (
         values.calorLatente
       ),
@@ -556,6 +637,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           value={editingRow.values.calorSensible}
           onChange={(e) => handleEditChange("calorSensible", e.target.value)}
         />
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.calorSensible}
+        </span>
       ) : (
         values.calorSensible
       ),
@@ -566,6 +651,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           value={editingRow.values.equipos}
           onChange={(e) => handleEditChange("equipos", e.target.value)}
         />
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.equipos}
+        </span>
       ) : (
         values.equipos
       ),
@@ -576,6 +665,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           value={editingRow.values.funcionamientoSemanal}
           onChange={(e) => handleEditChange("funcionamientoSemanal", e.target.value)}
         />
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.funcionamientoSemanal}
+        </span>
       ) : (
         values.funcionamientoSemanal
       ),
@@ -602,6 +695,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
   };
 
   const mapHorarioRow = (enclosure: any) => {
+    const isDefault = enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "global";
     const details = enclosure.building_conditions[0]?.details || {};
     const recinto = details.recinto || { climatizado: "N/A", desfase_clima: 0 };
     const isEditing =
@@ -616,8 +710,20 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
         };
 
     return {
-      codigoRecinto: enclosure.code,
-      tipologiaRecinto: enclosure.name,
+      codigoRecinto: isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {enclosure.code}
+        </span>
+      ) : (
+        enclosure.code
+      ),
+      tipologiaRecinto: isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {enclosure.name}
+        </span>
+      ) : (
+        enclosure.name
+      ),
       climatizado: isEditing ? (
         <select
           className="form-control form-control-sm"
@@ -627,6 +733,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           <option value="Si">Si</option>
           <option value="No">No</option>
         </select>
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.climatizado}
+        </span>
       ) : (
         values.climatizado
       ),
@@ -637,6 +747,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           value={editingRow.values.hrsDesfaseClimaInv}
           onChange={(e) => handleEditChange("hrsDesfaseClimaInv", e.target.value)}
         />
+      ) : isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {values.hrsDesfaseClimaInv}
+        </span>
       ) : (
         values.hrsDesfaseClimaInv
       ),
@@ -696,35 +810,35 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
           value: searchVentilacion,
           onChange: setSearchVentilacion,
           onNew: () => handleNuevoClick("ventilacion"),
-          placeholder: "Buscar recinto..."
+          placeholder: "Buscar recinto...",
         };
       case "iluminacion":
         return {
           value: searchIluminacion,
           onChange: setSearchIluminacion,
           onNew: () => handleNuevoClick("iluminacion"),
-          placeholder: "Buscar recinto..."
+          placeholder: "Buscar recinto...",
         };
       case "cargas":
         return {
           value: searchCargas,
           onChange: setSearchCargas,
           onNew: () => handleNuevoClick("cargas"),
-          placeholder: "Buscar recinto..."
+          placeholder: "Buscar recinto...",
         };
       case "horario":
         return {
           value: searchHorario,
           onChange: setSearchHorario,
           onNew: () => handleNuevoClick("horario"),
-          placeholder: "Buscar recinto..."
+          placeholder: "Buscar recinto...",
         };
       default:
         return {
           value: "",
           onChange: () => {},
           onNew: () => {},
-          placeholder: "Buscar recinto..."
+          placeholder: "Buscar recinto...",
         };
     }
   };
@@ -752,7 +866,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
                   backgroundColor: "#fff",
                   color: activeTab === item.key ? primaryColor : "var(--secondary-color)",
                   border: "none",
-                  borderBottom: activeTab === item.key ? `solid 2px ${primaryColor}` : "none",
+                  borderBottom:
+                    activeTab === item.key ? `solid 2px ${primaryColor}` : "none",
                 }}
                 onClick={() => setActiveTab(item.key as TabKey)}
               >
@@ -862,7 +977,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger =
         saveLabel="Eliminar"
       >
         <div>
-          <p>¿Está seguro que desea eliminar el recinto <strong>{itemToDelete?.name}</strong>?</p>
+          <p>
+            ¿Está seguro que desea eliminar el recinto{" "}
+            <strong>{itemToDelete?.name}</strong>?
+          </p>
         </div>
       </ModalCreate>
     </div>

@@ -979,7 +979,7 @@ const TabMuroCreate: React.FC = () => {
         <form>
           <div className="row align-items-center mb-3">
             <label htmlFor="po1_length" className="col-sm-4 col-form-label">
-              P01 - Longitud
+              P01 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1015,7 +1015,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po2_length" className="col-sm-4 col-form-label">
-              P02 - Longitud
+              P02 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1051,7 +1051,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po3_length" className="col-sm-4 col-form-label">
-              P03 - Longitud
+              P03 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1087,7 +1087,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po4_length" className="col-sm-4 col-form-label">
-              P04 - Longitud
+              P04 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1102,7 +1102,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po4_e_aislacion" className="col-sm-4 col-form-label">
-              P04 - Espesor Aislación
+              P04 - Espesor Aislación (cm)
             </label>
             <div className="col-sm-8">
               <input

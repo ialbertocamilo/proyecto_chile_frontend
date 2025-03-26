@@ -223,7 +223,7 @@ const ChartProjectCreated: React.FC = () => {
                             options={chartOptions}
                             series={series}
                             type="line"
-                            height={150}
+                            height={100}
                             width="100%"
                         />
                     </div>

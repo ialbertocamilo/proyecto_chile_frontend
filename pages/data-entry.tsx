@@ -25,15 +25,13 @@ interface MaterialAtributs {
   conductivity: number;
   specific_heat: number;
   density: number;
-  // Aquí se usa create_status (sin "d" extra)
-
 }
 
 export interface Material {
   id: number;
   atributs: MaterialAtributs;
   create_status?: string;
-  user_id?:string
+  user_id?: string;
 }
 
 export interface ElementBase {
@@ -41,23 +39,21 @@ export interface ElementBase {
   type: "window" | "door";
   name_element: string;
   u_marco: number;
-  fm: number; // Se guarda internamente como fracción (por ejemplo 0.2 para 20%)
+  fm: number; // Se guarda internamente como fracción (ej. 0.2 para 20%)
   atributs: {
     u_vidrio?: number;
     fs_vidrio?: number;
     frame_type?: string;
     clousure_type?: string;
     u_puerta_opaca?: number;
-    porcentaje_vidrio?: number; // Se guarda como fracción (ej. 0.3 para 30%)
+    porcentaje_vidrio?: number; // Se almacena como fracción (ej. 0.3 para 30%) en la DB
     name_ventana?: string;
     ventana_id?: number;
-    // Posible propiedad para determinar el estilo:
     created_status?: string;
   };
-  user_id?:string
+  user_id?: string;
 }
 
-// Función para leer el valor de CSS (en caso de necesitarlo para colores, etc.)
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement)
@@ -66,7 +62,6 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-// Forzar que un número esté entre 0 y 100
 const validatePercentage = (value: number) => {
   if (isNaN(value)) return 0;
   if (value < 0) return 0;
@@ -131,7 +126,6 @@ const DataEntryPage: React.FC = () => {
     specific_heat: "",
     density: "",
   });
-  // Nuevo estado para saber si se está editando (almacena el id del material)
   const [editingMaterialId, setEditingMaterialId] = useState<number | null>(null);
   const [materialSearch, setMaterialSearch] = useState("");
 
@@ -150,14 +144,14 @@ const DataEntryPage: React.FC = () => {
     clousure_type: "",
     frame_type: "",
     u_marco: "",
-    fm: "", // El usuario ingresa en porcentaje (ej: 20.00)
+    fm: "", // Valor en porcentaje ingresado por el usuario
   });
   const [doorData, setDoorData] = useState({
     name_element: "",
     ventana_id: "",
     name_ventana: "",
     u_puerta_opaca: "",
-    porcentaje_vidrio: "",
+    porcentaje_vidrio: "", // Valor en porcentaje (ej. 12 para 12%)
     u_marco: "",
     fm: "",
   });
@@ -371,7 +365,6 @@ const DataEntryPage: React.FC = () => {
       return false;
     } catch (error: any) {
       console.error("Error al actualizar material:", error);
-      // Verificar si el backend devuelve {detail: "El material ya existe"}
       if (error?.response?.data?.detail === "El material ya existe") {
         notify("El Nombre del Material ya existe");
       } else {
@@ -399,7 +392,6 @@ const DataEntryPage: React.FC = () => {
 
   // === CREAR ELEMENTO TIPO VENTANA ===
   const handleCreateWindowElement = async (): Promise<boolean> => {
-    // Validamos el input de FM en porcentaje y lo convertimos a fracción
     const fmInput = parseFloat(windowData.fm);
     if (isNaN(fmInput) || fmInput < 0 || fmInput > 100) {
       notify("El valor de FM debe estar entre 0 y 100");
@@ -480,15 +472,13 @@ const DataEntryPage: React.FC = () => {
 
   // === CREAR ELEMENTO TIPO PUERTA ===
   const handleCreateDoorElement = async (): Promise<boolean> => {
-    // Validamos FM
     const fmInput = parseFloat(doorData.fm);
     if (isNaN(fmInput) || fmInput < 0 || fmInput > 100) {
       notify("El valor de FM debe estar entre 0 y 100");
       return false;
     }
     const fmNumber = fmInput;
-
-    // Validamos % Vidrio si hay ventana asociada
+  
     let porcentajeVidrioNumber = 0;
     if (doorData.ventana_id) {
       const porcentajeInput = parseFloat(doorData.porcentaje_vidrio);
@@ -496,9 +486,10 @@ const DataEntryPage: React.FC = () => {
         notify("El valor de % Vidrio debe estar entre 0 y 100");
         return false;
       }
-      porcentajeVidrioNumber = porcentajeInput / 100;
+      // Enviar el valor tal cual, ya que el backend lo divide
+      porcentajeVidrioNumber = porcentajeInput;
     }
-
+  
     if (
       doorData.name_element.trim() === "" ||
       !doorData.u_puerta_opaca ||
@@ -509,11 +500,11 @@ const DataEntryPage: React.FC = () => {
       notify("Por favor complete todos los campos de la puerta correctamente");
       return false;
     }
-
+  
     try {
       const token = localStorage.getItem("token");
       if (!token) return false;
-
+  
       const body = {
         name_element: doorData.name_element,
         type: "door",
@@ -521,13 +512,13 @@ const DataEntryPage: React.FC = () => {
           ventana_id: doorData.ventana_id ? parseInt(doorData.ventana_id) : 0,
           name_ventana: doorData.ventana_id ? doorData.name_ventana : "",
           u_puerta_opaca: parseFloat(doorData.u_puerta_opaca),
-          // Enviamos porcentaje_vidrio como fracción (0 a 1)
+          // Se envía el valor en porcentaje sin modificar (el backend lo divide)
           porcentaje_vidrio: porcentajeVidrioNumber,
         },
         u_marco: parseFloat(doorData.u_marco),
         fm: fmNumber,
       };
-
+  
       const response = await axios.post(
         `${constantUrlApiEndpoint}/user/elements/create`,
         body,
@@ -539,7 +530,14 @@ const DataEntryPage: React.FC = () => {
           },
         }
       );
-      setElementsList((prev) => [...prev, response.data.element]);
+      // Normalizamos la respuesta para puertas: si se trata de una puerta,
+      // asumimos que el backend ya almacenó el valor dividido y convertimos a fracción
+      const newElement = response.data.element;
+      if (newElement.type === "door" && newElement.atributs?.porcentaje_vidrio > 1) {
+        // Si el valor es mayor a 1, significa que no se normalizó, así que lo convertimos dividiéndolo por 100
+        newElement.atributs.porcentaje_vidrio = newElement.atributs.porcentaje_vidrio / 100;
+      }
+      setElementsList((prev) => [...prev, newElement]);
       notify(`La puerta "${doorData.name_element}" fue creada exitosamente`);
       setDoorData({
         name_element: "",
@@ -565,6 +563,7 @@ const DataEntryPage: React.FC = () => {
       return false;
     }
   };
+  
 
   // === Funciones para eliminación de elemento (ventana o puerta) ===
   const handleDeleteElement = async (elementId: number, type: "window" | "door") => {
@@ -592,9 +591,8 @@ const DataEntryPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      // Validamos FM (ingresado en %), redondeamos y convertimos a fracción
       const clampedFm = validatePercentage(element.fm);
-      const fmFraction = clampedFm / 100;
+      const fmFraction = clampedFm;
   
       const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
       const headers = {
@@ -619,7 +617,6 @@ const DataEntryPage: React.FC = () => {
       setEditingWindowData(null);
     } catch (error: any) {
       console.error("Error al actualizar ventana:", error);
-      // Si el mensaje de error del backend es el esperado, se notifica ese mensaje específico
       if (
         error?.response?.data?.detail ===
         "El nombre del elemento ya existe dentro del tipo window"
@@ -635,16 +632,15 @@ const DataEntryPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      // Validamos FM y convertimos de % a fracción
       const clampedFm = validatePercentage(element.fm);
-      const fmFraction = clampedFm / 100;
+      const fmFraction = clampedFm;
   
-      // Si hay ventana asociada, convertimos también el % de vidrio de % a fracción
       let porcentajeVidrioFraction = 0;
       if (element.atributs.ventana_id) {
         const clampedPorcentaje = validatePercentage(
           element.atributs.porcentaje_vidrio || 0
         );
+        // Envíar el valor tal cual, sin dividir entre 100
         porcentajeVidrioFraction = clampedPorcentaje;
       }
   
@@ -659,7 +655,6 @@ const DataEntryPage: React.FC = () => {
         type: "door",
         atributs: {
           ...element.atributs,
-          // Se envía porcentaje_vidrio como fracción
           porcentaje_vidrio: porcentajeVidrioFraction,
         },
         u_marco: element.u_marco,
@@ -695,7 +690,6 @@ const DataEntryPage: React.FC = () => {
     }
   };
   
-
   // === useEffect para Step 3 (Materiales) ===
   useEffect(() => {
     if (step === 3) {
@@ -713,7 +707,6 @@ const DataEntryPage: React.FC = () => {
     }
   }, [step, modalElementType, fetchElements, fetchAllWindowsForDoor]);
 
-  // === isValid para formularios
   const materialIsValid =
     newMaterialData.name.trim() !== "" &&
     newMaterialData.conductivity !== "" &&
@@ -752,7 +745,7 @@ const DataEntryPage: React.FC = () => {
         parseFloat(doorData.porcentaje_vidrio) >= 0 &&
         parseFloat(doorData.porcentaje_vidrio) <= 100));
 
-  // === RENDER DE STEP 3: Lista de Materiales (CON botones de edición y eliminación)
+  // === RENDER DE STEP 3: Lista de Materiales ===
   const renderStep3Materials = () => {
     const columnsMaterials = [
       { headerName: "Nombre Material", field: "materialName" },
@@ -770,13 +763,7 @@ const DataEntryPage: React.FC = () => {
         const isDefault = mat.create_status === "default" || mat.create_status === "global";
         return {
           materialName: (
-            <span
-              style={
-                !isDefault
-                  ? { color: primaryColor, fontWeight: "bold" }
-                  : undefined
-              }
-            >
+            <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : undefined}>
               {mat.atributs.name}
             </span>
           ),
@@ -817,7 +804,7 @@ const DataEntryPage: React.FC = () => {
                 setDeleteAction(() => () => handleDeleteMaterial(mat.id));
                 setShowConfirmModal(true);
               }}
-              isDisabled={mat.user_id==null}
+              isDisabled={mat.user_id == null}
             />
           ),
         };
@@ -849,10 +836,9 @@ const DataEntryPage: React.FC = () => {
     );
   };
 
-  // === RENDER DE STEP 5: Elementos Translúcidos (Ventanas / Puertas) CON ACCIONES
+  // === RENDER DE STEP 5: Elementos Translúcidos ===
   const renderStep5Elements = () => {
     if (modalElementType === "ventanas") {
-      // Columns para Ventanas con columna de acciones
       const columnsVentanas = [
         { headerName: "Nombre Elemento", field: "name_element" },
         { headerName: "U Vidrio [W/m2K]", field: "u_vidrio" },
@@ -935,11 +921,10 @@ const DataEntryPage: React.FC = () => {
             acciones: (
               <ActionButtons
                 onEdit={() =>
-                  // Al editar, convertimos fm a porcentaje
                   setEditingWindowData({ ...el, fm: el.fm * 100 })
                 }
                 onDelete={() => confirmDeleteElement(el.id, "window")}
-                isDisabled={el.user_id==null}
+                isDisabled={el.user_id == null}
               />
             ),
           };
@@ -975,7 +960,6 @@ const DataEntryPage: React.FC = () => {
         </>
       );
     } else {
-      // Columns para Puertas con columna de acciones
       const columnsPuertas = [
         { headerName: "Nombre Elemento", field: "name_element" },
         { headerName: "U Puerta opaca [W/m2K]", field: "u_puerta_opaca" },
@@ -1025,10 +1009,10 @@ const DataEntryPage: React.FC = () => {
               el.atributs.porcentaje_vidrio !== undefined ? (
                 !isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {(el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"}
+                    {el.atributs.porcentaje_vidrio * 100 + "%"}
                   </span>
                 ) : (
-                  (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"
+                  el.atributs.porcentaje_vidrio * 100 + "%"
                 )
               ) : (
                 "0%"
@@ -1056,13 +1040,13 @@ const DataEntryPage: React.FC = () => {
                     atributs: {
                       ...el.atributs,
                       porcentaje_vidrio: el.atributs.porcentaje_vidrio
-                        ? el.atributs.porcentaje_vidrio
+                        ? el.atributs.porcentaje_vidrio * 100
                         : 0,
                     },
                   })
                 }
                 onDelete={() => confirmDeleteElement(el.id, "door")}
-                isDisabled={el.user_id==null}
+                isDisabled={el.user_id == null}
               />
             ),
           };
@@ -1103,8 +1087,6 @@ const DataEntryPage: React.FC = () => {
   // === RENDER DE STEP 6: Perfil de uso (tabla manual)
   const renderStep6Profile = () => (
     <div className="px-3">
-      {/* Se asume que UseProfileTab internamente mostrará los campos. 
-          Si en UseProfileTab se utilizan tablas similares, se debería implementar la lógica de estilo allí. */}
       <UseProfileTab refreshTrigger={0} />
     </div>
   );
@@ -1572,12 +1554,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_vidrio: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_vidrio: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1593,12 +1575,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          fs_vidrio: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            fs_vidrio: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1613,12 +1595,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          clousure_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            clousure_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1640,12 +1622,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          frame_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            frame_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1733,12 +1715,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_puerta_opaca: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_puerta_opaca: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1757,13 +1739,13 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          ventana_id: selectedId ? parseInt(selectedId) : 0,
-                          name_ventana: selectedWindow ? selectedWindow.name_element : "",
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            ventana_id: selectedId ? parseInt(selectedId) : 0,
+                            name_ventana: selectedWindow ? selectedWindow.name_element : "",
+                          },
+                        }
                       : prev
                   );
                 }}
@@ -1785,7 +1767,7 @@ const DataEntryPage: React.FC = () => {
                 className="form-control"
                 value={
                   editingDoorData.atributs.porcentaje_vidrio !== undefined
-                    ? (editingDoorData.atributs.porcentaje_vidrio * 100).toString()
+                    ? editingDoorData.atributs.porcentaje_vidrio.toString()
                     : ""
                 }
                 onChange={(e) => {
@@ -1794,12 +1776,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          porcentaje_vidrio: isNaN(clamped) ? 0 : clamped,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: isNaN(clamped) ? 0 : clamped,
+                          },
+                        }
                       : prev
                   );
                 }}

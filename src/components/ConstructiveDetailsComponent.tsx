@@ -16,6 +16,7 @@ interface Detail {
   material_id: number;
   material: string;
   layer_thickness: number;
+  created_status?: string;
 }
 
 interface TabItem {
@@ -23,6 +24,7 @@ interface TabItem {
   id?: number;
   name_detail: string;
   value_u?: number;
+  created_status?: string;
   info?: {
     surface_color?: {
       exterior?: { name: string; value?: number };
@@ -193,7 +195,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     const token = getToken();
     if (!token) return;
     try {
-      const url = `${constantUrlApiEndpoint}/constants/?page=1&per_page=700`;
+      const url = `${constantUrlApiEndpoint}/admin/constants/?page=1&per_page=700`;
       const { data } = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -342,7 +344,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const handleEditDetail = (detail: Detail) => {
     // Cierra el modal de Detalles Generales para que el modal de edición no quede detrás.
     setShowGeneralDetailsModal(false);
-
     // Carga la lista de materiales para que el select tenga datos actualizados
     fetchMaterials();
     setEditingDetail(detail);
@@ -380,10 +381,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
       });
       notify("Detalle actualizado con éxito.");
       await fetchFetchedDetails();
-
       // Cierra el modal de edición
       setEditingDetail(null);
-
       // Reabre el modal de Detalles Generales con data refrescada
       setShowGeneralDetailsModal(true);
     } catch (error: unknown) {
@@ -430,12 +429,40 @@ const ConstructiveDetailsComponent: React.FC = () => {
       }
     }
 
-    // La columna Acciones se mantiene en la vista de Detalles Generales
+    // Se aplica estilo condicional a cada campo si created_status es "default"
     const data = filteredData.map((det) => ({
-      scantilon_location: det.scantilon_location,
-      name_detail: det.name_detail,
-      material: det.material,
-      layer_thickness: det.layer_thickness,
+      scantilon_location:
+        det.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {det.scantilon_location}
+          </span>
+        ) : (
+          det.scantilon_location
+        ),
+      name_detail:
+        det.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {det.name_detail}
+          </span>
+        ) : (
+          det.name_detail
+        ),
+      material:
+        det.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {det.material}
+          </span>
+        ) : (
+          det.material
+        ),
+      layer_thickness:
+        det.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {det.layer_thickness}
+          </span>
+        ) : (
+          det.layer_thickness
+        ),
       acciones: (
         <>
           <CustomButton variant="editIcon" onClick={() => handleEditDetail(det)}>
@@ -444,10 +471,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           <CustomButton
             variant="deleteIcon"
             onClick={() => {
-              // Cierra el modal de Detalles Generales si está abierto
               setShowGeneralDetailsModal(false);
-
-              // Abre el modal de confirmación de eliminación
               setDeletingDetail(det);
               setShowDeleteModal(true);
             }}
@@ -596,10 +620,38 @@ const ConstructiveDetailsComponent: React.FC = () => {
     ];
 
     const data = murosTabList.map((item) => ({
-      nombreAbreviado: item.name_detail,
-      valorU: item.value_u ? item.value_u.toFixed(3) : "--",
-      colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
-      colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
+      nombreAbreviado:
+        item.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {item.name_detail}
+          </span>
+        ) : (
+          item.name_detail
+        ),
+      valorU:
+        item.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {item.value_u ? item.value_u.toFixed(3) : "--"}
+          </span>
+        ) : (
+          item.value_u ? item.value_u.toFixed(3) : "--"
+        ),
+      colorExterior:
+        item.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {item.info?.surface_color?.exterior?.name || "Desconocido"}
+          </span>
+        ) : (
+          item.info?.surface_color?.exterior?.name || "Desconocido"
+        ),
+      colorInterior:
+        item.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {item.info?.surface_color?.interior?.name || "Desconocido"}
+          </span>
+        ) : (
+          item.info?.surface_color?.interior?.name || "Desconocido"
+        ),
     }));
 
     return (
@@ -623,10 +675,38 @@ const ConstructiveDetailsComponent: React.FC = () => {
     ];
 
     const data = techumbreTabList.map((item) => ({
-      nombreAbreviado: item.name_detail,
-      valorU: item.value_u ? item.value_u.toFixed(3) : "--",
-      colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
-      colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
+      nombreAbreviado:
+        item.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {item.name_detail}
+          </span>
+        ) : (
+          item.name_detail
+        ),
+      valorU:
+        item.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {item.value_u ? item.value_u.toFixed(3) : "--"}
+          </span>
+        ) : (
+          item.value_u ? item.value_u.toFixed(3) : "--"
+        ),
+      colorExterior:
+        item.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {item.info?.surface_color?.exterior?.name || "Desconocido"}
+          </span>
+        ) : (
+          item.info?.surface_color?.exterior?.name || "Desconocido"
+        ),
+      colorInterior:
+        item.created_status === "default" ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {item.info?.surface_color?.interior?.name || "Desconocido"}
+          </span>
+        ) : (
+          item.info?.surface_color?.interior?.name || "Desconocido"
+        ),
     }));
 
     return (
@@ -642,7 +722,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
   // PISOS
   const renderPisosTable = () => {
-    // Multi-encabezados (si deseas mantenerlo para agrupar columnas)
     const columnsPisos = [
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
@@ -684,16 +763,86 @@ const ConstructiveDetailsComponent: React.FC = () => {
       const horiz = item.info?.ref_aisl_horizontal || {};
 
       return {
-        nombre: item.name_detail,
-        uValue: item.value_u ? item.value_u.toFixed(3) : "--",
-        bajoPisoLambda: bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A",
-        bajoPisoEAisl: bajoPiso.e_aisl ?? "N/A",
-        vertLambda: vert.lambda ? vert.lambda.toFixed(3) : "N/A",
-        vertEAisl: vert.e_aisl ?? "N/A",
-        vertD: vert.d ?? "N/A",
-        horizLambda: horiz.lambda ? horiz.lambda.toFixed(3) : "N/A",
-        horizEAisl: horiz.e_aisl ?? "N/A",
-        horizD: horiz.d ?? "N/A",
+        nombre:
+          item.created_status === "default" ? (
+            <span style={{ color: primaryColor, fontWeight: "bold" }}>
+              {item.name_detail}
+            </span>
+          ) : (
+            item.name_detail
+          ),
+        uValue:
+          item.created_status === "default" ? (
+            <span style={{ color: primaryColor, fontWeight: "bold" }}>
+              {item.value_u ? item.value_u.toFixed(3) : "--"}
+            </span>
+          ) : (
+            item.value_u ? item.value_u.toFixed(3) : "--"
+          ),
+        bajoPisoLambda:
+          item.created_status === "default" ? (
+            <span style={{ color: primaryColor, fontWeight: "bold" }}>
+              {bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}
+            </span>
+          ) : (
+            bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"
+          ),
+        bajoPisoEAisl:
+          item.created_status === "default" ? (
+            <span style={{ color: primaryColor, fontWeight: "bold" }}>
+              {bajoPiso.e_aisl ?? "N/A"}
+            </span>
+          ) : (
+            bajoPiso.e_aisl ?? "N/A"
+          ),
+        vertLambda:
+          item.created_status === "default" ? (
+            <span style={{ color: primaryColor, fontWeight: "bold" }}>
+              {vert.lambda ? vert.lambda.toFixed(3) : "N/A"}
+            </span>
+          ) : (
+            vert.lambda ? vert.lambda.toFixed(3) : "N/A"
+          ),
+        vertEAisl:
+          item.created_status === "default" ? (
+            <span style={{ color: primaryColor, fontWeight: "bold" }}>
+              {vert.e_aisl ?? "N/A"}
+            </span>
+          ) : (
+            vert.e_aisl ?? "N/A"
+          ),
+        vertD:
+          item.created_status === "default" ? (
+            <span style={{ color: primaryColor, fontWeight: "bold" }}>
+              {vert.d ?? "N/A"}
+            </span>
+          ) : (
+            vert.d ?? "N/A"
+          ),
+        horizLambda:
+          item.created_status === "default" ? (
+            <span style={{ color: primaryColor, fontWeight: "bold" }}>
+              {horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}
+            </span>
+          ) : (
+            horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"
+          ),
+        horizEAisl:
+          item.created_status === "default" ? (
+            <span style={{ color: primaryColor, fontWeight: "bold" }}>
+              {horiz.e_aisl ?? "N/A"}
+            </span>
+          ) : (
+            horiz.e_aisl ?? "N/A"
+          ),
+        horizD:
+          item.created_status === "default" ? (
+            <span style={{ color: primaryColor, fontWeight: "bold" }}>
+              {horiz.d ?? "N/A"}
+            </span>
+          ) : (
+            horiz.d ?? "N/A"
+          ),
       };
     });
 

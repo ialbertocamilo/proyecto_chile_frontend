@@ -14,11 +14,13 @@ import { useCrudOperations } from "../src/hooks/useCrudOperations";
 import ConstructiveDetailsComponent from "@/components/ConstructiveDetailsComponent";
 import UseProfileTab from "../src/components/UseProfileTab";
 
+// Se agrega created_status en el modelo de MaterialAttributes
 interface MaterialAttributes {
   name: string;
   conductivity: number;
   specific_heat: number;
   density: number;
+  create_status?: string;
 }
 
 export interface Detail {
@@ -31,11 +33,13 @@ export interface Detail {
   is_deleted?: boolean;
 }
 
+// Se agrega created_status en los atributos de ElementAttributesDoor y ElementAttributesWindow si se requiriera
 interface ElementAttributesDoor {
   u_puerta_opaca: number;
   porcentaje_vidrio: number;
   ventana_id: number;
   name_ventana: string;
+  created_status?: string;
 }
 
 interface ElementAttributesWindow {
@@ -43,9 +47,9 @@ interface ElementAttributesWindow {
   fs_vidrio: number;
   frame_type: string;
   clousure_type: string;
+  created_status?: string;
 }
 
-// Interfaz para las props del modal de confirmación
 interface ConfirmModalProps {
   onConfirm: () => Promise<void>;
   message: string;
@@ -61,6 +65,9 @@ const AdministrationPage: React.FC = () => {
     fetchElements,
     handleLogout,
   } = useAdministration();
+
+  // Definición de la variable para el color primario
+  const primaryColor = "var(--primary-color)";
 
   // Estados para steps y tabs
   const [step, setStep] = useState<number>(3);
@@ -146,38 +153,66 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
+  // Se aplica estilo condicional a los materiales usando created_status
   const materialsData = materialsList
     .filter((mat: any) =>
       mat.atributs.name.toLowerCase().includes(searchMaterial.toLowerCase())
     )
-    .map((mat: any) => ({
-      name: mat.atributs.name,
-      conductivity: mat.atributs.conductivity,
-      specific_heat: mat.atributs.specific_heat,
-      density: mat.atributs.density,
-      action: (
-        <ActionButtons
-          onEdit={() => {
-            setSelectedMaterialId(mat.id);
-            setNewMaterialData({
-              name: mat.atributs.name,
-              conductivity: mat.atributs.conductivity,
-              specific_heat: mat.atributs.specific_heat,
-              density: mat.atributs.density,
-            });
-            setShowNewMaterialModal(true);
-          }}
-          onDelete={() => {
-            confirmDelete(
-              mat.id,
-              "admin/constant",
-              `el material "${mat.atributs.name}"`,
-              () => fetchMaterialsList(1)
-            );
-          }}
-        />
-      ),
-    }));
+    .map((mat: any) => {
+      const isDefault = mat.create_status === "default";
+      return {
+        name: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {mat.atributs.name}
+          </span>
+        ) : (
+          mat.atributs.name
+        ),
+        conductivity: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {mat.atributs.conductivity}
+          </span>
+        ) : (
+          mat.atributs.conductivity
+        ),
+        specific_heat: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {mat.atributs.specific_heat}
+          </span>
+        ) : (
+          mat.atributs.specific_heat
+        ),
+        density: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {mat.atributs.density}
+          </span>
+        ) : (
+          mat.atributs.density
+        ),
+        action: (
+          <ActionButtons
+            onEdit={() => {
+              setSelectedMaterialId(mat.id);
+              setNewMaterialData({
+                name: mat.atributs.name,
+                conductivity: mat.atributs.conductivity,
+                specific_heat: mat.atributs.specific_heat,
+                density: mat.atributs.density,
+              });
+              setShowNewMaterialModal(true);
+            }}
+            onDelete={() => {
+              confirmDelete(
+                mat.id,
+                "admin/constant",
+                `el material "${mat.atributs.name}"`,
+                () => fetchMaterialsList(1)
+              );
+            }}
+          />
+        ),
+      };
+    });
 
   // Columnas y datos para la tabla de ventanas
   const windowsColumns = [
@@ -191,45 +226,91 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
+  // Se aplica estilo condicional a las ventanas usando created_status
   const windowsData = elementsList
     .filter((el) => el.type === "window")
     .filter((el) =>
       el.name_element.toLowerCase().includes(searchElement.toLowerCase())
     )
-    .map((el) => ({
-      name_element: el.name_element,
-      u_vidrio: (el.atributs as ElementAttributesWindow).u_vidrio,
-      fs_vidrio: (el.atributs as ElementAttributesWindow).fs_vidrio,
-      clousure_type: (el.atributs as ElementAttributesWindow).clousure_type,
-      frame_type: (el.atributs as ElementAttributesWindow).frame_type,
-      u_marco: el.u_marco,
-      fm: (el.fm * 100).toFixed(2) + "%",
-      action: (
-        <ActionButtons
-          onEdit={() => {
-            setSelectedWindowId(el.id);
-            setNewWindow({
-              name_element: el.name_element,
-              u_vidrio: (el.atributs as ElementAttributesWindow).u_vidrio,
-              fs_vidrio: (el.atributs as ElementAttributesWindow).fs_vidrio,
-              clousure_type: (el.atributs as ElementAttributesWindow).clousure_type,
-              frame_type: (el.atributs as ElementAttributesWindow).frame_type,
-              u_marco: el.u_marco,
-              fm: el.fm,
-            });
-            setShowNewWindowModal(true);
-          }}
-          onDelete={() => {
-            confirmDelete(
-              el.id,
-              "admin/elements",
-              `la ventana "${el.name_element}"`,
-              fetchElements
-            );
-          }}
-        />
-      ),
-    }));
+    .map((el) => {
+      const isDefault = (el as { created_status?: string }).created_status === "default";
+      return {
+        name_element: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {el.name_element}
+          </span>
+        ) : (
+          el.name_element
+        ),
+        u_vidrio: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {(el.atributs as ElementAttributesWindow).u_vidrio}
+          </span>
+        ) : (
+          (el.atributs as ElementAttributesWindow).u_vidrio
+        ),
+        fs_vidrio: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {(el.atributs as ElementAttributesWindow).fs_vidrio}
+          </span>
+        ) : (
+          (el.atributs as ElementAttributesWindow).fs_vidrio
+        ),
+        clousure_type: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {(el.atributs as ElementAttributesWindow).clousure_type}
+          </span>
+        ) : (
+          (el.atributs as ElementAttributesWindow).clousure_type
+        ),
+        frame_type: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {(el.atributs as ElementAttributesWindow).frame_type}
+          </span>
+        ) : (
+          (el.atributs as ElementAttributesWindow).frame_type
+        ),
+        u_marco: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {el.u_marco}
+          </span>
+        ) : (
+          el.u_marco
+        ),
+        fm: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {(el.fm * 100).toFixed(0) + "%"}
+          </span>
+        ) : (
+          (el.fm * 100).toFixed(0) + "%"
+        ),
+        action: (
+          <ActionButtons
+            onEdit={() => {
+              setSelectedWindowId(el.id);
+              setNewWindow({
+                name_element: el.name_element,
+                u_vidrio: (el.atributs as ElementAttributesWindow).u_vidrio,
+                fs_vidrio: (el.atributs as ElementAttributesWindow).fs_vidrio,
+                clousure_type: (el.atributs as ElementAttributesWindow).clousure_type,
+                frame_type: (el.atributs as ElementAttributesWindow).frame_type,
+                u_marco: el.u_marco,
+                fm: el.fm,
+              });
+              setShowNewWindowModal(true);
+            }}
+            onDelete={() => {
+              confirmDelete(
+                el.id,
+                "admin/elements",
+                `la ventana "${el.name_element}"`,
+                fetchElements
+              );
+            }}
+          />
+        ),
+      };
+    });
 
   // Columnas y datos para la tabla de puertas
   const doorsColumns = [
@@ -242,45 +323,83 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
+  // Se aplica estilo condicional a las puertas usando created_status
   const doorsData = elementsList
     .filter((el) => el.type === "door")
     .filter((el) =>
       el.name_element.toLowerCase().includes(searchElement.toLowerCase())
     )
-    .map((el) => ({
-      name_element: el.name_element,
-      u_puerta_opaca: (el.atributs as ElementAttributesDoor).u_puerta_opaca,
-      name_ventana: (el.atributs as ElementAttributesDoor).name_ventana,
-      porcentaje_vidrio:
-        ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(2) +
-        "%",
-      u_marco: el.u_marco,
-      fm: (el.fm * 100).toFixed(2) + "%",
-      action: (
-        <ActionButtons
-          onEdit={() => {
-            setSelectedDoorId(el.id);
-            setNewDoor({
-              name_element: el.name_element,
-              u_puerta_opaca: (el.atributs as ElementAttributesDoor).u_puerta_opaca,
-              ventana_id: (el.atributs as ElementAttributesDoor).ventana_id,
-              u_marco: el.u_marco,
-              fm: el.fm,
-              porcentaje_vidrio: (el.atributs as ElementAttributesDoor).porcentaje_vidrio,
-            });
-            setShowNewDoorModal(true);
-          }}
-          onDelete={() => {
-            confirmDelete(
-              el.id,
-              "admin/elements",
-              `la puerta "${el.name_element}"`,
-              fetchElements
-            );
-          }}
-        />
-      ),
-    }));
+    .map((el) => {
+      const isDefault = el.created_status === "default";
+      return {
+        name_element: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {el.name_element}
+          </span>
+        ) : (
+          el.name_element
+        ),
+        u_puerta_opaca: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {(el.atributs as ElementAttributesDoor).u_puerta_opaca}
+          </span>
+        ) : (
+          (el.atributs as ElementAttributesDoor).u_puerta_opaca
+        ),
+        name_ventana: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {(el.atributs as ElementAttributesDoor).name_ventana}
+          </span>
+        ) : (
+          (el.atributs as ElementAttributesDoor).name_ventana
+        ),
+        porcentaje_vidrio: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"}
+          </span>
+        ) : (
+          ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"
+        ),
+        u_marco: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {el.u_marco}
+          </span>
+        ) : (
+          el.u_marco
+        ),
+        fm: isDefault ? (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {(el.fm * 100).toFixed(0) + "%"}
+          </span>
+        ) : (
+          (el.fm * 100).toFixed(0) + "%"
+        ),
+        action: (
+          <ActionButtons
+            onEdit={() => {
+              setSelectedDoorId(el.id);
+              setNewDoor({
+                name_element: el.name_element,
+                u_puerta_opaca: (el.atributs as ElementAttributesDoor).u_puerta_opaca,
+                ventana_id: (el.atributs as ElementAttributesDoor).ventana_id,
+                u_marco: el.u_marco,
+                fm: el.fm,
+                porcentaje_vidrio: (el.atributs as ElementAttributesDoor).porcentaje_vidrio,
+              });
+              setShowNewDoorModal(true);
+            }}
+            onDelete={() => {
+              confirmDelete(
+                el.id,
+                "admin/elements",
+                `la puerta "${el.name_element}"`,
+                fetchElements
+              );
+            }}
+          />
+        ),
+      };
+    });
 
   // Función para obtener el nombre del material (si la necesitas)
   function getMaterialName(materialId: number) {

@@ -420,24 +420,35 @@ const AdministrationPage: React.FC = () => {
       name: "materials",
       type: "definition materials",
     };
-
-    await handleEdit(
-      selectedMaterialId,
-      payload,
-      "admin/constant",
-      `El material "${newMaterialData.name}" fue actualizado correctamente`,
-      () => fetchMaterialsList(1)
-    );
-
-    setShowNewMaterialModal(false);
-    setNewMaterialData({
-      name: "",
-      conductivity: 0,
-      specific_heat: 0,
-      density: 0,
-    });
-    setSelectedMaterialId(null);
+  
+    try {
+      await handleEdit(
+        selectedMaterialId,
+        payload,
+        "admin/constant",
+        `El material "${newMaterialData.name}" fue actualizado correctamente`,
+        () => fetchMaterialsList(1)
+      );
+  
+      setShowNewMaterialModal(false);
+      setNewMaterialData({
+        name: "",
+        conductivity: 0,
+        specific_heat: 0,
+        density: 0,
+      });
+      setSelectedMaterialId(null);
+    } catch (error: any) {
+      console.error("Error al actualizar material:", error);
+      if (error?.response?.data?.detail === "El material ya existe") {
+        notify("El Nombre del Material ya existe");
+      } else {
+        notify("Error al actualizar el material");
+      }
+      return false;
+    }
   };
+  
 
   // Función para crear elementos (ventanas y puertas)
   const handleCreateElement = async () => {

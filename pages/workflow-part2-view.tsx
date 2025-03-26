@@ -469,7 +469,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     ];
   
     const ventanasData = ventanasTabList.map((item) => {
-      if ((item as any).created_status === "default" || (item as any).created_status === "global") {
+      if ((item as any).created_status === "created") {
         return {
           name_element: (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
@@ -553,7 +553,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     ];
   
     const puertasData = puertasTabList.map((item) => {
-      if ((item as any).created_status === "default" || (item as any).created_status === "global") {
+      if ((item as any).created_status === "created") {
         return {
           name_element: (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
@@ -732,7 +732,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
   
     // Mapeamos para transformar TODOS los campos a color primario cuando created_status es "default"
     const detailsData = filteredDetails.map((det) => {
-      if (det.created_status === "default" || det.created_status === "global") {
+      if (det.created_status === "created") {
         return {
           ...det,
           scantilon_location: (

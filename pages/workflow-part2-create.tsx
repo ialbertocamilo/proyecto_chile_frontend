@@ -950,7 +950,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
     const data = filteredDetails.map((det) => {
       const textStyle =
-        det.created_status === "default" || det.created_status === "global"
+        det.created_status === "created"
           ? { color: "var(--primary-color)", fontWeight: "bold" }
           : {};
       return {
@@ -1020,8 +1020,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               })
               .map((det) => {
                 const textStyle =
-                  det.created_status === "default" ||
-                  det.created_status === "global"
+                  det.created_status === "created"
                     ? { color: "var(--primary-color)", fontWeight: "bold" }
                     : {};
                 return {
@@ -1489,7 +1488,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
     const ventanasData = ventanasTabList.map((item) => {
       const textStyle =
-        item.created_status === "default" || item.created_status === "global"
+        item.created_status === "created"
           ? { color: "var(--primary-color)", fontWeight: "bold" }
           : {};
       return {
@@ -1569,7 +1568,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
     const puertasData = puertasTabList.map((item) => {
       const textStyle =
-        item.created_status === "default" || item.created_status === "global"
+        item.created_status === "created"
           ? { color: "var(--primary-color)", fontWeight: "bold" }
           : {};
       return {

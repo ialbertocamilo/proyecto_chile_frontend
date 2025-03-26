@@ -48,7 +48,7 @@ interface DetailModalProps {
 export const DetailModal: React.FC<DetailModalProps> = ({ detail, show, onClose }) => {
   if (!detail) return null;
   const textStyle =
-    detail.created_status === "default" || detail.created_status === "global"
+    detail.created_status === "created"
       ? { color: "var(--primary-color)", fontWeight: "bold" }
       : {};
   return (
@@ -625,7 +625,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     ];
     const data = filteredDetails.map((det) => {
       const textStyle =
-        det.created_status === "default" || det.created_status === "global"
+        det.created_status === "created"
           ? { color: "var(--primary-color)", fontWeight: "bold" }
           : {};
       return {
@@ -684,7 +684,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     ];
     const data = filteredData.map((det) => {
       const textStyle =
-        det.created_status === "default" || det.created_status === "global"
+        det.created_status === "created"
           ? { color: "var(--primary-color)", fontWeight: "bold" }
           : {};
       return {
@@ -1181,7 +1181,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     ];
     const ventanasData = ventanasTabList.map((item) => {
       const textStyle =
-        item.created_status === "default" || item.created_status === "global"
+        item.created_status === "created"
           ? { color: "var(--primary-color)", fontWeight: "bold" }
           : {};
       return {
@@ -1257,7 +1257,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     ];
     const puertasData = puertasTabList.map((item) => {
       const textStyle =
-        item.created_status === "default" || item.created_status === "global"
+        item.created_status === "created"
           ? { color: "var(--primary-color)", fontWeight: "bold" }
           : {};
       return {

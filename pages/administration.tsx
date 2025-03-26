@@ -14,7 +14,7 @@ import { useCrudOperations } from "../src/hooks/useCrudOperations";
 import ConstructiveDetailsComponent from "@/components/ConstructiveDetailsComponent";
 import UseProfileTab from "../src/components/UseProfileTab";
 
-// Se agrega created_status en el modelo de MaterialAttributes
+// Se agrega create_status en el modelo de MaterialAttributes
 interface MaterialAttributes {
   name: string;
   conductivity: number;
@@ -33,7 +33,7 @@ export interface Detail {
   is_deleted?: boolean;
 }
 
-// Se agrega created_status en los atributos de ElementAttributesDoor y ElementAttributesWindow si se requiriera
+// Se agrega create_status en los atributos de ElementAttributesDoor y ElementAttributesWindow si se requiriera
 interface ElementAttributesDoor {
   u_puerta_opaca: number;
   porcentaje_vidrio: number;
@@ -153,13 +153,14 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
-  // Se aplica estilo condicional a los materiales usando created_status
+  // Se aplica estilo condicional a los materiales usando create_status
   const materialsData = materialsList
     .filter((mat: any) =>
       mat.atributs.name.toLowerCase().includes(searchMaterial.toLowerCase())
     )
     .map((mat: any) => {
-      const isDefault = (mat?.created_status ?? "") === "default";
+      // Se usa mat.atributs.create_status, ya que es donde se almacena el estado del material
+      const isDefault = mat.create_status === "default";
       return {
         name: isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>

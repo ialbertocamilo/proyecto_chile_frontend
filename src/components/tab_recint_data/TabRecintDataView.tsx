@@ -44,12 +44,9 @@ const TabRecintDataView: React.FC = () => {
         if (enclosureRes.ok) {
           const enclosureData: EnclosureGeneralData[] = await enclosureRes.json();
           setData(enclosureData);
-        } else {
-          notify("Error al cargar los datos de los recintos");
-        }
+        } 
       } catch (error) {
         console.error("Error al cargar los datos:", error);
-        notify("Ocurrió un error al cargar los datos del proyecto");
       }
     };
 

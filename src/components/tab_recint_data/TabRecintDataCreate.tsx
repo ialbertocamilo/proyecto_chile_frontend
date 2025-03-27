@@ -261,7 +261,7 @@ const TabRecintDataCreate: React.FC = () => {
       </div>
 
       {data.length === 0 ? (
-        <div className="alert alert-info" role="alert">
+        <div  >
           No hay datos para mostrar
         </div>
       ) : (

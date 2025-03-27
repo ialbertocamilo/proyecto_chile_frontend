@@ -17,6 +17,7 @@ import SearchParameters from "../src/components/inputs/SearchParameters";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import ModalCreate from "@/components/common/ModalCreate";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataCreate";
+import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
 interface Detail {
   id_detail: number;
@@ -1089,26 +1090,12 @@ const WorkFlowpar2createPage: React.FC = () => {
         ),
         acciones: isEditing ? (
           <>
-            <CustomButton
-              className="btn-table"
-              variant="save"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleConfirmEdit(item);
-              }}
-            >
-              <span className="material-icons">check</span>
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="cancelIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCancelEdit(item);
-              }}
-            >
-              Deshacer
-            </CustomButton>
+          <div onClick={(e) => e.stopPropagation()}>
+              <ActionButtonsConfirm
+                onAccept={() => handleConfirmEdit(item)}
+                onCancel={() => handleCancelEdit(item)}
+              />
+            </div>
           </>
         ) : (
           <CustomButton

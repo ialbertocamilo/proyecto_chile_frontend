@@ -289,9 +289,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
       });
       console.log("Respuesta de creación:", response);
       notify("Detalle creado exitosamente.");
+      // Refrescar la lista general y la tabla específica según el tipo de detalle
       await fetchFetchedDetails();
-
-      // Actualiza la tabla específica según el tipo de detalle creado
       const tipo = newDetailForm.scantilon_location.toLowerCase();
       if (tipo === "muro") {
         fetchMurosDetails();
@@ -300,7 +299,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
       } else if (tipo === "piso") {
         fetchPisosDetails();
       }
-
       setShowNewDetailRow(false);
       setNewDetailForm({
         scantilon_location: "",
@@ -348,8 +346,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
       console.log("Detalle eliminado:", response.data);
       notify("Detalle correctamente eliminado");
       await fetchFetchedDetails();
-
-      // Actualizar la tabla específica según el tipo de detalle eliminado
       const tipo = deletingDetail.scantilon_location.toLowerCase();
       if (tipo === "muro") {
         fetchMurosDetails();
@@ -389,7 +385,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
         },
       });
       notify("Detalle eliminado correctamente.");
-      // Refrescar la tabla según la pestaña actual
       if (tabStep4 === "muros") fetchMurosDetails();
       else if (tabStep4 === "techumbre") fetchTechumbreDetails();
       else if (tabStep4 === "pisos") fetchPisosDetails();
@@ -444,6 +439,15 @@ const ConstructiveDetailsComponent: React.FC = () => {
         });
         notify("Detalle actualizado con éxito.");
         await fetchFetchedDetails();
+        // También se refresca la tabla específica según el tipo de detalle editado
+        const tipo = editingDetail.scantilon_location.toLowerCase();
+        if (tipo === "muro") {
+          fetchMurosDetails();
+        } else if (tipo === "techo") {
+          fetchTechumbreDetails();
+        } else if (tipo === "piso") {
+          fetchPisosDetails();
+        }
         setEditingDetail(null);
         setShowGeneralDetailsModal(true);
       } catch (error: unknown) {
@@ -459,7 +463,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
   const handleInlineEdit = (item: TabItem, e: React.MouseEvent) => {
     e.stopPropagation();
-    // Usamos id_detail si está definido, de lo contrario usamos id
     setEditingRowId(item.id_detail ?? item.id ?? null);
     setEditValues({
       name_detail: item.name_detail,
@@ -480,7 +483,11 @@ const ConstructiveDetailsComponent: React.FC = () => {
     setEditValues({});
   };
 
-  const handleInlineSave = async (item: TabItem, detailType: "Muro" | "Techo" | "Piso", e: React.MouseEvent) => {
+  const handleInlineSave = async (
+    item: TabItem,
+    detailType: "Muro" | "Techo" | "Piso",
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
     const token = getToken();
     if (!token) return;
@@ -622,11 +629,11 @@ const ConstructiveDetailsComponent: React.FC = () => {
             style={{ marginBottom: "1rem" }}
           />
         )}
-        <div className="custom-table-container" style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
+        <div className="custom-table-container">
           <TablesParameters columns={columnsDetails} data={data} />
         </div>
         {!inModal && (
-          <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
+          <div>
             <CustomButton
               variant="save"
               onClick={(e) => {
@@ -634,7 +641,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
                 if (inModal) setShowGeneralDetailsModal(false);
                 else setShowTabsInStep4(false);
               }}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 67px", borderRadius: "8px", height: "40px", marginTop: "30px" }}
+             
             >
               <span className="material-icons">arrow_back</span> Volver
             </CustomButton>
@@ -650,7 +657,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const renderDetailsTabs = () => (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-        <CustomButton onClick={handleNewButtonClick} style={{ padding: "8px 16px", borderRadius: "8px", height: "40px" }}>
+        <CustomButton onClick={handleNewButtonClick}>
           + Nuevo
         </CustomButton>
       </div>
@@ -689,7 +696,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           </li>
         ))}
       </ul>
-      <div style={{ height: "400px", position: "relative" }}>
+      <div>
         {tabStep4 === "muros" && (
           <div onClick={() => setShowGeneralDetailsModal(true)}>
             {renderMurosTable()}
@@ -815,7 +822,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     });
 
     return (
-      <div style={{ overflowX: "auto", minWidth: "600px" }}>
+      <div>
         {murosTabList.length > 0 ? (
           <TablesParameters columns={columnsMuros} data={data} />
         ) : (
@@ -926,7 +933,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     });
 
     return (
-      <div style={{ overflowX: "auto", minWidth: "600px" }}>
+      <div>
         {techumbreTabList.length > 0 ? (
           <TablesParameters columns={columnsTech} data={data} />
         ) : (
@@ -969,12 +976,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
             : "-",
         bajoPisoLambda:
           item.info?.aislacion_bajo_piso?.lambda &&
-            Number(item.info.aislacion_bajo_piso.lambda) !== 0
+          Number(item.info.aislacion_bajo_piso.lambda) !== 0
             ? Number(item.info.aislacion_bajo_piso.lambda).toFixed(3)
             : "-",
         bajoPisoEAisl:
           item.info?.aislacion_bajo_piso?.e_aisl &&
-            Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
+          Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
             ? item.info.aislacion_bajo_piso.e_aisl
             : "-",
         vertLambda: isEditing ? (
@@ -1117,7 +1124,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     });
 
     return (
-      <div style={{ overflowX: "auto", minWidth: "600px" }}>
+      <div>
         {pisosTabList.length > 0 ? (
           <TablesParameters
             columns={columnsPisos}
@@ -1161,8 +1168,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
       {/* MODAL: Crear Nuevo Detalle */}
       <ModalCreate
         isOpen={showNewDetailRow}
-        onClose={() => { setShowNewDetailRow(false); }}
-        onSave={() => { handleCreateNewDetail(); }}
+        onClose={() => {
+          setShowNewDetailRow(false);
+        }}
+        onSave={() => {
+          handleCreateNewDetail();
+        }}
         title="Nuevo Detalle"
         saveLabel="Crear Detalle"
         detail={newDetailForm}
@@ -1289,12 +1300,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
           }}
           onSave={() => {
             handleConfirmEditDetail({
-              stopPropagation: () => { },
-              preventDefault: () => { },
+              stopPropagation: () => {},
+              preventDefault: () => {},
               nativeEvent: new MouseEvent("click"),
               isDefaultPrevented: () => false,
               isPropagationStopped: () => false,
-              persist: () => { },
+              persist: () => {},
               target: document.createElement("button"),
               currentTarget: document.createElement("button"),
               bubbles: true,

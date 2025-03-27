@@ -120,22 +120,6 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
-const stickyHeaderStyle1 = {
-  position: "sticky" as const,
-  top: 0,
-  backgroundColor: "#fff",
-  zIndex: 3,
-  textAlign: "center" as const,
-};
-
-const stickyHeaderStyle2 = {
-  position: "sticky" as const,
-  top: 40,
-  backgroundColor: "#fff",
-  zIndex: 2,
-  textAlign: "center" as const,
-};
-
 const WorkFlowpar2createPage: React.FC = () => {
   useAuth();
   const router = useRouter();
@@ -257,7 +241,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
 
-  // Cuando se abra el modal de Ventana, inicializamos el input con el valor actual
+  // Inicializa el input de porcentaje al abrir el modal de Ventana
   useEffect(() => {
     if (editingVentanaForm) {
       setVentanaFmInput(
@@ -268,7 +252,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   }, [editingVentanaForm]);
 
-  // Cuando se abra el modal de Puerta, inicializamos el input de porcentaje
+  // Inicializa el input de porcentaje al abrir el modal de Puerta
   useEffect(() => {
     if (editingPuertaForm && editingPuertaForm.atributs) {
       setPuertaPorcentajeInput(
@@ -394,7 +378,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   useEffect(() => {
     if (editingDetail) {
-      // Aquí puedes realizar acciones adicionales al editar el detalle
+      // Acciones adicionales al editar el detalle
     }
   }, [editingDetail]);
 
@@ -428,7 +412,6 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // Función para editar detalle: se cierra el modal de Detalles Generales y se abre el modal de edición.
   const handleEditDetail = (detail: Detail) => {
     setShowDetallesModal(false);
     if ((!detail.material_id || detail.material_id === 0) && detail.material) {
@@ -506,10 +489,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          "Error en la creación del detalle:",
-          error.response?.data
-        );
+        console.error("Error en la creación del detalle:", error.response?.data);
         notify("Error en la creación del Detalle.");
       } else {
         notify("Error desconocido al crear el Detalle.");
@@ -1990,12 +1970,15 @@ const WorkFlowpar2createPage: React.FC = () => {
                 step="any"
                 className="form-control"
                 value={ventanaFmInput}
-                onChange={(e) => setVentanaFmInput(e.target.value)}
-                onBlur={() => {
-                  let val = Number(ventanaFmInput);
-                  if (isNaN(val)) val = 0;
-                  if (val < 0) val = 0;
+                onChange={(e) => {
+                  let val = Number(e.target.value);
+                  if (isNaN(val)) {
+                    setVentanaFmInput("");
+                    return;
+                  }
                   if (val > 100) val = 100;
+                  if (val < 0) val = 0;
+                  setVentanaFmInput(String(val));
                   setEditingVentanaForm((prev) =>
                     prev ? { ...prev, fm: val / 100 } : prev
                   );
@@ -2080,12 +2063,15 @@ const WorkFlowpar2createPage: React.FC = () => {
                 step="any"
                 className="form-control"
                 value={puertaPorcentajeInput}
-                onChange={(e) => setPuertaPorcentajeInput(e.target.value)}
-                onBlur={() => {
-                  let val = Number(puertaPorcentajeInput);
-                  if (isNaN(val)) val = 0;
-                  if (val < 0) val = 0;
+                onChange={(e) => {
+                  let val = Number(e.target.value);
+                  if (isNaN(val)) {
+                    setPuertaPorcentajeInput("");
+                    return;
+                  }
                   if (val > 100) val = 100;
+                  if (val < 0) val = 0;
+                  setPuertaPorcentajeInput(String(val));
                   setEditingPuertaForm((prev) =>
                     prev && prev.atributs
                       ? {
@@ -2134,8 +2120,8 @@ const WorkFlowpar2createPage: React.FC = () => {
                     );
                     return;
                   }
-                  if (val < 0) val = 0;
                   if (val > 100) val = 100;
+                  if (val < 0) val = 0;
                   setEditingPuertaForm((prev) =>
                     prev ? { ...prev, fm: val / 100 } : prev
                   );

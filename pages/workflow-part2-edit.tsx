@@ -536,6 +536,8 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== EDICIÓN DE DETALLE ======================
   const handleEditDetail = (detail: Detail) => {
     setEditingDetail(detail);
+    // Opcional: cargar materiales si aún no se han cargado
+    if (materials.length === 0) fetchMaterials();
   };
 
   const handleConfirmDetailEdit = async () => {
@@ -1588,9 +1590,8 @@ const WorkFlowpar2editPage: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <label>ID Material</label>
-              <input
-                type="number"
+              <label>Material</label>
+              <select 
                 className="form-control"
                 value={editingDetail.id_material}
                 onChange={(e) =>
@@ -1598,7 +1599,14 @@ const WorkFlowpar2editPage: React.FC = () => {
                     prev ? { ...prev, id_material: parseInt(e.target.value, 10) } : prev
                   )
                 }
-              />
+              >
+                <option value="">Seleccione Material</option>
+                {materials.map((mat: Material) => (
+                  <option key={mat.id} value={mat.id}>
+                    {mat.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-group">
               <label>Espesor de capa (cm)</label>

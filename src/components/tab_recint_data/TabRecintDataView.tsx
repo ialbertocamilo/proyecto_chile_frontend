@@ -13,26 +13,9 @@ interface EnclosureGeneralData {
   zona_termica: string;
   name_enclosure: string;
   comuna_id: number;
-}
-
-interface OccupationProfile {
-  id: number;
-  code: string;
-  name: string;
-}
-
-interface Region {
-  id: number;
-  nombre_region: string;
-}
-
-interface Comuna {
-  id: number;
-  zonas_termicas: string[];
-  region_id: number;
   nombre_comuna: string;
-  latitud: number;
-  longitud: number;
+  nombre_region: string;
+  usage_profile_name: string;
 }
 
 const TabRecintDataView: React.FC = () => {
@@ -42,10 +25,6 @@ const TabRecintDataView: React.FC = () => {
   );
 
   const [data, setData] = useState<EnclosureGeneralData[]>([]);
-  const [regiones, setRegiones] = useState<Region[]>([]);
-  const [comunas, setComunas] = useState<Comuna[]>([]);
-  const [zonasTermicas, setZonasTermicas] = useState<string[]>([]);
-  const [occupationProfiles, setOccupationProfiles] = useState<OccupationProfile[]>([]);
 
   useEffect(() => {
     if (!token || !projectId) return;
@@ -57,55 +36,17 @@ const TabRecintDataView: React.FC = () => {
           Authorization: `Bearer ${token}`,
         };
 
-        const [
-          enclosureRes,
-          regionesRes,
-          comunasRes,
-          zonasRes,
-          profilesRes,
-        ] = await Promise.all([
-          fetch(`${constantUrlApiEndpoint}/enclosure-generals/${projectId}`, { headers }),
-          fetch(`${constantUrlApiEndpoint}/regiones`, { headers }),
-          fetch(`${constantUrlApiEndpoint}/comunas/4`, { headers }),
-          fetch(`${constantUrlApiEndpoint}/zonas-termicas/24`, { headers }),
-          fetch(`${constantUrlApiEndpoint}/user/enclosures-typing/`, { headers }),
-        ]);
+        const enclosureRes = await fetch(
+          `${constantUrlApiEndpoint}/enclosure-generals/${projectId}`,
+          { headers }
+        );
 
         if (enclosureRes.ok) {
           const enclosureData: EnclosureGeneralData[] = await enclosureRes.json();
           setData(enclosureData);
-        }
-
-        if (regionesRes.ok) {
-          const regionesData: Region[] = await regionesRes.json();
-          setRegiones(regionesData);
-        } else {
-          notify("Error al cargar las regiones");
-        }
-
-        if (comunasRes.ok) {
-          const comunasData: Comuna[] = await comunasRes.json();
-          setComunas(comunasData);
-        } else {
-          notify("Error al cargar las comunas");
-        }
-
-        if (zonasRes.ok) {
-          const zonasData: string[] = await zonasRes.json();
-          setZonasTermicas(zonasData);
-        } else {
-          notify("Error al cargar las zonas térmicas");
-        }
-
-        if (profilesRes.ok) {
-          const profilesData: OccupationProfile[] = await profilesRes.json();
-          setOccupationProfiles(profilesData);
-        } else {
-          notify("Error al cargar los perfiles de ocupación");
-        }
+        } 
       } catch (error) {
         console.error("Error al cargar los datos:", error);
-        notify("Ocurrió un error al cargar los datos del proyecto");
       }
     };
 
@@ -125,10 +66,8 @@ const TabRecintDataView: React.FC = () => {
     },
     {
       headerName: "Perfil Ocupación",
-      field: "occupation_profile_id",
-      renderCell: (row: EnclosureGeneralData) =>
-        occupationProfiles.find((p) => p.id === row.occupation_profile_id)?.name ||
-        row.occupation_profile_id,
+      field: "usage_profile_name",
+      renderCell: (row: EnclosureGeneralData) => row.usage_profile_name,
     },
     {
       headerName: "Altura (m)",
@@ -142,20 +81,18 @@ const TabRecintDataView: React.FC = () => {
     },
     {
       headerName: "Región",
-      field: "region_id",
-      renderCell: (row: EnclosureGeneralData) =>
-        regiones.find((r) => r.id === row.region_id)?.nombre_region || row.region_id,
+      field: "nombre_region",
+      renderCell: (row: EnclosureGeneralData) => row.nombre_region, // Mostrar el nombre de la región
+    },
+    {
+      headerName: "Comuna",
+      field: "nombre_comuna",
+      renderCell: (row: EnclosureGeneralData) => row.nombre_comuna, // Mostrar el nombre de la comuna
     },
     {
       headerName: "Zona Térmica",
       field: "zona_termica",
       renderCell: (row: EnclosureGeneralData) => row.zona_termica,
-    },
-    {
-      headerName: "Comuna",
-      field: "comuna_id",
-      renderCell: (row: EnclosureGeneralData) =>
-        comunas.find((c) => c.id === row.comuna_id)?.nombre_comuna || row.comuna_id,
     },
   ];
 

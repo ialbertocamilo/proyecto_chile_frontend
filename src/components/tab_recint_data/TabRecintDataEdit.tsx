@@ -5,6 +5,7 @@ import ActionButtons from "@/components/common/ActionButtons";
 import CustomButton from "@/components/common/CustomButton";
 import ModalCreate from "@/components/common/ModalCreate";
 import { notify } from "@/utils/notify";
+import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 
 interface EnclosureGeneralData {
   id: number;
@@ -16,26 +17,9 @@ interface EnclosureGeneralData {
   zona_termica: string;
   name_enclosure: string;
   comuna_id: number;
-}
-
-interface OccupationProfile {
-  id: number;
-  code: string;
-  name: string;
-}
-
-interface Region {
-  id: number;
-  nombre_region: string;
-}
-
-interface Comuna {
-  id: number;
-  zonas_termicas: string[];
-  region_id: number;
   nombre_comuna: string;
-  latitud: number;
-  longitud: number;
+  nombre_region: string;
+  usage_profile_name: string;
 }
 
 interface IFormData {
@@ -50,28 +34,23 @@ interface IFormData {
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
-const TabEnclosureGenerals: React.FC = () => {
+const TabRecintDataEdit: React.FC = () => {
   const router = useRouter();
   const projectId = localStorage.getItem("project_id_edit") || "44";
   const token = localStorage.getItem("token") || "";
 
   // Estados para la tabla principal
   const [data, setData] = useState<EnclosureGeneralData[]>([]);
-  // Estados para regiones, comunas, zonas térmicas y perfiles de ocupación
-  const [regiones, setRegiones] = useState<Region[]>([]);
-  const [comunas, setComunas] = useState<Comuna[]>([]);
-  const [zonasTermicas, setZonasTermicas] = useState<string[]>([]);
-  const [occupationProfiles, setOccupationProfiles] = useState<OccupationProfile[]>([]);
 
   // Modal de confirmación para eliminación
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<EnclosureGeneralData | null>(null);
 
   // ===========================================================
-  // 1. Funciones para fetch de datos
+  // 1. Funciones para fetch de datos (solo para recintos)
   // ===========================================================
   const fetchEnclosureGenerals = async () => {
-    const url = `https://ceela-backend.svgdev.tech/enclosure-generals/${projectId}`;
+    const url = `${constantUrlApiEndpoint}/enclosure-generals/${projectId}`;
     const response = await fetch(url, {
       method: "GET",
       headers: {
@@ -84,91 +63,11 @@ const TabEnclosureGenerals: React.FC = () => {
     setData(responseData);
   };
 
-  const fetchRegiones = async () => {
-    try {
-      const url = "https://ceela-backend.svgdev.tech/regiones";
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al obtener regiones");
-      const responseData: Region[] = await response.json();
-      setRegiones(responseData);
-    } catch (error) {
-      console.error(error);
-      notify("Error al cargar las regiones");
-    }
-  };
-
-  const fetchComunas = async () => {
-    try {
-      const url = "https://ceela-backend.svgdev.tech/comunas/4";
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al obtener comunas");
-      const responseData: Comuna[] = await response.json();
-      setComunas(responseData);
-    } catch (error) {
-      console.error(error);
-      notify("Error al cargar las comunas");
-    }
-  };
-
-  const fetchZonasTermicas = async () => {
-    try {
-      const url = "https://ceela-backend.svgdev.tech/zonas-termicas/24";
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al obtener zonas térmicas");
-      const responseData: string[] = await response.json();
-      setZonasTermicas(responseData);
-    } catch (error) {
-      console.error(error);
-      notify("Error al cargar las zonas térmicas");
-    }
-  };
-
-  const fetchOccupationProfiles = async () => {
-    try {
-      const url = "https://ceela-backend.svgdev.tech/user/enclosures-typing/";
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al obtener los perfiles de ocupación");
-      const responseData: OccupationProfile[] = await response.json();
-      setOccupationProfiles(responseData);
-    } catch (error) {
-      console.error(error);
-      notify("Error al cargar los perfiles de ocupación");
-    }
-  };
-
   // ===========================================================
-  // 2. useEffect para cargar todos los datos al inicio
+  // 2. useEffect para cargar los datos del recinto al inicio
   // ===========================================================
   useEffect(() => {
     fetchEnclosureGenerals();
-    fetchRegiones();
-    fetchComunas();
-    fetchZonasTermicas();
-    fetchOccupationProfiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -176,7 +75,6 @@ const TabEnclosureGenerals: React.FC = () => {
   // 3. Función para redirigir a la página de edición
   // ===========================================================
   const handleNewFunction = (row: EnclosureGeneralData) => {
-    // Crear el objeto con los datos del recinto para precargar el formulario
     const formData: IFormData = {
       selectedRegion: row.region_id.toString(),
       selectedComuna: row.comuna_id.toString(),
@@ -189,7 +87,7 @@ const TabEnclosureGenerals: React.FC = () => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
     localStorage.setItem("recinto_id", row.id.toString());
     notify("Datos del recinto cargados para edición");
-    router.push("/recinto-edit"); // Asegúrate de que la ruta coincida con la de tu página de edición
+    router.push("/recinto-edit");
   };
 
   // ===========================================================
@@ -202,7 +100,7 @@ const TabEnclosureGenerals: React.FC = () => {
 
   const confirmDelete = async () => {
     if (!itemToDelete) return;
-    const url = `https://ceela-backend.svgdev.tech/enclosure-generals-delete/${projectId}/${itemToDelete.id}`;
+    const url = `${constantUrlApiEndpoint}/enclosure-generals-delete/${projectId}/${itemToDelete.id}`;
     try {
       const response = await fetch(url, {
         method: "DELETE",
@@ -237,7 +135,7 @@ const TabEnclosureGenerals: React.FC = () => {
   };
 
   // ===========================================================
-  // 6. Definición de columnas para la tabla
+  // 6. Definición de columnas para la tabla (cambio en el orden)
   // ===========================================================
   const columns = [
     {
@@ -253,9 +151,7 @@ const TabEnclosureGenerals: React.FC = () => {
     {
       headerName: "Perfil Ocupación",
       field: "occupation_profile_id",
-      renderCell: (row: EnclosureGeneralData) =>
-        occupationProfiles.find((p) => p.id === row.occupation_profile_id)?.name ||
-        row.occupation_profile_id,
+      renderCell: (row: EnclosureGeneralData) => row.usage_profile_name,  // Cambiado para mostrar el nombre del perfil
     },
     {
       headerName: "Altura (m)",
@@ -270,19 +166,17 @@ const TabEnclosureGenerals: React.FC = () => {
     {
       headerName: "Región",
       field: "region_id",
-      renderCell: (row: EnclosureGeneralData) =>
-        regiones.find((r) => r.id === row.region_id)?.nombre_region || row.region_id,
-    },
-    {
-      headerName: "Zona Térmica",
-      field: "zona_termica",
-      renderCell: (row: EnclosureGeneralData) => row.zona_termica,
+      renderCell: (row: EnclosureGeneralData) => row.nombre_region,  // Cambiado para mostrar el nombre de la región
     },
     {
       headerName: "Comuna",
       field: "comuna_id",
-      renderCell: (row: EnclosureGeneralData) =>
-        comunas.find((c) => c.id === row.comuna_id)?.nombre_comuna || row.comuna_id,
+      renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,  // Cambiado para mostrar el nombre de la comuna
+    },
+    {
+      headerName: "Zona Térmica",
+      field: "zona_termica",
+      renderCell: (row: EnclosureGeneralData) => row.zona_termica,  // Mantuvimos la columna Zona Térmica aquí
     },
     {
       headerName: "Acciones",
@@ -343,4 +237,4 @@ const TabEnclosureGenerals: React.FC = () => {
   );
 };
 
-export default TabEnclosureGenerals;
+export default TabRecintDataEdit;

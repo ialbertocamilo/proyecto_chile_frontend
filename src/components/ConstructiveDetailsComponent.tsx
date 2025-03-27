@@ -177,11 +177,13 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   }, []);
 
+  // Aquí se eliminó la condición "if (data && data.length > 0)" para que siempre se actualice el estado,
+  // incluso si la respuesta es un arreglo vacío.
   const fetchMurosDetails = useCallback(() => {
     fetchData<TabItem[]>(
       `${constantUrlApiEndpoint}/details/all/Muro/`,
       (data) => {
-        if (data && data.length > 0) setMurosTabList(data);
+        setMurosTabList(data);
       }
     );
   }, [fetchData]);
@@ -189,14 +191,18 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const fetchTechumbreDetails = useCallback(() => {
     fetchData<TabItem[]>(
       `${constantUrlApiEndpoint}/details/all/Techo/`,
-      setTechumbreTabList
+      (data) => {
+        setTechumbreTabList(data);
+      }
     );
   }, [fetchData]);
 
   const fetchPisosDetails = useCallback(() => {
     fetchData<TabItem[]>(
       `${constantUrlApiEndpoint}/details/all/Piso/`,
-      setPisosTabList
+      (data) => {
+        setPisosTabList(data);
+      }
     );
   }, [fetchData]);
 
@@ -341,10 +347,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
     try {
       const url = `${constantUrlApiEndpoint}/admin/details/${deletingDetail.id_detail}/delete`;
-      const response = await axios.delete(url, {
+      await axios.delete(url, {
         headers: { Authorization: `Bearer ${token}`, accept: "application/json" },
       });
-      console.log("Detalle eliminado:", response.data);
+      console.log("Detalle eliminado");
       notify("Detalle correctamente eliminado");
       await fetchFetchedDetails();
       const tipo = deletingDetail.scantilon_location.toLowerCase();
@@ -386,6 +392,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
         },
       });
       notify("Detalle eliminado correctamente.");
+      // Se actualiza también la tabla general de detalles
+      await fetchFetchedDetails();
       if (tabStep4 === "muros") fetchMurosDetails();
       else if (tabStep4 === "techumbre") fetchTechumbreDetails();
       else if (tabStep4 === "pisos") fetchPisosDetails();
@@ -440,7 +448,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
         });
         notify("Detalle actualizado con éxito.");
         await fetchFetchedDetails();
-        // También se refresca la tabla específica según el tipo de detalle editado
         const tipo = editingDetail.scantilon_location.toLowerCase();
         if (tipo === "muro") {
           fetchMurosDetails();
@@ -458,10 +465,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
     })();
   };
 
-  // ========================
+  // ========================================================
   // Funciones de edición inline
-  // ========================
-
+  // ========================================================
   const handleInlineEdit = (item: TabItem, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingRowId(item.id_detail ?? item.id ?? null);
@@ -642,7 +648,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
                 if (inModal) setShowGeneralDetailsModal(false);
                 else setShowTabsInStep4(false);
               }}
-             
             >
               <span className="material-icons">arrow_back</span> Volver
             </CustomButton>
@@ -658,9 +663,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const renderDetailsTabs = () => (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-        <CustomButton onClick={handleNewButtonClick}>
-          + Nuevo
-        </CustomButton>
+        <CustomButton onClick={handleNewButtonClick}>+ Nuevo</CustomButton>
       </div>
       <ul
         className="nav"
@@ -720,7 +723,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
   // ========================================================
   // Renderizado de Tablas con edición inline
   // ========================================================
-
   // MUROS
   const renderMurosTable = () => {
     const columnsMuros = [
@@ -773,14 +775,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
           item.info?.surface_color?.interior?.name || "Desconocido"
         ),
         acciones: isEditing ? (
-          <>
-            <div onClick={(e) => e.stopPropagation()}>
-              <ActionButtonsConfirm
-                onAccept={() => handleInlineSave(item, "Muro")}
-                onCancel={handleInlineCancel}
-              />
-            </div>
-          </>
+          <div onClick={(e) => e.stopPropagation()}>
+            <ActionButtonsConfirm
+              onAccept={() => handleInlineSave(item, "Muro")}
+              onCancel={handleInlineCancel}
+            />
+          </div>
         ) : (
           <>
             <CustomButton
@@ -872,12 +872,26 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ),
         acciones: isEditing ? (
           <>
-            <div onClick={(e) => e.stopPropagation()}>
-              <ActionButtonsConfirm
-                onAccept={() => handleInlineSave(item, "Techo")}
-                onCancel={handleInlineCancel}
-              />
-            </div>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineSave(item, "Techo", e);
+              }}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineCancel(e);
+              }}
+            >
+              Deshacer
+            </CustomButton>
           </>
         ) : (
           <>
@@ -1049,12 +1063,26 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ),
         acciones: isEditing ? (
           <>
-            <div onClick={(e) => e.stopPropagation()}>
-              <ActionButtonsConfirm
-                onAccept={() => handleInlineSave(item, "Piso")}
-                onCancel={handleInlineCancel}
-              />
-            </div>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineSave(item, "Piso", e);
+              }}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineCancel(e);
+              }}
+            >
+              Deshacer
+            </CustomButton>
           </>
         ) : (
           <>
@@ -1117,7 +1145,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     );
   };
 
-  //Render principal del componente
+  // Render principal del componente
   return (
     <div className="constructive-details-container" style={{ padding: "20px" }}>
       <div style={{ marginTop: "20px" }}>

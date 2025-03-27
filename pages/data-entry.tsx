@@ -852,9 +852,9 @@ const DataEntryPage: React.FC = () => {
             el.name_element.toLowerCase().includes(elementSearch.toLowerCase())
         )
         .map((el) => {
-          const isDefault = (el as any).created_status === "default" || (el as any).create_status === "global";
+          const isDefault = (el as any).created_status === "created"
           return {
-            name_element: !isDefault ? (
+            name_element: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.name_element}
               </span>
@@ -863,7 +863,7 @@ const DataEntryPage: React.FC = () => {
             ),
             u_vidrio:
               el.atributs.u_vidrio && el.atributs.u_vidrio > 0 ? (
-                !isDefault ? (
+                isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
                     {el.atributs.u_vidrio}
                   </span>
@@ -875,7 +875,7 @@ const DataEntryPage: React.FC = () => {
               ),
             fs_vidrio:
               el.atributs.fs_vidrio && el.atributs.fs_vidrio > 0 ? (
-                !isDefault ? (
+                isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
                     {el.atributs.fs_vidrio}
                   </span>
@@ -885,28 +885,28 @@ const DataEntryPage: React.FC = () => {
               ) : (
                 "--"
               ),
-            clousure_type: !isDefault ? (
+            clousure_type: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.atributs.clousure_type ?? "--"}
               </span>
             ) : (
               el.atributs.clousure_type ?? "--"
             ),
-            frame_type: !isDefault ? (
+            frame_type: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.atributs.frame_type ?? "--"}
               </span>
             ) : (
               el.atributs.frame_type ?? "--"
             ),
-            u_marco: !isDefault ? (
+            u_marco: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.u_marco}
               </span>
             ) : (
               el.u_marco
             ),
-            fm: !isDefault ? (
+            fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {(el.fm * 100).toFixed(2) + "%"}
               </span>
@@ -972,9 +972,9 @@ const DataEntryPage: React.FC = () => {
             el.name_element.toLowerCase().includes(elementSearch.toLowerCase())
         )
         .map((el) => {
-          const isDefault = (el as any).created_status === "default" || (el as any).create_status === "global";
+          const isDefault = (el as any).created_status === "created"
           return {
-            name_element: !isDefault ? (
+            name_element: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.name_element}
               </span>
@@ -983,7 +983,7 @@ const DataEntryPage: React.FC = () => {
             ),
             u_puerta_opaca:
               el.atributs.u_puerta_opaca && el.atributs.u_puerta_opaca > 0 ? (
-                !isDefault ? (
+                isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
                     {el.atributs.u_puerta_opaca}
                   </span>
@@ -993,7 +993,7 @@ const DataEntryPage: React.FC = () => {
               ) : (
                 "--"
               ),
-            name_ventana: !isDefault ? (
+            name_ventana: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.atributs.name_ventana ?? "--"}
               </span>
@@ -1002,7 +1002,7 @@ const DataEntryPage: React.FC = () => {
             ),
             porcentaje_vidrio:
               el.atributs.porcentaje_vidrio !== undefined ? (
-                !isDefault ? (
+                isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
                     {(el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"}
                   </span>
@@ -1012,14 +1012,14 @@ const DataEntryPage: React.FC = () => {
               ) : (
                 "0%"
               ),
-            u_marco: !isDefault ? (
+            u_marco: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.u_marco}
               </span>
             ) : (
               el.u_marco
             ),
-            fm: !isDefault ? (
+            fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {(el.fm * 100).toFixed(2) + "%"}
               </span>

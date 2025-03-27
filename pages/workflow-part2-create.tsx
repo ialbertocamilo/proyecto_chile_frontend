@@ -1686,7 +1686,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           ))}
         </ul>
         <div
-          style={{ height: "400px", overflowY: "auto", position: "relative" }}
+          style={{ height: "400px", position: "relative" }}
         >
           {tabStep4 === "muros" && renderMurosTable()}
           {tabStep4 === "techumbre" && renderTechumbreTable()}
@@ -2165,7 +2165,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           materials={materials.map((mat) => ({ ...mat, id: String(mat.id) }))}
           onSave={handleCreateNewDetail}
           title="Nuevo Detalle"
-          saveLabel="Crear"
+          saveLabel="Crear Detalle"
         >
           <form
             onSubmit={(e) => {

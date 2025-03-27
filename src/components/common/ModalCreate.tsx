@@ -33,7 +33,7 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
   onSave,
   children,
   title,
-  saveLabel = 'Crear',
+  saveLabel = 'Grabar Datos',
   modalStyle,
   overlayStyle,
   hideFooter = false, // Valor por defecto: false (no oculta el footer)

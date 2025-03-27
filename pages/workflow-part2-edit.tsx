@@ -1534,15 +1534,95 @@ const WorkFlowpar2editPage: React.FC = () => {
           </div>
         </Card>
       </div>
-      {/* Modal para crear un nuevo detalle */}
-      <NewDetailModal
-        showNewDetailRow={showNewDetailRow}
-        setShowNewDetailRow={setShowNewDetailRow}
-        newDetailForm={newDetailForm}
-        setNewDetailForm={setNewDetailForm}
-        materials={materials}
-        handleCreateNewDetail={handleCreateNewDetail}
+      {/* Modal para crear un nuevo detalle usando ModalCreate */}
+<ModalCreate
+  detail={null}
+  isOpen={showNewDetailRow}
+  title="Crear Nuevo Detalle"
+  onClose={() => {
+    setShowNewDetailRow(false);
+    // Reinicia el formulario si es necesario:
+    setNewDetailForm({
+      scantilon_location: "",
+      name_detail: "",
+      material_id: 0,
+      layer_thickness: null,
+    });
+  }}
+  onSave={handleCreateNewDetail}
+>
+  <form>
+    <div className="form-group">
+      <label>Ubicación del Detalle</label>
+      <select
+        className="form-control"
+        value={newDetailForm.scantilon_location}
+        onChange={(e) =>
+          setNewDetailForm((prev) => ({
+            ...prev,
+            scantilon_location: e.target.value,
+          }))
+        }
+      >
+        <option value="">Seleccione</option>
+        <option value="Muro">Muro</option>
+        <option value="Techo">Techo</option>
+        <option value="Piso">Piso</option>
+      </select>
+    </div>
+    <div className="form-group">
+      <label>Nombre del Detalle</label>
+      <input
+        type="text"
+        className="form-control"
+        placeholder="Nombre Detalle"
+        value={newDetailForm.name_detail}
+        onChange={(e) =>
+          setNewDetailForm((prev) => ({
+            ...prev,
+            name_detail: e.target.value,
+          }))
+        }
       />
+    </div>
+    <div className="form-group">
+      <label>Material</label>
+      <select
+        className="form-control"
+        value={newDetailForm.material_id}
+        onChange={(e) =>
+          setNewDetailForm((prev) => ({
+            ...prev,
+            material_id: parseInt(e.target.value, 10),
+          }))
+        }
+      >
+        <option value={0}>Seleccione un Material</option>
+        {materials.map((mat) => (
+          <option key={mat.id} value={mat.id}>
+            {mat.name}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div className="form-group">
+      <label>Espesor de capa (cm)</label>
+      <input
+        type="number"
+        className="form-control"
+        placeholder="Espesor (cm)"
+        value={newDetailForm.layer_thickness ?? ""}
+        onChange={(e) =>
+          setNewDetailForm((prev) => ({
+            ...prev,
+            layer_thickness: parseFloat(e.target.value),
+          }))
+        }
+      />
+    </div>
+  </form>
+</ModalCreate>
+
       {/* Modal para mostrar los detalles generales de un registro */}
       <DetailModal detail={selectedDetail} show={showDetailModal} onClose={() => setShowDetailModal(false)} />
       {/* Modal para mostrar la tabla de Detalles Generales */}

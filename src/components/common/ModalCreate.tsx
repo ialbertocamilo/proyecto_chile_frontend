@@ -33,7 +33,7 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
   onSave,
   children,
   title,
-  saveLabel = 'Guardar Cambios',
+  saveLabel = 'Crear',
   modalStyle,
   overlayStyle,
   hideFooter = false, // Valor por defecto: false (no oculta el footer)
@@ -136,7 +136,7 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
             }}
           >
             <CancelButton onClick={onClose} />
-            <CustomButton variant="save" onClick={onSave}>
+            <CustomButton onClick={onSave}>
               {saveLabel}
             </CustomButton>
           </div>

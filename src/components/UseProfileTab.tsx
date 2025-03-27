@@ -544,7 +544,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         values.estrategia
       ),
       potenciaPropuesta: isDefault ? (
-        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+        <span style={{ color: "black", fontWeight: "" }}>
           {values.potenciaPropuesta}
         </span>
       ) : (
@@ -953,7 +953,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         onClose={() => setIsCreateModalOpen(false)}
         onSave={handleCreateSave}
         title="Crear nuevo recinto"
-        saveLabel="Crear"
+        saveLabel="Crear Perfil"
       >
         <div>
           <label htmlFor="recinto-name">Nombre del Recinto</label>

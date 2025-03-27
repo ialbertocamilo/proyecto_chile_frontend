@@ -19,7 +19,7 @@ interface Detail {
   created_status?: string;
 }
 
-interface TabItem {
+export interface TabItem {
   id_detail?: number;
   id?: number;
   name_detail: string;
@@ -120,8 +120,16 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const [deletingDetail, setDeletingDetail] = useState<Detail | null>(null);
   const [editingDetail, setEditingDetail] = useState<Detail | null>(null);
 
+  // Estados para eliminación inline en tablas (Muros, Techumbre, Pisos)
+  const [showInlineDeleteModal, setShowInlineDeleteModal] = useState(false);
+  const [deletingInlineDetail, setDeletingInlineDetail] = useState<TabItem | null>(null);
+
   // Estado para mostrar modal "Detalles Generales"
   const [showGeneralDetailsModal, setShowGeneralDetailsModal] = useState(false);
+
+  // Estados para edición inline
+  const [editingRowId, setEditingRowId] = useState<number | null>(null);
+  const [editValues, setEditValues] = useState<any>({});
 
   // Efecto para cargar color primario y marcar carga inicial
   useEffect(() => {
@@ -268,10 +276,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
       notify("Por favor complete todos los campos de Detalle.");
       return;
     }
-
     const token = getToken();
     if (!token) return;
-
     setIsCreatingDetail(true);
     try {
       const createUrl = `${constantUrlApiEndpoint}/admin/details/create`;
@@ -284,6 +290,17 @@ const ConstructiveDetailsComponent: React.FC = () => {
       console.log("Respuesta de creación:", response);
       notify("Detalle creado exitosamente.");
       await fetchFetchedDetails();
+      
+      // Actualiza la tabla específica según el tipo de detalle creado
+      const tipo = newDetailForm.scantilon_location.toLowerCase();
+      if (tipo === "muro") {
+        fetchMurosDetails();
+      } else if (tipo === "techo") {
+        fetchTechumbreDetails();
+      } else if (tipo === "piso") {
+        fetchPisosDetails();
+      }
+      
       setShowNewDetailRow(false);
       setNewDetailForm({
         scantilon_location: "",
@@ -331,25 +348,70 @@ const ConstructiveDetailsComponent: React.FC = () => {
       console.log("Detalle eliminado:", response.data);
       notify("Detalle correctamente eliminado");
       await fetchFetchedDetails();
+  
+      // Actualizar la tabla específica según el tipo de detalle eliminado
+      const tipo = deletingDetail.scantilon_location.toLowerCase();
+      if (tipo === "muro") {
+        fetchMurosDetails();
+      } else if (tipo === "techo") {
+        fetchTechumbreDetails();
+      } else if (tipo === "piso") {
+        fetchPisosDetails();
+      }
     } catch (error: unknown) {
       console.error("Error al eliminar detalle:", error);
       notify("Error", "No se pudo eliminar el detalle.");
     } finally {
       setShowDeleteModal(false);
       setDeletingDetail(null);
+      setShowGeneralDetailsModal(true);
+    }
+  };
+  
+  // Función para abrir el modal de eliminación inline en tablas
+  const handleInlineDeleteModal = (item: TabItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeletingInlineDetail(item);
+    setShowInlineDeleteModal(true);
+  };
+
+  // Función para confirmar la eliminación inline en tablas
+  const confirmInlineDeleteDetail = async () => {
+    if (!deletingInlineDetail) return;
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/admin/${deletingInlineDetail.id}/details/delete`;
+      await axios.delete(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          accept: "application/json",
+        },
+      });
+      notify("Detalle eliminado correctamente.");
+      // Refrescar la tabla según la pestaña actual
+      if (tabStep4 === "muros") fetchMurosDetails();
+      else if (tabStep4 === "techumbre") fetchTechumbreDetails();
+      else if (tabStep4 === "pisos") fetchPisosDetails();
+    } catch (error: any) {
+      console.error("Error al eliminar detalle inline:", error);
+      notify("Error al eliminar el detalle.");
+    } finally {
+      setShowInlineDeleteModal(false);
+      setDeletingInlineDetail(null);
     }
   };
 
   // EDICIÓN DE DETALLE GENERAL (Modal)
-  const handleEditDetail = (detail: Detail) => {
-    // Cierra el modal de Detalles Generales para que el modal de edición no quede detrás.
+  const handleEditDetail = (detail: Detail, e: React.MouseEvent) => {
+    e.stopPropagation();
     setShowGeneralDetailsModal(false);
-    // Carga la lista de materiales para que el select tenga datos actualizados
     fetchMaterials();
     setEditingDetail(detail);
   };
 
-  const handleConfirmEditDetail = async () => {
+  const handleConfirmEditDetail = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!editingDetail) return;
     if (!editingDetail.scantilon_location.trim() || !editingDetail.name_detail.trim()) {
       notify("Los campos 'Ubicación Detalle' y 'Nombre Detalle' no pueden estar vacíos.");
@@ -365,14 +427,93 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
     const token = getToken();
     if (!token) return;
+    (async () => {
+      try {
+        const url = `${constantUrlApiEndpoint}/admin/details/${editingDetail.id_detail}/update`;
+        const payload = {
+          scantilon_location: editingDetail.scantilon_location,
+          name_detail: editingDetail.name_detail,
+          material_id: editingDetail.material_id,
+          layer_thickness: editingDetail.layer_thickness,
+        };
+        await axios.put(url, payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        notify("Detalle actualizado con éxito.");
+        await fetchFetchedDetails();
+        setEditingDetail(null);
+        setShowGeneralDetailsModal(true);
+      } catch (error: unknown) {
+        console.error("Error al actualizar el detalle:", error);
+        notify("Error al actualizar el detalle.");
+      }
+    })();
+  };
+
+  // ========================
+  // Funciones de edición inline
+  // ========================
+
+  const handleInlineEdit = (item: TabItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Usamos id_detail si está definido, de lo contrario usamos id
+    setEditingRowId(item.id_detail ?? item.id ?? null);
+    setEditValues({
+      name_detail: item.name_detail,
+      exterior: item.info?.surface_color?.exterior?.name || "",
+      interior: item.info?.surface_color?.interior?.name || "",
+      vertLambda: item.info?.ref_aisl_vertical?.lambda || "",
+      vertEAisl: item.info?.ref_aisl_vertical?.e_aisl || "",
+      vertD: item.info?.ref_aisl_vertical?.d || "",
+      horizLambda: item.info?.ref_aisl_horizontal?.lambda || "",
+      horizEAisl: item.info?.ref_aisl_horizontal?.e_aisl || "",
+      horizD: item.info?.ref_aisl_horizontal?.d || "",
+    });
+  };
+
+  const handleInlineCancel = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEditingRowId(null);
+    setEditValues({});
+  };
+
+  const handleInlineSave = async (item: TabItem, detailType: "Muro" | "Techo" | "Piso", e: React.MouseEvent) => {
+    e.stopPropagation();
+    const token = getToken();
+    if (!token) return;
     try {
-      const url = `${constantUrlApiEndpoint}/admin/details/${editingDetail.id_detail}/update`;
-      const payload = {
-        scantilon_location: editingDetail.scantilon_location,
-        name_detail: editingDetail.name_detail,
-        material_id: editingDetail.material_id,
-        layer_thickness: editingDetail.layer_thickness,
-      };
+      let url = `${constantUrlApiEndpoint}/${item.id_detail}/details/update`;
+      let payload;
+      if (detailType === "Piso") {
+        payload = {
+          info: {
+            ref_aisl_vertical: {
+              d: editValues.vertD || item.info?.ref_aisl_vertical?.d,
+              e_aisl: editValues.vertEAisl || item.info?.ref_aisl_vertical?.e_aisl,
+              lambda: editValues.vertLambda || item.info?.ref_aisl_vertical?.lambda,
+            },
+            ref_aisl_horizontal: {
+              d: editValues.horizD || item.info?.ref_aisl_horizontal?.d,
+              e_aisl: editValues.horizEAisl || item.info?.ref_aisl_horizontal?.e_aisl,
+              lambda: editValues.horizLambda || item.info?.ref_aisl_horizontal?.lambda,
+            },
+          },
+        };
+        url = `${constantUrlApiEndpoint}/${item.id}/details/update/Piso`;
+      } else {
+        payload = {
+          info: {
+            surface_color: {
+              interior: { name: editValues.interior },
+              exterior: { name: editValues.exterior },
+            },
+          },
+        };
+        url = `${constantUrlApiEndpoint}/${item.id}/details/update/${detailType}`;
+      }
       await axios.put(url, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -380,19 +521,18 @@ const ConstructiveDetailsComponent: React.FC = () => {
         },
       });
       notify("Detalle actualizado con éxito.");
-      await fetchFetchedDetails();
-      // Cierra el modal de edición
-      setEditingDetail(null);
-      // Reabre el modal de Detalles Generales con data refrescada
-      setShowGeneralDetailsModal(true);
-    } catch (error: unknown) {
-      console.error("Error al actualizar el detalle:", error);
+      if (detailType === "Muro") fetchMurosDetails();
+      else if (detailType === "Techo") fetchTechumbreDetails();
+      else if (detailType === "Piso") fetchPisosDetails();
+      handleInlineCancel();
+    } catch (error: any) {
+      console.error("Error al actualizar detalle inline:", error);
       notify("Error al actualizar el detalle.");
     }
   };
 
   // ========================================================
-  //   Renderizado "Detalles Generales" (Vista Inicial)
+  // Renderizado "Detalles Generales" (Vista Inicial)
   // ========================================================
   const renderInitialDetails = (inModal: boolean = false) => {
     const columnsDetails = [
@@ -429,48 +569,36 @@ const ConstructiveDetailsComponent: React.FC = () => {
       }
     }
 
-    // Se aplica estilo condicional a cada campo si created_status es "default"
     const data = filteredData.map((det) => ({
-      scantilon_location:
-        det.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {det.scantilon_location}
-          </span>
-        ) : (
-          det.scantilon_location
-        ),
-      name_detail:
-        det.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {det.name_detail}
-          </span>
-        ) : (
-          det.name_detail
-        ),
-      material:
-        det.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {det.material}
-          </span>
-        ) : (
-          det.material
-        ),
-      layer_thickness:
-        det.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {det.layer_thickness}
-          </span>
-        ) : (
-          det.layer_thickness
-        ),
+      scantilon_location: (
+        <span style={{ color: det.created_status !== "default" ? primaryColor : "black" }}>
+          {det.scantilon_location}
+        </span>
+      ),
+      name_detail: (
+        <span style={{ color: det.created_status !== "default" ? primaryColor : "black" }}>
+          {det.name_detail}
+        </span>
+      ),
+      material: (
+        <span style={{ color: det.created_status !== "default" ? primaryColor : "black" }}>
+          {det.material}
+        </span>
+      ),
+      layer_thickness: (
+        <span style={{ color: det.created_status !== "default" ? primaryColor : "black" }}>
+          {det.layer_thickness}
+        </span>
+      ),
       acciones: (
         <>
-          <CustomButton variant="editIcon" onClick={() => handleEditDetail(det)}>
+          <CustomButton variant="editIcon" onClick={(e) => handleEditDetail(det, e)}>
             Editar
           </CustomButton>
           <CustomButton
             variant="deleteIcon"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowGeneralDetailsModal(false);
               setDeletingDetail(det);
               setShowDeleteModal(true);
@@ -494,35 +622,19 @@ const ConstructiveDetailsComponent: React.FC = () => {
             style={{ marginBottom: "1rem" }}
           />
         )}
-
-        <div
-          className="custom-table-container"
-          style={{
-            height: "400px",
-            overflowY: "auto",
-            overflowX: "auto",
-          }}
-        >
+        <div className="custom-table-container" style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
           <TablesParameters columns={columnsDetails} data={data} />
         </div>
-
         {!inModal && (
           <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px" }}>
             <CustomButton
               variant="save"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 if (inModal) setShowGeneralDetailsModal(false);
                 else setShowTabsInStep4(false);
               }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "12px 67px",
-                borderRadius: "8px",
-                height: "40px",
-                marginTop: "30px",
-              }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 67px", borderRadius: "8px", height: "40px", marginTop: "30px" }}
             >
               <span className="material-icons">arrow_back</span> Volver
             </CustomButton>
@@ -533,23 +645,15 @@ const ConstructiveDetailsComponent: React.FC = () => {
   };
 
   // ========================================================
-  //   Renderizado de las pestañas (Muros, Techumbre, Pisos)
+  // Renderizado de las pestañas (Muros, Techumbre, Pisos)
   // ========================================================
   const renderDetailsTabs = () => (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-        <CustomButton
-          onClick={handleNewButtonClick}
-          style={{
-            padding: "8px 16px",
-            borderRadius: "8px",
-            height: "40px",
-          }}
-        >
+        <CustomButton onClick={handleNewButtonClick} style={{ padding: "8px 16px", borderRadius: "8px", height: "40px" }}>
           + Nuevo
         </CustomButton>
       </div>
-
       <ul
         className="nav"
         style={{
@@ -585,8 +689,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           </li>
         ))}
       </ul>
-
-      <div style={{ height: "400px", overflowY: "auto", position: "relative" }}>
+      <div style={{ height: "400px", position: "relative" }}>
         {tabStep4 === "muros" && (
           <div onClick={() => setShowGeneralDetailsModal(true)}>
             {renderMurosTable()}
@@ -607,7 +710,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
   );
 
   // ========================================================
-  //   Renderizado de Tablas (sin columna de “Acciones”)
+  // Renderizado de Tablas con edición inline
   // ========================================================
 
   // MUROS
@@ -617,42 +720,99 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
+      { headerName: "Acciones", field: "acciones" },
     ];
 
-    const data = murosTabList.map((item) => ({
-      nombreAbreviado:
-        item.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {item.name_detail}
-          </span>
-        ) : (
-          item.name_detail
-        ),
-      valorU:
-        item.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {item.value_u ? item.value_u.toFixed(3) : "--"}
-          </span>
-        ) : (
-          item.value_u ? item.value_u.toFixed(3) : "--"
-        ),
-      colorExterior:
-        item.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {item.info?.surface_color?.exterior?.name || "Desconocido"}
-          </span>
+    const data = murosTabList.map((item) => {
+      const isEditing = editingRowId === (item.id_detail ?? item.id);
+      return {
+        nombreAbreviado: item.name_detail,
+        valorU: item.value_u?.toFixed(3) ?? "--",
+        colorExterior: isEditing ? (
+          <select
+            onClick={(e) => e.stopPropagation()}
+            value={editValues.exterior || item.info?.surface_color?.exterior?.name || ""}
+            onChange={(e) =>
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                exterior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
         ) : (
           item.info?.surface_color?.exterior?.name || "Desconocido"
         ),
-      colorInterior:
-        item.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {item.info?.surface_color?.interior?.name || "Desconocido"}
-          </span>
+        colorInterior: isEditing ? (
+          <select
+            onClick={(e) => e.stopPropagation()}
+            value={editValues.interior || item.info?.surface_color?.interior?.name || ""}
+            onChange={(e) =>
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                interior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
         ) : (
           item.info?.surface_color?.interior?.name || "Desconocido"
         ),
-    }));
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineSave(item, "Muro", e);
+              }}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineCancel(e);
+              }}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="editIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineEdit(item, e);
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="deleteIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineDeleteModal(item, e);
+              }}
+            >
+              Eliminar
+            </CustomButton>
+          </>
+        ),
+      };
+    });
 
     return (
       <div style={{ overflowX: "auto", minWidth: "600px" }}>
@@ -672,42 +832,98 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
+      { headerName: "Acciones", field: "acciones" },
     ];
 
-    const data = techumbreTabList.map((item) => ({
-      nombreAbreviado:
-        item.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {item.name_detail}
-          </span>
-        ) : (
-          item.name_detail
-        ),
-      valorU:
-        item.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {item.value_u ? item.value_u.toFixed(3) : "--"}
-          </span>
-        ) : (
-          item.value_u ? item.value_u.toFixed(3) : "--"
-        ),
-      colorExterior:
-        item.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {item.info?.surface_color?.exterior?.name || "Desconocido"}
-          </span>
+    const data = techumbreTabList.map((item) => {
+      const isEditing = editingRowId === (item.id_detail ?? item.id);
+      return {
+        nombreAbreviado: item.name_detail,
+        valorU: item.value_u ? item.value_u.toFixed(3) : "--",
+        colorExterior: isEditing ? (
+          <select
+            onClick={(e) => e.stopPropagation()}
+            value={editValues.exterior || item.info?.surface_color?.exterior?.name || ""}
+            onChange={(e) =>
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                exterior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
         ) : (
           item.info?.surface_color?.exterior?.name || "Desconocido"
         ),
-      colorInterior:
-        item.created_status === "default" ? (
-          <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {item.info?.surface_color?.interior?.name || "Desconocido"}
-          </span>
+        colorInterior: isEditing ? (
+          <select
+            onClick={(e) => e.stopPropagation()}
+            value={editValues.interior || item.info?.surface_color?.interior?.name || ""}
+            onChange={(e) =>
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                interior: e.target.value,
+              }))
+            }
+          >
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+            <option value="Intermedio">Intermedio</option>
+          </select>
         ) : (
           item.info?.surface_color?.interior?.name || "Desconocido"
         ),
-    }));
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineSave(item, "Techo", e);
+              }}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineCancel(e);
+              }}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <>
+            <CustomButton
+              variant="editIcon"
+              className="btn-table"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineEdit(item, e);
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              variant="deleteIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineDeleteModal(item, e);
+              }}
+            >
+              Eliminar
+            </CustomButton>
+          </>
+        ),
+      };
+    });
 
     return (
       <div style={{ overflowX: "auto", minWidth: "600px" }}>
@@ -718,6 +934,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
         )}
       </div>
     );
+  };
+
+  const formatNumber = (num: number | undefined, decimals = 3) => {
+    return num != null && num !== 0 ? num.toFixed(decimals) : "-";
   };
 
   // PISOS
@@ -733,116 +953,190 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
       { headerName: "e Aisl [cm] (horiz)", field: "horizEAisl" },
       { headerName: "D [cm] (horiz)", field: "horizD" },
+      { headerName: "Acciones", field: "acciones" },
     ];
 
-    const multiHeaderPisos = {
-      rows: [
-        [
-          { label: "Nombre", rowSpan: 2 },
-          { label: "U [W/m²K]", rowSpan: 2 },
-          { label: "Aislamiento bajo piso", colSpan: 2 },
-          { label: "Ref Aisl Vert.", colSpan: 3 },
-          { label: "Ref Aisl Horiz.", colSpan: 3 },
-        ],
-        [
-          { label: "I [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "I [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "D [cm]" },
-          { label: "I [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "D [cm]" },
-        ],
-      ],
-    };
-
-    const pisosData = pisosTabList.map((item) => {
+    const data = pisosTabList.map((item) => {
+      const isEditing = editingRowId === (item.id_detail ?? item.id);
       const bajoPiso = item.info?.aislacion_bajo_piso || {};
       const vert = item.info?.ref_aisl_vertical || {};
       const horiz = item.info?.ref_aisl_horizontal || {};
-
       return {
-        nombre:
-          item.created_status === "default" ? (
-            <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {item.name_detail}
-            </span>
-          ) : (
-            item.name_detail
-          ),
-        uValue:
-          item.created_status === "default" ? (
-            <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {item.value_u ? item.value_u.toFixed(3) : "--"}
-            </span>
-          ) : (
-            item.value_u ? item.value_u.toFixed(3) : "--"
-          ),
-        bajoPisoLambda:
-          item.created_status === "default" ? (
-            <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"}
-            </span>
-          ) : (
-            bajoPiso.lambda ? bajoPiso.lambda.toFixed(3) : "N/A"
-          ),
+        nombre: item.name_detail,
+        uValue: item.value_u ? item.value_u.toFixed(3) : "--",
+        bajoPisoLambda: bajoPiso.lambda != null ? bajoPiso.lambda.toFixed(3) : "-",
         bajoPisoEAisl:
-          item.created_status === "default" ? (
-            <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {bajoPiso.e_aisl ?? "N/A"}
-            </span>
-          ) : (
-            bajoPiso.e_aisl ?? "N/A"
-          ),
-        vertLambda:
-          item.created_status === "default" ? (
-            <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {vert.lambda ? vert.lambda.toFixed(3) : "N/A"}
-            </span>
-          ) : (
-            vert.lambda ? vert.lambda.toFixed(3) : "N/A"
-          ),
-        vertEAisl:
-          item.created_status === "default" ? (
-            <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {vert.e_aisl ?? "N/A"}
-            </span>
-          ) : (
-            vert.e_aisl ?? "N/A"
-          ),
-        vertD:
-          item.created_status === "default" ? (
-            <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {vert.d ?? "N/A"}
-            </span>
-          ) : (
-            vert.d ?? "N/A"
-          ),
-        horizLambda:
-          item.created_status === "default" ? (
-            <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"}
-            </span>
-          ) : (
-            horiz.lambda ? horiz.lambda.toFixed(3) : "N/A"
-          ),
-        horizEAisl:
-          item.created_status === "default" ? (
-            <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {horiz.e_aisl ?? "N/A"}
-            </span>
-          ) : (
-            horiz.e_aisl ?? "N/A"
-          ),
-        horizD:
-          item.created_status === "default" ? (
-            <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {horiz.d ?? "N/A"}
-            </span>
-          ) : (
-            horiz.d ?? "N/A"
-          ),
+          bajoPiso.e_aisl != null && bajoPiso.e_aisl !== 0
+            ? bajoPiso.e_aisl
+            : "-",
+        vertLambda: isEditing ? (
+          <input
+            onClick={(e) => e.stopPropagation()}
+            type="number"
+            min="0"
+            max="100"
+            step="any"
+            className="form-control form-control-sm"
+            value={editValues.vertLambda || vert.lambda || ""}
+            onChange={(e) =>
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                vertical: { ...prev.vertical, lambda: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          formatNumber(vert.lambda)
+        ),
+        vertEAisl: isEditing ? (
+          <input
+            onClick={(e) => e.stopPropagation()}
+            type="number"
+            min="0"
+            max="100"
+            step="any"
+            className="form-control form-control-sm"
+            value={editValues.vertEAisl || vert.e_aisl || ""}
+            onChange={(e) =>
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                vertical: { ...prev.vertical, e_aisl: e.target.value },
+              }))
+            }
+          />
+        ) : vert.e_aisl != null && vert.e_aisl !== 0 ? (
+          vert.e_aisl
+        ) : (
+          "-"
+        ),
+        vertD: isEditing ? (
+          <input
+            onClick={(e) => e.stopPropagation()}
+            type="number"
+            min="0"
+            max="100"
+            step="any"
+            className="form-control form-control-sm"
+            value={editValues.vertD || vert.d || ""}
+            onChange={(e) =>
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                vertical: { ...prev.vertical, d: e.target.value },
+              }))
+            }
+          />
+        ) : vert.d != null && vert.d !== 0 ? (
+          vert.d
+        ) : (
+          "-"
+        ),
+        horizLambda: isEditing ? (
+          <input
+            onClick={(e) => e.stopPropagation()}
+            type="number"
+            min="0"
+            max="100"
+            step="any"
+            className="form-control form-control-sm"
+            value={editValues.horizLambda || vert.lambda || ""}
+            onChange={(e) =>
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                vertical: { ...prev.vertical, lambda: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          formatNumber(vert.lambda)
+        ),
+        horizEAisl: isEditing ? (
+          <input
+            onClick={(e) => e.stopPropagation()}
+            type="number"
+            min="0"
+            max="100"
+            step="any"
+            className="form-control form-control-sm"
+            value={editValues.horizEAisl || horiz.e_aisl || ""}
+            onChange={(e) =>
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                horizontal: { ...prev.horizontal, lambda: e.target.value },
+              }))
+            }
+          />
+        ) : horiz.e_aisl != null && horiz.e_aisl !== 0 ? (
+          horiz.e_aisl
+        ) : (
+          "-"
+        ),
+        horizD: isEditing ? (
+          <input
+            onClick={(e) => e.stopPropagation()}
+            type="number"
+            min="0"
+            max="100"
+            step="any"
+            className="form-control form-control-sm"
+            value={editValues.horizD || horiz.d || ""}
+            onChange={(e) =>
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                horizontal: { ...prev.horizontal, d: e.target.value },
+              }))
+            }
+          />
+        ) : horiz.d != null && horiz.d !== 0 ? (
+          horiz.d
+        ) : (
+          "-"
+        ),
+        acciones: isEditing ? (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="save"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineSave(item, "Piso", e);
+              }}
+            >
+              <span className="material-icons">check</span>
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
+              variant="cancelIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineCancel(e);
+              }}
+            >
+              Deshacer
+            </CustomButton>
+          </>
+        ) : (
+          <>
+            <CustomButton
+              className="btn-table"
+              variant="editIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineEdit(item, e);
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              variant="deleteIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInlineDeleteModal(item, e);
+              }}
+            >
+              Eliminar
+            </CustomButton>
+          </>
+        ),
       };
     });
 
@@ -851,8 +1145,28 @@ const ConstructiveDetailsComponent: React.FC = () => {
         {pisosTabList.length > 0 ? (
           <TablesParameters
             columns={columnsPisos}
-            data={pisosData}
-            multiHeader={multiHeaderPisos}
+            data={data}
+            multiHeader={{
+              rows: [
+                [
+                  { label: "Nombre", rowSpan: 2 },
+                  { label: "U [W/m²K]", rowSpan: 2 },
+                  { label: "Aislamiento bajo piso", colSpan: 2 },
+                  { label: "Ref Aisl Vert.", colSpan: 3 },
+                  { label: "Ref Aisl Horiz.", colSpan: 3 },
+                ],
+                [
+                  { label: "I [W/mK]" },
+                  { label: "e Aisl [cm]" },
+                  { label: "I [W/mK]" },
+                  { label: "e Aisl [cm]" },
+                  { label: "D [cm]" },
+                  { label: "I [W/mK]" },
+                  { label: "e Aisl [cm]" },
+                  { label: "D [cm]" },
+                ],
+              ],
+            }}
           />
         ) : (
           <p>No hay datos</p>
@@ -871,10 +1185,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
       {/* MODAL: Crear Nuevo Detalle */}
       <ModalCreate
         isOpen={showNewDetailRow}
-        onClose={() => setShowNewDetailRow(false)}
-        onSave={handleCreateNewDetail}
+        onClose={() => { setShowNewDetailRow(false); }}
+        onSave={() => { handleCreateNewDetail(); }}
         title="Nuevo Detalle"
-        saveLabel="Crear"
+        saveLabel="Crear Detalle"  
         detail={newDetailForm}
       >
         <form
@@ -908,6 +1222,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               onChange={(e) =>
                 setNewDetailForm({ ...newDetailForm, name_detail: e.target.value })
               }
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
           <div className="form-group">
@@ -918,6 +1233,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               onChange={(e) =>
                 setNewDetailForm({ ...newDetailForm, material_id: Number(e.target.value) })
               }
+              onClick={(e) => e.stopPropagation()}
             >
               <option value={0}>Seleccione Material</option>
               {materials.map((material) => (
@@ -940,20 +1256,21 @@ const ConstructiveDetailsComponent: React.FC = () => {
                   layer_thickness: Number(e.target.value),
                 })
               }
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
         </form>
       </ModalCreate>
 
-      {/* MODAL: Confirmar Eliminación */}
+      {/* MODAL: Confirmar Eliminación (Vista General) */}
       <ModalCreate
         isOpen={showDeleteModal}
         onClose={() => {
           setShowDeleteModal(false);
           setDeletingDetail(null);
         }}
-        onSave={async () => {
-          await confirmDeleteDetail();
+        onSave={() => {
+          confirmDeleteDetail();
         }}
         title="Confirmar Eliminación"
         saveLabel="Eliminar"
@@ -965,14 +1282,70 @@ const ConstructiveDetailsComponent: React.FC = () => {
         </p>
       </ModalCreate>
 
+      {/* MODAL: Confirmar Eliminación Inline en Tablas */}
+      <ModalCreate
+        isOpen={showInlineDeleteModal}
+        onClose={() => {
+          setShowInlineDeleteModal(false);
+          setDeletingInlineDetail(null);
+        }}
+        onSave={() => {
+          confirmInlineDeleteDetail();
+        }}
+        title="Confirmar Eliminación"
+        saveLabel="Eliminar"
+        detail={deletingInlineDetail}
+      >
+        <p>
+          ¿Estás seguro que deseas eliminar el detalle{" "}
+          <strong>{deletingInlineDetail?.name_detail}</strong>?
+        </p>
+      </ModalCreate>
+
       {/* MODAL: Editar Detalle (Vista General) */}
       {editingDetail && (
         <ModalCreate
           isOpen={true}
           title="Editar Detalle"
           detail={editingDetail}
-          onClose={() => setEditingDetail(null)}
-          onSave={handleConfirmEditDetail}
+          onClose={() => {
+            setEditingDetail(null);
+          }}
+          onSave={() => {
+            handleConfirmEditDetail({
+              stopPropagation: () => {},
+              preventDefault: () => {},
+              nativeEvent: new MouseEvent("click"),
+              isDefaultPrevented: () => false,
+              isPropagationStopped: () => false,
+              persist: () => {},
+              target: document.createElement("button"),
+              currentTarget: document.createElement("button"),
+              bubbles: true,
+              cancelable: true,
+              defaultPrevented: false,
+              eventPhase: 0,
+              isTrusted: true,
+              altKey: false,
+              button: 0,
+              buttons: 0,
+              clientX: 0,
+              clientY: 0,
+              ctrlKey: false,
+              metaKey: false,
+              movementX: 0,
+              movementY: 0,
+              pageX: 0,
+              pageY: 0,
+              relatedTarget: null,
+              screenX: 0,
+              screenY: 0,
+              shiftKey: false,
+              type: "click",
+              x: 0,
+              y: 0,
+            } as unknown as React.MouseEvent<Element, MouseEvent>);
+          }}
         >
           <form>
             <div className="form-group">
@@ -986,6 +1359,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
                     prev ? { ...prev, scantilon_location: e.target.value } : prev
                   )
                 }
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
             <div className="form-group">
@@ -999,6 +1373,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
                     prev ? { ...prev, name_detail: e.target.value } : prev
                   )
                 }
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
             <div className="form-group">
@@ -1011,7 +1386,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
                     prev ? { ...prev, material_id: Number(e.target.value) } : prev
                   )
                 }
-                onClick={fetchMaterials}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fetchMaterials();
+                }}
               >
                 <option value="">Seleccione Material</option>
                 {materials.map((mat) => (
@@ -1032,6 +1410,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
                     prev ? { ...prev, layer_thickness: Number(e.target.value) } : prev
                   )
                 }
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
           </form>
@@ -1041,8 +1420,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
       {/* MODAL: Detalles Generales (Vista Filtrada) */}
       <ModalCreate
         isOpen={showGeneralDetailsModal}
-        onClose={() => setShowGeneralDetailsModal(false)}
-        onSave={() => {}}
+        onClose={() => {
+          setShowGeneralDetailsModal(false);
+        }}
+        onSave={() => {
+          // No necesita acción de guardado
+        }}
         title="Detalles Generales"
         detail={null}
         modalStyle={{

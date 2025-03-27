@@ -18,13 +18,28 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 // Importamos nuestro componente genérico de tablas
 import Breadcrumb from "@/components/common/Breadcrumb";
 import TablesParameters from "../src/components/tables/TablesParameters";
-import { NewDetailModal } from "@/components/modals/NewDetailModal";
+import { NewDetailModal } from "../src/components/modals/NewDetailModal";
 // Importamos nuestro componente de modales
 import ModalCreate from "@/components/common/ModalCreate";
 import TabRecintDataCreate from "../src/components/tab_recint_data/TabRecintDataEdit";
 
 // IMPORTANTE: Importamos el componente ActionButtonsConfirm
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
+
+// Funciones auxiliares para formatear valores
+const formatValue = (value: number | null | undefined): string => {
+  if (value === undefined || value === null || value === 0 || isNaN(Number(value))) {
+    return "-";
+  }
+  return Number(value).toFixed(3);
+};
+
+const formatPercentage = (value: number | null | undefined): string => {
+  if (value === undefined || value === null || value === 0 || isNaN(Number(value))) {
+    return "-";
+  }
+  return (Number(value) * 100).toFixed(2);
+};
 
 // -----------------------
 // Modal de Detalles Individuales
@@ -729,8 +744,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       return {
         __detail: item,
         nombreAbreviado: item.name_detail,
-        valorU:
-          item.value_u !== undefined && item.value_u !== 0 ? item.value_u.toFixed(3) : "-",
+        valorU: formatValue(item.value_u),
         colorExterior: isEditing ? (
           <select
             value={editingColors.exterior}
@@ -832,8 +846,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       return {
         __detail: item,
         nombreAbreviado: item.name_detail,
-        valorU:
-          item.value_u !== undefined && item.value_u !== 0 ? item.value_u.toFixed(3) : "-",
+        valorU: formatValue(item.value_u),
         colorExterior: isEditing ? (
           <select
             value={editingTechColors.exterior}
@@ -970,18 +983,9 @@ const WorkFlowpar2editPage: React.FC = () => {
         __detail: item,
         id: item.id,
         nombre: item.name_detail,
-        uValue:
-          item.value_u !== undefined && item.value_u !== 0 ? item.value_u.toFixed(3) : "-",
-        bajoPisoLambda:
-          item.info?.aislacion_bajo_piso?.lambda !== undefined &&
-            item.info.aislacion_bajo_piso.lambda !== 0
-            ? item.info.aislacion_bajo_piso.lambda.toFixed(3)
-            : "-",
-        bajoPisoEAisl:
-          item.info?.aislacion_bajo_piso?.e_aisl !== undefined &&
-            item.info.aislacion_bajo_piso.e_aisl !== 0
-            ? item.info.aislacion_bajo_piso.e_aisl
-            : "-",
+        uValue: formatValue(item.value_u),
+        bajoPisoLambda: formatValue(item.info?.aislacion_bajo_piso?.lambda),
+        bajoPisoEAisl: formatValue(item.info?.aislacion_bajo_piso?.e_aisl),
         vertLambda: isEditing ? (
           <input
             type="number"
@@ -995,12 +999,8 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : vertical.lambda !== undefined &&
-          vertical.lambda !== null &&
-          Number(vertical.lambda) !== 0 ? (
-          Number(vertical.lambda).toFixed(3)
         ) : (
-          "-"
+          <>{formatValue(Number(vertical.lambda))}</>
         ),
         vertEAisl: isEditing ? (
           <input
@@ -1015,12 +1015,8 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : vertical.e_aisl !== undefined &&
-          vertical.e_aisl !== null &&
-          Number(vertical.e_aisl) !== 0 ? (
-          vertical.e_aisl
         ) : (
-          "-"
+          <>{formatValue(Number(vertical.e_aisl))}</>
         ),
         vertD: isEditing ? (
           <input
@@ -1035,12 +1031,8 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : vertical.d !== undefined &&
-          vertical.d !== null &&
-          Number(vertical.d) !== 0 ? (
-          vertical.d
         ) : (
-          "-"
+          <>{formatValue(Number(vertical.d))}</>
         ),
         horizLambda: isEditing ? (
           <input
@@ -1055,12 +1047,8 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : horizontal.lambda !== undefined &&
-          horizontal.lambda !== null &&
-          Number(horizontal.lambda) !== 0 ? (
-          Number(horizontal.lambda).toFixed(3)
         ) : (
-          "-"
+          <>{formatValue(Number(horizontal.lambda))}</>
         ),
         horizEAisl: isEditing ? (
           <input
@@ -1075,12 +1063,8 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : horizontal.e_aisl !== undefined &&
-          horizontal.e_aisl !== null &&
-          Number(horizontal.e_aisl) !== 0 ? (
-          horizontal.e_aisl
         ) : (
-          "-"
+          <>{formatValue(Number(horizontal.e_aisl))}</>
         ),
         horizD: isEditing ? (
           <input
@@ -1095,12 +1079,8 @@ const WorkFlowpar2editPage: React.FC = () => {
               }))
             }
           />
-        ) : horizontal.d !== undefined &&
-          horizontal.d !== null &&
-          Number(horizontal.d) !== 0 ? (
-          horizontal.d
         ) : (
-          "-"
+          <>{formatValue(Number(horizontal.d))}</>
         ),
         acciones: isEditing ? (
           <div onClick={(e) => e.stopPropagation()}>
@@ -1203,26 +1183,20 @@ const WorkFlowpar2editPage: React.FC = () => {
           : {};
       return {
         name_element: <span style={textStyle}>{item.name_element}</span>,
-        u_vidrio:
-          item.atributs?.u_vidrio ? (
-            <span style={textStyle}>{item.atributs.u_vidrio.toFixed(3)}</span>
-          ) : (
-            <span style={textStyle}>--</span>
-          ),
-        fs_vidrio: <span style={textStyle}>{item.atributs?.fs_vidrio ?? "--"}</span>,
-        frame_type: <span style={textStyle}>{item.atributs?.frame_type ?? "--"}</span>,
-        clousure_type: <span style={textStyle}>{item.atributs?.clousure_type ?? "--"}</span>,
-        u_marco: item.u_marco ? (
-          <span style={textStyle}>{item.u_marco.toFixed(3)}</span>
-        ) : (
-          <span style={textStyle}>--</span>
+        u_vidrio: (
+          <span style={textStyle}>{formatValue(item.atributs?.u_vidrio)}</span>
         ),
-        fm:
-          item.fm !== undefined && item.fm !== null ? (
-            <span style={textStyle}>{(item.fm * 100).toFixed(2)}</span>
-          ) : (
-            <span style={textStyle}>--</span>
-          ),
+        fs_vidrio: (
+          <span style={textStyle}>{formatValue(item.atributs?.fs_vidrio)}</span>
+        ),
+        frame_type: <span style={textStyle}>{item.atributs?.frame_type ?? "-"}</span>,
+        clousure_type: <span style={textStyle}>{item.atributs?.clousure_type ?? "-"}</span>,
+        u_marco: (
+          <span style={textStyle}>{formatValue(item.u_marco)}</span>
+        ),
+        fm: (
+          <span style={textStyle}>{formatPercentage(item.fm)}</span>
+        ),
         acciones: (
           <div style={textStyle}>
             <CustomButton
@@ -1281,31 +1255,19 @@ const WorkFlowpar2editPage: React.FC = () => {
           : {};
       return {
         name_element: <span style={textStyle}>{item.name_element}</span>,
-        u_puerta: item.atributs?.u_puerta_opaca ? (
-          <span style={textStyle}>{item.atributs.u_puerta_opaca.toFixed(3)}</span>
-        ) : (
-          <span style={textStyle}>--</span>
+        u_puerta: (
+          <span style={textStyle}>{formatValue(item.atributs?.u_puerta_opaca)}</span>
         ),
-        name_ventana: <span style={textStyle}>{item.atributs?.name_ventana ?? "--"}</span>,
-        porcentaje_vidrio:
-          item.atributs?.porcentaje_vidrio !== undefined ? (
-            <span style={textStyle}>
-              {(item.atributs.porcentaje_vidrio * 100).toFixed(2)}
-            </span>
-          ) : (
-            <span style={textStyle}>--</span>
-          ),
-        u_marco: item.u_marco ? (
-          <span style={textStyle}>{item.u_marco.toFixed(3)}</span>
-        ) : (
-          <span style={textStyle}>--</span>
+        name_ventana: <span style={textStyle}>{item.atributs?.name_ventana ?? "-"}</span>,
+        porcentaje_vidrio: (
+          <span style={textStyle}>{formatPercentage(item.atributs?.porcentaje_vidrio)}</span>
         ),
-        fm:
-          item.fm !== undefined && item.fm !== null ? (
-            <span style={textStyle}>{(item.fm * 100).toFixed(2)}</span>
-          ) : (
-            <span style={textStyle}>--</span>
-          ),
+        u_marco: (
+          <span style={textStyle}>{formatValue(item.u_marco)}</span>
+        ),
+        fm: (
+          <span style={textStyle}>{formatPercentage(item.fm)}</span>
+        ),
         acciones: (
           <div style={textStyle}>
             <CustomButton
@@ -1388,7 +1350,6 @@ const WorkFlowpar2editPage: React.FC = () => {
         <div
           style={{
             height: "400px",
-            overflowY: "auto",
             position: "relative",
             marginTop: "1rem",
           }}

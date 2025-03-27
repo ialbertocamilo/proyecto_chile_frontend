@@ -55,6 +55,19 @@ interface ConfirmModalProps {
   message: string;
 }
 
+// Funciones auxiliares para formatear los valores
+const formatValue = (value: any): React.ReactNode => {
+  if (value === 0 || value === "N/A") {
+    return "-";
+  }
+  return value;
+};
+
+const formatPercentage = (value: number): string => {
+  if (value === 0) return "-";
+  return (value * 100).toFixed(0) + "%";
+};
+
 const AdministrationPage: React.FC = () => {
   useAuth();
   const { handleCreate, handleEdit, handleDelete } = useCrudOperations();
@@ -67,11 +80,6 @@ const AdministrationPage: React.FC = () => {
 
   // Variable para el color primario
   const primaryColor = "var(--primary-color)";
-
-  // Función para formatear los porcentajes multiplicándolos por 100
-  const formatPercentage = (value: number): string => {
-    return (value * 100).toFixed(0) + "%";
-  };
 
   // Estados para steps y tabs
   const [step, setStep] = useState<number>(3);
@@ -175,24 +183,24 @@ const AdministrationPage: React.FC = () => {
         ),
         conductivity: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {mat.atributs.conductivity}
+            {formatValue(mat.atributs.conductivity)}
           </span>
         ) : (
-          mat.atributs.conductivity
+          formatValue(mat.atributs.conductivity)
         ),
         specific_heat: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {mat.atributs.specific_heat}
+            {formatValue(mat.atributs.specific_heat)}
           </span>
         ) : (
-          mat.atributs.specific_heat
+          formatValue(mat.atributs.specific_heat)
         ),
         density: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {mat.atributs.density}
+            {formatValue(mat.atributs.density)}
           </span>
         ) : (
-          mat.atributs.density
+          formatValue(mat.atributs.density)
         ),
         action: (
           <ActionButtons
@@ -248,38 +256,38 @@ const AdministrationPage: React.FC = () => {
         ),
         u_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesWindow).u_vidrio}
+            {formatValue((el.atributs as ElementAttributesWindow).u_vidrio)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesWindow).u_vidrio
+          formatValue((el.atributs as ElementAttributesWindow).u_vidrio)
         ),
         fs_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesWindow).fs_vidrio}
+            {formatValue((el.atributs as ElementAttributesWindow).fs_vidrio)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesWindow).fs_vidrio
+          formatValue((el.atributs as ElementAttributesWindow).fs_vidrio)
         ),
         clousure_type: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesWindow).clousure_type}
+            {formatValue((el.atributs as ElementAttributesWindow).clousure_type)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesWindow).clousure_type
+          formatValue((el.atributs as ElementAttributesWindow).clousure_type)
         ),
         frame_type: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesWindow).frame_type}
+            {formatValue((el.atributs as ElementAttributesWindow).frame_type)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesWindow).frame_type
+          formatValue((el.atributs as ElementAttributesWindow).frame_type)
         ),
         u_marco: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {el.u_marco}
+            {formatValue(el.u_marco)}
           </span>
         ) : (
-          el.u_marco
+          formatValue(el.u_marco)
         ),
         fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -345,17 +353,17 @@ const AdministrationPage: React.FC = () => {
         ),
         u_puerta_opaca: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesDoor).u_puerta_opaca}
+            {formatValue((el.atributs as ElementAttributesDoor).u_puerta_opaca)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesDoor).u_puerta_opaca
+          formatValue((el.atributs as ElementAttributesDoor).u_puerta_opaca)
         ),
         name_ventana: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesDoor).name_ventana}
+            {formatValue((el.atributs as ElementAttributesDoor).name_ventana)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesDoor).name_ventana
+          formatValue((el.atributs as ElementAttributesDoor).name_ventana)
         ),
         porcentaje_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -366,10 +374,10 @@ const AdministrationPage: React.FC = () => {
         ),
         u_marco: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {el.u_marco}
+            {formatValue(el.u_marco)}
           </span>
         ) : (
-          el.u_marco
+          formatValue(el.u_marco)
         ),
         fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -847,8 +855,7 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedMaterialId(null);
           }}
-          onSave={
-            selectedMaterialId ? handleEditMaterial : async () => {
+          onSave={selectedMaterialId ? handleEditMaterial : async () => {
               if (
                 newMaterialData.name.trim() === "" ||
                 newMaterialData.conductivity <= 0 ||
@@ -897,8 +904,7 @@ const AdministrationPage: React.FC = () => {
                   density: 0,
                 });
               }
-            }
-          }
+            }}
           title={selectedMaterialId ? "Editar Material" : "Agregar Nuevo Material"}
           saveLabel={selectedMaterialId ? "Guardar Cambios" : "Crear Material"}
         >
@@ -996,8 +1002,7 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedWindowId(null);
           }}
-          onSave={
-            selectedWindowId ? handleEditWindow : async () => {
+          onSave={selectedWindowId ? handleEditWindow : async () => {
               if (
                 newWindow.name_element.trim() === "" ||
                 newWindow.u_vidrio <= 0 ||
@@ -1057,8 +1062,7 @@ const AdministrationPage: React.FC = () => {
                   fm: 0,
                 });
               }
-            }
-          }
+            }}
           title={selectedWindowId ? "Editar Ventana" : "Agregar Nueva Ventana"}
           saveLabel={selectedWindowId ? "Guardar Cambios" : "Crear Ventana"}
         >
@@ -1215,8 +1219,7 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedDoorId(null);
           }}
-          onSave={
-            selectedDoorId ? handleEditDoor : async () => {
+          onSave={selectedDoorId ? handleEditDoor : async () => {
               if (
                 newDoor.name_element.trim() === "" ||
                 newDoor.u_puerta_opaca <= 0 ||
@@ -1284,8 +1287,7 @@ const AdministrationPage: React.FC = () => {
                   porcentaje_vidrio: 0,
                 });
               }
-            }
-          }
+            }}
           title={selectedDoorId ? "Editar Puerta" : "Agregar Nueva Puerta"}
           saveLabel={selectedDoorId ? "Guardar Cambios" : "Crear Puerta"}
         >

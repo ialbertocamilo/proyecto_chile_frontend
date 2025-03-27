@@ -233,12 +233,12 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // ===================== ESTADOS EDICIÓN MUROS / TECHUMBRE ======================
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
-  const [editingColors, setEditingColors] = useState<{ interior: string; exterior: string }>( {
+  const [editingColors, setEditingColors] = useState<{ interior: string; exterior: string }>({
     interior: "Intermedio",
     exterior: "Intermedio",
   });
   const [editingTechRowId, setEditingTechRowId] = useState<number | null>(null);
-  const [editingTechColors, setEditingTechColors] = useState<{ interior: string; exterior: string }>( {
+  const [editingTechColors, setEditingTechColors] = useState<{ interior: string; exterior: string }>({
     interior: "Intermedio",
     exterior: "Intermedio",
   });
@@ -342,12 +342,13 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
   }, [projectId]);
 
+  // Actualización: Se elimina la condición que verificaba la longitud del arreglo.
   const fetchMurosDetails = useCallback(() => {
     if (!projectId) return;
     fetchData<TabItem[]>(
       `${constantUrlApiEndpoint}/project/${projectId}/details/Muro`,
       (data) => {
-        if (data && data.length > 0) setMurosTabList(data);
+        setMurosTabList(data);
       }
     );
   }, [projectId, fetchData]);
@@ -558,8 +559,13 @@ const WorkFlowpar2editPage: React.FC = () => {
       };
       await axios.put(url, payload, { headers });
       notify("Detalle actualizado");
+      // Guarda la ubicación antes de limpiar el estado
+      const updatedLocation = editingDetail.scantilon_location.toLowerCase();
       setEditingDetail(null);
       fetchFetchedDetails();
+      if (updatedLocation === "muro") fetchMurosDetails();
+      else if (updatedLocation === "techo") fetchTechumbreDetails();
+      else if (updatedLocation === "piso") fetchPisosDetails();
     } catch (error: unknown) {
       console.error(error);
       notify("Error al actualizar el detalle");
@@ -588,6 +594,10 @@ const WorkFlowpar2editPage: React.FC = () => {
       if (deleteItem.type === "detail") {
         notify("Detalle eliminado");
         fetchFetchedDetails();
+        // Actualiza la tabla según la pestaña activa
+        if (tabStep4 === "muros") fetchMurosDetails();
+        else if (tabStep4 === "techumbre") fetchTechumbreDetails();
+        else if (tabStep4 === "pisos") fetchPisosDetails();
       } else if (deleteItem.type === "window") {
         notify("Ventana eliminada exitosamente.");
         setVentanasTabList((prev) => prev.filter((v) => v.id !== deleteItem.id));
@@ -751,7 +761,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 const token = getToken();
                 if (!token) return;
                 try {
-                  console.log("Project ID", projectId)
+                  console.log("Project ID", projectId);
                   const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Muro/${item.id}`;
                   const headers = { Authorization: `Bearer ${token}` };
                   const payload = {
@@ -854,8 +864,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 const token = getToken();
                 if (!token) return;
                 try {
-                  console.log("Project ID", projectId)
-
+                  console.log("Project ID", projectId);
                   const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Techo/${item.id}`;
                   const headers = { Authorization: `Bearer ${token}` };
                   const payload = {
@@ -1101,8 +1110,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 const token = getToken();
                 if (!token) return;
                 try {
-                  console.log("Project ID", projectId)
-
+                  console.log("Project ID", projectId);
                   const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Piso/${item.id}`;
                   const headers = { Authorization: `Bearer ${token}` };
                   const payload = {
@@ -1540,93 +1548,93 @@ const WorkFlowpar2editPage: React.FC = () => {
         </Card>
       </div>
       {/* Modal para crear un nuevo detalle usando ModalCreate */}
-<ModalCreate
-  detail={null}
-  isOpen={showNewDetailRow}
-  title="Crear Nuevo Detalle"
-  onClose={() => {
-    setShowNewDetailRow(false);
-    // Reinicia el formulario si es necesario:
-    setNewDetailForm({
-      scantilon_location: "",
-      name_detail: "",
-      material_id: 0,
-      layer_thickness: null,
-    });
-  }}
-  onSave={handleCreateNewDetail}
->
-  <form>
-    <div className="form-group">
-      <label>Ubicación del Detalle</label>
-      <select
-        className="form-control"
-        value={newDetailForm.scantilon_location}
-        onChange={(e) =>
-          setNewDetailForm((prev) => ({
-            ...prev,
-            scantilon_location: e.target.value,
-          }))
-        }
+      <ModalCreate
+        detail={null}
+        isOpen={showNewDetailRow}
+        title="Crear Nuevo Detalle"
+        onClose={() => {
+          setShowNewDetailRow(false);
+          // Reinicia el formulario si es necesario:
+          setNewDetailForm({
+            scantilon_location: "",
+            name_detail: "",
+            material_id: 0,
+            layer_thickness: null,
+          });
+        }}
+        onSave={handleCreateNewDetail}
       >
-        <option value="">Seleccione</option>
-        <option value="Muro">Muro</option>
-        <option value="Techo">Techo</option>
-        <option value="Piso">Piso</option>
-      </select>
-    </div>
-    <div className="form-group">
-      <label>Nombre del Detalle</label>
-      <input
-        type="text"
-        className="form-control"
-        placeholder="Nombre Detalle"
-        value={newDetailForm.name_detail}
-        onChange={(e) =>
-          setNewDetailForm((prev) => ({
-            ...prev,
-            name_detail: e.target.value,
-          }))
-        }
-      />
-    </div>
-    <div className="form-group">
-      <label>Material</label>
-      <select
-        className="form-control"
-        value={newDetailForm.material_id}
-        onChange={(e) =>
-          setNewDetailForm((prev) => ({
-            ...prev,
-            material_id: parseInt(e.target.value, 10),
-          }))
-        }
-      >
-        <option value={0}>Seleccione un Material</option>
-        {materials.map((mat) => (
-          <option key={mat.id} value={mat.id}>
-            {mat.name}
-          </option>
-        ))}
-      </select>
-    </div>
-    <div className="form-group">
-      <label>Espesor de capa (cm)</label>
-      <input
-        type="number"
-        className="form-control"
-        placeholder="Espesor (cm)"
-        value={newDetailForm.layer_thickness ?? ""}
-        onChange={(e) =>
-          setNewDetailForm((prev) => ({
-            ...prev,
-            layer_thickness: parseFloat(e.target.value),
-          }))
-        }
-      />
-    </div>
-  </form>
-</ModalCreate>
+        <form>
+          <div className="form-group">
+            <label>Ubicación del Detalle</label>
+            <select
+              className="form-control"
+              value={newDetailForm.scantilon_location}
+              onChange={(e) =>
+                setNewDetailForm((prev) => ({
+                  ...prev,
+                  scantilon_location: e.target.value,
+                }))
+              }
+            >
+              <option value="">Seleccione</option>
+              <option value="Muro">Muro</option>
+              <option value="Techo">Techo</option>
+              <option value="Piso">Piso</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Nombre del Detalle</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Nombre Detalle"
+              value={newDetailForm.name_detail}
+              onChange={(e) =>
+                setNewDetailForm((prev) => ({
+                  ...prev,
+                  name_detail: e.target.value,
+                }))
+              }
+            />
+          </div>
+          <div className="form-group">
+            <label>Material</label>
+            <select
+              className="form-control"
+              value={newDetailForm.material_id}
+              onChange={(e) =>
+                setNewDetailForm((prev) => ({
+                  ...prev,
+                  material_id: parseInt(e.target.value, 10),
+                }))
+              }
+            >
+              <option value={0}>Seleccione un Material</option>
+              {materials.map((mat) => (
+                <option key={mat.id} value={mat.id}>
+                  {mat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Espesor de capa (cm)</label>
+            <input
+              type="number"
+              className="form-control"
+              placeholder="Espesor (cm)"
+              value={newDetailForm.layer_thickness ?? ""}
+              onChange={(e) =>
+                setNewDetailForm((prev) => ({
+                  ...prev,
+                  layer_thickness: parseFloat(e.target.value),
+                }))
+              }
+            />
+          </div>
+        </form>
+      </ModalCreate>
 
       {/* Modal para mostrar los detalles generales de un registro */}
       <DetailModal detail={selectedDetail} show={showDetailModal} onClose={() => setShowDetailModal(false)} />

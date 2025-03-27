@@ -34,6 +34,8 @@ export default function TablesParameters({
   multiHeader,
 }: TablesParametersProps) {
   // Estilo base para los encabezados sticky.
+  // (Si tienes múltiples filas sticky, deberás ajustar manualmente el `top`
+  // de cada una para evitar que se superpongan).
   const baseStickyStyle: React.CSSProperties = {
     position: "sticky",
     top: 0,                // Mantén la primera fila fija arriba. Para más filas, necesitarás ajustar esto.
@@ -51,12 +53,12 @@ export default function TablesParameters({
   return (
     <div className="container-fluid p-0">
       <div className="row g-0">
-        <div className="col-12 p-0 d-flex flex-column">
-          <div className="table-responsive flex-fill">
+        <div className="col-12 p-0 d-flex flex-column" >
+          <div className="table-responsive w-100 flex-fill" style={{ maxHeight: "400px" }}>
             <table
               className="table table-hover w-100 mb-0"
               style={{
-                tableLayout: "fixed",  // Ajuste para que las celdas se distribuyan de manera uniforme
+                tableLayout: "auto",    // Ajusta el ancho de las celdas al contenido
                 borderCollapse: "collapse",
               }}
             >
@@ -64,7 +66,7 @@ export default function TablesParameters({
                 {multiHeader ? (
                   <>
                     {multiHeader.rows.map((row, rowIndex) => (
-                      <tr key={rowIndex} style={{ height: "auto" }}>
+                      <tr key={rowIndex} style={{ height: "fixed" }}>
                         {row.map((cell, cellIndex) => (
                           <th
                             key={cellIndex}
@@ -126,8 +128,7 @@ export default function TablesParameters({
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
+        </div></div>
     </div>
   );
 }

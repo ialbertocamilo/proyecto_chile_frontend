@@ -854,11 +854,11 @@ const TabMuroCreate: React.FC = () => {
   const renderContent = () => (
     <div className="d-flex flex-column gap-4">
       <div className="table-responsive">
-        <div className="d-flex" style={{ minWidth: "1200px" }}>
-          <div className="p-2" style={{ flex: 1 }}>
+        <div className="d-flex w-100 mb-4">
+          <div className="p-2 flex-fill">
             <TablesParameters columns={murosColumns} data={murosData} />
           </div>
-          <div className="p-2" style={{ flex: 1 }}>
+          <div className="p-2 flex-fill">
             <TablesParameters
               columns={puentesColumns}
               data={puentesData}
@@ -867,7 +867,8 @@ const TabMuroCreate: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="d-flex justify-content-end gap-2 w-100">
+      {/* Botones alineados a la derecha */}
+      <div className="d-flex justify-content-end gap-2 mt-3 w-100">
         <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
           Nuevo Muro
         </CustomButton>
@@ -877,6 +878,10 @@ const TabMuroCreate: React.FC = () => {
       </div>
     </div>
   );
+  
+  
+  
+  
 
   return (
     <div className="container-fluid">

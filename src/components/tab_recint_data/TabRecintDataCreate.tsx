@@ -127,14 +127,16 @@ const TabRecintDataCreate: React.FC = () => {
       if (!response.ok) throw new Error();
       const result: Region[] = await response.json();
       setRegiones(result);
+      // Llamar a fetchComunas para la primera región cargada (o puedes iterar todas las regiones)
+      if (result.length > 0) fetchComunas(result[0].id); // Cargar comunas de la primera región
     } catch (error) {
       notify("Error al cargar las regiones");
     }
   };
 
-  const fetchComunas = async () => {
+  const fetchComunas = async (regionId: number) => {
     try {
-      const url = `${constantUrlApiEndpoint}/comunas/4`;
+      const url = `${constantUrlApiEndpoint}/comunas/${regionId}`;
       const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -145,14 +147,16 @@ const TabRecintDataCreate: React.FC = () => {
       if (!response.ok) throw new Error();
       const result: Comuna[] = await response.json();
       setComunas(result);
+      // Llamar a fetchZonasTermicas para la primera comuna cargada (o puedes iterar todas las comunas)
+      if (result.length > 0) fetchZonasTermicas(result[0].id); // Cargar zonas térmicas de la primera comuna
     } catch (error) {
       notify("Error al cargar las comunas");
     }
   };
 
-  const fetchZonasTermicas = async () => {
+  const fetchZonasTermicas = async (comunaId: number) => {
     try {
-      const url = `${constantUrlApiEndpoint}/zonas-termicas/24`;
+      const url = `${constantUrlApiEndpoint}/zonas-termicas/${comunaId}`;
       const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -193,8 +197,6 @@ const TabRecintDataCreate: React.FC = () => {
     if (token && projectId) {
       fetchEnclosureGenerals();
       fetchRegiones();
-      fetchComunas();
-      fetchZonasTermicas();
       fetchOccupationProfiles();
     }
   }, [token, projectId]);
@@ -296,14 +298,33 @@ const TabRecintDataCreate: React.FC = () => {
     {
       headerName: "Zona Térmica",
       field: "zona_termica",
-      renderCell: (row: EnclosureGeneralData) => row.zona_termica,
+      renderCell: (row: EnclosureGeneralData) =>
+        zonasTermicas.find((z) => z === row.zona_termica) || row.zona_termica,
     },
     {
       headerName: "Comuna",
       field: "comuna_id",
-      renderCell: (row: EnclosureGeneralData) =>
-        comunas.find((c) => c.id === row.comuna_id)?.nombre_comuna || row.comuna_id,
+      renderCell: (row: EnclosureGeneralData) => {
+        // Verificar si las comunas están cargadas
+        if (comunas.length === 0) {
+          return "Cargando..."; // Mensaje de carga si las comunas no están cargadas
+        }
+    
+        console.log('Comunas:', comunas); // Verificar las comunas cargadas
+    
+        const comuna = comunas.find((c) => c.id === row.comuna_id);
+        
+        // Verificar si se encuentra la comuna
+        if (!comuna) {
+          console.log(`Comuna no encontrada para ID: ${row.comuna_id}`); // Depuración
+          return `Comuna no encontrada (ID: ${row.comuna_id})`; // Mensaje si no se encuentra la comuna
+        }
+    
+        return comuna.nombre_comuna; // Mostrar el nombre de la comuna
+      },
     },
+    
+    
     {
       headerName: "Acciones",
       field: "acciones",

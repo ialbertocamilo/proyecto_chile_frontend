@@ -40,7 +40,7 @@ export interface IFormData {
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
-const RecintoEdit: React.FC = () => {
+const RecintoEditModeCreate: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("Nombre del Proyecto");
   const [projectDepartment, setProjectDepartment] = useState<string>("Región");
   const [projectId, setProjectId] = useState<string>("");
@@ -225,7 +225,9 @@ const RecintoEdit: React.FC = () => {
 
   const handleSave = async () => {
     // Validación de campos obligatorios
-    const altura = parseFloat(alturaPromedio);
+    // Se debe reemplazar la coma por punto para la conversión a número si es necesario.
+    const normalizedHeight = alturaPromedio.replace(",", ".");
+    const altura = parseFloat(normalizedHeight);
     if (
       !selectedRegion ||
       !selectedComuna ||
@@ -445,16 +447,15 @@ const RecintoEdit: React.FC = () => {
               </label>
               <input
                 id="alturaPromedio"
-                type="number"
-                step="0.01"
-                min="0"
+                type="text"
                 className="form-control"
                 placeholder="Ej: 2.5 (en metros)"
                 value={alturaPromedio}
                 onChange={(e) => {
                   const value = e.target.value;
-                  const regex = /^\d*(\.\d{0,2})?$/;
-                  if (regex.test(value) || value === "") {
+                  // Solo se permiten números, punto y coma
+                  const regex = /^[0-9.,]*$/;
+                  if (regex.test(value)) {
                     setAlturaPromedio(value);
                   }
                 }}
@@ -501,4 +502,4 @@ const RecintoEdit: React.FC = () => {
   );
 };
 
-export default RecintoEdit;
+export default RecintoEditModeCreate;

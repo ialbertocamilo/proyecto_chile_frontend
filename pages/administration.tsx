@@ -989,7 +989,7 @@ const AdministrationPage: React.FC = () => {
               name_element: "",
               u_vidrio: 0,
               fs_vidrio: 0,
-              clousure_type: "Corredera",
+              clousure_type: "",
               frame_type: "",
               u_marco: 0,
               fm: 0,
@@ -1051,7 +1051,7 @@ const AdministrationPage: React.FC = () => {
                   name_element: "",
                   u_vidrio: 0,
                   fs_vidrio: 0,
-                  clousure_type: "Corredera",
+                  clousure_type: "",
                   frame_type: "",
                   u_marco: 0,
                   fm: 0,
@@ -1129,6 +1129,7 @@ const AdministrationPage: React.FC = () => {
                   }))
                 }
               >
+                <option value="">Seleccione</option>
                 <option value="Corredera">Corredera</option>
                 <option value="Abatir">Abatir</option>
                 <option value="Fija">Fija</option>

@@ -909,7 +909,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "IDA", field: "ida" },
                 { headerName: "Ocupacion", field: "ocupacion" },
                 { headerName: "Caudal Impuesto Vent Noct", field: "caudalImpuestoVentNoct" },
-                { headerName: "Accion", field: "accion" },
+                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" } },
               ]}
               data={filteredVentilacion}
             />
@@ -925,7 +925,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "Potencia Base [W/m2]", field: "potenciaBase" },
                 { headerName: "Estrategia", field: "estrategia" },
                 { headerName: "Potencia Propuesta [W/m2]", field: "potenciaPropuesta" },
-                { headerName: "Accion", field: "accion" },
+                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" }},
               ]}
               data={filteredIluminacion}
             />
@@ -943,7 +943,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "Calor Sensible [W/pers]", field: "calorSensible" },
                 { headerName: "Equipos [W/m2]", field: "equipos" },
                 { headerName: "Funcionamiento Semanal", field: "funcionamientoSemanal" },
-                { headerName: "Accion", field: "accion" },
+                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" }},
               ]}
               data={filteredCargas}
             />
@@ -958,7 +958,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
                 { headerName: "Climatizado", field: "climatizado" },
                 { headerName: "Hrs Desfase Clima (Inv)", field: "hrsDesfaseClimaInv" },
-                { headerName: "Accion", field: "accion" },
+                { headerName: "Accion", field: "accion"},
               ]}
               data={filteredHorario}
             />

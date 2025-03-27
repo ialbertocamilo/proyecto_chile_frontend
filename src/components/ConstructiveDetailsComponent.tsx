@@ -3,6 +3,7 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/router";
 import CustomButton from "./common/CustomButton";
+import ActionButtonsConfirm from "./common/ActionButtonsConfirm";
 import { notify } from "@/utils/notify";
 import { constantUrlApiEndpoint } from "../utils/constant-url-endpoint";
 import TablesParameters from "@/components/tables/TablesParameters";
@@ -486,9 +487,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const handleInlineSave = async (
     item: TabItem,
     detailType: "Muro" | "Techo" | "Piso",
-    e: React.MouseEvent
+    e?: React.MouseEvent
   ) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     const token = getToken();
     if (!token) return;
     try {
@@ -773,26 +774,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ),
         acciones: isEditing ? (
           <>
-            <CustomButton
-              className="btn-table"
-              variant="save"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleInlineSave(item, "Muro", e);
-              }}
-            >
-              <span className="material-icons">check</span>
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="cancelIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleInlineCancel(e);
-              }}
-            >
-              Deshacer
-            </CustomButton>
+            <div onClick={(e) => e.stopPropagation()}>
+              <ActionButtonsConfirm
+                onAccept={() => handleInlineSave(item, "Muro")}
+                onCancel={handleInlineCancel}
+              />
+            </div>
           </>
         ) : (
           <>

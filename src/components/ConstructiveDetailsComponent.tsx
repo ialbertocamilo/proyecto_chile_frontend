@@ -872,26 +872,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ),
         acciones: isEditing ? (
           <>
-            <CustomButton
-              className="btn-table"
-              variant="save"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleInlineSave(item, "Techo", e);
-              }}
-            >
-              <span className="material-icons">check</span>
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="cancelIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleInlineCancel(e);
-              }}
-            >
-              Deshacer
-            </CustomButton>
+            <div onClick={(e) => e.stopPropagation()}>
+              <ActionButtonsConfirm
+                onAccept={() => handleInlineSave(item, "Techo")}
+                onCancel={handleInlineCancel}
+              />
+            </div>
           </>
         ) : (
           <>
@@ -1063,26 +1049,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ),
         acciones: isEditing ? (
           <>
-            <CustomButton
-              className="btn-table"
-              variant="save"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleInlineSave(item, "Piso", e);
-              }}
-            >
-              <span className="material-icons">check</span>
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="cancelIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleInlineCancel(e);
-              }}
-            >
-              Deshacer
-            </CustomButton>
+            <div onClick={(e) => e.stopPropagation()}>
+              <ActionButtonsConfirm
+                onAccept={() => handleInlineSave(item, "Piso")}
+                onCancel={handleInlineCancel}
+              />
+            </div>
           </>
         ) : (
           <>

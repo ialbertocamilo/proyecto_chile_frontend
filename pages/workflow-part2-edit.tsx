@@ -545,7 +545,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token) return;
     try {
-      const url = `${constantUrlApiEndpoint}/user/details/${editingDetail.id_detail}/update`;
+      const url = `${constantUrlApiEndpoint}/user/details/${editingDetail.id_detail}/update?project_id=${projectId}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -751,6 +751,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 const token = getToken();
                 if (!token) return;
                 try {
+                  console.log("Project ID", projectId)
                   const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Muro/${item.id}`;
                   const headers = { Authorization: `Bearer ${token}` };
                   const payload = {
@@ -853,6 +854,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                 const token = getToken();
                 if (!token) return;
                 try {
+                  console.log("Project ID", projectId)
+
                   const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Techo/${item.id}`;
                   const headers = { Authorization: `Bearer ${token}` };
                   const payload = {
@@ -1098,6 +1101,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                 const token = getToken();
                 if (!token) return;
                 try {
+                  console.log("Project ID", projectId)
+
                   const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Piso/${item.id}`;
                   const headers = { Authorization: `Bearer ${token}` };
                   const payload = {

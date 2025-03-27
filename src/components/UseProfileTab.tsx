@@ -88,17 +88,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   // Estado para llevar el registro de la fila que se está editando
   const [editingRow, setEditingRow] = useState<EditingRow | null>(null);
 
-  // Función para formatear celdas: reemplaza "N/A" y 0 por guion
-  const formatCell = (value: any) => {
-    if (value === "N/A") return "-";
-    if (typeof value === "number" && value === 0) return "-";
-    if (typeof value === "string") {
-      const trimmed = value.trim();
-      if (trimmed === "0" || trimmed === "0.00") return "-";
-    }
-    return value;
-  };
-
   // Función para abrir el modal de creación
   const handleNuevoClick = (tab: TabKey) => {
     console.log(`Nuevo elemento para ${tab}`);
@@ -387,14 +376,13 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       editingRow.id === enclosure.id &&
       editingRow.tab === "ventilacion";
     const rPersValue = (minSalubridad.r_pers ?? 0).toFixed(2);
-    const formattedRPers = formatCell(rPersValue);
     const values = isEditing
       ? editingRow.values
       : {
-          rPers: formattedRPers,
-          ida: formatCell(minSalubridad.ida || "N/A"),
-          ocupacion: formatCell(minSalubridad.ocupacion || "N/A"),
-          caudalImpuestoVentNoct: formatCell((condition.caudal_impuesto?.vent_noct ?? 0).toFixed(2)),
+          rPers: rPersValue,
+          ida: minSalubridad.ida || "N/A",
+          ocupacion: minSalubridad.ocupacion || "N/A",
+          caudalImpuestoVentNoct: (condition.caudal_impuesto?.vent_noct ?? 0).toFixed(2),
         };
 
     return {
@@ -414,10 +402,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ),
       rPers: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.rPers}
+          {rPersValue}
         </span>
       ) : (
-        values.rPers
+        rPersValue
       ),
       ida: isEditing ? (
         <select
@@ -503,9 +491,9 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const values = isEditing
       ? editingRow.values
       : {
-          potenciaBase: formatCell((details.potencia_base ?? 0).toFixed(2)),
+          potenciaBase: (details.potencia_base ?? 0).toFixed(2),
           estrategia: details.estrategia || "",
-          potenciaPropuesta: formatCell((details.potencia_propuesta ?? 0).toFixed(2)),
+          potenciaPropuesta: (details.potencia_propuesta ?? 0).toFixed(2),
         };
 
     return {
@@ -556,7 +544,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         values.estrategia
       ),
       potenciaPropuesta: isDefault ? (
-        <span style={{ color: "black" }}>
+        <span style={{ color: "black", fontWeight: "" }}>
           {values.potenciaPropuesta}
         </span>
       ) : (
@@ -592,11 +580,11 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const values = isEditing
       ? editingRow.values
       : {
-          usuarios: formatCell((condition.usuarios ?? 0).toFixed(2)),
-          calorLatente: formatCell((condition.calor_latente ?? 0).toFixed(2)),
-          calorSensible: formatCell((condition.calor_sensible ?? 0).toFixed(2)),
-          equipos: formatCell((condition.equipos ?? 0).toFixed(2)),
-          funcionamientoSemanal: formatCell(condition.horario?.funcionamiento_semanal || "N/A"),
+          usuarios: (condition.usuarios ?? 0).toFixed(2),
+          calorLatente: (condition.calor_latente ?? 0).toFixed(2),
+          calorSensible: (condition.calor_sensible ?? 0).toFixed(2),
+          equipos: (condition.equipos ?? 0).toFixed(2),
+          funcionamientoSemanal: condition.horario?.funcionamiento_semanal || "",
         };
 
     return {
@@ -718,7 +706,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ? editingRow.values
       : {
           climatizado: recinto.climatizado,
-          hrsDesfaseClimaInv: formatCell(recinto.desfase_clima ? recinto.desfase_clima.toFixed(2) : "N/A"),
+          hrsDesfaseClimaInv: recinto.desfase_clima ? recinto.desfase_clima.toFixed(2) : "N/A",
         };
 
     return {

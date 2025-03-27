@@ -555,6 +555,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       }
       fetchFetchedDetails();
       setEditingDetail(null);
+      setShowDetallesModal(true); // <-- Esta línea abre el modal de Detalles generales
     } catch (error: unknown) {
       console.error("Error al actualizar el detalle:", error);
       notify("Error al actualizar el Detalle.");

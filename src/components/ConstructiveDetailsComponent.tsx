@@ -290,7 +290,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       console.log("Respuesta de creación:", response);
       notify("Detalle creado exitosamente.");
       await fetchFetchedDetails();
-      
+
       // Actualiza la tabla específica según el tipo de detalle creado
       const tipo = newDetailForm.scantilon_location.toLowerCase();
       if (tipo === "muro") {
@@ -300,7 +300,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       } else if (tipo === "piso") {
         fetchPisosDetails();
       }
-      
+
       setShowNewDetailRow(false);
       setNewDetailForm({
         scantilon_location: "",
@@ -348,7 +348,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       console.log("Detalle eliminado:", response.data);
       notify("Detalle correctamente eliminado");
       await fetchFetchedDetails();
-  
+
       // Actualizar la tabla específica según el tipo de detalle eliminado
       const tipo = deletingDetail.scantilon_location.toLowerCase();
       if (tipo === "muro") {
@@ -367,7 +367,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       setShowGeneralDetailsModal(true);
     }
   };
-  
+
   // Función para abrir el modal de eliminación inline en tablas
   const handleInlineDeleteModal = (item: TabItem, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -963,130 +963,106 @@ const ConstructiveDetailsComponent: React.FC = () => {
       const horiz = item.info?.ref_aisl_horizontal || {};
       return {
         nombre: item.name_detail,
-        uValue: item.value_u ? item.value_u.toFixed(3) : "--",
-        bajoPisoLambda: bajoPiso.lambda != null ? bajoPiso.lambda.toFixed(3) : "-",
+        uValue:
+          item.value_u && Number(item.value_u) !== 0
+            ? Number(item.value_u).toFixed(3)
+            : "-",
+        bajoPisoLambda:
+          item.info?.aislacion_bajo_piso?.lambda &&
+            Number(item.info.aislacion_bajo_piso.lambda) !== 0
+            ? Number(item.info.aislacion_bajo_piso.lambda).toFixed(3)
+            : "-",
         bajoPisoEAisl:
-          bajoPiso.e_aisl != null && bajoPiso.e_aisl !== 0
-            ? bajoPiso.e_aisl
+          item.info?.aislacion_bajo_piso?.e_aisl &&
+            Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
+            ? item.info.aislacion_bajo_piso.e_aisl
             : "-",
         vertLambda: isEditing ? (
           <input
-            onClick={(e) => e.stopPropagation()}
             type="number"
-            min="0"
-            max="100"
-            step="any"
             className="form-control form-control-sm"
             value={editValues.vertLambda || vert.lambda || ""}
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({
-                ...prev,
-                vertical: { ...prev.vertical, lambda: e.target.value },
-              }))
+              setEditValues((prev: Record<string, any>) => ({ ...prev, vertLambda: e.target.value }))
             }
           />
+        ) : vert.lambda && Number(vert.lambda) !== 0 ? (
+          Number(vert.lambda).toFixed(3)
         ) : (
-          formatNumber(vert.lambda)
+          "-"
         ),
         vertEAisl: isEditing ? (
           <input
-            onClick={(e) => e.stopPropagation()}
             type="number"
-            min="0"
-            max="100"
-            step="any"
             className="form-control form-control-sm"
             value={editValues.vertEAisl || vert.e_aisl || ""}
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({
-                ...prev,
-                vertical: { ...prev.vertical, e_aisl: e.target.value },
-              }))
+              setEditValues((prev: Record<string, any>) => ({ ...prev, vertEAisl: e.target.value }))
             }
           />
-        ) : vert.e_aisl != null && vert.e_aisl !== 0 ? (
+        ) : vert.e_aisl ? (
           vert.e_aisl
         ) : (
           "-"
         ),
         vertD: isEditing ? (
           <input
-            onClick={(e) => e.stopPropagation()}
             type="number"
-            min="0"
-            max="100"
-            step="any"
             className="form-control form-control-sm"
             value={editValues.vertD || vert.d || ""}
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({
-                ...prev,
-                vertical: { ...prev.vertical, d: e.target.value },
-              }))
+              setEditValues((prev: Record<string, any>) => ({ ...prev, vertD: e.target.value }))
             }
           />
-        ) : vert.d != null && vert.d !== 0 ? (
+        ) : vert.d ? (
           vert.d
         ) : (
           "-"
         ),
         horizLambda: isEditing ? (
           <input
-            onClick={(e) => e.stopPropagation()}
             type="number"
-            min="0"
-            max="100"
-            step="any"
             className="form-control form-control-sm"
-            value={editValues.horizLambda || vert.lambda || ""}
+            value={editValues.horizLambda || horiz.lambda || ""}
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({
-                ...prev,
-                vertical: { ...prev.vertical, lambda: e.target.value },
-              }))
+              setEditValues((prev: Record<string, any>) => ({ ...prev, horizLambda: e.target.value }))
             }
           />
+        ) : horiz.lambda && Number(horiz.lambda) !== 0 ? (
+          Number(horiz.lambda).toFixed(3)
         ) : (
-          formatNumber(vert.lambda)
+          "-"
         ),
         horizEAisl: isEditing ? (
           <input
-            onClick={(e) => e.stopPropagation()}
             type="number"
-            min="0"
-            max="100"
-            step="any"
             className="form-control form-control-sm"
             value={editValues.horizEAisl || horiz.e_aisl || ""}
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({
-                ...prev,
-                horizontal: { ...prev.horizontal, lambda: e.target.value },
-              }))
+              setEditValues((prev: Record<string, any>) => ({ ...prev, horizEAisl: e.target.value }))
             }
           />
-        ) : horiz.e_aisl != null && horiz.e_aisl !== 0 ? (
+        ) : horiz.e_aisl ? (
           horiz.e_aisl
         ) : (
           "-"
         ),
         horizD: isEditing ? (
           <input
-            onClick={(e) => e.stopPropagation()}
             type="number"
-            min="0"
-            max="100"
-            step="any"
             className="form-control form-control-sm"
             value={editValues.horizD || horiz.d || ""}
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({
-                ...prev,
-                horizontal: { ...prev.horizontal, d: e.target.value },
-              }))
+              setEditValues((prev: Record<string, any>) => ({ ...prev, horizD: e.target.value }))
             }
           />
-        ) : horiz.d != null && horiz.d !== 0 ? (
+        ) : horiz.d ? (
           horiz.d
         ) : (
           "-"
@@ -1175,7 +1151,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     );
   };
 
-  // Render principal del componente
+  //Render principal del componente
   return (
     <div className="constructive-details-container" style={{ padding: "20px" }}>
       <div style={{ marginTop: "20px" }}>
@@ -1188,7 +1164,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
         onClose={() => { setShowNewDetailRow(false); }}
         onSave={() => { handleCreateNewDetail(); }}
         title="Nuevo Detalle"
-        saveLabel="Crear Detalle"  
+        saveLabel="Crear Detalle"
         detail={newDetailForm}
       >
         <form
@@ -1313,12 +1289,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
           }}
           onSave={() => {
             handleConfirmEditDetail({
-              stopPropagation: () => {},
-              preventDefault: () => {},
+              stopPropagation: () => { },
+              preventDefault: () => { },
               nativeEvent: new MouseEvent("click"),
               isDefaultPrevented: () => false,
               isPropagationStopped: () => false,
-              persist: () => {},
+              persist: () => { },
               target: document.createElement("button"),
               currentTarget: document.createElement("button"),
               bubbles: true,
@@ -1354,11 +1330,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
                 type="text"
                 className="form-control"
                 value={editingDetail.scantilon_location}
-                onChange={(e) =>
-                  setEditingDetail((prev) =>
-                    prev ? { ...prev, scantilon_location: e.target.value } : prev
-                  )
-                }
+                readOnly
                 onClick={(e) => e.stopPropagation()}
               />
             </div>

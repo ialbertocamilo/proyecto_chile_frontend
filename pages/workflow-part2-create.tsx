@@ -1255,8 +1255,9 @@ const WorkFlowpar2createPage: React.FC = () => {
     ],
   };
 
-  const formatNumber = (num: number | undefined, decimals = 3) => {
-    return num != null && num !== 0 ? num.toFixed(decimals) : "-";
+  const formatNumber = (num: number | string | undefined, decimals = 3) => {
+    const parsedNum = Number(num);
+    return !isNaN(parsedNum) && parsedNum !== 0 ? parsedNum.toFixed(decimals) : "-";
   };
 
   const renderPisosTable = () => {

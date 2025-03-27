@@ -848,9 +848,6 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Ahora se renderiza directamente el contenido correspondiente a "muros" (sin pestañas)
-  // ... (resto del código permanece igual)
-
   const renderContent = () => (
     <div className="d-flex flex-column gap-4">
       <div className="table-responsive">

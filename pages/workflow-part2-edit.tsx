@@ -233,12 +233,12 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // ===================== ESTADOS EDICIÓN MUROS / TECHUMBRE ======================
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
-  const [editingColors, setEditingColors] = useState<{ interior: string; exterior: string }>({
+  const [editingColors, setEditingColors] = useState<{ interior: string; exterior: string }>( {
     interior: "Intermedio",
     exterior: "Intermedio",
   });
   const [editingTechRowId, setEditingTechRowId] = useState<number | null>(null);
-  const [editingTechColors, setEditingTechColors] = useState<{ interior: string; exterior: string }>({
+  const [editingTechColors, setEditingTechColors] = useState<{ interior: string; exterior: string }>( {
     interior: "Intermedio",
     exterior: "Intermedio",
   });
@@ -1731,14 +1731,19 @@ const WorkFlowpar2editPage: React.FC = () => {
               <input
                 type="number"
                 className="form-control"
-                value={
-                  editingVentana.fm !== undefined ? (editingVentana.fm * 100).toString() : ""
-                }
-                onChange={(e) =>
+                value={editingVentana.fm !== undefined ? (editingVentana.fm * 100).toString() : ""}
+                onChange={(e) => {
+                  let val = Number(e.target.value);
+                  if (isNaN(val)) {
+                    setEditingVentana((prev) => prev ? { ...prev, fm: 0 } : prev);
+                    return;
+                  }
+                  if (val > 100) val = 100;
+                  if (val < 0) val = 0;
                   setEditingVentana((prev) =>
-                    prev ? { ...prev, fm: parseFloat(e.target.value) / 100 } : prev
-                  )
-                }
+                    prev ? { ...prev, fm: val / 100 } : prev
+                  );
+                }}
               />
             </div>
           </form>
@@ -1810,19 +1815,22 @@ const WorkFlowpar2editPage: React.FC = () => {
                     ? (editingPuerta.atributs.porcentaje_vidrio * 100).toString()
                     : ""
                 }
-                onChange={(e) =>
+                onChange={(e) => {
+                  let val = Number(e.target.value);
+                  if (isNaN(val)) {
+                    setEditingPuerta((prev) =>
+                      prev ? { ...prev, atributs: { ...prev.atributs, porcentaje_vidrio: 0 } } : prev
+                    );
+                    return;
+                  }
+                  if (val > 100) val = 100;
+                  if (val < 0) val = 0;
                   setEditingPuerta((prev) =>
                     prev
-                      ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: parseFloat(e.target.value) / 100,
-                          },
-                        }
+                      ? { ...prev, atributs: { ...prev.atributs, porcentaje_vidrio: val / 100 } }
                       : prev
-                  )
-                }
+                  );
+                }}
               />
             </div>
             <div className="form-group">
@@ -1844,11 +1852,18 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingPuerta.fm !== undefined ? (editingPuerta.fm * 100).toString() : ""}
-                onChange={(e) =>
+                onChange={(e) => {
+                  let val = Number(e.target.value);
+                  if (isNaN(val)) {
+                    setEditingPuerta((prev) => prev ? { ...prev, fm: 0 } : prev);
+                    return;
+                  }
+                  if (val > 100) val = 100;
+                  if (val < 0) val = 0;
                   setEditingPuerta((prev) =>
-                    prev ? { ...prev, fm: parseFloat(e.target.value) / 100 } : prev
-                  )
-                }
+                    prev ? { ...prev, fm: val / 100 } : prev
+                  );
+                }}
               />
             </div>
           </form>

@@ -786,7 +786,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       };
       await axios.put(url, payload, { headers });
       notify(
-        `Se actualizó correctamente el detalle con ID '${detail.id}' en el proyecto '${projectId}' de tipo 'Piso'.`
+        `Detalle tipo Piso actualizado con éxito`
       );
       setPisosTabList((prev) =>
         prev.map((item) =>
@@ -1173,26 +1173,12 @@ const WorkFlowpar2createPage: React.FC = () => {
         ),
         acciones: isEditing ? (
           <>
-            <CustomButton
-              className="btn-table"
-              variant="save"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleConfirmTechEdit(item);
-              }}
-            >
-              <span className="material-icons">check</span>
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="cancelIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCancelTechEdit(item);
-              }}
-            >
-              Deshacer
-            </CustomButton>
+            <div onClick={(e) => e.stopPropagation()}>
+              <ActionButtonsConfirm
+                onAccept={() => handleConfirmTechEdit(item)}
+                onCancel={() => handleCancelTechEdit(item)}
+              />
+            </div>
           </>
         ) : (
           <CustomButton
@@ -1394,26 +1380,13 @@ const WorkFlowpar2createPage: React.FC = () => {
         ),
         acciones: isEditing ? (
           <>
-            <CustomButton
-              className="btn-table"
-              variant="save"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleConfirmPisoEdit(item);
-              }}
-            >
-              <span className="material-icons">check</span>
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="cancelIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCancelPisoEdit();
-              }}
-            >
-              Deshacer
-            </CustomButton>
+            <div onClick={(e) => e.stopPropagation()}>
+              <ActionButtonsConfirm
+                onAccept={() => handleConfirmPisoEdit(item)}
+                onCancel={() => handleCancelPisoEdit()}
+              />
+            </div>
+            
           </>
         ) : (
           <CustomButton

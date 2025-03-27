@@ -641,6 +641,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 e.stopPropagation();
                 handleEditDetail(det);
               }}
+              disabled={det.created_status == "default" || det.created_status == "global"}
             >
               Editar
             </CustomButton>
@@ -650,6 +651,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 e.stopPropagation();
                 handleDeleteDetail(det);
               }}
+              disabled={det.created_status == "default" || det.created_status == "global"}
             >
               <span className="material-icons">delete</span>
             </CustomButton>
@@ -1215,6 +1217,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 e.stopPropagation();
                 setEditingVentana(item);
               }}
+              disabled={item.created_status == "default" || item.created_status == "global"}
             >
               Editar
             </CustomButton>
@@ -1226,6 +1229,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 setDeleteItem({ id: item.id, type: "window" });
                 setShowDeleteModal(true);
               }}
+              disabled={item.created_status == "default" || item.created_status == "global"}
             >
               <span className="material-icons">delete</span>
             </CustomButton>
@@ -1296,6 +1300,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 e.stopPropagation();
                 setEditingPuerta(item);
               }}
+              disabled={item.created_status == "default" || item.created_status == "global"}
             >
               Editar
             </CustomButton>
@@ -1307,6 +1312,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 setDeleteItem({ id: item.id, type: "door" });
                 setShowDeleteModal(true);
               }}
+              disabled={item.created_status == "default" || item.created_status == "global"}
             >
               <span className="material-icons">delete</span>
             </CustomButton>

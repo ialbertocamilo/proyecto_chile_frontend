@@ -966,6 +966,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               className="btn-table"
               variant="editIcon"
               onClick={() => handleEditDetail(det)}
+              disabled={det.created_status == "default" || det.created_status == "global"}
             >
               Editar
             </CustomButton>
@@ -973,6 +974,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               className="btn-table"
               variant="deleteIcon"
               onClick={() => confirmDeleteDetail(det.id_detail)}
+              disabled={det.created_status == "default" || det.created_status == "global"}
             >
               <span className="material-icons">delete</span>
             </CustomButton>
@@ -1526,6 +1528,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 e.stopPropagation();
                 setEditingVentanaForm(item);
               }}
+              disabled={item.created_status == "default" || item.created_status == "global"}
             >
               Editar
             </CustomButton>
@@ -1536,6 +1539,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 e.stopPropagation();
                 confirmDeleteElement(item.id, "window");
               }}
+              disabled={item.created_status == "default" || item.created_status == "global"}
             >
               <span className="material-icons">delete</span>
             </CustomButton>
@@ -1609,6 +1613,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 e.stopPropagation();
                 setEditingPuertaForm(item);
               }}
+              disabled={item.created_status == "default" || item.created_status == "global"}
             >
               Editar
             </CustomButton>
@@ -1619,6 +1624,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 e.stopPropagation();
                 confirmDeleteElement(item.id as number, "door");
               }}
+              disabled={item.created_status == "default" || item.created_status == "global"}
             >
               <span className="material-icons">delete</span>
             </CustomButton>

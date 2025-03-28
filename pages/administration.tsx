@@ -434,7 +434,7 @@ const AdministrationPage: React.FC = () => {
         selectedMaterialId,
         payload,
         "admin/constant",
-        `El material "${newMaterialData.name}" fue actualizado correctamente`,
+        "Actualizado con éxito.",
         () => fetchMaterialsList(1)
       );
   
@@ -457,7 +457,6 @@ const AdministrationPage: React.FC = () => {
     }
   };
   
-
   // Función para crear elementos (ventanas y puertas)
   const handleCreateElement = async () => {
     if (tabElementosOperables === "ventanas") {
@@ -612,7 +611,7 @@ const AdministrationPage: React.FC = () => {
         selectedWindowId,
         payload,
         "admin/elements",
-        `La ventana "${newWindow.name_element}" fue actualizada correctamente`,
+        "Actualizado con éxito.",
         fetchElements
       );
 
@@ -664,7 +663,7 @@ const AdministrationPage: React.FC = () => {
         selectedDoorId,
         payload,
         "admin/elements",
-        `La puerta "${newDoor.name_element}" fue actualizada correctamente`,
+        "Actualizado con éxito.",
         fetchElements
       );
 

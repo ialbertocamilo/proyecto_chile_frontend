@@ -366,7 +366,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     })
       .then((res) => res.json())
       .then((data) => {
-        notify(data.message || "Actualización exitosa");
+        notify("Actualizado con éxito.");
         setEditingRow(null);
         setRefresh((prev) => prev + 1);
       })

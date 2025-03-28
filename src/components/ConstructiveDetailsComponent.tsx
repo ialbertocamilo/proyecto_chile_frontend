@@ -445,7 +445,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             "Content-Type": "application/json",
           },
         });
-        notify("Detalle actualizado con éxito.");
+        notify("Actualizado con éxito.");
         await fetchFetchedDetails();
         const tipo = editingDetail.scantilon_location.toLowerCase();
         if (tipo === "muro") {
@@ -499,36 +499,17 @@ const ConstructiveDetailsComponent: React.FC = () => {
       let url = `${constantUrlApiEndpoint}/${item.id_detail}/details/update`;
       let payload;
       if (detailType === "Piso") {
-        // Se reemplaza el uso de "||" por una comprobación que respeta valores vacíos
         payload = {
           info: {
             ref_aisl_vertical: {
-              d:
-                editValues.vertD !== undefined
-                  ? editValues.vertD
-                  : item.info?.ref_aisl_vertical?.d,
-              e_aisl:
-                editValues.vertEAisl !== undefined
-                  ? editValues.vertEAisl
-                  : item.info?.ref_aisl_vertical?.e_aisl,
-              lambda:
-                editValues.vertLambda !== undefined
-                  ? editValues.vertLambda
-                  : item.info?.ref_aisl_vertical?.lambda,
+              d: editValues.vertD || item.info?.ref_aisl_vertical?.d,
+              e_aisl: editValues.vertEAisl || item.info?.ref_aisl_vertical?.e_aisl,
+              lambda: editValues.vertLambda || item.info?.ref_aisl_vertical?.lambda,
             },
             ref_aisl_horizontal: {
-              d:
-                editValues.horizD !== undefined
-                  ? editValues.horizD
-                  : item.info?.ref_aisl_horizontal?.d,
-              e_aisl:
-                editValues.horizEAisl !== undefined
-                  ? editValues.horizEAisl
-                  : item.info?.ref_aisl_horizontal?.e_aisl,
-              lambda:
-                editValues.horizLambda !== undefined
-                  ? editValues.horizLambda
-                  : item.info?.ref_aisl_horizontal?.lambda,
+              d: editValues.horizD || item.info?.ref_aisl_horizontal?.d,
+              e_aisl: editValues.horizEAisl || item.info?.ref_aisl_horizontal?.e_aisl,
+              lambda: editValues.horizLambda || item.info?.ref_aisl_horizontal?.lambda,
             },
           },
         };
@@ -550,7 +531,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           "Content-Type": "application/json",
         },
       });
-      notify("Detalle actualizado con éxito.");
+      notify("Actualizado con éxito.");
       if (detailType === "Muro") fetchMurosDetails();
       else if (detailType === "Techo") fetchTechumbreDetails();
       else if (detailType === "Piso") fetchPisosDetails();
@@ -881,28 +862,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
           item.info?.surface_color?.interior?.name || "Desconocido"
         ),
         acciones: isEditing ? (
-          <>
-            <CustomButton
-              className="btn-table"
-              variant="save"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleInlineSave(item, "Techo", e);
-              }}
-            >
-              <span className="material-icons">check</span>
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="cancelIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleInlineCancel(e);
-              }}
-            >
-              Deshacer
-            </CustomButton>
-          </>
+          <div onClick={(e) => e.stopPropagation()}>
+          <ActionButtonsConfirm  
+          onAccept={() => handleInlineSave(item, "Techo")}
+          onCancel={handleInlineCancel}
+          />
+          </div>
         ) : (
           <>
             <CustomButton
@@ -916,6 +881,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               Editar
             </CustomButton>
             <CustomButton
+            className="btn-table"
               variant="deleteIcon"
               onClick={(e) => {
                 e.stopPropagation();
@@ -982,7 +948,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
             ? item.info.aislacion_bajo_piso.e_aisl
             : "-",
-        // Cada input usa la lógica para que si el valor es borrado quede ""
+        // En modo edición se revisa si el valor ingresado es 0 para asignarle "" (lo que luego se mostrará como guion en modo lectura)
         vertLambda: isEditing ? (
           <input
             type="number"
@@ -1146,28 +1112,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
           "-"
         ),
         acciones: isEditing ? (
-          <>
-            <CustomButton
-              className="btn-table"
-              variant="save"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleInlineSave(item, "Piso", e);
-              }}
-            >
-              <span className="material-icons">check</span>
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="cancelIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleInlineCancel(e);
-              }}
-            >
-              Deshacer
-            </CustomButton>
-          </>
+            <div onClick={(e) => e.stopPropagation()}>
+            <ActionButtonsConfirm  
+            onAccept={() => handleInlineSave(item, "Piso")}
+            onCancel={handleInlineCancel}
+            />
+            </div>
         ) : (
           <>
             <CustomButton

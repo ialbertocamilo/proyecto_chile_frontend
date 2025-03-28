@@ -121,84 +121,90 @@ const TabWindowCreate: React.FC = () => {
   // Obtener ventanas y FAVs
   const fetchWindowEnclosures = async () => {
     try {
-      const response = await fetch(
-        `${constantUrlApiEndpoint}/window-enclosures/${enclosure_id}`,
-        {
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (!response.ok) throw new Error("Error al obtener las ventanas");
-      const windowsData = await response.json();
+        const response = await fetch(
+          `${constantUrlApiEndpoint}/window-enclosures/${enclosure_id}`,
+          {
+            headers: {
+              accept: "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Error al obtener las ventanas");
+        const windowsData = await response.json();
 
-      let mappedData = windowsData.map((item: any) => ({
-        id: item.id,
-        window_id: item.window_id,
-        tipoVano: `Ventana ${item.window_id}`,
-        caracteristicas: item.characteristics,
-        anguloAzimut: item.angulo_azimut,
-        orientacion: item.orientation,
-        alojadoEn: item.housed_in,
-        tipoCierre: item.clousure_type, // lectura
-        posicionVentanal: item.position,
-        aislacion: item.with_no_return,
-        alto: item.high,
-        ancho: item.broad,
-        marco: item.frame,
-        // Inicializamos FAV
-        fav1_D: "",
-        fav1_L: "",
-        fav2izq_P: "",
-        fav2izq_S: "",
-        fav2der_P: "",
-        fav2der_S: "",
-        fav3_E: "",
-        fav3_T: "",
-        fav3_beta: "",
-        fav3_alpha: "",
-        fav_id: null,
-      }));
+        let mappedData = windowsData.map((item: any) => {
+          // Buscar el nombre del elemento de ventana correspondiente
+          const windowElement = windowOptions.find((window: any) => window.id === item.window_id);
+          const windowName = windowElement ? windowElement.name_element : `Ventana ${item.window_id}`;
 
-      const favResponse = await fetch(
-        `${constantUrlApiEndpoint}/window/fav-enclosures/${enclosure_id}/`,
-        {
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (!favResponse.ok) throw new Error("Error al obtener los favs de ventana");
-      const favsData = await favResponse.json();
-
-      mappedData = mappedData.map((row: any) => {
-        const fav = favsData.find((f: any) => f.item_id === row.id);
-        if (fav) {
           return {
-            ...row,
-            fav1_D: fav.fav1.d,
-            fav1_L: fav.fav1.l,
-            fav2izq_P: fav.fav2_izq.p,
-            fav2izq_S: fav.fav2_izq.s,
-            fav2der_P: fav.fav2_der.p,
-            fav2der_S: fav.fav2_der.s,
-            fav3_E: fav.fav3.e,
-            fav3_T: fav.fav3.t,
-            fav3_beta: fav.fav3.beta,
-            fav3_alpha: fav.fav3.alfa,
-            fav_id: fav.id,
+            id: item.id,
+            window_id: item.window_id,
+            tipoVano: windowName, // Ahora muestra el nombre de la ventana en lugar de "Ventana X"
+            caracteristicas: item.characteristics,
+            anguloAzimut: item.angulo_azimut,
+            orientacion: item.orientation,
+            alojadoEn: item.housed_in,
+            tipoCierre: item.clousure_type, // lectura
+            posicionVentanal: item.position,
+            aislacion: item.with_no_return,
+            alto: item.high,
+            ancho: item.broad,
+            marco: item.frame,
+            // Inicializamos FAV
+            fav1_D: "",
+            fav1_L: "",
+            fav2izq_P: "",
+            fav2izq_S: "",
+            fav2der_P: "",
+            fav2der_S: "",
+            fav3_E: "",
+            fav3_T: "",
+            fav3_beta: "",
+            fav3_alpha: "",
+            fav_id: null,
           };
-        }
-        return row;
-      });
+        });
 
-      setTableData(mappedData);
+        const favResponse = await fetch(
+          `${constantUrlApiEndpoint}/window/fav-enclosures/${enclosure_id}/`,
+          {
+            headers: {
+              accept: "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!favResponse.ok) throw new Error("Error al obtener los favs de ventana");
+        const favsData = await favResponse.json();
+
+        mappedData = mappedData.map((row: any) => {
+          const fav = favsData.find((f: any) => f.item_id === row.id);
+          if (fav) {
+            return {
+              ...row,
+              fav1_D: fav.fav1.d,
+              fav1_L: fav.fav1.l,
+              fav2izq_P: fav.fav2_izq.p,
+              fav2izq_S: fav.fav2_izq.s,
+              fav2der_P: fav.fav2_der.p,
+              fav2der_S: fav.fav2_der.s,
+              fav3_E: fav.fav3.e,
+              fav3_T: fav.fav3.t,
+              fav3_beta: fav.fav3.beta,
+              fav3_alpha: fav.fav3.alfa,
+              fav_id: fav.id,
+            };
+          }
+          return row;
+        });
+
+        setTableData(mappedData);
     } catch (error) {
-      console.error(error);
+        console.error(error);
     }
-  };
+};
 
   useEffect(() => {
     fetchWindowEnclosures();
@@ -1050,7 +1056,7 @@ const TabWindowCreate: React.FC = () => {
         onClose={handleCloseModal}
         onSave={handleSaveModal}
         title="Crear Ventana"
-        saveLabel="Crear"
+        saveLabel="Grabar Datos"
       >
         <form>
           <div className="row mb-3">

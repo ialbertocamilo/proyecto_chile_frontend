@@ -1,5 +1,5 @@
 // recinto-create.tsx
-import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
+import RecintoCaractersComponent from "@/components/RecintoCaractersComponentEdit";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
@@ -41,10 +41,13 @@ interface IFormData {
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
-const RecintoCreate: React.FC = () => {
+const RecintoCreateEdit: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("Nombre del Proyecto");
   const [projectDepartment, setProjectDepartment] = useState<string>("Región");
   const [projectId, setProjectId] = useState<string>("");
+
+  // Estado para controlar si el recinto fue creado
+  const [isRecintoCreated, setIsRecintoCreated] = useState<boolean>(false);
 
   // ---------------------------
   //  Estados para los desplegables y formulario
@@ -91,6 +94,12 @@ const RecintoCreate: React.FC = () => {
       setPerfilOcupacion(data.perfilOcupacion);
       setAlturaPromedio(data.alturaPromedio);
       setSensorCo2(data.sensorCo2);
+    }
+
+    // Verificar si el recinto ya fue creado
+    const recintoId = localStorage.getItem("recinto_id");
+    if (recintoId) {
+      setIsRecintoCreated(true);
     }
   }, []);
 
@@ -225,8 +234,9 @@ const RecintoCreate: React.FC = () => {
   }, []);
 
   const handleSave = async () => {
-    // Validación de campos obligatorios
-    const altura = parseFloat(alturaPromedio);
+    // Se reemplaza la coma por el punto para que parseFloat funcione correctamente
+    const normalizedAlturaPromedio = alturaPromedio.replace(/,/g, ".");
+    const altura = parseFloat(normalizedAlturaPromedio);
     if (
       !selectedRegion ||
       !selectedComuna ||
@@ -287,8 +297,8 @@ const RecintoCreate: React.FC = () => {
       localStorage.setItem("recinto_id", result.id.toString());
 
       notify("Recinto creado correctamente");
-      // Recargar la página por completo (manteniendo los datos del formulario en localStorage)
-      window.location.reload();
+      // En lugar de recargar la página, actualizamos el estado para mostrar la Card de características térmicas
+      setIsRecintoCreated(true);
     } catch (error) {
       console.error("Error en handleSave:", error);
       notify("Error al guardar los datos");
@@ -443,16 +453,15 @@ const RecintoCreate: React.FC = () => {
               </label>
               <input
                 id="alturaPromedio"
-                type="number"
-                step="0.01"
-                min="0"
+                type="text"
                 className="form-control"
                 placeholder="Ej: 2.5 (en metros)"
                 value={alturaPromedio}
                 onChange={(e) => {
                   const value = e.target.value;
-                  const regex = /^\d*(\.\d{0,2})?$/;
-                  if (regex.test(value) || value === '') {
+                  // Solo se permiten los caracteres: dígitos, punto y coma
+                  const regex = /^[0-9.,]*$/;
+                  if (regex.test(value)) {
                     setAlturaPromedio(value);
                   }
                 }}
@@ -488,15 +497,18 @@ const RecintoCreate: React.FC = () => {
         </div>
       </Card>
 
-      {/* Nueva Card para "Características térmicas de la envolvente" */}
-      <Card>
-        <div>
-          <Title text="Características térmicas de la envolvente" />
-          <RecintoCaractersComponent />
-        </div>
-      </Card>
+      {/* Nueva Card para "Características térmicas de la envolvente"
+          Se muestra solo si el recinto ya fue creado */}
+      {isRecintoCreated && (
+        <Card>
+          <div>
+            <Title text="Características térmicas de la envolvente" />
+            <RecintoCaractersComponent />
+          </div>
+        </Card>
+      )}
     </>
   );
 };
 
-export default RecintoCreate;
+export default RecintoCreateEdit;

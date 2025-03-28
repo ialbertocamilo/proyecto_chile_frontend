@@ -44,7 +44,6 @@ export const useCrudOperations = () => {
     successMessage: string,
     fetchData: () => Promise<void>
   ) => {
-    try {
       const token = localStorage.getItem("token");
       if (!token) {
         notify("Token no encontrado. Inicia sesión.");
@@ -63,10 +62,7 @@ export const useCrudOperations = () => {
         notify(successMessage);
         await fetchData();
       }
-    } catch (error) {
-      console.error(`[handleEdit] Error:`, error);
-      notify("No se pudo editar el elemento");
-    }
+    
   };
 
   const handleDelete = async (

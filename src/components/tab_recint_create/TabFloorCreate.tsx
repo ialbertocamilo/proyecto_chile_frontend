@@ -380,7 +380,11 @@ const TabFloorCreate: React.FC = () => {
         return editingRowIndex === row.index ? renderEditableCell("area", row) : row.area;
       }
     },
-    { headerName: "U [W/m²K]", field: "uValue" },
+    {
+      headerName: "U [W/m²K]",
+      field: "uValue",
+      renderCell: (row: FloorData) => row.uValue.toFixed(2)
+    },
     {
       headerName: "Perímetro Suelo [m]",
       field: "perimetroSuelo",
@@ -427,7 +431,7 @@ const TabFloorCreate: React.FC = () => {
 
   // Función para validar los campos del formulario
   const validateForm = () => {
-    if (floorId === 0 || !characteristic || !area || area <= 0 || !parameter || parameter <= 0 || !isVentilated) {
+    if (floorId === 0 || !characteristic || !area || area <= 0) {
       notify("Debe completar todos los campos del formulario correctamente");
       return false;
     }
@@ -488,7 +492,7 @@ const TabFloorCreate: React.FC = () => {
       <div style={{ marginTop: "20px" }}>
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={() => setShowModal(true)}>
-            Crear
+            Crear Piso
           </CustomButton>
         </div>
       </div>
@@ -498,96 +502,109 @@ const TabFloorCreate: React.FC = () => {
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Crear"
+        saveLabel="Grabar Datos"
         title="Crear Piso"
       >
-        <div className="container">
-          <div className="row mb-3">
-            <div className="col-md-4">
-              <label htmlFor="floorId">Piso</label>
-            </div>
-            <div className="col-md-8">
-              <select
-                id="floorId"
-                className="form-control"
-                value={floorId}
-                onChange={(e) => setFloorId(Number(e.target.value))}
-                disabled={loading}
-              >
-                <option value={0}>Seleccione un piso</option>
-                {floorOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.name_detail}
-                  </option>
-                ))}
-              </select>
-              {loading && <small className="text-muted">Cargando opciones...</small>}
-            </div>
-          </div>
-          <div className="row mb-3">
-            <div className="col-md-4">
-              <label htmlFor="characteristic">Característica</label>
-            </div>
-            <div className="col-md-8">
-              <select
-                id="characteristic"
-                className="form-control"
-                value={characteristic}
-                onChange={(e) => setCharacteristic(e.target.value)}
-              >
-                <option value="">Seleccione una opción</option>
-                <option value="Exterior">Exterior</option>
-                <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
-              </select>
-            </div>
-          </div>
-          <div className="row mb-3">
-            <div className="col-md-4">
-              <label htmlFor="area">Área [m²]</label>
-            </div>
-            <div className="col-md-8">
-              <input
-                type="number"
-                id="area"
-                className="form-control"
-                value={area}
-                onChange={(e) => setArea(Number(e.target.value))}
-              />
-            </div>
-          </div>
-          <div className="row mb-3">
-            <div className="col-md-4">
-              <label htmlFor="parameter">Perímetro Suelo [m]</label>
-            </div>
-            <div className="col-md-8">
-              <input
-                type="number"
-                id="parameter"
-                className="form-control"
-                value={parameter}
-                onChange={(e) => setParameter(Number(e.target.value))}
-              />
-            </div>
-          </div>
-          <div className="row mb-3">
-            <div className="col-md-4">
-              <label htmlFor="isVentilated">Ventilado</label>
-            </div>
-            <div className="col-md-8">
-              <select
-                id="isVentilated"
-                className="form-control"
-                value={isVentilated}
-                onChange={(e) => setIsVentilated(e.target.value)}
-              >
-                <option value="">Seleccione una opción</option>
-                <option value="Ventilado">Ventilado</option>
-                <option value="No Ventilado">No Ventilado</option>
-              </select>
-            </div>
-          </div>
-        </div>
+      
+
+<div className="container">
+  <div className="row mb-3">
+    <div className="col-md-4">
+      <label htmlFor="floorId">
+        Piso <span style={{ color: "red" }}>*</span>
+      </label>
+    </div>
+    <div className="col-md-8">
+      <select
+        id="floorId"
+        className="form-control"
+        value={floorId}
+        onChange={(e) => setFloorId(Number(e.target.value))}
+        disabled={loading}
+      >
+        <option value={0}>Seleccione un piso</option>
+        {floorOptions.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.name_detail}
+          </option>
+        ))}
+      </select>
+      {loading && <small className="text-muted">Cargando opciones...</small>}
+    </div>
+  </div>
+
+  <div className="row mb-3">
+    <div className="col-md-4">
+      <label htmlFor="characteristic">
+        Característica <span style={{ color: "red" }}>*</span>
+      </label>
+    </div>
+    <div className="col-md-8">
+      <select
+        id="characteristic"
+        className="form-control"
+        value={characteristic}
+        onChange={(e) => setCharacteristic(e.target.value)}
+      >
+        <option value="">Seleccione una opción</option>
+        <option value="Exterior">Exterior</option>
+        <option value="Inter Recintos Clim">Inter Recintos Clim</option>
+        <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+      </select>
+    </div>
+  </div>
+
+  <div className="row mb-3">
+    <div className="col-md-4">
+      <label htmlFor="area">
+        Área [m²] <span style={{ color: "red" }}>*</span>
+      </label>
+    </div>
+    <div className="col-md-8">
+      <input
+        type="number"
+        id="area"
+        className="form-control"
+        value={area}
+        onChange={(e) => setArea(Number(e.target.value))}
+      />
+    </div>
+  </div>
+
+  <div className="row mb-3">
+    <div className="col-md-4">
+      <label htmlFor="parameter">Perímetro Suelo [m]</label>
+    </div>
+    <div className="col-md-8">
+      <input
+        type="number"
+        id="parameter"
+        className="form-control"
+        value={parameter}
+        onChange={(e) => setParameter(Number(e.target.value))}
+      />
+    </div>
+  </div>
+
+  <div className="row mb-3">
+    <div className="col-md-4">
+      <label htmlFor="isVentilated">Ventilado</label>
+    </div>
+    <div className="col-md-8">
+      <select
+        id="isVentilated"
+        className="form-control"
+        value={isVentilated}
+        onChange={(e) => setIsVentilated(e.target.value)}
+      >
+        <option value="">Seleccione una opción</option>
+        <option value="Ventilado">Ventilado</option>
+        <option value="No Ventilado">No Ventilado</option>
+      </select>
+    </div>
+  </div>
+</div>
+
       </ModalCreate>
 
       {/* Modal de Confirmación de Eliminación */}
@@ -602,7 +619,6 @@ const TabFloorCreate: React.FC = () => {
           <div className="row mb-3">
             <div className="col-12 text-center">
               <p>¿Está seguro que desea eliminar el piso <strong>{rowToDelete?.pisos}</strong>?</p>
-
             </div>
           </div>
         </div>

@@ -400,7 +400,7 @@ const TabCeilingCreate: React.FC = () => {
       <div style={{ marginTop: "20px" }}>
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={handleCreate}>
-            Crear
+            Crear Techo
           </CustomButton>
         </div>
       </div>
@@ -408,7 +408,7 @@ const TabCeilingCreate: React.FC = () => {
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Crear"
+        saveLabel="Grabar Datos"
         title="Crear Techo"
       >
         <div className="container">

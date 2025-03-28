@@ -53,8 +53,8 @@ export default function TablesParameters({
   return (
     <div className="container-fluid p-0">
       <div className="row g-0">
-        <div className="col-12 p-0">
-          <div className="table-responsive w-100" style={{ maxHeight: "400px" }}>
+        <div className="col-12 p-0 d-flex flex-column" >
+          <div className="table-responsive w-100 flex-fill" style={{ maxHeight: "400px" }}>
             <table
               className="table table-hover w-100 mb-0"
               style={{
@@ -66,7 +66,7 @@ export default function TablesParameters({
                 {multiHeader ? (
                   <>
                     {multiHeader.rows.map((row, rowIndex) => (
-                      <tr key={rowIndex} style={{ height: "auto" }}>
+                      <tr key={rowIndex} style={{ height: "fixed" }}>
                         {row.map((cell, cellIndex) => (
                           <th
                             key={cellIndex}

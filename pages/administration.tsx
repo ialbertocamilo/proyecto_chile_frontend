@@ -33,7 +33,7 @@ export interface Detail {
   is_deleted?: boolean;
 }
 
-// Se agrega create_status en los atributos de ElementAttributesDoor y ElementAttributesWindow si se requiriera
+// Atributos para puertas y ventanas (se incluye created_status si se requiere)
 interface ElementAttributesDoor {
   u_puerta_opaca: number;
   porcentaje_vidrio: number;
@@ -55,6 +55,19 @@ interface ConfirmModalProps {
   message: string;
 }
 
+// Funciones auxiliares para formatear los valores
+const formatValue = (value: any): React.ReactNode => {
+  if (value === 0 || value === "N/A") {
+    return "-";
+  }
+  return value;
+};
+
+const formatPercentage = (value: number): string => {
+  if (value === 0) return "-";
+  return (value * 100).toFixed(0) + "%";
+};
+
 const AdministrationPage: React.FC = () => {
   useAuth();
   const { handleCreate, handleEdit, handleDelete } = useCrudOperations();
@@ -63,21 +76,20 @@ const AdministrationPage: React.FC = () => {
     elementsList,
     fetchMaterialsList,
     fetchElements,
-    handleLogout,
   } = useAdministration();
 
-  // Definición de la variable para el color primario
+  // Variable para el color primario
   const primaryColor = "var(--primary-color)";
 
   // Estados para steps y tabs
   const [step, setStep] = useState<number>(3);
   const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
 
-  // Estados para búsqueda
+  // Estados para búsquedas
   const [searchMaterial, setSearchMaterial] = useState("");
   const [searchElement, setSearchElement] = useState("");
 
-  // Estados para modales de creación/edición
+  // Estados para modales de creación/edición de materiales
   const [showNewMaterialModal, setShowNewMaterialModal] = useState(false);
   const [newMaterialData, setNewMaterialData] = useState<MaterialAttributes>({
     name: "",
@@ -87,30 +99,32 @@ const AdministrationPage: React.FC = () => {
   });
   const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(null);
 
+  // Estados para modales de ventanas
   const [showNewWindowModal, setShowNewWindowModal] = useState(false);
   const [newWindow, setNewWindow] = useState({
     name_element: "",
     u_vidrio: 0,
     fs_vidrio: 0,
-    clousure_type: "Corredera",
+    clousure_type: "",
     frame_type: "",
     u_marco: 0,
-    fm: 0,
+    fm: 0, // En la UI se muestra el porcentaje completo (ej. 70)
   });
   const [selectedWindowId, setSelectedWindowId] = useState<number | null>(null);
 
+  // Estados para modales de puertas
   const [showNewDoorModal, setShowNewDoorModal] = useState(false);
   const [newDoor, setNewDoor] = useState({
     name_element: "",
     u_puerta_opaca: 0,
     ventana_id: 0,
     u_marco: 0,
-    fm: 0,
-    porcentaje_vidrio: 0,
+    fm: 0, // En la UI se muestra el porcentaje completo (ej. 70)
+    porcentaje_vidrio: 0, // En la UI se muestra el porcentaje completo (ej. 30)
   });
   const [selectedDoorId, setSelectedDoorId] = useState<number | null>(null);
 
-  // Estados para el modal de confirmación
+  // Estado para modal de confirmación
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmModalProps, setConfirmModalProps] = useState<ConfirmModalProps>({
     onConfirm: async () => Promise.resolve(),
@@ -153,13 +167,11 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
-  // Se aplica estilo condicional a los materiales usando create_status
   const materialsData = materialsList
     .filter((mat: any) =>
       mat.atributs.name.toLowerCase().includes(searchMaterial.toLowerCase())
     )
     .map((mat: any) => {
-      // Se usa mat.atributs.create_status, ya que es donde se almacena el estado del material
       const isDefault = mat.create_status === "default";
       return {
         name: !isDefault ? (
@@ -171,24 +183,24 @@ const AdministrationPage: React.FC = () => {
         ),
         conductivity: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {mat.atributs.conductivity}
+            {formatValue(mat.atributs.conductivity)}
           </span>
         ) : (
-          mat.atributs.conductivity
+          formatValue(mat.atributs.conductivity)
         ),
         specific_heat: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {mat.atributs.specific_heat}
+            {formatValue(mat.atributs.specific_heat)}
           </span>
         ) : (
-          mat.atributs.specific_heat
+          formatValue(mat.atributs.specific_heat)
         ),
         density: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {mat.atributs.density}
+            {formatValue(mat.atributs.density)}
           </span>
         ) : (
-          mat.atributs.density
+          formatValue(mat.atributs.density)
         ),
         action: (
           <ActionButtons
@@ -227,7 +239,6 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
-  // Se aplica estilo condicional a las ventanas usando created_status
   const windowsData = elementsList
     .filter((el) => el.type === "window")
     .filter((el) =>
@@ -245,49 +256,50 @@ const AdministrationPage: React.FC = () => {
         ),
         u_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesWindow).u_vidrio}
+            {formatValue((el.atributs as ElementAttributesWindow).u_vidrio)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesWindow).u_vidrio
+          formatValue((el.atributs as ElementAttributesWindow).u_vidrio)
         ),
         fs_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesWindow).fs_vidrio}
+            {formatValue((el.atributs as ElementAttributesWindow).fs_vidrio)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesWindow).fs_vidrio
+          formatValue((el.atributs as ElementAttributesWindow).fs_vidrio)
         ),
         clousure_type: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesWindow).clousure_type}
+            {formatValue((el.atributs as ElementAttributesWindow).clousure_type)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesWindow).clousure_type
+          formatValue((el.atributs as ElementAttributesWindow).clousure_type)
         ),
         frame_type: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesWindow).frame_type}
+            {formatValue((el.atributs as ElementAttributesWindow).frame_type)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesWindow).frame_type
+          formatValue((el.atributs as ElementAttributesWindow).frame_type)
         ),
         u_marco: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {el.u_marco}
+            {formatValue(el.u_marco)}
           </span>
         ) : (
-          el.u_marco
+          formatValue(el.u_marco)
         ),
         fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.fm * 100).toFixed(0) + "%"}
+            {formatPercentage(el.fm)}
           </span>
         ) : (
-          (el.fm * 100).toFixed(0) + "%"
+          formatPercentage(el.fm)
         ),
         action: (
           <ActionButtons
             onEdit={() => {
+              // Al editar, se carga el valor multiplicado por 100 para mostrar el porcentaje completo
               setSelectedWindowId(el.id);
               setNewWindow({
                 name_element: el.name_element,
@@ -296,7 +308,7 @@ const AdministrationPage: React.FC = () => {
                 clousure_type: (el.atributs as ElementAttributesWindow).clousure_type,
                 frame_type: (el.atributs as ElementAttributesWindow).frame_type,
                 u_marco: el.u_marco,
-                fm: el.fm,
+                fm: el.fm * 100,
               });
               setShowNewWindowModal(true);
             }}
@@ -324,7 +336,6 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Acción", field: "action" },
   ];
 
-  // Se aplica estilo condicional a las puertas usando created_status
   const doorsData = elementsList
     .filter((el) => el.type === "door")
     .filter((el) =>
@@ -342,50 +353,52 @@ const AdministrationPage: React.FC = () => {
         ),
         u_puerta_opaca: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesDoor).u_puerta_opaca}
+            {formatValue((el.atributs as ElementAttributesDoor).u_puerta_opaca)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesDoor).u_puerta_opaca
+          formatValue((el.atributs as ElementAttributesDoor).u_puerta_opaca)
         ),
         name_ventana: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.atributs as ElementAttributesDoor).name_ventana}
+            {formatValue((el.atributs as ElementAttributesDoor).name_ventana)}
           </span>
         ) : (
-          (el.atributs as ElementAttributesDoor).name_ventana
+          formatValue((el.atributs as ElementAttributesDoor).name_ventana)
         ),
         porcentaje_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"}
+            {formatPercentage((el.atributs as ElementAttributesDoor).porcentaje_vidrio)}
           </span>
         ) : (
-          ((el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100).toFixed(0) + "%"
+          formatPercentage((el.atributs as ElementAttributesDoor).porcentaje_vidrio)
         ),
         u_marco: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {el.u_marco}
+            {formatValue(el.u_marco)}
           </span>
         ) : (
-          el.u_marco
+          formatValue(el.u_marco)
         ),
         fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {(el.fm * 100).toFixed(0) + "%"}
+            {formatPercentage(el.fm)}
           </span>
         ) : (
-          (el.fm * 100).toFixed(0) + "%"
+          formatPercentage(el.fm)
         ),
         action: (
           <ActionButtons
             onEdit={() => {
+              // Al editar la puerta se carga el valor multiplicado por 100 para mostrar el porcentaje completo
               setSelectedDoorId(el.id);
               setNewDoor({
                 name_element: el.name_element,
                 u_puerta_opaca: (el.atributs as ElementAttributesDoor).u_puerta_opaca,
                 ventana_id: (el.atributs as ElementAttributesDoor).ventana_id,
                 u_marco: el.u_marco,
-                fm: el.fm,
-                porcentaje_vidrio: (el.atributs as ElementAttributesDoor).porcentaje_vidrio,
+                fm: el.fm * 100,
+                porcentaje_vidrio:
+                  (el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100,
               });
               setShowNewDoorModal(true);
             }}
@@ -402,37 +415,9 @@ const AdministrationPage: React.FC = () => {
       };
     });
 
-  // Función para obtener el nombre del material (si la necesitas)
-  function getMaterialName(materialId: number) {
-    const mat = materialsList.find(
-      (m) => m.id === materialId || m.material_id === materialId
-    );
-    return mat ? mat.atributs.name : "Desconocido";
-  }
-
-  // Funciones para crear y editar materiales
-  const handleCreateMaterial = async () => {
-    if (
-      newMaterialData.name.trim() === "" ||
-      newMaterialData.conductivity <= 0 ||
-      newMaterialData.specific_heat <= 0 ||
-      newMaterialData.density <= 0
-    ) {
-      notify("Por favor complete todos los campos de material");
-      return;
-    }
-
-    const materialExists = materialsList.some(
-      (mat: any) =>
-        (mat.atributs.name as string).trim().toLowerCase() ===
-        newMaterialData.name.trim().toLowerCase()
-    );
-
-    if (materialExists) {
-      notify(`El Nombre del Material ya existe`);
-      return;
-    }
-
+  // Función para editar material
+  const handleEditMaterial = async () => {
+    if (!selectedMaterialId) return;
     const payload = {
       atributs: {
         name: newMaterialData.name,
@@ -443,15 +428,16 @@ const AdministrationPage: React.FC = () => {
       name: "materials",
       type: "definition materials",
     };
-
-    const success = await handleCreate(
-      payload,
-      "admin/constants/create",
-      `El material "${newMaterialData.name}" fue creado correctamente`,
-      () => fetchMaterialsList(1)
-    );
-
-    if (success) {
+  
+    try {
+      await handleEdit(
+        selectedMaterialId,
+        payload,
+        "admin/constant",
+        `El material "${newMaterialData.name}" fue actualizado correctamente`,
+        () => fetchMaterialsList(1)
+      );
+  
       setShowNewMaterialModal(false);
       setNewMaterialData({
         name: "",
@@ -459,40 +445,18 @@ const AdministrationPage: React.FC = () => {
         specific_heat: 0,
         density: 0,
       });
+      setSelectedMaterialId(null);
+    } catch (error: any) {
+      console.error("Error al actualizar material:", error);
+      if (error?.response?.data?.detail === "El material ya existe") {
+        notify("El Nombre del Material ya existe");
+      } else {
+        notify("Error al actualizar el material");
+      }
+      return false;
     }
   };
-
-  const handleEditMaterial = async () => {
-    if (!selectedMaterialId) return;
-
-    const payload = {
-      atributs: {
-        name: newMaterialData.name,
-        density: newMaterialData.density,
-        conductivity: newMaterialData.conductivity,
-        specific_heat: newMaterialData.specific_heat,
-      },
-      name: "materials",
-      type: "definition materials",
-    };
-
-    await handleEdit(
-      selectedMaterialId,
-      payload,
-      "admin/constant",
-      `El material "${newMaterialData.name}" fue actualizado correctamente`,
-      () => fetchMaterialsList(1)
-    );
-
-    setShowNewMaterialModal(false);
-    setNewMaterialData({
-      name: "",
-      conductivity: 0,
-      specific_heat: 0,
-      density: 0,
-    });
-    setSelectedMaterialId(null);
-  };
+  
 
   // Función para crear elementos (ventanas y puertas)
   const handleCreateElement = async () => {
@@ -528,7 +492,7 @@ const AdministrationPage: React.FC = () => {
         type: "window",
         name_element: newWindow.name_element,
         u_marco: newWindow.u_marco,
-        fm: newWindow.fm,
+        fm: newWindow.fm, // Se envía el valor tal como se ingresa en la UI
         atributs: {
           u_vidrio: newWindow.u_vidrio,
           fs_vidrio: newWindow.fs_vidrio,
@@ -550,7 +514,7 @@ const AdministrationPage: React.FC = () => {
           name_element: "",
           u_vidrio: 0,
           fs_vidrio: 0,
-          clousure_type: "Corredera",
+          clousure_type: "",
           frame_type: "",
           u_marco: 0,
           fm: 0,
@@ -597,7 +561,7 @@ const AdministrationPage: React.FC = () => {
         type: "door",
         name_element: newDoor.name_element,
         u_marco: newDoor.u_marco,
-        fm: newDoor.fm,
+        fm: newDoor.fm, // Se envía el valor tal como se ingresa en la UI
         atributs: {
           ventana_id: newDoor.ventana_id,
           name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
@@ -627,80 +591,104 @@ const AdministrationPage: React.FC = () => {
     }
   };
 
+  // Función para editar ventana
   const handleEditWindow = async () => {
     if (!selectedWindowId) return;
+    try {
+      const payload = {
+        type: "window",
+        name_element: newWindow.name_element,
+        u_marco: newWindow.u_marco,
+        fm: newWindow.fm / 100, // Se envía el valor tal como se muestra en la UI
+        atributs: {
+          u_vidrio: newWindow.u_vidrio,
+          fs_vidrio: newWindow.fs_vidrio,
+          frame_type: newWindow.frame_type,
+          clousure_type: newWindow.clousure_type,
+        },
+      };
 
-    const payload = {
-      type: "window",
-      name_element: newWindow.name_element,
-      u_marco: newWindow.u_marco,
-      fm: newWindow.fm,
-      atributs: {
-        u_vidrio: newWindow.u_vidrio,
-        fs_vidrio: newWindow.fs_vidrio,
-        frame_type: newWindow.frame_type,
-        clousure_type: newWindow.clousure_type,
-      },
-    };
+      await handleEdit(
+        selectedWindowId,
+        payload,
+        "admin/elements",
+        `La ventana "${newWindow.name_element}" fue actualizada correctamente`,
+        fetchElements
+      );
 
-    await handleEdit(
-      selectedWindowId,
-      payload,
-      "admin/elements",
-      `La ventana "${newWindow.name_element}" fue actualizada correctamente`,
-      fetchElements
-    );
-
-    setShowNewWindowModal(false);
-    setNewWindow({
-      name_element: "",
-      u_vidrio: 0,
-      fs_vidrio: 0,
-      clousure_type: "Corredera",
-      frame_type: "",
-      u_marco: 0,
-      fm: 0,
-    });
-    setSelectedWindowId(null);
+      setShowNewWindowModal(false);
+      setNewWindow({
+        name_element: "",
+        u_vidrio: 0,
+        fs_vidrio: 0,
+        clousure_type: "",
+        frame_type: "",
+        u_marco: 0,
+        fm: 0,
+      });
+      setSelectedWindowId(null);
+    } catch (error: any) {
+      console.error("Error al actualizar ventana:", error);
+      if (
+        error?.response?.data?.detail ===
+        "El nombre del elemento ya existe dentro del tipo window"
+      ) {
+        notify("El Nombre de la Ventana ya existe");
+      } else {
+        notify("Error al actualizar la ventana");
+      }
+    }
   };
 
+  // Función para editar puerta
   const handleEditDoor = async () => {
     if (!selectedDoorId) return;
+    try {
+      const ventanaSeleccionada = windowsList.find(
+        (win) => win.id === newDoor.ventana_id
+      );
+      const payload = {
+        type: "door",
+        name_element: newDoor.name_element,
+        u_marco: newDoor.u_marco,
+        fm: newDoor.fm / 100, // Se envía el valor tal como se muestra en la UI
+        atributs: {
+          ventana_id: newDoor.ventana_id,
+          name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
+          u_puerta_opaca: newDoor.u_puerta_opaca,
+          porcentaje_vidrio: newDoor.porcentaje_vidrio / 100,
+        },
+      };
 
-    const ventanaSeleccionada = windowsList.find(
-      (win) => win.id === newDoor.ventana_id
-    );
-    const payload = {
-      type: "door",
-      name_element: newDoor.name_element,
-      u_marco: newDoor.u_marco,
-      fm: newDoor.fm,
-      atributs: {
-        ventana_id: newDoor.ventana_id,
-        name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
-        u_puerta_opaca: newDoor.u_puerta_opaca,
-        porcentaje_vidrio: newDoor.porcentaje_vidrio,
-      },
-    };
+      await handleEdit(
+        selectedDoorId,
+        payload,
+        "admin/elements",
+        `La puerta "${newDoor.name_element}" fue actualizada correctamente`,
+        fetchElements
+      );
 
-    await handleEdit(
-      selectedDoorId,
-      payload,
-      "admin/elements",
-      `La puerta "${newDoor.name_element}" fue actualizada correctamente`,
-      fetchElements
-    );
-
-    setShowNewDoorModal(false);
-    setNewDoor({
-      name_element: "",
-      u_puerta_opaca: 0,
-      ventana_id: 0,
-      u_marco: 0,
-      fm: 0,
-      porcentaje_vidrio: 0,
-    });
-    setSelectedDoorId(null);
+      setShowNewDoorModal(false);
+      setNewDoor({
+        name_element: "",
+        u_puerta_opaca: 0,
+        ventana_id: 0,
+        u_marco: 0,
+        fm: 0,
+        porcentaje_vidrio: 0,
+      });
+      setSelectedDoorId(null);
+    } catch (error: any) {
+      console.error("Error al actualizar puerta:", error);
+      if (
+        error?.response?.data?.detail ===
+        "El nombre del elemento ya existe dentro del tipo door"
+      ) {
+        notify("El Nombre de la Puerta ya existe");
+      } else {
+        notify("Error al actualizar la puerta");
+      }
+    }
   };
 
   useEffect(() => {
@@ -736,14 +724,14 @@ const AdministrationPage: React.FC = () => {
       {/* Card principal */}
       <Card>
         <div className="row">
-          {/* Columna para Sidebar */}
+          {/* Sidebar */}
           <div className="col-12 col-md-3">
             <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
           </div>
 
-          {/* Columna para Contenido principal */}
+          {/* Contenido principal */}
           <div className="col-12 col-md-9 p-4">
-            {/* Step 3: Tabla de Materiales */}
+            {/* Step 3: Materiales */}
             {step === 3 && (
               <>
                 <SearchParameters
@@ -834,9 +822,7 @@ const AdministrationPage: React.FC = () => {
                   </div>
                   <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
                     <TablesParameters
-                      columns={
-                        tabElementosOperables === "ventanas" ? windowsColumns : doorsColumns
-                      }
+                      columns={tabElementosOperables === "ventanas" ? windowsColumns : doorsColumns}
                       data={tabElementosOperables === "ventanas" ? windowsData : doorsData}
                     />
                   </div>
@@ -854,7 +840,7 @@ const AdministrationPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Modales de creación/edición */}
+      {/* Modal Material */}
       {showNewMaterialModal && (
         <ModalCreate
           isOpen={showNewMaterialModal}
@@ -869,14 +855,63 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedMaterialId(null);
           }}
-          onSave={selectedMaterialId ? handleEditMaterial : handleCreateMaterial}
+          onSave={selectedMaterialId ? handleEditMaterial : async () => {
+              if (
+                newMaterialData.name.trim() === "" ||
+                newMaterialData.conductivity <= 0 ||
+                newMaterialData.specific_heat <= 0 ||
+                newMaterialData.density <= 0
+              ) {
+                notify("Por favor complete todos los campos de material");
+                return;
+              }
+
+              const materialExists = materialsList.some(
+                (mat: any) =>
+                  (mat.atributs.name as string).trim().toLowerCase() ===
+                  newMaterialData.name.trim().toLowerCase()
+              );
+
+              if (materialExists) {
+                notify(`El Nombre del Material ya existe`);
+                return;
+              }
+
+              const payload = {
+                atributs: {
+                  name: newMaterialData.name,
+                  density: newMaterialData.density,
+                  conductivity: newMaterialData.conductivity,
+                  specific_heat: newMaterialData.specific_heat,
+                },
+                name: "materials",
+                type: "definition materials",
+              };
+
+              const success = await handleCreate(
+                payload,
+                "admin/constants/create",
+                `El material "${newMaterialData.name}" fue creado correctamente`,
+                () => fetchMaterialsList(1)
+              );
+
+              if (success) {
+                setShowNewMaterialModal(false);
+                setNewMaterialData({
+                  name: "",
+                  conductivity: 0,
+                  specific_heat: 0,
+                  density: 0,
+                });
+              }
+            }}
           title={selectedMaterialId ? "Editar Material" : "Agregar Nuevo Material"}
           saveLabel={selectedMaterialId ? "Guardar Cambios" : "Crear Material"}
         >
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              selectedMaterialId ? handleEditMaterial() : handleCreateMaterial();
+              selectedMaterialId ? handleEditMaterial() : undefined;
             }}
           >
             <div className="form-group">
@@ -949,6 +984,7 @@ const AdministrationPage: React.FC = () => {
         </ModalCreate>
       )}
 
+      {/* Modal Ventana */}
       {showNewWindowModal && (
         <ModalCreate
           isOpen={showNewWindowModal}
@@ -959,168 +995,214 @@ const AdministrationPage: React.FC = () => {
               name_element: "",
               u_vidrio: 0,
               fs_vidrio: 0,
-              clousure_type: "Corredera",
+              clousure_type: "",
               frame_type: "",
               u_marco: 0,
               fm: 0,
             });
             setSelectedWindowId(null);
           }}
-          onSave={selectedWindowId ? handleEditWindow : handleCreateElement}
+          onSave={selectedWindowId ? handleEditWindow : async () => {
+              if (
+                newWindow.name_element.trim() === "" ||
+                newWindow.u_vidrio <= 0 ||
+                newWindow.fs_vidrio <= 0 ||
+                newWindow.u_marco <= 0 ||
+                newWindow.fm < 0 ||
+                newWindow.fm > 100 ||
+                newWindow.clousure_type.trim() === "" ||
+                newWindow.frame_type.trim() === ""
+              ) {
+                notify("Por favor complete todos los campos de la ventana correctamente");
+                return;
+              }
+
+              const windowExists = elementsList
+                .filter((el) => el.type === "window")
+                .some(
+                  (el) =>
+                    el.name_element.trim().toLowerCase() ===
+                    newWindow.name_element.trim().toLowerCase()
+                );
+
+              if (windowExists) {
+                notify(`El Nombre de la Ventana ya existe`);
+                return;
+              }
+
+              const payload = {
+                type: "window",
+                name_element: newWindow.name_element,
+                u_marco: newWindow.u_marco,
+                fm: newWindow.fm,
+                atributs: {
+                  u_vidrio: newWindow.u_vidrio,
+                  fs_vidrio: newWindow.fs_vidrio,
+                  frame_type: newWindow.frame_type,
+                  clousure_type: newWindow.clousure_type,
+                },
+              };
+
+              const success = await handleCreate(
+                payload,
+                "admin/elements/create",
+                `La ventana "${newWindow.name_element}" fue creada correctamente`,
+                fetchElements
+              );
+
+              if (success) {
+                setShowNewWindowModal(false);
+                setNewWindow({
+                  name_element: "",
+                  u_vidrio: 0,
+                  fs_vidrio: 0,
+                  clousure_type: "",
+                  frame_type: "",
+                  u_marco: 0,
+                  fm: 0,
+                });
+              }
+            }}
           title={selectedWindowId ? "Editar Ventana" : "Agregar Nueva Ventana"}
           saveLabel={selectedWindowId ? "Guardar Cambios" : "Crear Ventana"}
         >
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              selectedWindowId ? handleEditWindow() : handleCreateElement();
+              selectedWindowId ? handleEditWindow() : undefined;
             }}
           >
-            <div className="row">
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Nombre del Elemento</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Nombre"
-                    value={newWindow.name_element}
-                    onChange={(e) =>
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        name_element: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>U Vidrio [W/m2K]</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="U Vidrio"
-                    value={newWindow.u_vidrio}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        u_vidrio: isNaN(value) ? 0 : value,
-                      }));
-                    }}
-                    min="0"
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>FS Vidrio</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="FS Vidrio"
-                    value={newWindow.fs_vidrio}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        fs_vidrio: isNaN(value) ? 0 : value,
-                      }));
-                    }}
-                    min="0"
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Tipo de Cierre</label>
-                  <select
-                    className="form-control"
-                    value={newWindow.clousure_type}
-                    onChange={(e) =>
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        clousure_type: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="Corredera">Corredera</option>
-                    <option value="Abatir">Abatir</option>
-                    <option value="Fija">Fija</option>
-                    <option value="Guillotina">Guillotina</option>
-                    <option value="Proyectante">Proyectante</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Tipo de Marco</label>
-                  <select
-                    className="form-control"
-                    value={newWindow.frame_type}
-                    onChange={(e) =>
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        frame_type: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">Seleccione</option>
-                    <option value="Fierro">Fierro</option>
-                    <option value="Madera Con RPT">Madera Con RPT</option>
-                    <option value="Madera Sin RPT">Madera Sin RPT</option>
-                    <option value="Metalico Con RPT">Metálico Con RPT</option>
-                    <option value="Metalico Sin RPT">Metálico Sin RPT</option>
-                    <option value="PVC Con RPT">PVC Con RPT</option>
-                    <option value="PVC Sin RPT">PVC Sin RPT</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>U Marco [W/m2K]</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="U Marco"
-                    value={newWindow.u_marco}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      setNewWindow((prev) => ({
-                        ...prev,
-                        u_marco: isNaN(value) ? 0 : value,
-                      }));
-                    }}
-                    min="0"
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>FM [%]</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="FM (%)"
-                    value={newWindow.fm}
-                    onChange={(e) => {
-                      let value = parseFloat(e.target.value);
-                      if (isNaN(value)) value = 0;
-                      if (value < 0) value = 0;
-                      if (value > 100) value = 100;
-                      setNewWindow((prev) => ({ ...prev, fm: value }));
-                    }}
-                    min="0"
-                    max="100"
-                  />
-                </div>
-              </div>
+            <div className="form-group">
+              <label>Nombre del Elemento</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Nombre"
+                value={newWindow.name_element}
+                onChange={(e) =>
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    name_element: e.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>U Vidrio [W/m2K]</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="U Vidrio"
+                value={newWindow.u_vidrio}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    u_vidrio: isNaN(value) ? 0 : value,
+                  }));
+                }}
+                min="0"
+              />
+            </div>
+            <div className="form-group">
+              <label>FS Vidrio</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="FS Vidrio"
+                value={newWindow.fs_vidrio}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    fs_vidrio: isNaN(value) ? 0 : value,
+                  }));
+                }}
+                min="0"
+              />
+            </div>
+            <div className="form-group">
+              <label>Tipo de Cierre</label>
+              <select
+                className="form-control"
+                value={newWindow.clousure_type}
+                onChange={(e) =>
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    clousure_type: e.target.value,
+                  }))
+                }
+              >
+                <option value="">Seleccione</option>
+                <option value="Corredera">Corredera</option>
+                <option value="Abatir">Abatir</option>
+                <option value="Fija">Fija</option>
+                <option value="Guillotina">Guillotina</option>
+                <option value="Proyectante">Proyectante</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Tipo de Marco</label>
+              <select
+                className="form-control"
+                value={newWindow.frame_type}
+                onChange={(e) =>
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    frame_type: e.target.value,
+                  }))
+                }
+              >
+                <option value="">Seleccione</option>
+                <option value="Fierro">Fierro</option>
+                <option value="Madera Con RPT">Madera Con RPT</option>
+                <option value="Madera Sin RPT">Madera Sin RPT</option>
+                <option value="Metalico Con RPT">Metálico Con RPT</option>
+                <option value="Metalico Sin RPT">Metálico Sin RPT</option>
+                <option value="PVC Con RPT">PVC Con RPT</option>
+                <option value="PVC Sin RPT">PVC Sin RPT</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>U Marco [W/m2K]</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="U Marco"
+                value={newWindow.u_marco}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  setNewWindow((prev) => ({
+                    ...prev,
+                    u_marco: isNaN(value) ? 0 : value,
+                  }));
+                }}
+                min="0"
+              />
+            </div>
+            <div className="form-group">
+              <label>FM [%]</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="FM (%)"
+                value={newWindow.fm}
+                onChange={(e) => {
+                  let value = parseFloat(e.target.value);
+                  if (isNaN(value)) value = 0;
+                  if (value < 0) value = 0;
+                  if (value > 100) value = 100;
+                  setNewWindow((prev) => ({ ...prev, fm: value }));
+                }}
+                min="0"
+                max="100"
+              />
             </div>
           </form>
         </ModalCreate>
       )}
 
+      {/* Modal Puerta */}
       {showNewDoorModal && (
         <ModalCreate
           isOpen={showNewDoorModal}
@@ -1137,14 +1219,82 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedDoorId(null);
           }}
-          onSave={selectedDoorId ? handleEditDoor : handleCreateElement}
+          onSave={selectedDoorId ? handleEditDoor : async () => {
+              if (
+                newDoor.name_element.trim() === "" ||
+                newDoor.u_puerta_opaca <= 0 ||
+                newDoor.u_marco <= 0 ||
+                newDoor.fm < 0 ||
+                newDoor.fm > 100
+              ) {
+                notify("Por favor complete todos los campos de la puerta correctamente");
+                return;
+              }
+
+              if (newDoor.ventana_id !== 0) {
+                if (newDoor.porcentaje_vidrio < 0 || newDoor.porcentaje_vidrio > 100) {
+                  notify("Asegúrese de que el % de vidrio esté entre 0 y 100");
+                  return;
+                }
+              } else {
+                newDoor.porcentaje_vidrio = 0;
+              }
+
+              const doorExists = elementsList
+                .filter((el) => el.type === "door")
+                .some(
+                  (el) =>
+                    el.name_element.trim().toLowerCase() ===
+                    newDoor.name_element.trim().toLowerCase()
+                );
+
+              if (doorExists) {
+                notify(`El Nombre de la Puerta ya existe`);
+                return;
+              }
+
+              const ventanaSeleccionada = windowsList.find(
+                (win) => win.id === newDoor.ventana_id
+              );
+              const payload = {
+                type: "door",
+                name_element: newDoor.name_element,
+                u_marco: newDoor.u_marco,
+                fm: newDoor.fm,
+                atributs: {
+                  ventana_id: newDoor.ventana_id,
+                  name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
+                  u_puerta_opaca: newDoor.u_puerta_opaca,
+                  porcentaje_vidrio: newDoor.porcentaje_vidrio,
+                },
+              };
+
+              const success = await handleCreate(
+                payload,
+                "admin/elements/create",
+                `La puerta "${newDoor.name_element}" fue creada correctamente`,
+                fetchElements
+              );
+
+              if (success) {
+                setShowNewDoorModal(false);
+                setNewDoor({
+                  name_element: "",
+                  u_puerta_opaca: 0,
+                  ventana_id: 0,
+                  u_marco: 0,
+                  fm: 0,
+                  porcentaje_vidrio: 0,
+                });
+              }
+            }}
           title={selectedDoorId ? "Editar Puerta" : "Agregar Nueva Puerta"}
           saveLabel={selectedDoorId ? "Guardar Cambios" : "Crear Puerta"}
         >
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              selectedDoorId ? handleEditDoor() : handleCreateElement();
+              selectedDoorId ? handleEditDoor() : undefined;
             }}
           >
             <div className="form-group">

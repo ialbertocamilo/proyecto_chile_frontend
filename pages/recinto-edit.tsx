@@ -1,4 +1,4 @@
-import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
+import RecintoCaractersComponent from "@/components/RecintoCaractersComponentEdit";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
@@ -224,8 +224,8 @@ const RecintoEdit: React.FC = () => {
   }, []);
 
   const handleSave = async () => {
-    // Validación de campos obligatorios
-    const altura = parseFloat(alturaPromedio);
+    // Se reemplaza la coma por el punto para convertir correctamente el valor a número
+    const altura = parseFloat(alturaPromedio.replace(",", "."));
     if (
       !selectedRegion ||
       !selectedComuna ||
@@ -445,16 +445,15 @@ const RecintoEdit: React.FC = () => {
               </label>
               <input
                 id="alturaPromedio"
-                type="number"
-                step="0.01"
-                min="0"
+                type="text"
                 className="form-control"
                 placeholder="Ej: 2.5 (en metros)"
                 value={alturaPromedio}
                 onChange={(e) => {
                   const value = e.target.value;
-                  const regex = /^\d*(\.\d{0,2})?$/;
-                  if (regex.test(value) || value === "") {
+                  // Solo se permiten los dígitos 0-9, el punto y la coma
+                  const regex = /^[0-9.,]*$/;
+                  if (regex.test(value)) {
                     setAlturaPromedio(value);
                   }
                 }}

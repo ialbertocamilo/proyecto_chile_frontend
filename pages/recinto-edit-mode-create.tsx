@@ -1,5 +1,4 @@
-// recinto-create.tsx
-import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
+import RecintoCaractersComponent from "@/components/RecintoCaractersComponentEdit";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
@@ -29,7 +28,7 @@ interface IEnclosureProfile {
   // ... otros campos que pudiera tener la respuesta
 }
 
-interface IFormData {
+export interface IFormData {
   selectedRegion: string;
   selectedComuna: string;
   selectedZonaTermica: string;
@@ -41,12 +40,14 @@ interface IFormData {
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
-const RecintoCreate: React.FC = () => {
+const RecintoEditModeCreate: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("Nombre del Proyecto");
   const [projectDepartment, setProjectDepartment] = useState<string>("Región");
   const [projectId, setProjectId] = useState<string>("");
 
-  // Estados para los desplegables y formulario
+  // ---------------------------
+  //  Estados para los desplegables y formulario
+  // ---------------------------
   const [regions, setRegions] = useState<IRegion[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [comunas, setComunas] = useState<IComuna[]>([]);
@@ -54,19 +55,22 @@ const RecintoCreate: React.FC = () => {
   const [zonasTermicas, setZonasTermicas] = useState<string[]>([]);
   const [selectedZonaTermica, setSelectedZonaTermica] = useState<string>("");
 
-  // Perfiles de ocupación (desplegable)
+  // ---------------------------
+  //  Perfiles de ocupación (desplegable)
+  // ---------------------------
   const [enclosureProfiles, setEnclosureProfiles] = useState<IEnclosureProfile[]>([]);
   const [perfilOcupacion, setPerfilOcupacion] = useState<number>(0);
 
-  // Otros campos del formulario
+  // ---------------------------
+  //  Otros campos del formulario
+  // ---------------------------
   const [nombreRecinto, setNombreRecinto] = useState<string>("");
   const [alturaPromedio, setAlturaPromedio] = useState<string>(""); // Se enviará como número
   const [sensorCo2, setSensorCo2] = useState<boolean>(false);
 
-  // Estado para controlar si ya se creó el recinto
-  const [isRecintoCreated, setIsRecintoCreated] = useState<boolean>(false);
-
-  // Recuperar datos del proyecto y del formulario (si existen) del localStorage
+  // ---------------------------
+  //  Recuperar datos del proyecto y del formulario (si existen) del localStorage
+  // ---------------------------
   useEffect(() => {
     const name = localStorage.getItem("project_name") || "Nombre del Proyecto";
     const department = localStorage.getItem("project_department") || "Región";
@@ -75,7 +79,7 @@ const RecintoCreate: React.FC = () => {
     setProjectDepartment(department);
     setProjectId(pid);
 
-    // Recuperar datos del formulario guardados
+    // Recuperar datos del formulario guardados en "recintoFormData"
     const savedFormData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (savedFormData) {
       const data: IFormData = JSON.parse(savedFormData);
@@ -89,14 +93,9 @@ const RecintoCreate: React.FC = () => {
     }
   }, []);
 
-  // Verificar si ya se creó un recinto (almacenado en el localStorage)
-  useEffect(() => {
-    if (localStorage.getItem("recinto_id")) {
-      setIsRecintoCreated(true);
-    }
-  }, []);
-
-  // Guardar cambios en el formulario en el localStorage
+  // ---------------------------
+  //  Guardar cambios en el formulario en el localStorage
+  // ---------------------------
   useEffect(() => {
     const formData: IFormData = {
       selectedRegion,
@@ -110,7 +109,9 @@ const RecintoCreate: React.FC = () => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
   }, [selectedRegion, selectedComuna, selectedZonaTermica, nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2]);
 
-  // useEffect para cargar Regiones
+  // ---------------------------
+  //  useEffect para cargar Regiones
+  // ---------------------------
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -224,26 +225,21 @@ const RecintoCreate: React.FC = () => {
 
   const handleSave = async () => {
     // Validación de campos obligatorios
-    // Se elimina parseFloat, ya que la validación se puede ajustar en función del formato requerido
+    // Se debe reemplazar la coma por punto para la conversión a número si es necesario.
+    const normalizedHeight = alturaPromedio.replace(",", ".");
+    const altura = parseFloat(normalizedHeight);
     if (
       !selectedRegion ||
       !selectedComuna ||
       !selectedZonaTermica ||
       !nombreRecinto.trim() ||
       !perfilOcupacion ||
-      !alturaPromedio.trim()
+      !alturaPromedio.trim() ||
+      isNaN(altura) ||
+      altura <= 0
     ) {
       notify(
-        "Por favor, complete todos los campos requeridos y asegúrese que la altura tenga un formato correcto"
-      );
-      return;
-    }
-
-    // Se reemplazan comas por punto para convertir correctamente a número
-    const alturaNumerica = parseFloat(alturaPromedio.replace(/,/g, "."));
-    if (isNaN(alturaNumerica) || alturaNumerica <= 0) {
-      notify(
-        "La altura debe ser un número positivo. Verifique el formato ingresado."
+        "Por favor, complete todos los campos requeridos y asegúrese que la altura sea un número positivo"
       );
       return;
     }
@@ -254,22 +250,28 @@ const RecintoCreate: React.FC = () => {
         return;
       }
 
+      const recintoId = localStorage.getItem("recinto_id");
+      if (!recintoId) {
+        notify("ID del recinto no encontrado");
+        return;
+      }
+
       const payload = {
         name_enclosure: nombreRecinto,
         region_id: parseInt(selectedRegion),
         comuna_id: parseInt(selectedComuna),
         zona_termica: selectedZonaTermica,
         occupation_profile_id: perfilOcupacion,
-        height: alturaNumerica,
+        height: altura,
         co2_sensor: sensorCo2 ? "Si" : "No",
       };
 
       console.log("Payload a enviar:", payload);
 
       const response = await fetch(
-        `${constantUrlApiEndpoint}/enclosure-generals-create/${projectId}`,
+        `${constantUrlApiEndpoint}/enclosure-generals-update/${projectId}/${recintoId}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             accept: "application/json",
@@ -284,17 +286,16 @@ const RecintoCreate: React.FC = () => {
       console.log("Respuesta del servidor:", result);
 
       if (!response.ok) {
-        notify(result.detail || "Error al guardar los datos");
+        notify(result.detail || "Error al actualizar los datos");
         return;
       }
 
-      // Se guarda el id del recinto en el localStorage con la llave "recinto_id"
-      localStorage.setItem("recinto_id", result.id.toString());
-      notify("Recinto creado correctamente");
-      setIsRecintoCreated(true);
+      notify("Recinto actualizado correctamente");
+      // Recargar la página por completo (manteniendo los datos del formulario en localStorage)
+      window.location.reload();
     } catch (error) {
       console.error("Error en handleSave:", error);
-      notify("Error al guardar los datos");
+      notify("Error al actualizar los datos");
     }
   };
 
@@ -307,7 +308,7 @@ const RecintoCreate: React.FC = () => {
       {/* Card del título y encabezado del proyecto */}
       <Card>
         <div>
-          <Title text="Nuevo Recinto" />
+          <Title text="Edicion de Recinto" />
           <ProjectInfoHeader
             projectName={projectName}
             region={projectDepartment}
@@ -452,7 +453,7 @@ const RecintoCreate: React.FC = () => {
                 value={alturaPromedio}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Solo se permiten dígitos, punto y coma
+                  // Solo se permiten números, punto y coma
                   const regex = /^[0-9.,]*$/;
                   if (regex.test(value)) {
                     setAlturaPromedio(value);
@@ -461,7 +462,7 @@ const RecintoCreate: React.FC = () => {
               />
             </div>
 
-            {/* 8. Sensor CO2 */}
+            {/* Sensor CO2 */}
             <div className="col-6 mb-3">
               <label htmlFor="sensorCo2" className="form-label">
                 Sensor CO2
@@ -478,29 +479,27 @@ const RecintoCreate: React.FC = () => {
             </div>
           </div>
 
-          {/* Botones Regresar y Guardar */}
+          {/* Botones: Regresar a la izquierda y Actualizar Datos a la derecha */}
           <div className="d-flex justify-content-between">
             <CustomButton variant="back" onClick={handleBack}>
               Regresar
             </CustomButton>
             <CustomButton variant="save" onClick={handleSave}>
-              Guardar
+              Actualizar Datos
             </CustomButton>
           </div>
         </div>
       </Card>
 
-      {/* Card de "Características térmicas de la envolvente" solo se muestra si el recinto fue creado */}
-      {isRecintoCreated && (
-        <Card>
-          <div>
-            <Title text="Características térmicas de la envolvente" />
-            <RecintoCaractersComponent />
-          </div>
-        </Card>
-      )}
+      {/* Card para "Características térmicas de la envolvente" */}
+      <Card>
+        <div>
+          <Title text="Características térmicas de la envolvente" />
+          <RecintoCaractersComponent />
+        </div>
+      </Card>
     </>
   );
 };
 
-export default RecintoCreate;
+export default RecintoEditModeCreate;

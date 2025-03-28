@@ -469,8 +469,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     ];
   
     const ventanasData = ventanasTabList.map((item) => {
-      // Verificamos si el registro tiene created_status igual a "default"
-      if ((item as any).created_status === "default" || (item as any).created_status === "global") {
+      if ((item as any).created_status === "created") {
         return {
           name_element: (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
@@ -512,9 +511,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ) : (
             "--"
           ),
+          // Multiplicamos fm por 100 y lo formateamos a dos decimales
           fm: item.fm ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.fm}
+              {(item.fm * 100).toFixed(2)}
             </span>
           ) : (
             "--"
@@ -530,7 +530,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           frame_type: item.atributs?.frame_type ?? "--",
           clousure_type: item.atributs?.clousure_type ?? "--",
           u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
-          fm: item.fm ?? "--",
+          fm: item.fm ? (item.fm * 100).toFixed(2) : "--",
         };
       }
     });
@@ -553,8 +553,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     ];
   
     const puertasData = puertasTabList.map((item) => {
-      // Verificamos si el registro tiene created_status igual a "default"
-      if ((item as any).created_status === "default" || (item as any).created_status === "global") {
+      if ((item as any).created_status === "created") {
         return {
           name_element: (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
@@ -575,9 +574,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ) : (
             "--"
           ),
+          // Multiplicamos porcentaje_vidrio por 100 y lo formateamos a dos decimales
           porcentaje_vidrio: item.atributs?.porcentaje_vidrio ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.atributs.porcentaje_vidrio}
+              {(item.atributs.porcentaje_vidrio * 100).toFixed(2)}
             </span>
           ) : (
             "--"
@@ -591,7 +591,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ),
           fm: item.fm ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.fm}
+              {(item.fm * 100).toFixed(2)}
             </span>
           ) : (
             "--"
@@ -604,9 +604,11 @@ const WorkFlowpar2viewPage: React.FC = () => {
             ? item.atributs.u_puerta_opaca.toFixed(3)
             : "--",
           name_ventana: item.atributs?.name_ventana ?? "--",
-          porcentaje_vidrio: item.atributs?.porcentaje_vidrio ?? "--",
+          porcentaje_vidrio: item.atributs?.porcentaje_vidrio
+            ? (item.atributs.porcentaje_vidrio * 100).toFixed(2)
+            : "--",
           u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
-          fm: item.fm ?? "--",
+          fm: item.fm ? (item.fm * 100).toFixed(2) : "--",
         };
       }
     });
@@ -617,6 +619,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       <p>No hay datos</p>
     );
   };
+  
   
 
   // ==================== RENDER PESTAÑAS (DATOS CONSTRUCTIVOS) ====================
@@ -729,7 +732,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
   
     // Mapeamos para transformar TODOS los campos a color primario cuando created_status es "default"
     const detailsData = filteredDetails.map((det) => {
-      if (det.created_status === "default" || det.created_status === "global") {
+      if (det.created_status === "created") {
         return {
           ...det,
           scantilon_location: (

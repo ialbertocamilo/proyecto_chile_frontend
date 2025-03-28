@@ -511,23 +511,7 @@ const TabMuroCreate: React.FC = () => {
       headerName: "U [W/m²K]",
       field: "u",
       renderCell: (row: Wall) => {
-        if (row.wall_id === editingWallId && editingWallData) {
-          return (
-            <input
-              type="number"
-              name="u"
-              min="0"
-              step="0.01"
-              value={editingWallData.u || ""}
-              onChange={handleEditWallChange}
-              onBlur={(e) => {
-                const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingWallData({ ...editingWallData, u: Number(rounded) });
-              }}
-              className="form-control form-control-sm"
-            />
-          );
-        }
+        // Se muestra el valor de U como solo lectura, incluso en modo edición
         return row.u ? Number(row.u).toFixed(2) : "";
       },
     },
@@ -785,7 +769,6 @@ const TabMuroCreate: React.FC = () => {
         { label: "L[m]" },
         { label: "e Aislación [cm]" },
         { label: "Elemento 2" },
-
       ],
     ],
   };
@@ -865,17 +848,14 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Ahora se renderiza directamente el contenido correspondiente a "muros" (sin pestañas)
-  // ... (resto del código permanece igual)
-
   const renderContent = () => (
     <div className="d-flex flex-column gap-4">
       <div className="table-responsive">
-        <div className="d-flex" style={{ minWidth: "1200px" }}>
-          <div className="p-2" style={{ flex: 1 }}>
+        <div className="d-flex w-100 mb-4">
+          <div className="p-2 flex-fill">
             <TablesParameters columns={murosColumns} data={murosData} />
           </div>
-          <div className="p-2" style={{ flex: 1 }}>
+          <div className="p-2 flex-fill">
             <TablesParameters
               columns={puentesColumns}
               data={puentesData}
@@ -884,9 +864,10 @@ const TabMuroCreate: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="d-flex justify-content-end gap-2 w-100">
+      {/* Botones alineados a la derecha */}
+      <div className="d-flex justify-content-end gap-2 mt-3 w-100">
         <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
-          Nuevo Muro
+          Crear Muro
         </CustomButton>
         <CustomButton variant="save" onClick={() => setIsThermalBridgeModalOpen(true)}>
           Nuevo Puente Térmico
@@ -894,9 +875,10 @@ const TabMuroCreate: React.FC = () => {
       </div>
     </div>
   );
-
-
-
+  
+  
+  
+  
 
   return (
     <div className="container-fluid">
@@ -999,7 +981,7 @@ const TabMuroCreate: React.FC = () => {
         <form>
           <div className="row align-items-center mb-3">
             <label htmlFor="po1_length" className="col-sm-4 col-form-label">
-              P01 - Longitud
+              P01 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1035,7 +1017,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po2_length" className="col-sm-4 col-form-label">
-              P02 - Longitud
+              P02 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1071,7 +1053,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po3_length" className="col-sm-4 col-form-label">
-              P03 - Longitud
+              P03 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1107,7 +1089,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po4_length" className="col-sm-4 col-form-label">
-              P04 - Longitud
+              P04 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1122,7 +1104,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po4_e_aislacion" className="col-sm-4 col-form-label">
-              P04 - Espesor Aislación
+              P04 - Espesor Aislación (cm)
             </label>
             <div className="col-sm-8">
               <input

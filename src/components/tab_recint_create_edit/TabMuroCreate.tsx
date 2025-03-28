@@ -103,7 +103,7 @@ const TabMuroCreate: React.FC = () => {
 
   // Obtener el project_id del localStorage
   useEffect(() => {
-    const storedProjectId = localStorage.getItem("project_id");
+    const storedProjectId = localStorage.getItem("project_id_edit");
     if (storedProjectId) {
       setProjectId(storedProjectId);
     }
@@ -243,7 +243,6 @@ const TabMuroCreate: React.FC = () => {
     if (!editingWallData) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     const updateId = editingWallData.id || wallId;
     try {
       const response = await fetch(
@@ -252,7 +251,7 @@ const TabMuroCreate: React.FC = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
           body: JSON.stringify({
             wall_id: editingWallData.wall_id,
@@ -288,7 +287,6 @@ const TabMuroCreate: React.FC = () => {
     if (!wallToDelete) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/wall-enclosures-delete/${wallToDelete.id}`,
@@ -296,7 +294,7 @@ const TabMuroCreate: React.FC = () => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
         }
       );
@@ -340,7 +338,6 @@ const TabMuroCreate: React.FC = () => {
     if (!editingBridgeData) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/thermal-bridge-update/${bridgeId}`,
@@ -348,7 +345,7 @@ const TabMuroCreate: React.FC = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
           body: JSON.stringify(editingBridgeData),
         }
@@ -380,7 +377,6 @@ const TabMuroCreate: React.FC = () => {
     if (!bridgeToDelete) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/thermal-bridge-delete/${bridgeToDelete.id}`,
@@ -388,7 +384,7 @@ const TabMuroCreate: React.FC = () => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
         }
       );
@@ -410,7 +406,9 @@ const TabMuroCreate: React.FC = () => {
     setBridgeToDelete(null);
   };
 
-  // Columnas para la tabla de muros (se modifica la columna de "Caracteristicas" para usar un desplegable)
+  // Columnas para la tabla de muros
+  // En la columna de "U [W/m²K]" se elimina la lógica para mostrar un input en modo edición,
+  // mostrando siempre el valor formateado a dos decimales.
   const murosColumns = [
     {
       headerName: "Muros",
@@ -511,24 +509,8 @@ const TabMuroCreate: React.FC = () => {
       headerName: "U [W/m²K]",
       field: "u",
       renderCell: (row: Wall) => {
-        if (row.wall_id === editingWallId && editingWallData) {
-          return (
-            <input
-              type="number"
-              name="u"
-              min="0"
-              step="0.01"
-              value={editingWallData.u || ""}
-              onChange={handleEditWallChange}
-              onBlur={(e) => {
-                const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingWallData({ ...editingWallData, u: Number(rounded) });
-              }}
-              className="form-control form-control-sm"
-            />
-          );
-        }
-        return row.u ? Number(row.u).toFixed(2) : "";
+        // Se muestra siempre el valor formateado a dos decimales, sin lógica de edición
+        return <span>{row.u ? Number(row.u).toFixed(2) : ""}</span>;
       },
     },
     {
@@ -785,13 +767,11 @@ const TabMuroCreate: React.FC = () => {
         { label: "L[m]" },
         { label: "e Aislación [cm]" },
         { label: "Elemento 2" },
-
       ],
     ],
   };
 
   // MANEJO DE FORMULARIOS (Modal de creación)
-
   const handleWallInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setNewWall((prev) => ({
@@ -865,9 +845,7 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Ahora se renderiza directamente el contenido correspondiente a "muros" (sin pestañas)
-  // ... (resto del código permanece igual)
-
+  // Render de contenido principal, incluyendo el contenedor responsive de las tablas
   const renderContent = () => (
     <div className="d-flex flex-column gap-4">
       <div className="table-responsive">
@@ -894,9 +872,6 @@ const TabMuroCreate: React.FC = () => {
       </div>
     </div>
   );
-
-
-
 
   return (
     <div className="container-fluid">
@@ -999,7 +974,7 @@ const TabMuroCreate: React.FC = () => {
         <form>
           <div className="row align-items-center mb-3">
             <label htmlFor="po1_length" className="col-sm-4 col-form-label">
-              P01 - Longitud
+              P01 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1035,7 +1010,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po2_length" className="col-sm-4 col-form-label">
-              P02 - Longitud
+              P02 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1071,7 +1046,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po3_length" className="col-sm-4 col-form-label">
-              P03 - Longitud
+              P03 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1107,7 +1082,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po4_length" className="col-sm-4 col-form-label">
-              P04 - Longitud
+              P04 - Longitud (m)
             </label>
             <div className="col-sm-8">
               <input
@@ -1122,7 +1097,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="po4_e_aislacion" className="col-sm-4 col-form-label">
-              P04 - Espesor Aislación
+              P04 - Espesor Aislación (cm)
             </label>
             <div className="col-sm-8">
               <input

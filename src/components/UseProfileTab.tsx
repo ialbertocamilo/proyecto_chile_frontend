@@ -88,6 +88,15 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   // Estado para llevar el registro de la fila que se está editando
   const [editingRow, setEditingRow] = useState<EditingRow | null>(null);
 
+  // Función auxiliar para formatear los valores mostrados en las tablas.
+  // Si el valor es "N/A" o equivale a 0, se retorna un guion ("-").
+  const formatDisplayValue = (value: any): string => {
+    if (value === "N/A") return "-";
+    const num = parseFloat(value);
+    if (!isNaN(num) && num === 0) return "-";
+    return value;
+  };
+
   // Función para abrir el modal de creación
   const handleNuevoClick = (tab: TabKey) => {
     console.log(`Nuevo elemento para ${tab}`);
@@ -367,8 +376,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   // Funciones para construir cada fila de tabla según el tipo de dato
 
   const mapVentilacionRow = (enclosure: any) => {
-    // Se asume que si el primer building_conditions tiene created_status === "default", es por defecto.
-    const isDefault = enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "global";
+    const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
+                      enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions[0]?.details || {};
     const minSalubridad = condition.cauldal_min_salubridad || {};
     const isEditing =
@@ -402,10 +411,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ),
       rPers: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {rPersValue}
+          {formatDisplayValue(rPersValue)}
         </span>
       ) : (
-        rPersValue
+        formatDisplayValue(rPersValue)
       ),
       ida: isEditing ? (
         <select
@@ -419,10 +428,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         </select>
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.ida}
+          {formatDisplayValue(values.ida)}
         </span>
       ) : (
-        values.ida
+        formatDisplayValue(values.ida)
       ),
       ocupacion: isEditing ? (
         <select
@@ -439,10 +448,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         </select>
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.ocupacion}
+          {formatDisplayValue(values.ocupacion)}
         </span>
       ) : (
-        values.ocupacion
+        formatDisplayValue(values.ocupacion)
       ),
       caudalImpuestoVentNoct: isEditing ? (
         <input
@@ -453,10 +462,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.caudalImpuestoVentNoct}
+          {formatDisplayValue(values.caudalImpuestoVentNoct)}
         </span>
       ) : (
-        values.caudalImpuestoVentNoct
+        formatDisplayValue(values.caudalImpuestoVentNoct)
       ),
       accion: isEditing ? (
         <ActionButtonsConfirm
@@ -479,7 +488,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   };
 
   const mapIluminacionRow = (enclosure: any) => {
-    const isDefault = enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "global";
+    const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
+                      enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions.find(
       (cond: any) => cond.type === "lightning"
     );
@@ -520,10 +530,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.potenciaBase}
+          {formatDisplayValue(values.potenciaBase)}
         </span>
       ) : (
-        values.potenciaBase
+        formatDisplayValue(values.potenciaBase)
       ),
       estrategia: isEditing ? (
         <select
@@ -538,17 +548,24 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         </select>
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.estrategia}
+          {formatDisplayValue(values.estrategia)}
         </span>
       ) : (
-        values.estrategia
+        formatDisplayValue(values.estrategia)
       ),
-      potenciaPropuesta: isDefault ? (
+      potenciaPropuesta: isEditing ? (
+        <input
+          type="number"
+          className="form-control form-control-sm"
+          value={editingRow?.values.potenciaPropuesta}
+          onChange={(e) => handleEditChange("potenciaPropuesta", e.target.value)}
+        />
+      ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.potenciaPropuesta}
+          {formatDisplayValue(values.potenciaPropuesta)}
         </span>
       ) : (
-        values.potenciaPropuesta
+        formatDisplayValue(values.potenciaPropuesta)
       ),
       accion: isEditing ? (
         <ActionButtonsConfirm
@@ -571,7 +588,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   };
 
   const mapCargasRow = (enclosure: any) => {
-    const isDefault = enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "global";
+    const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
+                      enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions[0]?.details || {};
     const isEditing =
       editingRow &&
@@ -611,10 +629,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.usuarios}
+          {formatDisplayValue(values.usuarios)}
         </span>
       ) : (
-        values.usuarios
+        formatDisplayValue(values.usuarios)
       ),
       calorLatente: isEditing ? (
         <input
@@ -625,10 +643,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.calorLatente}
+          {formatDisplayValue(values.calorLatente)}
         </span>
       ) : (
-        values.calorLatente
+        formatDisplayValue(values.calorLatente)
       ),
       calorSensible: isEditing ? (
         <input
@@ -639,10 +657,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.calorSensible}
+          {formatDisplayValue(values.calorSensible)}
         </span>
       ) : (
-        values.calorSensible
+        formatDisplayValue(values.calorSensible)
       ),
       equipos: isEditing ? (
         <input
@@ -653,10 +671,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.equipos}
+          {formatDisplayValue(values.equipos)}
         </span>
       ) : (
-        values.equipos
+        formatDisplayValue(values.equipos)
       ),
       funcionamientoSemanal: isEditing ? (
         <input
@@ -667,10 +685,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.funcionamientoSemanal}
+          {formatDisplayValue(values.funcionamientoSemanal)}
         </span>
       ) : (
-        values.funcionamientoSemanal
+        formatDisplayValue(values.funcionamientoSemanal)
       ),
       accion: isEditing ? (
         <ActionButtonsConfirm
@@ -695,7 +713,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   };
 
   const mapHorarioRow = (enclosure: any) => {
-    const isDefault = enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "global";
+    const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
+                      enclosure.building_conditions[0]?.created_status === "global";
     const details = enclosure.building_conditions[0]?.details || {};
     const recinto = details.recinto || { climatizado: "N/A", desfase_clima: 0 };
     const isEditing =
@@ -735,10 +754,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         </select>
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.climatizado}
+          {formatDisplayValue(values.climatizado)}
         </span>
       ) : (
-        values.climatizado
+        formatDisplayValue(values.climatizado)
       ),
       hrsDesfaseClimaInv: isEditing ? (
         <input
@@ -749,10 +768,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {values.hrsDesfaseClimaInv}
+          {formatDisplayValue(values.hrsDesfaseClimaInv)}
         </span>
       ) : (
-        values.hrsDesfaseClimaInv
+        formatDisplayValue(values.hrsDesfaseClimaInv)
       ),
       accion: isEditing ? (
         <ActionButtonsConfirm
@@ -890,7 +909,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "IDA", field: "ida" },
                 { headerName: "Ocupacion", field: "ocupacion" },
                 { headerName: "Caudal Impuesto Vent Noct", field: "caudalImpuestoVentNoct" },
-                { headerName: "Accion", field: "accion" },
+                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" } },
               ]}
               data={filteredVentilacion}
             />
@@ -906,7 +925,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "Potencia Base [W/m2]", field: "potenciaBase" },
                 { headerName: "Estrategia", field: "estrategia" },
                 { headerName: "Potencia Propuesta [W/m2]", field: "potenciaPropuesta" },
-                { headerName: "Accion", field: "accion" },
+                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" }},
               ]}
               data={filteredIluminacion}
             />
@@ -924,7 +943,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "Calor Sensible [W/pers]", field: "calorSensible" },
                 { headerName: "Equipos [W/m2]", field: "equipos" },
                 { headerName: "Funcionamiento Semanal", field: "funcionamientoSemanal" },
-                { headerName: "Accion", field: "accion" },
+                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" }},
               ]}
               data={filteredCargas}
             />
@@ -939,7 +958,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
                 { headerName: "Climatizado", field: "climatizado" },
                 { headerName: "Hrs Desfase Clima (Inv)", field: "hrsDesfaseClimaInv" },
-                { headerName: "Accion", field: "accion" },
+                { headerName: "Accion", field: "accion"},
               ]}
               data={filteredHorario}
             />
@@ -953,7 +972,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         onClose={() => setIsCreateModalOpen(false)}
         onSave={handleCreateSave}
         title="Crear nuevo recinto"
-        saveLabel="Crear"
+        saveLabel="Crear Perfil"
       >
         <div>
           <label htmlFor="recinto-name">Nombre del Recinto</label>

@@ -1198,31 +1198,35 @@ const WorkFlowpar2editPage: React.FC = () => {
           <span style={textStyle}>{formatPercentage(item.fm)}</span>
         ),
         acciones: (
-          <div style={textStyle}>
-            <CustomButton
-              className="btn-table"
-              variant="editIcon"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                setEditingVentana(item);
-              }}
-              disabled={item.created_status == "default" || item.created_status == "global"}
-            >
-              Editar
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="deleteIcon"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                setDeleteItem({ id: item.id, type: "window" });
-                setShowDeleteModal(true);
-              }}
-              disabled={item.created_status == "default" || item.created_status == "global"}
-            >
-              <span className="material-icons">delete</span>
-            </CustomButton>
-          </div>
+          <>
+            {(item.created_status === "default" || item.created_status === "global") ? (
+              <span>-</span>
+            ) : (
+              <div style={textStyle}>
+                <CustomButton
+                  className="btn-table"
+                  variant="editIcon"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    setEditingVentana(item);
+                  }}
+                >
+                  Editar
+                </CustomButton>
+                <CustomButton
+                  className="btn-table"
+                  variant="deleteIcon"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    setDeleteItem({ id: item.id, type: "window" });
+                    setShowDeleteModal(true);
+                  }}
+                >
+                  <span className="material-icons">delete</span>
+                </CustomButton>
+              </div>
+            )}
+          </>
         ),
       };
     });
@@ -1269,31 +1273,35 @@ const WorkFlowpar2editPage: React.FC = () => {
           <span style={textStyle}>{formatPercentage(item.fm)}</span>
         ),
         acciones: (
-          <div style={textStyle}>
-            <CustomButton
-              className="btn-table"
-              variant="editIcon"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                setEditingPuerta(item);
-              }}
-              disabled={item.created_status == "default" || item.created_status == "global"}
-            >
-              Editar
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="deleteIcon"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                setDeleteItem({ id: item.id, type: "door" });
-                setShowDeleteModal(true);
-              }}
-              disabled={item.created_status == "default" || item.created_status == "global"}
-            >
-              <span className="material-icons">delete</span>
-            </CustomButton>
-          </div>
+          <>
+            {(item.created_status === "default" || item.created_status === "global") ? (
+              <span>-</span>
+            ) : (
+              <div style={textStyle}>
+                <CustomButton
+                  className="btn-table"
+                  variant="editIcon"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    setEditingPuerta(item);
+                  }}
+                >
+                  Editar
+                </CustomButton>
+                <CustomButton
+                  className="btn-table"
+                  variant="deleteIcon"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    setDeleteItem({ id: item.id, type: "door" });
+                    setShowDeleteModal(true);
+                  }}
+                >
+                  <span className="material-icons">delete</span>
+                </CustomButton>
+              </div>
+            )}
+          </>
         ),
       };
     });

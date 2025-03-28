@@ -62,13 +62,14 @@ const initialFormData: FormData = {
   longitude: -70.6703553846175,
 };
 
-
 const ProjectWorkflowPart1: React.FC = () => {
   useAuth();
   const router = useRouter();
 
   const [, setPrimaryColor] = useState("#3ca7b7");
   const [step, setStep] = useState<number>(1);
+  // Nueva variable de estado para controlar si se completó el paso 1
+  const [isStep1Validated, setIsStep1Validated] = useState<boolean>(false);
   const [locationSearch, setLocationSearch] = useState("");
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -277,6 +278,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     setLoading(false);
   };
 
+  // Función que se encarga de la acción del botón Continuar en el paso 1
   const handleStep1Action = async () => {
     setSubmitted(true);
     const fieldErrors = validateStep1Fields();
@@ -295,13 +297,22 @@ const ProjectWorkflowPart1: React.FC = () => {
       notify("El nombre del proyecto ya existe. Por favor, elija otro nombre.");
       return;
     }
-    // Si todo es correcto, avanzar al siguiente paso
+    // Si todo es correcto, marcar que se validó el paso 1 y avanzar al siguiente paso
+    setIsStep1Validated(true);
     setStep(2);
+  };
+
+  // Función para controlar el cambio de paso desde el sidebar
+  const handleSidebarStepChange = (newStep: number) => {
+    if (newStep > 1 && !isStep1Validated) {
+      notify("Por favor, complete y valide correctamente el Paso 1 antes de avanzar.");
+      return;
+    }
+    setStep(newStep);
   };
 
   const renderMainHeader = () => {
     return <Title text="Proyecto nuevo" />;
-
   };
 
   const [completionList, setCompletionList] = useState<{
@@ -345,7 +356,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       <Card>
         <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
           {/* Sidebar dinámico con el arreglo de pasos */}
-          <AdminSidebar activeStep={step} onStepChange={setStep} steps={steps} />
+          <AdminSidebar activeStep={step} onStepChange={handleSidebarStepChange} steps={steps} />
           <div className="content p-4" style={{ flex: 1 }}>
             {step === 1 && (
               <>
@@ -674,7 +685,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                     marginBottom: "20px",
                   }}
                 >
-
                   <MapAutocompletion
                     formData={formData}
                     handleFormInputChange={handleFormInputChange}
@@ -686,9 +696,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         variant="save"
                         onClick={handleGeolocation}
                       >
-                        <span
-                          className="material-icons"
-                        >
+                        <span className="material-icons">
                           location_on
                         </span>
                         Ubicación actual

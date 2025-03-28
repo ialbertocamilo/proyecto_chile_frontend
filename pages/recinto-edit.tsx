@@ -1,5 +1,8 @@
+// recinto-edit.tsx
+
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponentEdit";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import Breadcrumb from "@/components/common/Breadcrumb";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
 import Title from "../src/components/Title";
@@ -303,14 +306,22 @@ const RecintoEdit: React.FC = () => {
 
   return (
     <>
-      {/* Card del título y encabezado del proyecto */}
+      {/* Card del título y encabezado del proyecto con Breadcrumb alineado a la derecha */}
       <Card>
         <div>
           <Title text="Edicion de Recinto" />
-          <ProjectInfoHeader
-            projectName={projectName}
-            region={projectDepartment}
-          />
+          <div className="d-flex justify-content-between align-items-center">
+            <ProjectInfoHeader
+              projectName={projectName}
+              region={projectDepartment}
+            />
+            <Breadcrumb
+              items={[
+                { title: "Inicio", href: "/" },
+                { title: "Editar Recinto", href: "/recinto-edit" },
+              ]}
+            />
+          </div>
         </div>
       </Card>
 

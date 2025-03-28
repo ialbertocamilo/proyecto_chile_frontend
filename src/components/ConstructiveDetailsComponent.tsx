@@ -499,17 +499,36 @@ const ConstructiveDetailsComponent: React.FC = () => {
       let url = `${constantUrlApiEndpoint}/${item.id_detail}/details/update`;
       let payload;
       if (detailType === "Piso") {
+        // Se reemplaza el uso de "||" por una comprobación que respeta valores vacíos
         payload = {
           info: {
             ref_aisl_vertical: {
-              d: editValues.vertD || item.info?.ref_aisl_vertical?.d,
-              e_aisl: editValues.vertEAisl || item.info?.ref_aisl_vertical?.e_aisl,
-              lambda: editValues.vertLambda || item.info?.ref_aisl_vertical?.lambda,
+              d:
+                editValues.vertD !== undefined
+                  ? editValues.vertD
+                  : item.info?.ref_aisl_vertical?.d,
+              e_aisl:
+                editValues.vertEAisl !== undefined
+                  ? editValues.vertEAisl
+                  : item.info?.ref_aisl_vertical?.e_aisl,
+              lambda:
+                editValues.vertLambda !== undefined
+                  ? editValues.vertLambda
+                  : item.info?.ref_aisl_vertical?.lambda,
             },
             ref_aisl_horizontal: {
-              d: editValues.horizD || item.info?.ref_aisl_horizontal?.d,
-              e_aisl: editValues.horizEAisl || item.info?.ref_aisl_horizontal?.e_aisl,
-              lambda: editValues.horizLambda || item.info?.ref_aisl_horizontal?.lambda,
+              d:
+                editValues.horizD !== undefined
+                  ? editValues.horizD
+                  : item.info?.ref_aisl_horizontal?.d,
+              e_aisl:
+                editValues.horizEAisl !== undefined
+                  ? editValues.horizEAisl
+                  : item.info?.ref_aisl_horizontal?.e_aisl,
+              lambda:
+                editValues.horizLambda !== undefined
+                  ? editValues.horizLambda
+                  : item.info?.ref_aisl_horizontal?.lambda,
             },
           },
         };
@@ -921,6 +940,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     );
   };
 
+  // Función auxiliar para formatear números
   const formatNumber = (num: number | undefined, decimals = 3) => {
     return num != null && num !== 0 ? num.toFixed(decimals) : "-";
   };
@@ -962,16 +982,25 @@ const ConstructiveDetailsComponent: React.FC = () => {
           Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
             ? item.info.aislacion_bajo_piso.e_aisl
             : "-",
+        // Cada input usa la lógica para que si el valor es borrado quede ""
         vertLambda: isEditing ? (
           <input
             type="number"
             min="0"
             className="form-control form-control-sm"
-            value={editValues.vertLambda || vert.lambda || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, vertLambda: e.target.value }))
+            value={
+              editValues.vertLambda !== undefined
+                ? editValues.vertLambda
+                : (vert.lambda && Number(vert.lambda) !== 0 ? Number(vert.lambda).toFixed(3) : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                vertLambda: Number(value) === 0 ? "" : value,
+              }));
+            }}
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}
@@ -986,11 +1015,19 @@ const ConstructiveDetailsComponent: React.FC = () => {
             type="number"
             min="0"
             className="form-control form-control-sm"
-            value={editValues.vertEAisl || vert.e_aisl || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, vertEAisl: e.target.value }))
+            value={
+              editValues.vertEAisl !== undefined
+                ? editValues.vertEAisl
+                : (vert.e_aisl && Number(vert.e_aisl) !== 0 ? vert.e_aisl : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                vertEAisl: Number(value) === 0 ? "" : value,
+              }));
+            }}
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}
@@ -1005,11 +1042,19 @@ const ConstructiveDetailsComponent: React.FC = () => {
             type="number"
             min="0"
             className="form-control form-control-sm"
-            value={editValues.vertD || vert.d || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, vertD: e.target.value }))
+            value={
+              editValues.vertD !== undefined
+                ? editValues.vertD
+                : (vert.d && Number(vert.d) !== 0 ? vert.d : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                vertD: Number(value) === 0 ? "" : value,
+              }));
+            }}
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}
@@ -1024,11 +1069,19 @@ const ConstructiveDetailsComponent: React.FC = () => {
             type="number"
             min="0"
             className="form-control form-control-sm"
-            value={editValues.horizLambda || horiz.lambda || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, horizLambda: e.target.value }))
+            value={
+              editValues.horizLambda !== undefined
+                ? editValues.horizLambda
+                : (horiz.lambda && Number(horiz.lambda) !== 0 ? Number(horiz.lambda).toFixed(3) : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                horizLambda: Number(value) === 0 ? "" : value,
+              }));
+            }}
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}
@@ -1043,11 +1096,19 @@ const ConstructiveDetailsComponent: React.FC = () => {
             type="number"
             min="0"
             className="form-control form-control-sm"
-            value={editValues.horizEAisl || horiz.e_aisl || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, horizEAisl: e.target.value }))
+            value={
+              editValues.horizEAisl !== undefined
+                ? editValues.horizEAisl
+                : (horiz.e_aisl && Number(horiz.e_aisl) !== 0 ? horiz.e_aisl : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                horizEAisl: Number(value) === 0 ? "" : value,
+              }));
+            }}
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}
@@ -1062,11 +1123,19 @@ const ConstructiveDetailsComponent: React.FC = () => {
             type="number"
             min="0"
             className="form-control form-control-sm"
-            value={editValues.horizD || horiz.d || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, horizD: e.target.value }))
+            value={
+              editValues.horizD !== undefined
+                ? editValues.horizD
+                : (horiz.d && Number(horiz.d) !== 0 ? horiz.d : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                horizD: Number(value) === 0 ? "" : value,
+              }));
+            }}
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}

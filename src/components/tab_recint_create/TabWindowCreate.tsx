@@ -1056,7 +1056,7 @@ const TabWindowCreate: React.FC = () => {
         onClose={handleCloseModal}
         onSave={handleSaveModal}
         title="Crear Ventana"
-        saveLabel="Crear"
+        saveLabel="Grabar Datos"
       >
         <form>
           <div className="row mb-3">

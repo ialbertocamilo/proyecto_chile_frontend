@@ -867,7 +867,7 @@ const TabMuroCreate: React.FC = () => {
       {/* Botones alineados a la derecha */}
       <div className="d-flex justify-content-end gap-2 mt-3 w-100">
         <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
-          Nuevo Muro
+          Crear Muro
         </CustomButton>
         <CustomButton variant="save" onClick={() => setIsThermalBridgeModalOpen(true)}>
           Nuevo Puente Térmico

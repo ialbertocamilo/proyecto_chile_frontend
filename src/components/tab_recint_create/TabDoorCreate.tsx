@@ -414,8 +414,20 @@ const TabDoorCreate: React.FC = () => {
     setBroad(0);
   };
 
-  // Endpoint para creación de puerta
+  // Endpoint para creación de puerta con validación de campos obligatorios
   const handleModalSave = async () => {
+    // Validar que todos los campos sean obligatorios
+    if (
+      doorId === 0 ||
+      characteristics === "" ||
+      anguloAzimut === "" ||
+      high <= 0 ||
+      broad <= 0
+    ) {
+      notify("Todos los campos son obligatorios");
+      return;
+    }
+
     const payload = {
       door_id: doorId,
       characteristics: characteristics,

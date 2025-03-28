@@ -407,8 +407,6 @@ const TabMuroCreate: React.FC = () => {
   };
 
   // Columnas para la tabla de muros
-  // En la columna de "U [W/m²K]" se elimina la lógica para mostrar un input en modo edición,
-  // mostrando siempre el valor formateado a dos decimales.
   const murosColumns = [
     {
       headerName: "Muros",
@@ -509,7 +507,6 @@ const TabMuroCreate: React.FC = () => {
       headerName: "U [W/m²K]",
       field: "u",
       renderCell: (row: Wall) => {
-        // Se muestra siempre el valor formateado a dos decimales, sin lógica de edición
         return <span>{row.u ? Number(row.u).toFixed(2) : ""}</span>;
       },
     },
@@ -790,6 +787,16 @@ const TabMuroCreate: React.FC = () => {
 
   // Función para crear un muro (Modal de creación)
   const handleCreateWall = async () => {
+    // Validación: Verificar que todos los campos estén llenos
+    if (
+      newWall.wall_id === 0 ||
+      newWall.characteristics.trim() === "" ||
+      newWall.angulo_azimut.trim() === "" ||
+      newWall.area === 0
+    ) {
+      notify("Todos los campos son obligatorios para crear el muro");
+      return;
+    }
     const authData = getAuthData();
     if (!authData) return;
     const { token, enclosure_id } = authData;
@@ -813,6 +820,21 @@ const TabMuroCreate: React.FC = () => {
 
   // Función para crear un puente térmico (Modal de creación)
   const handleCreateThermalBridge = async () => {
+    // Validación: Verificar que todos los campos estén llenos
+    if (
+      newThermalBridge.po1_length === 0 ||
+      newThermalBridge.po1_id_element === 0 ||
+      newThermalBridge.po2_length === 0 ||
+      newThermalBridge.po2_id_element === 0 ||
+      newThermalBridge.po3_length === 0 ||
+      newThermalBridge.po3_id_element === 0 ||
+      newThermalBridge.po4_length === 0 ||
+      newThermalBridge.po4_e_aislacion === 0 ||
+      newThermalBridge.po4_id_element === 0
+    ) {
+      notify("Todos los campos son obligatorios para crear el puente térmico");
+      return;
+    }
     const authData = getAuthData();
     if (!authData) return;
     const { token, enclosure_id } = authData;

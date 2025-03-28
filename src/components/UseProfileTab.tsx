@@ -456,9 +456,16 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       caudalImpuestoVentNoct: isEditing ? (
         <input
           type="number"
+          min="0"
           className="form-control form-control-sm"
           value={editingRow.values.caudalImpuestoVentNoct}
-          onChange={(e) => handleEditChange("caudalImpuestoVentNoct", e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            handleEditChange("caudalImpuestoVentNoct", e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "-") e.preventDefault();
+          }}
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -524,9 +531,16 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       potenciaBase: isEditing ? (
         <input
           type="number"
+          min="0"
           className="form-control form-control-sm"
           value={editingRow?.values.potenciaBase}
-          onChange={(e) => handleEditChange("potenciaBase", e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            handleEditChange("potenciaBase", e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "-") e.preventDefault();
+          }}
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -556,9 +570,16 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       potenciaPropuesta: isEditing ? (
         <input
           type="number"
+          min="0"
           className="form-control form-control-sm"
           value={editingRow?.values.potenciaPropuesta}
-          onChange={(e) => handleEditChange("potenciaPropuesta", e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            handleEditChange("potenciaPropuesta", e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "-") e.preventDefault();
+          }}
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -623,9 +644,16 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       usuarios: isEditing ? (
         <input
           type="number"
+          min="0"
           className="form-control form-control-sm"
           value={editingRow.values.usuarios}
-          onChange={(e) => handleEditChange("usuarios", e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            handleEditChange("usuarios", e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "-") e.preventDefault();
+          }}
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -637,9 +665,16 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       calorLatente: isEditing ? (
         <input
           type="number"
+          min="0"
           className="form-control form-control-sm"
           value={editingRow.values.calorLatente}
-          onChange={(e) => handleEditChange("calorLatente", e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            handleEditChange("calorLatente", e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "-") e.preventDefault();
+          }}
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -651,9 +686,16 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       calorSensible: isEditing ? (
         <input
           type="number"
+          min="0"
           className="form-control form-control-sm"
           value={editingRow.values.calorSensible}
-          onChange={(e) => handleEditChange("calorSensible", e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            handleEditChange("calorSensible", e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "-") e.preventDefault();
+          }}
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -665,9 +707,16 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       equipos: isEditing ? (
         <input
           type="number"
+          min="0"
           className="form-control form-control-sm"
           value={editingRow.values.equipos}
-          onChange={(e) => handleEditChange("equipos", e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            handleEditChange("equipos", e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "-") e.preventDefault();
+          }}
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -762,9 +811,16 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       hrsDesfaseClimaInv: isEditing ? (
         <input
           type="number"
+          min="0"
           className="form-control form-control-sm"
           value={editingRow.values.hrsDesfaseClimaInv}
-          onChange={(e) => handleEditChange("hrsDesfaseClimaInv", e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            handleEditChange("hrsDesfaseClimaInv", e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "-") e.preventDefault();
+          }}
         />
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -925,7 +981,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "Potencia Base [W/m2]", field: "potenciaBase" },
                 { headerName: "Estrategia", field: "estrategia" },
                 { headerName: "Potencia Propuesta [W/m2]", field: "potenciaPropuesta" },
-                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" }},
+                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" } },
               ]}
               data={filteredIluminacion}
             />
@@ -943,7 +999,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "Calor Sensible [W/pers]", field: "calorSensible" },
                 { headerName: "Equipos [W/m2]", field: "equipos" },
                 { headerName: "Funcionamiento Semanal", field: "funcionamientoSemanal" },
-                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" }},
+                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" } },
               ]}
               data={filteredCargas}
             />
@@ -958,7 +1014,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
                 { headerName: "Climatizado", field: "climatizado" },
                 { headerName: "Hrs Desfase Clima (Inv)", field: "hrsDesfaseClimaInv" },
-                { headerName: "Accion", field: "accion"},
+                { headerName: "Accion", field: "accion" },
               ]}
               data={filteredHorario}
             />

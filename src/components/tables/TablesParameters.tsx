@@ -4,17 +4,15 @@ interface Column {
   headerName: string;
   field: string;
   headerStyle?: React.CSSProperties;
-  // Permite renderizar contenido personalizado en la celda
   renderCell?: (row: any) => React.ReactNode;
 }
 
 interface TablesParametersProps {
   columns: Column[];
   data: any[];
-  multiHeader?: MultiHeader; // Encabezado de múltiples filas (opcional)
+  multiHeader?: MultiHeader;
 }
 
-// Cada celda del encabezado (multi-header)
 interface HeaderCell {
   label: string;
   colSpan?: number;
@@ -33,73 +31,65 @@ export default function TablesParameters({
   data,
   multiHeader,
 }: TablesParametersProps) {
-  // Estilo base para los encabezados sticky.
-  // (Si tienes múltiples filas sticky, deberás ajustar manualmente el `top`
-  // de cada una para evitar que se superpongan).
-  const baseStickyStyle: React.CSSProperties = {
-    position: "sticky",
-    top: 0,                // Mantén la primera fila fija arriba. Para más filas, necesitarás ajustar esto.
-    backgroundColor: "#fff",
-    zIndex: 500,
-    textAlign: "center",
-    verticalAlign: "middle",
-    color: "var(--primary-color)",
-  };
-
-  // Función para calcular el total de colSpan en una fila (si no se indica, se asume 1)
-  const getTotalColSpan = (row: HeaderRow) =>
-    row.reduce((acc, cell) => acc + (cell.colSpan ?? 1), 0);
-
   return (
     <div className="container-fluid p-0">
       <div className="row g-0">
-        <div className="col-12 p-0 d-flex flex-column" >
-          <div className="table-responsive w-100 flex-fill" style={{ maxHeight: "400px" }}>
-            <table
-              className="table table-hover w-100 mb-0"
-              style={{
-                tableLayout: "auto",    // Ajusta el ancho de las celdas al contenido
-                borderCollapse: "collapse",
-              }}
-            >
-              <thead className="bg-light border-bottom">
+        <div className="col-12 p-0 d-flex flex-column">
+          <div
+            className="table-responsive w-100"
+            style={{
+              maxHeight: "400px", // Limitamos la altura para que tenga un scroll si es necesario
+            }}
+          >
+            <table className="table table-hover table-sm mb-0">
+              <thead
+                className="border-bottom"
+                style={{
+                  backgroundColor: "transparent", // Fondo transparente
+                  color: "var(--primary-color)", // Color del texto: color primario
+                }}
+              >
                 {multiHeader ? (
                   <>
                     {multiHeader.rows.map((row, rowIndex) => (
-                      <tr key={rowIndex} style={{ height: "fixed" }}>
+                      <tr key={rowIndex}>
                         {row.map((cell, cellIndex) => (
                           <th
                             key={cellIndex}
                             colSpan={cell.colSpan}
                             rowSpan={cell.rowSpan}
-                            style={{
-                              ...baseStickyStyle,
-                              ...cell.style,
-                            }}
+                            style={cell.style}
+                            className="text-center align-middle" // Clases de Bootstrap para centrar el texto
                           >
                             {cell.label}
                           </th>
                         ))}
-                        {rowIndex === 0 && getTotalColSpan(row) < columns.length && (
-                          <th
-                            colSpan={columns.length - getTotalColSpan(row)}
-                            style={{
-                              ...baseStickyStyle,
-                            }}
-                          />
-                        )}
+                        {rowIndex === 0 &&
+                          row.reduce(
+                            (acc, cell) => acc + (cell.colSpan ?? 1),
+                            0
+                          ) < columns.length && (
+                            <th
+                              colSpan={
+                                columns.length -
+                                row.reduce(
+                                  (acc, cell) => acc + (cell.colSpan ?? 1),
+                                  0
+                                )
+                              }
+                              className="text-center align-middle"
+                            />
+                          )}
                       </tr>
                     ))}
                   </>
                 ) : (
-                  <tr style={{ height: "auto" }}>
+                  <tr>
                     {columns.map((col) => (
                       <th
                         key={col.field}
-                        style={{
-                          ...baseStickyStyle,
-                          ...col.headerStyle,
-                        }}
+                        className="text-center align-middle"
+                        style={col.headerStyle}
                       >
                         {col.headerName}
                       </th>
@@ -110,14 +100,14 @@ export default function TablesParameters({
 
               <tbody>
                 {data.map((row, rowIndex) => (
-                  <tr key={rowIndex} style={{ height: "auto" }}>
+                  <tr key={rowIndex}>
                     {columns.map((col) => (
                       <td
                         key={col.field}
+                        className="text-center align-middle"
                         style={{
-                          verticalAlign: "middle", // Centra verticalmente
-                          textAlign: "center",     // Centra horizontalmente
-                          padding: "8px",          // Añade algo de padding para mejorar la legibilidad
+                          padding: "2px",
+                          minWidth: "100px", // Asegura un ancho mínimo para las celdas
                         }}
                       >
                         {col.renderCell ? col.renderCell(row) : row[col.field]}
@@ -128,7 +118,8 @@ export default function TablesParameters({
               </tbody>
             </table>
           </div>
-        </div></div>
+        </div>
+      </div>
     </div>
   );
 }

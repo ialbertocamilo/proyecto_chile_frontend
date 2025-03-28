@@ -399,7 +399,7 @@ const TabCeilingCreate: React.FC = () => {
       <TablesParameters columns={columns} data={data} />
       <div style={{ marginTop: "20px" }}>
         <div className="d-flex justify-content-end gap-2 w-100">
-          <CustomButton variant="save" onClick={handleCreate}>
+          <CustomButton variant="save" onClick={handleCreate} >
             Crear Techo
           </CustomButton>
         </div>

@@ -791,8 +791,19 @@ const TabMuroCreate: React.FC = () => {
     }));
   };
 
-  // Función para crear un muro (Modal de creación)
+  // Función para crear un muro (Modal de creación) con validación de campos obligatorios
   const handleCreateWall = async () => {
+    // Validar que los campos obligatorios estén completos
+    if (
+      newWall.wall_id <= 0 ||
+      newWall.characteristics.trim() === "" ||
+      newWall.angulo_azimut.trim() === "" ||
+      newWall.area <= 0
+    ) {
+      notify("Debe completar todos los campos del muro");
+      return;
+    }
+
     const authData = getAuthData();
     if (!authData) return;
     const { token, enclosure_id } = authData;
@@ -814,8 +825,24 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Función para crear un puente térmico (Modal de creación)
+  // Función para crear un puente térmico (Modal de creación) con validación de campos obligatorios
   const handleCreateThermalBridge = async () => {
+    // Validar que los campos obligatorios estén completos
+    if (
+      newThermalBridge.po1_length <= 0 ||
+      newThermalBridge.po1_id_element <= 0 ||
+      newThermalBridge.po2_length <= 0 ||
+      newThermalBridge.po2_id_element <= 0 ||
+      newThermalBridge.po3_length <= 0 ||
+      newThermalBridge.po3_id_element <= 0 ||
+      newThermalBridge.po4_length <= 0 ||
+      newThermalBridge.po4_e_aislacion <= 0 ||
+      newThermalBridge.po4_id_element <= 0
+    ) {
+      notify("Debe completar todos los campos del puente térmico");
+      return;
+    }
+
     const authData = getAuthData();
     if (!authData) return;
     const { token, enclosure_id } = authData;
@@ -849,7 +876,7 @@ const TabMuroCreate: React.FC = () => {
   };
 
   const renderContent = () => (
-    <div className="d-flex flex-column gap-4">
+    <div className="col-12">
       <div className="table-responsive">
         <div className="d-flex w-100 mb-4">
           <div className="p-2 flex-fill">
@@ -867,7 +894,7 @@ const TabMuroCreate: React.FC = () => {
       {/* Botones alineados a la derecha */}
       <div className="d-flex justify-content-end gap-2 mt-3 w-100">
         <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
-          Crear Muro
+          Nuevo Muro
         </CustomButton>
         <CustomButton variant="save" onClick={() => setIsThermalBridgeModalOpen(true)}>
           Nuevo Puente Térmico
@@ -876,10 +903,6 @@ const TabMuroCreate: React.FC = () => {
     </div>
   );
   
-  
-  
-  
-
   return (
     <div className="container-fluid">
       {renderContent()}

@@ -253,7 +253,17 @@ const TabDoorCreate: React.FC = () => {
         }
         return row;
       });
-      setData(mergedData);
+
+      // Actualizar el nombre de la puerta usando doorOptions ya cargado
+      const updatedData = mergedData.map((row) => {
+        const doorInfo = doorOptions.find((door: any) => door.id === row.door_id);
+        if (doorInfo) {
+          return { ...row, tipoPuente: doorInfo.name_element };
+        }
+        return row;
+      });
+
+      setData(updatedData);
     } catch (error) {
       console.error("Error fetching door data:", error);
       notify("Error al cargar los datos de puertas", "error");
@@ -407,8 +417,20 @@ const TabDoorCreate: React.FC = () => {
     setBroad(0);
   };
 
-  // Endpoint para creación de puerta
+  // Endpoint para creación de puerta con validación de campos obligatorios
   const handleModalSave = async () => {
+    // Validación: todos los campos deben tener un valor válido
+    if (
+      doorId === 0 ||
+      characteristics === "" ||
+      anguloAzimut === "" ||
+      high <= 0 ||
+      broad <= 0
+    ) {
+      notify("Todos los campos son obligatorios");
+      return;
+    }
+
     const payload = {
       door_id: doorId,
       characteristics: characteristics,

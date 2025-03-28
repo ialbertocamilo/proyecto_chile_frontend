@@ -495,7 +495,7 @@ const validateForm = () => {
       <div style={{ marginTop: "20px" }}>
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={() => setShowModal(true)}>
-            Crear
+            Crear Piso
           </CustomButton>
         </div>
       </div>

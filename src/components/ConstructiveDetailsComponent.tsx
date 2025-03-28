@@ -116,7 +116,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     layer_thickness: null,
   });
 
-  // Estados para eliminar y editar detalle (en la vista general)
+  // Estados para eliminar y editar detalle (vista general)
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingDetail, setDeletingDetail] = useState<Detail | null>(null);
   const [editingDetail, setEditingDetail] = useState<Detail | null>(null);
@@ -177,8 +177,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   }, []);
 
-  // Aquí se eliminó la condición "if (data && data.length > 0)" para que siempre se actualice el estado,
-  // incluso si la respuesta es un arreglo vacío.
+  // Aquí se actualizan las tablas de acuerdo al tipo de detalle
   const fetchMurosDetails = useCallback(() => {
     fetchData<TabItem[]>(
       `${constantUrlApiEndpoint}/details/all/Muro/`,
@@ -231,7 +230,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   };
 
-  // Efecto de carga inicial de detalles
+  // Efectos de carga inicial
   useEffect(() => {
     if (hasLoaded) fetchFetchedDetails();
   }, [hasLoaded, fetchFetchedDetails]);
@@ -255,7 +254,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     hasLoaded,
   ]);
 
-  // Si editingDetail tiene material pero material_id=0, buscar el id correspondiente
+  // Actualiza el id del material en caso de edición si es necesario
   useEffect(() => {
     if (
       editingDetail &&
@@ -465,9 +464,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     })();
   };
 
-  // ========================================================
   // Funciones de edición inline
-  // ========================================================
   const handleInlineEdit = (item: TabItem, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingRowId(item.id_detail ?? item.id ?? null);
@@ -502,17 +499,36 @@ const ConstructiveDetailsComponent: React.FC = () => {
       let url = `${constantUrlApiEndpoint}/${item.id_detail}/details/update`;
       let payload;
       if (detailType === "Piso") {
+        // Se reemplaza el uso de "||" por una comprobación que respeta valores vacíos
         payload = {
           info: {
             ref_aisl_vertical: {
-              d: editValues.vertD || item.info?.ref_aisl_vertical?.d,
-              e_aisl: editValues.vertEAisl || item.info?.ref_aisl_vertical?.e_aisl,
-              lambda: editValues.vertLambda || item.info?.ref_aisl_vertical?.lambda,
+              d:
+                editValues.vertD !== undefined
+                  ? editValues.vertD
+                  : item.info?.ref_aisl_vertical?.d,
+              e_aisl:
+                editValues.vertEAisl !== undefined
+                  ? editValues.vertEAisl
+                  : item.info?.ref_aisl_vertical?.e_aisl,
+              lambda:
+                editValues.vertLambda !== undefined
+                  ? editValues.vertLambda
+                  : item.info?.ref_aisl_vertical?.lambda,
             },
             ref_aisl_horizontal: {
-              d: editValues.horizD || item.info?.ref_aisl_horizontal?.d,
-              e_aisl: editValues.horizEAisl || item.info?.ref_aisl_horizontal?.e_aisl,
-              lambda: editValues.horizLambda || item.info?.ref_aisl_horizontal?.lambda,
+              d:
+                editValues.horizD !== undefined
+                  ? editValues.horizD
+                  : item.info?.ref_aisl_horizontal?.d,
+              e_aisl:
+                editValues.horizEAisl !== undefined
+                  ? editValues.horizEAisl
+                  : item.info?.ref_aisl_horizontal?.e_aisl,
+              lambda:
+                editValues.horizLambda !== undefined
+                  ? editValues.horizLambda
+                  : item.info?.ref_aisl_horizontal?.lambda,
             },
           },
         };
@@ -545,9 +561,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   };
 
-  // ========================================================
   // Renderizado "Detalles Generales" (Vista Inicial)
-  // ========================================================
   const renderInitialDetails = (inModal: boolean = false) => {
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
@@ -657,9 +671,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     );
   };
 
-  // ========================================================
   // Renderizado de las pestañas (Muros, Techumbre, Pisos)
-  // ========================================================
   const renderDetailsTabs = () => (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
@@ -720,9 +732,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     </div>
   );
 
-  // ========================================================
   // Renderizado de Tablas con edición inline
-  // ========================================================
   // MUROS
   const renderMurosTable = () => {
     const columnsMuros = [
@@ -930,6 +940,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     );
   };
 
+  // Función auxiliar para formatear números
   const formatNumber = (num: number | undefined, decimals = 3) => {
     return num != null && num !== 0 ? num.toFixed(decimals) : "-";
   };
@@ -971,15 +982,28 @@ const ConstructiveDetailsComponent: React.FC = () => {
           Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
             ? item.info.aislacion_bajo_piso.e_aisl
             : "-",
+        // Cada input usa la lógica para que si el valor es borrado quede ""
         vertLambda: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
-            value={editValues.vertLambda || vert.lambda || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, vertLambda: e.target.value }))
+            value={
+              editValues.vertLambda !== undefined
+                ? editValues.vertLambda
+                : (vert.lambda && Number(vert.lambda) !== 0 ? Number(vert.lambda).toFixed(3) : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                vertLambda: Number(value) === 0 ? "" : value,
+              }));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
           />
         ) : vert.lambda && Number(vert.lambda) !== 0 ? (
           Number(vert.lambda).toFixed(3)
@@ -989,12 +1013,24 @@ const ConstructiveDetailsComponent: React.FC = () => {
         vertEAisl: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
-            value={editValues.vertEAisl || vert.e_aisl || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, vertEAisl: e.target.value }))
+            value={
+              editValues.vertEAisl !== undefined
+                ? editValues.vertEAisl
+                : (vert.e_aisl && Number(vert.e_aisl) !== 0 ? vert.e_aisl : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                vertEAisl: Number(value) === 0 ? "" : value,
+              }));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
           />
         ) : vert.e_aisl ? (
           vert.e_aisl
@@ -1004,12 +1040,24 @@ const ConstructiveDetailsComponent: React.FC = () => {
         vertD: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
-            value={editValues.vertD || vert.d || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, vertD: e.target.value }))
+            value={
+              editValues.vertD !== undefined
+                ? editValues.vertD
+                : (vert.d && Number(vert.d) !== 0 ? vert.d : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                vertD: Number(value) === 0 ? "" : value,
+              }));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
           />
         ) : vert.d ? (
           vert.d
@@ -1019,12 +1067,24 @@ const ConstructiveDetailsComponent: React.FC = () => {
         horizLambda: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
-            value={editValues.horizLambda || horiz.lambda || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, horizLambda: e.target.value }))
+            value={
+              editValues.horizLambda !== undefined
+                ? editValues.horizLambda
+                : (horiz.lambda && Number(horiz.lambda) !== 0 ? Number(horiz.lambda).toFixed(3) : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                horizLambda: Number(value) === 0 ? "" : value,
+              }));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
           />
         ) : horiz.lambda && Number(horiz.lambda) !== 0 ? (
           Number(horiz.lambda).toFixed(3)
@@ -1034,12 +1094,24 @@ const ConstructiveDetailsComponent: React.FC = () => {
         horizEAisl: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
-            value={editValues.horizEAisl || horiz.e_aisl || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, horizEAisl: e.target.value }))
+            value={
+              editValues.horizEAisl !== undefined
+                ? editValues.horizEAisl
+                : (horiz.e_aisl && Number(horiz.e_aisl) !== 0 ? horiz.e_aisl : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                horizEAisl: Number(value) === 0 ? "" : value,
+              }));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
           />
         ) : horiz.e_aisl ? (
           horiz.e_aisl
@@ -1049,12 +1121,24 @@ const ConstructiveDetailsComponent: React.FC = () => {
         horizD: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
-            value={editValues.horizD || horiz.d || ""}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditValues((prev: Record<string, any>) => ({ ...prev, horizD: e.target.value }))
+            value={
+              editValues.horizD !== undefined
+                ? editValues.horizD
+                : (horiz.d && Number(horiz.d) !== 0 ? horiz.d : "")
             }
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditValues((prev: Record<string, any>) => ({
+                ...prev,
+                horizD: Number(value) === 0 ? "" : value,
+              }));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
           />
         ) : horiz.d ? (
           horiz.d
@@ -1221,6 +1305,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             <label>Espesor capa (cm)</label>
             <input
               type="number"
+              min="1"
               className="form-control"
               placeholder="Espesor capa (cm)"
               value={newDetailForm.layer_thickness ?? ""}
@@ -1231,6 +1316,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
                 })
               }
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                if (e.key === "-") e.preventDefault();
+              }}
             />
           </div>
         </form>
@@ -1373,6 +1461,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               <label>Espesor de capa (cm)</label>
               <input
                 type="number"
+                min="1"
                 className="form-control"
                 value={editingDetail.layer_thickness}
                 onChange={(e) =>
@@ -1381,6 +1470,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
                   )
                 }
                 onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === "-") e.preventDefault();
+                }}
               />
             </div>
           </form>

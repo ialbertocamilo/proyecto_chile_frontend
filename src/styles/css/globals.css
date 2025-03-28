@@ -123,7 +123,9 @@ a {
   transform: translateX(-50%) !important;
   */
 }
-
+.table th {
+  color: var(--primary-color) !important; 
+}
 /* Modifica los botones dentro de las tablas  de lista de proyectos*/
 .btn-table-list {
   width: 1.3rem !important;

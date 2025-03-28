@@ -849,7 +849,7 @@ const TabMuroCreate: React.FC = () => {
   };
 
   const renderContent = () => (
-    <div className="d-flex flex-column gap-4">
+    <div className="col-12">
       <div className="table-responsive">
         <div className="d-flex w-100 mb-4">
           <div className="p-2 flex-fill">

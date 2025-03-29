@@ -298,6 +298,11 @@ const TabCeilingCreate: React.FC = () => {
               type="number"
               className="form-control"
               value={editingValues.area}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
               onChange={(e) => setEditingValues({ ...editingValues, area: Number(e.target.value) })}
             />
           );
@@ -462,6 +467,11 @@ const TabCeilingCreate: React.FC = () => {
                 id="area"
                 className="form-control"
                 value={area}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => setArea(Number(e.target.value))}
               />
             </div>

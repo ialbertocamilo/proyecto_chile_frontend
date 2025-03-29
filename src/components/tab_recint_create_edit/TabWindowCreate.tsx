@@ -12,6 +12,13 @@ const TabWindowCreate: React.FC = () => {
   const projectId = localStorage.getItem("project_id_edit");
   const token = localStorage.getItem("token") || "";
 
+  // Función para formatear valores: si es 0 o "N/A" devuelve "-"
+  const formatValue = (value: any, decimals: number = 2) => {
+    if (value === 0 || value === "N/A") return "-";
+    if (typeof value === "number") return value.toFixed(decimals);
+    return value;
+  };
+
   // Estados para edición de ventana
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [editData, setEditData] = useState<any>(null);
@@ -609,7 +616,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          Number(row.alto).toFixed(2)
+          formatValue(row.alto)
         ),
     },
     {
@@ -631,7 +638,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          Number(row.ancho).toFixed(2)
+          formatValue(row.ancho)
         ),
     },
     {
@@ -659,7 +666,7 @@ const TabWindowCreate: React.FC = () => {
         ),
     },
     // ========================================
-    // FAV (con inputs sin permitir negativos)
+    // FAV (con inputs sin permitir negativos y formateo de valores)
     {
       headerName: "D [m]",
       field: "fav1_D",
@@ -676,13 +683,11 @@ const TabWindowCreate: React.FC = () => {
               handleFavEditChange("fav1_D", Number(e.target.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
+              if (e.key === "-") e.preventDefault();
             }}
           />
         ) : (
-          row.fav1_D
+          formatValue(row.fav1_D)
         ),
       cellStyle: {
         position: "sticky",
@@ -707,13 +712,11 @@ const TabWindowCreate: React.FC = () => {
               handleFavEditChange("fav1_L", Number(e.target.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
+              if (e.key === "-") e.preventDefault();
             }}
           />
         ) : (
-          row.fav1_L
+          formatValue(row.fav1_L)
         ),
       cellStyle: {
         position: "sticky",
@@ -738,13 +741,11 @@ const TabWindowCreate: React.FC = () => {
               handleFavEditChange("fav2izq_P", Number(e.target.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
+              if (e.key === "-") e.preventDefault();
             }}
           />
         ) : (
-          row.fav2izq_P
+          formatValue(row.fav2izq_P)
         ),
       cellStyle: {
         position: "sticky",
@@ -769,13 +770,11 @@ const TabWindowCreate: React.FC = () => {
               handleFavEditChange("fav2izq_S", Number(e.target.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
+              if (e.key === "-") e.preventDefault();
             }}
           />
         ) : (
-          row.fav2izq_S
+          formatValue(row.fav2izq_S)
         ),
       cellStyle: {
         position: "sticky",
@@ -800,13 +799,11 @@ const TabWindowCreate: React.FC = () => {
               handleFavEditChange("fav2der_P", Number(e.target.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
+              if (e.key === "-") e.preventDefault();
             }}
           />
         ) : (
-          row.fav2der_P
+          formatValue(row.fav2der_P)
         ),
       cellStyle: {
         position: "sticky",
@@ -831,13 +828,11 @@ const TabWindowCreate: React.FC = () => {
               handleFavEditChange("fav2der_S", Number(e.target.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
+              if (e.key === "-") e.preventDefault();
             }}
           />
         ) : (
-          row.fav2der_S
+          formatValue(row.fav2der_S)
         ),
       cellStyle: {
         position: "sticky",
@@ -862,13 +857,11 @@ const TabWindowCreate: React.FC = () => {
               handleFavEditChange("fav3_E", Number(e.target.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
+              if (e.key === "-") e.preventDefault();
             }}
           />
         ) : (
-          row.fav3_E
+          formatValue(row.fav3_E)
         ),
       cellStyle: {
         position: "sticky",
@@ -893,13 +886,11 @@ const TabWindowCreate: React.FC = () => {
               handleFavEditChange("fav3_T", Number(e.target.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
+              if (e.key === "-") e.preventDefault();
             }}
           />
         ) : (
-          row.fav3_T
+          formatValue(row.fav3_T)
         ),
       cellStyle: {
         position: "sticky",
@@ -924,13 +915,11 @@ const TabWindowCreate: React.FC = () => {
               handleFavEditChange("fav3_beta", Number(e.target.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
+              if (e.key === "-") e.preventDefault();
             }}
           />
         ) : (
-          row.fav3_beta
+          formatValue(row.fav3_beta)
         ),
       cellStyle: {
         position: "sticky",
@@ -955,13 +944,11 @@ const TabWindowCreate: React.FC = () => {
               handleFavEditChange("fav3_alpha", Number(e.target.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
+              if (e.key === "-") e.preventDefault();
             }}
           />
         ) : (
-          row.fav3_alpha
+          formatValue(row.fav3_alpha)
         ),
       cellStyle: {
         position: "sticky",

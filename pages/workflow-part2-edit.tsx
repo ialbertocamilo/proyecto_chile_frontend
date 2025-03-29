@@ -639,9 +639,9 @@ const WorkFlowpar2editPage: React.FC = () => {
     const detailType = detailTypeMapping[tabStep4];
     const filteredDetails = detailType
       ? fetchedDetails.filter(
-        (det) =>
-          det.scantilon_location.toLowerCase() === detailType.toLowerCase()
-      )
+          (det) =>
+            det.scantilon_location.toLowerCase() === detailType.toLowerCase()
+        )
       : fetchedDetails;
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
@@ -989,15 +989,21 @@ const WorkFlowpar2editPage: React.FC = () => {
         vertLambda: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
             value={vertical.lambda}
             onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue.includes("-")) {
+                notify("El guion no está permitido");
+                return;
+              }
               setEditingPisosData((prev) => ({
                 ...prev,
-                ref_aisl_vertical: { ...prev.ref_aisl_vertical, lambda: e.target.value },
-              }))
-            }
+                ref_aisl_vertical: { ...prev.ref_aisl_vertical, lambda: newValue },
+              }));
+            }}
           />
         ) : (
           <>{formatValue(Number(vertical.lambda))}</>
@@ -1005,15 +1011,21 @@ const WorkFlowpar2editPage: React.FC = () => {
         vertEAisl: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
             value={vertical.e_aisl}
             onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue.includes("-")) {
+                notify("El guion no está permitido");
+                return;
+              }
               setEditingPisosData((prev) => ({
                 ...prev,
-                ref_aisl_vertical: { ...prev.ref_aisl_vertical, e_aisl: e.target.value },
-              }))
-            }
+                ref_aisl_vertical: { ...prev.ref_aisl_vertical, e_aisl: newValue },
+              }));
+            }}
           />
         ) : (
           <>{formatValue(Number(vertical.e_aisl))}</>
@@ -1021,15 +1033,21 @@ const WorkFlowpar2editPage: React.FC = () => {
         vertD: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
             value={vertical.d}
             onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue.includes("-")) {
+                notify("El guion no está permitido");
+                return;
+              }
               setEditingPisosData((prev) => ({
                 ...prev,
-                ref_aisl_vertical: { ...prev.ref_aisl_vertical, d: e.target.value },
-              }))
-            }
+                ref_aisl_vertical: { ...prev.ref_aisl_vertical, d: newValue },
+              }));
+            }}
           />
         ) : (
           <>{formatValue(Number(vertical.d))}</>
@@ -1037,15 +1055,21 @@ const WorkFlowpar2editPage: React.FC = () => {
         horizLambda: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
             value={horizontal.lambda}
             onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue.includes("-")) {
+                notify("El guion no está permitido");
+                return;
+              }
               setEditingPisosData((prev) => ({
                 ...prev,
-                ref_aisl_horizontal: { ...prev.ref_aisl_horizontal, lambda: e.target.value },
-              }))
-            }
+                ref_aisl_horizontal: { ...prev.ref_aisl_horizontal, lambda: newValue },
+              }));
+            }}
           />
         ) : (
           <>{formatValue(Number(horizontal.lambda))}</>
@@ -1053,15 +1077,21 @@ const WorkFlowpar2editPage: React.FC = () => {
         horizEAisl: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
             value={horizontal.e_aisl}
             onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue.includes("-")) {
+                notify("El guion no está permitido");
+                return;
+              }
               setEditingPisosData((prev) => ({
                 ...prev,
-                ref_aisl_horizontal: { ...prev.ref_aisl_horizontal, e_aisl: e.target.value },
-              }))
-            }
+                ref_aisl_horizontal: { ...prev.ref_aisl_horizontal, e_aisl: newValue },
+              }));
+            }}
           />
         ) : (
           <>{formatValue(Number(horizontal.e_aisl))}</>
@@ -1069,15 +1099,21 @@ const WorkFlowpar2editPage: React.FC = () => {
         horizD: isEditing ? (
           <input
             type="number"
+            min="0"
             className="form-control form-control-sm"
             value={horizontal.d}
             onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue.includes("-")) {
+                notify("El guion no está permitido");
+                return;
+              }
               setEditingPisosData((prev) => ({
                 ...prev,
-                ref_aisl_horizontal: { ...prev.ref_aisl_horizontal, d: e.target.value },
-              }))
-            }
+                ref_aisl_horizontal: { ...prev.ref_aisl_horizontal, d: newValue },
+              }));
+            }}
           />
         ) : (
           <>{formatValue(Number(horizontal.d))}</>
@@ -1559,12 +1595,14 @@ const WorkFlowpar2editPage: React.FC = () => {
               className="form-control"
               placeholder="Nombre Detalle"
               value={newDetailForm.name_detail}
-              onChange={(e) =>
-                setNewDetailForm((prev) => ({
-                  ...prev,
-                  name_detail: e.target.value,
-                }))
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.includes("-")) {
+                  notify("El guion no está permitido");
+                  return;
+                }
+                setNewDetailForm((prev) => ({ ...prev, name_detail: value }));
+              }}
             />
           </div>
           <div className="form-group">
@@ -1590,17 +1628,22 @@ const WorkFlowpar2editPage: React.FC = () => {
           <div className="form-group">
             <label>Espesor de capa (cm)</label>
             <input
-              type="number"
-              className="form-control"
-              placeholder="Espesor (cm)"
-              value={newDetailForm.layer_thickness ?? ""}
-              onChange={(e) =>
-                setNewDetailForm((prev) => ({
-                  ...prev,
-                  layer_thickness: parseFloat(e.target.value),
-                }))
-              }
-            />
+  type="number"
+  min="0"
+  className="form-control"
+  placeholder="Espesor (cm)"
+  value={newDetailForm.layer_thickness ?? ""}
+  onChange={(e) => {
+    const value = e.target.value;
+    if (value.includes("-")) {
+      return;
+    }
+    setNewDetailForm((prev) => ({
+      ...prev,
+      layer_thickness: parseFloat(value),
+    }));
+  }}
+/>
           </div>
         </form>
       </ModalCreate>
@@ -1719,9 +1762,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: { ...prev.atributs, u_vidrio: parseFloat(e.target.value) },
-                      }
+                          ...prev,
+                          atributs: { ...prev.atributs, u_vidrio: parseFloat(e.target.value) },
+                        }
                       : prev
                   )
                 }
@@ -1737,9 +1780,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: { ...prev.atributs, fs_vidrio: parseFloat(e.target.value) },
-                      }
+                          ...prev,
+                          atributs: { ...prev.atributs, fs_vidrio: parseFloat(e.target.value) },
+                        }
                       : prev
                   )
                 }
@@ -1796,16 +1839,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 value={editingVentana.fm !== undefined ? Math.round(editingVentana.fm * 100) : ""}
                 onChange={(e) => {
                   const rawValue = e.target.value;
-                  // Permite campo vacío temporalmente
                   if (rawValue === "") {
                     setEditingVentana(prev => prev ? { ...prev, fm: 0 } : prev);
                     return;
                   }
-
                   const val = parseInt(rawValue, 10);
-                  if (isNaN(val)) return; // No actualiza si no es número
-
-                  // Asegura que esté entre 0 y 100
+                  if (isNaN(val)) return;
                   const clampedValue = Math.min(100, Math.max(0, val));
                   setEditingVentana(prev =>
                     prev ? { ...prev, fm: clampedValue / 100 } : prev
@@ -1849,9 +1888,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: { ...prev.atributs, u_puerta_opaca: parseFloat(e.target.value) },
-                      }
+                          ...prev,
+                          atributs: { ...prev.atributs, u_puerta_opaca: parseFloat(e.target.value) },
+                        }
                       : prev
                   )
                 }
@@ -1892,20 +1931,18 @@ const WorkFlowpar2editPage: React.FC = () => {
                     );
                     return;
                   }
-
                   const val = parseInt(rawValue, 10);
                   if (isNaN(val)) return;
-
                   const clampedValue = Math.min(100, Math.max(0, val));
                   setEditingPuerta(prev =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          porcentaje_vidrio: clampedValue / 100
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: clampedValue / 100
+                          }
                         }
-                      }
                       : prev
                   );
                 }}
@@ -1936,10 +1973,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                     setEditingPuerta(prev => prev ? { ...prev, fm: 0 } : prev);
                     return;
                   }
-
                   const val = parseInt(rawValue, 10);
                   if (isNaN(val)) return;
-
                   const clampedValue = Math.min(100, Math.max(0, val));
                   setEditingPuerta(prev =>
                     prev ? { ...prev, fm: clampedValue / 100 } : prev

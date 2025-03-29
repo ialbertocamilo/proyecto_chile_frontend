@@ -247,7 +247,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     if (editingVentanaForm) {
       setVentanaFmInput(
         editingVentanaForm.fm !== undefined
-          ? String(editingVentanaForm.fm * 100)
+          ? String(Math.round(editingVentanaForm.fm * 100))
           : ""
       );
     }
@@ -258,7 +258,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     if (editingPuertaForm && editingPuertaForm.atributs) {
       setPuertaPorcentajeInput(
         editingPuertaForm.atributs.porcentaje_vidrio !== undefined
-          ? String(editingPuertaForm.atributs.porcentaje_vidrio * 100)
+          ? String(Math.round(editingPuertaForm.atributs.porcentaje_vidrio * 100))
           : ""
       );
     }
@@ -556,7 +556,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       }
       fetchFetchedDetails();
       setEditingDetail(null);
-      setShowDetallesModal(true); // <-- Abre el modal de Detalles generales
+      setShowDetallesModal(true);
     } catch (error: unknown) {
       console.error("Error al actualizar el detalle:", error);
       notify("Error al actualizar el Detalle.");
@@ -785,9 +785,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         },
       };
       await axios.put(url, payload, { headers });
-      notify(
-        `Detalle tipo Piso actualizado con éxito`
-      );
+      notify("Detalle tipo Piso actualizado con éxito");
       setPisosTabList((prev) =>
         prev.map((item) =>
           item.id === detail.id
@@ -843,14 +841,14 @@ const WorkFlowpar2createPage: React.FC = () => {
       );
       setEditingPuertaForm(null);
     } catch (error: any) {
-      console.error("Error al actualizar ventana:", error);
+      console.error("Error al actualizar puerta:", error);
       if (
         error?.response?.data?.detail ===
         "El nombre del elemento ya existe dentro del tipo door"
       ) {
         notify("El Nombre de la Puerta ya existe");
       } else {
-        notify("Error al actualizar la ventana");
+        notify("Error al actualizar la puerta");
       }
     }
   };
@@ -1451,7 +1449,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         ),
         fm: (
           <span style={textStyle}>
-            {item.fm != null ? (item.fm * 100).toFixed(2) + "%" : "--"}
+            {item.fm != null ? Math.round(item.fm * 100) + "%" : "--"}
           </span>
         ),
         acciones:
@@ -1526,7 +1524,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         porcentaje_vidrio: (
           <span style={textStyle}>
             {item.atributs?.porcentaje_vidrio != null
-              ? (item.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"
+              ? Math.round(item.atributs.porcentaje_vidrio * 100) + "%"
               : "--"}
           </span>
         ),
@@ -1537,7 +1535,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         ),
         fm: (
           <span style={textStyle}>
-            {item.fm != null ? (item.fm * 100).toFixed(2) + "%" : "--"}
+            {item.fm != null ? Math.round(item.fm * 100) + "%" : "--"}
           </span>
         ),
         acciones:
@@ -1935,7 +1933,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                   if (val < 0) val = 0;
                   setVentanaFmInput(String(val));
                   setEditingVentanaForm((prev) =>
-                    prev ? { ...prev, fm: val / 100 } : prev
+                    prev ? { ...prev, fm: Math.round(val) / 100 } : prev
                   );
                 }}
               />
@@ -2033,7 +2031,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                           ...prev,
                           atributs: {
                             ...prev.atributs,
-                            porcentaje_vidrio: val / 100,
+                            porcentaje_vidrio: Math.round(val) / 100,
                           },
                         }
                       : prev
@@ -2064,7 +2062,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 className="form-control"
                 value={
                   editingPuertaForm.fm !== undefined
-                    ? editingPuertaForm.fm * 100
+                    ? Math.round(editingPuertaForm.fm * 100)
                     : ""
                 }
                 onChange={(e) => {
@@ -2078,7 +2076,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                   if (val > 100) val = 100;
                   if (val < 0) val = 0;
                   setEditingPuertaForm((prev) =>
-                    prev ? { ...prev, fm: val / 100 } : prev
+                    prev ? { ...prev, fm: Math.round(val) / 100 } : prev
                   );
                 }}
               />
@@ -2201,18 +2199,13 @@ const WorkFlowpar2createPage: React.FC = () => {
 
       {/* Modal para mostrar Detalles Generales filtrados según el tipo */}
       {showDetallesModal && (
+        // Aquí iría el componente/modal para mostrar los detalles generales
         <ModalCreate
+          onSave={() => {}}
           detail={null}
-          isOpen={true}
+          isOpen={showDetallesModal}
           title="Detalles Generales"
           onClose={() => setShowDetallesModal(false)}
-          onSave={() => {}}
-          hideFooter={true}
-          modalStyle={{
-            maxWidth: "70%",
-            width: "70%",
-            padding: "32px",
-          }}
         >
           {renderDetallesModalContent()}
         </ModalCreate>

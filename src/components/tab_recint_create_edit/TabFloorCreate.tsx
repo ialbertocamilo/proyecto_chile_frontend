@@ -92,6 +92,13 @@ const TabFloorCreate: React.FC = () => {
     return value.toString();
   };
 
+  // Manejador para prevenir la entrada del guión
+  const handlePreventHyphen = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === '-') {
+      e.preventDefault();
+    }
+  };
+
   // Cargar las opciones de pisos y los datos de la tabla al montar el componente
   useEffect(() => {
     fetchFloorOptions();
@@ -340,6 +347,7 @@ const TabFloorCreate: React.FC = () => {
             className="form-control"
             value={editValues.area}
             onChange={(e) => handleEditChange("area", Number(e.target.value))}
+            onKeyDown={handlePreventHyphen}
           />
         );
       case "perimetroSuelo":
@@ -349,6 +357,7 @@ const TabFloorCreate: React.FC = () => {
             className="form-control"
             value={editValues.parameter}
             onChange={(e) => handleEditChange("parameter", Number(e.target.value))}
+            onKeyDown={handlePreventHyphen}
           />
         );
       case "pisoVentilado":
@@ -594,6 +603,7 @@ const TabFloorCreate: React.FC = () => {
                 className="form-control"
                 value={area}
                 onChange={(e) => setArea(Number(e.target.value))}
+                onKeyDown={handlePreventHyphen}
               />
             </div>
           </div>
@@ -609,6 +619,7 @@ const TabFloorCreate: React.FC = () => {
                 className="form-control"
                 value={parameter}
                 onChange={(e) => setParameter(Number(e.target.value))}
+                onKeyDown={handlePreventHyphen}
               />
             </div>
           </div>

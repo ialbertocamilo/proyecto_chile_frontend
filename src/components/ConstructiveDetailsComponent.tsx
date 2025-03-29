@@ -728,7 +728,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       const isEditing = editingRowId === (item.id_detail ?? item.id);
       return {
         nombreAbreviado: item.name_detail,
-        valorU: item.value_u?.toFixed(3) ?? "--",
+        valorU: item.value_u && Number(item.value_u) !== 0 ? Number(item.value_u).toFixed(3) : "--",
         colorExterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}
@@ -906,7 +906,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     );
   };
 
-  // Función auxiliar para formatear números
+  // Función auxiliar para formatear números (en vista, no en inputs de edición)
   const formatNumber = (num: number | undefined, decimals = 3) => {
     return num != null && num !== 0 ? num.toFixed(decimals) : "-";
   };
@@ -948,7 +948,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
             ? item.info.aislacion_bajo_piso.e_aisl
             : "-",
-        // Para los campos de edición se verifica el valor ingresado.
+        // Para los campos de edición se usa input; si el valor es 0 o vacío, se deja el campo en blanco para edición.
         vertLambda: isEditing ? (
           <input
             type="number"
@@ -964,18 +964,14 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                vertLambda: value === "" ? "" : value,
+                vertLambda: value === "0" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}
           />
-        ) : vert.lambda && Number(vert.lambda) !== 0 ? (
-          Number(vert.lambda).toFixed(3)
-        ) : (
-          "-"
-        ),
+        ) : (vert.lambda && Number(vert.lambda) !== 0 ? Number(vert.lambda).toFixed(3) : "-"),
         vertEAisl: isEditing ? (
           <input
             type="number"
@@ -991,7 +987,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                vertEAisl: value === "" ? "" : value,
+                vertEAisl: value === "0" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
@@ -1018,7 +1014,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                vertD: value === "" ? "" : value,
+                vertD: value === "0" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
@@ -1045,18 +1041,14 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                horizLambda: value === "" ? "" : value,
+                horizLambda: value === "0" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}
           />
-        ) : horiz.lambda && Number(horiz.lambda) !== 0 ? (
-          Number(horiz.lambda).toFixed(3)
-        ) : (
-          "-"
-        ),
+        ) : (horiz.lambda && Number(horiz.lambda) !== 0 ? Number(horiz.lambda).toFixed(3) : "-"),
         horizEAisl: isEditing ? (
           <input
             type="number"
@@ -1072,7 +1064,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                horizEAisl: value === "" ? "" : value,
+                horizEAisl: value === "0" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
@@ -1099,7 +1091,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                horizD: value === "" ? "" : value,
+                horizD: value === "0" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {

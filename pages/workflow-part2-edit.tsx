@@ -639,9 +639,9 @@ const WorkFlowpar2editPage: React.FC = () => {
     const detailType = detailTypeMapping[tabStep4];
     const filteredDetails = detailType
       ? fetchedDetails.filter(
-          (det) =>
-            det.scantilon_location.toLowerCase() === detailType.toLowerCase()
-        )
+        (det) =>
+          det.scantilon_location.toLowerCase() === detailType.toLowerCase()
+      )
       : fetchedDetails;
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
@@ -1613,7 +1613,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         isOpen={showDetallesModal}
         title="Detalles Generales"
         onClose={() => setShowDetallesModal(false)}
-        onSave={() => {}}
+        onSave={() => { }}
         hideFooter={true}
         modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
       >
@@ -1653,7 +1653,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             </div>
             <div className="form-group">
               <label>Material</label>
-              <select 
+              <select
                 className="form-control"
                 value={editingDetail.id_material}
                 onChange={(e) =>
@@ -1719,9 +1719,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: { ...prev.atributs, u_vidrio: parseFloat(e.target.value) },
-                        }
+                        ...prev,
+                        atributs: { ...prev.atributs, u_vidrio: parseFloat(e.target.value) },
+                      }
                       : prev
                   )
                 }
@@ -1737,9 +1737,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: { ...prev.atributs, fs_vidrio: parseFloat(e.target.value) },
-                        }
+                        ...prev,
+                        atributs: { ...prev.atributs, fs_vidrio: parseFloat(e.target.value) },
+                      }
                       : prev
                   )
                 }
@@ -1793,17 +1793,22 @@ const WorkFlowpar2editPage: React.FC = () => {
               <input
                 type="number"
                 className="form-control"
-                value={editingVentana.fm !== undefined ? (editingVentana.fm * 100).toString() : ""}
+                value={editingVentana.fm !== undefined ? Math.round(editingVentana.fm * 100) : ""}
                 onChange={(e) => {
-                  let val = Number(e.target.value);
-                  if (isNaN(val)) {
-                    setEditingVentana((prev) => prev ? { ...prev, fm: 0 } : prev);
+                  const rawValue = e.target.value;
+                  // Permite campo vacío temporalmente
+                  if (rawValue === "") {
+                    setEditingVentana(prev => prev ? { ...prev, fm: 0 } : prev);
                     return;
                   }
-                  if (val > 100) val = 100;
-                  if (val < 0) val = 0;
-                  setEditingVentana((prev) =>
-                    prev ? { ...prev, fm: val / 100 } : prev
+
+                  const val = parseInt(rawValue, 10);
+                  if (isNaN(val)) return; // No actualiza si no es número
+
+                  // Asegura que esté entre 0 y 100
+                  const clampedValue = Math.min(100, Math.max(0, val));
+                  setEditingVentana(prev =>
+                    prev ? { ...prev, fm: clampedValue / 100 } : prev
                   );
                 }}
               />
@@ -1844,9 +1849,9 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: { ...prev.atributs, u_puerta_opaca: parseFloat(e.target.value) },
-                        }
+                        ...prev,
+                        atributs: { ...prev.atributs, u_puerta_opaca: parseFloat(e.target.value) },
+                      }
                       : prev
                   )
                 }
@@ -1874,22 +1879,33 @@ const WorkFlowpar2editPage: React.FC = () => {
                 className="form-control"
                 value={
                   editingPuerta.atributs?.porcentaje_vidrio !== undefined
-                    ? (editingPuerta.atributs.porcentaje_vidrio * 100).toString()
+                    ? Math.round(editingPuerta.atributs.porcentaje_vidrio * 100)
                     : ""
                 }
                 onChange={(e) => {
-                  let val = Number(e.target.value);
-                  if (isNaN(val)) {
-                    setEditingPuerta((prev) =>
-                      prev ? { ...prev, atributs: { ...prev.atributs, porcentaje_vidrio: 0 } } : prev
+                  const rawValue = e.target.value;
+                  if (rawValue === "") {
+                    setEditingPuerta(prev =>
+                      prev
+                        ? { ...prev, atributs: { ...prev.atributs, porcentaje_vidrio: 0 } }
+                        : prev
                     );
                     return;
                   }
-                  if (val > 100) val = 100;
-                  if (val < 0) val = 0;
-                  setEditingPuerta((prev) =>
+
+                  const val = parseInt(rawValue, 10);
+                  if (isNaN(val)) return;
+
+                  const clampedValue = Math.min(100, Math.max(0, val));
+                  setEditingPuerta(prev =>
                     prev
-                      ? { ...prev, atributs: { ...prev.atributs, porcentaje_vidrio: val / 100 } }
+                      ? {
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          porcentaje_vidrio: clampedValue / 100
+                        }
+                      }
                       : prev
                   );
                 }}
@@ -1913,17 +1929,20 @@ const WorkFlowpar2editPage: React.FC = () => {
               <input
                 type="number"
                 className="form-control"
-                value={editingPuerta.fm !== undefined ? (editingPuerta.fm * 100).toString() : ""}
+                value={editingPuerta.fm !== undefined ? Math.round(editingPuerta.fm * 100) : ""}
                 onChange={(e) => {
-                  let val = Number(e.target.value);
-                  if (isNaN(val)) {
-                    setEditingPuerta((prev) => prev ? { ...prev, fm: 0 } : prev);
+                  const rawValue = e.target.value;
+                  if (rawValue === "") {
+                    setEditingPuerta(prev => prev ? { ...prev, fm: 0 } : prev);
                     return;
                   }
-                  if (val > 100) val = 100;
-                  if (val < 0) val = 0;
-                  setEditingPuerta((prev) =>
-                    prev ? { ...prev, fm: val / 100 } : prev
+
+                  const val = parseInt(rawValue, 10);
+                  if (isNaN(val)) return;
+
+                  const clampedValue = Math.min(100, Math.max(0, val));
+                  setEditingPuerta(prev =>
+                    prev ? { ...prev, fm: clampedValue / 100 } : prev
                   );
                 }}
               />
@@ -1947,8 +1966,8 @@ const WorkFlowpar2editPage: React.FC = () => {
             {deleteItem.type === "detail"
               ? "¿Estás seguro de que deseas eliminar este detalle?"
               : deleteItem.type === "window"
-              ? "¿Estás seguro de que deseas eliminar esta ventana?"
-              : "¿Estás seguro de que deseas eliminar esta puerta?"}
+                ? "¿Estás seguro de que deseas eliminar esta ventana?"
+                : "¿Estás seguro de que deseas eliminar esta puerta?"}
           </p>
         </ModalCreate>
       )}

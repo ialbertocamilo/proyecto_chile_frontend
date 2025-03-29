@@ -472,7 +472,7 @@ const DataEntryPage: React.FC = () => {
 
   // === CREAR ELEMENTO TIPO PUERTA ===
   const handleCreateDoorElement = async (): Promise<boolean> => {
-    const fmInput = parseFloat(doorData.fm);
+    const fmInput = Number(doorData.fm);
     if (isNaN(fmInput) || fmInput < 0 || fmInput > 100) {
       notify("El valor de FM debe estar entre 0 y 100");
       return false;
@@ -908,15 +908,15 @@ const DataEntryPage: React.FC = () => {
             ),
             fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {(el.fm * 100).toFixed(2) + "%"}
+                {Math.round(el.fm * 100) + "%"}
               </span>
             ) : (
-              (el.fm * 100).toFixed(2) + "%"
+              Math.round(el.fm * 100) + "%"
             ),
             acciones: (
               <ActionButtons
                 onEdit={() =>
-                  setEditingWindowData({ ...el, fm: el.fm * 100 })
+                  setEditingWindowData({ ...el, fm: parseFloat((el.fm * 100).toFixed(4)) })
                 }
                 onDelete={() => confirmDeleteElement(el.id, "window")}
                 isDisabled={el.user_id == null}
@@ -1004,10 +1004,10 @@ const DataEntryPage: React.FC = () => {
               el.atributs.porcentaje_vidrio !== undefined ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {(el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"}
+                    {Math.round(el.atributs.porcentaje_vidrio * 100) + "%"}
                   </span>
                 ) : (
-                  (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"
+                  Math.round(el.atributs.porcentaje_vidrio * 100) + "%"
                 )
               ) : (
                 "0%"
@@ -1021,21 +1021,21 @@ const DataEntryPage: React.FC = () => {
             ),
             fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {(el.fm * 100).toFixed(2) + "%"}
+                {Math.round(el.fm * 100) + "%"}
               </span>
             ) : (
-              (el.fm * 100).toFixed(2) + "%"
+              Math.round(el.fm * 100) + "%"
             ),
             acciones: (
               <ActionButtons
                 onEdit={() =>
                   setEditingDoorData({
                     ...el,
-                    fm: el.fm * 100,
+                    fm: parseFloat((el.fm * 100).toFixed(4)),
                     atributs: {
                       ...el.atributs,
-                      porcentaje_vidrio: el.atributs.porcentaje_vidrio
-                        ? el.atributs.porcentaje_vidrio * 100
+                      porcentaje_vidrio: el.atributs?.porcentaje_vidrio
+                        ? parseFloat((el.atributs.porcentaje_vidrio * 100).toFixed(4))
                         : 0,
                     },
                   })

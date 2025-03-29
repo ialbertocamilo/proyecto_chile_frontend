@@ -308,7 +308,7 @@ const AdministrationPage: React.FC = () => {
                 clousure_type: (el.atributs as ElementAttributesWindow).clousure_type,
                 frame_type: (el.atributs as ElementAttributesWindow).frame_type,
                 u_marco: el.u_marco,
-                fm: el.fm * 100,
+                fm: Math.round(el.fm * 100), // Redondear a entero
               });
               setShowNewWindowModal(true);
             }}
@@ -396,9 +396,10 @@ const AdministrationPage: React.FC = () => {
                 u_puerta_opaca: (el.atributs as ElementAttributesDoor).u_puerta_opaca,
                 ventana_id: (el.atributs as ElementAttributesDoor).ventana_id,
                 u_marco: el.u_marco,
-                fm: el.fm * 100,
-                porcentaje_vidrio:
-                  (el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100,
+                fm: Math.round(el.fm * 100), // Redondear a entero
+                porcentaje_vidrio: Math.round(
+                  (el.atributs as ElementAttributesDoor).porcentaje_vidrio * 100
+                ), // Redondear a entero
               });
               setShowNewDoorModal(true);
             }}
@@ -592,53 +593,52 @@ const AdministrationPage: React.FC = () => {
 
   // Función para editar ventana
   const handleEditWindow = async () => {
-    if (!selectedWindowId) return;
-    try {
-      const payload = {
-        type: "window",
-        name_element: newWindow.name_element,
-        u_marco: newWindow.u_marco,
-        fm: newWindow.fm / 100, // Se envía el valor tal como se muestra en la UI
-        atributs: {
-          u_vidrio: newWindow.u_vidrio,
-          fs_vidrio: newWindow.fs_vidrio,
-          frame_type: newWindow.frame_type,
-          clousure_type: newWindow.clousure_type,
-        },
-      };
+  if (!selectedWindowId) return;
+  try {
+    const payload = {
+      type: "window",
+      name_element: newWindow.name_element,
+      u_marco: newWindow.u_marco,
+      fm: Math.round(newWindow.fm) / 100, // Asegura que no haya decimales
+      atributs: {
+        u_vidrio: newWindow.u_vidrio,
+        fs_vidrio: newWindow.fs_vidrio,
+        frame_type: newWindow.frame_type,
+        clousure_type: newWindow.clousure_type,
+      },
+    };
 
-      await handleEdit(
-        selectedWindowId,
-        payload,
-        "admin/elements",
-        "Actualizado con éxito.",
-        fetchElements
-      );
+    await handleEdit(
+      selectedWindowId,
+      payload,
+      "admin/elements",
+      "Actualizado con éxito.",
+      fetchElements
+    );
 
-      setShowNewWindowModal(false);
-      setNewWindow({
-        name_element: "",
-        u_vidrio: 0,
-        fs_vidrio: 0,
-        clousure_type: "",
-        frame_type: "",
-        u_marco: 0,
-        fm: 0,
-      });
-      setSelectedWindowId(null);
-    } catch (error: any) {
-      console.error("Error al actualizar ventana:", error);
-      if (
-        error?.response?.data?.detail ===
-        "El nombre del elemento ya existe dentro del tipo window"
-      ) {
-        notify("El Nombre de la Ventana ya existe");
-      } else {
-        notify("Error al actualizar la ventana");
-      }
+    setShowNewWindowModal(false);
+    setNewWindow({
+      name_element: "",
+      u_vidrio: 0,
+      fs_vidrio: 0,
+      clousure_type: "",
+      frame_type: "",
+      u_marco: 0,
+      fm: 0,
+    });
+    setSelectedWindowId(null);
+  } catch (error: any) {
+    console.error("Error al actualizar ventana:", error);
+    if (
+      error?.response?.data?.detail ===
+      "El nombre del elemento ya existe dentro del tipo window"
+    ) {
+      notify("El Nombre de la Ventana ya existe");
+    } else {
+      notify("Error al actualizar la ventana");
     }
-  };
-
+  }
+};
   // Función para editar puerta
   const handleEditDoor = async () => {
     if (!selectedDoorId) return;

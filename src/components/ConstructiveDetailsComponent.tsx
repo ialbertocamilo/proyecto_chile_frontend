@@ -502,14 +502,14 @@ const ConstructiveDetailsComponent: React.FC = () => {
         payload = {
           info: {
             ref_aisl_vertical: {
-              d: editValues.vertD || item.info?.ref_aisl_vertical?.d,
-              e_aisl: editValues.vertEAisl || item.info?.ref_aisl_vertical?.e_aisl,
-              lambda: editValues.vertLambda || item.info?.ref_aisl_vertical?.lambda,
+              d: editValues.vertD !== "" ? editValues.vertD : null,
+              e_aisl: editValues.vertEAisl !== "" ? editValues.vertEAisl : null,
+              lambda: editValues.vertLambda !== "" ? editValues.vertLambda : null,
             },
             ref_aisl_horizontal: {
-              d: editValues.horizD || item.info?.ref_aisl_horizontal?.d,
-              e_aisl: editValues.horizEAisl || item.info?.ref_aisl_horizontal?.e_aisl,
-              lambda: editValues.horizLambda || item.info?.ref_aisl_horizontal?.lambda,
+              d: editValues.horizD !== "" ? editValues.horizD : null,
+              e_aisl: editValues.horizEAisl !== "" ? editValues.horizEAisl : null,
+              lambda: editValues.horizLambda !== "" ? editValues.horizLambda : null,
             },
           },
         };
@@ -863,10 +863,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ),
         acciones: isEditing ? (
           <div onClick={(e) => e.stopPropagation()}>
-          <ActionButtonsConfirm  
-          onAccept={() => handleInlineSave(item, "Techo")}
-          onCancel={handleInlineCancel}
-          />
+            <ActionButtonsConfirm
+              onAccept={() => handleInlineSave(item, "Techo")}
+              onCancel={handleInlineCancel}
+            />
           </div>
         ) : (
           <>
@@ -881,7 +881,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               Editar
             </CustomButton>
             <CustomButton
-            className="btn-table"
+              className="btn-table"
               variant="deleteIcon"
               onClick={(e) => {
                 e.stopPropagation();
@@ -948,7 +948,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
             ? item.info.aislacion_bajo_piso.e_aisl
             : "-",
-        // En modo edición se revisa si el valor ingresado es 0 para asignarle "" (lo que luego se mostrará como guion en modo lectura)
+        // Para los campos de edición se verifica el valor ingresado.
         vertLambda: isEditing ? (
           <input
             type="number"
@@ -964,7 +964,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                vertLambda: Number(value) === 0 ? "" : value,
+                vertLambda: value === "" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
@@ -991,7 +991,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                vertEAisl: Number(value) === 0 ? "" : value,
+                vertEAisl: value === "" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
@@ -1018,7 +1018,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                vertD: Number(value) === 0 ? "" : value,
+                vertD: value === "" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
@@ -1045,7 +1045,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                horizLambda: Number(value) === 0 ? "" : value,
+                horizLambda: value === "" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
@@ -1072,7 +1072,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                horizEAisl: Number(value) === 0 ? "" : value,
+                horizEAisl: value === "" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
@@ -1099,7 +1099,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               const value = e.target.value;
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
-                horizD: Number(value) === 0 ? "" : value,
+                horizD: value === "" ? "" : value,
               }));
             }}
             onKeyDown={(e) => {
@@ -1112,12 +1112,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
           "-"
         ),
         acciones: isEditing ? (
-            <div onClick={(e) => e.stopPropagation()}>
-            <ActionButtonsConfirm  
-            onAccept={() => handleInlineSave(item, "Piso")}
-            onCancel={handleInlineCancel}
+          <div onClick={(e) => e.stopPropagation()}>
+            <ActionButtonsConfirm
+              onAccept={() => handleInlineSave(item, "Piso")}
+              onCancel={handleInlineCancel}
             />
-            </div>
+          </div>
         ) : (
           <>
             <CustomButton

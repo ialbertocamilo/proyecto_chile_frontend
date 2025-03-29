@@ -58,6 +58,11 @@ const TabDoorCreate: React.FC = () => {
   const [angleOptions, setAngleOptions] = useState<string[]>([]);
   const [doorOptions, setDoorOptions] = useState<any[]>([]);
 
+  // Función para formatear el valor a mostrar en las celdas
+  const displayValue = (value: any) => {
+    return value === 0 || value === "N/A" ? "-" : value;
+  };
+
   // Cargar datos y opciones al montar el componente
   useEffect(() => {
     const fetchData = async () => {
@@ -490,7 +495,7 @@ const TabDoorCreate: React.FC = () => {
             </select>
           );
         }
-        return row.tipoPuente;
+        return displayValue(row.tipoPuente);
       },
     },
     {
@@ -511,7 +516,7 @@ const TabDoorCreate: React.FC = () => {
             </select>
           );
         }
-        return row.characteristics;
+        return displayValue(row.characteristics);
       },
     },
     {
@@ -534,13 +539,13 @@ const TabDoorCreate: React.FC = () => {
             </select>
           );
         }
-        return row.anguloAzimut;
+        return displayValue(row.anguloAzimut);
       },
     },
     {
       headerName: "Orientación",
       field: "orientacion",
-      renderCell: (row: DoorData) => row.orientacion,
+      renderCell: (row: DoorData) => displayValue(row.orientacion),
     },
     {
       headerName: "Alto [m]",
@@ -556,7 +561,7 @@ const TabDoorCreate: React.FC = () => {
             />
           );
         }
-        return row.high;
+        return displayValue(row.high);
       },
     },
     {
@@ -573,7 +578,7 @@ const TabDoorCreate: React.FC = () => {
             />
           );
         }
-        return row.broad;
+        return displayValue(row.broad);
       },
     },
     {
@@ -610,7 +615,7 @@ const TabDoorCreate: React.FC = () => {
             onChange={(e) => handleFavEditChange("fav1D", Number(e.target.value))}
           />
         ) : (
-          row.fav1D
+          displayValue(row.fav1D)
         ),
       cellStyle: { position: "sticky", right: "240px", background: "#fff", zIndex: 1 },
     },
@@ -627,7 +632,7 @@ const TabDoorCreate: React.FC = () => {
             onChange={(e) => handleFavEditChange("fav1L", Number(e.target.value))}
           />
         ) : (
-          row.fav1L
+          displayValue(row.fav1L)
         ),
       cellStyle: { position: "sticky", right: "160px", background: "#fff", zIndex: 1 },
     },
@@ -644,7 +649,7 @@ const TabDoorCreate: React.FC = () => {
             onChange={(e) => handleFavEditChange("fav2izqP", Number(e.target.value))}
           />
         ) : (
-          row.fav2izqP
+          displayValue(row.fav2izqP)
         ),
       cellStyle: { position: "sticky", right: "80px", background: "#fff", zIndex: 1 },
     },
@@ -661,7 +666,7 @@ const TabDoorCreate: React.FC = () => {
             onChange={(e) => handleFavEditChange("fav2izqS", Number(e.target.value))}
           />
         ) : (
-          row.fav2izqS
+          displayValue(row.fav2izqS)
         ),
       cellStyle: { position: "sticky", right: "0px", background: "#fff", zIndex: 1 },
     },
@@ -678,7 +683,7 @@ const TabDoorCreate: React.FC = () => {
             onChange={(e) => handleFavEditChange("fav2DerP", Number(e.target.value))}
           />
         ) : (
-          row.fav2DerP
+          displayValue(row.fav2DerP)
         ),
       cellStyle: { position: "sticky", right: "-80px", background: "#fff", zIndex: 1 },
     },
@@ -695,7 +700,7 @@ const TabDoorCreate: React.FC = () => {
             onChange={(e) => handleFavEditChange("fav2DerS", Number(e.target.value))}
           />
         ) : (
-          row.fav2DerS
+          displayValue(row.fav2DerS)
         ),
       cellStyle: { position: "sticky", right: "-160px", background: "#fff", zIndex: 1 },
     },
@@ -712,7 +717,7 @@ const TabDoorCreate: React.FC = () => {
             onChange={(e) => handleFavEditChange("fav3E", Number(e.target.value))}
           />
         ) : (
-          row.fav3E
+          displayValue(row.fav3E)
         ),
       cellStyle: { position: "sticky", right: "-240px", background: "#fff", zIndex: 1 },
     },
@@ -729,7 +734,7 @@ const TabDoorCreate: React.FC = () => {
             onChange={(e) => handleFavEditChange("fav3T", Number(e.target.value))}
           />
         ) : (
-          row.fav3T
+          displayValue(row.fav3T)
         ),
       cellStyle: { position: "sticky", right: "-320px", background: "#fff", zIndex: 1 },
     },
@@ -746,7 +751,7 @@ const TabDoorCreate: React.FC = () => {
             onChange={(e) => handleFavEditChange("fav3Beta", Number(e.target.value))}
           />
         ) : (
-          row.fav3Beta
+          displayValue(row.fav3Beta)
         ),
       cellStyle: { position: "sticky", right: "-400px", background: "#fff", zIndex: 1 },
     },
@@ -763,7 +768,7 @@ const TabDoorCreate: React.FC = () => {
             onChange={(e) => handleFavEditChange("fav3Alpha", Number(e.target.value))}
           />
         ) : (
-          row.fav3Alpha
+          displayValue(row.fav3Alpha)
         ),
       cellStyle: { position: "sticky", right: "-480px", background: "#fff", zIndex: 1 },
     },
@@ -835,7 +840,7 @@ const TabDoorCreate: React.FC = () => {
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Crear"
+        saveLabel="Grabar Datos"
         title="Crear Puerta"
       >
         <div className="container">

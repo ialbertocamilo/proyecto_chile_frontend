@@ -106,7 +106,7 @@ export default function TablesParameters({
                         key={col.field}
                         className="text-center align-middle"
                         style={{
-                          padding: "2px",
+                          padding: "8px 2px",
                           minWidth: "100px", // Asegura un ancho mínimo para las celdas
                         }}
                       >

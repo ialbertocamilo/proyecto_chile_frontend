@@ -81,6 +81,17 @@ const TabFloorCreate: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [rowToDelete, setRowToDelete] = useState<FloorData | null>(null);
 
+  // Función para formatear valores en las celdas: si es 0 o "N/A" muestra guion ("-")
+  const formatCellValue = (value: any, decimalPlaces?: number): string => {
+    if (value === 0 || value === "0" || value === "N/A") {
+      return "-";
+    }
+    if (decimalPlaces !== undefined && typeof value === "number") {
+      return value.toFixed(decimalPlaces);
+    }
+    return value.toString();
+  };
+
   // Cargar las opciones de pisos y los datos de la tabla al montar el componente
   useEffect(() => {
     fetchFloorOptions();
@@ -363,45 +374,61 @@ const TabFloorCreate: React.FC = () => {
       headerName: "Pisos",
       field: "pisos",
       renderCell: (row: FloorData) => {
-        return editingRowIndex === row.index ? renderEditableCell("pisos", row) : row.pisos;
-      }
+        return editingRowIndex === row.index
+          ? renderEditableCell("pisos", row)
+          : formatCellValue(row.pisos);
+      },
     },
     {
       headerName: "Características espacio contiguo al elemento",
       field: "caracteristicas",
       renderCell: (row: FloorData) => {
-        return editingRowIndex === row.index ? renderEditableCell("caracteristicas", row) : row.caracteristicas;
-      }
+        return editingRowIndex === row.index
+          ? renderEditableCell("caracteristicas", row)
+          : formatCellValue(row.caracteristicas);
+      },
     },
     {
       headerName: "Área [m²]",
       field: "area",
       renderCell: (row: FloorData) => {
-        return editingRowIndex === row.index ? renderEditableCell("area", row) : row.area;
-      }
+        return editingRowIndex === row.index
+          ? renderEditableCell("area", row)
+          : formatCellValue(row.area);
+      },
     },
     {
       headerName: "U [W/m²K]",
       field: "uValue",
       renderCell: (row: FloorData) => {
-        return Number(row.uValue).toFixed(2);
-      }
+        return row.uValue === 0
+          ? "-"
+          : formatCellValue(row.uValue, 2);
+      },
     },
     {
       headerName: "Perímetro Suelo [m]",
       field: "perimetroSuelo",
       renderCell: (row: FloorData) => {
-        return editingRowIndex === row.index ? renderEditableCell("perimetroSuelo", row) : row.perimetroSuelo;
-      }
+        return editingRowIndex === row.index
+          ? renderEditableCell("perimetroSuelo", row)
+          : formatCellValue(row.perimetroSuelo);
+      },
     },
     {
       headerName: "Piso ventilado [¿?]",
       field: "pisoVentilado",
       renderCell: (row: FloorData) => {
-        return editingRowIndex === row.index ? renderEditableCell("pisoVentilado", row) : row.pisoVentilado;
-      }
+        return editingRowIndex === row.index
+          ? renderEditableCell("pisoVentilado", row)
+          : formatCellValue(row.pisoVentilado);
+      },
     },
-    { headerName: "PT P06 L [m]", field: "ptP06L" },
+    {
+      headerName: "PT P06 L [m]",
+      field: "ptP06L",
+      renderCell: (row: FloorData) => formatCellValue(row.ptP06L)
+    },
     {
       headerName: "Acciones",
       field: "acciones",
@@ -431,15 +458,14 @@ const TabFloorCreate: React.FC = () => {
     setIsVentilated("");
   };
 
- // Función para validar los campos del formulario
-const validateForm = () => {
-  if (floorId === 0 || !characteristic || !area || area <= 0) {
-    notify("Debe completar todos los campos del formulario correctamente");
-    return false;
-  }
-  return true;
-};
-
+  // Función para validar los campos del formulario
+  const validateForm = () => {
+    if (floorId === 0 || !characteristic || !area || area <= 0) {
+      notify("Debe completar todos los campos del formulario correctamente");
+      return false;
+    }
+    return true;
+  };
 
   // Función que se ejecuta al confirmar la creación en el modal
   const handleModalSave = async () => {
@@ -505,109 +531,112 @@ const validateForm = () => {
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Crear"
+        saveLabel="Grabar Datos"
         title="Crear Piso"
       >
-        
+        <div className="container">
+          <div className="row mb-3">
+            <div className="col-md-4">
+              <label htmlFor="floorId">
+                Piso <span style={{ color: "red" }}>*</span>
+              </label>
+            </div>
+            <div className="col-md-8">
+              <select
+                id="floorId"
+                className="form-control"
+                value={floorId}
+                onChange={(e) => setFloorId(Number(e.target.value))}
+                disabled={loading}
+              >
+                <option value={0}>Seleccione un piso</option>
+                {floorOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name_detail}
+                  </option>
+                ))}
+              </select>
+              {loading && <small className="text-muted">Cargando opciones...</small>}
+            </div>
+          </div>
 
-<div className="container">
-  <div className="row mb-3">
-    <div className="col-md-4">
-      <label htmlFor="floorId">
-        Piso <span style={{ color: "red" }}>*</span>
-      </label>
-    </div>
-    <div className="col-md-8">
-      <select
-        id="floorId"
-        className="form-control"
-        value={floorId}
-        onChange={(e) => setFloorId(Number(e.target.value))}
-        disabled={loading}
-      >
-        <option value={0}>Seleccione un piso</option>
-        {floorOptions.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.name_detail}
-          </option>
-        ))}
-      </select>
-      {loading && <small className="text-muted">Cargando opciones...</small>}
-    </div>
-  </div>
+          <div className="row mb-3">
+            <div className="col-md-4">
+              <label htmlFor="characteristic">
+                Característica <span style={{ color: "red" }}>*</span>
+              </label>
+            </div>
+            <div className="col-md-8">
+              <select
+                id="characteristic"
+                className="form-control"
+                value={characteristic}
+                onChange={(e) => setCharacteristic(e.target.value)}
+              >
+                <option value="">Seleccione una opción</option>
+                <option value="Exterior">Exterior</option>
+                <option value="Inter Recintos Clim">Inter Recintos Clim</option>
+                <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+              </select>
+            </div>
+          </div>
 
-  <div className="row mb-3">
-    <div className="col-md-4">
-      <label htmlFor="characteristic">
-        Característica <span style={{ color: "red" }}>*</span>
-      </label>
-    </div>
-    <div className="col-md-8">
-      <select
-        id="characteristic"
-        className="form-control"
-        value={characteristic}
-        onChange={(e) => setCharacteristic(e.target.value)}
-      >
-        <option value="">Seleccione una opción</option>
-        <option value="Exterior">Exterior</option>
-        <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-        <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
-      </select>
-    </div>
-  </div>
+          <div className="row mb-3">
+            <div className="col-md-4">
+              <label htmlFor="area">
+                Área [m²] <span style={{ color: "red" }}>*</span>
+              </label>
+            </div>
+            <div className="col-md-8">
+              <input
+                type="number"
+                id="area"
+                className="form-control"
+                value={area}
+                onChange={(e) => setArea(Number(e.target.value))}
+              />
+            </div>
+          </div>
 
-  <div className="row mb-3">
-    <div className="col-md-4">
-      <label htmlFor="area">
-        Área [m²] <span style={{ color: "red" }}>*</span>
-      </label>
-    </div>
-    <div className="col-md-8">
-      <input
-        type="number"
-        id="area"
-        className="form-control"
-        value={area}
-        onChange={(e) => setArea(Number(e.target.value))}
-      />
-    </div>
-  </div>
+          <div className="row mb-3">
+            <div className="col-md-4">
+              <label htmlFor="parameter">Perímetro Suelo [m]</label>
+            </div>
+            <div className="col-md-8">
+              <input
+                type="number"
+                id="parameter"
+                className="form-control"
+                value={parameter}
+                onChange={(e) => setParameter(Number(e.target.value))}
+              />
+            </div>
+          </div>
 
-  <div className="row mb-3">
-    <div className="col-md-4">
-      <label htmlFor="parameter">Perímetro Suelo [m]</label>
-    </div>
-    <div className="col-md-8">
-      <input
-        type="number"
-        id="parameter"
-        className="form-control"
-        value={parameter}
-        onChange={(e) => setParameter(Number(e.target.value))}
-      />
-    </div>
-  </div>
-
-  <div className="row mb-3">
-    <div className="col-md-4">
-      <label htmlFor="isVentilated">Ventilado</label>
-    </div>
-    <div className="col-md-8">
-      <select
-        id="isVentilated"
-        className="form-control"
-        value={isVentilated}
-        onChange={(e) => setIsVentilated(e.target.value)}
-      >
-        <option value="">Seleccione una opción</option>
-        <option value="Ventilado">Ventilado</option>
-        <option value="No Ventilado">No Ventilado</option>
-      </select>
-    </div>
-  </div>
-</div>
-
+          <div className="row mb-3">
+            <div className="col-md-4">
+              <label htmlFor="isVentilated">Ventilado</label>
+            </div>
+            <div className="col-md-8">
+              <select
+                id="isVentilated"
+                className="form-control"
+                value={isVentilated}
+                onChange={(e) => setIsVentilated(e.target.value)}
+              >
+                <option value="">Seleccione una opción</option>
+                <option value="Ventilado">Ventilado</option>
+                <option value="No Ventilado">No Ventilado</option>
+              </select>
+            </div>
+          </div>
+          {/* Texto de datos obligatorios */}
+          <div className="row">
+            <div className="col-12" style={{ textAlign: "left" }}>
+              <p style={{ color: "red", margin: 0 }}>(*) Datos obligatorios</p>
+            </div>
+          </div>
+        </div>
       </ModalCreate>
 
       {/* Modal de Confirmación de Eliminación */}
@@ -621,7 +650,9 @@ const validateForm = () => {
         <div className="container">
           <div className="row mb-3">
             <div className="col-12 text-center">
-              <p>¿Está seguro que desea eliminar el piso <strong>{rowToDelete?.pisos}</strong>?</p>
+              <p>
+                ¿Está seguro que desea eliminar el piso <strong>{rowToDelete?.pisos}</strong>?
+              </p>
             </div>
           </div>
         </div>

@@ -264,7 +264,8 @@ const TabCeilingCreate: React.FC = () => {
             </select>
           );
         }
-        return row.techos;
+        // Si el valor es "N/A" o "0", se muestra un guion
+        return row.techos === "N/A" || row.techos === "0" ? "-" : row.techos;
       }
     },
     {
@@ -284,7 +285,7 @@ const TabCeilingCreate: React.FC = () => {
             </select>
           );
         }
-        return row.caracteristicas;
+        return row.caracteristicas === "N/A" || row.caracteristicas === "0" ? "-" : row.caracteristicas;
       }
     },
     {
@@ -301,13 +302,14 @@ const TabCeilingCreate: React.FC = () => {
             />
           );
         }
-        return row.area;
+        return row.area === 0 ? "-" : row.area;
       }
     },
     {
       headerName: "U [W/m²K]",
       field: "u",
-      renderCell: (row: CeilingData) => row.u.toFixed(2)
+      renderCell: (row: CeilingData) =>
+        row.u === 0 ? "-" : row.u.toFixed(2)
     },
     {
       headerName: "Acciones",
@@ -408,7 +410,7 @@ const TabCeilingCreate: React.FC = () => {
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Crear"
+        saveLabel="Grabar Datos"
         title="Crear Techo"
       >
         <div className="container">

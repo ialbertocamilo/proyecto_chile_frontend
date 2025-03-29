@@ -15,7 +15,7 @@ import TablesParameters from "@/components/tables/TablesParameters";
 import VerticalDivider from "@/components/ui/HorizontalDivider";
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
-import ModalCreate from "@/components/common/ModalCreate";
+import ModalCreate from "../src/components/common/ModalCreate";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataCreate";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
@@ -26,7 +26,7 @@ interface Detail {
   material_id: number;
   material: string;
   layer_thickness: number;
-  created_status: string; // "default" o "created"
+  created_status: string; // "default" o "created" o "global"
 }
 
 interface TabItem {
@@ -556,7 +556,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       }
       fetchFetchedDetails();
       setEditingDetail(null);
-      setShowDetallesModal(true); // <-- Esta línea abre el modal de Detalles generales
+      setShowDetallesModal(true); // <-- Abre el modal de Detalles generales
     } catch (error: unknown) {
       console.error("Error al actualizar el detalle:", error);
       notify("Error al actualizar el Detalle.");
@@ -1089,14 +1089,12 @@ const WorkFlowpar2createPage: React.FC = () => {
           item.info?.surface_color?.interior?.name || "Desconocido"
         ),
         acciones: isEditing ? (
-          <>
           <div onClick={(e) => e.stopPropagation()}>
-              <ActionButtonsConfirm
-                onAccept={() => handleConfirmEdit(item)}
-                onCancel={() => handleCancelEdit(item)}
-              />
-            </div>
-          </>
+            <ActionButtonsConfirm
+              onAccept={() => handleConfirmEdit(item)}
+              onCancel={() => handleCancelEdit(item)}
+            />
+          </div>
         ) : (
           <CustomButton
             className="btn-table"
@@ -1172,14 +1170,12 @@ const WorkFlowpar2createPage: React.FC = () => {
           item.info?.surface_color?.interior?.name || "Desconocido"
         ),
         acciones: isEditing ? (
-          <>
-            <div onClick={(e) => e.stopPropagation()}>
-              <ActionButtonsConfirm
-                onAccept={() => handleConfirmTechEdit(item)}
-                onCancel={() => handleCancelTechEdit(item)}
-              />
-            </div>
-          </>
+          <div onClick={(e) => e.stopPropagation()}>
+            <ActionButtonsConfirm
+              onAccept={() => handleConfirmTechEdit(item)}
+              onCancel={() => handleCancelTechEdit(item)}
+            />
+          </div>
         ) : (
           <CustomButton
             variant="editIcon"
@@ -1379,15 +1375,12 @@ const WorkFlowpar2createPage: React.FC = () => {
           "-"
         ),
         acciones: isEditing ? (
-          <>
-            <div onClick={(e) => e.stopPropagation()}>
-              <ActionButtonsConfirm
-                onAccept={() => handleConfirmPisoEdit(item)}
-                onCancel={() => handleCancelPisoEdit()}
-              />
-            </div>
-            
-          </>
+          <div onClick={(e) => e.stopPropagation()}>
+            <ActionButtonsConfirm
+              onAccept={() => handleConfirmPisoEdit(item)}
+              onCancel={() => handleCancelPisoEdit()}
+            />
+          </div>
         ) : (
           <CustomButton
             className="btn-table"
@@ -1461,32 +1454,33 @@ const WorkFlowpar2createPage: React.FC = () => {
             {item.fm != null ? (item.fm * 100).toFixed(2) + "%" : "--"}
           </span>
         ),
-        acciones: (
-          <div style={textStyle}>
-            <CustomButton
-              className="btn-table"
-              variant="editIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingVentanaForm(item);
-              }}
-              disabled={item.created_status == "default" || item.created_status == "global"}
-            >
-              Editar
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="deleteIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                confirmDeleteElement(item.id, "window");
-              }}
-              disabled={item.created_status == "default" || item.created_status == "global"}
-            >
-              <span className="material-icons">delete</span>
-            </CustomButton>
-          </div>
-        ),
+        acciones:
+          item.created_status === "default" || item.created_status === "global" ? (
+            <span>-</span>
+          ) : (
+            <div style={textStyle}>
+              <CustomButton
+                className="btn-table"
+                variant="editIcon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingVentanaForm(item);
+                }}
+              >
+                Editar
+              </CustomButton>
+              <CustomButton
+                className="btn-table"
+                variant="deleteIcon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  confirmDeleteElement(item.id, "window");
+                }}
+              >
+                <span className="material-icons">delete</span>
+              </CustomButton>
+            </div>
+          ),
       };
     });
 
@@ -1546,32 +1540,33 @@ const WorkFlowpar2createPage: React.FC = () => {
             {item.fm != null ? (item.fm * 100).toFixed(2) + "%" : "--"}
           </span>
         ),
-        acciones: (
-          <div style={textStyle}>
-            <CustomButton
-              className="btn-table"
-              variant="editIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingPuertaForm(item);
-              }}
-              disabled={item.created_status == "default" || item.created_status == "global"}
-            >
-              Editar
-            </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="deleteIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                confirmDeleteElement(item.id as number, "door");
-              }}
-              disabled={item.created_status == "default" || item.created_status == "global"}
-            >
-              <span className="material-icons">delete</span>
-            </CustomButton>
-          </div>
-        ),
+        acciones:
+          item.created_status === "default" || item.created_status === "global" ? (
+            <span>-</span>
+          ) : (
+            <div style={textStyle}>
+              <CustomButton
+                className="btn-table"
+                variant="editIcon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingPuertaForm(item);
+                }}
+              >
+                Editar
+              </CustomButton>
+              <CustomButton
+                className="btn-table"
+                variant="deleteIcon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  confirmDeleteElement(item.id as number, "door");
+                }}
+              >
+                <span className="material-icons">delete</span>
+              </CustomButton>
+            </div>
+          ),
       };
     });
 
@@ -1646,9 +1641,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div
-          style={{ height: "400px", position: "relative" }}
-        >
+        <div style={{ height: "400px", position: "relative" }}>
           {tabStep4 === "muros" && renderMurosTable()}
           {tabStep4 === "techumbre" && renderTechumbreTable()}
           {tabStep4 === "pisos" && renderPisosTable()}

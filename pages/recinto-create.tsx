@@ -1,6 +1,7 @@
 // recinto-create.tsx
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import Breadcrumb from "@/components/common/Breadcrumb";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
 import Title from "../src/components/Title";
@@ -223,8 +224,6 @@ const RecintoCreate: React.FC = () => {
   }, []);
 
   const handleSave = async () => {
-    // Validación de campos obligatorios
-    // Se elimina parseFloat, ya que la validación se puede ajustar en función del formato requerido
     if (
       !selectedRegion ||
       !selectedComuna ||
@@ -239,7 +238,6 @@ const RecintoCreate: React.FC = () => {
       return;
     }
 
-    // Se reemplazan comas por punto para convertir correctamente a número
     const alturaNumerica = parseFloat(alturaPromedio.replace(/,/g, "."));
     if (isNaN(alturaNumerica) || alturaNumerica <= 0) {
       notify(
@@ -288,7 +286,6 @@ const RecintoCreate: React.FC = () => {
         return;
       }
 
-      // Se guarda el id del recinto en el localStorage con la llave "recinto_id"
       localStorage.setItem("recinto_id", result.id.toString());
       notify("Recinto creado correctamente");
       setIsRecintoCreated(true);
@@ -308,10 +305,21 @@ const RecintoCreate: React.FC = () => {
       <Card>
         <div>
           <Title text="Nuevo Recinto" />
-          <ProjectInfoHeader
-            projectName={projectName}
-            region={projectDepartment}
-          />
+          <div className="d-flex align-items-center">
+            <ProjectInfoHeader
+              projectName={projectName}
+              region={projectDepartment}
+            />
+            {/* Breadcrumb alineado a la derecha */}
+            <div className="ms-auto">
+              <Breadcrumb
+                items={[
+                  { title: "Inicio", href: "/" },
+                  { title: "Nuevo Recinto", href: "/recinto-create" },
+                ]}
+              />
+            </div>
+          </div>
         </div>
       </Card>
 
@@ -320,7 +328,6 @@ const RecintoCreate: React.FC = () => {
         <div>
           <Title text="Características de la edificación" />
           <div className="row mt-4">
-            {/* 1. Nombre proyecto */}
             <div className="col-6 mb-3">
               <label htmlFor="projectName" className="form-label">
                 Nombre proyecto
@@ -335,7 +342,6 @@ const RecintoCreate: React.FC = () => {
               />
             </div>
 
-            {/* 2. Región (desplegable) */}
             <div className="col-6 mb-3">
               <label htmlFor="region" className="form-label">
                 Región
@@ -346,7 +352,6 @@ const RecintoCreate: React.FC = () => {
                 value={selectedRegion}
                 onChange={(e) => {
                   setSelectedRegion(e.target.value);
-                  // Limpiar campos dependientes
                   setSelectedComuna("");
                   setSelectedZonaTermica("");
                 }}
@@ -360,7 +365,6 @@ const RecintoCreate: React.FC = () => {
               </select>
             </div>
 
-            {/* 3. Comuna (desplegable) */}
             <div className="col-6 mb-3">
               <label htmlFor="comuna" className="form-label">
                 Comuna
@@ -384,7 +388,6 @@ const RecintoCreate: React.FC = () => {
               </select>
             </div>
 
-            {/* 4. Zona Térmica Proyecto (desplegable) */}
             <div className="col-6 mb-3">
               <label htmlFor="zonaTermica" className="form-label">
                 Zona Térmica Proyecto
@@ -427,9 +430,7 @@ const RecintoCreate: React.FC = () => {
                 id="perfilOcupacion"
                 className="form-select"
                 value={perfilOcupacion || ""}
-                onChange={(e) =>
-                  setPerfilOcupacion(parseInt(e.target.value))
-                }
+                onChange={(e) => setPerfilOcupacion(parseInt(e.target.value))}
               >
                 <option value="">Seleccione un perfil de ocupación</option>
                 {enclosureProfiles.map((profile) => (
@@ -452,7 +453,6 @@ const RecintoCreate: React.FC = () => {
                 value={alturaPromedio}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Solo se permiten dígitos, punto y coma
                   const regex = /^[0-9.,]*$/;
                   if (regex.test(value)) {
                     setAlturaPromedio(value);
@@ -461,7 +461,6 @@ const RecintoCreate: React.FC = () => {
               />
             </div>
 
-            {/* 8. Sensor CO2 */}
             <div className="col-6 mb-3">
               <label htmlFor="sensorCo2" className="form-label">
                 Sensor CO2
@@ -478,7 +477,6 @@ const RecintoCreate: React.FC = () => {
             </div>
           </div>
 
-          {/* Botones Regresar y Guardar */}
           <div className="d-flex justify-content-between">
             <CustomButton variant="back" onClick={handleBack}>
               Regresar
@@ -490,7 +488,6 @@ const RecintoCreate: React.FC = () => {
         </div>
       </Card>
 
-      {/* Card de "Características térmicas de la envolvente" solo se muestra si el recinto fue creado */}
       {isRecintoCreated && (
         <Card>
           <div>

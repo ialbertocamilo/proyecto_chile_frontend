@@ -221,11 +221,11 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Iniciar edición de muro (edición en línea)
-  const handleEditWall = (wallId: number) => {
-    const wallToEdit = murosData.find((w) => w.wall_id === wallId);
+  // Iniciar edición de muro (edición en línea) usando el id único del muro
+  const handleEditWall = (id: number) => {
+    const wallToEdit = murosData.find((w) => w.id === id);
     if (wallToEdit) {
-      setEditingWallId(wallId);
+      setEditingWallId(id);
       setEditingWallData({ ...wallToEdit });
     }
   };
@@ -239,12 +239,12 @@ const TabMuroCreate: React.FC = () => {
   };
 
   // Aceptar edición de muro (PUT)
-  const handleAcceptEditWall = async (wallId: number) => {
+  const handleAcceptEditWall = async (id: number) => {
     if (!editingWallData) return;
     const authData = getAuthData();
     if (!authData) return;
     const { token } = authData;
-    const updateId = editingWallData.id || wallId;
+    const updateId = editingWallData.id || id;
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/wall-enclosures-update/${updateId}`,
@@ -416,7 +416,7 @@ const TabMuroCreate: React.FC = () => {
       headerName: "Muros",
       field: "name",
       renderCell: (row: Wall) => {
-        if (row.wall_id === editingWallId && editingWallData) {
+        if (row.id === editingWallId && editingWallData) {
           return (
             <select
               name="wall_id"
@@ -440,7 +440,7 @@ const TabMuroCreate: React.FC = () => {
       headerName: "Caracteristicas",
       field: "characteristics",
       renderCell: (row: Wall) => {
-        if (row.wall_id === editingWallId && editingWallData) {
+        if (row.id === editingWallId && editingWallData) {
           return (
             <select
               name="characteristics"
@@ -462,7 +462,7 @@ const TabMuroCreate: React.FC = () => {
       headerName: "Ángulo Azimut",
       field: "angulo_azimut",
       renderCell: (row: Wall) => {
-        if (row.wall_id === editingWallId && editingWallData) {
+        if (row.id === editingWallId && editingWallData) {
           return (
             <select
               name="angulo_azimut"
@@ -487,7 +487,7 @@ const TabMuroCreate: React.FC = () => {
       headerName: "Área [m²]",
       field: "area",
       renderCell: (row: Wall) => {
-        if (row.wall_id === editingWallId && editingWallData) {
+        if (row.id === editingWallId && editingWallData) {
           return (
             <input
               type="number"
@@ -519,15 +519,15 @@ const TabMuroCreate: React.FC = () => {
       headerName: "Acciones",
       field: "acciones",
       renderCell: (row: Wall) => {
-        const isEditing = row.wall_id === editingWallId;
+        const isEditing = row.id === editingWallId;
         return isEditing ? (
           <ActionButtonsConfirm
-            onAccept={() => handleAcceptEditWall(row.wall_id)}
+            onAccept={() => handleAcceptEditWall(row.id!)}
             onCancel={handleCancelEditWall}
           />
         ) : (
           <ActionButtons
-            onEdit={() => handleEditWall(row.wall_id)}
+            onEdit={() => handleEditWall(row.id!)}
             onDelete={() => handleOpenDeleteModal(row)}
           />
         );

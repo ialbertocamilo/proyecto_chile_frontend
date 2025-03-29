@@ -321,6 +321,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         attributes: {
           potencia_base: parseFloat(editingRow.values.potenciaBase),
           estrategia: editingRow.values.estrategia,
+          // Se mantiene potencia_propuesta como solo lectura
           potencia_propuesta: parseFloat(editingRow.values.potenciaPropuesta),
         },
       };
@@ -567,21 +568,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) : (
         formatDisplayValue(values.estrategia)
       ),
-      potenciaPropuesta: isEditing ? (
-        <input
-          type="number"
-          min="0"
-          className="form-control form-control-sm"
-          value={editingRow?.values.potenciaPropuesta}
-          onChange={(e) => {
-            if (e.target.value.startsWith("-") || e.target.value === "-") return;
-            handleEditChange("potenciaPropuesta", e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "-") e.preventDefault();
-          }}
-        />
-      ) : !isDefault ? (
+      // La columna "potencia propuesta" se muestra siempre como solo lectura.
+      potenciaPropuesta: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {formatDisplayValue(values.potenciaPropuesta)}
         </span>

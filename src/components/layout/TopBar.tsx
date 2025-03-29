@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
+import { constantUrlApiEndpoint } from "../../utils/constant-url-endpoint";
 
 interface TopBarProps {
   sidebarWidth: string;
@@ -96,9 +97,35 @@ const TopBar = ({}: TopBarProps) => {
     return null;
   }
 
-  const handleLogout = () => {
-    localStorage.clear();
-    router.push("/login");
+  const handleLogout = async () => {
+      const token = localStorage.getItem("token"); // Obtener el token del usuario
+      if (!token) {
+          router.push("/login");
+          return;
+      }
+  
+      try {
+          const response = await fetch(`${constantUrlApiEndpoint}/logout`, {
+              method: "DELETE",
+              headers: {
+                  "Authorization": `Bearer ${token}`, // Token en el header para autenticar al usuario
+                  "token": token, // Enviar el token a revocar (según la definición del endpoint)
+                  "Content-Type": "application/json"
+              }
+          });
+  
+          if (response.ok) {
+              console.log("Sesión cerrada correctamente");
+          } else {
+              console.error("Error al cerrar sesión", await response.json());
+          }
+      } catch (error) {
+          console.error("Error de red:", error);
+      }
+  
+      // Limpiar el almacenamiento local y redirigir al login
+      localStorage.clear();
+      router.push("/login");
   };
 
   return (

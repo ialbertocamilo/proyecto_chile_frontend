@@ -1170,6 +1170,7 @@ const TabMuroCreate: React.FC = () => {
         onClose={handleCancelDelete}
         onSave={handleConfirmDeleteWall}
         title="Confirmar Eliminación"
+        saveLabel="Eliminar"
       >
         {wallToDelete && (
           <p>

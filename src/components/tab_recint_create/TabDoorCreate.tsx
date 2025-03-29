@@ -938,7 +938,7 @@ const TabDoorCreate: React.FC = () => {
       >
         <div className="container">
           <div className="row mb-3">
-            <div className="col-12 text-center">
+            <div className="">
               <p>
                 ¿Está seguro que desea eliminar la puerta{" "}
                 <strong>{deletingRow?.tipoPuente}</strong>?

@@ -283,8 +283,20 @@ const TabDoorCreate: React.FC = () => {
 
   const handleAccept = async () => {
     if (!editingRow) return;
+
+    // Validar que no se incluyan guiones en los campos de texto
+    if (
+      editingRow.characteristics.includes("-") ||
+      editingRow.anguloAzimut.includes("-")
+    ) {
+      notify("No se permiten guiones en los campos", "error");
+      return;
+    }
+
     try {
-      const selectedDoor = doorOptions.find((door: any) => door.name_element === editingRow.tipoPuente);
+      const selectedDoor = doorOptions.find(
+        (door: any) => door.name_element === editingRow.tipoPuente
+      );
       const doorId = selectedDoor ? selectedDoor.id : 0;
       const payload = {
         door_id: doorId,
@@ -414,7 +426,7 @@ const TabDoorCreate: React.FC = () => {
     setBroad(0);
   };
 
-  // Endpoint para creación de puerta con validación de campos obligatorios
+  // Endpoint para creación de puerta con validación de campos obligatorios y sin guiones
   const handleModalSave = async () => {
     // Validar que todos los campos sean obligatorios
     if (
@@ -425,6 +437,12 @@ const TabDoorCreate: React.FC = () => {
       broad <= 0
     ) {
       notify("Todos los campos son obligatorios");
+      return;
+    }
+
+    // Validar que no se incluyan guiones en los campos de texto
+    if (characteristics.includes("-") || anguloAzimut.includes("-")) {
+      notify("No se permiten guiones en los campos", "error");
       return;
     }
 

@@ -221,7 +221,7 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Iniciar edición de muro (edición en línea) usando el id único del muro
+  // Manejadores de edición
   const handleEditWall = (id: number) => {
     const wallToEdit = murosData.find((w) => w.id === id);
     if (wallToEdit) {
@@ -230,20 +230,21 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Actualiza el estado de edición del muro
+  // Se actualiza para rechazar cualquier entrada que contenga el carácter "-"
   const handleEditWallChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    if (value.includes("-")) {
+      return;
+    }
     setEditingWallData((prev) =>
       prev ? { ...prev, [name]: name === "wall_id" || name === "area" ? Number(value) : value } : null
     );
   };
 
-  // Aceptar edición de muro (PUT)
   const handleAcceptEditWall = async (id: number) => {
     if (!editingWallData) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     const updateId = editingWallData.id || id;
     try {
       const response = await fetch(
@@ -252,7 +253,7 @@ const TabMuroCreate: React.FC = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
           body: JSON.stringify({
             wall_id: editingWallData.wall_id,
@@ -278,7 +279,7 @@ const TabMuroCreate: React.FC = () => {
     setEditingWallData(null);
   };
 
-  // Nueva función: Abrir modal de confirmación de eliminación de muro
+  // Modal de confirmación para eliminación de muro
   const handleOpenDeleteModal = (wall: Wall) => {
     setWallToDelete(wall);
     setIsDeleteModalOpen(true);
@@ -288,7 +289,6 @@ const TabMuroCreate: React.FC = () => {
     if (!wallToDelete) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/wall-enclosures-delete/${wallToDelete.id}`,
@@ -296,7 +296,7 @@ const TabMuroCreate: React.FC = () => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
         }
       );
@@ -312,13 +312,12 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Nueva función: Cancelar eliminación de muro
   const handleCancelDelete = () => {
     setIsDeleteModalOpen(false);
     setWallToDelete(null);
   };
 
-  // Iniciar edición de puente térmico: se guarda el registro completo en editingBridgeData
+  // Manejadores de edición para puente térmico
   const handleEditBridge = (bridgeId: number) => {
     const bridgeToEdit = puentesData.find((b) => b.id === bridgeId);
     if (bridgeToEdit) {
@@ -327,20 +326,21 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Actualiza el estado de edición del puente térmico
+  // Se actualiza para rechazar cualquier entrada que contenga el carácter "-"
   const handleEditBridgeChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    if (value.includes("-")) {
+      return;
+    }
     setEditingBridgeData((prev) =>
       prev ? { ...prev, [name]: name.startsWith("po") ? Number(value) : value } : null
     );
   };
 
-  // Aceptar edición de puente térmico (PUT)
   const handleAcceptEditBridge = async (bridgeId: number) => {
     if (!editingBridgeData) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/thermal-bridge-update/${bridgeId}`,
@@ -348,7 +348,7 @@ const TabMuroCreate: React.FC = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
           body: JSON.stringify(editingBridgeData),
         }
@@ -369,18 +369,16 @@ const TabMuroCreate: React.FC = () => {
     setEditingBridgeData(null);
   };
 
-  // Nueva función: Abrir modal de confirmación de eliminación de puente térmico
+  // Modal de confirmación para eliminación de puente térmico
   const handleOpenDeleteBridgeModal = (bridge: ThermalBridge) => {
     setBridgeToDelete(bridge);
     setIsDeleteBridgeModalOpen(true);
   };
 
-  // Función para confirmar eliminación de puente térmico
   const handleConfirmDeleteBridge = async () => {
     if (!bridgeToDelete) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/thermal-bridge-delete/${bridgeToDelete.id}`,
@@ -388,7 +386,7 @@ const TabMuroCreate: React.FC = () => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
         }
       );
@@ -404,13 +402,17 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Función para cancelar eliminación de puente térmico
   const handleCancelDeleteBridge = () => {
     setIsDeleteBridgeModalOpen(false);
     setBridgeToDelete(null);
   };
 
-  // Columnas para la tabla de muros (se modifica la columna de "Caracteristicas" para usar un desplegable)
+  // Función de ayuda para mostrar valores o guion
+  const displayNumericValue = (value: number): string => {
+    return value === 0 || value === null || value === undefined ? "-" : Number(value).toFixed(2);
+  };
+
+  // Columnas para la tabla de muros
   const murosColumns = [
     {
       headerName: "Muros",
@@ -504,15 +506,14 @@ const TabMuroCreate: React.FC = () => {
             />
           );
         }
-        return Number(row.area).toFixed(2);
+        return displayNumericValue(row.area);
       },
     },
     {
       headerName: "U [W/m²K]",
       field: "u",
       renderCell: (row: Wall) => {
-        // Se muestra el valor de U como solo lectura, incluso en modo edición
-        return row.u ? Number(row.u).toFixed(2) : "";
+        return !row.u || row.u === 0 ? "-" : Number(row.u).toFixed(2);
       },
     },
     {
@@ -558,7 +559,7 @@ const TabMuroCreate: React.FC = () => {
             />
           );
         }
-        return Number(row.po1_length).toFixed(2);
+        return displayNumericValue(row.po1_length);
       },
     },
     {
@@ -582,7 +583,7 @@ const TabMuroCreate: React.FC = () => {
             </select>
           );
         }
-        return row.po1_element_name || row.po1_id_element;
+        return row.po1_element_name ? row.po1_element_name : row.po1_id_element === 0 ? "-" : row.po1_id_element;
       },
     },
     {
@@ -594,13 +595,19 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po2_length"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po2_length}
               onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({ ...editingBridgeData, po2_length: Number(rounded) });
+              }}
               className="form-control form-control-sm"
             />
           );
         }
-        return row.po2_length;
+        return displayNumericValue(row.po2_length);
       },
     },
     {
@@ -624,7 +631,7 @@ const TabMuroCreate: React.FC = () => {
             </select>
           );
         }
-        return row.po2_element_name || row.po2_id_element;
+        return row.po2_element_name ? row.po2_element_name : row.po2_id_element === 0 ? "-" : row.po2_id_element;
       },
     },
     {
@@ -636,13 +643,19 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po3_length"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po3_length}
               onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({ ...editingBridgeData, po3_length: Number(rounded) });
+              }}
               className="form-control form-control-sm"
             />
           );
         }
-        return row.po3_length;
+        return displayNumericValue(row.po3_length);
       },
     },
     {
@@ -666,7 +679,7 @@ const TabMuroCreate: React.FC = () => {
             </select>
           );
         }
-        return row.po3_element_name || row.po3_id_element;
+        return row.po3_element_name ? row.po3_element_name : row.po3_id_element === 0 ? "-" : row.po3_id_element;
       },
     },
     {
@@ -678,13 +691,19 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po4_length"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po4_length}
               onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({ ...editingBridgeData, po4_length: Number(rounded) });
+              }}
               className="form-control form-control-sm"
             />
           );
         }
-        return row.po4_length;
+        return displayNumericValue(row.po4_length);
       },
     },
     {
@@ -696,13 +715,19 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po4_e_aislacion"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po4_e_aislacion}
               onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({ ...editingBridgeData, po4_e_aislacion: Number(rounded) });
+              }}
               className="form-control form-control-sm"
             />
           );
         }
-        return row.po4_e_aislacion;
+        return displayNumericValue(row.po4_e_aislacion);
       },
     },
     {
@@ -726,7 +751,7 @@ const TabMuroCreate: React.FC = () => {
             </select>
           );
         }
-        return row.po4_element_name || row.po4_id_element;
+        return row.po4_element_name ? row.po4_element_name : row.po4_id_element === 0 ? "-" : row.po4_id_element;
       },
     },
     {
@@ -773,8 +798,7 @@ const TabMuroCreate: React.FC = () => {
     ],
   };
 
-  // MANEJO DE FORMULARIOS (Modal de creación)
-
+  // Manejo de formularios (Modal de creación)
   const handleWallInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setNewWall((prev) => ({
@@ -791,9 +815,7 @@ const TabMuroCreate: React.FC = () => {
     }));
   };
 
-  // Función para crear un muro (Modal de creación) con validación de campos obligatorios
   const handleCreateWall = async () => {
-    // Validar que los campos obligatorios estén completos
     if (
       newWall.wall_id <= 0 ||
       newWall.characteristics.trim() === "" ||
@@ -806,14 +828,15 @@ const TabMuroCreate: React.FC = () => {
 
     const authData = getAuthData();
     if (!authData) return;
-    const { token, enclosure_id } = authData;
-    const url = `${constantUrlApiEndpoint}/wall-enclosures-create/${enclosure_id}`;
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(newWall),
-      });
+      const response = await fetch(
+        `${constantUrlApiEndpoint}/wall-enclosures-create/${authData.enclosure_id}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authData.token}` },
+          body: JSON.stringify(newWall),
+        }
+      );
       if (!response.ok) throw new Error("Error en la creación del muro.");
       notify("Muro creado exitosamente");
       setIsWallModalOpen(false);
@@ -825,9 +848,7 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Función para crear un puente térmico (Modal de creación) con validación de campos obligatorios
   const handleCreateThermalBridge = async () => {
-    // Validar que los campos obligatorios estén completos
     if (
       newThermalBridge.po1_length <= 0 ||
       newThermalBridge.po1_id_element <= 0 ||
@@ -845,14 +866,15 @@ const TabMuroCreate: React.FC = () => {
 
     const authData = getAuthData();
     if (!authData) return;
-    const { token, enclosure_id } = authData;
-    const url = `${constantUrlApiEndpoint}/thermal-bridge-create/${enclosure_id}`;
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(newThermalBridge),
-      });
+      const response = await fetch(
+        `${constantUrlApiEndpoint}/thermal-bridge-create/${authData.enclosure_id}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authData.token}` },
+          body: JSON.stringify(newThermalBridge),
+        }
+      );
       if (!response.ok) throw new Error("Error en la creación del puente térmico.");
       notify("Puente térmico creado exitosamente");
       setIsThermalBridgeModalOpen(false);
@@ -891,7 +913,6 @@ const TabMuroCreate: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* Botones alineados a la derecha */}
       <div className="d-flex justify-content-end gap-2 mt-3 w-100">
         <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
           Nuevo Muro
@@ -907,7 +928,6 @@ const TabMuroCreate: React.FC = () => {
     <div className="container-fluid">
       {renderContent()}
 
-      {/* Modal para crear un nuevo muro */}
       <ModalCreate
         isOpen={isWallModalOpen}
         onClose={() => setIsWallModalOpen(false)}
@@ -994,7 +1014,6 @@ const TabMuroCreate: React.FC = () => {
         </form>
       </ModalCreate>
 
-      {/* Modal para crear un nuevo puente térmico */}
       <ModalCreate
         isOpen={isThermalBridgeModalOpen}
         onClose={() => setIsThermalBridgeModalOpen(false)}
@@ -1164,7 +1183,6 @@ const TabMuroCreate: React.FC = () => {
         </form>
       </ModalCreate>
 
-      {/* Modal de confirmación para eliminar un muro */}
       <ModalCreate
         isOpen={isDeleteModalOpen}
         onClose={handleCancelDelete}
@@ -1178,10 +1196,9 @@ const TabMuroCreate: React.FC = () => {
         )}
       </ModalCreate>
 
-      {/* Modal de confirmación para eliminar un puente térmico */}
       <ModalCreate
         isOpen={isDeleteBridgeModalOpen}
-        onClose={handleCancelDeleteBridge}
+        onClose={() => setIsDeleteBridgeModalOpen(false)}
         onSave={handleConfirmDeleteBridge}
         title="Confirmar Eliminación"
       >

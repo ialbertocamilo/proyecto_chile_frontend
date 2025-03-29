@@ -50,16 +50,6 @@ const TabWindowCreate: React.FC = () => {
   const [windowOptions, setWindowOptions] = useState<any[]>([]);
   const [tableData, setTableData] = useState<any[]>([]);
 
-  // Función para prevenir pegar guiones
-  const preventHyphenPaste = (
-    e: React.ClipboardEvent<HTMLInputElement>
-  ) => {
-    const pastedText = e.clipboardData.getData("text");
-    if (pastedText.includes("-")) {
-      e.preventDefault();
-    }
-  };
-
   // Obtener detalles
   useEffect(() => {
     const fetchDetails = async () => {
@@ -87,15 +77,12 @@ const TabWindowCreate: React.FC = () => {
   useEffect(() => {
     const fetchAngleOptions = async () => {
       try {
-        const response = await fetch(
-          `${constantUrlApiEndpoint}/angle-azimut`,
-          {
-            headers: {
-              accept: "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!response.ok)
           throw new Error("Error al obtener las opciones de ángulo");
         const data = await response.json();
@@ -636,7 +623,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           Number(row.alto).toFixed(2)
@@ -661,7 +647,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           Number(row.ancho).toFixed(2)
@@ -713,7 +698,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           row.fav1_D
@@ -745,7 +729,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           row.fav1_L
@@ -777,7 +760,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           row.fav2izq_P
@@ -809,7 +791,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           row.fav2izq_S
@@ -841,7 +822,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           row.fav2der_P
@@ -873,7 +853,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           row.fav2der_S
@@ -905,7 +884,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           row.fav3_E
@@ -937,7 +915,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           row.fav3_T
@@ -969,7 +946,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           row.fav3_beta
@@ -1001,7 +977,6 @@ const TabWindowCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onPaste={preventHyphenPaste}
           />
         ) : (
           row.fav3_alpha
@@ -1254,7 +1229,6 @@ const TabWindowCreate: React.FC = () => {
                     e.preventDefault();
                   }
                 }}
-                onPaste={preventHyphenPaste}
               />
             </div>
           </div>
@@ -1277,7 +1251,6 @@ const TabWindowCreate: React.FC = () => {
                     e.preventDefault();
                   }
                 }}
-                onPaste={preventHyphenPaste}
               />
             </div>
           </div>

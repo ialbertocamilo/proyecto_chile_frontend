@@ -61,13 +61,6 @@ const TabCeilingCreate: React.FC = () => {
     area: 0
   });
 
-  // Manejador para evitar guiones en los inputs
-  const handleNoHyphen = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "-") {
-      e.preventDefault();
-    }
-  };
-
   // Función para obtener los techos disponibles
   const fetchTechos = async () => {
     try {
@@ -305,7 +298,6 @@ const TabCeilingCreate: React.FC = () => {
               className="form-control"
               value={editingValues.area}
               onChange={(e) => setEditingValues({ ...editingValues, area: Number(e.target.value) })}
-              onKeyDown={handleNoHyphen}
             />
           );
         }
@@ -469,7 +461,6 @@ const TabCeilingCreate: React.FC = () => {
                 className="form-control"
                 value={area}
                 onChange={(e) => setArea(Number(e.target.value))}
-                onKeyDown={handleNoHyphen}
               />
             </div>
           </div>

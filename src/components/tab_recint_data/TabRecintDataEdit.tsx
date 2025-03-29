@@ -214,13 +214,13 @@ const TabRecintDataEdit: React.FC = () => {
       )}
 
       {/* Mostrar tabla de datos o mensaje si no hay datos */}
+      {data.length > 0 ? (
         <TablesParameters columns={columns} data={data} />
-        {data.length === 0 && (
-          <div style={{ textAlign: "center", padding: "1rem" }}>
-            No hay datos para mostrar
-          </div>
-        )}
-        
+      ) : (
+        <div style={{ textAlign: "center", padding: "1rem" }}>
+          No hay datos para mostrar
+        </div>
+      )}
 
       {/* Modal de confirmación para eliminar */}
       <ModalCreate

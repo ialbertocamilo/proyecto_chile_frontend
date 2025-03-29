@@ -260,11 +260,12 @@ const TabRecintDataCreate: React.FC = () => {
         </CustomButton>
       </div>
 
-      <TablesParameters columns={columns} data={data} />
-      {data.length === 0 && (
-        <div style={{ textAlign: "center", padding: "1rem" }}>
+      {data.length === 0 ? (
+        <div  >
           No hay datos para mostrar
         </div>
+      ) : (
+        <TablesParameters columns={columns} data={data} />
       )}
 
       <ModalCreate

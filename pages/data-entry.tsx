@@ -478,7 +478,7 @@ const DataEntryPage: React.FC = () => {
       return false;
     }
     const fmNumber = fmInput;
-  
+
     let porcentajeVidrioNumber = 0;
     if (doorData.ventana_id) {
       const porcentajeInput = parseFloat(doorData.porcentaje_vidrio);
@@ -488,7 +488,7 @@ const DataEntryPage: React.FC = () => {
       }
       porcentajeVidrioNumber = porcentajeInput;
     }
-  
+
     if (
       doorData.name_element.trim() === "" ||
       !doorData.u_puerta_opaca ||
@@ -499,11 +499,11 @@ const DataEntryPage: React.FC = () => {
       notify("Por favor complete todos los campos de la puerta correctamente");
       return false;
     }
-  
+
     try {
       const token = localStorage.getItem("token");
       if (!token) return false;
-  
+
       const body = {
         name_element: doorData.name_element,
         type: "door",
@@ -516,7 +516,7 @@ const DataEntryPage: React.FC = () => {
         u_marco: parseFloat(doorData.u_marco),
         fm: fmNumber,
       };
-  
+
       const response = await axios.post(
         `${constantUrlApiEndpoint}/user/elements/create`,
         body,
@@ -530,7 +530,8 @@ const DataEntryPage: React.FC = () => {
       );
       const newElement = response.data.element;
       if (newElement.type === "door" && newElement.atributs?.porcentaje_vidrio > 1) {
-        newElement.atributs.porcentaje_vidrio = newElement.atributs.porcentaje_vidrio / 100;
+        newElement.atributs.porcentaje_vidrio =
+          newElement.atributs.porcentaje_vidrio / 100;
       }
       setElementsList((prev) => [...prev, newElement]);
       notify(`La puerta "${doorData.name_element}" fue creada exitosamente`);
@@ -558,7 +559,6 @@ const DataEntryPage: React.FC = () => {
       return false;
     }
   };
-  
 
   // === Funciones para eliminación de elemento (ventana o puerta) ===
   const handleDeleteElement = async (elementId: number, type: "window" | "door") => {
@@ -590,7 +590,7 @@ const DataEntryPage: React.FC = () => {
       if (!token) return;
       const clampedFm = validatePercentage(element.fm);
       const fmFraction = clampedFm / 100; // Convertir a fracción
-  
+
       const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
       const headers = {
         "Content-Type": "application/json",
@@ -624,7 +624,7 @@ const DataEntryPage: React.FC = () => {
       }
     }
   };
-  
+
   // Al confirmar edición de puerta, se convierte fm y % Vidrio a fracción
   const handleConfirmDoorEdit = async (element: ElementBase) => {
     try {
@@ -632,13 +632,15 @@ const DataEntryPage: React.FC = () => {
       if (!token) return;
       const clampedFm = validatePercentage(element.fm);
       const fmFraction = clampedFm / 100;
-  
+
       let porcentajeVidrioFraction = 0;
       if (element.atributs.ventana_id) {
-        const clampedPorcentaje = validatePercentage(element.atributs.porcentaje_vidrio || 0);
+        const clampedPorcentaje = validatePercentage(
+          element.atributs.porcentaje_vidrio || 0
+        );
         porcentajeVidrioFraction = clampedPorcentaje / 100;
       }
-  
+
       const url = `${constantUrlApiEndpoint}/user/elements/${element.id}/update`;
       const headers = {
         "Content-Type": "application/json",
@@ -661,13 +663,13 @@ const DataEntryPage: React.FC = () => {
         prev.map((el) =>
           el.id === element.id
             ? {
-                ...element,
-                fm: fmFraction,
-                atributs: {
-                  ...element.atributs,
-                  porcentaje_vidrio: porcentajeVidrioFraction,
-                },
-              }
+              ...element,
+              fm: fmFraction,
+              atributs: {
+                ...element.atributs,
+                porcentaje_vidrio: porcentajeVidrioFraction,
+              },
+            }
             : el
         )
       );
@@ -684,7 +686,7 @@ const DataEntryPage: React.FC = () => {
       }
     }
   };
-  
+
   // === useEffect para Step 3 (Materiales) ===
   useEffect(() => {
     if (step === 3) {
@@ -783,7 +785,13 @@ const DataEntryPage: React.FC = () => {
           ) : (
             mat.atributs.density
           ),
-          action: (
+
+          // ----- AQUÍ ES DONDE SE HACE EL CAMBIO -----
+          // Si mat.user_id == null (o la condición que desees), mostramos "-"
+          // De lo contrario, se muestran los botones de acción
+          action: mat.user_id == null ? (
+            <span>-</span>
+          ) : (
             <ActionButtons
               onEdit={() => {
                 setEditingMaterialId(mat.id);
@@ -799,7 +807,7 @@ const DataEntryPage: React.FC = () => {
                 setDeleteAction(() => () => handleDeleteMaterial(mat.id));
                 setShowConfirmModal(true);
               }}
-              isDisabled={mat.user_id == null}
+              isDisabled={false}
             />
           ),
         };
@@ -824,7 +832,7 @@ const DataEntryPage: React.FC = () => {
             }}
           />
         </div>
-        <div className="border rounded overflow-hidden">
+        <div className="overflow-hidden">
           <TablesParameters columns={columnsMaterials} data={filteredMaterialData} />
         </div>
       </>
@@ -852,7 +860,7 @@ const DataEntryPage: React.FC = () => {
             el.name_element.toLowerCase().includes(elementSearch.toLowerCase())
         )
         .map((el) => {
-          const isDefault = (el as any).created_status === "created"
+          const isDefault = (el as any).created_status === "created";
           return {
             name_element: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -913,13 +921,17 @@ const DataEntryPage: React.FC = () => {
             ) : (
               Math.round(el.fm * 100) + "%"
             ),
-            acciones: (
+
+            // ----- AQUÍ ES DONDE SE HACE EL CAMBIO -----
+            acciones: el.user_id == null ? (
+              <span>-</span>
+            ) : (
               <ActionButtons
                 onEdit={() =>
                   setEditingWindowData({ ...el, fm: parseFloat((el.fm * 100).toFixed(4)) })
                 }
                 onDelete={() => confirmDeleteElement(el.id, "window")}
-                isDisabled={el.user_id == null}
+                isDisabled={false}
               />
             ),
           };
@@ -935,17 +947,24 @@ const DataEntryPage: React.FC = () => {
               onNew={() => setShowElementModal(true)}
             />
           </div>
-          <div className="border rounded overflow-hidden">
+          <div className="overflow-hidden">
             <div className="bg-white border-bottom">
               <div className="row g-0">
                 {["Ventanas", "Puertas"].map((tab) => (
                   <div key={tab} className="col-6">
-                    <ButtonTab
-                      label={tab}
-                      active={modalElementType === tab.toLowerCase()}
+                    <div
                       onClick={() => setModalElementType(tab.toLowerCase())}
-                      primaryColor={primaryColor}
-                    />
+                      style={{
+                        flex: 1,
+                        textAlign: "center",
+                        padding: "10px",
+                        cursor: "pointer",
+                        color: primaryColor,
+                        borderBottom: modalElementType === tab.toLowerCase() ? `2px solid ${primaryColor}` : "2px solid transparent",
+                      }}
+                    >
+                      {tab}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -972,7 +991,7 @@ const DataEntryPage: React.FC = () => {
             el.name_element.toLowerCase().includes(elementSearch.toLowerCase())
         )
         .map((el) => {
-          const isDefault = (el as any).created_status === "created"
+          const isDefault = (el as any).created_status === "created";
           return {
             name_element: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -1026,7 +1045,11 @@ const DataEntryPage: React.FC = () => {
             ) : (
               Math.round(el.fm * 100) + "%"
             ),
-            acciones: (
+
+            // ----- AQUÍ ES DONDE SE HACE EL CAMBIO -----
+            acciones: el.user_id == null ? (
+              <span>-</span>
+            ) : (
               <ActionButtons
                 onEdit={() =>
                   setEditingDoorData({
@@ -1041,7 +1064,7 @@ const DataEntryPage: React.FC = () => {
                   })
                 }
                 onDelete={() => confirmDeleteElement(el.id, "door")}
-                isDisabled={el.user_id == null}
+                isDisabled={false}
               />
             ),
           };
@@ -1057,17 +1080,24 @@ const DataEntryPage: React.FC = () => {
               onNew={() => setShowElementModal(true)}
             />
           </div>
-          <div className="border rounded overflow-hidden">
+          <div className="overflow-hidden">
             <div className="bg-white border-bottom">
               <div className="row g-0">
                 {["Ventanas", "Puertas"].map((tab) => (
                   <div key={tab} className="col-6">
-                    <ButtonTab
-                      label={tab}
-                      active={modalElementType === tab.toLowerCase()}
+                    <div
                       onClick={() => setModalElementType(tab.toLowerCase())}
-                      primaryColor={primaryColor}
-                    />
+                      style={{
+                        flex: 1,
+                        textAlign: "center",
+                        padding: "10px",
+                        cursor: "pointer",
+                        color: primaryColor,
+                        borderBottom: modalElementType === tab.toLowerCase() ? `2px solid ${primaryColor}` : "2px solid transparent",
+                      }}
+                    >
+                      {tab}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1455,7 +1485,7 @@ const DataEntryPage: React.FC = () => {
                   max="100"
                   className="form-control"
                   placeholder="% Vidrio"
-                  value={doorData.ventana_id ? doorData.porcentaje_vidrio : ""}
+                  value={doorData.porcentaje_vidrio}
                   onChange={(e) => {
                     const value = parseFloat(e.target.value);
                     if (isNaN(value)) {
@@ -1469,7 +1499,6 @@ const DataEntryPage: React.FC = () => {
                     }
                   }}
                   onKeyDown={handleNumberKeyDown}
-                  disabled={!doorData.ventana_id}
                 />
               </div>
               <div className="form-group mb-3">
@@ -1549,12 +1578,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1570,12 +1599,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            fs_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          fs_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1590,12 +1619,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            clousure_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          clousure_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1617,12 +1646,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            frame_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          frame_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1710,12 +1739,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_puerta_opaca: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_puerta_opaca: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1734,13 +1763,13 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            ventana_id: selectedId ? parseInt(selectedId) : 0,
-                            name_ventana: selectedWindow ? selectedWindow.name_element : "",
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          ventana_id: selectedId ? parseInt(selectedId) : 0,
+                          name_ventana: selectedWindow ? selectedWindow.name_element : "",
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -1771,12 +1800,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: clamped,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          porcentaje_vidrio: clamped,
+                        },
+                      }
                       : prev
                   );
                 }}

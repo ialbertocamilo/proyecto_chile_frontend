@@ -935,6 +935,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="Conductividad"
                 value={newMaterialData.conductivity}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewMaterialData((prev) => ({
@@ -952,6 +957,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="Calor específico"
                 value={newMaterialData.specific_heat}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewMaterialData((prev) => ({
@@ -969,6 +979,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="Densidad"
                 value={newMaterialData.density}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewMaterialData((prev) => ({
@@ -1093,6 +1108,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="U Vidrio"
                 value={newWindow.u_vidrio}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewWindow((prev) => ({
@@ -1110,6 +1130,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="FS Vidrio"
                 value={newWindow.fs_vidrio}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewWindow((prev) => ({
@@ -1169,6 +1194,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="U Marco"
                 value={newWindow.u_marco}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewWindow((prev) => ({
@@ -1186,6 +1216,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="FM (%)"
                 value={newWindow.fm}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => {
                   let value = parseFloat(e.target.value);
                   if (isNaN(value)) value = 0;
@@ -1318,6 +1353,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="U Puerta opaca"
                 value={newDoor.u_puerta_opaca}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewDoor((prev) => ({
@@ -1357,6 +1397,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="% Vidrio"
                 value={newDoor.porcentaje_vidrio}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => {
                   let value = parseFloat(e.target.value);
                   if (isNaN(value)) value = 0;
@@ -1366,7 +1411,7 @@ const AdministrationPage: React.FC = () => {
                 }}
                 min="0"
                 max="100"
-                disabled={newDoor.ventana_id === 0}
+              
               />
             </div>
             <div className="form-group">
@@ -1376,6 +1421,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="U Marco"
                 value={newDoor.u_marco}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewDoor((prev) => ({
@@ -1393,6 +1443,11 @@ const AdministrationPage: React.FC = () => {
                 className="form-control"
                 placeholder="FM (%)"
                 value={newDoor.fm}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => {
                   let value = parseFloat(e.target.value);
                   if (isNaN(value)) value = 0;

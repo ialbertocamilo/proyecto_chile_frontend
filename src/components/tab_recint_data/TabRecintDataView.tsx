@@ -98,11 +98,15 @@ const TabRecintDataView: React.FC = () => {
 
   return (
     <div>
-      {data.length === 0 ? (
-        <p>No se encontraron datos</p>
-      ) : (
-        <TablesParameters columns={columns} data={data} />
-      )}
+      {/* Siempre se renderiza la estructura de la tabla para mostrar las pestañas */}
+            <TablesParameters columns={columns} data={data} />
+      
+            {/* Si no hay datos, se muestra un mensaje informativo */}
+            {data.length === 0 && (
+              <div style={{ textAlign: "center", padding: "1rem" }}>
+                No hay datos para mostrar
+              </div>
+            )}
     </div>
   );
 };

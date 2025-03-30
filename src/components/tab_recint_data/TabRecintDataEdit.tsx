@@ -197,26 +197,25 @@ const TabRecintDataEdit: React.FC = () => {
   // ===========================================================
   return (
     <div>
-      {/* Si hay datos, muestra el botón "+ Nuevo" */}
-      {data.length > 0 && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            marginBottom: "1rem",
-          }}
-        >
-          <CustomButton variant="save" onClick={handleCreate}>
-            + Nuevo
-          </CustomButton>
-        </div>
-      )}
+      {/* Botón "+ Nuevo" siempre visible */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          marginBottom: "1rem",
+        }}
+      >
+        <CustomButton variant="save" onClick={handleCreate}>
+          + Nuevo
+        </CustomButton>
+      </div>
 
-      {/* Mostrar tabla de datos o mensaje si no hay datos */}
-      {data.length > 0 ? (
-        <TablesParameters columns={columns} data={data} />
-      ) : (
+      {/* Siempre se renderiza la estructura de la tabla para mostrar las pestañas */}
+      <TablesParameters columns={columns} data={data} />
+
+      {/* Si no hay datos, se muestra un mensaje informativo */}
+      {data.length === 0 && (
         <div style={{ textAlign: "center", padding: "1rem" }}>
           No hay datos para mostrar
         </div>

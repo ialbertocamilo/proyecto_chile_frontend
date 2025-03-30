@@ -1264,6 +1264,11 @@ const WorkFlowpar2createPage: React.FC = () => {
             step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.vertical.lambda}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}          
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1282,6 +1287,11 @@ const WorkFlowpar2createPage: React.FC = () => {
             step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.vertical.e_aisl}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}          
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1302,6 +1312,11 @@ const WorkFlowpar2createPage: React.FC = () => {
             step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.vertical.d}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}          
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1322,6 +1337,11 @@ const WorkFlowpar2createPage: React.FC = () => {
             step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.horizontal.lambda}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}          
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1340,6 +1360,11 @@ const WorkFlowpar2createPage: React.FC = () => {
             step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.horizontal.e_aisl}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}          
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1360,6 +1385,11 @@ const WorkFlowpar2createPage: React.FC = () => {
             step="any"
             className="form-control form-control-sm"
             value={editingPisoForm.horizontal.d}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}          
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -2185,6 +2215,11 @@ const WorkFlowpar2createPage: React.FC = () => {
                 className="form-control"
                 placeholder="Espesor capa (cm)"
                 value={newDetailForm.layer_thickness ?? ""}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) =>
                   setNewDetailForm({
                     ...newDetailForm,

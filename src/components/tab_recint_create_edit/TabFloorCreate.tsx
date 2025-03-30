@@ -658,11 +658,9 @@ const TabFloorCreate: React.FC = () => {
       >
         <div className="container">
           <div className="row mb-3">
-            <div className="col-12 text-center">
               <p>
                 ¿Está seguro que desea eliminar el piso <strong>{rowToDelete?.pisos}</strong>?
               </p>
-            </div>
           </div>
         </div>
       </ModalCreate>

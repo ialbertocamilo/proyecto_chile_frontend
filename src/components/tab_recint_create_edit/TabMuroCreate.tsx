@@ -872,15 +872,15 @@ const TabMuroCreate: React.FC = () => {
   const handleCreateThermalBridge = async () => {
     // Validación: Verificar que todos los campos estén llenos
     if (
-      newThermalBridge.po1_length === 0 ||
-      newThermalBridge.po1_id_element === 0 ||
-      newThermalBridge.po2_length === 0 ||
-      newThermalBridge.po2_id_element === 0 ||
-      newThermalBridge.po3_length === 0 ||
-      newThermalBridge.po3_id_element === 0 ||
-      newThermalBridge.po4_length === 0 ||
-      newThermalBridge.po4_e_aislacion === 0 ||
-      newThermalBridge.po4_id_element === 0
+      newThermalBridge.po1_length <= 0 &&
+      newThermalBridge.po1_id_element <= 0 &&
+      newThermalBridge.po2_length <= 0 &&
+      newThermalBridge.po2_id_element <= 0 &&
+      newThermalBridge.po3_length <= 0 &&
+      newThermalBridge.po3_id_element <= 0 &&
+      newThermalBridge.po4_length <= 0 &&
+      newThermalBridge.po4_e_aislacion <= 0 &&
+      newThermalBridge.po4_id_element <= 0
     ) {
       notify("Todos los campos son obligatorios para crear el puente térmico");
       return;
@@ -1225,6 +1225,7 @@ const TabMuroCreate: React.FC = () => {
         isOpen={isDeleteModalOpen}
         onClose={handleCancelDelete}
         onSave={handleConfirmDeleteWall}
+        saveLabel="Eliminar"
         title="Confirmar Eliminación"
       >
         {wallToDelete && (
@@ -1239,6 +1240,7 @@ const TabMuroCreate: React.FC = () => {
         isOpen={isDeleteBridgeModalOpen}
         onClose={handleCancelDeleteBridge}
         onSave={handleConfirmDeleteBridge}
+        saveLabel="Eliminar"
         title="Confirmar Eliminación"
       >
         {bridgeToDelete && (

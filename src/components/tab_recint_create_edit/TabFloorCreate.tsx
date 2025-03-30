@@ -237,10 +237,8 @@ const TabFloorCreate: React.FC = () => {
     if (
       editValues.floor_id === 0 ||
       !editValues.characteristic ||
-      !editValues.area ||
-      editValues.area <= 0 ||
-      !editValues.parameter ||
-      editValues.parameter <= 0 ||
+      editValues.area === undefined ||
+      editValues.parameter === undefined ||
       !editValues.is_ventilated
     ) {
       notify("Debe completar todos los campos del formulario correctamente");
@@ -469,7 +467,7 @@ const TabFloorCreate: React.FC = () => {
 
   // Función para validar los campos del formulario
   const validateForm = () => {
-    if (floorId === 0 || !characteristic || !area || area <= 0) {
+    if (floorId === 0 || !characteristic || area === undefined) {
       notify("Debe completar todos los campos del formulario correctamente");
       return false;
     }

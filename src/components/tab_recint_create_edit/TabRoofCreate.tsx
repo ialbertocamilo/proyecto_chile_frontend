@@ -197,7 +197,7 @@ const TabCeilingCreate: React.FC = () => {
       return;
     }
 
-    if (!editingValues.area || editingValues.area <= 0) {
+    if (editingValues.area < 0) {
       notify("Debe ingresar un área válida");
       return;
     }
@@ -359,7 +359,7 @@ const TabCeilingCreate: React.FC = () => {
       return;
     }
 
-    if (!area || area <= 0) {
+    if (area < 0) {
       notify("Debe ingresar un área válida");
       return;
     }

@@ -147,7 +147,7 @@ const TabFloorCreate: React.FC = () => {
         uValue: item.value_u,
         perimetroSuelo: item.parameter,
         pisoVentilado: item.is_ventilated,
-        ptP06L: item.po6_l
+        ptP06L: item.po6_l,
       }));
 
       setTableData(formattedData);
@@ -219,10 +219,10 @@ const TabFloorCreate: React.FC = () => {
     if (
       editValues.floor_id === 0 ||
       !editValues.characteristic ||
-      !editValues.area ||
-      editValues.area <= 0 ||
-      !editValues.parameter ||
-      editValues.parameter <= 0 ||
+      editValues.area === undefined ||
+      editValues.area === null ||
+      editValues.parameter === undefined ||
+      editValues.parameter === null ||
       !editValues.is_ventilated
     ) {
       notify("Debe completar todos los campos del formulario correctamente");
@@ -328,6 +328,11 @@ const TabFloorCreate: React.FC = () => {
             type="number"
             className="form-control"
             value={editValues.area}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleEditChange("area", Number(e.target.value))}
           />
         );
@@ -337,6 +342,11 @@ const TabFloorCreate: React.FC = () => {
             type="number"
             className="form-control"
             value={editValues.parameter}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleEditChange("parameter", Number(e.target.value))}
           />
         );
@@ -377,26 +387,37 @@ const TabFloorCreate: React.FC = () => {
       headerName: "Área [m²]",
       field: "area",
       renderCell: (row: FloorData) => {
-        return editingRowIndex === row.index ? renderEditableCell("area", row) : row.area;
+        if (editingRowIndex === row.index) {
+          return renderEditableCell("area", row);
+        }
+        return row.area === 0 ? "-" : row.area;
       }
     },
     {
       headerName: "U [W/m²K]",
       field: "uValue",
-      renderCell: (row: FloorData) => row.uValue.toFixed(2)
+      renderCell: (row: FloorData) => {
+        return row.uValue === 0 ? "-" : row.uValue.toFixed(2);
+      }
     },
     {
       headerName: "Perímetro Suelo [m]",
       field: "perimetroSuelo",
       renderCell: (row: FloorData) => {
-        return editingRowIndex === row.index ? renderEditableCell("perimetroSuelo", row) : row.perimetroSuelo;
+        if (editingRowIndex === row.index) {
+          return renderEditableCell("perimetroSuelo", row);
+        }
+        return row.perimetroSuelo === 0 ? "-" : row.perimetroSuelo;
       }
     },
     {
       headerName: "Piso ventilado [¿?]",
       field: "pisoVentilado",
       renderCell: (row: FloorData) => {
-        return editingRowIndex === row.index ? renderEditableCell("pisoVentilado", row) : row.pisoVentilado;
+        if (editingRowIndex === row.index) {
+          return renderEditableCell("pisoVentilado", row);
+        }
+        return row.pisoVentilado === "N/A" || row.pisoVentilado === "" ? "-" : row.pisoVentilado;
       }
     },
     { headerName: "PT P06 L [m]", field: "ptP06L" },
@@ -431,7 +452,14 @@ const TabFloorCreate: React.FC = () => {
 
   // Función para validar los campos del formulario
   const validateForm = () => {
-    if (floorId === 0 || !characteristic || !area || area <= 0) {
+    if (
+      floorId === 0 ||
+      !characteristic ||
+      area === undefined ||
+      area === null ||
+      parameter === undefined ||
+      parameter === null
+    ) {
       notify("Debe completar todos los campos del formulario correctamente");
       return false;
     }
@@ -505,8 +533,6 @@ const TabFloorCreate: React.FC = () => {
         saveLabel="Grabar Datos"
         title="Crear Piso"
       >
-
-
         <div className="container">
           <div className="row mb-3">
             <div className="col-md-4">
@@ -566,6 +592,11 @@ const TabFloorCreate: React.FC = () => {
                 id="area"
                 className="form-control"
                 value={area}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => setArea(Number(e.target.value))}
               />
             </div>
@@ -581,6 +612,11 @@ const TabFloorCreate: React.FC = () => {
                 id="parameter"
                 className="form-control"
                 value={parameter}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => setParameter(Number(e.target.value))}
               />
             </div>
@@ -608,9 +644,8 @@ const TabFloorCreate: React.FC = () => {
             <div className="col-12" style={{ textAlign: "left" }}>
               <p style={{ color: "red", margin: 0 }}>(*) Datos obligatorios</p>
             </div>
-          </div>|
+          </div>
         </div>
-
       </ModalCreate>
 
       {/* Modal de Confirmación de Eliminación */}

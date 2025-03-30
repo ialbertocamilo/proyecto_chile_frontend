@@ -61,6 +61,14 @@ const TabCeilingCreate: React.FC = () => {
     area: 0
   });
 
+  // Función para formatear valores
+  const formatValue = (value: any) => {
+    if (value === 0 || value === "0" || value === "N/A") {
+      return "-";
+    }
+    return value;
+  };
+
   // Función para obtener los techos disponibles
   const fetchTechos = async () => {
     try {
@@ -197,7 +205,7 @@ const TabCeilingCreate: React.FC = () => {
       return;
     }
 
-    if (!editingValues.area || editingValues.area <= 0) {
+    if (editingValues.area === undefined || editingValues.area === null) {
       notify("Debe ingresar un área válida");
       return;
     }
@@ -264,7 +272,7 @@ const TabCeilingCreate: React.FC = () => {
             </select>
           );
         }
-        return row.techos;
+        return formatValue(row.techos);
       }
     },
     {
@@ -284,7 +292,7 @@ const TabCeilingCreate: React.FC = () => {
             </select>
           );
         }
-        return row.caracteristicas;
+        return formatValue(row.caracteristicas);
       }
     },
     {
@@ -297,17 +305,24 @@ const TabCeilingCreate: React.FC = () => {
               type="number"
               className="form-control"
               value={editingValues.area}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}            
               onChange={(e) => setEditingValues({ ...editingValues, area: Number(e.target.value) })}
             />
           );
         }
-        return row.area;
+        return formatValue(row.area);
       }
     },
     {
       headerName: "U [W/m²K]",
       field: "u",
-      renderCell: (row: CeilingData) => row.u.toFixed(2)
+      renderCell: (row: CeilingData) => {
+        return row.u === 0 ? "-" : row.u.toFixed(2);
+      }
     },
     {
       headerName: "Acciones",
@@ -352,7 +367,7 @@ const TabCeilingCreate: React.FC = () => {
       return;
     }
 
-    if (!area || area <= 0) {
+    if (area === undefined || area === null) {
       notify("Debe ingresar un área válida");
       return;
     }
@@ -460,6 +475,11 @@ const TabCeilingCreate: React.FC = () => {
                 id="area"
                 className="form-control"
                 value={area}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={(e) => setArea(Number(e.target.value))}
               />
             </div>
@@ -479,7 +499,7 @@ const TabCeilingCreate: React.FC = () => {
           <div className="row mb-3">
             <div className="">
               <p>¿Está seguro que desea eliminar el siguiente techo?</p>
-              < strong>{itemToDelete?.techos}</strong>
+              <strong>{itemToDelete?.techos}</strong>
             </div>
           </div>
         </div>

@@ -110,6 +110,7 @@ const TabRecintDataEdit: React.FC = () => {
         },
       });
       if (!response.ok) throw new Error("Error al eliminar el recinto");
+      setData(prevData => prevData.filter(item => item.id !== itemToDelete.id));
       notify("Recinto eliminado exitosamente");
       setShowDeleteModal(false);
       setItemToDelete(null);

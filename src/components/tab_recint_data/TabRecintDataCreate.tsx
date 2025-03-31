@@ -171,6 +171,7 @@ const TabRecintDataCreate: React.FC = () => {
       });
       if (!response.ok) throw new Error();
       notify("Recinto eliminado exitosamente");
+      setData((prevData) => prevData.filter((item) => item.id !== itemToDelete.id));
       setShowDeleteModal(false);
       setItemToDelete(null);
       await fetchEnclosureGenerals();

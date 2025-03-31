@@ -151,7 +151,7 @@ const TabRecintDataEdit: React.FC = () => {
     {
       headerName: "Perfil Ocupación",
       field: "occupation_profile_id",
-      renderCell: (row: EnclosureGeneralData) => row.usage_profile_name,  // Cambiado para mostrar el nombre del perfil
+      renderCell: (row: EnclosureGeneralData) => row.usage_profile_name,
     },
     {
       headerName: "Altura (m)",
@@ -166,17 +166,17 @@ const TabRecintDataEdit: React.FC = () => {
     {
       headerName: "Región",
       field: "region_id",
-      renderCell: (row: EnclosureGeneralData) => row.nombre_region,  // Cambiado para mostrar el nombre de la región
+      renderCell: (row: EnclosureGeneralData) => row.nombre_region,
     },
     {
       headerName: "Comuna",
       field: "comuna_id",
-      renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,  // Cambiado para mostrar el nombre de la comuna
+      renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
     },
     {
       headerName: "Zona Térmica",
       field: "zona_termica",
-      renderCell: (row: EnclosureGeneralData) => row.zona_termica,  // Mantuvimos la columna Zona Térmica aquí
+      renderCell: (row: EnclosureGeneralData) => row.zona_termica,
     },
     {
       headerName: "Acciones",
@@ -197,7 +197,7 @@ const TabRecintDataEdit: React.FC = () => {
   // ===========================================================
   return (
     <div>
-      {/* Título y botón "+ Nuevo" */}
+      {/* Botón "+ Nuevo" siempre visible */}
       <div
         style={{
           display: "flex",
@@ -211,8 +211,15 @@ const TabRecintDataEdit: React.FC = () => {
         </CustomButton>
       </div>
 
-      {/* Tabla de datos */}
+      {/* Siempre se renderiza la estructura de la tabla para mostrar las pestañas */}
       <TablesParameters columns={columns} data={data} />
+
+      {/* Si no hay datos, se muestra un mensaje informativo */}
+      {data.length === 0 && (
+        <div style={{ textAlign: "center", padding: "1rem" }}>
+          No hay datos para mostrar
+        </div>
+      )}
 
       {/* Modal de confirmación para eliminar */}
       <ModalCreate

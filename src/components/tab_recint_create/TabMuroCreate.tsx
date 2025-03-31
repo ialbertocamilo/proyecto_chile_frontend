@@ -51,6 +51,17 @@ interface WallDetail {
 }
 
 const TabMuroCreate: React.FC = () => {
+  // Función helper para formatear valores: si el valor es 0, "0" o "N/A", retorna guion.
+  const formatValue = (value: any, fixed?: number): string => {
+    if (value === 0 || value === "0" || value === "N/A") {
+      return "-";
+    }
+    if (typeof value === "number" && fixed !== undefined) {
+      return value.toFixed(fixed);
+    }
+    return value;
+  };
+
   // Estados de modales
   const [isWallModalOpen, setIsWallModalOpen] = useState<boolean>(false);
   const [isThermalBridgeModalOpen, setIsThermalBridgeModalOpen] = useState<boolean>(false);
@@ -243,7 +254,6 @@ const TabMuroCreate: React.FC = () => {
     if (!editingWallData) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     const updateId = editingWallData.id || id;
     try {
       const response = await fetch(
@@ -252,7 +262,7 @@ const TabMuroCreate: React.FC = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
           body: JSON.stringify({
             wall_id: editingWallData.wall_id,
@@ -288,7 +298,6 @@ const TabMuroCreate: React.FC = () => {
     if (!wallToDelete) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/wall-enclosures-delete/${wallToDelete.id}`,
@@ -296,7 +305,7 @@ const TabMuroCreate: React.FC = () => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
         }
       );
@@ -340,7 +349,6 @@ const TabMuroCreate: React.FC = () => {
     if (!editingBridgeData) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/thermal-bridge-update/${bridgeId}`,
@@ -348,7 +356,7 @@ const TabMuroCreate: React.FC = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
           body: JSON.stringify(editingBridgeData),
         }
@@ -380,7 +388,6 @@ const TabMuroCreate: React.FC = () => {
     if (!bridgeToDelete) return;
     const authData = getAuthData();
     if (!authData) return;
-    const { token } = authData;
     try {
       const response = await fetch(
         `${constantUrlApiEndpoint}/thermal-bridge-delete/${bridgeToDelete.id}`,
@@ -388,7 +395,7 @@ const TabMuroCreate: React.FC = () => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authData.token}`,
           },
         }
       );
@@ -410,7 +417,7 @@ const TabMuroCreate: React.FC = () => {
     setBridgeToDelete(null);
   };
 
-  // Columnas para la tabla de muros (se modifica la columna de "Caracteristicas" para usar un desplegable)
+  // Columnas para la tabla de muros
   const murosColumns = [
     {
       headerName: "Muros",
@@ -495,6 +502,11 @@ const TabMuroCreate: React.FC = () => {
               min="0"
               step="0.01"
               value={editingWallData.area}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}            
               onChange={handleEditWallChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
@@ -504,15 +516,14 @@ const TabMuroCreate: React.FC = () => {
             />
           );
         }
-        return Number(row.area).toFixed(2);
+        return formatValue(row.area, 2);
       },
     },
     {
       headerName: "U [W/m²K]",
       field: "u",
       renderCell: (row: Wall) => {
-        // Se muestra el valor de U como solo lectura, incluso en modo edición
-        return row.u ? Number(row.u).toFixed(2) : "";
+        return formatValue(row.u, 2);
       },
     },
     {
@@ -549,6 +560,11 @@ const TabMuroCreate: React.FC = () => {
               min="0"
               step="0.01"
               value={editingBridgeData.po1_length}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}            
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
@@ -558,7 +574,7 @@ const TabMuroCreate: React.FC = () => {
             />
           );
         }
-        return Number(row.po1_length).toFixed(2);
+        return formatValue(row.po1_length, 2);
       },
     },
     {
@@ -582,7 +598,8 @@ const TabMuroCreate: React.FC = () => {
             </select>
           );
         }
-        return row.po1_element_name || row.po1_id_element;
+        const element = row.po1_element_name || row.po1_id_element;
+        return formatValue(element);
       },
     },
     {
@@ -594,13 +611,24 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po2_length"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po2_length}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}            
               onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({ ...editingBridgeData, po2_length: Number(rounded) });
+              }}
               className="form-control form-control-sm"
             />
           );
         }
-        return row.po2_length;
+        return formatValue(row.po2_length, 2);
       },
     },
     {
@@ -624,7 +652,8 @@ const TabMuroCreate: React.FC = () => {
             </select>
           );
         }
-        return row.po2_element_name || row.po2_id_element;
+        const element = row.po2_element_name || row.po2_id_element;
+        return formatValue(element);
       },
     },
     {
@@ -636,13 +665,24 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po3_length"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po3_length}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}            
               onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({ ...editingBridgeData, po3_length: Number(rounded) });
+              }}
               className="form-control form-control-sm"
             />
           );
         }
-        return row.po3_length;
+        return formatValue(row.po3_length, 2);
       },
     },
     {
@@ -666,7 +706,8 @@ const TabMuroCreate: React.FC = () => {
             </select>
           );
         }
-        return row.po3_element_name || row.po3_id_element;
+        const element = row.po3_element_name || row.po3_id_element;
+        return formatValue(element);
       },
     },
     {
@@ -678,13 +719,24 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po4_length"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po4_length}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}            
               onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({ ...editingBridgeData, po4_length: Number(rounded) });
+              }}
               className="form-control form-control-sm"
             />
           );
         }
-        return row.po4_length;
+        return formatValue(row.po4_length, 2);
       },
     },
     {
@@ -696,13 +748,24 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po4_e_aislacion"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po4_e_aislacion}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}            
               onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({ ...editingBridgeData, po4_e_aislacion: Number(rounded) });
+              }}
               className="form-control form-control-sm"
             />
           );
         }
-        return row.po4_e_aislacion;
+        return formatValue(row.po4_e_aislacion, 2);
       },
     },
     {
@@ -726,7 +789,8 @@ const TabMuroCreate: React.FC = () => {
             </select>
           );
         }
-        return row.po4_element_name || row.po4_id_element;
+        const element = row.po4_element_name || row.po4_id_element;
+        return formatValue(element);
       },
     },
     {
@@ -829,14 +893,14 @@ const TabMuroCreate: React.FC = () => {
   const handleCreateThermalBridge = async () => {
     // Validar que los campos obligatorios estén completos
     if (
-      newThermalBridge.po1_length <= 0 ||
-      newThermalBridge.po1_id_element <= 0 ||
-      newThermalBridge.po2_length <= 0 ||
-      newThermalBridge.po2_id_element <= 0 ||
-      newThermalBridge.po3_length <= 0 ||
-      newThermalBridge.po3_id_element <= 0 ||
-      newThermalBridge.po4_length <= 0 ||
-      newThermalBridge.po4_e_aislacion <= 0 ||
+      newThermalBridge.po1_length <= 0 &&
+      newThermalBridge.po1_id_element <= 0 &&
+      newThermalBridge.po2_length <= 0 &&
+      newThermalBridge.po2_id_element <= 0 &&
+      newThermalBridge.po3_length <= 0 &&
+      newThermalBridge.po3_id_element <= 0 &&
+      newThermalBridge.po4_length <= 0 &&
+      newThermalBridge.po4_e_aislacion <= 0 &&
       newThermalBridge.po4_id_element <= 0
     ) {
       notify("Debe completar todos los campos del puente térmico");
@@ -987,6 +1051,11 @@ const TabMuroCreate: React.FC = () => {
                 name="area"
                 className="form-control form-control-sm"
                 value={newWall.area}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={handleWallInputChange}
               />
             </div>
@@ -1013,6 +1082,11 @@ const TabMuroCreate: React.FC = () => {
                 name="po1_length"
                 className="form-control form-control-sm"
                 value={newThermalBridge.po1_length}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={handleThermalBridgeInputChange}
               />
             </div>
@@ -1049,6 +1123,11 @@ const TabMuroCreate: React.FC = () => {
                 name="po2_length"
                 className="form-control form-control-sm"
                 value={newThermalBridge.po2_length}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={handleThermalBridgeInputChange}
               />
             </div>
@@ -1085,6 +1164,11 @@ const TabMuroCreate: React.FC = () => {
                 name="po3_length"
                 className="form-control form-control-sm"
                 value={newThermalBridge.po3_length}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={handleThermalBridgeInputChange}
               />
             </div>
@@ -1121,6 +1205,11 @@ const TabMuroCreate: React.FC = () => {
                 name="po4_length"
                 className="form-control form-control-sm"
                 value={newThermalBridge.po4_length}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={handleThermalBridgeInputChange}
               />
             </div>
@@ -1136,6 +1225,11 @@ const TabMuroCreate: React.FC = () => {
                 name="po4_e_aislacion"
                 className="form-control form-control-sm"
                 value={newThermalBridge.po4_e_aislacion}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}              
                 onChange={handleThermalBridgeInputChange}
               />
             </div>
@@ -1170,6 +1264,7 @@ const TabMuroCreate: React.FC = () => {
         onClose={handleCancelDelete}
         onSave={handleConfirmDeleteWall}
         title="Confirmar Eliminación"
+        saveLabel="Eliminar"
       >
         {wallToDelete && (
           <p>
@@ -1184,6 +1279,7 @@ const TabMuroCreate: React.FC = () => {
         onClose={handleCancelDeleteBridge}
         onSave={handleConfirmDeleteBridge}
         title="Confirmar Eliminación"
+        saveLabel="Eliminar"
       >
         {bridgeToDelete && (
           <p>

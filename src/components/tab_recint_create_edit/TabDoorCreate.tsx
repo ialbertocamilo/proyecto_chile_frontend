@@ -63,6 +63,13 @@ const TabDoorCreate: React.FC = () => {
     return value === 0 || value === "N/A" ? "-" : value;
   };
 
+  // Handler para evitar ingreso de guiones
+  const preventHyphen = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "-") {
+      e.preventDefault();
+    }
+  };
+
   // Cargar datos y opciones al montar el componente
   useEffect(() => {
     const fetchData = async () => {
@@ -558,6 +565,7 @@ const TabDoorCreate: React.FC = () => {
               className="form-control"
               value={editingRow.high}
               onChange={(e) => handleRowFieldChange("high", Number(e.target.value))}
+              onKeyDown={preventHyphen}
             />
           );
         }
@@ -575,6 +583,7 @@ const TabDoorCreate: React.FC = () => {
               className="form-control"
               value={editingRow.broad}
               onChange={(e) => handleRowFieldChange("broad", Number(e.target.value))}
+              onKeyDown={preventHyphen}
             />
           );
         }
@@ -613,6 +622,7 @@ const TabDoorCreate: React.FC = () => {
             style={favInputStyle}
             value={favEditData.fav1D}
             onChange={(e) => handleFavEditChange("fav1D", Number(e.target.value))}
+            onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav1D)
@@ -630,6 +640,7 @@ const TabDoorCreate: React.FC = () => {
             style={favInputStyle}
             value={favEditData.fav1L}
             onChange={(e) => handleFavEditChange("fav1L", Number(e.target.value))}
+            onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav1L)
@@ -647,6 +658,7 @@ const TabDoorCreate: React.FC = () => {
             style={favInputStyle}
             value={favEditData.fav2izqP}
             onChange={(e) => handleFavEditChange("fav2izqP", Number(e.target.value))}
+            onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav2izqP)
@@ -664,6 +676,7 @@ const TabDoorCreate: React.FC = () => {
             style={favInputStyle}
             value={favEditData.fav2izqS}
             onChange={(e) => handleFavEditChange("fav2izqS", Number(e.target.value))}
+            onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav2izqS)
@@ -681,6 +694,7 @@ const TabDoorCreate: React.FC = () => {
             style={favInputStyle}
             value={favEditData.fav2DerP}
             onChange={(e) => handleFavEditChange("fav2DerP", Number(e.target.value))}
+            onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav2DerP)
@@ -698,6 +712,7 @@ const TabDoorCreate: React.FC = () => {
             style={favInputStyle}
             value={favEditData.fav2DerS}
             onChange={(e) => handleFavEditChange("fav2DerS", Number(e.target.value))}
+            onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav2DerS)
@@ -715,6 +730,7 @@ const TabDoorCreate: React.FC = () => {
             style={favInputStyle}
             value={favEditData.fav3E}
             onChange={(e) => handleFavEditChange("fav3E", Number(e.target.value))}
+            onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav3E)
@@ -732,6 +748,7 @@ const TabDoorCreate: React.FC = () => {
             style={favInputStyle}
             value={favEditData.fav3T}
             onChange={(e) => handleFavEditChange("fav3T", Number(e.target.value))}
+            onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav3T)
@@ -749,6 +766,7 @@ const TabDoorCreate: React.FC = () => {
             style={favInputStyle}
             value={favEditData.fav3Beta}
             onChange={(e) => handleFavEditChange("fav3Beta", Number(e.target.value))}
+            onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav3Beta)
@@ -766,6 +784,7 @@ const TabDoorCreate: React.FC = () => {
             style={favInputStyle}
             value={favEditData.fav3Alpha}
             onChange={(e) => handleFavEditChange("fav3Alpha", Number(e.target.value))}
+            onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav3Alpha)
@@ -913,6 +932,7 @@ const TabDoorCreate: React.FC = () => {
                 className="form-control"
                 value={high}
                 onChange={(e) => setHigh(Number(e.target.value))}
+                onKeyDown={preventHyphen}
               />
             </div>
           </div>
@@ -927,6 +947,7 @@ const TabDoorCreate: React.FC = () => {
                 className="form-control"
                 value={broad}
                 onChange={(e) => setBroad(Number(e.target.value))}
+                onKeyDown={preventHyphen}
               />
             </div>
           </div>
@@ -946,13 +967,11 @@ const TabDoorCreate: React.FC = () => {
       >
         <div className="container">
           <div className="row mb-3">
-            <div className="col-12 text-center">
               <p>
                 ¿Está seguro que desea eliminar la puerta{" "}
                 <strong>{deletingRow?.tipoPuente}</strong>?
               </p>
             </div>
-          </div>
         </div>
       </ModalCreate>
     </div>

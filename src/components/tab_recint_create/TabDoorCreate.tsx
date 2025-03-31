@@ -58,6 +58,11 @@ const TabDoorCreate: React.FC = () => {
   const [angleOptions, setAngleOptions] = useState<string[]>([]);
   const [doorOptions, setDoorOptions] = useState<any[]>([]);
 
+  // Función para formatear los valores. Si es 0 o "N/A", se retorna "-"
+  const formatValue = (value: any) => {
+    return value === 0 || value === "N/A" ? "-" : value;
+  };
+
   // Cargar datos y opciones al montar el componente
   useEffect(() => {
     const fetchData = async () => {
@@ -549,11 +554,16 @@ const TabDoorCreate: React.FC = () => {
               type="number"
               className="form-control"
               value={editingRow.high}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
               onChange={(e) => handleRowFieldChange("high", Number(e.target.value))}
             />
           );
         }
-        return row.high;
+        return formatValue(row.high);
       },
     },
     {
@@ -566,11 +576,16 @@ const TabDoorCreate: React.FC = () => {
               type="number"
               className="form-control"
               value={editingRow.broad}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
               onChange={(e) => handleRowFieldChange("broad", Number(e.target.value))}
             />
           );
         }
-        return row.broad;
+        return formatValue(row.broad);
       },
     },
     {
@@ -604,10 +619,15 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav1D}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleFavEditChange("fav1D", Number(e.target.value))}
           />
         ) : (
-          row.fav1D
+          formatValue(row.fav1D)
         ),
       cellStyle: { position: "sticky", right: "240px", background: "#fff", zIndex: 1 },
     },
@@ -621,10 +641,15 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav1L}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleFavEditChange("fav1L", Number(e.target.value))}
           />
         ) : (
-          row.fav1L
+          formatValue(row.fav1L)
         ),
       cellStyle: { position: "sticky", right: "160px", background: "#fff", zIndex: 1 },
     },
@@ -638,10 +663,15 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2izqP}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleFavEditChange("fav2izqP", Number(e.target.value))}
           />
         ) : (
-          row.fav2izqP
+          formatValue(row.fav2izqP)
         ),
       cellStyle: { position: "sticky", right: "80px", background: "#fff", zIndex: 1 },
     },
@@ -655,10 +685,15 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2izqS}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleFavEditChange("fav2izqS", Number(e.target.value))}
           />
         ) : (
-          row.fav2izqS
+          formatValue(row.fav2izqS)
         ),
       cellStyle: { position: "sticky", right: "0px", background: "#fff", zIndex: 1 },
     },
@@ -672,10 +707,15 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2DerP}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleFavEditChange("fav2DerP", Number(e.target.value))}
           />
         ) : (
-          row.fav2DerP
+          formatValue(row.fav2DerP)
         ),
       cellStyle: { position: "sticky", right: "-80px", background: "#fff", zIndex: 1 },
     },
@@ -689,10 +729,15 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2DerS}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleFavEditChange("fav2DerS", Number(e.target.value))}
           />
         ) : (
-          row.fav2DerS
+          formatValue(row.fav2DerS)
         ),
       cellStyle: { position: "sticky", right: "-160px", background: "#fff", zIndex: 1 },
     },
@@ -706,10 +751,15 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3E}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleFavEditChange("fav3E", Number(e.target.value))}
           />
         ) : (
-          row.fav3E
+          formatValue(row.fav3E)
         ),
       cellStyle: { position: "sticky", right: "-240px", background: "#fff", zIndex: 1 },
     },
@@ -723,10 +773,15 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3T}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleFavEditChange("fav3T", Number(e.target.value))}
           />
         ) : (
-          row.fav3T
+          formatValue(row.fav3T)
         ),
       cellStyle: { position: "sticky", right: "-320px", background: "#fff", zIndex: 1 },
     },
@@ -740,10 +795,15 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3Beta}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleFavEditChange("fav3Beta", Number(e.target.value))}
           />
         ) : (
-          row.fav3Beta
+          formatValue(row.fav3Beta)
         ),
       cellStyle: { position: "sticky", right: "-400px", background: "#fff", zIndex: 1 },
     },
@@ -757,10 +817,15 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3Alpha}
+            onKeyDown={(e) => {
+              if (e.key === "-") {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => handleFavEditChange("fav3Alpha", Number(e.target.value))}
           />
         ) : (
-          row.fav3Alpha
+          formatValue(row.fav3Alpha)
         ),
       cellStyle: { position: "sticky", right: "-480px", background: "#fff", zIndex: 1 },
     },
@@ -904,6 +969,11 @@ const TabDoorCreate: React.FC = () => {
                 id="high"
                 className="form-control"
                 value={high}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => setHigh(Number(e.target.value))}
               />
             </div>
@@ -918,6 +988,11 @@ const TabDoorCreate: React.FC = () => {
                 id="broad"
                 className="form-control"
                 value={broad}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => setBroad(Number(e.target.value))}
               />
             </div>
@@ -938,7 +1013,7 @@ const TabDoorCreate: React.FC = () => {
       >
         <div className="container">
           <div className="row mb-3">
-            <div className="col-12 text-center">
+            <div className="">
               <p>
                 ¿Está seguro que desea eliminar la puerta{" "}
                 <strong>{deletingRow?.tipoPuente}</strong>?

@@ -244,7 +244,6 @@ const TabRecintDataCreate: React.FC = () => {
       ),
     },
   ];
-
   return (
     <div>
       <div
@@ -259,13 +258,14 @@ const TabRecintDataCreate: React.FC = () => {
           + Nuevo
         </CustomButton>
       </div>
+      {/* Siempre se renderiza la estructura de la tabla para mostrar las pestañas */}
+      <TablesParameters columns={columns} data={data} />
 
-      {data.length === 0 ? (
-        <div  >
+      {/* Si no hay datos, se muestra un mensaje informativo */}
+      {data.length === 0 && (
+        <div style={{ textAlign: "center", padding: "1rem" }}>
           No hay datos para mostrar
         </div>
-      ) : (
-        <TablesParameters columns={columns} data={data} />
       )}
 
       <ModalCreate

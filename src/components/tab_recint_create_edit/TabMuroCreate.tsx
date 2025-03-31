@@ -1,4 +1,3 @@
-// TabMuroCreate.tsx
 import React, { useState, useEffect, ChangeEvent } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { notify } from "@/utils/notify";
@@ -51,6 +50,15 @@ interface WallDetail {
 }
 
 const TabMuroCreate: React.FC = () => {
+  // Función auxiliar para prevenir el ingreso de guion "-"
+  const preventDash = (
+    e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    if (e.key === "-") {
+      e.preventDefault();
+    }
+  };
+
   // Estados de modales
   const [isWallModalOpen, setIsWallModalOpen] = useState<boolean>(false);
   const [isThermalBridgeModalOpen, setIsThermalBridgeModalOpen] = useState<boolean>(false);
@@ -418,6 +426,7 @@ const TabMuroCreate: React.FC = () => {
               name="wall_id"
               value={editingWallData.wall_id}
               onChange={handleEditWallChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             >
               <option value="">Seleccione...</option>
@@ -442,6 +451,7 @@ const TabMuroCreate: React.FC = () => {
               name="characteristics"
               value={editingWallData.characteristics}
               onChange={handleEditWallChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             >
               <option value="">Seleccione...</option>
@@ -464,6 +474,7 @@ const TabMuroCreate: React.FC = () => {
               name="angulo_azimut"
               value={editingWallData.angulo_azimut}
               onChange={handleEditWallChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             >
               <option value="">Seleccione...</option>
@@ -499,6 +510,7 @@ const TabMuroCreate: React.FC = () => {
               step="0.01"
               value={editingWallData.area}
               onChange={handleEditWallChange}
+              onKeyDown={preventDash}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
                 setEditingWallData({ ...editingWallData, area: Number(rounded) });
@@ -557,6 +569,7 @@ const TabMuroCreate: React.FC = () => {
               step="0.01"
               value={editingBridgeData.po1_length}
               onChange={handleEditBridgeChange}
+              onKeyDown={preventDash}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
                 setEditingBridgeData({ ...editingBridgeData, po1_length: Number(rounded) });
@@ -579,6 +592,7 @@ const TabMuroCreate: React.FC = () => {
               name="po1_id_element"
               value={editingBridgeData.po1_id_element}
               onChange={handleEditBridgeChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             >
               <option value="">Seleccione...</option>
@@ -603,8 +617,11 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po2_length"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po2_length}
               onChange={handleEditBridgeChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             />
           );
@@ -623,6 +640,7 @@ const TabMuroCreate: React.FC = () => {
               name="po2_id_element"
               value={editingBridgeData.po2_id_element}
               onChange={handleEditBridgeChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             >
               <option value="">Seleccione...</option>
@@ -647,8 +665,11 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po3_length"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po3_length}
               onChange={handleEditBridgeChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             />
           );
@@ -667,6 +688,7 @@ const TabMuroCreate: React.FC = () => {
               name="po3_id_element"
               value={editingBridgeData.po3_id_element}
               onChange={handleEditBridgeChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             >
               <option value="">Seleccione...</option>
@@ -691,8 +713,11 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po4_length"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po4_length}
               onChange={handleEditBridgeChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             />
           );
@@ -710,8 +735,11 @@ const TabMuroCreate: React.FC = () => {
             <input
               type="number"
               name="po4_e_aislacion"
+              min="0"
+              step="0.01"
               value={editingBridgeData.po4_e_aislacion}
               onChange={handleEditBridgeChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             />
           );
@@ -730,6 +758,7 @@ const TabMuroCreate: React.FC = () => {
               name="po4_id_element"
               value={editingBridgeData.po4_id_element}
               onChange={handleEditBridgeChange}
+              onKeyDown={preventDash}
               className="form-control form-control-sm"
             >
               <option value="">Seleccione...</option>
@@ -843,15 +872,15 @@ const TabMuroCreate: React.FC = () => {
   const handleCreateThermalBridge = async () => {
     // Validación: Verificar que todos los campos estén llenos
     if (
-      newThermalBridge.po1_length === 0 ||
-      newThermalBridge.po1_id_element === 0 ||
-      newThermalBridge.po2_length === 0 ||
-      newThermalBridge.po2_id_element === 0 ||
-      newThermalBridge.po3_length === 0 ||
-      newThermalBridge.po3_id_element === 0 ||
-      newThermalBridge.po4_length === 0 ||
-      newThermalBridge.po4_e_aislacion === 0 ||
-      newThermalBridge.po4_id_element === 0
+      newThermalBridge.po1_length <= 0 &&
+      newThermalBridge.po1_id_element <= 0 &&
+      newThermalBridge.po2_length <= 0 &&
+      newThermalBridge.po2_id_element <= 0 &&
+      newThermalBridge.po3_length <= 0 &&
+      newThermalBridge.po3_id_element <= 0 &&
+      newThermalBridge.po4_length <= 0 &&
+      newThermalBridge.po4_e_aislacion <= 0 &&
+      newThermalBridge.po4_id_element <= 0
     ) {
       notify("Todos los campos son obligatorios para crear el puente térmico");
       return;
@@ -940,6 +969,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newWall.wall_id || ""}
                 onChange={handleWallInputChange}
+                onKeyDown={preventDash}
               >
                 <option value="">Seleccione...</option>
                 {wallOptions.map((wall) => (
@@ -961,6 +991,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newWall.characteristics}
                 onChange={handleWallInputChange}
+                onKeyDown={preventDash}
               >
                 <option value="">Seleccione...</option>
                 <option value="Exterior">Exterior</option>
@@ -980,6 +1011,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newWall.angulo_azimut}
                 onChange={handleWallInputChange}
+                onKeyDown={preventDash}
               >
                 <option value="">Seleccione...</option>
                 {angleOptions.map((option, index) => (
@@ -1002,6 +1034,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newWall.area}
                 onChange={handleWallInputChange}
+                onKeyDown={preventDash}
               />
             </div>
           </div>
@@ -1028,6 +1061,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newThermalBridge.po1_length}
                 onChange={handleThermalBridgeInputChange}
+                onKeyDown={preventDash}
               />
             </div>
           </div>
@@ -1042,6 +1076,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newThermalBridge.po1_id_element || ""}
                 onChange={handleThermalBridgeInputChange}
+                onKeyDown={preventDash}
               >
                 <option value="">Seleccione...</option>
                 {detailOptions.map((detail) => (
@@ -1064,6 +1099,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newThermalBridge.po2_length}
                 onChange={handleThermalBridgeInputChange}
+                onKeyDown={preventDash}
               />
             </div>
           </div>
@@ -1078,6 +1114,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newThermalBridge.po2_id_element || ""}
                 onChange={handleThermalBridgeInputChange}
+                onKeyDown={preventDash}
               >
                 <option value="">Seleccione...</option>
                 {detailOptions.map((detail) => (
@@ -1100,6 +1137,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newThermalBridge.po3_length}
                 onChange={handleThermalBridgeInputChange}
+                onKeyDown={preventDash}
               />
             </div>
           </div>
@@ -1114,6 +1152,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newThermalBridge.po3_id_element || ""}
                 onChange={handleThermalBridgeInputChange}
+                onKeyDown={preventDash}
               >
                 <option value="">Seleccione...</option>
                 {detailOptions.map((detail) => (
@@ -1136,6 +1175,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newThermalBridge.po4_length}
                 onChange={handleThermalBridgeInputChange}
+                onKeyDown={preventDash}
               />
             </div>
           </div>
@@ -1151,6 +1191,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newThermalBridge.po4_e_aislacion}
                 onChange={handleThermalBridgeInputChange}
+                onKeyDown={preventDash}
               />
             </div>
           </div>
@@ -1165,6 +1206,7 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newThermalBridge.po4_id_element || ""}
                 onChange={handleThermalBridgeInputChange}
+                onKeyDown={preventDash}
               >
                 <option value="">Seleccione...</option>
                 {detailOptions.map((detail) => (
@@ -1183,6 +1225,7 @@ const TabMuroCreate: React.FC = () => {
         isOpen={isDeleteModalOpen}
         onClose={handleCancelDelete}
         onSave={handleConfirmDeleteWall}
+        saveLabel="Eliminar"
         title="Confirmar Eliminación"
       >
         {wallToDelete && (
@@ -1197,6 +1240,7 @@ const TabMuroCreate: React.FC = () => {
         isOpen={isDeleteBridgeModalOpen}
         onClose={handleCancelDeleteBridge}
         onSave={handleConfirmDeleteBridge}
+        saveLabel="Eliminar"
         title="Confirmar Eliminación"
       >
         {bridgeToDelete && (

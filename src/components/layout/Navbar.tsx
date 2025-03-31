@@ -3,15 +3,15 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import GoogleIcons from "../../../public/GoogleIcons";
 import useIsClient from "../../utils/useIsClient";
+import { constantUrlApiEndpoint } from "../../utils/constant-url-endpoint";
 
 interface NavbarProps {
   setActiveView?: (view: string) => void;
   onNavbarToggle?: (isOpen: boolean) => void;
 }
-
 
 const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   const router = useRouter();
@@ -21,6 +21,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false); 
   const isClient = useIsClient();
+  const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (!isClient) return;
@@ -53,6 +54,21 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, [isClient]);
 
+  // Cerrar la navbar en modo móvil al hacer clic fuera
+  useEffect(() => {
+    if (!isMobile || !isNavOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setIsNavOpen(false);
+        if (onNavbarToggle) {
+          onNavbarToggle(false);
+        }
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isMobile, isNavOpen, onNavbarToggle]);
+
   // Abrir/cerrar el submenú según la ruta actual
   useEffect(() => {
     // Si estamos en /workflow-part1-create o /workflow-part2-create, abrimos el submenú
@@ -66,8 +82,35 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     }
   }, [router.pathname]);
 
-  const handleLogout = () => {
-    if (!isClient) return;
+  const handleLogout = async () => {
+    if (!isClient) return; // Asegurar que estamos en el cliente
+
+    const token = localStorage.getItem("token"); // Obtener el token del usuario
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${constantUrlApiEndpoint}/logout`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`, // Token en el header para autenticar al usuario
+          "token": token, // Enviar el token a revocar (según la definición del endpoint)
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (response.ok) {
+        console.log("Sesión cerrada correctamente");
+      } else {
+        console.error("Error al cerrar sesión", await response.json());
+      }
+    } catch (error) {
+      console.error("Error de red:", error);
+    }
+
+    // Limpiar el almacenamiento local y redirigir al login
     localStorage.clear();
     router.push("/login");
   };
@@ -126,7 +169,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
 
   // Ícono especial para "Crear Proyecto": se marca si la ruta es /workflow-part1-create o /workflow-part2-create
   const createProjectIconStyle: React.CSSProperties = {
-    ...iconStyle(""), // base vacía para no comparar con path exacto
+    ...iconStyle(""),
     backgroundColor:
       router.pathname === "/workflow-part1-create" ||
       router.pathname === "/workflow-part2-create"
@@ -178,7 +221,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
       {/* Botón flotante en mobile cuando la navbar está cerrada */}
       {isMobile && !isNavOpen && (
         <button 
-          onClick={handleNewFunction}
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            handleNewFunction(); 
+          }}
           style={{
             position: "fixed",
             top: "10px",
@@ -205,6 +251,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
       {/* Navbar en desktop o en mobile cuando está abierta */}
       {(!isMobile || (isMobile && isNavOpen)) && (
         <nav
+          ref={navRef}
           className="sidebar d-flex flex-column"
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -544,14 +591,12 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                             padding: isNavOpen ? "10px 20px" : "10px 5px",
                             cursor: "pointer",
                           }}
-                          // <--- AQUÍ: redirigimos a /workflow-part1-create y alternamos submenú
                           onClick={() => {
                             setIsSubmenuOpen((prev) => !prev);
                             router.push("/workflow-part1-create");
                           }}
                         >
                           <span
-                            // Ícono de Crear Proyecto: se marca si ruta es /workflow-part1-create o /workflow-part2-create
                             style={createProjectIconStyle}
                             className="material-icons"
                           >
@@ -604,7 +649,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                                   }}
                                 >
                                   <span
-                                    // Ícono de Desarrollo de proyecto: solo se marca si la ruta es /workflow-part2-create
                                     style={developmentIconStyle}
                                     className="material-icons"
                                   >

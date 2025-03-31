@@ -12,6 +12,13 @@ const TabWindowCreate: React.FC = () => {
   const projectId = localStorage.getItem("project_id") || "37";
   const token = localStorage.getItem("token") || "";
 
+  // Función auxiliar para formatear los valores
+  const formatCell = (value: any, fixed?: number) => {
+    if (value === 0 || value === "0" || value === "N/A") return "-";
+    if (typeof value === "number" && fixed) return value.toFixed(fixed);
+    return value;
+  };
+
   // Estados para edición de ventana
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [editData, setEditData] = useState<any>(null);
@@ -478,7 +485,7 @@ const TabWindowCreate: React.FC = () => {
             ))}
           </select>
         ) : (
-          row.tipoVano
+          formatCell(row.tipoVano)
         ),
     },
     {
@@ -501,7 +508,7 @@ const TabWindowCreate: React.FC = () => {
             ))}
           </select>
         ) : (
-          row.caracteristicas
+          formatCell(row.caracteristicas)
         ),
     },
     {
@@ -524,13 +531,14 @@ const TabWindowCreate: React.FC = () => {
             ))}
           </select>
         ) : (
-          row.anguloAzimut
+          formatCell(row.anguloAzimut)
         ),
     },
     {
       headerName: "Orientación",
       field: "orientacion",
-      renderCell: (row: any) => row.orientacion,
+      renderCell: (row: any) =>
+        formatCell(row.orientacion),
     },
     {
       headerName: "Alojado en",
@@ -552,13 +560,13 @@ const TabWindowCreate: React.FC = () => {
             ))}
           </select>
         ) : (
-          row.alojadoEn
+          formatCell(row.alojadoEn)
         ),
     },
     {
       headerName: "Tipo de Cierre",
       field: "tipoCierre",
-      renderCell: (row: any) => row.tipoCierre,
+      renderCell: (row: any) => formatCell(row.tipoCierre),
     },
     {
       headerName: "Posición Ventanal",
@@ -578,7 +586,7 @@ const TabWindowCreate: React.FC = () => {
             ))}
           </select>
         ) : (
-          row.posicionVentanal
+          formatCell(row.posicionVentanal)
         ),
     },
     {
@@ -601,7 +609,7 @@ const TabWindowCreate: React.FC = () => {
             ))}
           </select>
         ) : (
-          row.aislacion
+          formatCell(row.aislacion)
         ),
     },
     {
@@ -625,7 +633,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          Number(row.alto).toFixed(2)
+          formatCell(Number(row.alto), 2)
         ),
     },
     {
@@ -649,13 +657,13 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          Number(row.ancho).toFixed(2)
+          formatCell(Number(row.ancho), 2)
         ),
     },
     {
       headerName: "Marco",
       field: "marco",
-      renderCell: (row: any) => row.marco,
+      renderCell: (row: any) => formatCell(row.marco),
     },
     {
       headerName: "Acciones Ventana",
@@ -700,7 +708,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          row.fav1_D
+          formatCell(row.fav1_D)
         ),
       cellStyle: {
         position: "sticky",
@@ -731,7 +739,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          row.fav1_L
+          formatCell(row.fav1_L)
         ),
       cellStyle: {
         position: "sticky",
@@ -762,7 +770,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          row.fav2izq_P
+          formatCell(row.fav2izq_P)
         ),
       cellStyle: {
         position: "sticky",
@@ -793,7 +801,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          row.fav2izq_S
+          formatCell(row.fav2izq_S)
         ),
       cellStyle: {
         position: "sticky",
@@ -824,7 +832,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          row.fav2der_P
+          formatCell(row.fav2der_P)
         ),
       cellStyle: {
         position: "sticky",
@@ -855,7 +863,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          row.fav2der_S
+          formatCell(row.fav2der_S)
         ),
       cellStyle: {
         position: "sticky",
@@ -886,7 +894,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          row.fav3_E
+          formatCell(row.fav3_E)
         ),
       cellStyle: {
         position: "sticky",
@@ -917,7 +925,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          row.fav3_T
+          formatCell(row.fav3_T)
         ),
       cellStyle: {
         position: "sticky",
@@ -948,7 +956,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          row.fav3_beta
+          formatCell(row.fav3_beta)
         ),
       cellStyle: {
         position: "sticky",
@@ -979,7 +987,7 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          row.fav3_alpha
+          formatCell(row.fav3_alpha)
         ),
       cellStyle: {
         position: "sticky",

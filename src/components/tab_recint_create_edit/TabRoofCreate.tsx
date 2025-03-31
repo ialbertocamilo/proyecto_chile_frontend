@@ -197,7 +197,7 @@ const TabCeilingCreate: React.FC = () => {
       return;
     }
 
-    if (!editingValues.area || editingValues.area <= 0) {
+    if (editingValues.area < 0) {
       notify("Debe ingresar un área válida");
       return;
     }
@@ -298,6 +298,11 @@ const TabCeilingCreate: React.FC = () => {
               type="number"
               className="form-control"
               value={editingValues.area}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
               onChange={(e) => setEditingValues({ ...editingValues, area: Number(e.target.value) })}
             />
           );
@@ -354,7 +359,7 @@ const TabCeilingCreate: React.FC = () => {
       return;
     }
 
-    if (!area || area <= 0) {
+    if (area < 0) {
       notify("Debe ingresar un área válida");
       return;
     }
@@ -462,6 +467,11 @@ const TabCeilingCreate: React.FC = () => {
                 id="area"
                 className="form-control"
                 value={area}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => setArea(Number(e.target.value))}
               />
             </div>
@@ -479,10 +489,8 @@ const TabCeilingCreate: React.FC = () => {
       >
         <div className="container">
           <div className="row mb-3">
-            <div className="col-12 text-center">
-              <p>¿Está seguro que desea eliminar el siguiente techo?</p>
-              <h5 className="mt-3 mb-3">{itemToDelete?.techos}</h5>
-            </div>
+            <p>¿Está seguro que desea eliminar {" "}
+              <strong>{itemToDelete?.techos}</strong>?</p>
           </div>
         </div>
       </ModalCreate>

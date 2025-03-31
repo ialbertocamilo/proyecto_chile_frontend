@@ -5,7 +5,10 @@ import TablesParameters from "@/components/tables/TablesParameters";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
 import ModalCreate from "../components/common/ModalCreate";
+import Profileschedules from "@/components/common/Profileschedules";
 import { constantUrlApiEndpoint } from "../utils/constant-url-endpoint";
+import CustomButton from "@/components/common/CustomButton";
+import axios from "axios";
 
 // Interfaces originales de datos (como vienen de la API)
 interface Ventilacion {
@@ -88,6 +91,9 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   // Estado para llevar el registro de la fila que se está editando
   const [editingRow, setEditingRow] = useState<EditingRow | null>(null);
 
+  // Nuevo estado para el modal de Profileschedules
+  const [isProfileSchedulesModalOpen, setIsProfileSchedulesModalOpen] = useState(false);
+
   // Función auxiliar para formatear los valores mostrados en las tablas.
   // Si el valor es "N/A" o equivale a 0, se retorna un guion ("-").
   const formatDisplayValue = (value: any): string => {
@@ -110,33 +116,35 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   };
 
   // Función para realizar el DELETE y eliminar un recinto
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!itemToDelete) return;
-
+  
     const token = localStorage.getItem("token");
     if (!token || !rolUser) return;
-
+  
     const url = `${constantUrlApiEndpoint}/enclosures-typing/${itemToDelete.id}/delete?section=${rolUser}`;
-
-    fetch(url, {
-      method: "DELETE",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Eliminación exitosa", data);
-        notify("Recinto eliminado exitosamente");
-        setIsDeleteModalOpen(false);
-        setItemToDelete(null);
-        setRefresh((prev) => prev + 1);
-      })
-      .catch((err) => {
-        console.error("Error al eliminar recinto", err);
-        notify("Error al eliminar recinto", "error");
-      });
+    const headers = { accept: "application/json", Authorization: `Bearer ${token}` };
+  
+    try {
+      const response = await axios.delete(url, { headers });
+      console.log("Eliminación exitosa", response.data);
+      notify("Recinto eliminado exitosamente");
+      setIsDeleteModalOpen(false);
+      setItemToDelete(null);
+      setRefresh((prev) => prev + 1);
+    } catch (error: any) {
+      setIsDeleteModalOpen(false);
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.detail === "No se encontró la tipología de recinto"
+      ) {
+        notify("No se puede eliminar un recinto por defecto o creado por el admin");
+      } else {
+        console.error("Error al eliminar recinto:", error);
+        notify("Error al eliminar recinto. Ver consola.");
+      }
+    }
   };
 
   // Función para realizar el POST y crear un nuevo recinto
@@ -568,7 +576,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) : (
         formatDisplayValue(values.estrategia)
       ),
-      // La columna "potencia propuesta" se muestra siempre como solo lectura.
       potenciaPropuesta: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {formatDisplayValue(values.potenciaPropuesta)}
@@ -733,18 +740,21 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           onCancel={handleCancelEdit}
         />
       ) : (
-        <ActionButtons
-          onEdit={() =>
-            handleStartEdit("cargas", enclosure, {
-              usuarios: condition.usuarios || 0,
-              calorLatente: condition.calor_latente || 0,
-              calorSensible: condition.calor_sensible || 0,
-              equipos: condition.equipos || 0,
-              funcionamientoSemanal: condition.horario?.funcionamiento_semanal || "",
-            })
-          }
-          onDelete={() => handleDeleteClick("cargas", enclosure.id, enclosure.name)}
-        />
+        <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
+          <ActionButtons
+            onEdit={() =>
+              handleStartEdit("cargas", enclosure, {
+                usuarios: condition.usuarios || 0,
+                calorLatente: condition.calor_latente || 0,
+                calorSensible: condition.calor_sensible || 0,
+                equipos: condition.equipos || 0,
+                funcionamientoSemanal: condition.horario?.funcionamiento_semanal || "",
+              })
+            }
+            onDelete={() => handleDeleteClick("cargas", enclosure.id, enclosure.name)}
+          />
+          
+        </div>
       ),
     };
   };
@@ -987,7 +997,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "Calor Sensible [W/pers]", field: "calorSensible" },
                 { headerName: "Equipos [W/m2]", field: "equipos" },
                 { headerName: "Funcionamiento Semanal", field: "funcionamientoSemanal" },
-                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" } },
+                { headerName: "Accion", field: "accion" },
               ]}
               data={filteredCargas}
             />
@@ -1046,6 +1056,9 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           </p>
         </div>
       </ModalCreate>
+
+      {/* Modal que muestra el componente Profileschedules */}
+      
     </div>
   );
 };

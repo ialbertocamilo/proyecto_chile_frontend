@@ -964,9 +964,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     });
 
     return (
-      <div style={{ height: "400px", overflowY: "auto", overflowX: "auto" }}>
         <TablesParameters columns={columnsDetails} data={data} />
-      </div>
     );
   };
 
@@ -2241,6 +2239,8 @@ const WorkFlowpar2createPage: React.FC = () => {
           isOpen={showDetallesModal}
           title="Detalles Generales"
           onClose={() => setShowDetallesModal(false)}
+          modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
+          hideFooter={true}
         >
           {renderDetallesModalContent()}
         </ModalCreate>

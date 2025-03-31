@@ -1471,7 +1471,7 @@ const AdministrationPage: React.FC = () => {
           onClose={() => setShowConfirmModal(false)}
           onSave={confirmModalProps.onConfirm}
           title="Confirmación"
-          saveLabel="Confirmar"
+          saveLabel="Eliminar"
         >
           <p>{confirmModalProps.message}</p>
         </ModalCreate>

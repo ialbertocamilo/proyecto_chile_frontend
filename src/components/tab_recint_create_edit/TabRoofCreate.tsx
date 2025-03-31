@@ -489,9 +489,9 @@ const TabCeilingCreate: React.FC = () => {
       >
         <div className="container">
           <div className="row mb-3">
-              <p>¿Está seguro que desea eliminar el siguiente techo?</p>
-              <h5 className="mt-3 mb-3">{itemToDelete?.techos}</h5>
-            </div>
+            <p>¿Está seguro que desea eliminar {" "}
+              <strong>{itemToDelete?.techos}</strong>?</p>
+          </div>
         </div>
       </ModalCreate>
     </div>

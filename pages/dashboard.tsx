@@ -1,5 +1,10 @@
 'use client'
-import ChartComponent from "@/components/chart/ChartComponent";
+import { BuildingLevelsReport } from "@/components/reports/BuildingLevelsReport";
+import { BuildingTypesReport } from "@/components/reports/BuildingTypesReport";
+import { ProjectsByMonthReport } from "@/components/reports/ProjectsByMonthReport";
+import { ProjectsStatusReport } from "@/components/reports/ProjectsStatusReport";
+import { TotalSurfaceReport } from "@/components/reports/TotalSurfaceReport";
+import { UserReport } from "@/components/reports/UserReport";
 import {
     ArcElement,
     BarElement,
@@ -19,7 +24,6 @@ import Card from "../src/components/common/Card";
 import Title from "../src/components/Title"; // Componente creado para mostrar títulos
 import { useApi } from "../src/hooks/useApi";
 import useAuth from "../src/hooks/useAuth";
-import WelcomeCard from "@/components/CardWelcome";
 
 ChartJS.register(
     CategoryScale,
@@ -67,7 +71,12 @@ interface BuildingTypeReport {
 
 interface ProjectsByUserReport {
     usuario: string[];
-    total_proyectos: number[];
+    total_proyectos: number[]
+}
+
+interface ProjectsByMonthReport {
+    month: string[];
+    total_projects: number[];
 }
 
 // Función para convertir datos de objeto a array
@@ -160,6 +169,8 @@ const DashboardPage: React.FC = () => {
     const [loadingTotalSurface, setLoadingTotalSurface] = useState(true);
     const [loadingBuildingTypes, setLoadingBuildingTypes] = useState(true);
     const [loadingProjectsByUser, setLoadingProjectsByUser] = useState(true);
+    const [loadingProjectsByMonth, setLoadingProjectsByMonth] = useState(true);
+    const [projectsByMonth, setProjectsByMonth] = useState<ProjectsByMonthReport | null>(null);
 
     // State variables for report data
     const [usersReport, setUsersReport] = useState<UsersReport | null>(null);
@@ -257,6 +268,17 @@ const DashboardPage: React.FC = () => {
                         console.error("Error fetching projects by user:", error);
                         setLoadingProjectsByUser(false);
                     }),
+
+                    // Projects registered by month
+                    api.get('reports/projects_registered_by_month').then(response => {
+                        if (response?.status === 'success') {
+                            setProjectsByMonth(convertObjectToArrays(response?.data));
+                        }
+                        setLoadingProjectsByMonth(false);
+                    }).catch(error => {
+                        console.error("Error fetching projects by month:", error);
+                        setLoadingProjectsByMonth(false);
+                    }),
                 ];
 
                 // Execute all requests concurrently
@@ -271,6 +293,7 @@ const DashboardPage: React.FC = () => {
                 setLoadingBuildingLevels(false);
                 setLoadingTotalSurface(false);
                 setLoadingBuildingTypes(false);
+                setLoadingProjectsByMonth(false);
             }
         };
 
@@ -298,28 +321,6 @@ const DashboardPage: React.FC = () => {
                 label: "Estado de Proyectos",
                 data: [50, 30, 20],
                 backgroundColor: generateColorPalette(3),
-            },
-        ],
-    }
-
-    const userReportChartData = usersReport ? {
-        labels: Array.isArray(usersReport?.active) ? usersReport?.active : [],
-        datasets: [
-            {
-                label: "Usuarios",
-                data: Array.isArray(usersReport?.total) ? usersReport?.total : [],
-                backgroundColor: usersReport?.active?.map((status) =>
-                    status === "Activo" || status === "Activos" ? "#1dd1a1" : "#8395a7" // Verde para activos, gris para inactivos
-                ),
-            },
-        ],
-    } : {
-        labels: ["Activos", "Inactivos"],
-        datasets: [
-            {
-                label: "Usuarios",
-                data: [75, 25],
-                backgroundColor: ["#1dd1a1", "#8395a7"], // Verde para activos, gris para inactivos
             },
         ],
     }
@@ -420,33 +421,6 @@ const DashboardPage: React.FC = () => {
         ],
     }
 
-    // Chart data configuration for Projects by User report
-    const projectsByUserChartData = projectsByUser ? {
-        labels: Array.isArray(projectsByUser?.usuario) ? projectsByUser?.usuario : [],
-        datasets: [
-            {
-                label: "Proyectos por Usuario",
-                data: Array.isArray(projectsByUser?.total_proyectos) ? projectsByUser?.total_proyectos : [],
-                backgroundColor: generateColorPalette(
-                    Array.isArray(projectsByUser?.usuario) ? projectsByUser?.usuario.length : 5
-                ),
-                borderWidth: 1,
-                borderColor: "#ffffff",
-            },
-        ],
-    } : {
-        labels: ["Usuario A", "Usuario B", "Usuario C", "Usuario D", "Usuario E"],
-        datasets: [
-            {
-                label: "Proyectos por Usuario",
-                data: [8, 5, 12, 3, 9],
-                backgroundColor: generateColorPalette(5),
-                borderWidth: 1,
-                borderColor: "#ffffff",
-            },
-        ],
-    }
-
     // Componente de carga para cada gráfico
     const ChartLoader = ({ title }: { title: string }) => (
         <div className="col-md-6 col-lg-4">
@@ -472,133 +446,56 @@ const DashboardPage: React.FC = () => {
             </Card>
 
             <Card className="charts-card p-2">
-                <div className="row g-3">
-                    <div className="col-sm-12 col-lg-4">
-                        <WelcomeCard />
-                    </div>
-                </div>
                 <div className="row g-3 mt-1">
-                    {loadingBuildingLevels ? (
-                        <ChartLoader title="Distribución de Niveles de Edificios" />
-                    ) : (
-                        <div className="col-md-6 col-lg-4">
-                            <ChartComponent
-                                title="Distribución de Niveles de Edificios"
-                                chartData={buildingLevelsChartData}
-                                chartType="Line"
-                                options={{
-                                    maintainAspectRatio: false,
-                                    responsive: true,
-                                    aspectRatio: 1.5
-                                }}
-                            />
-                        </div>
-                    )}
+                    
+                <div className="col-md-6 col-lg-4">
+                        <ProjectsByMonthReport
+                            loading={loadingProjectsByMonth}
+                            data={projectsByMonth}
+                            primaryColor={primaryColor}
+                        />
+                    </div>
+                    <div className="col-md-6 col-lg-4">
+                        <UserReport loading={loadingUsers} data={usersReport} />
+                    </div>
 
-                    {/* Apply the same pattern to all other chart components */}
-                    {loadingUsers ? (
-                        <ChartLoader title="Usuarios Activos vs Inactivos" />
-                    ) : (
-                        <div className="col-md-6 col-lg-4">
-                            <ChartComponent
-                                title="Usuarios Activos vs Inactivos"
-                                chartData={userReportChartData}
-                                chartType="Bar"
-                                options={{
-                                    maintainAspectRatio: false,
-                                    responsive: true
-                                }}
-                            />
-                        </div>
-                    )}
+                    <div className="col-md-6 col-lg-4">
+                        <BuildingLevelsReport
+                            loading={loadingBuildingLevels}
+                            data={buildingLevels}
+                            primaryColor={primaryColor}
+                            primaryColorAlpha={primaryColorAlpha}
+                        />
+                    </div>
 
-                    {loadingProjectsByCountry ? (
-                        <ChartLoader title="Proyectos por País" />
-                    ) : (
-                        <div className="col-md-6 col-lg-4">
-                            <ChartComponent
-                                title="Proyectos por País"
-                                chartData={projectsByCountryChartData}
-                                chartType="Pie"
-                                options={{
-                                    maintainAspectRatio: false,
-                                    responsive: true
-                                }}
-                            />
-                        </div>
-                    )}
+                    <div className="col-md-6 col-lg-4">
+                        <ProjectsStatusReport
+                            loading={loadingProjectsStatus}
+                            data={projectsStatus}
+                            generateColorPalette={generateColorPalette}
+                        />
+                    </div>
 
-                    {loadingProjectsStatus ? (
-                        <ChartLoader title="Estado de Proyectos" />
-                    ) : (
-                        <div className="col-md-6 col-lg-4">
-                            <ChartComponent
-                                title="Estado de Proyectos"
-                                chartData={projectsStatusChartData}
-                                chartType="Doughnut"
-                                options={{
-                                    maintainAspectRatio: false,
-                                    responsive: true
-                                }}
-                            />
-                        </div>
-                    )}
+                    <div className="col-md-6 col-lg-4">
+                        <BuildingTypesReport
+                            loading={loadingBuildingTypes}
+                            data={buildingTypes}
+                            generateColorPalette={generateColorPalette}
+                        />
+                    </div>
 
-                    {loadingBuildingTypes ? (
-                        <ChartLoader title="Distribución de Tipos de Edificios" />
-                    ) : (
-                        <div className="col-md-6 col-lg-4">
-                            <ChartComponent
-                                title="Distribución de Tipos de Edificios"
-                                chartData={buildingTypesChartData}
-                                chartType="Bar"
-                                options={{
-                                    maintainAspectRatio: false,
-                                    responsive: true
-                                }}
-                            />
-                        </div>
-                    )}
+                    <div className="col-md-6 col-lg-4">
+                        <TotalSurfaceReport
+                            loading={loadingTotalSurface}
+                            data={totalSurfaceByCountry}
+                            generateColorPalette={generateColorPalette}
+                        />
+                    </div>
 
-                    {loadingProjectsByUser ? (
-                        <ChartLoader title="Proyectos por Usuario" />
-                    ) : (
-                        <div className="col-md-6 col-lg-4">
-                            <ChartComponent
-                                title="Proyectos por Usuario"
-                                chartData={projectsByUserChartData}
-                                chartType="Bar"
-                                options={{
-                                    maintainAspectRatio: false,
-                                    responsive: true,
-                                    plugins: {
-                                        legend: {
-                                            display: false
-                                        }
-                                    },
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            title: {
-                                                display: true,
-                                                text: 'Número de Proyectos'
-                                            }
-                                        },
-                                        x: {
-                                            ticks: {
-                                                maxRotation: 45,
-                                                minRotation: 45
-                                            }
-                                        }
-                                    }
-                                }}
-                            />
-                        </div>
-                    )}
                 </div>
             </Card>
         </div>
-    )
-}
+    );
+};
 
-export default DashboardPage
+export default DashboardPage;

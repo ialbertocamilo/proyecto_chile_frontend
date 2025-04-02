@@ -6,17 +6,35 @@ interface ScheduleData {
   [key: string]: number | string | null;
 }
 
-const ProfileSchedules: React.FC = () => {
+interface ProfileSchedulesProps {
+  type?: string;
+}
+
+const ProfileSchedules: React.FC<ProfileSchedulesProps> = () => {
   const [data, setData] = useState<ScheduleData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [perfilId, setPerfilId] = useState<number | null>(null);
+  const [typeSelect, setTypeSelect] = useState<string>('usuarios');
 
+  // Obtener el perfil_id desde el LocalStorage
   useEffect(() => {
+    const storedId = localStorage.getItem("perfil_id");
+    if (storedId) {
+      setPerfilId(parseInt(storedId, 10));
+    }
+  }, []);
+
+  // Cargar datos cuando ya tengamos el perfilId y el valor del select
+  useEffect(() => {
+    if (perfilId === null) return; // Espera a obtener el perfilId
+
+    const token = localStorage.getItem("token");
     const fetchData = async () => {
       try {
-        const response = await fetch(`${constantUrlApiEndpoint}/usuarios/schedule/1`, {
+        const response = await fetch(`${constantUrlApiEndpoint}/${typeSelect}/schedule/${perfilId}`, {
           headers: {
             'accept': 'application/json',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMCwiZXhwIjoxNzQzNTY2OTMwfQ.4AKMXCCToFTmfFui_ASqlDoutlrOZNIkDO-kGfQzoxM'
+            Authorization: `Bearer ${token}`,
           }
         });
         const result = await response.json();
@@ -28,8 +46,10 @@ const ProfileSchedules: React.FC = () => {
       }
     };
 
+    // Opcionalmente, puedes poner un setLoading(true) aquí para mostrar el loader cada vez que cambie el select
+    setLoading(true);
     fetchData();
-  }, []);
+  }, [typeSelect, perfilId]);
 
   // Procesamos los datos para generar el array de horas (de hour_1 a hour_24) y sus valores.
   let option = {};
@@ -52,7 +72,7 @@ const ProfileSchedules: React.FC = () => {
       },
       series: [
         {
-          name: 'usuarios',
+          name: typeSelect,
           type: 'line',
           data: values,
           smooth: true,
@@ -66,6 +86,14 @@ const ProfileSchedules: React.FC = () => {
 
   return (
     <div className="apache-container" id="dotted">
+      <div style={{ marginBottom: '1rem' }}>
+        <select value={typeSelect} onChange={(e) => setTypeSelect(e.target.value)}>
+          <option value="usuarios">usuarios</option>
+          <option value="iluminacion verano">iluminacion verano</option>
+          <option value="iluminacion invierno">iluminacion invierno</option>
+          <option value="equipos">equipos</option>
+        </select>
+      </div>
       {loading ? (
         <p>Cargando datos...</p>
       ) : (

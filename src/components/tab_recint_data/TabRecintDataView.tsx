@@ -1,7 +1,9 @@
+// TabRecintDataView.tsx
 import React, { useEffect, useState } from "react";
 import TablesParameters from "@/components/tables/TablesParameters";
-import { notify } from "@/utils/notify";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
+import { useRouter } from "next/router";
+import CustomButton from "@/components/common/CustomButton";
 
 interface EnclosureGeneralData {
   id: number;
@@ -19,16 +21,15 @@ interface EnclosureGeneralData {
 }
 
 const TabRecintDataView: React.FC = () => {
+  const router = useRouter();
   const token = typeof window !== "undefined" ? localStorage.getItem("token") ?? null : null;
   const [projectId, setProjectId] = useState<string | null>(
     typeof window !== "undefined" ? localStorage.getItem("project_id_view") : null
   );
-
   const [data, setData] = useState<EnclosureGeneralData[]>([]);
 
   useEffect(() => {
     if (!token || !projectId) return;
-
     const fetchAllData = async () => {
       try {
         const headers = {
@@ -44,7 +45,7 @@ const TabRecintDataView: React.FC = () => {
         if (enclosureRes.ok) {
           const enclosureData: EnclosureGeneralData[] = await enclosureRes.json();
           setData(enclosureData);
-        } 
+        }
       } catch (error) {
         console.error("Error al cargar los datos:", error);
       }
@@ -52,6 +53,17 @@ const TabRecintDataView: React.FC = () => {
 
     fetchAllData();
   }, [projectId, token]);
+
+  // Al hacer clic, redirige a la página "recinto-view" pasando el id del recinto 
+  // y guardando el enclosure_id en el LocalStorage (asegúrate de tener ese valor disponible)
+  const handleViewProject = (row: EnclosureGeneralData) => {
+    // Guarda el enclosure_id en el localStorage. Por ejemplo, si row.id es el enclosure_id:
+    localStorage.setItem("enclosure_id", row.id.toString());
+    router.push({
+      pathname: "/recinto-view",
+      query: { id: row.id }
+    });
+  };
 
   const columns = [
     {
@@ -82,31 +94,47 @@ const TabRecintDataView: React.FC = () => {
     {
       headerName: "Región",
       field: "nombre_region",
-      renderCell: (row: EnclosureGeneralData) => row.nombre_region, // Mostrar el nombre de la región
+      renderCell: (row: EnclosureGeneralData) => row.nombre_region,
     },
     {
       headerName: "Comuna",
       field: "nombre_comuna",
-      renderCell: (row: EnclosureGeneralData) => row.nombre_comuna, // Mostrar el nombre de la comuna
+      renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
     },
     {
       headerName: "Zona Térmica",
       field: "zona_termica",
       renderCell: (row: EnclosureGeneralData) => row.zona_termica,
     },
+    {
+      headerName: "Acciones",
+      field: "acciones",
+      renderCell: (row: EnclosureGeneralData) => (
+        <div className="text-center">
+          <CustomButton
+            variant="viewIcon"
+            onClick={() => handleViewProject(row)}
+            style={{
+              backgroundColor: "var(--primary-color)",
+              padding: "0.5rem",
+              width: "40px",
+              height: "40px",
+              borderRadius: "4px"
+            }}
+          />
+        </div>
+      )
+    }
   ];
 
   return (
     <div>
-      {/* Siempre se renderiza la estructura de la tabla para mostrar las pestañas */}
-            <TablesParameters columns={columns} data={data} />
-      
-            {/* Si no hay datos, se muestra un mensaje informativo */}
-            {data.length === 0 && (
-              <div style={{ textAlign: "center", padding: "1rem" }}>
-                No hay datos para mostrar
-              </div>
-            )}
+      <TablesParameters columns={columns} data={data} />
+      {data.length === 0 && (
+        <div style={{ textAlign: "center", padding: "1rem" }}>
+          No hay datos para mostrar
+        </div>
+      )}
     </div>
   );
 };

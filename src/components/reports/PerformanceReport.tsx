@@ -1,3 +1,4 @@
+import { Card } from "react-bootstrap";
 import { ChartLoader } from "./ChartLoader";
 
 interface PerformanceData {
@@ -23,6 +24,7 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
     }
 
     return (
+        <Card>
         <div className="container mb-4">
             <div className="row justify-content-end mb-3">
                 <div className="col-auto">
@@ -86,5 +88,7 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
                 </div>
             </div>
         </div>
+            
+            </Card>
     );
 };

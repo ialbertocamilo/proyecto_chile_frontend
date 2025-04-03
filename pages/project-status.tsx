@@ -99,7 +99,6 @@ const ProjectListStatusEditPage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("[fetchProjects] Proyectos recibidos:", response.data);
       setProjects(response.data.projects);
     } catch (err: unknown) {
       console.error("[fetchProjects] Error al obtener los proyectos:", err);

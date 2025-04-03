@@ -307,18 +307,8 @@ const DashboardPage: React.FC = () => {
                         console.error("Error fetching detailed users:", error);
                         setLoadingDetailedUsers(false);
                     }),
-
-                    // Performance report
-                    api.get('reports/performance').then(response => {
-                        if (response?.status === 'success') {
-                            setPerformanceData(response?.data);
-                        }
-                        setLoadingPerformance(false);
-                    }).catch(error => {
-                        console.error("Error fetching performance data:", error);
-                        setLoadingPerformance(false);
-                    }),
                 ];
+                setLoadingPerformance(false);
 
                 // Execute all requests concurrently
                 await Promise.all(requests);
@@ -409,10 +399,13 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="col-md-6 col-lg-4">
+                        <Card>
+
                         <PerformanceReport
                             loading={loadingPerformance}
                             data={performanceData}
                         />
+                        </Card>
                     </div>
 
                 </div>

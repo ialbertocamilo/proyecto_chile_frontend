@@ -2,6 +2,7 @@ import { Eye } from "lucide-react";
 import { useState } from "react";
 import Card from "../common/Card";
 import Modal from "../common/Modal";
+import CustomButton from "../common/CustomButton";
 
 interface DetailedUser {
     id: number;
@@ -47,7 +48,7 @@ export const DetailedUsersReport = ({ loading, data }: DetailedUsersReportProps)
                     <tbody>
                         {data?.map((user) => (
                             <tr key={user.id}>
-                                <td>{`${user.name} ${user.last_name}`}</td>
+                                <td><img src="/assets/images/user_icon.png" alt="User icon" width={18} height={18} className="me-2" />{`${user.name} ${user.last_name}`}</td>
                                 <td>{user.email}</td>
                                 <td>{new Date(user.created_at).toLocaleDateString()}</td>
                                 <td>
@@ -57,13 +58,18 @@ export const DetailedUsersReport = ({ loading, data }: DetailedUsersReportProps)
                                 </td>
                                 <td>{user.project_count}</td>
                                 <td>
-                                    <Eye
-                                        size={18}
+                                    <CustomButton
+                                        variant="viewIcon"
                                         onClick={() => !user.project_count || handleViewProjects(user)}
                                         style={{
-                                            cursor: user.project_count ? 'pointer' : 'not-allowed',
-                                            color: user.project_count ? 'var(--primary)' : '#ccc',
-                                            transition: 'color 0.2s ease'
+                                            backgroundColor: "var(--primary-color)",
+                                            padding: "0.5rem",
+                                            width: "40px",
+                                            height: "40px",
+                                            borderRadius: "4px",
+                                            margin: '0 auto',
+                                            opacity: user.project_count ? 1 : 0.5,
+                                            cursor: user.project_count ? 'pointer' : 'not-allowed'
                                         }}
                                     />
                                 </td>
@@ -76,22 +82,24 @@ export const DetailedUsersReport = ({ loading, data }: DetailedUsersReportProps)
             <Modal
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
-                title={`Proyectos de ${selectedUser?.name} ${selectedUser?.last_name}`}
+                title={`Información de ${selectedUser?.name} ${selectedUser?.last_name}`}
             >
                 <div className="p-3">
-                    <h6>Total de proyectos: {selectedUser?.project_count}</h6>
-                    <div className="mt-3">
-                        {selectedUser?.project_ids.length ? (
-                            <ul className="list-group">
-                                {selectedUser.project_ids.map((projectId) => (
-                                    <li key={projectId} className="list-group-item">
-                                        Proyecto ID: {projectId}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-muted">Este usuario no tiene proyectos asignados.</p>
-                        )}
+                    <div className="row">
+                        <div className="col-md-6">
+                            <h6>Nombre completo:</h6>
+                            <p>{`${selectedUser?.name} ${selectedUser?.last_name}`}</p>
+                            <h6>Email:</h6>
+                            <p>{selectedUser?.email}</p>
+                        </div>
+                        <div className="col-md-6">
+                            <h6>Fecha de creación:</h6>
+                            <p>{new Date(selectedUser?.created_at || '').toLocaleDateString()}</p>
+                            <h6>Estado:</h6>
+                            <p><span className={`badge ${selectedUser?.status ? 'bg-success' : 'bg-danger'}`}>
+                                {selectedUser?.status ? 'Activo' : 'Inactivo'}
+                            </span></p>
+                        </div>
                     </div>
                 </div>
             </Modal>

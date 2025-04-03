@@ -27,7 +27,7 @@ export const ProjectsByMonthReport = ({ loading, data, primaryColor }: ProjectsB
             {
                 label: "Proyectos Registrados",
                 data: Array.isArray(data?.total_projects) ? data?.total_projects : [],
-                backgroundColor: (context) => {
+                backgroundColor: (context: { chart: any; }) => {
                     const { chart } = context;
                     const { ctx, chartArea } = chart;
                     if (!chartArea) return primaryColor;
@@ -46,7 +46,7 @@ export const ProjectsByMonthReport = ({ loading, data, primaryColor }: ProjectsB
             {
                 label: "Proyectos Registrados",
                 data: [],
-                backgroundColor: (context) => {
+                backgroundColor: (context: { chart: any; }) => {
                     const { chart } = context;
                     const { ctx, chartArea } = chart;
                     if (!chartArea) return primaryColor;

@@ -901,7 +901,9 @@ const TabMuroCreate: React.FC = () => {
     if (!authData) return;
     const { token, enclosure_id } = authData;
     const url = `${constantUrlApiEndpoint}/wall-enclosures-create/${enclosure_id}`;
+    console.log("url",url)
     try {
+      console.log("url dentro del try",url)
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },

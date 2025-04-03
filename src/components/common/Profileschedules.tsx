@@ -190,7 +190,7 @@ const ProfileSchedules: React.FC = () => {
                 }
               }}
             />
-            <span className="ml-2">%</span>
+            <span style={{ marginLeft: '10px' }}>%</span>
           </div>
           </div>
         </ModalCreate>

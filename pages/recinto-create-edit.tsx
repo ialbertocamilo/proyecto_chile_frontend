@@ -8,6 +8,7 @@ import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import { useApi } from "@/hooks/useApi";
 
 interface IRegion {
   id: number;
@@ -234,6 +235,27 @@ const RecintoCreateEdit: React.FC = () => {
     fetchProfiles();
   }, []);
 
+
+  const { put } = useApi();
+  
+  const actualizarStatus = async () => {
+      try {
+        const project_id = localStorage.getItem("project_id_edit");
+        if (!project_id) {
+          notify("No se encontró el project_id.");
+          return;
+        }
+        console.log("ProjectId: ", project_id)
+        // Construir la URL del endpoint con el project_id
+        const url = `/project/${project_id}/status`;
+        // Enviar la solicitud PUT con el status
+        await put(url, { status: "en proceso" });
+      } catch (error) {
+        console.error("Error al actualizar el status:", error);
+        notify("Error al actualizar el estado del proyecto.");
+      }
+    };
+
   const handleSave = async () => {
     // Se reemplaza la coma por el punto para que parseFloat funcione correctamente
     const normalizedAlturaPromedio = alturaPromedio.replace(/,/g, ".");
@@ -298,6 +320,7 @@ const RecintoCreateEdit: React.FC = () => {
       localStorage.setItem("recinto_id", result.id.toString());
 
       notify("Recinto creado correctamente");
+      actualizarStatus()
       // En lugar de recargar la página, actualizamos el estado para mostrar la Card de características térmicas
       setIsRecintoCreated(true);
     } catch (error) {

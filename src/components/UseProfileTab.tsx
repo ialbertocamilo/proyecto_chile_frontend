@@ -338,8 +338,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           horario: {
             funcionamiento_semanal: editingRow.values.funcionamientoSemanal,
             laboral: {
-              inicio: 0,
-              fin: 0,
+              inicio: parseFloat(editingRow.values.laboralInicio),
+              fin: parseFloat(editingRow.values.laboralFin),
             },
           },
         },

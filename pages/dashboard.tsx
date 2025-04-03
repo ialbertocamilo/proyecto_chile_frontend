@@ -1,6 +1,8 @@
 'use client'
 import { BuildingLevelsReport } from "@/components/reports/BuildingLevelsReport";
 import { BuildingTypesReport } from "@/components/reports/BuildingTypesReport";
+import { DetailedUsersReport } from "@/components/reports/DetailedUsersReport";
+import { PerformanceReport } from "@/components/reports/PerformanceReport";
 import { ProjectsByMonthReport } from "@/components/reports/ProjectsByMonthReport";
 import { ProjectsStatusReport } from "@/components/reports/ProjectsStatusReport";
 import { TotalSurfaceReport } from "@/components/reports/TotalSurfaceReport";
@@ -77,6 +79,17 @@ interface ProjectsByUserReport {
 interface ProjectsByMonthReport {
     month: string[];
     total_projects: number[];
+}
+
+interface DetailedUser {
+    id: number;
+    name: string;
+    email: string;
+    last_name: string;
+    created_at: string;
+    status: boolean;
+    project_count: number;
+    project_ids: number[];
 }
 
 // Función para convertir datos de objeto a array
@@ -170,7 +183,10 @@ const DashboardPage: React.FC = () => {
     const [loadingBuildingTypes, setLoadingBuildingTypes] = useState(true);
     const [loadingProjectsByUser, setLoadingProjectsByUser] = useState(true);
     const [loadingProjectsByMonth, setLoadingProjectsByMonth] = useState(true);
+    const [loadingDetailedUsers, setLoadingDetailedUsers] = useState(true);
     const [projectsByMonth, setProjectsByMonth] = useState<ProjectsByMonthReport | null>(null);
+    const [loadingPerformance, setLoadingPerformance] = useState(true);
+    const [performanceData, setPerformanceData] = useState<any>(null);
 
     // State variables for report data
     const [usersReport, setUsersReport] = useState<UsersReport | null>(null);
@@ -180,6 +196,7 @@ const DashboardPage: React.FC = () => {
     const [totalSurfaceByCountry, setTotalSurfaceByCountry] = useState<TotalSurfaceByCountryReport | null>(null);
     const [buildingTypes, setBuildingTypes] = useState<BuildingTypeReport | null>(null);
     const [projectsByUser, setProjectsByUser] = useState<ProjectsByUserReport | null>(null);
+    const [detailedUsers, setDetailedUsers] = useState<DetailedUser[] | null>(null);
 
     useEffect(() => {
         const pColor = getCssVarValue("--primary-color", "#3ca7b7")
@@ -279,6 +296,28 @@ const DashboardPage: React.FC = () => {
                         console.error("Error fetching projects by month:", error);
                         setLoadingProjectsByMonth(false);
                     }),
+
+                    // Detailed users report
+                    api.get('reports/users/detailed').then(response => {
+                        if (response?.status === 'success') {
+                            setDetailedUsers(response?.data);
+                        }
+                        setLoadingDetailedUsers(false);
+                    }).catch(error => {
+                        console.error("Error fetching detailed users:", error);
+                        setLoadingDetailedUsers(false);
+                    }),
+
+                    // Performance report
+                    api.get('reports/performance').then(response => {
+                        if (response?.status === 'success') {
+                            setPerformanceData(response?.data);
+                        }
+                        setLoadingPerformance(false);
+                    }).catch(error => {
+                        console.error("Error fetching performance data:", error);
+                        setLoadingPerformance(false);
+                    }),
                 ];
 
                 // Execute all requests concurrently
@@ -294,6 +333,7 @@ const DashboardPage: React.FC = () => {
                 setLoadingTotalSurface(false);
                 setLoadingBuildingTypes(false);
                 setLoadingProjectsByMonth(false);
+                setLoadingDetailedUsers(false);
             }
         };
 
@@ -302,137 +342,6 @@ const DashboardPage: React.FC = () => {
 
     const primaryColorAlpha = hexToRgba(primaryColor, 0.2)
 
-    // Create chart data from API responses
-    const projectsStatusChartData = projectsStatus ? {
-        labels: Array.isArray(projectsStatus?.status) ? projectsStatus?.status : [],
-        datasets: [
-            {
-                label: "Estado de Proyectos",
-                data: Array.isArray(projectsStatus?.total) ? projectsStatus?.total : [],
-                backgroundColor: generateColorPalette(
-                    Array.isArray(projectsStatus?.status) ? projectsStatus?.status.length : 3
-                ),
-            },
-        ],
-    } : {
-        labels: ["Completados", "En Progreso", "Pendientes"],
-        datasets: [
-            {
-                label: "Estado de Proyectos",
-                data: [50, 30, 20],
-                backgroundColor: generateColorPalette(3),
-            },
-        ],
-    }
-
-    const projectsByCountryChartData = projectsByCountry ? {
-        labels: Array.isArray(projectsByCountry?.country) ? projectsByCountry?.country : [],
-        datasets: [
-            {
-                label: "Proyectos por País",
-                data: Array.isArray(projectsByCountry?.total) ? projectsByCountry?.total : [],
-                backgroundColor: generateColorPalette(
-                    Array.isArray(projectsByCountry?.country) ? projectsByCountry?.country.length : 5
-                ),
-            },
-        ],
-    } : {
-        labels: ["Chile", "Argentina", "Brasil", "Colombia", "Perú"],
-        datasets: [
-            {
-                label: "Proyectos por País",
-                data: [5, 9, 3, 7, 4],
-                backgroundColor: generateColorPalette(5),
-            },
-        ],
-    }
-
-    const buildingTypesChartData = buildingTypes ? {
-        labels: Array.isArray(buildingTypes?.building_type) ? buildingTypes?.building_type : [],
-        datasets: [
-            {
-                label: "Tipos de Edificios",
-                data: Array.isArray(buildingTypes?.total_proyectos) ? buildingTypes?.total_proyectos : [],
-                backgroundColor: generateColorPalette(
-                    Array.isArray(buildingTypes?.building_type) ? buildingTypes?.building_type.length : 5
-                ),
-            },
-        ],
-    } : {
-        labels: ["Proyecto 1", "Proyecto 2", "Proyecto 3"],
-        datasets: [
-            {
-                label: "Proyectos",
-                data: [10, 20, 30],
-                backgroundColor: generateColorPalette(3),
-            },
-        ],
-    }
-
-    const buildingLevelsChartData = buildingLevels ? {
-        labels: Array.isArray(buildingLevels?.number_levels)
-            ? buildingLevels?.number_levels?.map(level => `${level} Niveles`)
-            : [],
-        datasets: [
-            {
-                label: "Distribución de Niveles",
-                data: buildingLevels?.total || [],
-                borderColor: primaryColor,
-                backgroundColor: primaryColorAlpha,
-                tension: 0.4,
-                fill: true,
-            },
-        ],
-    } : {
-        labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"],
-        datasets: [
-            {
-                label: "Proyectos Nuevos",
-                data: [12, 19, 3, 5, 2, 3],
-                borderColor: primaryColor,
-                backgroundColor: primaryColorAlpha,
-                tension: 0.4,
-                fill: true,
-            },
-        ],
-    }
-
-    const totalSurfaceChartData = totalSurfaceByCountry ? {
-        labels: Array.isArray(totalSurfaceByCountry?.country) ? totalSurfaceByCountry?.country : [],
-        datasets: [
-            {
-                label: "Superficie Total (m²)",
-                data: Array.isArray(totalSurfaceByCountry?.total_surface) ? totalSurfaceByCountry?.total_surface : [],
-                backgroundColor: generateColorPalette(
-                    Array.isArray(totalSurfaceByCountry?.country) ? totalSurfaceByCountry?.country.length : 5
-                ),
-                borderWidth: 1,
-            },
-        ],
-    } : {
-        labels: ["Chile", "Argentina", "Brasil", "Colombia", "Perú"],
-        datasets: [
-            {
-                label: "Superficie Total (m²)",
-                data: [15000, 12000, 18000, 9000, 11000],
-                backgroundColor: generateColorPalette(5),
-                borderWidth: 1,
-            },
-        ],
-    }
-
-    // Componente de carga para cada gráfico
-    const ChartLoader = ({ title }: { title: string }) => (
-        <div className="col-md-6 col-lg-4">
-            <Card className="chart-card p-4 text-center h-100">
-                <h5>{title}</h5>
-                <div className="spinner-border text-primary mt-4" role="status">
-                    <span className="visually-hidden">Cargando...</span>
-                </div>
-                <p className="mt-2">Cargando datos...</p>
-            </Card>
-        </div>
-    );
 
     return (
         <div className="">
@@ -447,8 +356,8 @@ const DashboardPage: React.FC = () => {
 
             <Card className="charts-card p-2">
                 <div className="row g-3 mt-1">
-                    
-                <div className="col-md-6 col-lg-4">
+
+                    <div className="col-md-6 col-lg-4">
                         <ProjectsByMonthReport
                             loading={loadingProjectsByMonth}
                             data={projectsByMonth}
@@ -489,6 +398,22 @@ const DashboardPage: React.FC = () => {
                             loading={loadingTotalSurface}
                             data={totalSurfaceByCountry}
                             generateColorPalette={generateColorPalette}
+                        />
+                    </div>
+
+                    <div className="col-md-6 col-lg-8">
+                        <DetailedUsersReport
+                            loading={loadingDetailedUsers}
+                            data={detailedUsers}
+                        />
+                    </div>
+
+                    <div className="col-md-6 col-lg-4">
+                        <PerformanceReport
+                            loading={loadingPerformance}
+                            data={performanceData}
+                            primaryColor={primaryColor}
+                            primaryColorAlpha={primaryColorAlpha}
                         />
                     </div>
 

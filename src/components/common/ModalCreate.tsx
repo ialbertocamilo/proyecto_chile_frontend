@@ -9,6 +9,7 @@ type Material = {
 };
 
 interface ModalCreateProps {
+  initialValue?: number | null;
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;

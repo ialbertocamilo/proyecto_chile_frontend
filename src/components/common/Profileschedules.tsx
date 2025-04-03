@@ -1,6 +1,7 @@
 import ReactECharts from 'echarts-for-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { constantUrlApiEndpoint } from "../../utils/constant-url-endpoint";
+import ModalCreate from './ModalCreate'; // Asegúrate de ajustar la ruta si es necesario
 
 interface ScheduleData {
   [key: string]: number | string | null;
@@ -13,7 +14,12 @@ const ProfileSchedules: React.FC = () => {
   const [typeSelect, setTypeSelect] = useState<string>('usuarios');
   const chartRef = useRef<any>(null);
 
-  // Obtener perfilId del LocalStorage
+  // Estados para el modal
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [currentHourIndex, setCurrentHourIndex] = useState<number | null>(null);
+  const [currentValue, setCurrentValue] = useState<number | null>(null);
+  const [inputValue, setInputValue] = useState<number>(0);
+
   useEffect(() => {
     const storedId = localStorage.getItem("perfil_id");
     if (storedId) {
@@ -21,7 +27,6 @@ const ProfileSchedules: React.FC = () => {
     }
   }, []);
 
-  // Cargar datos según perfilId y tipo seleccionado
   useEffect(() => {
     if (perfilId === null) return;
 
@@ -47,33 +52,23 @@ const ProfileSchedules: React.FC = () => {
     fetchData();
   }, [typeSelect, perfilId]);
 
-  // Construir opción de la gráfica
-  const hours = Array.from({ length: 24 }, (_, i) => `hour_${i + 1}`);
-  const values = data ? hours.map(hour => data[hour] as number) : [];
+  // Aquí definimos el eje X como números del 1 al 24
+  const hours = Array.from({ length: 24 }, (_, i) => (i + 1).toString());
+  const values = data ? hours.map((_, i) => data[`hour_${i + 1}`] as number) : [];
 
   const option = {
-    tooltip: {
-      trigger: 'axis'
-    },
-    xAxis: {
-      type: 'category',
-      data: hours,
-      name: 'Horas'
-    },
-    yAxis: {
-      type: 'value',
-      name: 'Valor'
-    },
-    series: [
-      {
-        name: typeSelect,
-        type: 'bar', // gráfica de barras verticales
-        data: values,
-      }
-    ]
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: hours, name: 'Horas' },
+    yAxis: { type: 'value', name: 'Horas de uso', axisLabel: { formatter: '{value}%' } },
+    series: [{
+      name: typeSelect,
+      type: 'bar',
+      data: values,
+      barMinHeight: 10,
+      itemStyle: { color: '#2ab0c5', borderRadius: [10, 10, 0, 0] }
+    }]
   };
 
-  // Función para enviar la actualización mediante PUT
   const updateSchedule = async (newData: ScheduleData) => {
     const token = localStorage.getItem("token");
     try {
@@ -88,45 +83,52 @@ const ProfileSchedules: React.FC = () => {
       });
       const result = await response.json();
       console.log("Actualización exitosa", result);
-      // Actualizar estado con los nuevos datos
       setData(result);
     } catch (error) {
       console.error("Error actualizando datos", error);
     }
   };
 
-  // Ejemplo de listener para capturar clic en una barra y modificar su valor
   const onChartReady = (chart: any) => {
     chart.on('click', function (params: any) {
-      // params.dataIndex indica la barra clickeada
       const index = params.dataIndex;
-      // Por ejemplo, pedir al usuario el nuevo valor (esto es muy básico, se puede reemplazar por un slider o input)
-      const nuevoValor = prompt(`Ingresa el nuevo valor para ${hours[index]}:`, params.value);
-      if (nuevoValor !== null) {
-        // Actualizar los datos localmente
-        const newValues = [...values];
-        newValues[index] = Number(nuevoValor);
-        const newData = { ...data };
-        newData[hours[index]] = Number(nuevoValor);
-        // Actualizar la gráfica
-        chart.setOption({
-          series: [{
-            data: newValues
-          }]
-        });
-        // Enviar los cambios al servidor
-        updateSchedule(newData);
-      }
+      setCurrentHourIndex(index);
+      setCurrentValue(params.value);
+      setInputValue(params.value); // Inicializamos el input con el valor actual
+      setShowModal(true);
     });
+  };
+
+  const handleModalConfirm = () => {
+    if (currentHourIndex === null) return;
+
+    const newValues = [...values];
+    newValues[currentHourIndex] = inputValue;
+    const newData = { ...data };
+    newData[`hour_${currentHourIndex + 1}`] = inputValue;
+
+    if (chartRef.current) {
+      const chartInstance = chartRef.current.getEchartsInstance();
+      chartInstance.setOption({
+        series: [{
+          data: newValues
+        }]
+      });
+    }
+
+    updateSchedule(newData);
+
+    setShowModal(false);
+    setCurrentHourIndex(null);
+    setCurrentValue(null);
   };
 
   return (
     <div className="apache-container">
       <div className="d-flex justify-content-center mb-3">
-        <select className="form-select form-select-lg text-center"
-          style={{
-            maxWidth: "300px", textAlignLast: "center" // importante para centrar el texto dentro del <select>
-          }}
+        <select
+          className="form-select form-select-lg text-center"
+          style={{ maxWidth: "300px", textAlignLast: "center" }}
           value={typeSelect}
           onChange={(e) => setTypeSelect(e.target.value)}
         >
@@ -145,6 +147,50 @@ const ProfileSchedules: React.FC = () => {
           style={{ height: "100%", width: "100%", minHeight: "400px" }}
           onChartReady={onChartReady}
         />
+      )}
+      {showModal && (
+        <ModalCreate 
+          isOpen={showModal}
+          initialValue={currentValue}
+          onSave={handleModalConfirm}
+          onClose={() => {
+            setShowModal(false);
+            setCurrentHourIndex(null);
+            setCurrentValue(null);
+          }}
+        >
+          <div className="container d-flex flex-column align-items-center space-y-4">
+            <label 
+              htmlFor="valueInput" 
+              className="text-lg font-medium text-gray-800 text-center"
+            >
+              Ingrese el nuevo valor:
+            </label>
+            <br />
+            <input
+              id="valueInput"
+              type="number"
+              min="0"
+              max="100"
+              className="border border-gray-300 rounded p-2 text-gray-800 text-center"
+              value={inputValue}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                // Si el valor supera 100, se limita a 100
+                if (value > 100) {
+                  setInputValue(100);
+                } else {
+                  setInputValue(value);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === '-') {
+                  e.preventDefault();
+                }
+              }}
+            />
+          </div>
+        </ModalCreate>
       )}
     </div>
   );

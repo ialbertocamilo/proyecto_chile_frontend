@@ -128,6 +128,9 @@ const RecintoView: React.FC = () => {
     if (value === 0) {
       return "-";
     }
+    if (value === undefined || value === null) {
+      return "";
+    }
     if (decimalPlaces !== undefined && typeof value === "number") {
       return value.toFixed(decimalPlaces);
     }
@@ -158,19 +161,23 @@ const RecintoView: React.FC = () => {
       field: "po1_length",
       renderCell: (row: any) => formatCellValue(row.po1_length, 2)
     },
-    { headerName: "Elemento", field: "po1_id_element" },
+    { headerName: "Elemento", field: "po1_id_element", 
+      renderCell: (row: any) => formatCellValue(row.po1_id_element) },
     { 
       headerName: "L[m]", 
       field: "po2_length",
       renderCell: (row: any) => formatCellValue(row.po2_length, 2)
     },
-    { headerName: "Elemento", field: "po2_id_element" },
+    { headerName: "Elemento", field: "po2_id_element",
+      renderCell: (row: any) => formatCellValue(row.po2_id_element)
+     },
     { 
       headerName: "L[m]", 
       field: "po3_length",
       renderCell: (row: any) => formatCellValue(row.po3_length, 2)
     },
-    { headerName: "Elemento", field: "po3_id_element" },
+    { headerName: "Elemento", field: "po3_id_element", 
+      renderCell: (row: any) => formatCellValue(row.po3_id_element, 2)  },
     { 
       headerName: "L[m]", 
       field: "po4_length",
@@ -181,8 +188,9 @@ const RecintoView: React.FC = () => {
       field: "po4_e_aislacion",
       renderCell: (row: any) => formatCellValue(row.po4_e_aislacion, 2)
     },
-    { headerName: "Elemento", field: "po4_id_element" },
-    { headerName: "Acciones", field: "acciones_thermal" },
+    { headerName: "Elemento", field: "po4_id_element",
+      renderCell: (row: any) => formatCellValue(row.po4_id_element, 2)
+     },
   ];
 
   const mergedColumns = [...murosColumns, ...puentesColumns];
@@ -233,7 +241,9 @@ const RecintoView: React.FC = () => {
       field: "ancho",
       renderCell: (row: any) => formatCellValue(row.ancho, 2)
     },
-    { headerName: "Marco", field: "marco" },
+    { headerName: "Marco", field: "marco",
+      renderCell: (row: any) => formatCellValue(row.marco, 2)
+     },
     { 
       headerName: "FAV 1 - D [m]", 
       field: "fav1_D",
@@ -731,7 +741,7 @@ const RecintoView: React.FC = () => {
       {/* Muros y Puentes Térmicos */}
       <Card>
         <section>
-          <Title text="Muros y Puentes Térmicos" />
+        <Title text="Muros y Puentes Térmicos" variant="subtitle"/>
           {walls.length > 0 ? (
             <TablesParameters
               data={walls.map(wall => {
@@ -750,7 +760,7 @@ const RecintoView: React.FC = () => {
       {/* Ventanas */}
       <Card>
         <section>
-          <Title text="Ventanas" />
+          <Title text="Ventanas" variant="subtitle"/>
           {windows.length > 0 ? (
             <TablesParameters 
               data={windows.map(win => ({
@@ -791,7 +801,7 @@ const RecintoView: React.FC = () => {
       {/* Puertas */}
       <Card>
         <section>
-          <Title text="Puertas" />
+          <Title text="Puertas" variant="subtitle" />
           {doorTableData.length > 0 ? (
             <TablesParameters 
               data={doorTableData} 
@@ -807,7 +817,7 @@ const RecintoView: React.FC = () => {
       {/* Techumbre - tabla simplificada */}
       <Card>
         <section>
-          <Title text="Techumbre" />
+          <Title text="Techumbre" variant="subtitle"/>
           {roofData.length > 0 ? (
             <TablesParameters 
               data={roofData} 
@@ -822,7 +832,7 @@ const RecintoView: React.FC = () => {
       {/* Pisos */}
       <Card>
         <section>
-          <Title text="Pisos" />
+          <Title text="Pisos" variant="subtitle"/>
           {floorTableData.length > 0 ? (
             <TablesParameters 
               data={floorTableData} 

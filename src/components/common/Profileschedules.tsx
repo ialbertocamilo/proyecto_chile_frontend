@@ -167,6 +167,7 @@ const ProfileSchedules: React.FC = () => {
               Ingrese el nuevo valor:
             </label>
             <br />
+            <div className="d-flex align-items-center">
             <input
               id="valueInput"
               type="number"
@@ -189,6 +190,8 @@ const ProfileSchedules: React.FC = () => {
                 }
               }}
             />
+            <span className="ml-2">%</span>
+          </div>
           </div>
         </ModalCreate>
       )}

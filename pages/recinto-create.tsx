@@ -8,6 +8,7 @@ import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import { useApi } from "@/hooks/useApi";
 
 interface IRegion {
   id: number;
@@ -223,6 +224,26 @@ const RecintoCreate: React.FC = () => {
     fetchProfiles();
   }, []);
 
+  const { put } = useApi();
+
+  const actualizarStatus = async () => {
+      try {
+        const project_id = localStorage.getItem("project_id");
+        if (!project_id) {
+          notify("No se encontró el project_id.");
+          return;
+        }
+        console.log("ProjectId: ", project_id)
+        // Construir la URL del endpoint con el project_id
+        const url = `/project/${project_id}/status`;
+        // Enviar la solicitud PUT con el status
+        await put(url, { status: "en proceso" });
+      } catch (error) {
+        console.error("Error al actualizar el status:", error);
+        notify("Error al actualizar el estado del proyecto.");
+      }
+    };
+
   const handleSave = async () => {
     if (
       !selectedRegion ||
@@ -288,6 +309,8 @@ const RecintoCreate: React.FC = () => {
 
       localStorage.setItem("recinto_id", result.id.toString());
       notify("Recinto creado correctamente");
+      actualizarStatus()
+      
       setIsRecintoCreated(true);
     } catch (error) {
       console.error("Error en handleSave:", error);

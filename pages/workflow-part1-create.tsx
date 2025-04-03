@@ -261,7 +261,6 @@ const ProjectWorkflowPart1: React.FC = () => {
       localStorage.setItem("project_department", formData.department);
       localStorage.setItem("project_name", formData.name_project);
       notify("Proyecto creado con éxito.");
-      actualizarStatus()
       setFormData(initialFormData);
       router.push(`/workflow-part2-create?project_id=${project_id}`);
     } catch (error: unknown) {
@@ -281,24 +280,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     setLoading(false);
   };
 
-
-  const actualizarStatus = async () => {
-    try {
-      const project_id = localStorage.getItem("project_id");
-      if (!project_id) {
-        notify("No se encontró el project_id.");
-        return;
-      }
-      console.log("ProjectId: ", project_id)
-      // Construir la URL del endpoint con el project_id
-      const url = `/project/${project_id}/status`;
-      // Enviar la solicitud PUT con el status
-      await put(url, { status: "en proceso" });
-    } catch (error) {
-      console.error("Error al actualizar el status:", error);
-      notify("Error al actualizar el estado del proyecto.");
-    }
-  };
 
   // Función que se encarga de la acción del botón Continuar en el paso 1
   const handleStep1Action = async () => {

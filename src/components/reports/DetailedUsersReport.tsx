@@ -74,7 +74,7 @@ export const DetailedUsersReport = ({ loading, data }: DetailedUsersReportProps)
             </div>
 
             <Modal
-                show={showModal}
+                isOpen={showModal}
                 onClose={() => setShowModal(false)}
                 title={`Proyectos de ${selectedUser?.name} ${selectedUser?.last_name}`}
             >

@@ -412,8 +412,6 @@ const DashboardPage: React.FC = () => {
                         <PerformanceReport
                             loading={loadingPerformance}
                             data={performanceData}
-                            primaryColor={primaryColor}
-                            primaryColorAlpha={primaryColorAlpha}
                         />
                     </div>
 

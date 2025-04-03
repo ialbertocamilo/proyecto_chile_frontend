@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
 import ReactECharts from 'echarts-for-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { constantUrlApiEndpoint } from "../../utils/constant-url-endpoint";
 
 interface ScheduleData {
@@ -123,12 +123,13 @@ const ProfileSchedules: React.FC = () => {
   return (
     <div className="apache-container">
       <div className="d-flex justify-content-center mb-3">
-      <select className="form-select form-select-lg text-center"
-    style={{ maxWidth: "300px", textAlignLast: "center" // importante para centrar el texto dentro del <select>
-      }}
-    value={typeSelect}
-    onChange={(e) => setTypeSelect(e.target.value)}
-  >
+        <select className="form-select form-select-lg text-center"
+          style={{
+            maxWidth: "300px", textAlignLast: "center" // importante para centrar el texto dentro del <select>
+          }}
+          value={typeSelect}
+          onChange={(e) => setTypeSelect(e.target.value)}
+        >
           <option value="usuarios">Usuarios</option>
           <option value="iluminacion verano">Iluminacion verano</option>
           <option value="iluminacion invierno">Iluminacion invierno</option>

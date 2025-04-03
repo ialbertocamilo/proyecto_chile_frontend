@@ -810,31 +810,50 @@ const TabMuroCreate: React.FC = () => {
         ...[
           { label: (
             <>
-              <span>P01</span><br /><span>"L[m]"</span></>)},
+              <span>P01</span><br /><span>L[m]</span>
+            </>
+          )},
           { label: (
             <>
-              <span>P01</span><br /><span>"Elemento"</span></>)},
+              <span>P01</span><br /><span>Elemento</span>
+            </>
+          )},
           { label: (
             <>
-              <span>P02</span><br /><span>"L[m]"</span></>)},
+              <span>P02</span><br /><span>L[m]</span>
+            </>
+          )},
           { label: (
             <>
-              <span>P02</span><br /><span>"Elemento"</span></>)},
+              <span>P02</span><br /><span>Elemento</span>
+            </>
+          )},
           { label: (
             <>
-            <span>P03</span><br /><span>"L[m]"</span></>)},
+              <span>P03</span><br /><span>L[m]</span>
+            </>
+          )},
           { label: (
             <>
-            <span>P03</span><br /><span>"Elemento"</span></>)},
+              <span>P03</span><br /><span>Elemento</span>
+            </>
+          )},
           { label: (
             <>
-            <span>P04</span><br /><span>"L[m]"</span></>)},
+              <span>P04</span><br /><span>L[m]</span>
+            </>
+          )},
           { label: (
             <>
-            <span>P04</span><br /><span>"e Aislación [cm]"</span></>)},
+              <span>P04</span><br /><span>e Aislación [cm]</span>
+            </>
+          )},
           { label: (
             <>
-            <span>P04</span><br /><span>"Elemento" </span></>)},
+              <span>P04</span><br /><span>Elemento</span>
+            </>
+          )},
+          { label: "Acciones" }
         ]
       ]
     ]

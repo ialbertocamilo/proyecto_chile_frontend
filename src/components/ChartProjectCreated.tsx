@@ -56,18 +56,10 @@ const ChartProjectCreated: React.FC = () => {
 
     const chartOptions: ApexOptions = {
         chart: {
-            type: 'area',
+            type: 'bar',
             stacked: false,
             toolbar: {
                 show: false,
-            },
-            dropShadow: {
-                enabled: true,
-                color: '#64748B',
-                top: 12,
-                left: 5,
-                blur: 15,
-                opacity: 0.15
             },
             animations: {
                 enabled: true,
@@ -82,46 +74,31 @@ const ChartProjectCreated: React.FC = () => {
                 }
             }
         },
-        stroke: {
-            width: [3, 2],
-            curve: ['stepline'],
-            dashArray: [0, 5]
-        },
+
 
         plotOptions: {
             bar: {
-                columnWidth: '100px'
+                borderRadius: 2,
+                columnWidth: '40%',
+                distributed: true,
             }
         },
-        colors: ['#00B4D8', '#00B4D8'],
-        fill: {
-            type: "gradient",
-            gradient: {
-                type: "vertical",
-                shadeIntensity: 1,
-                opacityFrom: 0.7,
-                opacityTo: 0.2,
-                stops: [0, 90, 100],
-                colorStops: [
-                    {
-                        offset: 0,
-                        color: '#00B4D8',
-                        opacity: 0.7
-                    },
-                    {
-                        offset: 100,
-                        color: '#90E0EF',
-                        opacity: 0.2
-                    }
-                ]
-            }
+        annotations: {
+            yaxis: [{
+                y: 0,
+                // borderColor: '#64748B',
+                opacity: 0.2,
+                // borderWidth: 1,
+            }]
         },
+        colors: ['#00B4D8', '#00B4D8', '#00B4D8', '#00B4D8', '#00B4D8'],
+    
         grid: {
             show: false,
         },
         markers: {
             size: 5,
-            colors: ['#00B4D8'],
+            colors: ['#00B4D8', '#00B4D8', '#00B4D8', '#00B4D8', '#00B4D8'],
             strokeColors: '#fff',
             strokeWidth: 2,
             hover: {
@@ -140,7 +117,7 @@ const ChartProjectCreated: React.FC = () => {
                 style: {
                     fontSize: '12px',
                     fontWeight: 500,
-                    colors: '#64748B',
+                    // colors: '#64748B',
                     fontFamily: 'Outfit, sans-serif',
                 },
                 offsetY: 5
@@ -151,14 +128,20 @@ const ChartProjectCreated: React.FC = () => {
             labels: {
                 style: {
                     fontSize: '12px',
-                    fontWeight: 500,
-                    colors: '#64748B',
+                    // fontWeight: 500,
+                    // colors: '#64748B',
                     fontFamily: 'Noto Sans, sans-serif',
                 },
                 formatter: function (value) {
                     return Math.round(value).toString();
                 }
             },
+            tickAmount: 3,
+            min: 0,
+            max: (max) => {
+                const roundedMax = Math.ceil(max / 3) * 3;
+                return roundedMax > 0 ? roundedMax : 3;
+            }
         },
         dataLabels: {
             enabled: false,
@@ -186,7 +169,7 @@ const ChartProjectCreated: React.FC = () => {
         {
             name: 'Proyectos',
             data: chartData,
-            type: 'area'
+            type: 'bar'
         }
     ];
 
@@ -216,7 +199,7 @@ const ChartProjectCreated: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="card-body">
+            <div className="card-body mt-0 pt-0">
                 <div style={{ minHeight: '100px', maxHeight: '200px', width: '100%', overflow: 'hidden' }} >
                     <div id="chart" style={{ width: '100%' }}>
                         <ReactApexChart

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import TablesParameters from "@/components/tables/TablesParameters";
 import Card from "../src/components/common/Card";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
+import Breadcrumb from "../src/components/common/Breadcrumb";
+import Title from "../src/components/Title";
 
 interface Muro {
   id: number;
@@ -10,6 +12,7 @@ interface Muro {
   orientation: string;
   angulo_azimut: string;
   characteristics: string;
+  u?: number;
 }
 
 interface Ventana {
@@ -63,7 +66,7 @@ const RecintoView: React.FC = () => {
   const [roofs, setRoofs] = useState<Techumbre>([]);
   const [thermalBridges, setThermalBridges] = useState<PuenteTermico[]>([]);
 
-  // Estado para el tab activo: "muros" o "puentes"
+  // Si ya se combinó en la tabla de muros, ya no es necesaria la pestaña de puentes
   const [activeWallTab, setActiveWallTab] = useState<"muros" | "puentes">("muros");
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -113,33 +116,63 @@ const RecintoView: React.FC = () => {
       .catch(err => console.error("Error al obtener puentes térmicos:", err));
   }, [token, enclosure_id]);
 
-  // Columnas para muros
-  const wallColumns = [
+  // Combina los datos de muros y puentes térmicos.
+  const combinedWalls = walls.map(wall => {
+    // Busca el puente térmico asociado con el muro, si existe.
+    const thermal = thermalBridges.find(tb => tb.wall_id === wall.id);
+    return { ...wall, ...(thermal || {}) };
+  });
+
+  // Define las columnas combinadas (evitando duplicados y organizando los campos)
+  const combinedColumns = [
     { headerName: "ID", field: "id" },
-    { headerName: "Muros", field: "name" },
+    { headerName: "Muro", field: "name" },
     { headerName: "Características", field: "characteristics" },
     { headerName: "Ángulo Azimut", field: "angulo_azimut" },
     { headerName: "Orientación", field: "orientation" },
     { headerName: "Área [m²]", field: "area" },
     { headerName: "U [W/m²K]", field: "u" },
-  ];
-
-  // Columnas para puentes térmicos (se pueden ajustar según la información necesaria)
-  const thermalBridgeColumns = [
-    { headerName: "ID", field: "id" },
-    { headerName: "Wall ID", field: "wall_id" },
-    { headerName: "L[m]", field: "po1_length" },
-    { headerName: "Elemento", field: "po1_id_element" },
-    { headerName: "L[m]", field: "po2_length" },
-    { headerName: "Elemento", field: "po2_id_element" },
-    { headerName: "L[m]", field: "po3_length" },
-    { headerName: "Elemento", field: "po3_id_element" },
-    { headerName: "L[m]", field: "po4_length" },
+    // Campos del puente térmico (se muestran si existen)
+    { headerName: "Wall ID (PT)", field: "wall_id" },
+    { headerName: "L[m] (po1)", field: "po1_length" },
+    { headerName: "Elemento (po1)", field: "po1_id_element" },
+    { headerName: "L[m] (po2)", field: "po2_length" },
+    { headerName: "Elemento (po2)", field: "po2_id_element" },
+    { headerName: "L[m] (po3)", field: "po3_length" },
+    { headerName: "Elemento (po3)", field: "po3_id_element" },
+    { headerName: "L[m] (po4)", field: "po4_length" },
     { headerName: "e Aislación [cm]", field: "po4_e_aislacion" },
-    { headerName: "Elemento", field: "po4_id_element" },
-    // Agrega más columnas según se requiera
+    { headerName: "Elemento (po4)", field: "po4_id_element" },
   ];
+  const multiHeaderMuros = {
+    rows: [
+      [
+        { label: "Nombre", rowSpan: 2 },
+        { label: "U [W/m²K]", rowSpan: 2 },
+        { label: "po1", colSpan: 2 },
+        { label: "po2", colSpan: 2 },
+        { label: "po3", colSpan: 2 },
+        { label: "po4", colSpan: 3 },
+      ],
+      [
+        // Subencabezados para "po1"
+        { label: "L[m]" },
+        { label: "Elemento" },
+        // Subencabezados para "po2"
+        { label: "L[m]" },
+        { label: "Elemento" },
+        // Subencabezados para "po3"
+        { label: "L[m]" },
+        { label: "Elemento" },
+        // Subencabezados para "po4"
+        { label: "L[m]" },
+        { label: "e Aislación [cm]" },
+        { label: "Elemento" },
+      ],
+    ],
+  };
 
+  // Columnas para las demás tablas (se mantienen igual)
   const windowColumns = [
     { headerName: "ID", field: "id" },
     { headerName: "Nombre Ventana", field: "window_name" },
@@ -163,59 +196,42 @@ const RecintoView: React.FC = () => {
 
   const roofColumns = [
     { headerName: "ID", field: "id" },
-    // Agrega otros campos necesarios de la respuesta de techumbre
+    // Agregar otros campos necesarios de techumbre
   ];
 
   return (
+    
     <div>
-      <h1>Información del Recinto</h1>
+      <Card>
+        <div className="d-flex align-items-center w-100">
+          <Title text="Administrar proyectos" />
+          <Breadcrumb
+            items={[
+              { title: "Administrar proyectos", href: "/project-status", active: true }
+            ]}
+          />
+        </div>
+      </Card>
 
-      {/* Card con tabs para Muros y Puentes Térmicos */}
+      {/* Sección de Muros / Puentes Térmicos combinados */}
       <Card>
         <section>
-          <h2>Muros / Puentes Térmicos</h2>
+          <Title text= "Muros y Puentes Térmicos"/>
+          {/* Se conserva el botón si se quiere tener la opción de pestañas en el futuro */}
           <div style={{ display: "flex", marginBottom: "1rem" }}>
-            <button
-              onClick={() => setActiveWallTab("muros")}
-              style={{
-                padding: "0.5rem 1rem",
-                border: activeWallTab === "muros" ? "2px solid #000" : "1px solid #ccc",
-                background: activeWallTab === "muros" ? "#eee" : "#fff"
-              }}
-            >
-              Muros
-            </button>
-            <button
-              onClick={() => setActiveWallTab("puentes")}
-              style={{
-                padding: "0.5rem 1rem",
-                border: activeWallTab === "puentes" ? "2px solid #000" : "1px solid #ccc",
-                background: activeWallTab === "puentes" ? "#eee" : "#fff",
-                marginLeft: "1rem"
-              }}
-            >
-              Puentes Térmicos
-            </button>
+            
           </div>
-          {activeWallTab === "muros" ? (
-            walls.length > 0 ? (
-              <TablesParameters data={walls} columns={wallColumns} />
-            ) : (
-              <p>No hay muros creados.</p>
-            )
+          {combinedWalls.length > 0 ? (
+            <TablesParameters data={combinedWalls} columns={combinedColumns} />
           ) : (
-            thermalBridges.length > 0 ? (
-              <TablesParameters data={thermalBridges} columns={thermalBridgeColumns} />
-            ) : (
-              <p>No hay puentes térmicos creados.</p>
-            )
+            <p>No hay muros creados.</p>
           )}
         </section>
       </Card>
 
       <Card>
         <section>
-          <h2>Ventanas</h2>
+          <Title text= "Ventanas"/>
           {windows.length > 0 ? (
             <TablesParameters data={windows} columns={windowColumns} />
           ) : (
@@ -226,7 +242,7 @@ const RecintoView: React.FC = () => {
 
       <Card>
         <section>
-          <h2>Puertas</h2>
+        <Title text= "Puertas"/>
           {doors.length > 0 ? (
             <TablesParameters data={doors} columns={doorColumns} />
           ) : (
@@ -237,7 +253,7 @@ const RecintoView: React.FC = () => {
 
       <Card>
         <section>
-          <h2>Techumbre</h2>
+        <Title text= "Techumbre"/>
           {roofs.length > 0 ? (
             <TablesParameters data={roofs} columns={roofColumns} />
           ) : (
@@ -248,7 +264,7 @@ const RecintoView: React.FC = () => {
 
       <Card>
         <section>
-          <h2>Pisos</h2>
+        <Title text= "Pisos"/>
           {floors.length > 0 ? (
             <TablesParameters data={floors} columns={floorColumns} />
           ) : (

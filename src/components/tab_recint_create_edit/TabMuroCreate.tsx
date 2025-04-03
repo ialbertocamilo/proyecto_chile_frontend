@@ -818,15 +818,33 @@ const TabMuroCreate: React.FC = () => {
           { label: "Acciones" }
         ],
         ...[
-          { label: "L[m]" },
-          { label: "Elemento" },
-          { label: "L[m]" },
-          { label: "Elemento" },
-          { label: "L[m]" },
-          { label: "Elemento" },
-          { label: "L[m]" },
-          { label: "e Aislación [cm]" },
-          { label: "Elemento" },
+          { label: (
+            <>
+              <span>P01</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+              <span>P01</span><br /><span>"Elemento"</span></>)},
+          { label: (
+            <>
+              <span>P02</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+              <span>P02</span><br /><span>"Elemento"</span></>)},
+          { label: (
+            <>
+            <span>P03</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+            <span>P03</span><br /><span>"Elemento"</span></>)},
+          { label: (
+            <>
+            <span>P04</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+            <span>P04</span><br /><span>"e Aislación [cm]"</span></>)},
+          { label: (
+            <>
+            <span>P04</span><br /><span>"Elemento" </span></>)},
           { label: "Acciones" }
         ]
       ]

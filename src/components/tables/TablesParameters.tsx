@@ -14,7 +14,7 @@ interface TablesParametersProps {
 }
 
 interface HeaderCell {
-  label: string;
+  label: string | React.ReactNode;
   colSpan?: number;
   rowSpan?: number;
   style?: React.CSSProperties;

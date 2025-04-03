@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { ReactNode, useState, useEffect, ChangeEvent } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { notify } from "@/utils/notify";
 import TablesParameters from "@/components/tables/TablesParameters";
@@ -55,6 +55,7 @@ interface MergedWall extends Omit<Wall, 'wall_id'>, Partial<ThermalBridge> {
   wall_id: number;
   bridgeId?: number | null;
 }
+
 
 const TabMuroCreate: React.FC = () => {
   // Función helper para formatear valores
@@ -807,16 +808,33 @@ const TabMuroCreate: React.FC = () => {
           { label: "Acciones" }
         ],
         ...[
-          { label: "P01 - L[m]" },
-          { label: "P01 - Elemento" },
-          { label: "P02 - L[m]" },
-          { label: "P02 - Elemento" },
-          { label: "P03 - L[m]" },
-          { label: "P03 - Elemento" },
-          { label: "P04 - L[m]" },
-          { label: "P04 - e Aislación [cm]" },
-          { label: "P04 - Elemento" },
-          { label: "Acciones" }
+          { label: (
+            <>
+              <span>P01</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+              <span>P01</span><br /><span>"Elemento"</span></>)},
+          { label: (
+            <>
+              <span>P02</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+              <span>P02</span><br /><span>"Elemento"</span></>)},
+          { label: (
+            <>
+            <span>P03</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+            <span>P03</span><br /><span>"Elemento"</span></>)},
+          { label: (
+            <>
+            <span>P04</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+            <span>P04</span><br /><span>"e Aislación [cm]"</span></>)},
+          { label: (
+            <>
+            <span>P04</span><br /><span>"Elemento" </span></>)},
         ]
       ]
     ]

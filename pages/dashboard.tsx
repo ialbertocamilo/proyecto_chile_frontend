@@ -196,7 +196,15 @@ const DashboardPage: React.FC = () => {
                 const requests = [
                     api.get('reports/projects_registered_by_month').then(response => {
                         if (response?.status === 'success') {
-                            setProjectsByMonth(convertObjectToArrays(response?.data));
+                            const data = convertObjectToArrays(response?.data);
+                            if (data) {
+                                Object.keys(data).forEach(key => {
+                                    if (Array.isArray(data[key])) {
+                                        data[key] = data[key].reverse();
+                                    }
+                                });
+                            }
+                            setProjectsByMonth(data);
                         }
                         setLoadingProjectsByMonth(false);
                     }).catch(error => {

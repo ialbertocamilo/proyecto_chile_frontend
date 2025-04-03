@@ -1062,11 +1062,13 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         isOpen={isProfileSchedulesModalOpen}
         onClose={() => setIsProfileSchedulesModalOpen(false)}
         onSave={() => setIsProfileSchedulesModalOpen(false)}
-        title="Profile Schedules"
-        modalStyle={{ width: "auto", padding: "32px" }}
+        title="Perfil de uso diario"
+        modalStyle={{ maxWidth: "50vw",
+          maxHeight: "90vh",
+          padding: "32px"}}
         hideFooter={true}
       >
-        <Profileschedules type="default" />
+        <Profileschedules />
       </ModalCreate>
     </div>
   );

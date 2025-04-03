@@ -9,6 +9,7 @@ interface MapAutocompletionProps {
     formData: {
         latitude: number
         longitude: number
+        address: string
     }
     handleFormInputChange: (field: any, value: any) => void
 }
@@ -69,6 +70,7 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
                         const details = [
                             `Dirección: ${locationDetails?.Label || "N/A"}`,
                         ].join("\n");
+                        handleFormInputChange("address", details);
                         const detailsTextArea = document.getElementById("locationDetails") as HTMLTextAreaElement;
                         if (detailsTextArea) {
                             detailsTextArea.value = details;
@@ -102,6 +104,7 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
                     className="form-control"
                     rows={6}
                     readOnly
+                    value={formData.address}
                     style={{
                         width: "100%",
                         resize: "none"

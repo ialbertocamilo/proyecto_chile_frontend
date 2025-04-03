@@ -39,6 +39,7 @@ interface FormData {
   built_surface: number;
   latitude: number;
   longitude: number;
+  address: string;
 }
 
 interface Project {
@@ -60,6 +61,7 @@ const initialFormData: FormData = {
   built_surface: 0,
   latitude: -33.4589314398474,
   longitude: -70.6703553846175,
+  address: ''
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -181,7 +183,7 @@ const ProjectWorkflowPart1: React.FC = () => {
     return newErrors;
   };
 
-  const { post, get } = useApi();
+  const { post, get, put } = useApi();
 
   const checkProjectNameExists = async (): Promise<boolean> => {
     try {
@@ -239,6 +241,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           department: formData.department,
           province: formData.province,
           district: formData.district,
+          address: formData.address
         },
         name_project: formData.name_project,
         owner_name: formData.owner_name,
@@ -258,7 +261,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       localStorage.setItem("project_department", formData.department);
       localStorage.setItem("project_name", formData.name_project);
       notify("Proyecto creado con éxito.");
-
+      actualizarStatus()
       setFormData(initialFormData);
       router.push(`/workflow-part2-create?project_id=${project_id}`);
     } catch (error: unknown) {
@@ -276,6 +279,25 @@ const ProjectWorkflowPart1: React.FC = () => {
       notify("Ocurrió un error al enviar el proyecto.");
     }
     setLoading(false);
+  };
+
+
+  const actualizarStatus = async () => {
+    try {
+      const project_id = localStorage.getItem("project_id");
+      if (!project_id) {
+        notify("No se encontró el project_id.");
+        return;
+      }
+      console.log("ProjectId: ", project_id)
+      // Construir la URL del endpoint con el project_id
+      const url = `/project/${project_id}/status`;
+      // Enviar la solicitud PUT con el status
+      await put(url, { status: "en proceso" });
+    } catch (error) {
+      console.error("Error al actualizar el status:", error);
+      notify("Error al actualizar el estado del proyecto.");
+    }
   };
 
   // Función que se encarga de la acción del botón Continuar en el paso 1

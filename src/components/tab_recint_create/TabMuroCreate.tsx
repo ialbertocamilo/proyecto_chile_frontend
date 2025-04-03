@@ -1,5 +1,4 @@
-// TabMuroCreate.tsx
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { ReactNode, useState, useEffect, ChangeEvent } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { notify } from "@/utils/notify";
 import TablesParameters from "@/components/tables/TablesParameters";
@@ -21,9 +20,10 @@ interface Wall {
   u?: number;
 }
 
-// Interfaz para puentes térmicos (actualizada para incluir los nombres de los elementos)
+// Interfaz para puentes térmicos, se agregó wall_id para relacionar con el muro
 interface ThermalBridge {
   id: number;
+  wall_id: number; // Identifica el muro asociado
   po1_length: number;
   po1_id_element: number;
   po1_element_name?: string;
@@ -39,7 +39,7 @@ interface ThermalBridge {
   po4_element_name?: string;
 }
 
-// Interfaz para las opciones de desplegable (tanto para muros como para elementos de puente térmico)
+// Interfaz para las opciones de desplegable (usada tanto para muros como para elementos de puente térmico)
 interface WallDetail {
   type: string;
   id: number;
@@ -50,8 +50,15 @@ interface WallDetail {
   project_id: number;
 }
 
+// Definición de la data fusionada (muro + puente) con propiedad bridgeId para el id del puente térmico
+interface MergedWall extends Omit<Wall, 'wall_id'>, Partial<ThermalBridge> {
+  wall_id: number;
+  bridgeId?: number | null;
+}
+
+
 const TabMuroCreate: React.FC = () => {
-  // Función helper para formatear valores: si el valor es 0, "0" o "N/A", retorna guion.
+  // Función helper para formatear valores
   const formatValue = (value: any, fixed?: number): string => {
     if (value === 0 || value === "0" || value === "N/A") {
       return "-";
@@ -62,36 +69,32 @@ const TabMuroCreate: React.FC = () => {
     return value;
   };
 
-  // Estados de modales
+  // Estados de modales (solo para muros)
   const [isWallModalOpen, setIsWallModalOpen] = useState<boolean>(false);
-  const [isThermalBridgeModalOpen, setIsThermalBridgeModalOpen] = useState<boolean>(false);
   // Modal de confirmación para eliminación de muro
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [wallToDelete, setWallToDelete] = useState<Wall | null>(null);
-  // Modal de confirmación para eliminación de puente térmico
-  const [isDeleteBridgeModalOpen, setIsDeleteBridgeModalOpen] = useState<boolean>(false);
-  const [bridgeToDelete, setBridgeToDelete] = useState<ThermalBridge | null>(null);
 
-  // Estados de datos de las tablas
+  // Estados de datos: muros, puentes y data fusionada
   const [murosData, setMurosData] = useState<Wall[]>([]);
   const [puentesData, setPuentesData] = useState<ThermalBridge[]>([]);
+  const [mergedData, setMergedData] = useState<MergedWall[]>([]);
 
   // Estados para edición de muros
   const [editingWallId, setEditingWallId] = useState<number | null>(null);
   const [editingWallData, setEditingWallData] = useState<Wall | null>(null);
 
-  // Estados para edición de puentes térmicos
+  // Estados para edición de puentes térmicos (dentro de la misma tabla)
   const [editingBridgeId, setEditingBridgeId] = useState<number | null>(null);
   const [editingBridgeData, setEditingBridgeData] = useState<ThermalBridge | null>(null);
 
   // Otras opciones y datos del formulario
   const [angleOptions, setAngleOptions] = useState<string[]>([]);
   const [wallOptions, setWallOptions] = useState<WallDetail[]>([]);
-  // Opciones para elementos (usado tanto en modal de creación como en edición en tabla)
   const [detailOptions, setDetailOptions] = useState<WallDetail[]>([]);
   const [projectId, setProjectId] = useState<string | null>(null);
 
-  // Formularios para nuevo muro y puente térmico (modal de creación)
+  // Formularios para nuevo muro
   const [newWall, setNewWall] = useState<Wall>({
     wall_id: 0,
     name: "",
@@ -99,20 +102,8 @@ const TabMuroCreate: React.FC = () => {
     angulo_azimut: "",
     area: 0,
   });
-  const [newThermalBridge, setNewThermalBridge] = useState<ThermalBridge>({
-    id: 0,
-    po1_length: 0,
-    po1_id_element: 0,
-    po2_length: 0,
-    po2_id_element: 0,
-    po3_length: 0,
-    po3_id_element: 0,
-    po4_length: 0,
-    po4_e_aislacion: 0,
-    po4_id_element: 0,
-  });
 
-  // Obtener el project_id del localStorage
+  // Obtener el project_id desde localStorage
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id");
     if (storedProjectId) {
@@ -120,7 +111,7 @@ const TabMuroCreate: React.FC = () => {
     }
   }, []);
 
-  // Activar project id 
+  // Activar project id y cargar datos
   useEffect(() => {
     if (projectId) {
       fetchData();
@@ -226,13 +217,21 @@ const TabMuroCreate: React.FC = () => {
       if (!responsePuentes.ok) throw new Error("Error al obtener puentes térmicos");
       const puentes = await responsePuentes.json();
       setPuentesData(puentes);
+
+      // Fusionar datos: cada muro tendrá asociados sus datos de puente (si existen)
+      // Conservamos la id del muro y agregamos la propiedad bridgeId con el id del puente
+      const merged = muros.map((muro: Wall) => {
+        const puente = puentes.find((p: ThermalBridge) => p.wall_id === muro.id);
+        return { ...muro, ...puente, id: muro.id, bridgeId: puente ? puente.id : null };
+      });
+      setMergedData(merged);
     } catch (error) {
       notify("Error al cargar los datos");
       console.error(error);
     }
   };
 
-  // Iniciar edición de muro (edición en línea) usando el id único del muro
+  // Funciones para edición de muros
   const handleEditWall = (id: number) => {
     const wallToEdit = murosData.find((w) => w.id === id);
     if (wallToEdit) {
@@ -241,7 +240,6 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Actualiza el estado de edición del muro
   const handleEditWallChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setEditingWallData((prev) =>
@@ -249,7 +247,6 @@ const TabMuroCreate: React.FC = () => {
     );
   };
 
-  // Aceptar edición de muro (PUT)
   const handleAcceptEditWall = async (id: number) => {
     if (!editingWallData) return;
     const authData = getAuthData();
@@ -288,18 +285,20 @@ const TabMuroCreate: React.FC = () => {
     setEditingWallData(null);
   };
 
-  // Nueva función: Abrir modal de confirmación de eliminación de muro
+  // Abrir modal de confirmación para eliminación de muro
   const handleOpenDeleteModal = (wall: Wall) => {
     setWallToDelete(wall);
     setIsDeleteModalOpen(true);
   };
 
+  // Función para eliminar el muro y su puente térmico asociado (si lo tiene)
   const handleConfirmDeleteWall = async () => {
     if (!wallToDelete) return;
     const authData = getAuthData();
     if (!authData) return;
     try {
-      const response = await fetch(
+      // Eliminar el muro
+      const responseWall = await fetch(
         `${constantUrlApiEndpoint}/wall-enclosures-delete/${wallToDelete.id}`,
         {
           method: "DELETE",
@@ -309,26 +308,43 @@ const TabMuroCreate: React.FC = () => {
           },
         }
       );
-      if (!response.ok) throw new Error("Error al eliminar muro");
-      const data = await response.json();
-      notify(data.mensaje || "Muro eliminado exitosamente.");
+      if (!responseWall.ok) throw new Error("Error al eliminar muro");
+      // Si existe puente asociado se elimina también
+      const thermalBridgeAsociado = puentesData.find(
+        (bridge) => bridge.wall_id === wallToDelete.id
+      );
+      if (thermalBridgeAsociado) {
+        const responseBridge = await fetch(
+          `${constantUrlApiEndpoint}/thermal-bridge-delete/${thermalBridgeAsociado.id}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authData.token}`,
+            },
+          }
+        );
+        if (!responseBridge.ok)
+          throw new Error("Error al eliminar puente térmico");
+      }
+      notify("Muro y puente térmico eliminados exitosamente.");
       setIsDeleteModalOpen(false);
       setWallToDelete(null);
       fetchData();
     } catch (error) {
-      notify("Error al eliminar muro");
+      notify("Error al eliminar muro o puente térmico");
       console.error(error);
     }
   };
 
-  // Nueva función: Cancelar eliminación de muro
   const handleCancelDelete = () => {
     setIsDeleteModalOpen(false);
     setWallToDelete(null);
   };
 
-  // Iniciar edición de puente térmico: se guarda el registro completo en editingBridgeData
-  const handleEditBridge = (bridgeId: number) => {
+  // Funciones para edición de puentes térmicos (dentro de la misma tabla)
+  const handleEditBridge = (bridgeId: number | null) => {
+    if (!bridgeId) return;
     const bridgeToEdit = puentesData.find((b) => b.id === bridgeId);
     if (bridgeToEdit) {
       setEditingBridgeId(bridgeId);
@@ -336,7 +352,6 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Actualiza el estado de edición del puente térmico
   const handleEditBridgeChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setEditingBridgeData((prev) =>
@@ -344,9 +359,8 @@ const TabMuroCreate: React.FC = () => {
     );
   };
 
-  // Aceptar edición de puente térmico (PUT)
-  const handleAcceptEditBridge = async (bridgeId: number) => {
-    if (!editingBridgeData) return;
+  const handleAcceptEditBridge = async (bridgeId: number | null) => {
+    if (!bridgeId || !editingBridgeData) return;
     const authData = getAuthData();
     if (!authData) return;
     try {
@@ -377,52 +391,12 @@ const TabMuroCreate: React.FC = () => {
     setEditingBridgeData(null);
   };
 
-  // Nueva función: Abrir modal de confirmación de eliminación de puente térmico
-  const handleOpenDeleteBridgeModal = (bridge: ThermalBridge) => {
-    setBridgeToDelete(bridge);
-    setIsDeleteBridgeModalOpen(true);
-  };
-
-  // Función para confirmar eliminación de puente térmico
-  const handleConfirmDeleteBridge = async () => {
-    if (!bridgeToDelete) return;
-    const authData = getAuthData();
-    if (!authData) return;
-    try {
-      const response = await fetch(
-        `${constantUrlApiEndpoint}/thermal-bridge-delete/${bridgeToDelete.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authData.token}`,
-          },
-        }
-      );
-      if (!response.ok) throw new Error("Error al eliminar puente térmico");
-      const data = await response.json();
-      notify(data.mensaje || "Puente térmico eliminado exitosamente.");
-      setIsDeleteBridgeModalOpen(false);
-      setBridgeToDelete(null);
-      fetchData();
-    } catch (error) {
-      notify("Error al eliminar puente térmico");
-      console.error(error);
-    }
-  };
-
-  // Función para cancelar eliminación de puente térmico
-  const handleCancelDeleteBridge = () => {
-    setIsDeleteBridgeModalOpen(false);
-    setBridgeToDelete(null);
-  };
-
   // Columnas para la tabla de muros
   const murosColumns = [
     {
       headerName: "Muros",
       field: "name",
-      renderCell: (row: Wall) => {
+      renderCell: (row: MergedWall) => {
         if (row.id === editingWallId && editingWallData) {
           return (
             <select
@@ -446,7 +420,7 @@ const TabMuroCreate: React.FC = () => {
     {
       headerName: "Caracteristicas",
       field: "characteristics",
-      renderCell: (row: Wall) => {
+      renderCell: (row: MergedWall) => {
         if (row.id === editingWallId && editingWallData) {
           return (
             <select
@@ -468,7 +442,7 @@ const TabMuroCreate: React.FC = () => {
     {
       headerName: "Ángulo Azimut",
       field: "angulo_azimut",
-      renderCell: (row: Wall) => {
+      renderCell: (row: MergedWall) => {
         if (row.id === editingWallId && editingWallData) {
           return (
             <select
@@ -493,7 +467,7 @@ const TabMuroCreate: React.FC = () => {
     {
       headerName: "Área [m²]",
       field: "area",
-      renderCell: (row: Wall) => {
+      renderCell: (row: MergedWall) => {
         if (row.id === editingWallId && editingWallData) {
           return (
             <input
@@ -506,7 +480,7 @@ const TabMuroCreate: React.FC = () => {
                 if (e.key === "-") {
                   e.preventDefault();
                 }
-              }}            
+              }}
               onChange={handleEditWallChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
@@ -522,14 +496,12 @@ const TabMuroCreate: React.FC = () => {
     {
       headerName: "U [W/m²K]",
       field: "u",
-      renderCell: (row: Wall) => {
-        return formatValue(row.u, 2);
-      },
+      renderCell: (row: MergedWall) => formatValue(row.u, 2),
     },
     {
       headerName: "Acciones",
       field: "acciones",
-      renderCell: (row: Wall) => {
+      renderCell: (row: MergedWall) => {
         const isEditing = row.id === editingWallId;
         return isEditing ? (
           <ActionButtonsConfirm
@@ -546,13 +518,13 @@ const TabMuroCreate: React.FC = () => {
     },
   ];
 
-  // Columnas para la tabla de puentes térmicos
+  // Columnas para los campos de puentes térmicos
   const puentesColumns = [
     {
-      headerName: "L[m]",
+      headerName: "P01 - L[m]",
       field: "po1_length",
-      renderCell: (row: ThermalBridge) => {
-        if (row.id === editingBridgeId && editingBridgeData) {
+      renderCell: (row: MergedWall) => {
+        if (row.bridgeId === editingBridgeId && editingBridgeData) {
           return (
             <input
               type="number"
@@ -561,10 +533,8 @@ const TabMuroCreate: React.FC = () => {
               step="0.01"
               value={editingBridgeData.po1_length}
               onKeyDown={(e) => {
-                if (e.key === "-") {
-                  e.preventDefault();
-                }
-              }}            
+                if (e.key === "-") e.preventDefault();
+              }}
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
@@ -578,10 +548,10 @@ const TabMuroCreate: React.FC = () => {
       },
     },
     {
-      headerName: "Elemento",
+      headerName: "P01 - Elemento",
       field: "po1_id_element",
-      renderCell: (row: ThermalBridge) => {
-        if (row.id === editingBridgeId && editingBridgeData) {
+      renderCell: (row: MergedWall) => {
+        if (row.bridgeId === editingBridgeId && editingBridgeData) {
           return (
             <select
               name="po1_id_element"
@@ -603,10 +573,10 @@ const TabMuroCreate: React.FC = () => {
       },
     },
     {
-      headerName: "L[m]",
+      headerName: "P02 - L[m]",
       field: "po2_length",
-      renderCell: (row: ThermalBridge) => {
-        if (row.id === editingBridgeId && editingBridgeData) {
+      renderCell: (row: MergedWall) => {
+        if (row.bridgeId === editingBridgeId && editingBridgeData) {
           return (
             <input
               type="number"
@@ -615,10 +585,8 @@ const TabMuroCreate: React.FC = () => {
               step="0.01"
               value={editingBridgeData.po2_length}
               onKeyDown={(e) => {
-                if (e.key === "-") {
-                  e.preventDefault();
-                }
-              }}            
+                if (e.key === "-") e.preventDefault();
+              }}
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
@@ -632,10 +600,10 @@ const TabMuroCreate: React.FC = () => {
       },
     },
     {
-      headerName: "Elemento",
+      headerName: "P02 - Elemento",
       field: "po2_id_element",
-      renderCell: (row: ThermalBridge) => {
-        if (row.id === editingBridgeId && editingBridgeData) {
+      renderCell: (row: MergedWall) => {
+        if (row.bridgeId === editingBridgeId && editingBridgeData) {
           return (
             <select
               name="po2_id_element"
@@ -657,10 +625,10 @@ const TabMuroCreate: React.FC = () => {
       },
     },
     {
-      headerName: "L[m]",
+      headerName: "P03 - L[m]",
       field: "po3_length",
-      renderCell: (row: ThermalBridge) => {
-        if (row.id === editingBridgeId && editingBridgeData) {
+      renderCell: (row: MergedWall) => {
+        if (row.bridgeId === editingBridgeId && editingBridgeData) {
           return (
             <input
               type="number"
@@ -669,10 +637,8 @@ const TabMuroCreate: React.FC = () => {
               step="0.01"
               value={editingBridgeData.po3_length}
               onKeyDown={(e) => {
-                if (e.key === "-") {
-                  e.preventDefault();
-                }
-              }}            
+                if (e.key === "-") e.preventDefault();
+              }}
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
@@ -686,10 +652,10 @@ const TabMuroCreate: React.FC = () => {
       },
     },
     {
-      headerName: "Elemento",
+      headerName: "P03 - Elemento",
       field: "po3_id_element",
-      renderCell: (row: ThermalBridge) => {
-        if (row.id === editingBridgeId && editingBridgeData) {
+      renderCell: (row: MergedWall) => {
+        if (row.bridgeId === editingBridgeId && editingBridgeData) {
           return (
             <select
               name="po3_id_element"
@@ -711,10 +677,10 @@ const TabMuroCreate: React.FC = () => {
       },
     },
     {
-      headerName: "L[m]",
+      headerName: "P04 - L[m]",
       field: "po4_length",
-      renderCell: (row: ThermalBridge) => {
-        if (row.id === editingBridgeId && editingBridgeData) {
+      renderCell: (row: MergedWall) => {
+        if (row.bridgeId === editingBridgeId && editingBridgeData) {
           return (
             <input
               type="number"
@@ -723,10 +689,8 @@ const TabMuroCreate: React.FC = () => {
               step="0.01"
               value={editingBridgeData.po4_length}
               onKeyDown={(e) => {
-                if (e.key === "-") {
-                  e.preventDefault();
-                }
-              }}            
+                if (e.key === "-") e.preventDefault();
+              }}
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
@@ -740,10 +704,10 @@ const TabMuroCreate: React.FC = () => {
       },
     },
     {
-      headerName: "e Aislación [cm]",
+      headerName: "P04 - e Aislación [cm]",
       field: "po4_e_aislacion",
-      renderCell: (row: ThermalBridge) => {
-        if (row.id === editingBridgeId && editingBridgeData) {
+      renderCell: (row: MergedWall) => {
+        if (row.bridgeId === editingBridgeId && editingBridgeData) {
           return (
             <input
               type="number"
@@ -752,10 +716,8 @@ const TabMuroCreate: React.FC = () => {
               step="0.01"
               value={editingBridgeData.po4_e_aislacion}
               onKeyDown={(e) => {
-                if (e.key === "-") {
-                  e.preventDefault();
-                }
-              }}            
+                if (e.key === "-") e.preventDefault();
+              }}
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
@@ -769,10 +731,10 @@ const TabMuroCreate: React.FC = () => {
       },
     },
     {
-      headerName: "Elemento",
+      headerName: "P04 - Elemento",
       field: "po4_id_element",
-      renderCell: (row: ThermalBridge) => {
-        if (row.id === editingBridgeId && editingBridgeData) {
+      renderCell: (row: MergedWall) => {
+        if (row.bridgeId === editingBridgeId && editingBridgeData) {
           return (
             <select
               name="po4_id_element"
@@ -795,50 +757,108 @@ const TabMuroCreate: React.FC = () => {
     },
     {
       headerName: "Acciones",
-      field: "acciones",
-      renderCell: (row: ThermalBridge) => {
-        const isEditing = row.id === editingBridgeId;
+      field: "acciones_thermal",
+      cellStyle: {
+        position: "sticky",
+        right: "0px",
+        background: "#fff",
+        zIndex: 1,
+      },
+      renderCell: (row: MergedWall) => {
+        // Usamos la propiedad bridgeId para identificar el puente
+        const currentBridgeId = row.bridgeId;
+        const isEditing = currentBridgeId === editingBridgeId;
         return isEditing ? (
           <ActionButtonsConfirm
-            onAccept={() => handleAcceptEditBridge(row.id)}
+            onAccept={() => handleAcceptEditBridge(currentBridgeId)}
             onCancel={handleCancelEditBridge}
           />
         ) : (
-          <ActionButtons
-            onEdit={() => handleEditBridge(row.id)}
-            onDelete={() => handleOpenDeleteBridgeModal(row)}
-          />
+          // Solo mostramos el botón si existe un puente asociado (bridgeId no es null)
+          currentBridgeId ? (
+            <CustomButton variant="editIcon" onClick={() => handleEditBridge(currentBridgeId)}>
+              Editar FAV
+            </CustomButton>
+          ) : null
         );
       },
-    },
+    }
   ];
 
-  const puentesMultiHeader = {
+  // Fusionar las columnas de muros y puentes térmicos en el orden actual
+  const mergedColumns = [
+    ...murosColumns,
+    ...puentesColumns
+  ];
+
+  // Crear un multiheader único
+  const mergedMultiHeader = {
     rows: [
-      [{ label: "Puentes Térmicos", colSpan: 10 }],
       [
-        { label: "P01", colSpan: 2 },
-        { label: "P02", colSpan: 2 },
-        { label: "P03", colSpan: 2 },
-        { label: "P04", colSpan: 3 },
-        { label: "Acciones" },
+        { label: "Muros y Puentes Térmicos", colSpan: mergedColumns.length }
       ],
       [
-        { label: "L[m]" },
-        { label: "Elemento 2" },
-        { label: "L[m]" },
-        { label: "Elemento 2" },
-        { label: "L[m]" },
-        { label: "Elemento 2" },
-        { label: "L[m]" },
-        { label: "e Aislación [cm]" },
-        { label: "Elemento 2" },
-      ],
-    ],
+        ...[
+          { label: "Muros" },
+          { label: "Caracteristicas" },
+          { label: "Ángulo Azimut" },
+          { label: "Orientación" },
+          { label: "Área[m²]" },
+          { label: "U [W/m²K]" },
+          { label: "Acciones" }
+        ],
+        ...[
+          { label: (
+            <>
+              <span>P01</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+              <span>P01</span><br /><span>"Elemento"</span></>)},
+          { label: (
+            <>
+              <span>P02</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+              <span>P02</span><br /><span>"Elemento"</span></>)},
+          { label: (
+            <>
+            <span>P03</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+            <span>P03</span><br /><span>"Elemento"</span></>)},
+          { label: (
+            <>
+            <span>P04</span><br /><span>"L[m]"</span></>)},
+          { label: (
+            <>
+            <span>P04</span><br /><span>"e Aislación [cm]"</span></>)},
+          { label: (
+            <>
+            <span>P04</span><br /><span>"Elemento" </span></>)},
+        ]
+      ]
+    ]
   };
 
-  // MANEJO DE FORMULARIOS (Modal de creación)
+  // Renderizado único: se muestra solo la tabla fusionada y el botón de “Nuevo Muro”
+  const renderContent = () => (
+    <div className="col-12">
+      <div className="table-responsive">
+        <TablesParameters 
+          columns={mergedColumns} 
+          data={mergedData} 
+          multiHeader={mergedMultiHeader} 
+        />
+      </div>
+      <div className="d-flex justify-content-end gap-2 mt-3 w-100">
+        <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
+          Nuevo Muro
+        </CustomButton>
+      </div>
+    </div>
+  );
 
+  // Manejo del formulario del modal para creación de muro
   const handleWallInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setNewWall((prev) => ({
@@ -847,17 +867,8 @@ const TabMuroCreate: React.FC = () => {
     }));
   };
 
-  const handleThermalBridgeInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewThermalBridge((prev) => ({
-      ...prev,
-      [name]: Number(value),
-    }));
-  };
-
-  // Función para crear un muro (Modal de creación) con validación de campos obligatorios
+  // Función para crear un muro
   const handleCreateWall = async () => {
-    // Validar que los campos obligatorios estén completos
     if (
       newWall.wall_id <= 0 ||
       newWall.characteristics.trim() === "" ||
@@ -867,7 +878,6 @@ const TabMuroCreate: React.FC = () => {
       notify("Debe completar todos los campos del muro");
       return;
     }
-
     const authData = getAuthData();
     if (!authData) return;
     const { token, enclosure_id } = authData;
@@ -889,89 +899,9 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  // Función para crear un puente térmico (Modal de creación) con validación de campos obligatorios
-  const handleCreateThermalBridge = async () => {
-    // Validar que los campos obligatorios estén completos
-    if (
-      newThermalBridge.po1_length <= 0 &&
-      newThermalBridge.po1_id_element <= 0 &&
-      newThermalBridge.po2_length <= 0 &&
-      newThermalBridge.po2_id_element <= 0 &&
-      newThermalBridge.po3_length <= 0 &&
-      newThermalBridge.po3_id_element <= 0 &&
-      newThermalBridge.po4_length <= 0 &&
-      newThermalBridge.po4_e_aislacion <= 0 &&
-      newThermalBridge.po4_id_element <= 0
-    ) {
-      notify("Debe completar todos los campos del puente térmico");
-      return;
-    }
-
-    const authData = getAuthData();
-    if (!authData) return;
-    const { token, enclosure_id } = authData;
-    const url = `${constantUrlApiEndpoint}/thermal-bridge-create/${enclosure_id}`;
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(newThermalBridge),
-      });
-      if (!response.ok) throw new Error("Error en la creación del puente térmico.");
-      notify("Puente térmico creado exitosamente");
-      setIsThermalBridgeModalOpen(false);
-      setNewThermalBridge({
-        id: 0,
-        po1_length: 0,
-        po1_id_element: 0,
-        po2_length: 0,
-        po2_id_element: 0,
-        po3_length: 0,
-        po3_id_element: 0,
-        po4_length: 0,
-        po4_e_aislacion: 0,
-        po4_id_element: 0,
-      });
-      fetchData();
-    } catch (error) {
-      notify("Error al crear el puente térmico");
-      console.error(error);
-    }
-  };
-
-  const renderContent = () => (
-    <div className="col-12">
-      <div className="table-responsive">
-        <div className="d-flex w-100 mb-4">
-          <div className="p-2 flex-fill">
-            <TablesParameters columns={murosColumns} data={murosData} />
-          </div>
-          <div className="p-2 flex-fill">
-            <TablesParameters
-              columns={puentesColumns}
-              data={puentesData}
-              multiHeader={puentesMultiHeader}
-            />
-          </div>
-        </div>
-      </div>
-      {/* Botones alineados a la derecha */}
-      <div className="d-flex justify-content-end gap-2 mt-3 w-100">
-        <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
-          Nuevo Muro
-        </CustomButton>
-        <CustomButton variant="save" onClick={() => setIsThermalBridgeModalOpen(true)}>
-          Nuevo Puente Térmico
-        </CustomButton>
-      </div>
-    </div>
-  );
-  
   return (
     <div className="container-fluid">
       {renderContent()}
-
-      {/* Modal para crear un nuevo muro */}
       <ModalCreate
         isOpen={isWallModalOpen}
         onClose={() => setIsWallModalOpen(false)}
@@ -1052,213 +982,14 @@ const TabMuroCreate: React.FC = () => {
                 className="form-control form-control-sm"
                 value={newWall.area}
                 onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}              
+                  if (e.key === "-") e.preventDefault();
+                }}
                 onChange={handleWallInputChange}
               />
             </div>
           </div>
         </form>
       </ModalCreate>
-
-      {/* Modal para crear un nuevo puente térmico */}
-      <ModalCreate
-        isOpen={isThermalBridgeModalOpen}
-        onClose={() => setIsThermalBridgeModalOpen(false)}
-        onSave={handleCreateThermalBridge}
-        title="Crear Nuevo Puente Térmico"
-      >
-        <form>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="po1_length" className="col-sm-4 col-form-label">
-              P01 - Longitud (m)
-            </label>
-            <div className="col-sm-8">
-              <input
-                id="po1_length"
-                type="number"
-                name="po1_length"
-                className="form-control form-control-sm"
-                value={newThermalBridge.po1_length}
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}              
-                onChange={handleThermalBridgeInputChange}
-              />
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="po1_id_element" className="col-sm-4 col-form-label">
-              P01 - Elemento
-            </label>
-            <div className="col-sm-8">
-              <select
-                id="po1_id_element"
-                name="po1_id_element"
-                className="form-control form-control-sm"
-                value={newThermalBridge.po1_id_element || ""}
-                onChange={handleThermalBridgeInputChange}
-              >
-                <option value="">Seleccione...</option>
-                {detailOptions.map((detail) => (
-                  <option key={detail.id} value={detail.id}>
-                    {detail.name_detail}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="po2_length" className="col-sm-4 col-form-label">
-              P02 - Longitud (m)
-            </label>
-            <div className="col-sm-8">
-              <input
-                id="po2_length"
-                type="number"
-                name="po2_length"
-                className="form-control form-control-sm"
-                value={newThermalBridge.po2_length}
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}              
-                onChange={handleThermalBridgeInputChange}
-              />
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="po2_id_element" className="col-sm-4 col-form-label">
-              P02 - Elemento
-            </label>
-            <div className="col-sm-8">
-              <select
-                id="po2_id_element"
-                name="po2_id_element"
-                className="form-control form-control-sm"
-                value={newThermalBridge.po2_id_element || ""}
-                onChange={handleThermalBridgeInputChange}
-              >
-                <option value="">Seleccione...</option>
-                {detailOptions.map((detail) => (
-                  <option key={detail.id} value={detail.id}>
-                    {detail.name_detail}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="po3_length" className="col-sm-4 col-form-label">
-              P03 - Longitud (m)
-            </label>
-            <div className="col-sm-8">
-              <input
-                id="po3_length"
-                type="number"
-                name="po3_length"
-                className="form-control form-control-sm"
-                value={newThermalBridge.po3_length}
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}              
-                onChange={handleThermalBridgeInputChange}
-              />
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="po3_id_element" className="col-sm-4 col-form-label">
-              P03 - Elemento
-            </label>
-            <div className="col-sm-8">
-              <select
-                id="po3_id_element"
-                name="po3_id_element"
-                className="form-control form-control-sm"
-                value={newThermalBridge.po3_id_element || ""}
-                onChange={handleThermalBridgeInputChange}
-              >
-                <option value="">Seleccione...</option>
-                {detailOptions.map((detail) => (
-                  <option key={detail.id} value={detail.id}>
-                    {detail.name_detail}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="po4_length" className="col-sm-4 col-form-label">
-              P04 - Longitud (m)
-            </label>
-            <div className="col-sm-8">
-              <input
-                id="po4_length"
-                type="number"
-                name="po4_length"
-                className="form-control form-control-sm"
-                value={newThermalBridge.po4_length}
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}              
-                onChange={handleThermalBridgeInputChange}
-              />
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="po4_e_aislacion" className="col-sm-4 col-form-label">
-              P04 - Espesor Aislación (cm)
-            </label>
-            <div className="col-sm-8">
-              <input
-                id="po4_e_aislacion"
-                type="number"
-                name="po4_e_aislacion"
-                className="form-control form-control-sm"
-                value={newThermalBridge.po4_e_aislacion}
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}              
-                onChange={handleThermalBridgeInputChange}
-              />
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="po4_id_element" className="col-sm-4 col-form-label">
-              P04 - Elemento
-            </label>
-            <div className="col-sm-8">
-              <select
-                id="po4_id_element"
-                name="po4_id_element"
-                className="form-control form-control-sm"
-                value={newThermalBridge.po4_id_element || ""}
-                onChange={handleThermalBridgeInputChange}
-              >
-                <option value="">Seleccione...</option>
-                {detailOptions.map((detail) => (
-                  <option key={detail.id} value={detail.id}>
-                    {detail.name_detail}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </form>
-      </ModalCreate>
-
-      {/* Modal de confirmación para eliminar un muro */}
       <ModalCreate
         isOpen={isDeleteModalOpen}
         onClose={handleCancelDelete}
@@ -1269,21 +1000,6 @@ const TabMuroCreate: React.FC = () => {
         {wallToDelete && (
           <p>
             ¿Está seguro de eliminar el muro <strong>{wallToDelete.name}</strong>?
-          </p>
-        )}
-      </ModalCreate>
-
-      {/* Modal de confirmación para eliminar un puente térmico */}
-      <ModalCreate
-        isOpen={isDeleteBridgeModalOpen}
-        onClose={handleCancelDeleteBridge}
-        onSave={handleConfirmDeleteBridge}
-        title="Confirmar Eliminación"
-        saveLabel="Eliminar"
-      >
-        {bridgeToDelete && (
-          <p>
-            ¿Está seguro de eliminar el puente térmico con id <strong>{bridgeToDelete.id}</strong>?
           </p>
         )}
       </ModalCreate>

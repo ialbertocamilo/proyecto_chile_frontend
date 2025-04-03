@@ -40,6 +40,7 @@ interface FormData {
   built_surface: number;
   latitude: number;
   longitude: number;
+  address: string
 }
 
 interface Project {
@@ -62,6 +63,7 @@ const initialFormData: FormData = {
   built_surface: 0,
   latitude: -33.4589314398474,
   longitude: -70.6703553846175,
+  address: ''
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -133,6 +135,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           department: projectData.divisions?.department || "",
           province: projectData.divisions?.province || "",
           district: projectData.divisions?.district || "",
+          address: projectData.divisions?.address || "",
           building_type: projectData.building_type || "",
           main_use_type: projectData.main_use_type || "",
           number_levels: projectData.number_levels || 0,
@@ -276,6 +279,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           department: formData.department,
           province: formData.province,
           district: formData.district,
+          address: formData.address
         },
         name_project: formData.name_project,
         owner_name: formData.owner_name,

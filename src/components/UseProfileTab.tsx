@@ -105,7 +105,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   // Función para abrir el modal de creación
   const handleNuevoClick = (tab: TabKey) => {
-    console.log(`Nuevo elemento para ${tab}`);
     setIsCreateModalOpen(true);
   };
 
@@ -118,16 +117,15 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   // Función para realizar el DELETE y eliminar un recinto
   const handleDeleteConfirm = async () => {
     if (!itemToDelete) return;
-  
+
     const token = localStorage.getItem("token");
     if (!token || !rolUser) return;
-  
+
     const url = `${constantUrlApiEndpoint}/enclosures-typing/${itemToDelete.id}/delete?section=${rolUser}`;
     const headers = { accept: "application/json", Authorization: `Bearer ${token}` };
-  
+
     try {
-      const response = await axios.delete(url, { headers });
-      console.log("Eliminación exitosa", response.data);
+      await axios.delete(url, { headers });
       notify("Recinto eliminado exitosamente");
       setIsDeleteModalOpen(false);
       setItemToDelete(null);
@@ -141,7 +139,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) {
         notify("No se puede eliminar un recinto por defecto o creado por el admin");
       } else {
-        console.error("Error al eliminar recinto:", error);
         notify("Error al eliminar recinto. Ver consola.");
       }
     }
@@ -163,7 +160,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("Creación exitosa", data);
         notify("Recinto creado exitosamente");
         setIsCreateModalOpen(false);
         setNewRecintoName("");
@@ -278,7 +274,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   // Handlers para edición
   const handleStartEdit = (tab: TabKey, enclosure: any, initialValues: any) => {
-    // Se fuerza el valor de rPers a lo que muestra la API
     setEditingRow({
       id: enclosure.id,
       tab,
@@ -329,7 +324,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         attributes: {
           potencia_base: parseFloat(editingRow.values.potenciaBase),
           estrategia: editingRow.values.estrategia,
-          // Se mantiene potencia_propuesta como solo lectura
           potencia_propuesta: parseFloat(editingRow.values.potenciaPropuesta),
         },
       };
@@ -383,10 +377,9 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   };
 
   // Funciones para construir cada fila de tabla según el tipo de dato
-
   const mapVentilacionRow = (enclosure: any) => {
     const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
-                      enclosure.building_conditions[0]?.created_status === "global";
+      enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions[0]?.details || {};
     const minSalubridad = condition.cauldal_min_salubridad || {};
     const isEditing =
@@ -505,7 +498,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   const mapIluminacionRow = (enclosure: any) => {
     const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
-                      enclosure.building_conditions[0]?.created_status === "global";
+      enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions.find(
       (cond: any) => cond.type === "lightning"
     );
@@ -605,7 +598,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   const mapCargasRow = (enclosure: any) => {
     const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
-                      enclosure.building_conditions[0]?.created_status === "global";
+      enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions[0]?.details || {};
     const isEditing =
       editingRow &&
@@ -753,7 +746,15 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             }
             onDelete={() => handleDeleteClick("cargas", enclosure.id, enclosure.name)}
           />
-          
+          <CustomButton
+            className="btn-table-list"
+            onClick={() => {
+              localStorage.setItem("perfil_id", enclosure.id);
+              setIsProfileSchedulesModalOpen(true);
+            }}
+          >
+            <i className="fa fa-clock-o"></i>
+          </CustomButton>
         </div>
       ),
     };
@@ -761,7 +762,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   const mapHorarioRow = (enclosure: any) => {
     const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
-                      enclosure.building_conditions[0]?.created_status === "global";
+      enclosure.building_conditions[0]?.created_status === "global";
     const details = enclosure.building_conditions[0]?.details || {};
     const recinto = details.recinto || { climatizado: "N/A", desfase_clima: 0 };
     const isEditing =
@@ -939,8 +940,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                   backgroundColor: "#fff",
                   color: activeTab === item.key ? primaryColor : "var(--secondary-color)",
                   border: "none",
-                  borderBottom:
-                    activeTab === item.key ? `solid 2px ${primaryColor}` : "none",
+                  borderBottom: activeTab === item.key ? `solid 2px ${primaryColor}` : "none",
                 }}
                 onClick={() => setActiveTab(item.key as TabKey)}
               >
@@ -1058,7 +1058,18 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       </ModalCreate>
 
       {/* Modal que muestra el componente Profileschedules */}
-      
+      <ModalCreate
+        isOpen={isProfileSchedulesModalOpen}
+        onClose={() => setIsProfileSchedulesModalOpen(false)}
+        onSave={() => setIsProfileSchedulesModalOpen(false)}
+        title="Perfil de uso diario"
+        modalStyle={{ maxWidth: "50vw",
+          maxHeight: "90vh",
+          padding: "32px"}}
+        hideFooter={true}
+      >
+        <Profileschedules />
+      </ModalCreate>
     </div>
   );
 };

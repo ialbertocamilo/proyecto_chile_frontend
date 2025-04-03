@@ -1,13 +1,13 @@
 import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import Breadcrumb from "../src/components/common/Breadcrumb";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
+import DataTable from "../src/components/DataTable"; // Ajusta la ruta según corresponda
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
-import DataTable from "../src/components/DataTable"; // Ajusta la ruta según corresponda
-import Breadcrumb from "../src/components/common/Breadcrumb";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 interface Divisions {
   department?: string;
@@ -127,7 +127,7 @@ const ProjectListStatusEditPage = () => {
     { id: "id", label: "ID", minWidth: 50 },
     {
       id: "status",
-      label: "ESTADO",
+      label: "Estado",
       minWidth: 100,
       cell: ({ row }: { row: Project }) => (
         <div className="text-center">{getStatusTag(row.status)}</div>
@@ -135,34 +135,34 @@ const ProjectListStatusEditPage = () => {
     },
     {
       id: "name_project",
-      label: "NOMBRE DEL PROYECTO",
+      label: "Nombre del proyecto",
       minWidth: 150,
       cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.name_project)}</span>
     },
     {
       id: "owner_name",
-      label: "PROPIETARIO",
+      label: "Propietario",
       minWidth: 100,
       cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.owner_name)}</span>
     },
     {
       id: "building_type",
-      label: "TIPO DE EDIFICACIÓN",
+      label: "Tipo de edificación",
       minWidth: 100,
       cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.building_type)}</span>
     },
     {
       id: "main_use_type",
-      label: "TIPO DE USO PRINCIPAL",
+      label: "Tipo de uso principal",
       minWidth: 100,
       cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.main_use_type)}</span>
     },
-    { id: "number_levels", label: "NÚMERO DE NIVELES", minWidth: 100 },
-    { id: "number_homes_per_level", label: "N° VIVIENDAS/OFICINAS X NIVEL", minWidth: 100 },
-    { id: "built_surface", label: "SUPERFICIE CONSTRUIDA (M²)", minWidth: 100 },
+    { id: "number_levels", label: "Número de niveles", minWidth: 100 },
+    { id: "number_homes_per_level", label: "N° viviendas/oficinas x nivel", minWidth: 100 },
+    { id: "built_surface", label: "Superficie construida (M²)", minWidth: 100 },
     {
       id: "actions",
-      label: "ACCIONES",
+      label: "Acciones",
       minWidth: 100,
       cell: ({ row }: { row: Project }) => (
         <div className="text-center">

@@ -1,8 +1,7 @@
-import { Eye } from "lucide-react";
 import { useState } from "react";
 import Card from "../common/Card";
-import Modal from "../common/Modal";
 import CustomButton from "../common/CustomButton";
+import Modal from "../common/Modal";
 
 interface DetailedUser {
     id: number;
@@ -13,6 +12,7 @@ interface DetailedUser {
     status: boolean;
     project_count: number;
     project_ids: number[];
+    profession?: string;
 }
 
 interface DetailedUsersReportProps {
@@ -42,13 +42,17 @@ export const DetailedUsersReport = ({ loading, data }: DetailedUsersReportProps)
 
     return (
         <Card>
-            <h5 className="mb-4">Usuarios con más proyectos registrados</h5>
+            <h5 className="mb-4 mt-4">Usuarios con más proyectos registrados</h5>
             <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 <table className="table table-hover">
                     <tbody>
                         {data?.map((user) => (
                             <tr key={user.id}>
-                                <td><img src="/assets/images/user_icon.png" alt="User icon" width={18} height={18} className="me-2" />{`${user.name} ${user.last_name}`}</td>
+                                <td><img src="/assets/images/user_icon.png" alt="User icon" width={18} height={18} className="me-2" />{`${user.name} ${user.last_name}`}
+                                    <div style={{ fontSize: "0.8rem" }}>
+                                        {user.profession || "Profesión no disponible"}
+                                    </div>
+                                </td>
                                 <td>{user.email}</td>
                                 <td>{new Date(user.created_at).toLocaleDateString()}</td>
                                 <td>

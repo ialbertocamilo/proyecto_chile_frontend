@@ -2,6 +2,7 @@
 import { BuildingLevelsReport } from "@/components/reports/BuildingLevelsReport";
 import { BuildingTypesReport } from "@/components/reports/BuildingTypesReport";
 import { DetailedUsersReport } from "@/components/reports/DetailedUsersReport";
+import EnergyChart from "@/components/reports/EnergyReport";
 import { PerformanceReport } from "@/components/reports/PerformanceReport";
 import { ProjectsByMonthReport } from "@/components/reports/ProjectsByMonthReport";
 import { ProjectsStatusReport } from "@/components/reports/ProjectsStatusReport";
@@ -174,28 +175,12 @@ const DashboardPage: React.FC = () => {
     const [primaryColor, setPrimaryColor] = useState("#3ca7b7")
     const api = useApi();
 
-    // Individual loading states for each chart
-    const [loadingUsers, setLoadingUsers] = useState(true);
-    const [loadingProjectsByCountry, setLoadingProjectsByCountry] = useState(true);
-    const [loadingProjectsStatus, setLoadingProjectsStatus] = useState(true);
-    const [loadingBuildingLevels, setLoadingBuildingLevels] = useState(true);
-    const [loadingTotalSurface, setLoadingTotalSurface] = useState(true);
-    const [loadingBuildingTypes, setLoadingBuildingTypes] = useState(true);
-    const [loadingProjectsByUser, setLoadingProjectsByUser] = useState(true);
     const [loadingProjectsByMonth, setLoadingProjectsByMonth] = useState(true);
     const [loadingDetailedUsers, setLoadingDetailedUsers] = useState(true);
     const [projectsByMonth, setProjectsByMonth] = useState<ProjectsByMonthReport | null>(null);
     const [loadingPerformance, setLoadingPerformance] = useState(true);
     const [performanceData, setPerformanceData] = useState<any>(null);
 
-    // State variables for report data
-    const [usersReport, setUsersReport] = useState<UsersReport | null>(null);
-    const [projectsByCountry, setProjectsByCountry] = useState<ProjectsByCountryReport | null>(null);
-    const [projectsStatus, setProjectsStatus] = useState<ProjectsStatusReport | null>(null);
-    const [buildingLevels, setBuildingLevels] = useState<BuildingLevelsReport | null>(null);
-    const [totalSurfaceByCountry, setTotalSurfaceByCountry] = useState<TotalSurfaceByCountryReport | null>(null);
-    const [buildingTypes, setBuildingTypes] = useState<BuildingTypeReport | null>(null);
-    const [projectsByUser, setProjectsByUser] = useState<ProjectsByUserReport | null>(null);
     const [detailedUsers, setDetailedUsers] = useState<DetailedUser[] | null>(null);
 
     useEffect(() => {
@@ -209,84 +194,6 @@ const DashboardPage: React.FC = () => {
             try {
                 // Prepare all API requests to run concurrently
                 const requests = [
-                    // Users report
-                    api.get('reports/users').then(response => {
-                        if (response?.status === 'success') {
-                            setUsersReport(convertObjectToArrays(response?.data));
-                        }
-                        setLoadingUsers(false);
-                    }).catch(error => {
-                        console.error("Error fetching users report:", error);
-                        setLoadingUsers(false);
-                    }),
-
-                    // Projects by country
-                    api.get('reports/projects_by_country').then(response => {
-                        if (response?.status === 'success') {
-                            setProjectsByCountry(convertObjectToArrays(response?.data));
-                        }
-                        setLoadingProjectsByCountry(false);
-                    }).catch(error => {
-                        console.error("Error fetching projects by country:", error);
-                        setLoadingProjectsByCountry(false);
-                    }),
-
-                    // Projects status
-                    api.get('reports/projects_status').then(response => {
-                        if (response?.status === 'success') {
-                            setProjectsStatus(convertObjectToArrays(response?.data));
-                        }
-                        setLoadingProjectsStatus(false);
-                    }).catch(error => {
-                        console.error("Error fetching projects status:", error);
-                        setLoadingProjectsStatus(false);
-                    }),
-
-                    // Building levels distribution
-                    api.get('reports/building_levels_distribution').then(response => {
-                        if (response?.status === 'success') {
-                            setBuildingLevels(convertObjectToArrays(response?.data));
-                        }
-                        setLoadingBuildingLevels(false);
-                    }).catch(error => {
-                        console.error("Error fetching building levels:", error);
-                        setLoadingBuildingLevels(false);
-                    }),
-
-                    // Total surface by country
-                    api.get('reports/total_surface_by_country').then(response => {
-                        if (response?.status === 'success') {
-                            setTotalSurfaceByCountry(convertObjectToArrays(response?.data));
-                        }
-                        setLoadingTotalSurface(false);
-                    }).catch(error => {
-                        console.error("Error fetching surface by country:", error);
-                        setLoadingTotalSurface(false);
-                    }),
-
-                    // Building type distribution
-                    api.get('reports/building_type_distribution').then(response => {
-                        if (response?.status === 'success') {
-                            setBuildingTypes(convertObjectToArrays(response?.data));
-                        }
-                        setLoadingBuildingTypes(false);
-                    }).catch(error => {
-                        console.error("Error fetching building types:", error);
-                        setLoadingBuildingTypes(false);
-                    }),
-
-                    // Projects by user distribution
-                    api.get('reports/projects_by_user').then(response => {
-                        if (response?.status === 'success') {
-                            setProjectsByUser(convertObjectToArrays(response?.data));
-                        }
-                        setLoadingProjectsByUser(false);
-                    }).catch(error => {
-                        console.error("Error fetching projects by user:", error);
-                        setLoadingProjectsByUser(false);
-                    }),
-
-                    // Projects registered by month
                     api.get('reports/projects_registered_by_month').then(response => {
                         if (response?.status === 'success') {
                             setProjectsByMonth(convertObjectToArrays(response?.data));
@@ -315,13 +222,6 @@ const DashboardPage: React.FC = () => {
 
             } catch (error) {
                 console.error("Error fetching report data:", error);
-                // Set all loading states to false on error
-                setLoadingUsers(false);
-                setLoadingProjectsByCountry(false);
-                setLoadingProjectsStatus(false);
-                setLoadingBuildingLevels(false);
-                setLoadingTotalSurface(false);
-                setLoadingBuildingTypes(false);
                 setLoadingProjectsByMonth(false);
                 setLoadingDetailedUsers(false);
             }
@@ -329,8 +229,6 @@ const DashboardPage: React.FC = () => {
 
         fetchReportData();
     }, []);
-
-    const primaryColorAlpha = hexToRgba(primaryColor, 0.2)
 
 
     return (
@@ -347,65 +245,31 @@ const DashboardPage: React.FC = () => {
             <Card className="charts-card p-2">
                 <div className="row g-3 mt-1">
 
-                    <div className="col-md-6 col-lg-4">
+                    <div className="col-md-6 col-lg-6">
                         <ProjectsByMonthReport
                             loading={loadingProjectsByMonth}
                             data={projectsByMonth}
                             primaryColor={primaryColor}
                         />
                     </div>
-                    <div className="col-md-6 col-lg-4">
-                        <UserReport loading={loadingUsers} data={usersReport} />
+
+                    <div className="col-md-6 col-lg-6">
+                        <EnergyChart />
                     </div>
 
-                    <div className="col-md-6 col-lg-4">
-                        <BuildingLevelsReport
-                            loading={loadingBuildingLevels}
-                            data={buildingLevels}
-                            primaryColor={primaryColor}
-                            primaryColorAlpha={primaryColorAlpha}
-                        />
-                    </div>
-
-                    <div className="col-md-6 col-lg-4">
-                        <ProjectsStatusReport
-                            loading={loadingProjectsStatus}
-                            data={projectsStatus}
-                            generateColorPalette={generateColorPalette}
-                        />
-                    </div>
-
-                    <div className="col-md-6 col-lg-4">
-                        <BuildingTypesReport
-                            loading={loadingBuildingTypes}
-                            data={buildingTypes}
-                            generateColorPalette={generateColorPalette}
-                        />
-                    </div>
-
-                    <div className="col-md-6 col-lg-4">
-                        <TotalSurfaceReport
-                            loading={loadingTotalSurface}
-                            data={totalSurfaceByCountry}
-                            generateColorPalette={generateColorPalette}
-                        />
-                    </div>
-
-                    <div className="col-md-6 col-lg-8">
+                    <div className="col-md-6 col-lg-6">
                         <DetailedUsersReport
                             loading={loadingDetailedUsers}
                             data={detailedUsers}
                         />
                     </div>
 
-                    <div className="col-md-6 col-lg-4">
-                        <Card>
+                    <div className="col-md-6 col-lg-6">
 
                         <PerformanceReport
                             loading={loadingPerformance}
                             data={performanceData}
                         />
-                        </Card>
                     </div>
 
                 </div>

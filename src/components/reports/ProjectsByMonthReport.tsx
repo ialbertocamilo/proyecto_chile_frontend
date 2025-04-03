@@ -18,14 +18,24 @@ export const ProjectsByMonthReport = ({ loading, data, primaryColor }: ProjectsB
             ? data?.month.map(date => {
                 const [year, month] = date.split('-');
                 const monthDate = new Date(parseInt(year), parseInt(month) - 1);
-                return monthDate.toLocaleString('es', { month: 'long', year: 'numeric' });
+                return monthDate
+                    .toLocaleString('es', { month: 'long' })
+                    .replace(/^\w/, (c) => c.toUpperCase());
             })
             : [],
         datasets: [
             {
                 label: "Proyectos Registrados",
                 data: Array.isArray(data?.total_projects) ? data?.total_projects : [],
-                backgroundColor: primaryColor,
+                backgroundColor: (context) => {
+                    const { chart } = context;
+                    const { ctx, chartArea } = chart;
+                    if (!chartArea) return primaryColor;
+                    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                    gradient.addColorStop(0, primaryColor);
+                    gradient.addColorStop(1, "#FFFFFF");
+                    return gradient;
+                },
                 borderColor: primaryColor,
                 borderWidth: 1,
             },
@@ -36,7 +46,15 @@ export const ProjectsByMonthReport = ({ loading, data, primaryColor }: ProjectsB
             {
                 label: "Proyectos Registrados",
                 data: [],
-                backgroundColor: primaryColor,
+                backgroundColor: (context) => {
+                    const { chart } = context;
+                    const { ctx, chartArea } = chart;
+                    if (!chartArea) return primaryColor;
+                    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                    gradient.addColorStop(0, primaryColor);
+                    gradient.addColorStop(1, "#FFFFFF");
+                    return gradient;
+                },
                 borderColor: primaryColor,
                 borderWidth: 1,
             },
@@ -44,39 +62,42 @@ export const ProjectsByMonthReport = ({ loading, data, primaryColor }: ProjectsB
     };
 
     if (loading) {
-        return <ChartLoader title="Proyectos Registrados por Mes" />;
+        return <ChartLoader title="Proyectos Registrados" />;
     }
 
     return (
-        <ChartComponent
-            title="Proyectos Registrados por Mes"
-            chartData={chartData}
-            chartType="Bar"
-            options={{
-                maintainAspectRatio: false,
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Número de Proyectos'
+        <div>
+            <ChartComponent
+                title="Proyectos Registrados"
+                chartData={chartData}
+                chartType="Bar"
+                options={{
+                    height: 600,
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Número de Proyectos'
+                            },
+                            grid: {
+                                display: true
+                            }
                         },
-                        grid: {
-                            display: true
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            maxRotation: 45,
-                            minRotation: 45
-                        },
-                        grid: {
-                            display: false
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            grid: {
+                                display: false
+                            }
                         }
                     }
-                }
-            }}
-        />
+                }}
+            />
+        </div>
     );
 };

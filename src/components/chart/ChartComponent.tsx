@@ -59,7 +59,7 @@ const ChartComponent: React.FC<ChartComponentProps> = ({
                 <h3 className="title-chart">
                     {title}
                 </h3>
-                <div className="chart-wrapper" style={{ height: '300px', position: 'relative' }}>
+                <div className="chart-wrapper" style={{ height: '400px', position: 'relative' }}>
                     {renderChart()}
                 </div>
             </div>
@@ -81,7 +81,7 @@ const ChartComponent: React.FC<ChartComponentProps> = ({
                 }
                 .chart-wrapper {
                     flex: 1;
-                    min-height: 0;
+                    min-height: 200px;
                 }
             `}</style>
         </div>

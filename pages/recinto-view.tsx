@@ -204,7 +204,7 @@ const RecintoView: React.FC = () => {
       renderCell: (row: any) => formatCellValue(row.po1_length, 2)
     },
     {
-      headerName: "Elemento", field: "ppo1_element_namet",
+      headerName: "Elemento", field: "po1_element_name",
       renderCell: (row: any) => formatCellValue(row.po1_element_name)
     },
     {
@@ -213,8 +213,8 @@ const RecintoView: React.FC = () => {
       renderCell: (row: any) => formatCellValue(row.po2_length, 2)
     },
     {
-      headerName: "Elemento", field: "po2_id_element",
-      renderCell: (row: any) => formatCellValue(row.po2_id_element)
+      headerName: "Elemento", field: "po2_element_name",
+      renderCell: (row: any) => formatCellValue(row.po2_element_name)
     },
     {
       headerName: "L[m]",
@@ -222,8 +222,8 @@ const RecintoView: React.FC = () => {
       renderCell: (row: any) => formatCellValue(row.po3_length, 2)
     },
     {
-      headerName: "Elemento", field: "po3_id_element",
-      renderCell: (row: any) => formatCellValue(row.po3_id_element, 2)
+      headerName: "Elemento", field: "po3_element_name",
+      renderCell: (row: any) => formatCellValue(row.po3_element_name, 2)
     },
     {
       headerName: "L[m]",
@@ -236,8 +236,8 @@ const RecintoView: React.FC = () => {
       renderCell: (row: any) => formatCellValue(row.po4_e_aislacion, 2)
     },
     {
-      headerName: "Elemento", field: "po4_id_element",
-      renderCell: (row: any) => formatCellValue(row.po4_id_element, 2)
+      headerName: "Elemento", field: "po4_element_name",
+      renderCell: (row: any) => formatCellValue(row.po4_element_name, 2)
     },
   ];
 

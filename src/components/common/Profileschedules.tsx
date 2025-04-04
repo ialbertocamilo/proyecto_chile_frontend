@@ -72,7 +72,8 @@ const ProfileSchedules: React.FC = () => {
   const updateSchedule = async (newData: ScheduleData) => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`${constantUrlApiEndpoint}/${typeSelect}/schedule-update/${perfilId}`, {
+      // Se envía la actualización mediante PUT
+      await fetch(`${constantUrlApiEndpoint}/${typeSelect}/schedule-update/${perfilId}`, {
         method: 'PUT',
         headers: {
           'accept': 'application/json',
@@ -81,13 +82,22 @@ const ProfileSchedules: React.FC = () => {
         },
         body: JSON.stringify(newData)
       });
-      const result = await response.json();
-      console.log("Actualización exitosa", result);
-      setData(result);
+  
+      // Luego se realiza una petición GET para obtener los datos guardados actualizados
+      const response = await fetch(`${constantUrlApiEndpoint}/${typeSelect}/schedule/${perfilId}`, {
+        headers: {
+          'accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      const updatedResult = await response.json();
+      console.log("Datos actualizados", updatedResult);
+      setData(updatedResult);
     } catch (error) {
       console.error("Error actualizando datos", error);
     }
   };
+  
 
   const onChartReady = (chart: any) => {
     chart.on('click', function (params: any) {

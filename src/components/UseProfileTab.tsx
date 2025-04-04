@@ -274,6 +274,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   // Handlers para edición
   const handleStartEdit = (tab: TabKey, enclosure: any, initialValues: any) => {
+    console.log("Iniciando edición del enclosure con id:", enclosure.id);
     setEditingRow({
       id: enclosure.id,
       tab,
@@ -1065,9 +1066,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         onClose={() => setIsProfileSchedulesModalOpen(false)}
         onSave={() => setIsProfileSchedulesModalOpen(false)}
         title="Perfil de uso diario"
-        modalStyle={{ maxWidth: "50vw",
-          maxHeight: "90vh",
-          padding: "32px"}}
+        modalStyle={{ maxWidth: "50vw", maxHeight: "90vh", padding: "32px" }}
         hideFooter={true}
       >
         <Profileschedules />

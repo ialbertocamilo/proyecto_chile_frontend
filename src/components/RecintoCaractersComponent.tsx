@@ -6,9 +6,9 @@ import TabWindowCreate from "@/components/tab_recint_create/TabWindowCreate";
 import TabFloorCreate from "@/components/tab_recint_create/TabFloorCreate";
 import TabRoofCreate from "@/components/tab_recint_create/TabRoofCreate";
 import TabDoorCreate from "@/components/tab_recint_create/TabDoorCreate";
+import TabObstructionsCreate from "@/components/tab_recint_create/TabObstructionsCreate";
 
-
-type TabStep = "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
+type TabStep = "muros" | "techumbre" | "pisos" | "ventanas" | "puertas" | "obstrucciones";
 
 const RecintoCaractersComponent: React.FC = () => {
   const [tabStep, setTabStep] = useState<TabStep>("muros");
@@ -19,12 +19,15 @@ const RecintoCaractersComponent: React.FC = () => {
         return <TabMuroCreate />;
       case "ventanas":
         return <TabWindowCreate />;
+      case "puertas":
+        return <TabDoorCreate />;
       case "techumbre":
         return <TabRoofCreate />;
       case "pisos":
         return <TabFloorCreate />;
-      case "puertas":
-        return <TabDoorCreate />; default:
+      case "obstrucciones":
+        return <TabObstructionsCreate />;
+      default:
         return null;
     }
   };
@@ -69,6 +72,14 @@ const RecintoCaractersComponent: React.FC = () => {
           onClick={() => setTabStep("pisos")}
         >
           Pisos
+        </button>
+      </li>
+      <li className="nav-item">
+        <button
+          className={`nav-link ${tabStep === "obstrucciones" ? "active" : ""}`}
+          onClick={() => setTabStep("obstrucciones")}
+        >
+          Obstrucciones
         </button>
       </li>
     </ul>

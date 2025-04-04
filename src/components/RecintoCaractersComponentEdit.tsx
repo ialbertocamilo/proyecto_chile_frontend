@@ -1,4 +1,4 @@
-// RecintoCaractersComponent.tsx
+// RecintoCaractersComponentEdit.tsx
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import TabMuroCreate from "@/components/tab_recint_create_edit/TabMuroCreate"; 
@@ -6,11 +6,11 @@ import TabWindowCreate from "@/components/tab_recint_create_edit/TabWindowCreate
 import TabFloorCreate from "@/components/tab_recint_create_edit/TabFloorCreate";
 import TabRoofCreate from "@/components/tab_recint_create_edit/TabRoofCreate";
 import TabDoorCreate from "@/components/tab_recint_create_edit/TabDoorCreate";
+import TabObstructionsCreate from "@/components/tab_recint_create_edit/TabObstructionsCreate"; // Se importa el nuevo componente
 
+type TabStep = "muros" | "ventanas" | "puertas" | "techumbre" | "pisos" | "obstrucciones"; // Se añade "obstrucciones"
 
-type TabStep = "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
-
-const RecintoCaractersComponent: React.FC = () => {
+const RecintoCaractersComponentEdit: React.FC = () => {
   const [tabStep, setTabStep] = useState<TabStep>("muros");
 
   const renderTabContent = () => {
@@ -19,12 +19,15 @@ const RecintoCaractersComponent: React.FC = () => {
         return <TabMuroCreate />;
       case "ventanas":
         return <TabWindowCreate />;
+      case "puertas":
+        return <TabDoorCreate />;
       case "techumbre":
         return <TabRoofCreate />;
       case "pisos":
         return <TabFloorCreate />;
-      case "puertas":
-        return <TabDoorCreate />; default:
+      case "obstrucciones":
+        return <TabObstructionsCreate />; // Renderiza el componente de obstrucciones
+      default:
         return null;
     }
   };
@@ -71,6 +74,14 @@ const RecintoCaractersComponent: React.FC = () => {
           Pisos
         </button>
       </li>
+      <li className="nav-item">
+        <button
+          className={`nav-link ${tabStep === "obstrucciones" ? "active" : ""}`}
+          onClick={() => setTabStep("obstrucciones")}
+        >
+          Obstrucciones
+        </button>
+      </li>
     </ul>
   );
 
@@ -82,4 +93,4 @@ const RecintoCaractersComponent: React.FC = () => {
   );
 };
 
-export default RecintoCaractersComponent;
+export default RecintoCaractersComponentEdit;

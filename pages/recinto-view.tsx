@@ -127,9 +127,10 @@ const HeaderVistaDesarrollo: React.FC = () => {
 
   return (
     <Card>
+      <div style={{ marginTop: "10px" }}>
       <h3>
         <Title text="Vista de Desarrollo de proyecto" />
-      </h3>
+      </h3></div>
       <div
         style={{
           width: "100%",
@@ -142,7 +143,7 @@ const HeaderVistaDesarrollo: React.FC = () => {
         <Breadcrumb
           items={[
             {
-              title: "Vista De Proyecto",
+              title: "Vista recintos",
               href: "/",
               active: true,
             },
@@ -279,30 +280,56 @@ const RecintoView: React.FC = () => {
     { headerName: "Posición Ventanal", field: "posicionVentanal" },
     { headerName: "Aislación Con/sin retorno", field: "aislacion" },
     {
-      headerName: "Alto (H) [m]",
-      field: "alto",
+      headerName: "Alto (H) [m]", field: "alto",
       renderCell: (row: any) => formatCellValue(row.alto, 2)
     },
     {
-      headerName: "Ancho (W) [m]",
-      field: "ancho",
+      headerName: "Ancho (W) [m]", field: "ancho",
       renderCell: (row: any) => formatCellValue(row.ancho, 2)
     },
     {
       headerName: "Marco", field: "marco",
       renderCell: (row: any) => formatCellValue(row.marco, 2)
     },
-    { headerName: "Acciones Ventana", field: "acciones" },
-    { headerName: "FAV 1 - D [m]", field: "fav1_D" },
-    { headerName: "FAV 1 - L [m]", field: "fav1_L" },
-    { headerName: "FAV 2 izq - P [m]", field: "fav2izq_P" },
-    { headerName: "FAV 2 izq - S [m]", field: "fav2izq_S" },
-    { headerName: "FAV 2 Der - P [m]", field: "fav2der_P" },
-    { headerName: "FAV 2 Der - S [m]", field: "fav2der_S" },
-    { headerName: "FAV 3 - E [m]", field: "fav3_E" },
-    { headerName: "FAV 3 - T [m]", field: "fav3_T" },
-    { headerName: "FAV 3 - β [°]", field: "fav3_beta" },
-    { headerName: "FAV 3 - α [°]", field: "fav3_alpha" },
+    { 
+      headerName: "FAV 1 - D [m]", field: "fav1_D",
+      renderCell: (row: any) => formatCellValue(row.fav1_D, 2) 
+    },
+    { 
+      headerName: "FAV 1 - L [m]", field: "fav1_L",
+      renderCell: (row: any) => formatCellValue(row.fav1_L, 2)
+    },
+    { headerName: "FAV 2 izq - P [m]", field: "fav2izq_P",
+      renderCell: (row: any) => formatCellValue(row.fav2izq_P, 2)
+    },
+    { 
+      headerName: "FAV 2 izq - S [m]", field: "fav2izq_S",
+      renderCell: (row: any) => formatCellValue(row.fav2izq_S, 2)
+    },
+    { 
+      headerName: "FAV 2 Der - P [m]", field: "fav2der_P", 
+      renderCell: (row: any) => formatCellValue(row.fav2der_P, 2)
+    },
+    { 
+      headerName: "FAV 2 Der - S [m]", field: "fav2der_S",
+      renderCell: (row: any) => formatCellValue(row.fav2der_S, 2)
+    },
+    { 
+      headerName: "FAV 3 - E [m]", field: "fav3_E", 
+      renderCell: (row: any) => formatCellValue(row.fav3_E, 2)
+    },
+    { 
+      headerName: "FAV 3 - T [m]", field: "fav3_T",
+      renderCell: (row: any) => formatCellValue(row.fav3_T, 2)
+    },
+    { 
+      headerName: "FAV 3 - β [°]", field: "fav3_beta",
+      renderCell: (row: any) => formatCellValue(row.fav3_beta, 2)
+    },
+    { 
+      headerName: "FAV 3 - α [°]", field: "fav3_alpha",
+      renderCell: (row: any) => formatCellValue(row.fav3_alpha, 2)
+    },
   ];
 
   const ventanaMultiHeader = {
@@ -319,7 +346,6 @@ const RecintoView: React.FC = () => {
         { label: "Alto (H) [m]", rowSpan: 2 },
         { label: "Ancho (W) [m]", rowSpan: 2 },
         { label: "Marco", rowSpan: 2 },
-        { label: "Acciones Ventana", rowSpan: 2 },
         { label: "FAV 1", colSpan: 2 },
         { label: "FAV 2 izq", colSpan: 2 },
         { label: "FAV 2 Der", colSpan: 2 },

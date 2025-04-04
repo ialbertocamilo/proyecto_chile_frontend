@@ -245,23 +245,48 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
+  const [latitude, setLatitude] = useState<number>(0);
+  const [longitude, setLongitude] = useState<number>(0);
   const handleGeolocation = () => {
     if (!navigator.geolocation) {
-      console.error("Geolocalización no soportada.");
+      console.error("La geolocalización no es soportada en este navegador.");
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        setLatitude(latitude);
+        setLongitude(longitude);
         handleFormInputChange("latitude", latitude);
         handleFormInputChange("longitude", longitude);
-        console.log(`Lat: ${latitude}, Lon: ${longitude}`);
+        console.log(`Latitud: ${latitude}, Longitud: ${longitude}`);
+  
+        // Realizar solicitud de geocodificación inversa a Nominatim
+        axios
+          .get(`https://nominatim.openstreetmap.org/reverse`, {
+            params: {
+              format: "jsonv2",
+              lat: latitude,
+              lon: longitude,
+            },
+          })
+          .then((response) => {
+            // Extraer la dirección legible de la respuesta
+            const { display_name } = response.data;
+            // Actualizar el campo "address" del formulario
+            handleFormInputChange("address", display_name);
+            console.log("Dirección obtenida:", display_name);
+          })
+          .catch((error) => {
+            console.error("Error en la geocodificación inversa:", error);
+          });
       },
       () => {
-        console.error("No se pudo obtener la ubicación.");
+        console.error("No se pudo obtener la ubicación actual.");
       }
     );
   };
+  
 
   const enviarProyecto = async () => {
     setLoading(true);

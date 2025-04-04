@@ -10,9 +10,9 @@ import locationData from "../public/locationData";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import useAuth from "../src/hooks/useAuth";
 import Title from "../src/components/Title";
-import { AdminSidebar } from "../src/components/administration/AdminSidebar"; // Nuevo componente de sidebar
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Breadcrumb from "../src/components/common/Breadcrumb";
-import ProjectInfoHeader from "@/components/common/ProjectInfoHeader"; // Importamos el nuevo componente
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -36,6 +36,7 @@ interface FormData {
   built_surface: number;
   latitude: number;
   longitude: number;
+  address: string;
 }
 
 const initialFormData: FormData = {
@@ -53,6 +54,7 @@ const initialFormData: FormData = {
   built_surface: 0,
   latitude: -33.4589314398474,
   longitude: -70.6703553846175,
+  address: ""
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -82,9 +84,27 @@ const ProjectWorkflowPart1: React.FC = () => {
   // Obtener datos del localStorage para el header del proyecto
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const name = localStorage.getItem("project_name_view") || "";
-      const region = localStorage.getItem("project_department_view") || "";
-      setProjectHeaderData({ projectName: name, region: region });
+      const storedLatitude = localStorage.getItem("project_latitude");
+      const storedLongitude = localStorage.getItem("project_longitude");
+      const currentLatitude = formData.latitude.toString();
+      const currentLongitude = formData.longitude.toString();
+      
+      if (storedLatitude === currentLatitude && storedLongitude === currentLongitude) {
+        const storedAddress = localStorage.getItem("project_address");
+        if (storedAddress) {
+          setFormData((prev) => ({ ...prev, address: storedAddress }));
+        }
+      }
+    }
+  }, [formData.latitude, formData.longitude]);
+
+  // Cargar dirección almacenada en localStorage, si existe
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedAddress = localStorage.getItem("project_address");
+      if (storedAddress) {
+        setFormData((prev) => ({ ...prev, address: storedAddress }));
+      }
     }
   }, []);
 
@@ -133,6 +153,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           built_surface: projectData.built_surface || 0,
           latitude: projectData.latitude || -33.4589314398474,
           longitude: projectData.longitude || -70.6703553846175,
+          address: projectData.divisions?.address || ""
         });
       } catch (error: unknown) {
         console.error("Error fetching project data", error);
@@ -140,6 +161,34 @@ const ProjectWorkflowPart1: React.FC = () => {
     };
     fetchProjectData();
   }, [router.isReady, router.query.id]);
+
+  // Efecto para realizar geocodificación inversa a Nominatim cada vez que cambian las coordenadas.
+  useEffect(() => {
+    if (formData.latitude && formData.longitude) {
+      axios
+        .get(`https://nominatim.openstreetmap.org/reverse`, {
+          params: {
+            format: "jsonv2",
+            lat: formData.latitude,
+            lon: formData.longitude,
+          },
+        })
+        .then((response) => {
+          const { display_name } = response.data;
+          // Actualizamos la dirección si es diferente de la ya almacenada.
+          if (display_name && display_name !== formData.address) {
+            setFormData((prev) => {
+              const updatedData = { ...prev, address: display_name };
+              localStorage.setItem("project_address", display_name);
+              return updatedData;
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Error en la geocodificación inversa:", error);
+        });
+    }
+  }, [formData.latitude, formData.longitude]);
 
   // Función para obtener el id del proyecto desde localStorage
   const getProjectId = () => localStorage.getItem("project_id_view") || "";
@@ -172,7 +221,6 @@ const ProjectWorkflowPart1: React.FC = () => {
   const handleSidebarStepChange = (newStep: number) => {
     const projectId = getProjectId();
     if (newStep === 1 || newStep === 2) {
-      // Para pasos 1 y 2 usamos la misma ruta
       router.push(`/workflow-part1-view?id=${projectId}&step=${newStep}`);
     } else if (newStep === 6) {
       router.push(`/workflow-part2-view?id=${projectId}&step=4`);
@@ -213,234 +261,188 @@ const ProjectWorkflowPart1: React.FC = () => {
       <div>
         <div>{renderMainHeader()}</div>
         <Card>
-          <div>
-            <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
-              {/* Se utiliza el AdminSidebar para renderizar dinámicamente los pasos */}
-              <AdminSidebar activeStep={step} onStepChange={handleSidebarStepChange} steps={steps} />
-              <div className="content p-4" style={{ flex: 1 }}>
-                {step === 1 && (
-                  <>
-                    {/* Paso 1: Datos generales */}
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Nombre del proyecto</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.name_project}
-                          disabled={true}
-                        />
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Nombre del propietario</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.owner_name}
-                          disabled={true}
-                        />
-                      </div>
+          <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
+            {/* Sidebar para cambiar de step */}
+            <AdminSidebar activeStep={step} onStepChange={handleSidebarStepChange} steps={steps} />
+            <div className="content p-4" style={{ flex: 1 }}>
+              {step === 1 && (
+                <>
+                  {/* Paso 1: Datos generales */}
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Nombre del proyecto</label>
+                      <input type="text" className="form-control" value={formData.name_project} disabled />
                     </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Apellido del propietario</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.owner_lastname}
-                          disabled={true}
-                        />
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">País</label>
-                        <select className="form-control" value={formData.country} disabled={true}>
-                          <option value="">Seleccione un país</option>
-                          {Object.keys(locationData).map((country) => (
-                            <option key={country} value={country}>
-                              {country}
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Nombre del propietario</label>
+                      <input type="text" className="form-control" value={formData.owner_name} disabled />
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Apellido del propietario</label>
+                      <input type="text" className="form-control" value={formData.owner_lastname} disabled />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">País</label>
+                      <select className="form-control" value={formData.country} disabled>
+                        <option value="">Seleccione un país</option>
+                        {Object.keys(locationData).map((country) => (
+                          <option key={country} value={country}>
+                            {country}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Departamento</label>
+                      <select className="form-control" value={formData.department} disabled>
+                        <option value="">Seleccione un departamento</option>
+                        {formData.country &&
+                          Object.keys(locationData[formData.country]?.departments || {}).map((dept) => (
+                            <option key={dept} value={dept}>
+                              {dept}
                             </option>
                           ))}
-                        </select>
-                      </div>
+                      </select>
                     </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Provincia</label>
+                      <select className="form-control" value={formData.province} disabled>
+                        <option value="">Seleccione una provincia</option>
+                        {formData.country &&
+                          formData.department &&
+                          (locationData[formData.country]?.departments?.[formData.department] || []).map((prov) => (
+                            <option key={prov} value={prov}>
+                              {prov}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Distrito</label>
+                      <input type="text" className="form-control" value={formData.district} disabled />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Tipo de edificación</label>
+                      <select className="form-control" value={formData.building_type} disabled>
+                        <option value="">Seleccione un tipo de edificación</option>
+                        <option value="Unifamiliar">Unifamiliar</option>
+                        <option value="Duplex">Duplex</option>
+                        <option value="Vertical / Departamentos">Vertical / Departamentos</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Tipo de uso principal</label>
+                      <select className="form-control" value={formData.main_use_type} disabled>
+                        <option value="">Seleccione un tipo de uso</option>
+                        <option value="Viviendas">Viviendas</option>
+                        <option value="Oficinas">Oficinas</option>
+                        <option value="Terciarios">Terciarios</option>
+                      </select>
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Número de niveles</label>
+                      <input type="number" min="0" className="form-control" value={formData.number_levels} disabled />
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Número de viviendas / oficinas x nivel</label>
+                      <input type="number" min="0" className="form-control" value={formData.number_homes_per_level} disabled />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Superficie construida (m²)</label>
+                      <input type="number" min="0" className="form-control" value={formData.built_surface} disabled />
+                    </div>
+                  </div>
+                </>
+              )}
+              {step === 2 && (
+                <>
+                  {/* Paso 2: Ubicación */}
+                  <div
+                    style={{
+                      border: "1px solid #ccc",
+                      borderRadius: "8px",
+                      padding: "30px",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    {/* Fila para el input de búsqueda */}
                     <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Departamento</label>
-                        <select className="form-control" value={formData.department} disabled={true}>
-                          <option value="">Seleccione un departamento</option>
-                          {formData.country &&
-                            Object.keys(locationData[formData.country]?.departments || {}).map(
-                              (dept) => (
-                                <option key={dept} value={dept}>
-                                  {dept}
-                                </option>
-                              )
-                            )}
-                        </select>
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Provincia</label>
-                        <select className="form-control" value={formData.province} disabled={true}>
-                          <option value="">Seleccione una provincia</option>
-                          {formData.country &&
-                            formData.department &&
-                            (locationData[formData.country]?.departments?.[formData.department] || []).map(
-                              (prov) => (
-                                <option key={prov} value={prov}>
-                                  {prov}
-                                </option>
-                              )
-                            )}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Distrito</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.district}
-                          disabled={true}
-                        />
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Tipo de edificación</label>
-                        <select className="form-control" value={formData.building_type} disabled={true}>
-                          <option value="">Seleccione un tipo de edificación</option>
-                          <option value="Unifamiliar">Unifamiliar</option>
-                          <option value="Duplex">Duplex</option>
-                          <option value="Vertical / Departamentos">Vertical / Departamentos</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Tipo de uso principal</label>
-                        <select className="form-control" value={formData.main_use_type} disabled={true}>
-                          <option value="">Seleccione un tipo de uso</option>
-                          <option value="Viviendas">Viviendas</option>
-                          <option value="Oficinas">Oficinas</option>
-                          <option value="Terciarios">Terciarios</option>
-                        </select>
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Número de niveles</label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.number_levels}
-                          disabled={true}
-                        />
-                      </div>
-                    </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Número de viviendas / oficinas x nivel</label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.number_homes_per_level}
-                          disabled={true}
-                        />
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Superficie construida (m²)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.built_surface}
-                          disabled={true}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {step === 2 && (
-                  <>
-                    {/* Paso 2: Ubicación */}
-                    <div
-                      style={{
-                        border: "1px solid #ccc",
-                        borderRadius: "8px",
-                        padding: "30px",
-                        marginBottom: "20px",
-                      }}
-                    >
-                      <div className="row">
-                        <div className="col-12 mb-3">
-                          <div style={{ position: "relative" }}>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={locationSearch}
-                              onChange={(e) => setLocationSearch(e.target.value)}
-                              style={{ paddingLeft: "40px" }}
-                              disabled={true}
-                            />
-                            <span
-                              className="material-icons"
-                              style={{
-                                position: "absolute",
-                                left: "10px",
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                color: "#ccc",
-                              }}
-                            >
-                              search
-                            </span>
-                          </div>
-                        </div>
-                        <div className="col-12 col-md-8 mb-3">
-                          <div style={{ pointerEvents: "none" }}>
-                            <NoSSRInteractiveMap
-                              onLocationSelect={() => {}}
-                              initialLat={formData.latitude}
-                              initialLng={formData.longitude}
-                            />
-                          </div>
-                        </div>
-                        <div className="col-12 col-md-4">
-                          <label
-                            className="form-label"
+                      <div className="col-12">
+                        <div style={{ position: "relative" }}>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={locationSearch}
+                            onChange={(e) => setLocationSearch(e.target.value)}
+                            style={{ paddingLeft: "40px" }}
+                            disabled
+                          />
+                          <span
+                            className="material-icons"
                             style={{
-                              width: "100%",
-                              height: "20px",
-                              marginTop: "20px",
+                              position: "absolute",
+                              left: "10px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              color: "#ccc",
                             }}
                           >
-                            Datos de ubicaciones encontradas
-                          </label>
-                          <textarea
-                            className="form-control mb-2"
-                            rows={5}
-                            value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
-                            readOnly
-                            style={{
-                              width: "100%",
-                              height: "100px",
-                              marginTop: "0px",
-                            }}
+                            search
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Fila con dos columnas: mapa y detalles */}
+                    <div className="row">
+                      <div className="col-12 col-md-8 mb-3">
+                        <div style={{ pointerEvents: "none" }}>
+                          <NoSSRInteractiveMap
+                            onLocationSelect={() => {}}
+                            initialLat={formData.latitude}
+                            initialLng={formData.longitude}
                           />
                         </div>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center mt-4">
-                        <div className="d-flex">
-                          {/* Aquí podrías agregar botones o acciones adicionales si fuera necesario */}
+                      <div className="col-12 col-md-4">
+                        <div className="mb-3">
+                          <label className="form-label" style={{ width: "100%", height: "20px" }}>
+                            Datos de ubicaciones encontradas
+                          </label>
+                          <textarea
+                            className="form-control"
+                            rows={5}
+                            value={`Latitud: ${formData.latitude}, Longitud: ${formData.longitude}`}
+                            readOnly
+                            style={{ width: "100%", height: "100px" }}
+                          />
                         </div>
-                        <div className="d-flex">
-                          {/* Alternativa para otros botones */}
+                        <div className="mb-3">
+                          <label className="form-label" style={{ width: "100%", height: "20px" }}>
+                            Detalles de la ubicación
+                          </label>
+                          <textarea
+                            className="form-control"
+                            rows={5}
+                            value={`Dirección: ${formData.address}`}
+                            readOnly
+                            style={{ width: "100%", height: "100px" }}
+                          />
                         </div>
                       </div>
                     </div>
-                  </>
-                )}
-              </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </Card>

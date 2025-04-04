@@ -218,12 +218,33 @@ const ProjectWorkflowPart1: React.FC = () => {
         handleFormInputChange("latitude", latitude);
         handleFormInputChange("longitude", longitude);
         console.log(`Latitud: ${latitude}, Longitud: ${longitude}`);
+  
+        // Realizar solicitud de geocodificación inversa a Nominatim
+        axios
+          .get(`https://nominatim.openstreetmap.org/reverse`, {
+            params: {
+              format: "jsonv2",
+              lat: latitude,
+              lon: longitude,
+            },
+          })
+          .then((response) => {
+            // Extraer la dirección legible de la respuesta
+            const { display_name } = response.data;
+            // Actualizar el campo "address" del formulario
+            handleFormInputChange("address", display_name);
+            console.log("Dirección obtenida:", display_name);
+          })
+          .catch((error) => {
+            console.error("Error en la geocodificación inversa:", error);
+          });
       },
       () => {
         console.error("No se pudo obtener la ubicación actual.");
       }
     );
   };
+  
 
   const enviarProyecto = async () => {
     setLoading(true);

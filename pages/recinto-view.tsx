@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import TablesParameters from "@/components/tables/TablesParameters";
 import Card from "../src/components/common/Card";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
-import Breadcrumb from "../src/components/common/Breadcrumb";
+import Breadcrumb from "@/components/common/Breadcrumb";
 import Title from "../src/components/Title";
+import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 
 interface Muro {
   id: number;
@@ -112,6 +113,46 @@ interface DoorData {
   fav_id: number | null;
 }
 
+// Nueva cabecera: Vista de Desarrollo de proyecto
+const HeaderVistaDesarrollo: React.FC = () => {
+  const [projectName, setProjectName] = useState("");
+  const [projectDepartment, setProjectDepartment] = useState("");
+
+  useEffect(() => {
+    const name = localStorage.getItem("project_name_view") || "";
+    const department = localStorage.getItem("project_department_view") || "";
+    setProjectName(name);
+    setProjectDepartment(department);
+  }, []);
+
+  return (
+    <Card>
+      <h3>
+        <Title text="Vista de Desarrollo de proyecto" />
+      </h3>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <ProjectInfoHeader projectName={projectName} region={projectDepartment} />
+        <Breadcrumb
+          items={[
+            {
+              title: "Vista De Proyecto",
+              href: "/",
+              active: true,
+            },
+          ]}
+        />
+      </div>
+    </Card>
+  );
+};
+
 const RecintoView: React.FC = () => {
   const [walls, setWalls] = useState<Muro[]>([]);
   const [windows, setWindows] = useState<Ventana[]>([]);
@@ -143,54 +184,60 @@ const RecintoView: React.FC = () => {
     { headerName: "Caracteristicas", field: "characteristics" },
     { headerName: "Ángulo Azimut", field: "angulo_azimut" },
     { headerName: "Orientación", field: "orientation" },
-    { 
-      headerName: "Área [m²]", 
+    {
+      headerName: "Área [m²]",
       field: "area",
       renderCell: (row: any) => formatCellValue(row.area, 2)
     },
-    { 
-      headerName: "U [W/m²K]", 
+    {
+      headerName: "U [W/m²K]",
       field: "u",
       renderCell: (row: any) => formatCellValue(row.u, 2)
     },
   ];
 
   const puentesColumns = [
-    { 
-      headerName: "L[m]", 
+    {
+      headerName: "L[m]",
       field: "po1_length",
       renderCell: (row: any) => formatCellValue(row.po1_length, 2)
     },
-    { headerName: "Elemento", field: "po1_id_element", 
-      renderCell: (row: any) => formatCellValue(row.po1_id_element) },
-    { 
-      headerName: "L[m]", 
+    {
+      headerName: "Elemento", field: "ppo1_element_namet",
+      renderCell: (row: any) => formatCellValue(row.po1_element_name)
+    },
+    {
+      headerName: "L[m]",
       field: "po2_length",
       renderCell: (row: any) => formatCellValue(row.po2_length, 2)
     },
-    { headerName: "Elemento", field: "po2_id_element",
+    {
+      headerName: "Elemento", field: "po2_id_element",
       renderCell: (row: any) => formatCellValue(row.po2_id_element)
-     },
-    { 
-      headerName: "L[m]", 
+    },
+    {
+      headerName: "L[m]",
       field: "po3_length",
       renderCell: (row: any) => formatCellValue(row.po3_length, 2)
     },
-    { headerName: "Elemento", field: "po3_id_element", 
-      renderCell: (row: any) => formatCellValue(row.po3_id_element, 2)  },
-    { 
-      headerName: "L[m]", 
+    {
+      headerName: "Elemento", field: "po3_id_element",
+      renderCell: (row: any) => formatCellValue(row.po3_id_element, 2)
+    },
+    {
+      headerName: "L[m]",
       field: "po4_length",
       renderCell: (row: any) => formatCellValue(row.po4_length, 2)
     },
-    { 
-      headerName: "e Aislación [cm]", 
+    {
+      headerName: "e Aislación [cm]",
       field: "po4_e_aislacion",
       renderCell: (row: any) => formatCellValue(row.po4_e_aislacion, 2)
     },
-    { headerName: "Elemento", field: "po4_id_element",
+    {
+      headerName: "Elemento", field: "po4_id_element",
       renderCell: (row: any) => formatCellValue(row.po4_id_element, 2)
-     },
+    },
   ];
 
   const mergedColumns = [...murosColumns, ...puentesColumns];
@@ -231,69 +278,31 @@ const RecintoView: React.FC = () => {
     { headerName: "Tipo de Cierre", field: "tipoCierre" },
     { headerName: "Posición Ventanal", field: "posicionVentanal" },
     { headerName: "Aislación Con/sin retorno", field: "aislacion" },
-    { 
-      headerName: "Alto (H) [m]", 
+    {
+      headerName: "Alto (H) [m]",
       field: "alto",
       renderCell: (row: any) => formatCellValue(row.alto, 2)
     },
-    { 
-      headerName: "Ancho (W) [m]", 
+    {
+      headerName: "Ancho (W) [m]",
       field: "ancho",
       renderCell: (row: any) => formatCellValue(row.ancho, 2)
     },
-    { headerName: "Marco", field: "marco",
+    {
+      headerName: "Marco", field: "marco",
       renderCell: (row: any) => formatCellValue(row.marco, 2)
-     },
-    { 
-      headerName: "FAV 1 - D [m]", 
-      field: "fav1_D",
-      renderCell: (row: any) => formatCellValue(row.fav1_D, 2)
     },
-    { 
-      headerName: "FAV 1 - L [m]", 
-      field: "fav1_L",
-      renderCell: (row: any) => formatCellValue(row.fav1_L, 2)
-    },
-    { 
-      headerName: "FAV 2 izq - P [m]", 
-      field: "fav2izq_P",
-      renderCell: (row: any) => formatCellValue(row.fav2izq_P, 2)
-    },
-    { 
-      headerName: "FAV 2 izq - S [m]", 
-      field: "fav2izq_S",
-      renderCell: (row: any) => formatCellValue(row.fav2izq_S, 2)
-    },
-    { 
-      headerName: "FAV 2 Der - P [m]", 
-      field: "fav2der_P",
-      renderCell: (row: any) => formatCellValue(row.fav2der_P, 2)
-    },
-    { 
-      headerName: "FAV 2 Der - S [m]", 
-      field: "fav2der_S",
-      renderCell: (row: any) => formatCellValue(row.fav2der_S, 2)
-    },
-    { 
-      headerName: "FAV 3 - E [m]", 
-      field: "fav3_E",
-      renderCell: (row: any) => formatCellValue(row.fav3_E, 2)
-    },
-    { 
-      headerName: "FAV 3 - T [m]", 
-      field: "fav3_T",
-      renderCell: (row: any) => formatCellValue(row.fav3_T, 2)
-    },
-    { 
-      headerName: "FAV 3 - β [°]", 
-      field: "fav3_beta",
-      renderCell: (row: any) => formatCellValue(row.fav3_beta, 2)
-    },
-    { 
-      headerName: "FAV 3 - α [°]", 
-      field: "fav3_alpha",
-      renderCell: (row: any) => formatCellValue(row.fav3_alpha, 2)
-    },
+    { headerName: "Acciones Ventana", field: "acciones" },
+    { headerName: "FAV 1 - D [m]", field: "fav1_D" },
+    { headerName: "FAV 1 - L [m]", field: "fav1_L" },
+    { headerName: "FAV 2 izq - P [m]", field: "fav2izq_P" },
+    { headerName: "FAV 2 izq - S [m]", field: "fav2izq_S" },
+    { headerName: "FAV 2 Der - P [m]", field: "fav2der_P" },
+    { headerName: "FAV 2 Der - S [m]", field: "fav2der_S" },
+    { headerName: "FAV 3 - E [m]", field: "fav3_E" },
+    { headerName: "FAV 3 - T [m]", field: "fav3_T" },
+    { headerName: "FAV 3 - β [°]", field: "fav3_beta" },
+    { headerName: "FAV 3 - α [°]", field: "fav3_alpha" },
   ];
 
   const ventanaMultiHeader = {
@@ -337,63 +346,63 @@ const RecintoView: React.FC = () => {
     { headerName: "Características", field: "characteristics" },
     { headerName: "Ángulo Azimut", field: "anguloAzimut" },
     { headerName: "Orientación", field: "orientacion" },
-    { 
-      headerName: "Alto [m]", 
+    {
+      headerName: "Alto [m]",
       field: "high",
       renderCell: (row: any) => formatCellValue(row.high, 2)
     },
-    { 
-      headerName: "Ancho [m]", 
+    {
+      headerName: "Ancho [m]",
       field: "broad",
       renderCell: (row: any) => formatCellValue(row.broad, 2)
     },
-    { 
-      headerName: "D [m]", 
+    {
+      headerName: "D [m]",
       field: "fav1D",
       renderCell: (row: any) => formatCellValue(row.fav1D, 2)
     },
-    { 
-      headerName: "L [m]", 
+    {
+      headerName: "L [m]",
       field: "fav1L",
       renderCell: (row: any) => formatCellValue(row.fav1L, 2)
     },
-    { 
-      headerName: "P [m]", 
+    {
+      headerName: "P [m]",
       field: "fav2izqP",
       renderCell: (row: any) => formatCellValue(row.fav2izqP, 2)
     },
-    { 
-      headerName: "S [m]", 
+    {
+      headerName: "S [m]",
       field: "fav2izqS",
       renderCell: (row: any) => formatCellValue(row.fav2izqS, 2)
     },
-    { 
-      headerName: "P [m]", 
+    {
+      headerName: "P [m]",
       field: "fav2DerP",
       renderCell: (row: any) => formatCellValue(row.fav2DerP, 2)
     },
-    { 
-      headerName: "S [m]", 
+    {
+      headerName: "S [m]",
       field: "fav2DerS",
       renderCell: (row: any) => formatCellValue(row.fav2DerS, 2)
     },
-    { 
-      headerName: "E [m]", 
+    {
+      headerName: "E [m]",
       field: "fav3E",
       renderCell: (row: any) => formatCellValue(row.fav3E, 2)
     },
-    { 
-      headerName: "T [m]", 
+    {
+      headerName: "T [m]",
       field: "fav3T",
       renderCell: (row: any) => formatCellValue(row.fav3T, 2)
     },
-    { 
-      headerName: "β [°]", 
+    {
+      headerName: "β [°]",
       field: "fav3Beta",
       renderCell: (row: any) => formatCellValue(row.fav3Beta, 2)
     },
-    { 
-      headerName: "α [°]", 
+    {
+      headerName: "α [°]",
       field: "fav3Alpha",
       renderCell: (row: any) => formatCellValue(row.fav3Alpha, 2)
     },
@@ -432,13 +441,13 @@ const RecintoView: React.FC = () => {
   const roofColumns = [
     { headerName: "Techos", field: "techos" },
     { headerName: "Características espacio contiguo al elemento", field: "caracteristicas" },
-    { 
-      headerName: "Área [m²]", 
+    {
+      headerName: "Área [m²]",
       field: "area",
       renderCell: (row: any) => formatCellValue(row.area, 2)
     },
-    { 
-      headerName: "U [W/m²K]", 
+    {
+      headerName: "U [W/m²K]",
       field: "u",
       renderCell: (row: any) => formatCellValue(row.u, 2)
     },
@@ -727,21 +736,14 @@ const RecintoView: React.FC = () => {
 
   return (
     <div>
-      <Card>
-        <div className="d-flex align-items-center w-100">
-          <Title text="Administrar proyectos" />
-          <Breadcrumb
-            items={[
-              { title: "Administrar proyectos", href: "/project-status", active: true }
-            ]}
-          />
-        </div>
-      </Card>
+      {/* Nueva cabecera: Vista de Desarrollo de proyecto */}
+      <HeaderVistaDesarrollo />
 
       {/* Muros y Puentes Térmicos */}
       <Card>
         <section>
-        <Title text="Muros y Puentes Térmicos" variant="subtitle"/>
+          <div style={{ marginTop: "10px" }}>
+            <Title text="Muros y Puentes Térmicos" variant="subtitle" /></div>
           {walls.length > 0 ? (
             <TablesParameters
               data={walls.map(wall => {
@@ -757,12 +759,14 @@ const RecintoView: React.FC = () => {
         </section>
       </Card>
 
+
       {/* Ventanas */}
       <Card>
         <section>
-          <Title text="Ventanas" variant="subtitle"/>
+        <div style={{ marginTop: "10px" }}>
+          <Title text="Ventanas" variant="subtitle" /></div>
           {windows.length > 0 ? (
-            <TablesParameters 
+            <TablesParameters
               data={windows.map(win => ({
                 id: win.id,
                 tipoVano: win.window_name,
@@ -801,12 +805,13 @@ const RecintoView: React.FC = () => {
       {/* Puertas */}
       <Card>
         <section>
-          <Title text="Puertas" variant="subtitle" />
+        <div style={{ marginTop: "10px" }}>
+          <Title text="Puertas" variant="subtitle" /></div>
           {doorTableData.length > 0 ? (
-            <TablesParameters 
-              data={doorTableData} 
-              columns={doorColumnsNew} 
-              multiHeader={doorMultiHeader} 
+            <TablesParameters
+              data={doorTableData}
+              columns={doorColumnsNew}
+              multiHeader={doorMultiHeader}
             />
           ) : (
             <p>No hay puertas creadas.</p>
@@ -817,11 +822,12 @@ const RecintoView: React.FC = () => {
       {/* Techumbre - tabla simplificada */}
       <Card>
         <section>
-          <Title text="Techumbre" variant="subtitle"/>
+        <div style={{ marginTop: "10px" }}>
+          <Title text="Techumbre" variant="subtitle" /></div>
           {roofData.length > 0 ? (
-            <TablesParameters 
-              data={roofData} 
-              columns={roofColumns} 
+            <TablesParameters
+              data={roofData}
+              columns={roofColumns}
             />
           ) : (
             <p>No hay techumbre creada.</p>
@@ -832,11 +838,12 @@ const RecintoView: React.FC = () => {
       {/* Pisos */}
       <Card>
         <section>
-          <Title text="Pisos" variant="subtitle"/>
+        <div style={{ marginTop: "10px" }}>
+          <Title text="Pisos" variant="subtitle" /></div>
           {floorTableData.length > 0 ? (
-            <TablesParameters 
-              data={floorTableData} 
-              columns={floorColumns} 
+            <TablesParameters
+              data={floorTableData}
+              columns={floorColumns}
             />
           ) : (
             <p>No hay pisos creados.</p>

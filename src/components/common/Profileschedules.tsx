@@ -7,7 +7,7 @@ interface ScheduleData {
   [key: string]: number | string | null;
 }
 
-const ProfileSchedules: React.FC = () => {
+const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => {
   const [data, setData] = useState<ScheduleData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [perfilId, setPerfilId] = useState<number | null>(null);
@@ -52,9 +52,9 @@ const ProfileSchedules: React.FC = () => {
     fetchData();
   }, [typeSelect, perfilId]);
 
-  // Aquí definimos el eje X como números del 1 al 24
+  // Definimos el eje X como números del 1 al 24
   const hours = Array.from({ length: 24 }, (_, i) => (i + 1).toString());
-  const values = data ? hours.map((_, i) => data[`hour_${i + 1}`] as number) : [];
+  const values = data ? hours.map((_, i) => data[`hour_${i + 1}`] ?? 0) : [];
 
   const option = {
     tooltip: { trigger: 'axis' },
@@ -72,8 +72,8 @@ const ProfileSchedules: React.FC = () => {
   const updateSchedule = async (newData: ScheduleData) => {
     const token = localStorage.getItem("token");
     try {
-      // Se envía la actualización mediante PUT
-      await fetch(`${constantUrlApiEndpoint}/${typeSelect}/schedule-update/${perfilId}`, {
+      // Ejecuta la petición PUT y espera su respuesta
+      const putResponse = await fetch(`${constantUrlApiEndpoint}/${typeSelect}/schedule-update/${perfilId}`, {
         method: 'PUT',
         headers: {
           'accept': 'application/json',
@@ -83,7 +83,14 @@ const ProfileSchedules: React.FC = () => {
         body: JSON.stringify(newData)
       });
   
-      // Luego se realiza una petición GET para obtener los datos guardados actualizados
+      console.log("PUT response:", putResponse);
+      
+      if (!putResponse.ok) {
+        console.error("Error en el PUT:", putResponse.status, putResponse.statusText);
+        return;
+      }
+  
+      // Si el PUT fue exitoso, se procede a hacer la petición GET para traer los datos actualizados
       const response = await fetch(`${constantUrlApiEndpoint}/${typeSelect}/schedule/${perfilId}`, {
         headers: {
           'accept': 'application/json',
@@ -93,11 +100,14 @@ const ProfileSchedules: React.FC = () => {
       const updatedResult = await response.json();
       console.log("Datos actualizados", updatedResult);
       setData(updatedResult);
+      // Llamamos al callback onUpdate si está definido
+      if (onUpdate) {
+        onUpdate();
+      }
     } catch (error) {
       console.error("Error actualizando datos", error);
     }
   };
-  
 
   const onChartReady = (chart: any) => {
     chart.on('click', function (params: any) {
@@ -111,12 +121,21 @@ const ProfileSchedules: React.FC = () => {
 
   const handleModalConfirm = () => {
     if (currentHourIndex === null) return;
-
+  
+    // Construir el objeto completo usando los valores actuales de 'data' o 0 por defecto.
+    const completeSchedule: ScheduleData = {};
+    for (let i = 1; i <= 24; i++) {
+      completeSchedule[`hour_${i}`] = data && data[`hour_${i}`] !== undefined ? data[`hour_${i}`] as number : 0;
+    }
+    // Sobrescribir la hora modificada con el nuevo valor.
+    completeSchedule[`hour_${currentHourIndex + 1}`] = inputValue;
+    
+    // Verifica en consola que completeSchedule tenga los valores esperados
+    console.log("completeSchedule:", completeSchedule);
+    
+    // Actualiza el gráfico con el nuevo valor
     const newValues = [...values];
     newValues[currentHourIndex] = inputValue;
-    const newData = { ...data };
-    newData[`hour_${currentHourIndex + 1}`] = inputValue;
-
     if (chartRef.current) {
       const chartInstance = chartRef.current.getEchartsInstance();
       chartInstance.setOption({
@@ -125,13 +144,15 @@ const ProfileSchedules: React.FC = () => {
         }]
       });
     }
-
-    updateSchedule(newData);
-
+  
+    // Envía el objeto completo al servidor
+    updateSchedule(completeSchedule);
+  
     setShowModal(false);
     setCurrentHourIndex(null);
     setCurrentValue(null);
   };
+  
 
   return (
     <div className="apache-container">
@@ -178,30 +199,30 @@ const ProfileSchedules: React.FC = () => {
             </label>
             <br />
             <div className="d-flex align-items-center">
-            <input
-              id="valueInput"
-              type="number"
-              min="0"
-              max="100"
-              className="border border-gray-300 rounded p-2 text-gray-800 text-center"
-              value={inputValue}
-              onChange={(e) => {
-                const value = Number(e.target.value);
-                // Si el valor supera 100, se limita a 100
-                if (value > 100) {
-                  setInputValue(100);
-                } else {
-                  setInputValue(value);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === '-') {
-                  e.preventDefault();
-                }
-              }}
-            />
-            <span style={{ marginLeft: '10px' }}>%</span>
-          </div>
+              <input
+                id="valueInput"
+                type="number"
+                min="0"
+                max="100"
+                className="border border-gray-300 rounded p-2 text-gray-800 text-center"
+                value={inputValue}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  // Si el valor supera 100, se limita a 100
+                  if (value > 100) {
+                    setInputValue(100);
+                  } else {
+                    setInputValue(value);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === '-') {
+                    e.preventDefault();
+                  }
+                }}
+              />
+              <span style={{ marginLeft: '10px' }}>%</span>
+            </div>
           </div>
         </ModalCreate>
       )}

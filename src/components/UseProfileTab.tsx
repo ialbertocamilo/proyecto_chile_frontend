@@ -315,8 +315,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           caudal_impuesto: {
             vent_noct: parseFloat(editingRow.values.caudalImpuestoVentNoct),
           },
-          infiltraciones: 0,
-          recuperador_calor: 0,
+          infiltraciones: parseFloat(editingRow.values.infiltraciones),
+          recuperador_calor: parseFloat(editingRow.values.recuperadorCalor),
         },
       };
     } else if (tab === "iluminacion") {
@@ -379,7 +379,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   // Funciones para construir cada fila de tabla según el tipo de dato
   const mapVentilacionRow = (enclosure: any) => {
-    const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
+    const isDefault =
+      enclosure.building_conditions[0]?.created_status === "default" ||
       enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions[0]?.details || {};
     const minSalubridad = condition.cauldal_min_salubridad || {};
@@ -395,6 +396,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           ida: minSalubridad.ida || "N/A",
           ocupacion: minSalubridad.ocupacion || "N/A",
           caudalImpuestoVentNoct: (condition.caudal_impuesto?.vent_noct ?? 0).toFixed(2),
+          infiltraciones: condition.infiltraciones ?? 0,
+          recuperadorCalor: condition.recuperador_calor ?? 0,
         };
 
     return {
@@ -477,6 +480,50 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) : (
         formatDisplayValue(values.caudalImpuestoVentNoct)
       ),
+      // Nueva columna: Infiltraciones [1/h]
+      infiltraciones: isEditing ? (
+        <input
+          type="number"
+          min="0"
+          className="form-control form-control-sm"
+          value={editingRow.values.infiltraciones}
+          onChange={(e) => {
+            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            handleEditChange("infiltraciones", e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "-") e.preventDefault();
+          }}
+        />
+      ) : !isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {formatDisplayValue(values.infiltraciones)}
+        </span>
+      ) : (
+        formatDisplayValue(values.infiltraciones)
+      ),
+      // Nueva columna: Recuperador de calor [%]
+      recuperadorCalor: isEditing ? (
+        <input
+          type="number"
+          min="0"
+          className="form-control form-control-sm"
+          value={editingRow.values.recuperadorCalor}
+          onChange={(e) => {
+            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            handleEditChange("recuperadorCalor", e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "-") e.preventDefault();
+          }}
+        />
+      ) : !isDefault ? (
+        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+          {formatDisplayValue(values.recuperadorCalor)}
+        </span>
+      ) : (
+        formatDisplayValue(values.recuperadorCalor)
+      ),
       accion: isEditing ? (
         <ActionButtonsConfirm
           onAccept={() => handleSave("ventilacion", enclosure)}
@@ -489,6 +536,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
               ida: minSalubridad.ida || "",
               ocupacion: minSalubridad.ocupacion || "",
               caudalImpuestoVentNoct: condition.caudal_impuesto?.vent_noct || 0,
+              infiltraciones: condition.infiltraciones || 0,
+              recuperadorCalor: condition.recuperador_calor || 0,
             })
           }
           onDelete={() => handleDeleteClick("ventilacion", enclosure.id, enclosure.name)}
@@ -498,7 +547,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   };
 
   const mapIluminacionRow = (enclosure: any) => {
-    const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
+    const isDefault =
+      enclosure.building_conditions[0]?.created_status === "default" ||
       enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions.find(
       (cond: any) => cond.type === "lightning"
@@ -598,7 +648,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   };
 
   const mapCargasRow = (enclosure: any) => {
-    const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
+    const isDefault =
+      enclosure.building_conditions[0]?.created_status === "default" ||
       enclosure.building_conditions[0]?.created_status === "global";
     const condition = enclosure.building_conditions[0]?.details || {};
     const isEditing =
@@ -764,7 +815,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   };
 
   const mapHorarioRow = (enclosure: any) => {
-    const isDefault = enclosure.building_conditions[0]?.created_status === "default" ||
+    const isDefault =
+      enclosure.building_conditions[0]?.created_status === "default" ||
       enclosure.building_conditions[0]?.created_status === "global";
     const details = enclosure.building_conditions[0]?.details || {};
     const recinto = details.recinto || { climatizado: "N/A", desfase_clima: 0 };
@@ -966,6 +1018,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 { headerName: "IDA", field: "ida" },
                 { headerName: "Ocupacion", field: "ocupacion" },
                 { headerName: "Caudal Impuesto Vent Noct", field: "caudalImpuestoVentNoct" },
+                { headerName: "Infiltraciones [1/h]", field: "infiltraciones" },
+                { headerName: "Recuperador de calor [%]", field: "recuperadorCalor" },
                 { headerName: "Accion", field: "accion", headerStyle: { width: "100px" } },
               ]}
               data={filteredVentilacion}
@@ -1069,7 +1123,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         modalStyle={{ maxWidth: "50vw", maxHeight: "90vh", padding: "32px" }}
         hideFooter={true}
       >
-        <Profileschedules />
+        <Profileschedules onUpdate={() => setRefresh((prev) => prev + 1)} />
       </ModalCreate>
     </div>
   );

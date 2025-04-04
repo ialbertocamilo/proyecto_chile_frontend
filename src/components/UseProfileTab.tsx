@@ -746,15 +746,17 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             }
             onDelete={() => handleDeleteClick("cargas", enclosure.id, enclosure.name)}
           />
-          <CustomButton
-            className="btn-table-list"
-            onClick={() => {
-              localStorage.setItem("perfil_id", enclosure.id);
-              setIsProfileSchedulesModalOpen(true);
-            }}
-          >
-            <i className="fa fa-clock-o"></i>
-          </CustomButton>
+          {rolUser !== "admin" && (
+            <CustomButton
+              className="btn-table-list"
+              onClick={() => {
+                localStorage.setItem("perfil_id", enclosure.id);
+                setIsProfileSchedulesModalOpen(true);
+              }}
+            >
+              <i className="fa fa-clock-o"></i>
+            </CustomButton>
+          )}
         </div>
       ),
     };

@@ -1,9 +1,9 @@
 import { useApi } from "@/hooks/useApi";
-import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { LocationSearchInput } from "./LocationSearchInput";
+import CustomButton from "./common/CustomButton";
 
 const ClimateFileUploader: React.FC = () => {
     const [uploadedCsvFiles, setUploadedCsvFiles] = useState<File[]>([]);
@@ -31,9 +31,11 @@ const ClimateFileUploader: React.FC = () => {
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
-        accept: { "text/csv": [".csv"] },
+        accept: { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"] },
         maxSize: 50 * 1024 * 1024,
     });
+
+    const { post } = useApi()
 
     const uploadFile = async (file: File) => {
         if (!selectedLocation) {
@@ -52,27 +54,23 @@ const ClimateFileUploader: React.FC = () => {
         console.log('Thermal zone:', thermalZone);
         try {
             const queryParams = new URLSearchParams({
-            latitude: selectedLocation.Position[1],
-            longitude: selectedLocation.Position[0],
-            zone: thermalZone
+                latitude: selectedLocation.Position[1],
+                longitude: selectedLocation.Position[0],
+                zone: thermalZone
             });
 
-            const formData = new FormData();
-            formData.append("file", file);
 
-            const response = await fetch(`${constantUrlApiEndpoint}/upload-by-coordinates?${queryParams}`, {
-            method: "POST",
-            body: formData,
+            const response = await post(`/upload-by-coordinates?${queryParams}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
             });
 
-            if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Error al subir el archivo.");
+            if (!response) {
+                throw new Error( "Error al subir el archivo.");
             }
-
-            const result = await response.json();
             notify("Archivo subido exitosamente.");
-            setWeatherFiles([...weatherFiles, result.metadata]);
+            setWeatherFiles([...weatherFiles, response.metadata]);
         } catch (error: unknown) {
             console.error("Error uploading file:", error);
             if (error instanceof Error) {
@@ -129,7 +127,7 @@ const ClimateFileUploader: React.FC = () => {
                     style={{ border: "2px dashed gray", padding: "20px", textAlign: "center" }}
                 >
                     <input {...getInputProps()} />
-                    {isDragActive ? "Suelta aquí el archivo..." : "Arrastra o haz clic para subir CSV..."}
+                    {isDragActive ? "Suelta aquí el archivo..." : "Arrastra o haz clic para subir archivo excel..."}
                 </div>
             </div>
             <div>
@@ -137,12 +135,15 @@ const ClimateFileUploader: React.FC = () => {
                     <div key={index}>
                         <strong>{file.name}</strong>
                         <br />
-                        <button
-                            className="btn btn-primary btn-sm ml-2"
+                        <CustomButton
+                            className="btn-table-list"
                             onClick={() => uploadFile(file)}
+                            title="Subir archivo"
                         >
-                            Subir
-                        </button>
+                            <span className="material-icons" style={{ fontSize: "24px" }}>
+                                upload_file
+                            </span> Subir archivo
+                        </CustomButton>
                     </div>
                 ))}
             </div>

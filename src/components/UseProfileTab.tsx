@@ -581,7 +581,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) : (
         enclosure.name
       ),
-      potenciaBase: isEditing ? (
+      potenciaBase: (isEditing && !isDefault) ? (
         <input
           type="number"
           min="0"
@@ -595,12 +595,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             if (e.key === "-") e.preventDefault();
           }}
         />
-      ) : !isDefault ? (
-        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+      ) : (
+        <span style={ !isDefault ? { color: primaryColor, fontWeight: "bold" } : {} }>
           {formatDisplayValue(values.potenciaBase)}
         </span>
-      ) : (
-        formatDisplayValue(values.potenciaBase)
       ),
       estrategia: isEditing ? (
         <select
@@ -681,7 +679,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) : (
         enclosure.name
       ),
-      usuarios: isEditing ? (
+      // Para las siguientes columnas se muestra el input en modo edición solo si la fila no es default.
+      usuarios: (isEditing && !isDefault) ? (
         <input
           type="number"
           min="0"
@@ -695,14 +694,12 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             if (e.key === "-") e.preventDefault();
           }}
         />
-      ) : !isDefault ? (
-        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+      ) : (
+        <span style={ !isDefault ? { color: primaryColor, fontWeight: "bold" } : {} }>
           {formatDisplayValue(values.usuarios)}
         </span>
-      ) : (
-        formatDisplayValue(values.usuarios)
       ),
-      calorLatente: isEditing ? (
+      calorLatente: (isEditing && !isDefault) ? (
         <input
           type="number"
           min="0"
@@ -716,14 +713,12 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             if (e.key === "-") e.preventDefault();
           }}
         />
-      ) : !isDefault ? (
-        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+      ) : (
+        <span style={ !isDefault ? { color: primaryColor, fontWeight: "bold" } : {} }>
           {formatDisplayValue(values.calorLatente)}
         </span>
-      ) : (
-        formatDisplayValue(values.calorLatente)
       ),
-      calorSensible: isEditing ? (
+      calorSensible: (isEditing && !isDefault) ? (
         <input
           type="number"
           min="0"
@@ -737,14 +732,12 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             if (e.key === "-") e.preventDefault();
           }}
         />
-      ) : !isDefault ? (
-        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+      ) : (
+        <span style={ !isDefault ? { color: primaryColor, fontWeight: "bold" } : {} }>
           {formatDisplayValue(values.calorSensible)}
         </span>
-      ) : (
-        formatDisplayValue(values.calorSensible)
       ),
-      equipos: isEditing ? (
+      equipos: (isEditing && !isDefault) ? (
         <input
           type="number"
           min="0"
@@ -758,12 +751,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             if (e.key === "-") e.preventDefault();
           }}
         />
-      ) : !isDefault ? (
-        <span style={{ color: primaryColor, fontWeight: "bold" }}>
+      ) : (
+        <span style={ !isDefault ? { color: primaryColor, fontWeight: "bold" } : {} }>
           {formatDisplayValue(values.equipos)}
         </span>
-      ) : (
-        formatDisplayValue(values.equipos)
       ),
       funcionamientoSemanal: isEditing ? (
         <input

@@ -376,7 +376,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const url = `${constantUrlApiEndpoint}/building_condition/${enclosure.id}/update?section=${rolUser}`;
 
     fetch(url, {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         accept: "application/json",
         Authorization: `Bearer ${token}`,

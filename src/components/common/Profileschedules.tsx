@@ -101,7 +101,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     const token = localStorage.getItem("token");
     try {
       const putResponse = await fetch(`${constantUrlApiEndpoint}/${typeSelect}/schedule-update/${perfilId}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'accept': 'application/json',
           'Content-Type': 'application/json',

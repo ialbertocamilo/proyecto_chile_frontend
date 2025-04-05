@@ -661,13 +661,13 @@ const DataEntryPage: React.FC = () => {
         prev.map((el) =>
           el.id === element.id
             ? {
-              ...element,
-              fm: fmFraction,
-              atributs: {
-                ...element.atributs,
-                porcentaje_vidrio: porcentajeVidrioFraction,
-              },
-            }
+                ...element,
+                fm: fmFraction,
+                atributs: {
+                  ...element.atributs,
+                  porcentaje_vidrio: porcentajeVidrioFraction,
+                },
+              }
             : el
         )
       );
@@ -682,6 +682,27 @@ const DataEntryPage: React.FC = () => {
       } else {
         notify("Error al actualizar la puerta");
       }
+    }
+  };
+
+  const fetchEnclosureClone = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const response = await axios.post(
+        `${constantUrlApiEndpoint}/enclosures/clone`,
+        {}, // Agrega el body si es necesario
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Respuesta del endpoint:", response.data);
+      // Procesa la respuesta según necesites
+    } catch (error) {
+      console.error("Error al consultar el endpoint:", error);
     }
   };
 
@@ -700,7 +721,14 @@ const DataEntryPage: React.FC = () => {
         fetchAllWindowsForDoor();
       }
     }
+    
   }, [step, modalElementType, fetchElements, fetchAllWindowsForDoor]);
+
+  useEffect(() => {
+    if (step === 6) {
+      fetchEnclosureClone();
+    }
+  }, [step, fetchEnclosureClone]);
 
   const materialIsValid =
     newMaterialData.name.trim() !== "" &&
@@ -1580,12 +1608,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_vidrio: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_vidrio: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1601,12 +1629,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          fs_vidrio: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            fs_vidrio: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1621,12 +1649,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          clousure_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            clousure_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1648,12 +1676,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          frame_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            frame_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1741,12 +1769,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_puerta_opaca: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_puerta_opaca: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1765,13 +1793,13 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          ventana_id: selectedId ? parseInt(selectedId) : 0,
-                          name_ventana: selectedWindow ? selectedWindow.name_element : "",
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            ventana_id: selectedId ? parseInt(selectedId) : 0,
+                            name_ventana: selectedWindow ? selectedWindow.name_element : "",
+                          },
+                        }
                       : prev
                   );
                 }}
@@ -1802,12 +1830,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          porcentaje_vidrio: clamped,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: clamped,
+                          },
+                        }
                       : prev
                   );
                 }}

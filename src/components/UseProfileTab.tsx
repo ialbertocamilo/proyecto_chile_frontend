@@ -158,14 +158,30 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       },
       body: JSON.stringify({ name: newRecintoName }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          return res.json().then((errorData) => {
+            throw errorData;
+          });
+        }
+        return res.json();
+      })
       .then((data) => {
         notify("Recinto creado exitosamente");
         setIsCreateModalOpen(false);
         setNewRecintoName("");
         setRefresh((prev) => prev + 1);
       })
-      .catch((err) => console.error("Error al crear recinto", err));
+      .catch((err) => {
+        if (
+          err.detail ===
+          "Error al crear tipo de recinto: El nombre debe tener al menos dos caracteres"
+        ) {
+          notify("El Nombre del recinto debe contener al menos 2 letras");
+        } else {
+          console.error("Error al crear recinto", err);
+        }
+      });
   };
 
   // Función para obtener un valor CSS
@@ -380,8 +396,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   // Funciones para construir cada fila de tabla según el tipo de dato
   const mapVentilacionRow = (enclosure: any) => {
     const isDefault =
-      enclosure.building_conditions[0]?.created_status === "default" ||
-      enclosure.building_conditions[0]?.created_status === "global";
+      enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "cloned";
     const condition = enclosure.building_conditions[0]?.details || {};
     const minSalubridad = condition.cauldal_min_salubridad || {};
     const isEditing =
@@ -392,13 +407,13 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const values = isEditing
       ? editingRow.values
       : {
-          rPers: rPersValue,
-          ida: minSalubridad.ida || "N/A",
-          ocupacion: minSalubridad.ocupacion || "N/A",
-          caudalImpuestoVentNoct: (condition.caudal_impuesto?.vent_noct ?? 0).toFixed(2),
-          infiltraciones: condition.infiltraciones ?? 0,
-          recuperadorCalor: condition.recuperador_calor ?? 0,
-        };
+        rPers: rPersValue,
+        ida: minSalubridad.ida || "N/A",
+        ocupacion: minSalubridad.ocupacion || "N/A",
+        caudalImpuestoVentNoct: (condition.caudal_impuesto?.vent_noct ?? 0).toFixed(2),
+        infiltraciones: condition.infiltraciones ?? 0,
+        recuperadorCalor: condition.recuperador_calor ?? 0,
+      };
 
     return {
       codigoRecinto: !isDefault ? (
@@ -481,7 +496,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         formatDisplayValue(values.caudalImpuestoVentNoct)
       ),
       // Nueva columna: Infiltraciones [1/h]
-      infiltraciones: isEditing ? (
+      infiltraciones: isEditing && !isDefault ? (
         <input
           type="number"
           min="0"
@@ -495,28 +510,34 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             if (e.key === "-") e.preventDefault();
           }}
         />
-      ) : !isDefault ? (
+      ) : isDefault ? (
+        formatDisplayValue(values.infiltraciones)
+      ) : (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {formatDisplayValue(values.infiltraciones)}
         </span>
-      ) : (
-        formatDisplayValue(values.infiltraciones)
       ),
+
       // Nueva columna: Recuperador de calor [%]
       recuperadorCalor: isEditing ? (
         <input
           type="number"
           min="0"
+          max="100"
           className="form-control form-control-sm"
           value={editingRow.values.recuperadorCalor}
           onChange={(e) => {
-            if (e.target.value.startsWith("-") || e.target.value === "-") return;
-            handleEditChange("recuperadorCalor", e.target.value);
+            const value = e.target.value;
+            if (value.startsWith("-") || value === "-") return;
+            const numericValue = parseFloat(value);
+            if (numericValue > 100) return; // Limita a 100
+            handleEditChange("recuperadorCalor", value);
           }}
           onKeyDown={(e) => {
-            if (e.key === "-") e.preventDefault();
+            if (e.key === "-" || e.key === "e") e.preventDefault();
           }}
         />
+
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {formatDisplayValue(values.recuperadorCalor)}
@@ -548,8 +569,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   const mapIluminacionRow = (enclosure: any) => {
     const isDefault =
-      enclosure.building_conditions[0]?.created_status === "default" ||
-      enclosure.building_conditions[0]?.created_status === "global";
+      enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "cloned"
     const condition = enclosure.building_conditions.find(
       (cond: any) => cond.type === "lightning"
     );
@@ -561,10 +581,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const values = isEditing
       ? editingRow.values
       : {
-          potenciaBase: (details.potencia_base ?? 0).toFixed(2),
-          estrategia: details.estrategia || "",
-          potenciaPropuesta: (details.potencia_propuesta ?? 0).toFixed(2),
-        };
+        potenciaBase: (details.potencia_base ?? 0).toFixed(2),
+        estrategia: details.estrategia || "",
+        potenciaPropuesta: (details.potencia_propuesta ?? 0).toFixed(2),
+      };
 
     return {
       codigoRecinto: !isDefault ? (
@@ -596,7 +616,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           }}
         />
       ) : (
-        <span style={ !isDefault ? { color: primaryColor, fontWeight: "bold" } : {} }>
+        <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : {}}>
           {formatDisplayValue(values.potenciaBase)}
         </span>
       ),
@@ -647,8 +667,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   const mapCargasRow = (enclosure: any) => {
     const isDefault =
-      enclosure.building_conditions[0]?.created_status === "default" ||
-      enclosure.building_conditions[0]?.created_status === "global";
+      enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "cloned"
     const condition = enclosure.building_conditions[0]?.details || {};
     const isEditing =
       editingRow &&
@@ -657,12 +676,12 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const values = isEditing
       ? editingRow.values
       : {
-          usuarios: (condition.usuarios ?? 0).toFixed(2),
-          calorLatente: (condition.calor_latente ?? 0).toFixed(2),
-          calorSensible: (condition.calor_sensible ?? 0).toFixed(2),
-          equipos: (condition.equipos ?? 0).toFixed(2),
-          funcionamientoSemanal: condition.horario?.funcionamiento_semanal || "",
-        };
+        usuarios: (condition.usuarios ?? 0).toFixed(2),
+        calorLatente: (condition.calor_latente ?? 0).toFixed(2),
+        calorSensible: (condition.calor_sensible ?? 0).toFixed(2),
+        equipos: (condition.equipos ?? 0).toFixed(2),
+        funcionamientoSemanal: condition.horario?.funcionamiento_semanal || "",
+      };
 
     return {
       codigoRecinto: !isDefault ? (
@@ -695,7 +714,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           }}
         />
       ) : (
-        <span style={ !isDefault ? { color: primaryColor, fontWeight: "bold" } : {} }>
+        <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : {}}>
           {formatDisplayValue(values.usuarios)}
         </span>
       ),
@@ -714,7 +733,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           }}
         />
       ) : (
-        <span style={ !isDefault ? { color: primaryColor, fontWeight: "bold" } : {} }>
+        <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : {}}>
           {formatDisplayValue(values.calorLatente)}
         </span>
       ),
@@ -733,7 +752,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           }}
         />
       ) : (
-        <span style={ !isDefault ? { color: primaryColor, fontWeight: "bold" } : {} }>
+        <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : {}}>
           {formatDisplayValue(values.calorSensible)}
         </span>
       ),
@@ -752,17 +771,25 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           }}
         />
       ) : (
-        <span style={ !isDefault ? { color: primaryColor, fontWeight: "bold" } : {} }>
+        <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : {}}>
           {formatDisplayValue(values.equipos)}
         </span>
       ),
       funcionamientoSemanal: isEditing ? (
-        <input
-          type="text"
+        <select
           className="form-control form-control-sm"
           value={editingRow.values.funcionamientoSemanal}
           onChange={(e) => handleEditChange("funcionamientoSemanal", e.target.value)}
-        />
+        >
+          <option value="7x0">7x0</option>
+          <option value="6x1">6x1</option>
+          <option value="5x2">5x2</option>
+          <option value="4x3">4x3</option>
+          <option value="3x4">3x4</option>
+          <option value="2x5">2x5</option>
+          <option value="1x6">1x6</option>
+          <option value="0x7">0x7</option>
+        </select>
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {formatDisplayValue(values.funcionamientoSemanal)}
@@ -770,6 +797,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) : (
         formatDisplayValue(values.funcionamientoSemanal)
       ),
+      
       accion: isEditing ? (
         <ActionButtonsConfirm
           onAccept={() => handleSave("cargas", enclosure)}
@@ -807,8 +835,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   const mapHorarioRow = (enclosure: any) => {
     const isDefault =
-      enclosure.building_conditions[0]?.created_status === "default" ||
-      enclosure.building_conditions[0]?.created_status === "global";
+      enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "cloned"
     const details = enclosure.building_conditions[0]?.details || {};
     const recinto = details.recinto || { climatizado: "N/A", desfase_clima: 0 };
     const isEditing =
@@ -818,9 +845,9 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const values = isEditing
       ? editingRow.values
       : {
-          climatizado: recinto.climatizado,
-          hrsDesfaseClimaInv: recinto.desfase_clima ? recinto.desfase_clima.toFixed(2) : "N/A",
-        };
+        climatizado: recinto.climatizado,
+        hrsDesfaseClimaInv: recinto.desfase_clima ? recinto.desfase_clima.toFixed(2) : "N/A",
+      };
 
     return {
       codigoRecinto: !isDefault ? (
@@ -956,8 +983,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       default:
         return {
           value: "",
-          onChange: () => {},
-          onNew: () => {},
+          onChange: () => { },
+          onNew: () => { },
           placeholder: "Buscar recinto...",
         };
     }

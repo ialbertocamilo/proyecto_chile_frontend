@@ -8,12 +8,12 @@ interface ChartComponentProps {
     options?: any;
 }
 
-const ChartComponent: React.FC<ChartComponentProps> = ({ 
-    title, 
-    chartData, 
+const ChartComponent: React.FC<ChartComponentProps> = ({
+    title,
+    chartData,
     chartType,
     className = "",
-    options = {} 
+    options = {}
 }) => {
     const defaultOptions = {
         maintainAspectRatio: true,
@@ -59,7 +59,7 @@ const ChartComponent: React.FC<ChartComponentProps> = ({
                 <h3 className="title-chart">
                     {title}
                 </h3>
-                <div className="chart-wrapper" style={{ height: '400px', position: 'relative' }}>
+                <div className="chart-wrapper" style={{  position: 'relative' }}>
                     {renderChart()}
                 </div>
             </div>
@@ -81,7 +81,7 @@ const ChartComponent: React.FC<ChartComponentProps> = ({
                 }
                 .chart-wrapper {
                     flex: 1;
-                    min-height: 200px;
+                    min-height: 300px;
                 }
             `}</style>
         </div>

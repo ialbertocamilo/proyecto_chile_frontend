@@ -200,8 +200,8 @@ const ChartProjectCreated: React.FC = () => {
                 </div>
             </div>
             <div className="card-body mt-0 pt-0">
-                <div style={{ minHeight: '100px', maxHeight: '200px', width: '100%', overflow: 'hidden' }} >
-                    <div id="chart" style={{ width: '100%' }}>
+                <div style={{ minHeight: '120px', maxHeight: '220px', width: '100%', overflow: 'hidden' }} >
+                    <div id="chart" >
                         <ReactApexChart
                             options={chartOptions}
                             series={series}

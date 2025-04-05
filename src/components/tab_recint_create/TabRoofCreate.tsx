@@ -305,6 +305,7 @@ const TabCeilingCreate: React.FC = () => {
               type="number"
               className="form-control"
               value={editingValues.area}
+              min="0"
               onKeyDown={(e) => {
                 if (e.key === "-") {
                   e.preventDefault();
@@ -473,6 +474,7 @@ const TabCeilingCreate: React.FC = () => {
               <input
                 type="number"
                 id="area"
+                min="0"
                 className="form-control"
                 value={area}
                 onKeyDown={(e) => {

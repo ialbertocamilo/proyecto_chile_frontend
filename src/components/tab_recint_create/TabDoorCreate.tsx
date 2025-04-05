@@ -967,6 +967,7 @@ const TabDoorCreate: React.FC = () => {
               <input
                 type="number"
                 id="high"
+                min="0"
                 className="form-control"
                 value={high}
                 onKeyDown={(e) => {
@@ -986,6 +987,7 @@ const TabDoorCreate: React.FC = () => {
               <input
                 type="number"
                 id="broad"
+                min="0"
                 className="form-control"
                 value={broad}
                 onKeyDown={(e) => {

@@ -562,6 +562,7 @@ const TabDoorCreate: React.FC = () => {
           return (
             <input
               type="number"
+              min={0}
               className="form-control"
               value={editingRow.high}
               onChange={(e) => handleRowFieldChange("high", Number(e.target.value))}
@@ -580,6 +581,7 @@ const TabDoorCreate: React.FC = () => {
           return (
             <input
               type="number"
+              min={0}
               className="form-control"
               value={editingRow.broad}
               onChange={(e) => handleRowFieldChange("broad", Number(e.target.value))}

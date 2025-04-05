@@ -1786,6 +1786,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentana.atributs?.u_vidrio || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentana((prev) =>
                     prev
@@ -1804,6 +1810,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentana.atributs?.fs_vidrio || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentana((prev) =>
                     prev
@@ -1822,6 +1834,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="text"
                 className="form-control"
                 value={editingVentana.atributs?.frame_type || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentana((prev) =>
                     prev
@@ -1852,6 +1870,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentana.u_marco || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentana((prev) =>
                     prev ? { ...prev, u_marco: parseFloat(e.target.value) } : prev
@@ -1865,6 +1889,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentana.fm !== undefined ? Math.round(editingVentana.fm * 100) : ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => {
                   const rawValue = e.target.value;
                   if (rawValue === "") {

@@ -341,6 +341,7 @@ const TabFloorCreate: React.FC = () => {
         return (
           <input
             type="number"
+            min={0}
             className="form-control"
             value={editValues.area}
             onChange={(e) => handleEditChange("area", Number(e.target.value))}
@@ -351,6 +352,7 @@ const TabFloorCreate: React.FC = () => {
         return (
           <input
             type="number"
+            min={0}
             className="form-control"
             value={editValues.parameter}
             onChange={(e) => handleEditChange("parameter", Number(e.target.value))}

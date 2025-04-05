@@ -73,9 +73,13 @@ const ClimateFileUploader: React.FC = () => {
             const result = await response.json();
             notify("Archivo subido exitosamente.");
             setWeatherFiles([...weatherFiles, result.metadata]);
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Error uploading file:", error);
-            notify(error?.message || "Error al subir el archivo.", "error");
+            if (error instanceof Error) {
+                notify(error.message || "Error al subir el archivo.", "error");
+            } else {
+                notify("Error al subir el archivo.", "error");
+            }
         }
     };
 

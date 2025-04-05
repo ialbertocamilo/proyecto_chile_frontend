@@ -1,5 +1,5 @@
 import Breadcrumb from "@/components/common/Breadcrumb";
-import { Autocompletion } from "@/components/maps/Autocompletion";
+import MapAutocompletion from "@/components/maps/MapAutocompletion";
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import axios from "axios";
@@ -14,13 +14,8 @@ import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
-import MapAutocompletion from "@/components/maps/MapAutocompletion";
 
-const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap").then(mod => {
-  return { default: React.memo(mod.default) };
-}), {
-  ssr: false,
-});
+
 
 type Country = "" | "Perú" | "Chile";
 
@@ -218,7 +213,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         handleFormInputChange("latitude", latitude);
         handleFormInputChange("longitude", longitude);
         console.log(`Latitud: ${latitude}, Longitud: ${longitude}`);
-  
+
         // Realizar solicitud de geocodificación inversa a Nominatim
         axios
           .get(`https://nominatim.openstreetmap.org/reverse`, {
@@ -244,7 +239,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       }
     );
   };
-  
+
 
   const enviarProyecto = async () => {
     setLoading(true);
@@ -479,7 +474,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                 <div className="row mb-3">
                   <div className="col-12 col-md-6">
                     <label className="form-label">
-                      Departamento{" "}
+                      Región{" "}
                       {isFieldEmpty("department") && (
                         <span style={{ color: "red" }}>*</span>
                       )}
@@ -508,7 +503,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                   </div>
                   <div className="col-12 col-md-6">
                     <label className="form-label">
-                      Provincia{" "}
+                      Ciudad{" "}
                       {isFieldEmpty("province") && (
                         <span style={{ color: "red" }}>*</span>
                       )}

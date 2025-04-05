@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import TablesParameters from "@/components/tables/TablesParameters";
 import ActionButtons from "@/components/common/ActionButtons";
 import CustomButton from "@/components/common/CustomButton";
 import ModalCreate from "@/components/common/ModalCreate";
-import { notify } from "@/utils/notify";
+import TablesParameters from "@/components/tables/TablesParameters";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
+import { notify } from "@/utils/notify";
+import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
 
 interface EnclosureGeneralData {
   id: number;
@@ -170,7 +170,7 @@ const TabRecintDataEdit: React.FC = () => {
       renderCell: (row: EnclosureGeneralData) => row.nombre_region,
     },
     {
-      headerName: "Comuna",
+      headerName: "Localidad",
       field: "comuna_id",
       renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
     },

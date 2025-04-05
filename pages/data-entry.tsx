@@ -1,24 +1,22 @@
-import ButtonTab from "@/components/common/ButtonTab";
+import ActionButtons from "@/components/common/ActionButtons";
+import Breadcrumb from "@/components/common/Breadcrumb";
+import "@/styles/css/breadcrumb.css";
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
 import GooIcons from "../public/GoogleIcons";
-import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Card from "../src/components/common/Card";
-import CustomButton from "../src/components/common/CustomButton";
 import ModalCreate from "../src/components/common/ModalCreate";
 import SearchParameters from "../src/components/inputs/SearchParameters";
+import TablesParameters from "../src/components/tables/TablesParameters";
+import Title from "../src/components/Title";
+import UseProfileTab from "../src/components/UseProfileTab";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import Breadcrumb from "@/components/common/Breadcrumb";
-import TablesParameters from "../src/components/tables/TablesParameters";
-import UseProfileTab from "../src/components/UseProfileTab";
-import ActionButtons from "@/components/common/ActionButtons";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "@/styles/css/breadcrumb.css";
+import ClimateFileUploader from "@/components/ClimateFileUploader";
 
 interface MaterialAtributs {
   name: string;
@@ -1116,6 +1114,8 @@ const DataEntryPage: React.FC = () => {
     </div>
   );
 
+  const renderStep7Clima = () => <ClimateFileUploader />;
+
   return (
     <>
       <GooIcons />
@@ -1139,6 +1139,7 @@ const DataEntryPage: React.FC = () => {
                 { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de materiales" },
                 { stepNumber: 5, iconName: "home", title: "Elementos translúcidos" },
                 { stepNumber: 6, iconName: "deck", title: "Perfil de uso" },
+                { stepNumber: 7, iconName: "cloud_upload", title: "Archivo clima" },
               ]}
             />
           </div>
@@ -1148,6 +1149,7 @@ const DataEntryPage: React.FC = () => {
             {step === 3 && <div className="px-3">{renderStep3Materials()}</div>}
             {step === 5 && <div className="px-3">{renderStep5Elements()}</div>}
             {step === 6 && renderStep6Profile()}
+            {step === 7 && renderStep7Clima()}
           </div>
         </div>
       </Card>

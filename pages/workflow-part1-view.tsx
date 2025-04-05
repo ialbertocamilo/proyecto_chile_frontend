@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import axios from "axios";
-import dynamic from "next/dynamic";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import Card from "../src/components/common/Card";
+import React, { useEffect, useState } from "react";
 import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
 import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Breadcrumb from "../src/components/common/Breadcrumb";
-import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import Card from "../src/components/common/Card";
+import useAuth from "../src/hooks/useAuth";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
@@ -88,7 +88,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       const storedLongitude = localStorage.getItem("project_longitude");
       const currentLatitude = formData.latitude.toString();
       const currentLongitude = formData.longitude.toString();
-      
+
       if (storedLatitude === currentLatitude && storedLongitude === currentLongitude) {
         const storedAddress = localStorage.getItem("project_address");
         if (storedAddress) {
@@ -297,7 +297,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                   </div>
                   <div className="row mb-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Departamento</label>
+                      <label className="form-label">Región</label>
                       <select className="form-control" value={formData.department} disabled>
                         <option value="">Seleccione un departamento</option>
                         {formData.country &&
@@ -309,7 +309,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </select>
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Provincia</label>
+                      <label className="form-label">Ciudad</label>
                       <select className="form-control" value={formData.province} disabled>
                         <option value="">Seleccione una provincia</option>
                         {formData.country &&
@@ -407,7 +407,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       <div className="col-12 col-md-8 mb-3">
                         <div style={{ pointerEvents: "none" }}>
                           <NoSSRInteractiveMap
-                            onLocationSelect={() => {}}
+                            onLocationSelect={() => { }}
                             initialLat={formData.latitude}
                             initialLng={formData.longitude}
                           />

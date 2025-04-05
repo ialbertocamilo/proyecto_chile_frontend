@@ -1,9 +1,9 @@
 // TabRecintDataView.tsx
-import React, { useEffect, useState } from "react";
+import CustomButton from "@/components/common/CustomButton";
 import TablesParameters from "@/components/tables/TablesParameters";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { useRouter } from "next/router";
-import CustomButton from "@/components/common/CustomButton";
+import React, { useEffect, useState } from "react";
 
 interface EnclosureGeneralData {
   id: number;
@@ -97,7 +97,7 @@ const TabRecintDataView: React.FC = () => {
       renderCell: (row: EnclosureGeneralData) => row.nombre_region,
     },
     {
-      headerName: "Comuna",
+      headerName: "Localidad",
       field: "nombre_comuna",
       renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
     },

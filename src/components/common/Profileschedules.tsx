@@ -1,7 +1,7 @@
 import ReactECharts from 'echarts-for-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { constantUrlApiEndpoint } from "../../utils/constant-url-endpoint";
-import ModalCreate from './ModalCreate'; // Asegúrate de ajustar la ruta si es necesario
+import ModalCreate from './ModalCreate';
 
 interface ScheduleData {
   [key: string]: number | string | null;
@@ -12,6 +12,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
   const [loading, setLoading] = useState<boolean>(true);
   const [perfilId, setPerfilId] = useState<number | null>(null);
   const [typeSelect, setTypeSelect] = useState<string>('usuarios');
+  const [tipologia, setTipologia] = useState<string>(''); // Nuevo estado para tipología
   const chartRef = useRef<any>(null);
 
   // Estados para el modal
@@ -20,6 +21,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
   const [currentValue, setCurrentValue] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState<number>(0);
 
+  // Obtener el perfilId del localStorage
   useEffect(() => {
     const storedId = localStorage.getItem("perfil_id");
     if (storedId) {
@@ -27,6 +29,31 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     }
   }, []);
 
+  // Consultar la tipología del recinto según el perfilId
+  useEffect(() => {
+    if (perfilId === null) return;
+    const token = localStorage.getItem("token");
+    const fetchTipologia = async () => {
+      try {
+        const response = await fetch(`${constantUrlApiEndpoint}/user/enclosure-typing/${perfilId}`, {
+          headers: {
+            'accept': 'application/json',
+            Authorization: `Bearer ${token}`,
+          }
+        });
+        const result = await response.json();
+        // Se asume que la respuesta contiene la propiedad "nombre"
+        console.log("perfilid", perfilId);
+        console.log("perfil de uso", result);
+        setTipologia(result.name);
+      } catch (error) {
+        console.error("Error fetching tipologia", error);
+      }
+    };
+    fetchTipologia();
+  }, [perfilId]);
+
+  // Consultar los datos del schedule según el tipo seleccionado
   useEffect(() => {
     if (perfilId === null) return;
 
@@ -52,7 +79,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     fetchData();
   }, [typeSelect, perfilId]);
 
-  // Definimos el eje X como números del 1 al 24
+  // Definir las horas y valores para el gráfico
   const hours = Array.from({ length: 24 }, (_, i) => (i + 1).toString());
   const values = data ? hours.map((_, i) => data[`hour_${i + 1}`] ?? 0) : [];
 
@@ -69,10 +96,10 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     }]
   };
 
+  // Función para actualizar el schedule en el servidor
   const updateSchedule = async (newData: ScheduleData) => {
     const token = localStorage.getItem("token");
     try {
-      // Ejecuta la petición PUT y espera su respuesta
       const putResponse = await fetch(`${constantUrlApiEndpoint}/${typeSelect}/schedule-update/${perfilId}`, {
         method: 'PUT',
         headers: {
@@ -82,7 +109,6 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
         },
         body: JSON.stringify(newData)
       });
-  
       console.log("PUT response:", putResponse);
       
       if (!putResponse.ok) {
@@ -90,7 +116,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
         return;
       }
   
-      // Si el PUT fue exitoso, se procede a hacer la petición GET para traer los datos actualizados
+      // Volver a consultar el schedule actualizado
       const response = await fetch(`${constantUrlApiEndpoint}/${typeSelect}/schedule/${perfilId}`, {
         headers: {
           'accept': 'application/json',
@@ -100,7 +126,6 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
       const updatedResult = await response.json();
       console.log("Datos actualizados", updatedResult);
       setData(updatedResult);
-      // Llamamos al callback onUpdate si está definido
       if (onUpdate) {
         onUpdate();
       }
@@ -109,31 +134,28 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     }
   };
 
+  // Configurar la interacción con el gráfico
   const onChartReady = (chart: any) => {
     chart.on('click', function (params: any) {
       const index = params.dataIndex;
       setCurrentHourIndex(index);
       setCurrentValue(params.value);
-      setInputValue(params.value); // Inicializamos el input con el valor actual
+      setInputValue(params.value);
       setShowModal(true);
     });
   };
 
+  // Confirmar actualización del valor desde el modal
   const handleModalConfirm = () => {
     if (currentHourIndex === null) return;
   
-    // Construir el objeto completo usando los valores actuales de 'data' o 0 por defecto.
     const completeSchedule: ScheduleData = {};
     for (let i = 1; i <= 24; i++) {
       completeSchedule[`hour_${i}`] = data && data[`hour_${i}`] !== undefined ? data[`hour_${i}`] as number : 0;
     }
-    // Sobrescribir la hora modificada con el nuevo valor.
     completeSchedule[`hour_${currentHourIndex + 1}`] = inputValue;
-    
-    // Verifica en consola que completeSchedule tenga los valores esperados
     console.log("completeSchedule:", completeSchedule);
     
-    // Actualiza el gráfico con el nuevo valor
     const newValues = [...values];
     newValues[currentHourIndex] = inputValue;
     if (chartRef.current) {
@@ -145,17 +167,18 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
       });
     }
   
-    // Envía el objeto completo al servidor
     updateSchedule(completeSchedule);
   
     setShowModal(false);
     setCurrentHourIndex(null);
     setCurrentValue(null);
   };
-  
 
   return (
     <div className="apache-container">
+      <div className="header text-center mb-3">
+      <h2>{ tipologia ? tipologia : "Tipología de Recinto" }</h2>
+      </div>
       <div className="d-flex justify-content-center mb-3">
         <select
           className="form-select form-select-lg text-center"
@@ -164,8 +187,8 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
           onChange={(e) => setTypeSelect(e.target.value)}
         >
           <option value="usuarios">Usuarios</option>
-          <option value="iluminacion verano">Iluminacion verano</option>
-          <option value="iluminacion invierno">Iluminacion invierno</option>
+          <option value="iluminacion verano">Iluminación verano</option>
+          <option value="iluminacion invierno">Iluminación invierno</option>
           <option value="equipos">Equipos</option>
         </select>
       </div>
@@ -208,7 +231,6 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
                 value={inputValue}
                 onChange={(e) => {
                   const value = Number(e.target.value);
-                  // Si el valor supera 100, se limita a 100
                   if (value > 100) {
                     setInputValue(100);
                   } else {

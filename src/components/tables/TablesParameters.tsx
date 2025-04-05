@@ -1,7 +1,7 @@
 import React from "react";
 
 interface Column {
-  headerName: string;
+  headerName: string | React.ReactNode;
   field: string;
   headerStyle?: React.CSSProperties;
   renderCell?: (row: any) => React.ReactNode;

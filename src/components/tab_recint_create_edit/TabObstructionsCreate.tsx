@@ -64,7 +64,75 @@ const ObstructionTable: React.FC = () => {
   const [rowToDelete, setRowToDelete] = useState<ObstructionsData | null>(null);
 
   const token = localStorage.getItem("token") || "";
-  // Se elimina el orientationId fijo para usar el id devuelto en el response
+
+  // Cargar datos existentes desde el servidor al montar el componente
+  useEffect(() => {
+    const enclosureId = localStorage.getItem("recinto_id");
+    if (!enclosureId) {
+      notify("No se encontró el recinto_id en el LocalStorage", "error");
+      return;
+    }
+    setTableLoading(true);
+    fetch(`${constantUrlApiEndpoint}/obstruction/${enclosureId}`, {
+      method: "GET",
+      headers: {
+        "accept": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // Mapea los datos recibidos a la estructura que usa la tabla
+        const mappedData = data.orientations.map((orientation: any, index: number) => {
+          // Si existe al menos una división, se toma la primera
+          const divisionData =
+            orientation.divisions && orientation.divisions.length > 0
+              ? orientation.divisions[0]
+              : null;
+
+          return {
+            id: orientation.orientation_id,
+            index: index + 1,
+            división: divisionData ? divisionData.division : "-",
+            floor_id: orientation.enclosure_id, // O el valor que corresponda
+            a: divisionData ? divisionData.a : 0,
+            b: divisionData ? divisionData.b : 0,
+            d: divisionData ? divisionData.d : 0,
+            anguloAzimut: orientation.azimut,
+            orientación: orientation.orientation,
+            obstrucción: 0, // Puedes ajustar este valor según corresponda
+          };
+        });
+        setTableData(mappedData);
+        setTableLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching table data:", error);
+        notify("Error al cargar datos de obstrucciones", "error");
+        setTableLoading(false);
+      });
+  }, [token]);
+
+  // Se carga la información del endpoint cuando se abre el modal de Obstrucciones
+  useEffect(() => {
+    if (showModal) {
+      fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
+        method: "GET",
+        headers: {
+          "accept": "application/json",
+          Authorization: `Bearer ${token}`,
+        }
+      })
+        .then((response) => response.json())
+        .then((data: string[]) => {
+          setAngleOptions(data);
+        })
+        .catch((error) => {
+          console.error("Error fetching angle azimut options:", error);
+          notify("Error al cargar las opciones de ángulo azimut", "error");
+        });
+    }
+  }, [showModal, token]);
 
   // Función para editar la orientación (ya existente)
   const handleEdit = (row: ObstructionsData) => {
@@ -211,27 +279,6 @@ const ObstructionTable: React.FC = () => {
       e.preventDefault();
     }
   };
-
-  // Se carga la información del endpoint cuando se abre el modal de Obstrucciones
-  useEffect(() => {
-    if (showModal) {
-      fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
-        method: "GET",
-        headers: {
-          "accept": "application/json",
-          Authorization: `Bearer ${token}`,
-        }
-      })
-        .then((response) => response.json())
-        .then((data: string[]) => {
-          setAngleOptions(data);
-        })
-        .catch((error) => {
-          console.error("Error fetching angle azimut options:", error);
-          notify("Error al cargar las opciones de ángulo azimut", "error");
-        });
-    }
-  }, [showModal]);
 
   // Manejador del cambio en el select para ángulo azimut (usado en el modal de creación)
   const handleAngleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {

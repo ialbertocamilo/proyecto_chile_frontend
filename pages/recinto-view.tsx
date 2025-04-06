@@ -805,14 +805,13 @@ const RecintoView: React.FC = () => {
 
   // Nuevo useEffect para obtener obstrucciones utilizando el "recinto_id" del LocalStorage
   useEffect(() => {
-    const recinto_id = localStorage.getItem("recinto_id");
-    if (!token || !recinto_id) return;
+    const enclosureId = localStorage.getItem("enclosure_id");
+    if (!token || !enclosureId) return;
     const headers = {
       accept: "application/json",
       Authorization: `Bearer ${token}`,
     };
-
-    fetch(`${constantUrlApiEndpoint}/obstruction/${recinto_id}`, { headers })
+    fetch(`${constantUrlApiEndpoint}/obstruction/${enclosureId}`, { headers })
       .then((res) => res.json())
       .then((data) => {
         let obstructionsRows: ObstructionsData[] = [];

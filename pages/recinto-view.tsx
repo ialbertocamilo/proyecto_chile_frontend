@@ -814,7 +814,7 @@ const RecintoView: React.FC = () => {
     fetch(`${constantUrlApiEndpoint}/obstruction/${enclosureId}`, { headers })
       .then((res) => res.json())
       .then((data) => {
-        let obstructionsRows: ObstructionsData[] = [];
+        const obstructionsRows: ObstructionsData[] = [];
 
         if (data.orientations && Array.isArray(data.orientations)) {
           data.orientations.forEach((orientation: any) => {

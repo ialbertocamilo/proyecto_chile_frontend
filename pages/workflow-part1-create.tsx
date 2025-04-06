@@ -14,8 +14,7 @@ import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
-
-
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -74,6 +73,8 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [globalError, setGlobalError] = useState<string>("");
 
+  // Se han eliminado los estados y la lógica relacionada a las zonas
+
   // Definición de los pasos para la sidebar
   const steps = [
     {
@@ -95,6 +96,8 @@ const ProjectWorkflowPart1: React.FC = () => {
         .trim() || "#3ca7b7";
     setPrimaryColor(pColor);
   }, []);
+
+  // Se ha eliminado la llamada al endpoint de zonas
 
   const isFieldEmpty = (field: keyof FormData): boolean => {
     const value = formData[field];
@@ -240,7 +243,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     );
   };
 
-
   const enviarProyecto = async () => {
     setLoading(true);
     setGlobalError("");
@@ -295,7 +297,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
     setLoading(false);
   };
-
 
   // Función que se encarga de la acción del botón Continuar en el paso 1
   const handleStep1Action = async () => {
@@ -704,33 +705,22 @@ const ProjectWorkflowPart1: React.FC = () => {
                     marginBottom: "20px",
                   }}
                 >
+                  {/* Detalles de la ubicación */}
                   <MapAutocompletion
                     formData={formData}
                     handleFormInputChange={handleFormInputChange}
                   />
 
-                  <div className="d-flex justify-content-between align-items-center ">
+                  <div className="d-flex justify-content-between align-items-center mt-4">
                     <div className="d-flex">
-                      <CustomButton
-                        variant="save"
-                        onClick={handleGeolocation}
-                      >
-                        <span className="material-icons">
-                          location_on
-                        </span>
+                      <CustomButton variant="save" onClick={handleGeolocation}>
+                        <span className="material-icons">location_on</span>
                         Ubicación actual
                       </CustomButton>
                     </div>
                     <div className="d-flex">
-                      <CustomButton
-                        variant="save"
-                        onClick={enviarProyecto}
-                        disabled={loading}
-                      >
-                        <span
-                          className="material-icons"
-                          style={{ marginRight: "5px" }}
-                        >
+                      <CustomButton variant="save" onClick={enviarProyecto} disabled={loading}>
+                        <span className="material-icons" style={{ marginRight: "5px" }}>
                           sd_card
                         </span>
                         Grabar Datos

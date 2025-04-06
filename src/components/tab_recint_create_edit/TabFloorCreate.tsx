@@ -424,7 +424,7 @@ const TabFloorCreate: React.FC = () => {
       },
     },
     {
-      headerName: "Piso ventilado [¿?]",
+      headerName: "Piso ventilado",
       field: "pisoVentilado",
       renderCell: (row: FloorData) => {
         return editingRowIndex === row.index

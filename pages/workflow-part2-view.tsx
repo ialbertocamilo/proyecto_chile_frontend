@@ -671,13 +671,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
         {/* Se agrega onClick solo para tabs que no sean "puertas" ni "ventanas" */}
         <div
           style={{
-            height: tabStep4 === "ventanas" ? "auto" : "400px",
-            overflowY: tabStep4 === "ventanas" ? "hidden" : "auto",
+            height: (tabStep4 === "ventanas" || tabStep4 === "puertas") ? "auto" : "400px",
+            overflowY: (tabStep4 === "ventanas" || tabStep4 === "puertas") ? "hidden" : "auto",
             position: "relative",
-            cursor:
-              tabStep4 !== "puertas" && tabStep4 !== "ventanas"
-                ? "pointer"
-                : "default",
+            cursor: tabStep4 !== "puertas" && tabStep4 !== "ventanas" ? "pointer" : "default",
           }}
           onClick={
             tabStep4 !== "puertas" && tabStep4 !== "ventanas"
@@ -685,6 +682,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
               : undefined
           }
         >
+
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>{renderMurosTable()}</div>
           )}

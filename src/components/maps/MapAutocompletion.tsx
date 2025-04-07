@@ -9,6 +9,7 @@ interface MapAutocompletionProps {
     latitude: number
     longitude: number
     address: string
+    zone?: string
   }
   handleFormInputChange: (field: any, value: any) => void
 }
@@ -43,6 +44,35 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
 
     return () => clearTimeout(delaySearch);
   }, [locationSearch, formData.latitude, formData.longitude]);
+
+  // Nuevo efecto: geocodificación inversa para actualizar la dirección automáticamente
+  useEffect(() => {
+    if (formData.latitude && formData.longitude) {
+      axios
+        .get(`https://nominatim.openstreetmap.org/reverse`, {
+          params: {
+            format: "jsonv2",
+            lat: formData.latitude,
+            lon: formData.longitude,
+          },
+        })
+        .then((response) => {
+          const { display_name } = response.data;
+          // Si la dirección obtenida es distinta de la almacenada, se actualiza.
+          if (display_name && display_name !== formData.address) {
+            handleFormInputChange("address", display_name);
+            // Opcional: también puedes actualizar manualmente el textarea si es necesario
+            const detailsTextArea = document.getElementById("locationDetails") as HTMLTextAreaElement;
+            if (detailsTextArea) {
+              detailsTextArea.value = `Dirección: ${display_name}`;
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error en la geocodificación inversa:", error);
+        });
+    }
+  }, [formData.latitude, formData.longitude]);
 
   return (
     <div>
@@ -111,7 +141,12 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
           />
           {/* Se coloca el componente ZoneSelector justo debajo del recuadro de "Detalles de la ubicación" */}
           <div className="mt-3">
-            <ZoneSelector latitude={formData.latitude} longitude={formData.longitude} />
+            <ZoneSelector 
+              initialZone={formData.zone || ""}
+              latitude={formData.latitude} 
+              longitude={formData.longitude}
+              handleFormInputChange={handleFormInputChange}
+            />
           </div>
         </div>
       </div>
@@ -129,14 +164,18 @@ interface Zone {
 interface ZoneSelectorProps {
   latitude: number;
   longitude: number;
+  handleFormInputChange: (field: any, value: any) => void;
+  initialZone?: string;
 }
 
-const ZoneSelector: React.FC<ZoneSelectorProps> = ({ latitude, longitude }) => {
-  // Estados para almacenar las zonas obtenidas y la zona seleccionada
+const ZoneSelector: React.FC<ZoneSelectorProps> = ({ latitude, longitude, handleFormInputChange, initialZone = "" }) => {
   const [zones, setZones] = useState<Zone[]>([]);
-  const [selectedZone, setSelectedZone] = useState<string>("");
+  const [selectedZone, setSelectedZone] = useState<string>(initialZone);
 
-  // useEffect para obtener las zonas dinámicamente desde el endpoint usando las coordenadas recibidas
+  useEffect(() => {
+    setSelectedZone(initialZone);
+  }, [initialZone]);
+
   useEffect(() => {
     if (latitude && longitude) {
       axios
@@ -156,13 +195,17 @@ const ZoneSelector: React.FC<ZoneSelectorProps> = ({ latitude, longitude }) => {
       <select
         className="form-control"
         value={selectedZone}
-        onChange={(e) => setSelectedZone(e.target.value)}
+        onChange={(e) => {
+          const value = e.target.value;
+          setSelectedZone(value);
+          handleFormInputChange("zone", value);
+        }}
       >
         {zones.length > 0 ? (
           <>
             <option value="">Seleccione una zona</option>
             {zones.map((zone) => (
-              <option key={zone.id} value={zone.id}>
+              <option key={zone.id} value={zone.zone}>
                 {zone.zone}
               </option>
             ))}

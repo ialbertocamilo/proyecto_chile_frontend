@@ -34,6 +34,7 @@ interface FormData {
   latitude: number;
   longitude: number;
   address: string;
+  zone?: string;
 }
 
 interface Project {
@@ -55,7 +56,8 @@ const initialFormData: FormData = {
   built_surface: 0,
   latitude: -33.4589314398474,
   longitude: -70.6703553846175,
-  address: ''
+  address: '',
+  zone: "",
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -73,7 +75,9 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [globalError, setGlobalError] = useState<string>("");
 
-  // Se han eliminado los estados y la lógica relacionada a las zonas
+  // Estados para obtener zonas y la zona seleccionada
+  const [zones, setZones] = useState<any[]>([]);
+  const [selectedZone, setSelectedZone] = useState<string>("");
 
   // Definición de los pasos para la sidebar
   const steps = [
@@ -97,7 +101,19 @@ const ProjectWorkflowPart1: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
 
-  // Se ha eliminado la llamada al endpoint de zonas
+  // Efecto para obtener las zonas de forma dinámica cuando cambien latitud y longitud
+  useEffect(() => {
+    if (isStep1Validated && formData.latitude && formData.longitude) {
+      axios
+        .get(`${constantUrlApiEndpoint}/zones?latitude=${formData.latitude}&longitude=${formData.longitude}`)
+        .then((response) => {
+          setZones(response.data);
+        })
+        .catch((error) => {
+          console.error("Error al obtener las zonas:", error);
+        });
+    }
+  }, [formData.latitude, formData.longitude]);
 
   const isFieldEmpty = (field: keyof FormData): boolean => {
     const value = formData[field];
@@ -271,8 +287,10 @@ const ProjectWorkflowPart1: React.FC = () => {
         built_surface: formData.built_surface,
         latitude: formData.latitude,
         longitude: formData.longitude,
-      };
+        project_metadata: {
+          zone: formData.zone,}
 
+      };
       const data = await post(`/projects/create`, requestBody);
       const { project_id } = data;
       localStorage.setItem("project_id", project_id.toString());
@@ -705,13 +723,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                     marginBottom: "20px",
                   }}
                 >
-                  {/* Detalles de la ubicación */}
                   <MapAutocompletion
                     formData={formData}
                     handleFormInputChange={handleFormInputChange}
                   />
-
-                  <div className="d-flex justify-content-between align-items-center mt-4">
+                  <div className="d-flex justify-content-between align-items-center ">
                     <div className="d-flex">
                       <CustomButton variant="save" onClick={handleGeolocation}>
                         <span className="material-icons">location_on</span>

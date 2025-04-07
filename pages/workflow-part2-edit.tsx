@@ -1752,6 +1752,7 @@ const WorkFlowpar2editPage: React.FC = () => {
               <label>Espesor de capa (cm)</label>
               <input
                 type="number"
+                min="0"
                 className="form-control"
                 value={editingDetail.layer_thickness}
                 onChange={(e) =>

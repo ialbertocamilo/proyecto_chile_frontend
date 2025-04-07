@@ -51,8 +51,8 @@ const ResumenRecintos = () => {
         const energySystems=result.constant?.atributs?.consumos_por_fuente_de_energia
         const rendimiento_calef = energySystems?.rendimiento_calef?.[0]?.value || 0;
         const rendimiento_ref = energySystems?.rendimiento_ref?.[0]?.value || 0;
-        const consumo_calef_factor = energySystems?.consumos_por_fuente_de_energia?.find(f => f.code === "Elect")?.co2_eq || 0;
-        const consumo_ref_factor = energySystems?.consumos_por_fuente_de_energia?.find(f => f.code === "Pet")?.co2_eq || 0;
+        const consumo_calef_factor = energySystems?.consumos_por_fuente_de_energia?.find((f: { code: string; }) => f.code === "Elect")?.co2_eq || 0;
+        const consumo_ref_factor = energySystems?.consumos_por_fuente_de_energia?.find((f: { code: string; }) => f.code === "Pet")?.co2_eq || 0;
 
         const demanda_calef = recinto.superficie * rendimiento_calef;
         const demanda_ref = recinto.superficie * rendimiento_ref;
@@ -63,7 +63,7 @@ const ResumenRecintos = () => {
         const consumo_ref = demanda_ref * consumo_ref_factor;
         const consumo_total = consumo_calef + consumo_ref;
 
-        const co2_eq = consumo_total * (energySystems?.consumos_por_fuente_de_energia?.find(f => f.code === "Elect")?.co2_eq || 0.5);
+        const co2_eq = consumo_total * (energySystems?.consumos_por_fuente_de_energia?.find((f: { code: string; }) => f.code === "Elect")?.co2_eq || 0.5);
         const hrs_disconfort = recinto.superficie * 0.05; // Example calculation
 
         return {

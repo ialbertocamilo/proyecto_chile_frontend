@@ -8,7 +8,8 @@ import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
 interface ObstructionsData {
-  id: number;
+  id: number; // id de la orientación
+  division_id: number | null; // id de la división (nuevo)
   index: number;
   división: string;
   floor_id: number;
@@ -65,6 +66,25 @@ const ObstructionTable: React.FC = () => {
 
   const token = localStorage.getItem("token") || "";
 
+  // Función para obtener las opciones de ángulo azimut
+  const fetchAngleOptions = () => {
+    fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
+      method: "GET",
+      headers: {
+        "accept": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data: string[]) => {
+        setAngleOptions(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching angle azimut options:", error);
+        notify("Error al cargar las opciones de ángulo azimut", "error");
+      });
+  };
+
   // Cargar datos existentes desde el servidor al montar el componente
   useEffect(() => {
     const enclosureId = localStorage.getItem("recinto_id");
@@ -91,7 +111,8 @@ const ObstructionTable: React.FC = () => {
               : null;
 
           return {
-            id: orientation.orientation_id,
+            id: orientation.orientation_id, // id de la orientación
+            division_id: divisionData ? divisionData.division_id : null, // id de la división
             index: index + 1,
             división: divisionData ? divisionData.division : "-",
             floor_id: orientation.enclosure_id, // O el valor que corresponda
@@ -136,35 +157,16 @@ const ObstructionTable: React.FC = () => {
 
   // Función para editar la orientación (ya existente)
   const handleEdit = (row: ObstructionsData) => {
-    const newAngle = window.prompt("Seleccione el nuevo ángulo azimut:", row.anguloAzimut);
-    if (!newAngle) return;
-
-    fetch(`${constantUrlApiEndpoint}/orientation-update/${row.id}`, {
-      method: "PUT",
-      headers: {
-        "accept": "application/json",
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ azimut: newAngle })
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const updatedRow = { ...row, anguloAzimut: data.azimut, orientación: data.orientation };
-        setTableData(prevData =>
-          prevData.map(r => (r.id === row.id ? updatedRow : r))
-        );
-        notify("Orientación actualizada correctamente", "success");
-      })
-      .catch((error) => {
-        console.error("Error updating orientation:", error);
-        notify("Error al actualizar orientación", "error");
-      });
+    // Al iniciar la edición inline, se dispara la carga de opciones
+    if (angleOptions.length === 0) {
+      fetchAngleOptions();
+    }
+    setEditingRowId(row.id);
+    setSelectedAngle(row.anguloAzimut);
   };
 
   // Función para eliminar la obstrucción utilizando modal de confirmación
   const handleDelete = (row: ObstructionsData) => {
-    // En vez de usar window.confirm, se muestra el modal de confirmación
     setRowToDelete(row);
     setShowConfirmModal(true);
   };
@@ -173,7 +175,7 @@ const ObstructionTable: React.FC = () => {
   const confirmDeletion = () => {
     if (!rowToDelete) return;
 
-    fetch(`https://ceela-backend-qa.svgdev.tech/obstruction/${rowToDelete.id}`, {
+    fetch(`${constantUrlApiEndpoint}/obstruction/${rowToDelete.id}`, {
       method: "DELETE",
       headers: {
         "accept": "application/json",
@@ -235,7 +237,12 @@ const ObstructionTable: React.FC = () => {
     setEditingDivisionRowId(null);
   };
 
+  // Función para aceptar la edición inline de la división usando el endpoint PUT /division-update/{division_id}
   const handleAcceptDivisionEdit = (row: ObstructionsData) => {
+    if (!row.division_id) {
+      notify("No se encontró el id de división para actualizar", "error");
+      return;
+    }
     const payload = {
       division: editingDivisionValues.division,
       a: editingDivisionValues.a,
@@ -243,8 +250,8 @@ const ObstructionTable: React.FC = () => {
       d: editingDivisionValues.d,
     };
 
-    fetch(`${constantUrlApiEndpoint}/division-create/${row.id}`, {
-      method: "POST",
+    fetch(`${constantUrlApiEndpoint}/division-update/${row.division_id}`, {
+      method: "PUT",
       headers: {
         "accept": "application/json",
         Authorization: `Bearer ${token}`,
@@ -259,7 +266,8 @@ const ObstructionTable: React.FC = () => {
           división: data.division,
           a: data.a,
           b: data.b,
-          d: data.d
+          d: data.d,
+          division_id: data.id,
         };
         setTableData(prevData =>
           prevData.map(r => (r.id === row.id ? updatedRow : r))
@@ -314,7 +322,8 @@ const ObstructionTable: React.FC = () => {
       .then(response => response.json())
       .then(data => {
         const newObstruction: ObstructionsData = {
-          id: data.id, // Se asigna el id devuelto (orientationId)
+          id: data.id,
+          division_id: null,
           index: tableData.length + 1,
           división: "-",
           floor_id: 0,
@@ -381,7 +390,8 @@ const ObstructionTable: React.FC = () => {
           división: data.division,
           a: data.a,
           b: data.b,
-          d: data.d
+          d: data.d,
+          division_id: data.id,
         };
 
         setTableData(prevData =>
@@ -515,37 +525,35 @@ const ObstructionTable: React.FC = () => {
           );
         }
         return (
-          <CustomButton
-            variant="editIcon"
-            onClick={() => {
-              setEditingDivisionRowId(row.id);
-              setEditingDivisionValues({
-                division: row.división !== "-" ? row.división : "",
-                a: row.a,
-                b: row.b,
-                d: row.d,
-              });
-            }}
-          >
-            <i className="fa fa-edit" />
-          </CustomButton>
-        );
-      },
-    },
-    {
-      headerName: (
-        <div>
-          <span>Ángulo Azimut</span>
-          {tableData.some(row => row.anguloAzimut && row.anguloAzimut !== "-") && (
+          <>
+            {row.división !== "-" && (
+              <CustomButton
+                variant="editIcon"
+                onClick={() => {
+                  setEditingDivisionRowId(row.id);
+                  setEditingDivisionValues({
+                    division: row.división,
+                    a: row.a,
+                    b: row.b,
+                    d: row.d,
+                  });
+                }}
+              >
+                <i className="fa fa-edit" />
+              </CustomButton>
+            )}
             <CustomButton
               onClick={() => setShowDivisionModal(true)}
               style={{ marginLeft: "5px" }}
             >
               <i className="fa fa-plus" />
             </CustomButton>
-          )}
-        </div>
-      ),
+          </>
+        );
+      },
+    },
+    {
+      headerName: "Ángulo Azimut",
       field: "anguloAzimut",
       renderCell: (row: ObstructionsData) => {
         if (editingRowId === row.id) {
@@ -591,10 +599,7 @@ const ObstructionTable: React.FC = () => {
         return (
           <ActionButtons
             onDelete={() => handleDelete(row)}
-            onEdit={() => {
-              setEditingRowId(row.id);
-              setSelectedAngle(row.anguloAzimut);
-            }}
+            onEdit={() => handleEdit(row)}
           />
         );
       },

@@ -45,6 +45,35 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
     return () => clearTimeout(delaySearch);
   }, [locationSearch, formData.latitude, formData.longitude]);
 
+  // Nuevo efecto: geocodificación inversa para actualizar la dirección automáticamente
+  useEffect(() => {
+    if (formData.latitude && formData.longitude) {
+      axios
+        .get(`https://nominatim.openstreetmap.org/reverse`, {
+          params: {
+            format: "jsonv2",
+            lat: formData.latitude,
+            lon: formData.longitude,
+          },
+        })
+        .then((response) => {
+          const { display_name } = response.data;
+          // Si la dirección obtenida es distinta de la almacenada, se actualiza.
+          if (display_name && display_name !== formData.address) {
+            handleFormInputChange("address", display_name);
+            // Opcional: también puedes actualizar manualmente el textarea si es necesario
+            const detailsTextArea = document.getElementById("locationDetails") as HTMLTextAreaElement;
+            if (detailsTextArea) {
+              detailsTextArea.value = `Dirección: ${display_name}`;
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error en la geocodificación inversa:", error);
+        });
+    }
+  }, [formData.latitude, formData.longitude]);
+
   return (
     <div>
       <div className="row">

@@ -8,7 +8,8 @@ const ResumenRecintos = () => {
 
     const api = useApi();
     const router = useRouter();
-    const { result: energySystems } = useConstants("energy_systems", "general");
+    
+        const result = useConstants("energy_systems", "general");
 
     interface Recinto {
         id: number;
@@ -47,6 +48,7 @@ const ResumenRecintos = () => {
     }, [router.query.id])
 
     const calculateValues = (recinto: Recinto) => {
+        const energySystems=result.constant?.atributs?.consumos_por_fuente_de_energia
         const rendimiento_calef = energySystems?.rendimiento_calef?.[0]?.value || 0;
         const rendimiento_ref = energySystems?.rendimiento_ref?.[0]?.value || 0;
         const consumo_calef_factor = energySystems?.consumos_por_fuente_de_energia?.find(f => f.code === "Elect")?.co2_eq || 0;

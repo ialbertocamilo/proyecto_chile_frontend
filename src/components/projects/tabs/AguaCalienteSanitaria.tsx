@@ -102,13 +102,13 @@ const AguaCalienteSanitaria = () => {
     useEffect(() => {
         const rendimientoValue = getValueFromValue(rendimientoOptions, rendimiento, 'rendimiento');
         const sistDistribucionValue = getValueFromValue(sistDistribucionOptions, sistDistribucion, 'distribucion');
-        const sistControlValue = getValueFromValue(sistControlOptions, sistControl, 'control');
+        const sistControlValue = getValueFromValue(sistControlOptions, sistControl as string, 'control');
 
         if (rendimientoValue && sistDistribucionValue && sistControlValue) {
             const calculatedConsumoACS = demandaACS / (rendimientoValue * sistDistribucionValue * sistControlValue);
             setConsumoACS(parseFloat(calculatedConsumoACS.toFixed(3)));
         }
-    }, [demandaACS, rendimiento, sistDistribucion, sistControl]);
+    }, [demandaACS, rendimiento, sistDistribucion, sistControl, rendimientoOptions, sistDistribucionOptions, sistControlOptions]);
 
     useEffect(() => {
         const rendimientoValue = getValueFromValue(rendimientoOptions, rendimiento, 'rendimiento');
@@ -132,7 +132,7 @@ const AguaCalienteSanitaria = () => {
             const calculatedCo2Eq = co2EqValue * consumoEnergiaPrimariaACS;
             setCo2eqEnergiaPrimaria(parseFloat(calculatedCo2Eq.toFixed(3)));
         }
-    }, [demandaACS, rendimiento, sistDistribucion, sistControl, combustible, consumoEnergiaPrimariaACS]);
+    }, [demandaACS, rendimiento, sistDistribucion, sistControl, combustible, consumoEnergiaPrimariaACS, rendimientoOptions, sistDistribucionOptions, sistControlOptions, combustibleOptions, result.constant?.atributs?.consumos_por_fuente_de_energia]);
 
     const handleInputChange = (index: number, field: keyof TableRow, value: string) => {
         const updatedData = [...tableData];
@@ -230,7 +230,7 @@ const AguaCalienteSanitaria = () => {
                         <div className="mt-3">
                             <Form.Group as={Row} className="align-items-center">
                                 <Form.Label column sm={2} className="text-end">
-                                    T' ACS
+                                    T&apos; ACS
                                 </Form.Label>
                                 <Col sm={4} className="text-end">
                                     <Form.Control

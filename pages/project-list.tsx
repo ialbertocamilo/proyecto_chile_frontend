@@ -230,14 +230,7 @@ const ProjectListPage = () => {
             <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: true }]} />
           </div>
         </Card>
-        <div className="row mt-4 mb-4">
-          <div className="col-md-6">
-            <WelcomeCard />
-          </div>
-          <div className="col-md-6">
-            <ChartProjectCreated />
-          </div>
-        </div>
+        
         <DataTable
           data={projects}
           columns={tableColumns}
@@ -247,8 +240,18 @@ const ProjectListPage = () => {
           pageSize={10}
           showButton={true}
         />
+  
+        {/* Se movieron los charts debajo de la tabla */}
+        <div className="row mt-4 mb-4">
+          <div className="col-md-6">
+            <WelcomeCard />
+          </div>
+          <div className="col-md-6">
+            <ChartProjectCreated />
+          </div>
+        </div>
       </div>
-
+  
       {showDeleteModal && projectToDelete && (
         <ModalCreate
           isOpen={showDeleteModal}
@@ -266,7 +269,7 @@ const ProjectListPage = () => {
           </p>
         </ModalCreate>
       )}
-
+  
       <style jsx>{`
         .status-badge {
           font-family: var(--font-family-base);
@@ -278,6 +281,7 @@ const ProjectListPage = () => {
       `}</style>
     </>
   );
+  
 };
 
 export default ProjectListPage;

@@ -11,20 +11,19 @@ import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
-import SearchParameters from "../src/components/inputs/SearchParameters";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 // Importamos nuestro componente genérico de tablas
 import Breadcrumb from "@/components/common/Breadcrumb";
 import TablesParameters from "../src/components/tables/TablesParameters";
-import { NewDetailModal } from "../src/components/modals/NewDetailModal";
 // Importamos nuestro componente de modales
 import ModalCreate from "@/components/common/ModalCreate";
 import TabRecintDataCreate from "../src/components/tab_recint_data/TabRecintDataEdit";
 
 // IMPORTANTE: Importamos el componente ActionButtonsConfirm
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
+import ProjectStatus from "@/components/projects/ProjectStatus";
 
 // Funciones auxiliares para formatear valores
 const formatValue = (value: number | null | undefined): string => {
@@ -179,25 +178,6 @@ interface Puerta {
 }
 
 // -----------------------
-// Constantes para estilos de cabeceras fijas (si fueran necesarios)
-// -----------------------
-const stickyHeaderStyle1 = {
-  position: "sticky" as const,
-  top: 0,
-  backgroundColor: "#fff",
-  zIndex: 3,
-  textAlign: "center" as const,
-};
-
-const stickyHeaderStyle2 = {
-  position: "sticky" as const,
-  top: 40,
-  backgroundColor: "#fff",
-  zIndex: 2,
-  textAlign: "center" as const,
-};
-
-// -----------------------
 // Componente principal
 // -----------------------
 const WorkFlowpar2editPage: React.FC = () => {
@@ -210,6 +190,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   const [step, setStep] = useState<number>(4);
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [searchQuery, setSearchQuery] = useState("");
+  const [projectStatus, setProjectStatus] = useState("En proceso"); // Added state for project status
 
   // Estados para almacenar nombre de proyecto y región desde localStorage
   const [projectName, setProjectName] = useState("");
@@ -274,6 +255,26 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== ESTADOS PARA MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ======================
   const [deleteItem, setDeleteItem] = useState<{ id: number; type: "window" | "door" | "detail" } | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const fetchProjectData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const { data: projectData } = await axios.get(
+        `${constantUrlApiEndpoint}/projects/${projectId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProjectStatus(projectData?.status || "En proceso");
+    } catch (error: unknown) {
+      console.error("Error fetching project data", error);
+    }
+  };
+
+  useEffect(() => {
+    if (projectId) {
+      fetchProjectData();
+    }
+  }, [projectId]);
 
   // ===================== INIT ======================
   useEffect(() => {
@@ -1575,6 +1576,12 @@ const WorkFlowpar2editPage: React.FC = () => {
             </div>
           </div>
         </Card>
+
+        {router.query.id && projectId &&
+          <ProjectStatus
+            status={projectStatus}
+            projectId={router.query.id as string} />
+        }
       </div>
       {/* Modal para crear un nuevo detalle usando ModalCreate */}
       <ModalCreate
@@ -1745,6 +1752,7 @@ const WorkFlowpar2editPage: React.FC = () => {
               <label>Espesor de capa (cm)</label>
               <input
                 type="number"
+                min="0"
                 className="form-control"
                 value={editingDetail.layer_thickness}
                 onChange={(e) =>
@@ -1786,6 +1794,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentana.atributs?.u_vidrio || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentana((prev) =>
                     prev
@@ -1804,6 +1818,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentana.atributs?.fs_vidrio || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentana((prev) =>
                     prev
@@ -1822,6 +1842,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="text"
                 className="form-control"
                 value={editingVentana.atributs?.frame_type || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentana((prev) =>
                     prev
@@ -1852,6 +1878,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentana.u_marco || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentana((prev) =>
                     prev ? { ...prev, u_marco: parseFloat(e.target.value) } : prev
@@ -1865,6 +1897,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentana.fm !== undefined ? Math.round(editingVentana.fm * 100) : ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => {
                   const rawValue = e.target.value;
                   if (rawValue === "") {

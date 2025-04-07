@@ -327,6 +327,7 @@ const TabFloorCreate: React.FC = () => {
           <input
             type="number"
             className="form-control"
+            min="0"
             value={editValues.area}
             onKeyDown={(e) => {
               if (e.key === "-") {
@@ -342,6 +343,7 @@ const TabFloorCreate: React.FC = () => {
             type="number"
             className="form-control"
             value={editValues.parameter}
+            min="0"
             onKeyDown={(e) => {
               if (e.key === "-") {
                 e.preventDefault();
@@ -411,7 +413,7 @@ const TabFloorCreate: React.FC = () => {
       }
     },
     {
-      headerName: "Piso ventilado [¿?]",
+      headerName: "Piso ventilado",
       field: "pisoVentilado",
       renderCell: (row: FloorData) => {
         if (editingRowIndex === row.index) {
@@ -590,6 +592,7 @@ const TabFloorCreate: React.FC = () => {
               <input
                 type="number"
                 id="area"
+                min="0"
                 className="form-control"
                 value={area}
                 onKeyDown={(e) => {
@@ -610,6 +613,7 @@ const TabFloorCreate: React.FC = () => {
               <input
                 type="number"
                 id="parameter"
+                min="0"
                 className="form-control"
                 value={parameter}
                 onKeyDown={(e) => {

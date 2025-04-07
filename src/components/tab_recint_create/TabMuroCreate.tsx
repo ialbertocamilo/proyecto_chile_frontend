@@ -998,6 +998,7 @@ const TabMuroCreate: React.FC = () => {
             <div className="col-sm-9">
               <input
                 id="area"
+                min="0"
                 type="number"
                 name="area"
                 className="form-control form-control-sm"

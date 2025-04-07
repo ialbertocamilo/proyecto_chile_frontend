@@ -459,7 +459,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-              "Todos los detalles ya estaban en el proyecto"
+            "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -662,15 +662,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingColors.interior },
-                    exterior: { name: editingColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingColors.interior },
+                  exterior: { name: editingColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -721,15 +721,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingTechColors.interior },
-                    exterior: { name: editingTechColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingTechColors.interior },
+                  exterior: { name: editingTechColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -790,21 +790,21 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  ref_aisl_vertical: {
-                    lambda: Number(editingPisoForm.vertical.lambda),
-                    e_aisl: Number(editingPisoForm.vertical.e_aisl),
-                    d: Number(editingPisoForm.vertical.d),
-                  },
-                  ref_aisl_horizontal: {
-                    lambda: Number(editingPisoForm.horizontal.lambda),
-                    e_aisl: Number(editingPisoForm.horizontal.e_aisl),
-                    d: Number(editingPisoForm.horizontal.d),
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                ref_aisl_vertical: {
+                  lambda: Number(editingPisoForm.vertical.lambda),
+                  e_aisl: Number(editingPisoForm.vertical.e_aisl),
+                  d: Number(editingPisoForm.vertical.d),
                 },
-              }
+                ref_aisl_horizontal: {
+                  lambda: Number(editingPisoForm.horizontal.lambda),
+                  e_aisl: Number(editingPisoForm.horizontal.e_aisl),
+                  d: Number(editingPisoForm.horizontal.d),
+                },
+              },
+            }
             : item
         )
       );
@@ -915,9 +915,9 @@ const WorkFlowpar2createPage: React.FC = () => {
     const detailType = detailTypeMapping[tabStep4];
     const filteredDetails = detailType
       ? fetchedDetails.filter(
-          (det) =>
-            det.scantilon_location.toLowerCase() === detailType.toLowerCase()
-        )
+        (det) =>
+          det.scantilon_location.toLowerCase() === detailType.toLowerCase()
+      )
       : fetchedDetails;
 
     const columnsDetails = [
@@ -964,7 +964,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     });
 
     return (
-        <TablesParameters columns={columnsDetails} data={data} />
+      <TablesParameters columns={columnsDetails} data={data} />
     );
   };
 
@@ -1266,7 +1266,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               if (e.key === "-") {
                 e.preventDefault();
               }
-            }}          
+            }}
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1289,7 +1289,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               if (e.key === "-") {
                 e.preventDefault();
               }
-            }}          
+            }}
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1314,7 +1314,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               if (e.key === "-") {
                 e.preventDefault();
               }
-            }}          
+            }}
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1339,7 +1339,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               if (e.key === "-") {
                 e.preventDefault();
               }
-            }}          
+            }}
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1362,7 +1362,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               if (e.key === "-") {
                 e.preventDefault();
               }
-            }}          
+            }}
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1387,7 +1387,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               if (e.key === "-") {
                 e.preventDefault();
               }
-            }}          
+            }}
             onChange={(e) =>
               setEditingPisoForm((prev) => ({
                 ...prev,
@@ -1851,16 +1851,22 @@ const WorkFlowpar2createPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentanaForm.atributs?.u_vidrio || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_vidrio: Number(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_vidrio: Number(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1872,16 +1878,22 @@ const WorkFlowpar2createPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentanaForm.atributs?.fs_vidrio || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            fs_vidrio: Number(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          fs_vidrio: Number(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1897,12 +1909,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            frame_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          frame_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1918,12 +1930,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            clousure_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          clousure_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1935,6 +1947,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingVentanaForm.u_marco || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingVentanaForm((prev) =>
                     prev ? { ...prev, u_marco: Number(e.target.value) } : prev
@@ -1951,6 +1969,11 @@ const WorkFlowpar2createPage: React.FC = () => {
                 step="any"
                 className="form-control"
                 value={ventanaFmInput}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => {
                   let val = Number(e.target.value);
                   if (isNaN(val)) {
@@ -1999,16 +2022,22 @@ const WorkFlowpar2createPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingPuertaForm.atributs?.u_puerta_opaca || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingPuertaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_puerta_opaca: Number(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_puerta_opaca: Number(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2024,12 +2053,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            name_ventana: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          name_ventana: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2044,6 +2073,11 @@ const WorkFlowpar2createPage: React.FC = () => {
                 step="any"
                 className="form-control"
                 value={puertaPorcentajeInput}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => {
                   let val = Number(e.target.value);
                   if (isNaN(val)) {
@@ -2056,12 +2090,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev && prev.atributs
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: Math.round(val) / 100,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          porcentaje_vidrio: Math.round(val) / 100,
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -2073,6 +2107,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingPuertaForm.u_marco || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingPuertaForm((prev) =>
                     prev ? { ...prev, u_marco: Number(e.target.value) } : prev
@@ -2093,6 +2133,11 @@ const WorkFlowpar2createPage: React.FC = () => {
                     ? Math.round(editingPuertaForm.fm * 100)
                     : ""
                 }
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => {
                   let val = Number(e.target.value);
                   if (isNaN(val)) {
@@ -2213,11 +2258,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                 className="form-control"
                 placeholder="Espesor capa (cm)"
                 value={newDetailForm.layer_thickness ?? ""}
+                min="0"
                 onKeyDown={(e) => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) =>
                   setNewDetailForm({
                     ...newDetailForm,
@@ -2234,7 +2280,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {showDetallesModal && (
         // Aquí iría el componente/modal para mostrar los detalles generales
         <ModalCreate
-          onSave={() => {}}
+          onSave={() => { }}
           detail={null}
           isOpen={showDetallesModal}
           title="Detalles Generales"

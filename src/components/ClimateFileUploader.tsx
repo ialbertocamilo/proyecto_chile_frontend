@@ -67,17 +67,13 @@ const ClimateFileUploader: React.FC = () => {
             });
 
             if (!response) {
-                throw new Error( "Error al subir el archivo.");
+                throw new Error("Error al subir el archivo.");
             }
             notify("Archivo subido exitosamente.");
             setWeatherFiles([...weatherFiles, response.metadata]);
-        } catch (error: unknown) {
+        } catch (error: any) {
             console.error("Error uploading file:", error);
-            if (error instanceof Error) {
-                notify(error.message || "Error al subir el archivo.", "error");
-            } else {
-                notify("Error al subir el archivo.", "error");
-            }
+            notify(error?.response?.data?.detail || "Error al subir el archivo.", "error");
         }
     };
 
@@ -148,7 +144,7 @@ const ClimateFileUploader: React.FC = () => {
                 ))}
             </div>
             <div className="mt-4">
-                <h4>Archivos Meteorológicos Subidos</h4>
+                <h4>Archivos Subidos</h4>
                 <div className="table-responsive" style={{ maxHeight: "400px", overflowY: "auto" }}>
                     <table className="table table-striped">
                         <thead>
@@ -159,6 +155,7 @@ const ClimateFileUploader: React.FC = () => {
                                 <th>Distrito</th>
                                 <th>Zona</th>
                                 <th>Fecha de Creación</th>
+                                <th>Año</th>
                                 <th>Tamaño (KB)</th>
                             </tr>
                         </thead>
@@ -171,6 +168,7 @@ const ClimateFileUploader: React.FC = () => {
                                     <td>{file.district}</td>
                                     <td>{file.zone}</td>
                                     <td>{new Date(file.created_at).toLocaleDateString()}</td>
+                                    <td>{new Date(file.created_at).getFullYear()}</td>
                                     <td>{(file.file_size / 1024).toFixed(2)}</td>
                                 </tr>
                             ))}

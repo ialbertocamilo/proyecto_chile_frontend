@@ -562,6 +562,7 @@ const TabDoorCreate: React.FC = () => {
           return (
             <input
               type="number"
+              min={0}
               className="form-control"
               value={editingRow.high}
               onChange={(e) => handleRowFieldChange("high", Number(e.target.value))}
@@ -580,6 +581,7 @@ const TabDoorCreate: React.FC = () => {
           return (
             <input
               type="number"
+              min={0}
               className="form-control"
               value={editingRow.broad}
               onChange={(e) => handleRowFieldChange("broad", Number(e.target.value))}
@@ -931,8 +933,13 @@ const TabDoorCreate: React.FC = () => {
                 id="high"
                 className="form-control"
                 value={high}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => setHigh(Number(e.target.value))}
-                onKeyDown={preventHyphen}
               />
             </div>
           </div>
@@ -947,7 +954,12 @@ const TabDoorCreate: React.FC = () => {
                 className="form-control"
                 value={broad}
                 onChange={(e) => setBroad(Number(e.target.value))}
-                onKeyDown={preventHyphen}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
           </div>
@@ -967,11 +979,11 @@ const TabDoorCreate: React.FC = () => {
       >
         <div className="container">
           <div className="row mb-3">
-              <p>
-                ¿Está seguro que desea eliminar la puerta{" "}
-                <strong>{deletingRow?.tipoPuente}</strong>?
-              </p>
-            </div>
+            <p>
+              ¿Está seguro que desea eliminar la puerta{" "}
+              <strong>{deletingRow?.tipoPuente}</strong>?
+            </p>
+          </div>
         </div>
       </ModalCreate>
     </div>

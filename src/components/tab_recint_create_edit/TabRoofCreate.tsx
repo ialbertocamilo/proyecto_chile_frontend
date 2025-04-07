@@ -296,6 +296,8 @@ const TabCeilingCreate: React.FC = () => {
           return (
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               value={editingValues.area}
               onKeyDown={(e) => {
@@ -465,6 +467,8 @@ const TabCeilingCreate: React.FC = () => {
               <input
                 type="number"
                 id="area"
+                min="0"
+                step="any"
                 className="form-control"
                 value={area}
                 onKeyDown={(e) => {

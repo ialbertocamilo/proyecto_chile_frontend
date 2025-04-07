@@ -1,4 +1,4 @@
-import Card from "../common/Card";
+import { Card } from "react-bootstrap";
 import { ChartLoader } from "./ChartLoader";
 
 interface PerformanceData {
@@ -25,70 +25,70 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
 
     return (
         <Card>
-            <div className="container mb-4 mt-4">
-                <div className="row justify-content-end mb-3">
-                    <div className="col-auto">
-                        <select className="form-select">
-                            <option>Selecciona la región</option>
-                        </select>
-                    </div>
+        <div className="container mb-4">
+            <div className="row justify-content-end mb-3">
+                <div className="col-auto">
+                    <select className="form-select">
+                        <option>Selecciona la región</option>
+                    </select>
                 </div>
-                <div className="row mb-4">
-                    <div className="col-12">
-                        <h3 className="h6 text-muted mb-3">tCO2 equivalente</h3>
-                        <div className="row">
-                            <div className="col-md-6">
-                                <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
-                                    <div className="card-body">
-                                        <div className="h3" style={{ color: '#2ab0c5' }}>{data?.co2_equivalent?.total || 0}</div>
-                                        <div className="text-muted">Total</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
-                                    <div className="card-body">
-                                        <div className="h3" style={{ color: '#2ab0c5' }}>{data?.co2_equivalent?.baseline || 0}%</div>
-                                        <div className="text-muted">Línea base</div>
-                                    </div>
+            </div>
+            <div className="row mb-4">
+                <div className="col-12">
+                    <h3 className="h6 text-muted mb-3">tCO2 equivalente</h3>
+                    <div className="row">
+                        <div className="col-md-6">
+                            <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
+                                <div className="card-body">
+                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.co2_equivalent?.total || 999999}</div>
+                                    <div className="text-muted">Total</div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-12">
-                        <h3 className="h6 text-muted mb-3">Horas dentro del rango de confort anual</h3>
-                        <div className="row">
-                            <div className="col-md-4">
-                                <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
-                                    <div className="card-body">
-                                        <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.heating || 0}</div>
-                                        <div className="text-muted">Calefacción</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
-                                    <div className="card-body">
-                                        <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.cooling || 0}</div>
-                                        <div className="text-muted">Refrigeración</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
-                                    <div className="card-body">
-                                        <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.baseline || 0}%</div>
-                                        <div className="text-muted">Línea base</div>
-                                    </div>
+                        <div className="col-md-6">
+                            <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
+                                <div className="card-body">
+                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.co2_equivalent?.baseline || 100}%</div>
+                                    <div className="text-muted">Línea base</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-        </Card>
+            <div className="row">
+                <div className="col-12">
+                    <h3 className="h6 text-muted mb-3">Horas dentro del rango de confort anual</h3>
+                    <div className="row">
+                        <div className="col-md-4">
+                            <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
+                                <div className="card-body">
+                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.heating || 99}</div>
+                                    <div className="text-muted">Calefacción</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-md-4">
+                            <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
+                                <div className="card-body">
+                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.cooling || 99}</div>
+                                    <div className="text-muted">Refrigeración</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-md-4">
+                            <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
+                                <div className="card-body">
+                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.baseline || 100}%</div>
+                                    <div className="text-muted">Línea base</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+            </Card>
     );
 };

@@ -818,63 +818,63 @@ const TabMuroCreate: React.FC = () => {
           { label: "Acciones" }
         ],
         ...[
-          { 
+          {
             label: (
               <>
                 <span>P01</span><br /><span>L[m]</span>
               </>
             )
           },
-          { 
+          {
             label: (
               <>
                 <span>P01</span><br /><span>Elemento</span>
               </>
             )
           },
-          { 
+          {
             label: (
               <>
                 <span>P02</span><br /><span>L[m]</span>
               </>
             )
           },
-          { 
+          {
             label: (
               <>
                 <span>P02</span><br /><span>Elemento</span>
               </>
             )
           },
-          { 
+          {
             label: (
               <>
                 <span>P03</span><br /><span>L[m]</span>
               </>
             )
           },
-          { 
+          {
             label: (
               <>
                 <span>P03</span><br /><span>Elemento</span>
               </>
             )
           },
-          { 
+          {
             label: (
               <>
                 <span>P04</span><br /><span>L[m]</span>
               </>
             )
           },
-          { 
+          {
             label: (
               <>
                 <span>P04</span><br /><span>e Aislación [cm]</span>
               </>
             )
           },
-          { 
+          {
             label: (
               <>
                 <span>P04</span><br /><span>Elemento</span>
@@ -1042,8 +1042,13 @@ const TabMuroCreate: React.FC = () => {
                 name="area"
                 className="form-control form-control-sm"
                 value={newWall.area}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={handleWallInputChange}
-                onKeyDown={preventDash}
               />
             </div>
           </div>

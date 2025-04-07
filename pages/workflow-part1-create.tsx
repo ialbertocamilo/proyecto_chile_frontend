@@ -14,8 +14,7 @@ import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
-
-
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -35,6 +34,7 @@ interface FormData {
   latitude: number;
   longitude: number;
   address: string;
+  zone?: string;
 }
 
 interface Project {
@@ -56,7 +56,8 @@ const initialFormData: FormData = {
   built_surface: 0,
   latitude: -33.4589314398474,
   longitude: -70.6703553846175,
-  address: ''
+  address: '',
+  zone: "",
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -73,6 +74,10 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState<boolean>(false);
   const [globalError, setGlobalError] = useState<string>("");
+
+  // Estados para obtener zonas y la zona seleccionada
+  const [zones, setZones] = useState<any[]>([]);
+  const [selectedZone, setSelectedZone] = useState<string>("");
 
   // Definición de los pasos para la sidebar
   const steps = [
@@ -95,6 +100,20 @@ const ProjectWorkflowPart1: React.FC = () => {
         .trim() || "#3ca7b7";
     setPrimaryColor(pColor);
   }, []);
+
+  // Efecto para obtener las zonas de forma dinámica cuando cambien latitud y longitud
+  useEffect(() => {
+    if (isStep1Validated && formData.latitude && formData.longitude) {
+      axios
+        .get(`${constantUrlApiEndpoint}/zones?latitude=${formData.latitude}&longitude=${formData.longitude}`)
+        .then((response) => {
+          setZones(response.data);
+        })
+        .catch((error) => {
+          console.error("Error al obtener las zonas:", error);
+        });
+    }
+  }, [formData.latitude, formData.longitude]);
 
   const isFieldEmpty = (field: keyof FormData): boolean => {
     const value = formData[field];
@@ -240,7 +259,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     );
   };
 
-
   const enviarProyecto = async () => {
     setLoading(true);
     setGlobalError("");
@@ -269,8 +287,10 @@ const ProjectWorkflowPart1: React.FC = () => {
         built_surface: formData.built_surface,
         latitude: formData.latitude,
         longitude: formData.longitude,
-      };
+        project_metadata: {
+          zone: formData.zone,}
 
+      };
       const data = await post(`/projects/create`, requestBody);
       const { project_id } = data;
       localStorage.setItem("project_id", project_id.toString());
@@ -295,7 +315,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
     setLoading(false);
   };
-
 
   // Función que se encarga de la acción del botón Continuar en el paso 1
   const handleStep1Action = async () => {
@@ -708,29 +727,16 @@ const ProjectWorkflowPart1: React.FC = () => {
                     formData={formData}
                     handleFormInputChange={handleFormInputChange}
                   />
-
                   <div className="d-flex justify-content-between align-items-center ">
                     <div className="d-flex">
-                      <CustomButton
-                        variant="save"
-                        onClick={handleGeolocation}
-                      >
-                        <span className="material-icons">
-                          location_on
-                        </span>
+                      <CustomButton variant="save" onClick={handleGeolocation}>
+                        <span className="material-icons">location_on</span>
                         Ubicación actual
                       </CustomButton>
                     </div>
                     <div className="d-flex">
-                      <CustomButton
-                        variant="save"
-                        onClick={enviarProyecto}
-                        disabled={loading}
-                      >
-                        <span
-                          className="material-icons"
-                          style={{ marginRight: "5px" }}
-                        >
+                      <CustomButton variant="save" onClick={enviarProyecto} disabled={loading}>
+                        <span className="material-icons" style={{ marginRight: "5px" }}>
                           sd_card
                         </span>
                         Grabar Datos

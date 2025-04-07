@@ -661,13 +661,13 @@ const DataEntryPage: React.FC = () => {
         prev.map((el) =>
           el.id === element.id
             ? {
-                ...element,
-                fm: fmFraction,
-                atributs: {
-                  ...element.atributs,
-                  porcentaje_vidrio: porcentajeVidrioFraction,
-                },
-              }
+              ...element,
+              fm: fmFraction,
+              atributs: {
+                ...element.atributs,
+                porcentaje_vidrio: porcentajeVidrioFraction,
+              },
+            }
             : el
         )
       );
@@ -721,7 +721,7 @@ const DataEntryPage: React.FC = () => {
         fetchAllWindowsForDoor();
       }
     }
-    
+
   }, [step, modalElementType, fetchElements, fetchAllWindowsForDoor]);
 
   useEffect(() => {
@@ -1469,13 +1469,18 @@ const DataEntryPage: React.FC = () => {
                   className="form-control"
                   placeholder="U Puerta opaca"
                   value={doorData.u_puerta_opaca}
+                  onKeyDown={(e) => {
+                    if (e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
                   onChange={(e) =>
                     setDoorData((prev) => ({
                       ...prev,
                       u_puerta_opaca: e.target.value,
                     }))
                   }
-                  onKeyDown={handleNumberKeyDown}
+                 
                 />
               </div>
               <div className="form-group mb-3">
@@ -1602,18 +1607,24 @@ const DataEntryPage: React.FC = () => {
               <label>U Vidrio [W/m²K]</label>
               <input
                 type="number"
+                min="0"
                 className="form-control"
                 value={editingWindowData.atributs.u_vidrio || ""}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1623,18 +1634,24 @@ const DataEntryPage: React.FC = () => {
               <label>FS Vidrio</label>
               <input
                 type="number"
+                min="0"
                 className="form-control"
                 value={editingWindowData.atributs.fs_vidrio || ""}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            fs_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          fs_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1649,12 +1666,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            clousure_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          clousure_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1676,12 +1693,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            frame_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          frame_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1700,8 +1717,14 @@ const DataEntryPage: React.FC = () => {
               <label>U Marco [W/m²K]</label>
               <input
                 type="number"
+                min="0"
                 className="form-control"
                 value={editingWindowData.u_marco || ""}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingWindowData((prev) =>
                     prev ? { ...prev, u_marco: parseFloat(e.target.value) } : prev
@@ -1717,6 +1740,11 @@ const DataEntryPage: React.FC = () => {
                 max="100"
                 className="form-control"
                 value={editingWindowData.fm || ""}
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => {
                   const rawValue = parseFloat(e.target.value);
                   if (isNaN(rawValue)) {
@@ -1765,16 +1793,22 @@ const DataEntryPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingDoorData.atributs.u_puerta_opaca || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_puerta_opaca: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_puerta_opaca: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1793,13 +1827,13 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            ventana_id: selectedId ? parseInt(selectedId) : 0,
-                            name_ventana: selectedWindow ? selectedWindow.name_element : "",
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          ventana_id: selectedId ? parseInt(selectedId) : 0,
+                          name_ventana: selectedWindow ? selectedWindow.name_element : "",
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -1816,7 +1850,6 @@ const DataEntryPage: React.FC = () => {
               <label>% Vidrio</label>
               <input
                 type="number"
-                min="0"
                 max="100"
                 className="form-control"
                 value={
@@ -1824,18 +1857,24 @@ const DataEntryPage: React.FC = () => {
                     ? editingDoorData.atributs.porcentaje_vidrio.toString()
                     : ""
                 }
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => {
                   const val = parseFloat(e.target.value);
                   const clamped = validatePercentage(val);
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: clamped,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          porcentaje_vidrio: clamped,
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -1847,6 +1886,12 @@ const DataEntryPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 value={editingDoorData.u_marco || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) =>
                   setEditingDoorData((prev) =>
                     prev ? { ...prev, u_marco: parseFloat(e.target.value) } : prev
@@ -1858,10 +1903,15 @@ const DataEntryPage: React.FC = () => {
               <label>FM [%]</label>
               <input
                 type="number"
-                min="0"
                 max="100"
                 className="form-control"
                 value={editingDoorData.fm || ""}
+                min="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-") {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => {
                   const rawValue = parseFloat(e.target.value);
                   if (isNaN(rawValue)) {

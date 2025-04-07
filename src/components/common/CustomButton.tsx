@@ -5,24 +5,25 @@ import { Tooltip } from 'react-tooltip';
 
 interface CustomButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
   variant?:
-    | 'save'
-    | 'back'
-    | 'delete'
-    | 'editIcon'
-    | 'deleteIcon'
-    | 'backIcon'
-    | 'forwardIcon'
-    | 'addIcon'
-    | 'listIcon'
-    | 'cancelIcon'
-    | 'viewIcon'
-    | 'closed'
-    | 'borderless';
+  | 'save'
+  | 'back'
+  | 'delete'
+  | 'editIcon'
+  | 'deleteIcon'
+  | 'backIcon'
+  | 'forwardIcon'
+  | 'addIcon'
+  | 'listIcon'
+  | 'cancelIcon'
+  | 'viewIcon'
+  | 'closed'
+  | 'borderless';
   type?: 'button' | 'submit';
   isLoading?: boolean;
   margin?: string;
   icon?: LucideIcon;
   iconSize?: number; // Tamaño en pixeles
+  color?: 'yellow' | 'orange' | 'red'; // Add optional color parameter
 }
 
 const CustomButton: FC<CustomButtonProps> = ({
@@ -35,6 +36,7 @@ const CustomButton: FC<CustomButtonProps> = ({
   icon: Icon,
   iconSize = 24, // Puedes cambiar el valor por defecto aquí
   type = 'button',
+  color,
   ...rest
 }) => {
   if (disabled) return null;
@@ -111,15 +113,16 @@ const CustomButton: FC<CustomButtonProps> = ({
     variant === 'deleteIcon'
       ? 'btn-icon-only btn-deleteIcon'
       : variant === 'editIcon'
-      ? 'btn-icon-only btn-editIcon'
-      : isIconOnly
-      ? 'btn-icon-only'
-      : variant === 'borderless'
-      ? 'btn-borderless'
-      : `btn-${variant}`;
+        ? 'btn-icon-only btn-editIcon'
+        : isIconOnly
+          ? 'btn-icon-only'
+          : variant === 'borderless'
+            ? 'btn-borderless'
+            : `btn-${variant}`;
 
   const disabledClass = disabled || isLoading ? 'disabled' : '';
   const buttonId = variant === 'cancelIcon' ? 'grabar-datos-btn' : undefined;
+  const colorClass = color === 'yellow' ? 'btn-yellow' : color === 'orange' ? 'btn-orange' : color === 'red' ? 'btn-red' : '';
 
   return (
     <>
@@ -130,7 +133,7 @@ const CustomButton: FC<CustomButtonProps> = ({
         disabled={disabled || isLoading}
         aria-busy={isLoading}
         style={{ margin }}
-        className={`button btn-small px-2 btn btn-primary ${variantClass} ${className} ${disabledClass}`}
+        className={`button btn-small px-2 btn btn-primary ${variantClass} ${colorClass} ${className} ${disabledClass}`}
         title={tooltipText}
         {...rest}
       >
@@ -274,6 +277,33 @@ const CustomButton: FC<CustomButtonProps> = ({
         .btn-editIcon:hover {
           color: #2ab0c5 !important;
           background: transparent !important;
+        }
+
+        .btn-yellow {
+          background-color: yellow !important;
+          color: black !important;
+        }
+
+        .btn-yellow:hover {
+          background-color: #ffd700 !important; /* Darker yellow */
+        }
+
+        .btn-orange {
+          background-color: orange !important;
+          color: white !important;
+        }
+
+        .btn-orange:hover {
+          background-color: #ff8c00 !important; /* Darker orange */
+        }
+
+        .btn-red {
+          background-color: red !important;
+          color: white !important;
+        }
+
+        .btn-red:hover {
+          background-color: #b22222 !important; /* Darker red */
         }
       `}</style>
     </>

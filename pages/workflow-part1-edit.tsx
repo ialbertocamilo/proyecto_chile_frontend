@@ -17,11 +17,8 @@ import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader"; // I
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import ProjectStatus from "@/components/projects/ProjectStatus";
 
-// Cargamos el mapa sin SSR
-const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
-  ssr: false,
-});
 
 type Country = "" | "Perú" | "Chile";
 
@@ -40,12 +37,12 @@ interface FormData {
   built_surface: number;
   latitude: number;
   longitude: number;
-  address: string
+  address: string;
+  status?:string
 }
 
 interface Project {
   name_project: string;
-  // Puedes agregar más propiedades según tu modelo
 }
 
 const initialFormData: FormData = {
@@ -73,7 +70,6 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   const [, setPrimaryColor] = useState("#3ca7b7");
   const [step, setStep] = useState<number>(1);
-  const [locationSearch, setLocationSearch] = useState("");
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -143,6 +139,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           built_surface: projectData.built_surface || 0,
           latitude: projectData.latitude || -33.4589314398474,
           longitude: projectData.longitude || -70.6703553846175,
+          status: projectData?.status || "En proceso",
         });
       } catch (error: unknown) {
         console.error("Error fetching project data", error);
@@ -847,6 +844,9 @@ const ProjectWorkflowPart1: React.FC = () => {
             </div>
           </div>
         </Card>
+        
+        
+        {router.query.id && formData?.status && <ProjectStatus status={formData?.status} projectId={router.query.id as string}/>}
       </div>
     </>
   );

@@ -18,11 +18,6 @@ import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
-// Cargamos el mapa sin SSR
-const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
-  ssr: false,
-});
-
 type Country = "" | "Perú" | "Chile";
 
 interface FormData {
@@ -40,7 +35,8 @@ interface FormData {
   built_surface: number;
   latitude: number;
   longitude: number;
-  address: string
+  address: string;
+  zone?: string;
 }
 
 interface Project {
@@ -63,7 +59,8 @@ const initialFormData: FormData = {
   built_surface: 0,
   latitude: -33.4589314398474,
   longitude: -70.6703553846175,
-  address: ''
+  address: "",
+  zone: ""
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -143,6 +140,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           built_surface: projectData.built_surface || 0,
           latitude: projectData.latitude || -33.4589314398474,
           longitude: projectData.longitude || -70.6703553846175,
+          zone: projectData.project_metadata?.zone || ""
         });
       } catch (error: unknown) {
         console.error("Error fetching project data", error);
@@ -287,7 +285,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     );
   };
 
-
   const enviarProyecto = async () => {
     setLoading(true);
     setGlobalError("");
@@ -309,22 +306,23 @@ const ProjectWorkflowPart1: React.FC = () => {
         name_project: formData.name_project,
         owner_name: formData.owner_name,
         owner_lastname: formData.owner_lastname,
+        project_metadata: { zone: formData.zone }, // Se guarda la zona seleccionada dentro de project_metadata
         building_type: formData.building_type,
         main_use_type: formData.main_use_type,
         number_levels: formData.number_levels,
         number_homes_per_level: formData.number_homes_per_level,
         built_surface: formData.built_surface,
         latitude: formData.latitude,
-        longitude: formData.longitude,
+        longitude: formData.longitude
       };
 
       console.log("RequestBody:", requestBody);
 
       if (router.query.id) {
-        const projectIdParam = Array.isArray(router.query.id)
-          ? router.query.id[0]
-          : router.query.id || localStorage.getItem("project_id");
-        const { data } = await axios.put(
+        const projectIdParam =
+          Array.isArray(router.query.id) ? router.query.id[0] : router.query.id || localStorage.getItem("project_id_edit");
+      
+        await axios.put(
           `${constantUrlApiEndpoint}/my-projects/${projectIdParam}/update`,
           requestBody,
           {
@@ -334,7 +332,7 @@ const ProjectWorkflowPart1: React.FC = () => {
             },
           }
         );
-        console.log(data.message || "Proyecto actualizado con éxito.");
+        localStorage.setItem("project_department_edit", formData.department);
         notify("Proyecto actualizado con éxito.");
       } else {
         const { data } = await axios.post(
@@ -397,14 +395,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
-  const renderMainHeader = () => {
-    return (
-      <div className="w-100">
-        <Title text={router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"} />
-      </div>
-    );
-  };
-
   // Definición de los pasos para la sidebar
   const steps = [
     {
@@ -441,6 +431,14 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
+  const renderMainHeader = () => {
+    return (
+      <div className="w-100">
+        <Title text={router.query.id ? "Edición de Proyecto" : "Proyecto nuevo"} />
+      </div>
+    );
+  };
+
   return (
     <>
       <GooIcons />
@@ -463,8 +461,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           </div>
         </Card>
         <Card>
-          <div className="row" >
-
+          <div className="row">
             <div className="col-12 col-lg-3">
               <AdminSidebar activeStep={step} onStepChange={handleSidebarStepChange} steps={steps} />
             </div>

@@ -66,6 +66,8 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [step, setStep] = useState<number>(1);
   const [locationSearch, setLocationSearch] = useState("");
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  // Estado para almacenar project_metadata (ahora solo se extrae la zona)
+  const [projectMetadata, setProjectMetadata] = useState("");
 
   // Estado para almacenar datos del header del proyecto
   const [projectHeaderData, setProjectHeaderData] = useState({
@@ -134,6 +136,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
+        // Utilizar la ruta de admin para obtener project_metadata
         const { data: projectData } = await axios.get(
           `${constantUrlApiEndpoint}/projects/${projectIdStr}`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -155,6 +158,8 @@ const ProjectWorkflowPart1: React.FC = () => {
           longitude: projectData.longitude || -70.6703553846175,
           address: projectData.divisions?.address || ""
         });
+        // Extraer la zona desde project_metadata, asumiendo que la propiedad se llama "zone"
+        setProjectMetadata(projectData.project_metadata?.zone || "");
       } catch (error: unknown) {
         console.error("Error fetching project data", error);
       }
@@ -407,7 +412,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       <div className="col-12 col-md-8 mb-3">
                         <div style={{ pointerEvents: "none" }}>
                           <NoSSRInteractiveMap
-                            onLocationSelect={() => { }}
+                            onLocationSelect={() => {}}
                             initialLat={formData.latitude}
                             initialLng={formData.longitude}
                           />
@@ -434,6 +439,18 @@ const ProjectWorkflowPart1: React.FC = () => {
                             className="form-control"
                             rows={5}
                             value={`Dirección: ${formData.address}`}
+                            readOnly
+                            style={{ width: "100%", height: "100px" }}
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label" style={{ width: "100%", height: "20px" }}>
+                            Project Metadata (Zona)
+                          </label>
+                          <textarea
+                            className="form-control"
+                            rows={5}
+                            value={projectMetadata}
                             readOnly
                             style={{ width: "100%", height: "100px" }}
                           />

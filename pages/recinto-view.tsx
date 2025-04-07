@@ -21,7 +21,7 @@ interface Ventana {
   window_name: string;
   position: string;
   orientation: string;
-  angulo_azimut: string;
+  anguloAzimut: string;
   characteristics?: string;
   housed_in?: number | string;
   clousure_type?: string;
@@ -113,9 +113,10 @@ interface DoorData {
   fav_id: number | null;
 }
 
-// Nueva interfaz para la tabla de obstrucciones
+// Actualización de la interfaz para obstrucciones
 interface ObstructionsData {
   id: number;
+  division_id: number | null;
   index: number;
   división: string;
   floor_id: number;
@@ -125,9 +126,9 @@ interface ObstructionsData {
   anguloAzimut: string;
   orientación: any;
   obstrucción: number;
+  mainRow: boolean;
 }
 
-// Nueva cabecera: Vista de Desarrollo de proyecto
 const HeaderVistaDesarrollo: React.FC = () => {
   const [projectName, setProjectName] = useState("");
   const [projectDepartment, setProjectDepartment] = useState("");
@@ -179,8 +180,10 @@ const RecintoView: React.FC = () => {
   const [doorOptions, setDoorOptions] = useState<any[]>([]);
   const [activeWallTab, setActiveWallTab] = useState<"muros" | "puentes">("muros");
   const [floorTableData, setFloorTableData] = useState<FloorData[]>([]);
-  // Estado para la tabla de obstrucciones
-  const [obstructions, setObstructions] = useState<ObstructionsData[]>([]);
+  
+  // Nuevas variables para la tabla de obstrucciones
+  const [obstructionsData, setObstructionsData] = useState<ObstructionsData[]>([]);
+  const [obstructionsLoading, setObstructionsLoading] = useState<boolean>(false);
 
   // Definición de columnas para la tabla de muros
   const murosColumns = [
@@ -540,15 +543,43 @@ const RecintoView: React.FC = () => {
     },
   ];
 
-  // Definición de columnas para la tabla de obstrucciones (nueva)
+  // NUEVA definición de columnas para la tabla de obstrucciones (versión simplificada)
   const obstructionColumns = [
-    { headerName: "División", field: "división" },
-    { headerName: "A [m]", field: "a" },
-    { headerName: "B [m]", field: "b" },
-    { headerName: "D [m]", field: "d" },
-    { headerName: "Ángulo Azimut", field: "anguloAzimut" },
-    { headerName: "Orientación", field: "orientación" },
-    { headerName: "Obstrucción", field: "obstrucción" },
+    {
+      headerName: "Ángulo Azimut",
+      field: "anguloAzimut",
+      renderCell: (row: ObstructionsData) => row.mainRow ? row.anguloAzimut : "",
+    },
+    {
+      headerName: "Orientación",
+      field: "orientación",
+      renderCell: (row: ObstructionsData) => row.mainRow ? (row.orientación || "-") : "",
+    },
+    {
+      headerName: "Obstrucción",
+      field: "obstrucción",
+      renderCell: (row: ObstructionsData) => row.obstrucción === 0 ? "-" : row.obstrucción,
+    },
+    {
+      headerName: "División",
+      field: "división",
+      renderCell: (row: ObstructionsData) => row.división,
+    },
+    {
+      headerName: "A [m]",
+      field: "a",
+      renderCell: (row: ObstructionsData) => row.a === 0 ? "-" : row.a,
+    },
+    {
+      headerName: "B [m]",
+      field: "b",
+      renderCell: (row: ObstructionsData) => row.b === 0 ? "-" : row.b,
+    },
+    {
+      headerName: "D [m]",
+      field: "d",
+      renderCell: (row: ObstructionsData) => row.d === 0 ? "-" : row.d,
+    },
   ];
 
   // Función de formateo: reemplaza el valor 0 por guion y en otros casos formatea con dos decimales
@@ -803,10 +834,11 @@ const RecintoView: React.FC = () => {
     fetchDoorData();
   }, [token, enclosure_id]);
 
-  // Nuevo useEffect para obtener obstrucciones utilizando el "recinto_id" del LocalStorage
+  // NUEVO useEffect para cargar la tabla de obstrucciones (versión simplificada)
   useEffect(() => {
     const enclosureId = localStorage.getItem("enclosure_id");
     if (!token || !enclosureId) return;
+    setObstructionsLoading(true);
     const headers = {
       accept: "application/json",
       Authorization: `Bearer ${token}`,
@@ -814,37 +846,38 @@ const RecintoView: React.FC = () => {
     fetch(`${constantUrlApiEndpoint}/obstruction/${enclosureId}`, { headers })
       .then((res) => res.json())
       .then((data) => {
-        const obstructionsRows: ObstructionsData[] = [];
-
-        if (data.orientations && Array.isArray(data.orientations)) {
-          data.orientations.forEach((orientation: any) => {
-            if (orientation.divisions && orientation.divisions.length > 0) {
-              orientation.divisions.forEach((division: any, idx: number) => {
-                obstructionsRows.push({
-                  id: division.division_id,
-                  index: idx,
-                  división: division.division,
-                  floor_id: data.enclosure_id,
-                  a: division.a,
-                  b: division.b,
-                  d: division.d,
-                  anguloAzimut: orientation.azimut,
-                  orientación: orientation.orientation,
-                  obstrucción: 1, // Valor por defecto, se puede ajustar según la lógica
-                });
-              });
-            }
-          });
-        }
-
-        setObstructions(obstructionsRows);
+        const mappedData = data.orientations.map((orientation: any, index: number) => {
+          const divisionData =
+            orientation.divisions && orientation.divisions.length > 0
+              ? orientation.divisions[0]
+              : null;
+          return {
+            id: orientation.orientation_id,
+            division_id: divisionData ? divisionData.division_id : null,
+            index: index + 1,
+            división: divisionData ? divisionData.division : "-",
+            floor_id: orientation.enclosure_id,
+            a: divisionData ? divisionData.a : 0,
+            b: divisionData ? divisionData.b : 0,
+            d: divisionData ? divisionData.d : 0,
+            anguloAzimut: orientation.azimut,
+            orientación: orientation.orientation,
+            obstrucción: 0,
+            mainRow: true,
+          };
+        });
+        setObstructionsData(mappedData);
+        setObstructionsLoading(false);
       })
-      .catch((err) => console.error("Error al obtener obstrucciones:", err));
+      .catch((err) => {
+        console.error("Error al cargar datos de obstrucciones", err);
+        setObstructionsLoading(false);
+      });
   }, [token]);
 
   return (
     <div>
-      {/* Nueva cabecera: Vista de Desarrollo de proyecto */}
+      {/* Cabecera: Vista de Desarrollo de proyecto */}
       <HeaderVistaDesarrollo />
 
       {/* Muros y Puentes Térmicos */}
@@ -880,7 +913,7 @@ const RecintoView: React.FC = () => {
                 id: win.id,
                 tipoVano: win.window_name,
                 caracteristicas: win.characteristics || "",
-                anguloAzimut: win.angulo_azimut,
+                anguloAzimut: win.anguloAzimut,
                 orientacion: win.orientation,
                 alojadoEn: win.housed_in,
                 tipoCierre: win.clousure_type,
@@ -953,14 +986,18 @@ const RecintoView: React.FC = () => {
         </section>
       </Card>
 
-      {/* Obstrucciones - tabla agregada inline */}
+      {/* Obstrucciones - tabla reemplazada con la versión simplificada inline */}
       <Card>
         <section>
           <div style={{ marginTop: "10px" }}>
             <Title text="Obstrucciones" variant="subtitle" />
           </div>
-          {obstructions.length > 0 ? (
-            <TablesParameters columns={obstructionColumns} data={obstructions} />
+          {obstructionsLoading ? (
+            <div className="text-center p-4">
+              <p>Cargando datos de obstrucciones...</p>
+            </div>
+          ) : obstructionsData.length > 0 ? (
+            <TablesParameters columns={obstructionColumns} data={obstructionsData} />
           ) : (
             <p>No hay obstrucciones creadas.</p>
           )}

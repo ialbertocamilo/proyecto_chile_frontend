@@ -698,7 +698,7 @@ const AdministrationPage: React.FC = () => {
   const sidebarSteps = [
     { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de Materiales" },
     { stepNumber: 4, iconName: "build", title: "Detalles Constructivos" },
-    { stepNumber: 5, iconName: "home", title: "Elementos Translúcidos" },
+    { stepNumber: 5, iconName: "home", title: "Ventanas y Puertas" },
     { stepNumber: 6, iconName: "deck", title: "Perfil de Uso" },
   ];
 
@@ -756,7 +756,7 @@ const AdministrationPage: React.FC = () => {
               </div>
             )}
 
-            {/* Step 5: Elementos Translúcidos */}
+            {/* Step 5: Ventanas y Puertas */}
             {step === 5 && (
               <>
                 <SearchParameters

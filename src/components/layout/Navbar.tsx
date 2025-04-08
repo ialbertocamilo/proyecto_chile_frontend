@@ -19,7 +19,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [isSubmenuOpen, setIsSubmenuOpen] = useState(false); 
+  const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
+  const [isDataEntrySubmenuOpen, setIsDataEntrySubmenuOpen] = useState(false);
   const isClient = useIsClient();
   const navRef = useRef<HTMLElement>(null);
 
@@ -217,13 +218,13 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   return (
     <>
       <GoogleIcons />
-      
+
       {/* Botón flotante en mobile cuando la navbar está cerrada */}
       {isMobile && !isNavOpen && (
-        <button 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleNewFunction(); 
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleNewFunction();
           }}
           style={{
             position: "fixed",
@@ -477,58 +478,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                 </>
               ) : roleId === "2" && (
                 <>
-                  {/* Sección General */}
-                  <div className="nav-section">
-                    <div
-                      style={{
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '0 20px',
-                        marginBottom: '10px'
-                      }}
-                    >
-                      <span
-                        style={{
-                          color: "#fff",
-                          fontSize: "0.8rem",
-                          opacity: 0.7
-                        }}
-                      >
-                        General
-                      </span>
-                    </div>
-                    <div style={{ display: 'block' }}>
-                      <li className="nav-item">
-                        <Link
-                          href="/data-entry"
-                          className="nav-link text-white"
-                          style={{
-                            ...navLinkStyle,
-                            flexDirection: isNavOpen ? "row" : "column",
-                            justifyContent: isNavOpen ? "flex-start" : "center",
-                            padding: isNavOpen ? "10px 20px" : "10px 5px"
-                          }}
-                        >
-                          <span
-                            style={iconStyle("/data-entry")}
-                            className="material-icons"
-                          >
-                            input
-                          </span>
-                          <span
-                            style={{
-                              marginLeft: isNavOpen ? "10px" : "0",
-                              display: !isMobile && !isNavOpen ? "none" : "block"
-                            }}
-                          >
-                            Ingreso de Datos de entrada
-                          </span>
-                        </Link>
-                      </li>
-                    </div>
-                  </div>
-
                   {/* Sección Proyecto */}
                   <div className="nav-section" style={{ marginTop: "20px" }}>
                     <div
@@ -670,10 +619,147 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       </li>
                     </div>
                   </div>
+                  {/* Sección General */}
+                  <div className="nav-section">
+                    <div
+                      style={{
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '0 20px',
+                        marginBottom: '10px'
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#fff",
+                          fontSize: "0.8rem",
+                          opacity: 0.7
+                        }}
+                      >
+                        General
+                      </span>
+                    </div>
+                    <div style={{ display: 'block' }}>
+                      {/* Ingreso de Datos de entrada con submenú */}
+                      <li className="nav-item">
+                        <div
+                          className="nav-link text-white"
+                          style={{
+                            ...navLinkStyle,
+                            flexDirection: isNavOpen ? "row" : "column",
+                            justifyContent: isNavOpen ? "flex-start" : "center",
+                            padding: isNavOpen ? "10px 20px" : "10px 5px",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            // Se redirige directamente a la sección Data entry
+                            router.push("/data-entry?step=3");
+                            // Se alterna el submenú si se desean mostrar las opciones adicionales
+                            setIsDataEntrySubmenuOpen((prev) => !prev);
+                          }}
+                        >
+                          <span style={iconStyle("/data-entry")} className="material-icons">
+                            input
+                          </span>
+                          <span
+                            style={{
+                              marginLeft: isNavOpen ? "10px" : "0",
+                              display: !isMobile && !isNavOpen ? "none" : "block"
+                            }}
+                          >
+                            Ingreso de Datos de entrada
+                          </span>
+                          {isNavOpen && (
+                            <span
+                              className="material-icons"
+                              style={{
+                                marginLeft: "auto",
+                                transform: isDataEntrySubmenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                                transition: "transform 0.3s ease",
+                              }}
+                            >
+                              expand_more
+                            </span>
+                          )}
+                        </div>
+                        {isNavOpen && (
+                          <div
+                            style={{
+                              maxHeight: isDataEntrySubmenuOpen ? "200px" : "0px",
+                              opacity: isDataEntrySubmenuOpen ? 1 : 0,
+                              overflow: "hidden",
+                              transition: "all 0.3s ease",
+                            }}
+                          >
+                            <ul className="nav flex-column" style={{ paddingLeft: "20px" }}>
+                              <li className="nav-item">
+                                <Link
+                                  href="/data-entry?step=3"
+                                  className="nav-link text-white"
+                                  style={{
+                                    ...navLinkStyle,
+                                    flexDirection: "row",
+                                    justifyContent: "flex-start",
+                                    padding: "10px 20px",
+                                  }}
+                                >
+                                  <span style={iconStyle("/data-entry/materials-list")} className="material-icons">
+                                    imagesearch_roller
+                                  </span>
+                                  <span style={{ marginLeft: "10px", display: "block" }}>
+                                    Lista de materiales
+                                  </span>
+                                </Link>
+                              </li>
+                              <li className="nav-item">
+                                <Link
+                                  href="/data-entry?step=5"
+                                  className="nav-link text-white"
+                                  style={{
+                                    ...navLinkStyle,
+                                    flexDirection: "row",
+                                    justifyContent: "flex-start",
+                                    padding: "10px 20px",
+                                  }}
+                                >
+                                  <span style={iconStyle("/data-entry/translucent-elements")} className="material-icons">
+                                    home
+                                  </span>
+                                  <span style={{ marginLeft: "10px", display: "block" }}>
+                                    Ventanas y Puertas
+                                  </span>
+                                </Link>
+                              </li>
+                              <li className="nav-item">
+                                <Link
+                                  href="/data-entry?step=6"
+                                  className="nav-link text-white"
+                                  style={{
+                                    ...navLinkStyle,
+                                    flexDirection: "row",
+                                    justifyContent: "flex-start",
+                                    padding: "10px 20px",
+                                  }}
+                                >
+                                  <span style={iconStyle("/data-entry/usage-profile")} className="material-icons">
+                                    deck
+                                  </span>
+                                  <span style={{ marginLeft: "10px", display: "block" }}>
+                                    Perfil de uso
+                                  </span>
+                                </Link>
+                              </li>
+                            </ul>
+                          </div>
+                        )}
+                      </li>
+                    </div>
+                  </div>
                 </>
               )}
             </ul>
-            
+
             <ul className="nav flex-column" style={{ marginTop: "auto" }}>
               <li className="nav-item">
                 <div

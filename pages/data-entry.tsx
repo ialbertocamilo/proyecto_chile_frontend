@@ -1165,7 +1165,7 @@ const DataEntryPage: React.FC = () => {
               onStepChange={setStep}
               steps={[
                 { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de materiales" },
-                { stepNumber: 5, iconName: "home", title: "Elementos translúcidos" },
+                { stepNumber: 5, iconName: "home", title: "Ventanas y Puertas" },
                 { stepNumber: 6, iconName: "deck", title: "Perfil de uso" },
                 { stepNumber: 7, iconName: "cloud_upload", title: "Archivo clima" },
               ]}

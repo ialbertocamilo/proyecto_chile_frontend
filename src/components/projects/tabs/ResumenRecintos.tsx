@@ -3,6 +3,36 @@ import { useConstants } from '@/hooks/useConstantsHook';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
+interface Recinto {
+    id: number;
+    name_enclosure: string;
+    usage_profile_name: string;
+    height: number;
+    superficie: number;
+    demanda_calef: number;
+    demanda_ref: number;
+    demanda_ilum: number;
+    demanda_total: number;
+    consumo_calef: number;
+    consumo_ref: number;
+    consumo_total: number;
+    co2_eq: number;
+    hrs_disconfort: number;
+    rendimiento_calef?: number;
+    distribucion_calef?: number;
+    control_calef?: number;
+    scop_calef?: number;
+    scop_mc_calef?: number;
+    rendimiento_ref?: number;
+    distribucion_ref?: number;
+    control_ref?: number;
+    scop_ref?: number;
+    scop_mc_ref?: number;
+    consumo_energia_primaria_calef?: number;
+    consumo_energia_primaria_ref?: number;
+    consumo_energia_primaria_total?: number;
+}
+
 interface ResumenRecintosProps {
     onRecintosCalculated: (recintos: Recinto[]) => void;
 }
@@ -11,36 +41,6 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
     const api = useApi();
     const router = useRouter();
     const result = useConstants("energy_systems", "general");
-
-    interface Recinto {
-        id: number;
-        name_enclosure: string;
-        usage_profile_name: string;
-        height: number;
-        superficie: number;
-        demanda_calef: number;
-        demanda_ref: number;
-        demanda_ilum: number;
-        demanda_total: number;
-        consumo_calef: number;
-        consumo_ref: number;
-        consumo_total: number;
-        co2_eq: number;
-        hrs_disconfort: number;
-        rendimiento_calef?: number;
-        distribucion_calef?: number;
-        control_calef?: number;
-        scop_calef?: number;
-        scop_mc_calef?: number;
-        rendimiento_ref?: number;
-        distribucion_ref?: number;
-        control_ref?: number;
-        scop_ref?: number;
-        scop_mc_ref?: number;
-        consumo_energia_primaria_calef?: number;
-        consumo_energia_primaria_ref?: number;
-        consumo_energia_primaria_total?: number;
-    }
 
     const [recintos, setRecintos] = useState<Recinto[]>([]);
     const [calculatedRecintos, setCalculatedRecintos] = useState<Recinto[]>([]);

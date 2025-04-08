@@ -1,5 +1,3 @@
-// recinto-edit-mode-create.tsx
-
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponentEdit";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import Breadcrumb from "@/components/common/Breadcrumb";
@@ -7,7 +5,7 @@ import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
-import CustomButton from "../src/components/common/CustomButton";
+import CustomButton from "@/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 interface IRegion {
@@ -50,6 +48,7 @@ const RecintoEditModeCreate: React.FC = () => {
 
   // ---------------------------
   //  Estados para los desplegables y formulario
+  // (Mantienen la lógica para cargar regiones, comunas y zonas térmicas, aunque no se muestren en la UI)
   // ---------------------------
   const [regions, setRegions] = useState<IRegion[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
@@ -227,14 +226,11 @@ const RecintoEditModeCreate: React.FC = () => {
   }, []);
 
   const handleSave = async () => {
-    // Validación de campos obligatorios
-    // Se debe reemplazar la coma por punto para la conversión a número si es necesario.
+    // Se reemplaza la coma por el punto para la conversión a número si es necesario.
     const normalizedHeight = alturaPromedio.replace(",", ".");
     const altura = parseFloat(normalizedHeight);
     if (
-      !selectedRegion ||
-      !selectedComuna ||
-      !selectedZonaTermica ||
+      // Se eliminaron los campos de Región, Comuna y Zona Térmica de la validación
       !nombreRecinto.trim() ||
       !perfilOcupacion ||
       !alturaPromedio.trim() ||
@@ -259,11 +255,9 @@ const RecintoEditModeCreate: React.FC = () => {
         return;
       }
 
+      // Se elimina la inclusión de region, comuna y zona térmica en el payload
       const payload = {
         name_enclosure: nombreRecinto,
-        region_id: parseInt(selectedRegion),
-        comuna_id: parseInt(selectedComuna),
-        zona_termica: selectedZonaTermica,
         occupation_profile_id: perfilOcupacion,
         height: altura,
         co2_sensor: sensorCo2 ? "Si" : "No",
@@ -334,91 +328,14 @@ const RecintoEditModeCreate: React.FC = () => {
         <div>
           <Title text="Características de la edificación" />
           <div className="row mt-4">
-            {/* 1. Nombre proyecto */}
-            <div className="col-6 mb-3">
-              <label htmlFor="projectName" className="form-label">
-                Nombre proyecto
-              </label>
-              <input
-                id="projectName"
-                type="text"
-                className="form-control"
-                placeholder="Nombre del Proyecto"
-                value={projectName}
-                readOnly
-              />
-            </div>
-
-            {/* 2. Región (desplegable) */}
-            <div className="col-6 mb-3">
-              <label htmlFor="region" className="form-label">
-                Región
-              </label>
-              <select
-                id="region"
-                className="form-select"
-                value={selectedRegion}
-                onChange={(e) => {
-                  setSelectedRegion(e.target.value);
-                  // Limpiar campos dependientes
-                  setSelectedComuna("");
-                  setSelectedZonaTermica("");
-                }}
-              >
-                <option value="">Seleccione una región</option>
-                {regions.map((region) => (
-                  <option key={region.id} value={region.id}>
-                    {region.nombre_region}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 3. Comuna (desplegable) */}
-            <div className="col-6 mb-3">
-              <label htmlFor="comuna" className="form-label">
-                Comuna
-              </label>
-              <select
-                id="comuna"
-                className="form-select"
-                value={selectedComuna}
-                onChange={(e) => {
-                  setSelectedComuna(e.target.value);
-                  setSelectedZonaTermica("");
-                }}
-                disabled={!selectedRegion}
-              >
-                <option value="">Seleccione una comuna</option>
-                {comunas.map((comuna) => (
-                  <option key={comuna.id} value={comuna.id}>
-                    {comuna.nombre_comuna}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 4. Zona Térmica Proyecto (desplegable) */}
-            <div className="col-6 mb-3">
-              <label htmlFor="zonaTermica" className="form-label">
-                Zona Térmica Proyecto
-              </label>
-              <select
-                id="zonaTermica"
-                className="form-select"
-                value={selectedZonaTermica}
-                onChange={(e) => setSelectedZonaTermica(e.target.value)}
-                disabled={!selectedComuna}
-              >
-                <option value="">Seleccione zona térmica</option>
-                {zonasTermicas.map((zona) => (
-                  <option key={zona} value={zona}>
-                    {zona}
-                  </option>
-                ))}
-              </select>
-            </div>
-
+            {/*
+              Se retiran los apartados:
+              - Nombre proyecto
+              - Región
+              - Comuna
+              - Zona Térmica Proyecto
+            */}
+            {/* Campo: Nombre Recinto */}
             <div className="col-6 mb-3">
               <label htmlFor="nombreRecinto" className="form-label">
                 Nombre Recinto
@@ -433,6 +350,7 @@ const RecintoEditModeCreate: React.FC = () => {
               />
             </div>
 
+            {/* Campo: Perfil de Ocupación */}
             <div className="col-6 mb-3">
               <label htmlFor="perfilOcupacion" className="form-label">
                 Perfil de ocupación
@@ -454,6 +372,7 @@ const RecintoEditModeCreate: React.FC = () => {
               </select>
             </div>
 
+            {/* Campo: Altura Promedio Recinto */}
             <div className="col-6 mb-3">
               <label htmlFor="alturaPromedio" className="form-label">
                 Altura Promedio Recinto
@@ -475,7 +394,7 @@ const RecintoEditModeCreate: React.FC = () => {
               />
             </div>
 
-            {/* Sensor CO2 */}
+            {/* Campo: Sensor CO2 */}
             <div className="col-6 mb-3">
               <label htmlFor="sensorCo2" className="form-label">
                 Sensor CO2

@@ -186,8 +186,6 @@ const ProjectWorkflowPart1: React.FC = () => {
       newErrors.district = "El distrito es obligatorio.";
     if (!formData.building_type.trim())
       newErrors.building_type = "Debe seleccionar un tipo de edificación.";
-    if (!formData.main_use_type.trim())
-      newErrors.main_use_type = "Debe seleccionar un tipo de uso principal.";
     if (formData.number_levels <= 0)
       newErrors.number_levels = "El número de niveles debe ser mayor a 0.";
     if (formData.number_homes_per_level <= 0)
@@ -591,6 +589,8 @@ const ProjectWorkflowPart1: React.FC = () => {
                       <option value="Vertical / Departamentos">
                         Vertical / Departamentos
                       </option>
+                      <option value="Oficinas">Oficinas</option>
+                      <option value="Otros">Otros</option>
                     </select>
                     {submitted && errors.building_type && (
                       <small className="text-danger">{errors.building_type}</small>
@@ -598,29 +598,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                   </div>
                 </div>
                 <div className="row mb-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">
-                      Tipo de uso principal{" "}
-                      {isFieldEmpty("main_use_type") && (
-                        <span style={{ color: "red" }}>*</span>
-                      )}
-                    </label>
-                    <select
-                      className="form-control"
-                      value={formData.main_use_type}
-                      onChange={(e) =>
-                        handleFormInputChange("main_use_type", e.target.value)
-                      }
-                    >
-                      <option value="">Seleccione un tipo de uso</option>
-                      <option value="Viviendas">Viviendas</option>
-                      <option value="Oficinas">Oficinas</option>
-                      <option value="Terciarios">Terciarios</option>
-                    </select>
-                    {submitted && errors.main_use_type && (
-                      <small className="text-danger">{errors.main_use_type}</small>
-                    )}
-                  </div>
+                  
                   <div className="col-12 col-md-6">
                     <label className="form-label">
                       Número de niveles{" "}

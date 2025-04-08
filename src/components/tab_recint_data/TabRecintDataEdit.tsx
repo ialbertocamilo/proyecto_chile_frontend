@@ -23,9 +23,7 @@ interface EnclosureGeneralData {
 }
 
 interface IFormData {
-  selectedRegion: string;
-  selectedComuna: string;
-  selectedZonaTermica: string;
+
   nombreRecinto: string;
   perfilOcupacion: number;
   alturaPromedio: string;
@@ -76,9 +74,6 @@ const TabRecintDataEdit: React.FC = () => {
   // ===========================================================
   const handleNewFunction = (row: EnclosureGeneralData) => {
     const formData: IFormData = {
-      selectedRegion: row.region_id.toString(),
-      selectedComuna: row.comuna_id.toString(),
-      selectedZonaTermica: row.zona_termica,
       nombreRecinto: row.name_enclosure,
       perfilOcupacion: row.occupation_profile_id,
       alturaPromedio: row.height.toString(),

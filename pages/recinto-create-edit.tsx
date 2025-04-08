@@ -270,7 +270,7 @@ const RecintoCreateEdit: React.FC = () => {
             {/* Campo: Altura Promedio Recinto */}
             <div className="col-6 mb-3">
               <label htmlFor="alturaPromedio" className="form-label">
-                Altura Promedio Recinto
+                Altura Promedio Recinto (m)
               </label>
               <input
                 id="alturaPromedio"

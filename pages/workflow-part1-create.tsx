@@ -286,7 +286,8 @@ const ProjectWorkflowPart1: React.FC = () => {
         latitude: formData.latitude,
         longitude: formData.longitude,
         project_metadata: {
-          zone: formData.zone,}
+          zone: formData.zone,
+        }
 
       };
       const data = await post(`/projects/create`, requestBody);
@@ -597,8 +598,9 @@ const ProjectWorkflowPart1: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Fila que contiene Número de niveles y Superficie construida (m²) */}
                 <div className="row mb-3">
-                  
                   <div className="col-12 col-md-6">
                     <label className="form-label">
                       Número de niveles{" "}
@@ -620,31 +622,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                     />
                     {submitted && errors.number_levels && (
                       <small className="text-danger">{errors.number_levels}</small>
-                    )}
-                  </div>
-                </div>
-                <div className="row mb-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">
-                      Número de viviendas / oficinas x nivel{" "}
-                      {isFieldEmpty("number_homes_per_level") && (
-                        <span style={{ color: "red" }}>*</span>
-                      )}
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      className="form-control"
-                      value={formData.number_homes_per_level}
-                      onChange={(e) =>
-                        handleFormInputChange(
-                          "number_homes_per_level",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                    />
-                    {submitted && errors.number_homes_per_level && (
-                      <small className="text-danger">{errors.number_homes_per_level}</small>
                     )}
                   </div>
                   <div className="col-12 col-md-6">
@@ -671,19 +648,40 @@ const ProjectWorkflowPart1: React.FC = () => {
                     )}
                   </div>
                 </div>
-                {globalError && (
-                  <div className="alert alert-danger" role="alert">
-                    {globalError}
+
+                {/* Fila para Número de viviendas / oficinas x nivel */}
+                <div className="row mb-3">
+                  <div className="col-12">
+                    <label className="form-label">
+                      Número de viviendas / oficinas x nivel{" "}
+                      {isFieldEmpty("number_homes_per_level") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="form-control"
+                      value={formData.number_homes_per_level}
+                      onChange={(e) =>
+                        handleFormInputChange(
+                          "number_homes_per_level",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
+                    />
+                    {submitted && errors.number_homes_per_level && (
+                      <small className="text-danger">{errors.number_homes_per_level}</small>
+                    )}
                   </div>
-                )}
-                <div className="d-flex justify-content-between align-items-center mt-4">
-                  <div>
-                    (<span style={{ color: "red" }}>*</span>) Campos Obligatorios
-                  </div>
+                </div>
+                <div className="d-flex align-items-center mt-4">
+                  (<span style={{ color: "red" }}>*</span>) Campos Obligatorios
                   <CustomButton
                     variant="save"
                     onClick={handleStep1Action}
                     disabled={loading}
+                    className="ms-auto"
                   >
                     Continuar
                   </CustomButton>

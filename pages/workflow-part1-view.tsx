@@ -342,19 +342,15 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </select>
                     </div>
                   </div>
+                  {/* Se elimina la sección de "Tipo de uso principal" y se reestructura la información */}
                   <div className="row mb-3">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label">Tipo de uso principal</label>
-                      <select className="form-control" value={formData.main_use_type} disabled>
-                        <option value="">Seleccione un tipo de uso</option>
-                        <option value="Viviendas">Viviendas</option>
-                        <option value="Oficinas">Oficinas</option>
-                        <option value="Terciarios">Terciarios</option>
-                      </select>
-                    </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">Número de niveles</label>
                       <input type="number" min="0" className="form-control" value={formData.number_levels} disabled />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Superficie construida (m²)</label>
+                      <input type="number" min="0" className="form-control" value={formData.built_surface} disabled />
                     </div>
                   </div>
                   <div className="row mb-3">
@@ -363,8 +359,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       <input type="number" min="0" className="form-control" value={formData.number_homes_per_level} disabled />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Superficie construida (m²)</label>
-                      <input type="number" min="0" className="form-control" value={formData.built_surface} disabled />
+                      {/* Columna vacía para mantener la estructura de dos columnas */}
                     </div>
                   </div>
                 </>

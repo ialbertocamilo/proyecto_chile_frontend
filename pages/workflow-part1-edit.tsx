@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
 import GooIcons from "../public/GoogleIcons";
 import locationData from "../public/locationData";
-import { AdminSidebar } from "../src/components/administration/AdminSidebar"
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Breadcrumb from "../src/components/common/Breadcrumb";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
@@ -18,7 +18,6 @@ import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import ProjectStatus from "@/components/projects/ProjectStatus";
-
 
 type Country = "" | "Perú" | "Chile";
 
@@ -37,7 +36,7 @@ interface FormData {
   built_surface: number;
   latitude: number;
   longitude: number;
-  status?:string;
+  status?: string;
   address: string;
   zone?: string;
 }
@@ -213,6 +212,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       newErrors.district = "El distrito es obligatorio";
     if (!formData.building_type.trim())
       newErrors.building_type = "El tipo de edificación es obligatorio";
+    // Aunque se eliminó el campo visual para "Tipo de uso principal", se mantiene la validación.
     if (!formData.main_use_type.trim())
       newErrors.main_use_type = "El tipo de uso principal es obligatorio";
     if (formData.number_levels <= 0)
@@ -287,7 +287,6 @@ const ProjectWorkflowPart1: React.FC = () => {
       }
     );
   };
-
 
   const enviarProyecto = async () => {
     setLoading(true);
@@ -662,30 +661,9 @@ const ProjectWorkflowPart1: React.FC = () => {
                           )}
                       </div>
                     </div>
+                    {/* Se elimina el bloque visual de "Tipo de uso principal" */}
                     <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Tipo de uso principal{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.main_use_type}
-                          onChange={(e) =>
-                            handleFormInputChange("main_use_type", e.target.value)
-                          }
-                        >
-                          <option value="">Seleccione un tipo de uso</option>
-                          <option value="Viviendas">Viviendas</option>
-                          <option value="Oficinas">Oficinas</option>
-                          <option value="Terciarios">Terciarios</option>
-                        </select>
-                        {router.query.id &&
-                          submitted &&
-                          errors.main_use_type && (
-                            <small className="text-danger">{errors.main_use_type}</small>
-                          )}
-                      </div>
+                      {/* Fila combinada para Número de niveles y Superficie construida */}
                       <div className="col-12 col-md-6">
                         <label className="form-label">
                           Número de niveles{" "}
@@ -704,28 +682,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                           submitted &&
                           errors.number_levels && (
                             <small className="text-danger">{errors.number_levels}</small>
-                          )}
-                      </div>
-                    </div>
-                    <div className="row mb-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Número de viviendas / oficinas x nivel{" "}
-                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.number_homes_per_level}
-                          onChange={(e) =>
-                            handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)
-                          }
-                        />
-                        {router.query.id &&
-                          submitted &&
-                          errors.number_homes_per_level && (
-                            <small className="text-danger">{errors.number_homes_per_level}</small>
                           )}
                       </div>
                       <div className="col-12 col-md-6">
@@ -747,6 +703,32 @@ const ProjectWorkflowPart1: React.FC = () => {
                           errors.built_surface && (
                             <small className="text-danger">{errors.built_surface}</small>
                           )}
+                      </div>
+                    </div>
+                    <div className="row mb-3">
+                      {/* Se reestructura este bloque a dos columnas para lograr la misma altura y alineación */}
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">
+                          Número de viviendas / oficinas x nivel{" "}
+                          {!router.query.id && <span style={{ color: "red" }}>*</span>}
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          className="form-control"
+                          value={formData.number_homes_per_level}
+                          onChange={(e) =>
+                            handleFormInputChange("number_homes_per_level", parseInt(e.target.value) || 0)
+                          }
+                        />
+                        {router.query.id &&
+                          submitted &&
+                          errors.number_homes_per_level && (
+                            <small className="text-danger">{errors.number_homes_per_level}</small>
+                          )}
+                      </div>
+                      <div className="col-12 col-md-6">
+                        {/* Columna vacía para mantener la estructura de dos columnas */}
                       </div>
                     </div>
                     {globalError && (
@@ -849,8 +831,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           </div>
         </Card>
 
-
-        {router.query.id && formData?.status && <ProjectStatus status={formData?.status} projectId={router.query.id as string}/>}
+        {router.query.id && formData?.status && <ProjectStatus status={formData?.status} projectId={router.query.id as string} />}
       </div>
     </>
   );

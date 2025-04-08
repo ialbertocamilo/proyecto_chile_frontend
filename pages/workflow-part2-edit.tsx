@@ -296,7 +296,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         "Serás redirigido a la creación de proyecto",
         "warning"
       ).then(() => {
-        router.push("/project-workflow-part1");
+        router.push("/workflow-part1-edit");
       });
     }
   }, [hasLoaded, projectId, router]);

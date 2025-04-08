@@ -16,7 +16,7 @@ import Title from "../src/components/Title";
 import UseProfileTab from "../src/components/UseProfileTab";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import ClimateFileUploader from "@/components/ClimateFileUploader";
+// Eliminada la importación de ClimateFileUploader
 
 interface MaterialAtributs {
   name: string;
@@ -661,13 +661,13 @@ const DataEntryPage: React.FC = () => {
         prev.map((el) =>
           el.id === element.id
             ? {
-              ...element,
-              fm: fmFraction,
-              atributs: {
-                ...element.atributs,
-                porcentaje_vidrio: porcentajeVidrioFraction,
-              },
-            }
+                ...element,
+                fm: fmFraction,
+                atributs: {
+                  ...element.atributs,
+                  porcentaje_vidrio: porcentajeVidrioFraction,
+                },
+              }
             : el
         )
       );
@@ -691,7 +691,7 @@ const DataEntryPage: React.FC = () => {
     try {
       const response = await axios.post(
         `${constantUrlApiEndpoint}/enclosures/clone`,
-        {}, // Agrega el body si es necesario
+        {},
         {
           headers: {
             "Content-Type": "application/json",
@@ -700,7 +700,6 @@ const DataEntryPage: React.FC = () => {
         }
       );
       console.log("Respuesta del endpoint:", response.data);
-      // Procesa la respuesta según necesites
     } catch (error) {
       console.error("Error al consultar el endpoint:", error);
     }
@@ -721,9 +720,9 @@ const DataEntryPage: React.FC = () => {
         fetchAllWindowsForDoor();
       }
     }
-
   }, [step, modalElementType, fetchElements, fetchAllWindowsForDoor]);
 
+  // === useEffect para Step 6: Perfil de uso ===
   useEffect(() => {
     if (step === 6) {
       fetchEnclosureClone();
@@ -811,10 +810,6 @@ const DataEntryPage: React.FC = () => {
           ) : (
             mat.atributs.density
           ),
-
-          // ----- AQUÍ ES DONDE SE HACE EL CAMBIO -----
-          // Si mat.user_id == null (o la condición que desees), mostramos "-"
-          // De lo contrario, se muestran los botones de acción
           action: mat.user_id == null ? (
             <span>-</span>
           ) : (
@@ -947,8 +942,6 @@ const DataEntryPage: React.FC = () => {
             ) : (
               Math.round(el.fm * 100) + "%"
             ),
-
-            // ----- AQUÍ ES DONDE SE HACE EL CAMBIO -----
             acciones: el.user_id == null ? (
               <span>-</span>
             ) : (
@@ -986,7 +979,10 @@ const DataEntryPage: React.FC = () => {
                         padding: "10px",
                         cursor: "pointer",
                         color: primaryColor,
-                        borderBottom: modalElementType === tab.toLowerCase() ? `2px solid ${primaryColor}` : "2px solid transparent",
+                        borderBottom:
+                          modalElementType === tab.toLowerCase()
+                            ? `2px solid ${primaryColor}`
+                            : "2px solid transparent",
                       }}
                     >
                       {tab}
@@ -1071,8 +1067,6 @@ const DataEntryPage: React.FC = () => {
             ) : (
               Math.round(el.fm * 100) + "%"
             ),
-
-            // ----- AQUÍ ES DONDE SE HACE EL CAMBIO -----
             acciones: el.user_id == null ? (
               <span>-</span>
             ) : (
@@ -1119,7 +1113,10 @@ const DataEntryPage: React.FC = () => {
                         padding: "10px",
                         cursor: "pointer",
                         color: primaryColor,
-                        borderBottom: modalElementType === tab.toLowerCase() ? `2px solid ${primaryColor}` : "2px solid transparent",
+                        borderBottom:
+                          modalElementType === tab.toLowerCase()
+                            ? `2px solid ${primaryColor}`
+                            : "2px solid transparent",
                       }}
                     >
                       {tab}
@@ -1141,8 +1138,6 @@ const DataEntryPage: React.FC = () => {
       <UseProfileTab refreshTrigger={0} />
     </div>
   );
-
-  const renderStep7Clima = () => <ClimateFileUploader />;
 
   return (
     <>
@@ -1167,7 +1162,6 @@ const DataEntryPage: React.FC = () => {
                 { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de materiales" },
                 { stepNumber: 5, iconName: "home", title: "Ventanas y Puertas" },
                 { stepNumber: 6, iconName: "deck", title: "Perfil de uso" },
-                { stepNumber: 7, iconName: "cloud_upload", title: "Archivo clima" },
               ]}
             />
           </div>
@@ -1177,7 +1171,6 @@ const DataEntryPage: React.FC = () => {
             {step === 3 && <div className="px-3">{renderStep3Materials()}</div>}
             {step === 5 && <div className="px-3">{renderStep5Elements()}</div>}
             {step === 6 && renderStep6Profile()}
-            {step === 7 && renderStep7Clima()}
           </div>
         </div>
       </Card>
@@ -1480,7 +1473,6 @@ const DataEntryPage: React.FC = () => {
                       u_puerta_opaca: e.target.value,
                     }))
                   }
-                 
                 />
               </div>
               <div className="form-group mb-3">
@@ -1619,12 +1611,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_vidrio: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_vidrio: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1646,12 +1638,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          fs_vidrio: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            fs_vidrio: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1666,12 +1658,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          clousure_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            clousure_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1693,12 +1685,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          frame_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            frame_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1803,12 +1795,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_puerta_opaca: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_puerta_opaca: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1827,13 +1819,13 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          ventana_id: selectedId ? parseInt(selectedId) : 0,
-                          name_ventana: selectedWindow ? selectedWindow.name_element : "",
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            ventana_id: selectedId ? parseInt(selectedId) : 0,
+                            name_ventana: selectedWindow ? selectedWindow.name_element : "",
+                          },
+                        }
                       : prev
                   );
                 }}
@@ -1869,12 +1861,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          porcentaje_vidrio: clamped,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: clamped,
+                          },
+                        }
                       : prev
                   );
                 }}

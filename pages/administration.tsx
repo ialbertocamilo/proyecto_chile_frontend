@@ -1,3 +1,4 @@
+import ClimateFileUploader from "@/components/ClimateFileUploader";
 import ActionButtons from "@/components/common/ActionButtons";
 import ConstructiveDetailsComponent from "@/components/ConstructiveDetailsComponent";
 import { notify } from "@/utils/notify";
@@ -429,7 +430,7 @@ const AdministrationPage: React.FC = () => {
       name: "materials",
       type: "definition materials",
     };
-  
+
     try {
       await handleEdit(
         selectedMaterialId,
@@ -438,7 +439,7 @@ const AdministrationPage: React.FC = () => {
         "Actualizado con éxito.",
         () => fetchMaterialsList(1)
       );
-  
+
       setShowNewMaterialModal(false);
       setNewMaterialData({
         name: "",
@@ -457,7 +458,7 @@ const AdministrationPage: React.FC = () => {
       return false;
     }
   };
-  
+
   // Función para crear elementos (ventanas y puertas)
   const handleCreateElement = async () => {
     if (tabElementosOperables === "ventanas") {
@@ -593,52 +594,53 @@ const AdministrationPage: React.FC = () => {
 
   // Función para editar ventana
   const handleEditWindow = async () => {
-  if (!selectedWindowId) return;
-  try {
-    const payload = {
-      type: "window",
-      name_element: newWindow.name_element,
-      u_marco: newWindow.u_marco,
-      fm: Math.round(newWindow.fm) / 100, // Asegura que no haya decimales
-      atributs: {
-        u_vidrio: newWindow.u_vidrio,
-        fs_vidrio: newWindow.fs_vidrio,
-        frame_type: newWindow.frame_type,
-        clousure_type: newWindow.clousure_type,
-      },
-    };
+    if (!selectedWindowId) return;
+    try {
+      const payload = {
+        type: "window",
+        name_element: newWindow.name_element,
+        u_marco: newWindow.u_marco,
+        fm: Math.round(newWindow.fm) / 100, // Asegura que no haya decimales
+        atributs: {
+          u_vidrio: newWindow.u_vidrio,
+          fs_vidrio: newWindow.fs_vidrio,
+          frame_type: newWindow.frame_type,
+          clousure_type: newWindow.clousure_type,
+        },
+      };
 
-    await handleEdit(
-      selectedWindowId,
-      payload,
-      "admin/elements",
-      "Actualizado con éxito.",
-      fetchElements
-    );
+      await handleEdit(
+        selectedWindowId,
+        payload,
+        "admin/elements",
+        "Actualizado con éxito.",
+        fetchElements
+      );
 
-    setShowNewWindowModal(false);
-    setNewWindow({
-      name_element: "",
-      u_vidrio: 0,
-      fs_vidrio: 0,
-      clousure_type: "",
-      frame_type: "",
-      u_marco: 0,
-      fm: 0,
-    });
-    setSelectedWindowId(null);
-  } catch (error: any) {
-    console.error("Error al actualizar ventana:", error);
-    if (
-      error?.response?.data?.detail ===
-      "El nombre del elemento ya existe dentro del tipo window"
-    ) {
-      notify("El Nombre de la Ventana ya existe");
-    } else {
-      notify("Error al actualizar la ventana");
+      setShowNewWindowModal(false);
+      setNewWindow({
+        name_element: "",
+        u_vidrio: 0,
+        fs_vidrio: 0,
+        clousure_type: "",
+        frame_type: "",
+        u_marco: 0,
+        fm: 0,
+      });
+      setSelectedWindowId(null);
+    } catch (error: any) {
+      console.error("Error al actualizar ventana:", error);
+      if (
+        error?.response?.data?.detail ===
+        "El nombre del elemento ya existe dentro del tipo window"
+      ) {
+        notify("El Nombre de la Ventana ya existe");
+      } else {
+        notify("Error al actualizar la ventana");
+      }
     }
-  }
-};
+  };
+
   // Función para editar puerta
   const handleEditDoor = async () => {
     if (!selectedDoorId) return;
@@ -695,11 +697,13 @@ const AdministrationPage: React.FC = () => {
     if (step === 5) fetchElements();
   }, [step, fetchMaterialsList, fetchElements]);
 
+  // Actualización de la barra lateral con la incorporación del nuevo paso para carga de clima.
   const sidebarSteps = [
     { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de Materiales" },
     { stepNumber: 4, iconName: "build", title: "Detalles Constructivos" },
-    { stepNumber: 5, iconName: "home", title: "Elementos Translúcidos" },
+    { stepNumber: 5, iconName: "home", title: "Ventanas y Puertas" },
     { stepNumber: 6, iconName: "deck", title: "Perfil de Uso" },
+    { stepNumber: 7, iconName: "cloud_upload", title: "Archivo clima" }
   ];
 
   return (
@@ -756,7 +760,7 @@ const AdministrationPage: React.FC = () => {
               </div>
             )}
 
-            {/* Step 5: Elementos Translúcidos */}
+            {/* Step 5: Ventanas y Puertas */}
             {step === 5 && (
               <>
                 <SearchParameters
@@ -835,6 +839,13 @@ const AdministrationPage: React.FC = () => {
                 <UseProfileTab />
               </div>
             )}
+
+            {/* Step 7: Carga de Clima */}
+            {step === 7 && (
+              <div className="px-3">
+                <ClimateFileUploader />
+              </div>
+            )}
           </div>
         </div>
       </Card>
@@ -854,56 +865,60 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedMaterialId(null);
           }}
-          onSave={selectedMaterialId ? handleEditMaterial : async () => {
-              if (
-                newMaterialData.name.trim() === "" ||
-                newMaterialData.conductivity <= 0 ||
-                newMaterialData.specific_heat <= 0 ||
-                newMaterialData.density <= 0
-              ) {
-                notify("Por favor complete todos los campos de material");
-                return;
-              }
+          onSave={
+            selectedMaterialId
+              ? handleEditMaterial
+              : async () => {
+                  if (
+                    newMaterialData.name.trim() === "" ||
+                    newMaterialData.conductivity <= 0 ||
+                    newMaterialData.specific_heat <= 0 ||
+                    newMaterialData.density <= 0
+                  ) {
+                    notify("Por favor complete todos los campos de material");
+                    return;
+                  }
 
-              const materialExists = materialsList.some(
-                (mat: any) =>
-                  (mat.atributs.name as string).trim().toLowerCase() ===
-                  newMaterialData.name.trim().toLowerCase()
-              );
+                  const materialExists = materialsList.some(
+                    (mat: any) =>
+                      (mat.atributs.name as string).trim().toLowerCase() ===
+                      newMaterialData.name.trim().toLowerCase()
+                  );
 
-              if (materialExists) {
-                notify(`El Nombre del Material ya existe`);
-                return;
-              }
+                  if (materialExists) {
+                    notify(`El Nombre del Material ya existe`);
+                    return;
+                  }
 
-              const payload = {
-                atributs: {
-                  name: newMaterialData.name,
-                  density: newMaterialData.density,
-                  conductivity: newMaterialData.conductivity,
-                  specific_heat: newMaterialData.specific_heat,
-                },
-                name: "materials",
-                type: "definition materials",
-              };
+                  const payload = {
+                    atributs: {
+                      name: newMaterialData.name,
+                      density: newMaterialData.density,
+                      conductivity: newMaterialData.conductivity,
+                      specific_heat: newMaterialData.specific_heat,
+                    },
+                    name: "materials",
+                    type: "definition materials",
+                  };
 
-              const success = await handleCreate(
-                payload,
-                "admin/constants/create",
-                `El material "${newMaterialData.name}" fue creado correctamente`,
-                () => fetchMaterialsList(1)
-              );
+                  const success = await handleCreate(
+                    payload,
+                    "admin/constants/create",
+                    `El material "${newMaterialData.name}" fue creado correctamente`,
+                    () => fetchMaterialsList(1)
+                  );
 
-              if (success) {
-                setShowNewMaterialModal(false);
-                setNewMaterialData({
-                  name: "",
-                  conductivity: 0,
-                  specific_heat: 0,
-                  density: 0,
-                });
-              }
-            }}
+                  if (success) {
+                    setShowNewMaterialModal(false);
+                    setNewMaterialData({
+                      name: "",
+                      conductivity: 0,
+                      specific_heat: 0,
+                      density: 0,
+                    });
+                  }
+                }
+          }
           title={selectedMaterialId ? "Editar Material" : "Agregar Nuevo Material"}
           saveLabel={selectedMaterialId ? "Guardar Cambios" : "Crear Material"}
         >
@@ -961,7 +976,7 @@ const AdministrationPage: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewMaterialData((prev) => ({
@@ -983,7 +998,7 @@ const AdministrationPage: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewMaterialData((prev) => ({
@@ -1016,67 +1031,71 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedWindowId(null);
           }}
-          onSave={selectedWindowId ? handleEditWindow : async () => {
-              if (
-                newWindow.name_element.trim() === "" ||
-                newWindow.u_vidrio <= 0 ||
-                newWindow.fs_vidrio <= 0 ||
-                newWindow.u_marco <= 0 ||
-                newWindow.fm < 0 ||
-                newWindow.fm > 100 ||
-                newWindow.clousure_type.trim() === "" ||
-                newWindow.frame_type.trim() === ""
-              ) {
-                notify("Por favor complete todos los campos de la ventana correctamente");
-                return;
-              }
+          onSave={
+            selectedWindowId
+              ? handleEditWindow
+              : async () => {
+                  if (
+                    newWindow.name_element.trim() === "" ||
+                    newWindow.u_vidrio <= 0 ||
+                    newWindow.fs_vidrio <= 0 ||
+                    newWindow.u_marco <= 0 ||
+                    newWindow.fm < 0 ||
+                    newWindow.fm > 100 ||
+                    newWindow.clousure_type.trim() === "" ||
+                    newWindow.frame_type.trim() === ""
+                  ) {
+                    notify("Por favor complete todos los campos de la ventana correctamente");
+                    return;
+                  }
 
-              const windowExists = elementsList
-                .filter((el) => el.type === "window")
-                .some(
-                  (el) =>
-                    el.name_element.trim().toLowerCase() ===
-                    newWindow.name_element.trim().toLowerCase()
-                );
+                  const windowExists = elementsList
+                    .filter((el) => el.type === "window")
+                    .some(
+                      (el) =>
+                        el.name_element.trim().toLowerCase() ===
+                        newWindow.name_element.trim().toLowerCase()
+                    );
 
-              if (windowExists) {
-                notify(`El Nombre de la Ventana ya existe`);
-                return;
-              }
+                  if (windowExists) {
+                    notify(`El Nombre de la Ventana ya existe`);
+                    return;
+                  }
 
-              const payload = {
-                type: "window",
-                name_element: newWindow.name_element,
-                u_marco: newWindow.u_marco,
-                fm: newWindow.fm,
-                atributs: {
-                  u_vidrio: newWindow.u_vidrio,
-                  fs_vidrio: newWindow.fs_vidrio,
-                  frame_type: newWindow.frame_type,
-                  clousure_type: newWindow.clousure_type,
-                },
-              };
+                  const payload = {
+                    type: "window",
+                    name_element: newWindow.name_element,
+                    u_marco: newWindow.u_marco,
+                    fm: newWindow.fm,
+                    atributs: {
+                      u_vidrio: newWindow.u_vidrio,
+                      fs_vidrio: newWindow.fs_vidrio,
+                      frame_type: newWindow.frame_type,
+                      clousure_type: newWindow.clousure_type,
+                    },
+                  };
 
-              const success = await handleCreate(
-                payload,
-                "admin/elements/create",
-                `La ventana "${newWindow.name_element}" fue creada correctamente`,
-                fetchElements
-              );
+                  const success = await handleCreate(
+                    payload,
+                    "admin/elements/create",
+                    `La ventana "${newWindow.name_element}" fue creada correctamente`,
+                    fetchElements
+                  );
 
-              if (success) {
-                setShowNewWindowModal(false);
-                setNewWindow({
-                  name_element: "",
-                  u_vidrio: 0,
-                  fs_vidrio: 0,
-                  clousure_type: "",
-                  frame_type: "",
-                  u_marco: 0,
-                  fm: 0,
-                });
-              }
-            }}
+                  if (success) {
+                    setShowNewWindowModal(false);
+                    setNewWindow({
+                      name_element: "",
+                      u_vidrio: 0,
+                      fs_vidrio: 0,
+                      clousure_type: "",
+                      frame_type: "",
+                      u_marco: 0,
+                      fm: 0,
+                    });
+                  }
+                }
+          }
           title={selectedWindowId ? "Editar Ventana" : "Agregar Nueva Ventana"}
           saveLabel={selectedWindowId ? "Guardar Cambios" : "Crear Ventana"}
         >
@@ -1112,7 +1131,7 @@ const AdministrationPage: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewWindow((prev) => ({
@@ -1134,7 +1153,7 @@ const AdministrationPage: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewWindow((prev) => ({
@@ -1198,7 +1217,7 @@ const AdministrationPage: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewWindow((prev) => ({
@@ -1220,7 +1239,7 @@ const AdministrationPage: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => {
                   let value = parseFloat(e.target.value);
                   if (isNaN(value)) value = 0;
@@ -1253,75 +1272,79 @@ const AdministrationPage: React.FC = () => {
             });
             setSelectedDoorId(null);
           }}
-          onSave={selectedDoorId ? handleEditDoor : async () => {
-              if (
-                newDoor.name_element.trim() === "" ||
-                newDoor.u_puerta_opaca <= 0 ||
-                newDoor.u_marco <= 0 ||
-                newDoor.fm < 0 ||
-                newDoor.fm > 100
-              ) {
-                notify("Por favor complete todos los campos de la puerta correctamente");
-                return;
-              }
+          onSave={
+            selectedDoorId
+              ? handleEditDoor
+              : async () => {
+                  if (
+                    newDoor.name_element.trim() === "" ||
+                    newDoor.u_puerta_opaca <= 0 ||
+                    newDoor.u_marco <= 0 ||
+                    newDoor.fm < 0 ||
+                    newDoor.fm > 100
+                  ) {
+                    notify("Por favor complete todos los campos de la puerta correctamente");
+                    return;
+                  }
 
-              if (newDoor.ventana_id !== 0) {
-                if (newDoor.porcentaje_vidrio < 0 || newDoor.porcentaje_vidrio > 100) {
-                  notify("Asegúrese de que el % de vidrio esté entre 0 y 100");
-                  return;
+                  if (newDoor.ventana_id !== 0) {
+                    if (newDoor.porcentaje_vidrio < 0 || newDoor.porcentaje_vidrio > 100) {
+                      notify("Asegúrese de que el % de vidrio esté entre 0 y 100");
+                      return;
+                    }
+                  } else {
+                    newDoor.porcentaje_vidrio = 0;
+                  }
+
+                  const doorExists = elementsList
+                    .filter((el) => el.type === "door")
+                    .some(
+                      (el) =>
+                        el.name_element.trim().toLowerCase() ===
+                        newDoor.name_element.trim().toLowerCase()
+                    );
+
+                  if (doorExists) {
+                    notify(`El Nombre de la Puerta ya existe`);
+                    return;
+                  }
+
+                  const ventanaSeleccionada = windowsList.find(
+                    (win) => win.id === newDoor.ventana_id
+                  );
+                  const payload = {
+                    type: "door",
+                    name_element: newDoor.name_element,
+                    u_marco: newDoor.u_marco,
+                    fm: newDoor.fm,
+                    atributs: {
+                      ventana_id: newDoor.ventana_id,
+                      name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
+                      u_puerta_opaca: newDoor.u_puerta_opaca,
+                      porcentaje_vidrio: newDoor.porcentaje_vidrio,
+                    },
+                  };
+
+                  const success = await handleCreate(
+                    payload,
+                    "admin/elements/create",
+                    `La puerta "${newDoor.name_element}" fue creada correctamente`,
+                    fetchElements
+                  );
+
+                  if (success) {
+                    setShowNewDoorModal(false);
+                    setNewDoor({
+                      name_element: "",
+                      u_puerta_opaca: 0,
+                      ventana_id: 0,
+                      u_marco: 0,
+                      fm: 0,
+                      porcentaje_vidrio: 0,
+                    });
+                  }
                 }
-              } else {
-                newDoor.porcentaje_vidrio = 0;
-              }
-
-              const doorExists = elementsList
-                .filter((el) => el.type === "door")
-                .some(
-                  (el) =>
-                    el.name_element.trim().toLowerCase() ===
-                    newDoor.name_element.trim().toLowerCase()
-                );
-
-              if (doorExists) {
-                notify(`El Nombre de la Puerta ya existe`);
-                return;
-              }
-
-              const ventanaSeleccionada = windowsList.find(
-                (win) => win.id === newDoor.ventana_id
-              );
-              const payload = {
-                type: "door",
-                name_element: newDoor.name_element,
-                u_marco: newDoor.u_marco,
-                fm: newDoor.fm,
-                atributs: {
-                  ventana_id: newDoor.ventana_id,
-                  name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
-                  u_puerta_opaca: newDoor.u_puerta_opaca,
-                  porcentaje_vidrio: newDoor.porcentaje_vidrio,
-                },
-              };
-
-              const success = await handleCreate(
-                payload,
-                "admin/elements/create",
-                `La puerta "${newDoor.name_element}" fue creada correctamente`,
-                fetchElements
-              );
-
-              if (success) {
-                setShowNewDoorModal(false);
-                setNewDoor({
-                  name_element: "",
-                  u_puerta_opaca: 0,
-                  ventana_id: 0,
-                  u_marco: 0,
-                  fm: 0,
-                  porcentaje_vidrio: 0,
-                });
-              }
-            }}
+          }
           title={selectedDoorId ? "Editar Puerta" : "Agregar Nueva Puerta"}
           saveLabel={selectedDoorId ? "Guardar Cambios" : "Crear Puerta"}
         >
@@ -1357,7 +1380,7 @@ const AdministrationPage: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewDoor((prev) => ({
@@ -1401,7 +1424,7 @@ const AdministrationPage: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => {
                   let value = parseFloat(e.target.value);
                   if (isNaN(value)) value = 0;
@@ -1411,7 +1434,6 @@ const AdministrationPage: React.FC = () => {
                 }}
                 min="0"
                 max="100"
-              
               />
             </div>
             <div className="form-group">
@@ -1425,7 +1447,7 @@ const AdministrationPage: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => {
                   const value = parseFloat(e.target.value);
                   setNewDoor((prev) => ({
@@ -1447,7 +1469,7 @@ const AdministrationPage: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => {
                   let value = parseFloat(e.target.value);
                   if (isNaN(value)) value = 0;

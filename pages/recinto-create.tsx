@@ -28,6 +28,7 @@ const LOCAL_STORAGE_KEY = "recintoFormData";
 
 const RecintoCreate: React.FC = () => {
   // Se mantiene projectDepartment y projectId, en caso de que sean necesarios para otros componentes
+  const [projectName, setProjectName] = useState<string>("Nombre del Proyecto");
   const [projectDepartment, setProjectDepartment] = useState<string>("Región");
   const [projectId, setProjectId] = useState<string>("");
 
@@ -44,11 +45,13 @@ const RecintoCreate: React.FC = () => {
   const [isRecintoCreated, setIsRecintoCreated] = useState<boolean>(false);
 
   // Recuperar datos del proyecto y del formulario (si existen) del localStorage
-  useEffect(() => {
-    const department = localStorage.getItem("project_department") || "Región";
-    const pid = localStorage.getItem("project_id") || "";
-    setProjectDepartment(department);
-    setProjectId(pid);
+   useEffect(() => {
+      const name = localStorage.getItem("project_name") || "Nombre del Proyecto";
+      const department = localStorage.getItem("project_department") || "Región";
+      const pid = localStorage.getItem("project_id") || "";
+      setProjectName(name);
+      setProjectDepartment(department);
+      setProjectId(pid);
 
     // Recuperar datos del formulario guardados
     const savedFormData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -206,7 +209,7 @@ const RecintoCreate: React.FC = () => {
           <Title text="Nuevo Recinto" />
           <div className="d-flex align-items-center">
             <ProjectInfoHeader
-              projectName={""}
+              projectName={projectName}
               region={projectDepartment}
             />
             <div className="ms-auto">

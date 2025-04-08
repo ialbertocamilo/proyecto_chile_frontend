@@ -1,5 +1,3 @@
-// recinto-edit.tsx
-
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponentEdit";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import Breadcrumb from "@/components/common/Breadcrumb";
@@ -10,31 +8,7 @@ import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
-interface IRegion {
-  id: number;
-  nombre_region: string;
-}
-
-interface IComuna {
-  id: number;
-  nombre_comuna: string;
-  latitud: number;
-  longitud: number;
-  zonas_termicas: string[];
-  region_id: number;
-}
-
-interface IEnclosureProfile {
-  id: number;
-  code: string;
-  name: string;
-  // ... otros campos que pudiera tener la respuesta
-}
-
 export interface IFormData {
-  selectedRegion: string;
-  selectedComuna: string;
-  selectedZonaTermica: string;
   nombreRecinto: string;
   perfilOcupacion: number;
   alturaPromedio: string;
@@ -49,30 +23,18 @@ const RecintoEdit: React.FC = () => {
   const [projectId, setProjectId] = useState<string>("");
 
   // ---------------------------
-  //  Estados para los desplegables y formulario
-  // ---------------------------
-  const [regions, setRegions] = useState<IRegion[]>([]);
-  const [selectedRegion, setSelectedRegion] = useState<string>("");
-  const [comunas, setComunas] = useState<IComuna[]>([]);
-  const [selectedComuna, setSelectedComuna] = useState<string>("");
-  const [zonasTermicas, setZonasTermicas] = useState<string[]>([]);
-  const [selectedZonaTermica, setSelectedZonaTermica] = useState<string>("");
-
-  // ---------------------------
-  //  Perfiles de ocupación (desplegable)
-  // ---------------------------
-  const [enclosureProfiles, setEnclosureProfiles] = useState<IEnclosureProfile[]>([]);
-  const [perfilOcupacion, setPerfilOcupacion] = useState<number>(0);
-
-  // ---------------------------
-  //  Otros campos del formulario
+  //  Estados para los campos del formulario restantes
   // ---------------------------
   const [nombreRecinto, setNombreRecinto] = useState<string>("");
+  const [perfilOcupacion, setPerfilOcupacion] = useState<number>(0);
   const [alturaPromedio, setAlturaPromedio] = useState<string>(""); // Se enviará como número
   const [sensorCo2, setSensorCo2] = useState<boolean>(false);
+  const [enclosureProfiles, setEnclosureProfiles] = useState<
+    { id: number; name: string }[]
+  >([]);
 
   // ---------------------------
-  //  Recuperar datos del proyecto y del formulario (si existen) del localStorage
+  //  Recuperar datos del proyecto y del formulario guardados en localStorage
   // ---------------------------
   useEffect(() => {
     const name = localStorage.getItem("project_name_edit") || "Nombre del Proyecto";
@@ -82,13 +44,9 @@ const RecintoEdit: React.FC = () => {
     setProjectDepartment(department);
     setProjectId(pid);
 
-    // Recuperar datos del formulario guardados en "recintoFormData"
     const savedFormData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (savedFormData) {
       const data: IFormData = JSON.parse(savedFormData);
-      setSelectedRegion(data.selectedRegion);
-      setSelectedComuna(data.selectedComuna);
-      setSelectedZonaTermica(data.selectedZonaTermica);
       setNombreRecinto(data.nombreRecinto);
       setPerfilOcupacion(data.perfilOcupacion);
       setAlturaPromedio(data.alturaPromedio);
@@ -97,108 +55,21 @@ const RecintoEdit: React.FC = () => {
   }, []);
 
   // ---------------------------
-  //  Guardar cambios en el formulario en el localStorage
+  //  Guardar cambios del formulario en localStorage
   // ---------------------------
   useEffect(() => {
     const formData: IFormData = {
-      selectedRegion,
-      selectedComuna,
-      selectedZonaTermica,
       nombreRecinto,
       perfilOcupacion,
       alturaPromedio,
       sensorCo2,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
-  }, [selectedRegion, selectedComuna, selectedZonaTermica, nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2]);
+  }, [nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2]);
 
   // ---------------------------
-  //  useEffect para cargar Regiones
+  //  useEffect para cargar Perfiles de ocupación (desplegable)
   // ---------------------------
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    const fetchRegions = async () => {
-      try {
-        const response = await fetch(`${constantUrlApiEndpoint}/regiones`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Error al cargar las regiones");
-        }
-        const data = await response.json();
-        setRegions(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchRegions();
-  }, []);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token || !selectedRegion) {
-      setComunas([]);
-      return;
-    }
-
-    const fetchComunas = async () => {
-      try {
-        const response = await fetch(
-          `${constantUrlApiEndpoint}/comunas/${selectedRegion}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok) {
-          throw new Error("Error al cargar las comunas");
-        }
-        const data = await response.json();
-        setComunas(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchComunas();
-  }, [selectedRegion]);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token || !selectedComuna) {
-      setZonasTermicas([]);
-      return;
-    }
-
-    const fetchZonasTermicas = async () => {
-      try {
-        const response = await fetch(
-          `${constantUrlApiEndpoint}/zonas-termicas/${selectedComuna}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok) {
-          throw new Error("Error al cargar las zonas térmicas");
-        }
-        const data = await response.json();
-        setZonasTermicas(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchZonasTermicas();
-  }, [selectedComuna]);
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -230,9 +101,6 @@ const RecintoEdit: React.FC = () => {
     // Se reemplaza la coma por el punto para convertir correctamente el valor a número
     const altura = parseFloat(alturaPromedio.replace(",", "."));
     if (
-      !selectedRegion ||
-      !selectedComuna ||
-      !selectedZonaTermica ||
       !nombreRecinto.trim() ||
       !perfilOcupacion ||
       !alturaPromedio.trim() ||
@@ -240,7 +108,7 @@ const RecintoEdit: React.FC = () => {
       altura <= 0
     ) {
       notify(
-        "Por favor, complete todos los campos requeridos y asegúrese que la altura sea un número positivo"
+        "Por favor, complete todos los campos requeridos y asegúrese de que la altura sea un número positivo"
       );
       return;
     }
@@ -259,9 +127,6 @@ const RecintoEdit: React.FC = () => {
 
       const payload = {
         name_enclosure: nombreRecinto,
-        region_id: parseInt(selectedRegion),
-        comuna_id: parseInt(selectedComuna),
-        zona_termica: selectedZonaTermica,
         occupation_profile_id: perfilOcupacion,
         height: altura,
         co2_sensor: sensorCo2 ? "Si" : "No",
@@ -309,7 +174,7 @@ const RecintoEdit: React.FC = () => {
       {/* Card del título y encabezado del proyecto con Breadcrumb alineado a la derecha */}
       <Card>
         <div>
-          <Title text="Edicion de Recinto" />
+          <Title text="Edición de Recinto" />
           <div className="d-flex justify-content-between align-items-center">
             <ProjectInfoHeader
               projectName={projectName}
@@ -325,96 +190,12 @@ const RecintoEdit: React.FC = () => {
         </div>
       </Card>
 
-      {/* Card con los campos de "Características de la edificación" */}
+      {/* Card con los campos restantes "Características de la edificación" */}
       <Card>
         <div>
           <Title text="Características de la edificación" />
           <div className="row mt-4">
-            {/* 1. Nombre proyecto */}
-            <div className="col-6 mb-3">
-              <label htmlFor="projectName" className="form-label">
-                Nombre proyecto
-              </label>
-              <input
-                id="projectName"
-                type="text"
-                className="form-control"
-                placeholder="Nombre del Proyecto"
-                value={projectName}
-                readOnly
-              />
-            </div>
-
-            {/* 2. Región (desplegable) */}
-            <div className="col-6 mb-3">
-              <label htmlFor="region" className="form-label">
-                Región
-              </label>
-              <select
-                id="region"
-                className="form-select"
-                value={selectedRegion}
-                onChange={(e) => {
-                  setSelectedRegion(e.target.value);
-                  // Limpiar campos dependientes
-                  setSelectedComuna("");
-                  setSelectedZonaTermica("");
-                }}
-              >
-                <option value="">Seleccione una región</option>
-                {regions.map((region) => (
-                  <option key={region.id} value={region.id}>
-                    {region.nombre_region}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 3. Comuna (desplegable) */}
-            <div className="col-6 mb-3">
-              <label htmlFor="comuna" className="form-label">
-                Comuna
-              </label>
-              <select
-                id="comuna"
-                className="form-select"
-                value={selectedComuna}
-                onChange={(e) => {
-                  setSelectedComuna(e.target.value);
-                  setSelectedZonaTermica("");
-                }}
-                disabled={!selectedRegion}
-              >
-                <option value="">Seleccione una comuna</option>
-                {comunas.map((comuna) => (
-                  <option key={comuna.id} value={comuna.id}>
-                    {comuna.nombre_comuna}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 4. Zona Térmica Proyecto (desplegable) */}
-            <div className="col-6 mb-3">
-              <label htmlFor="zonaTermica" className="form-label">
-                Zona Térmica Proyecto
-              </label>
-              <select
-                id="zonaTermica"
-                className="form-select"
-                value={selectedZonaTermica}
-                onChange={(e) => setSelectedZonaTermica(e.target.value)}
-                disabled={!selectedComuna}
-              >
-                <option value="">Seleccione zona térmica</option>
-                {zonasTermicas.map((zona) => (
-                  <option key={zona} value={zona}>
-                    {zona}
-                  </option>
-                ))}
-              </select>
-            </div>
-
+            {/* Campo: Nombre Recinto */}
             <div className="col-6 mb-3">
               <label htmlFor="nombreRecinto" className="form-label">
                 Nombre Recinto
@@ -429,6 +210,7 @@ const RecintoEdit: React.FC = () => {
               />
             </div>
 
+            {/* Campo: Perfil de Ocupación */}
             <div className="col-6 mb-3">
               <label htmlFor="perfilOcupacion" className="form-label">
                 Perfil de ocupación
@@ -450,6 +232,7 @@ const RecintoEdit: React.FC = () => {
               </select>
             </div>
 
+            {/* Campo: Altura Promedio Recinto */}
             <div className="col-6 mb-3">
               <label htmlFor="alturaPromedio" className="form-label">
                 Altura Promedio Recinto
@@ -471,7 +254,7 @@ const RecintoEdit: React.FC = () => {
               />
             </div>
 
-            {/* Sensor CO2 */}
+            {/* Campo: Sensor CO2 */}
             <div className="col-6 mb-3">
               <label htmlFor="sensorCo2" className="form-label">
                 Sensor CO2

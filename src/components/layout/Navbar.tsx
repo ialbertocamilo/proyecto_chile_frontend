@@ -652,7 +652,12 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                             padding: isNavOpen ? "10px 20px" : "10px 5px",
                             cursor: "pointer",
                           }}
-                          onClick={() => setIsDataEntrySubmenuOpen((prev) => !prev)}
+                          onClick={() => {
+                            // Se redirige directamente a la sección Data entry
+                            router.push("/data-entry?step=3");
+                            // Se alterna el submenú si se desean mostrar las opciones adicionales
+                            setIsDataEntrySubmenuOpen((prev) => !prev);
+                          }}
                         >
                           <span style={iconStyle("/data-entry")} className="material-icons">
                             input
@@ -690,7 +695,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                             <ul className="nav flex-column" style={{ paddingLeft: "20px" }}>
                               <li className="nav-item">
                                 <Link
-                                  href="/data-entry/materials-list"
+                                  href="/data-entry?step=3"
                                   className="nav-link text-white"
                                   style={{
                                     ...navLinkStyle,
@@ -709,7 +714,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                               </li>
                               <li className="nav-item">
                                 <Link
-                                  href="/data-entry/translucent-elements"
+                                  href="/data-entry?step=5"
                                   className="nav-link text-white"
                                   style={{
                                     ...navLinkStyle,
@@ -728,7 +733,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                               </li>
                               <li className="nav-item">
                                 <Link
-                                  href="/data-entry/usage-profile"
+                                  href="/data-entry?step=6"
                                   className="nav-link text-white"
                                   style={{
                                     ...navLinkStyle,

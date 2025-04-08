@@ -2,7 +2,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Cloud, Droplet, Flame, Snowflake } from 'lucide-react';
 
-export default function IndicadoresFinales() {
+export default function ResumenEnergia() {
     // Datos simulados para cada sección
     const demandaData = [
         { concepto: 'Calefacción', kwh_m2_ano: 114.1, kwh_ano: 22814.2, vsCasoBase: '14%' },
@@ -35,6 +35,8 @@ export default function IndicadoresFinales() {
 
     return (
         <div className="container my-4">
+            <h1 className="mb-3">Resumen de Energía</h1>
+
             {/* Grid principal */}
             <div className="row">
                 {/* Sección Demanda */}

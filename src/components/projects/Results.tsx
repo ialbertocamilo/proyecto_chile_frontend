@@ -25,9 +25,8 @@ const Results = () => {
         } catch (error) {
             console.error('Error al procesar los datos:', error);
            notify('Se termino de procesar la información')
-           setIsButtonDisabled(true);
         } finally {
-            setLoading(false); // Hide the loader
+            setLoading(false); 
         }
     };
 
@@ -37,11 +36,16 @@ const Results = () => {
         processData();
     }, [router.query.id]);
 
+
+    const handleRecintosCalculated = (recintos: any[]) => {
+
+        console.log('Recintos calculated:', recintos);
+    };
     return (
         <Container fluid className="py-4">
             <h2 className="mb-4 mt-2">Resultados finales</h2>
             <br />
-            {loading ? ( // Show loader while processing
+            {loading ? ( 
                 <div className="text-center">Procesando datos...</div>
             ) : (
                 <>
@@ -60,7 +64,7 @@ const Results = () => {
                             <AguaCalienteSanitaria />
                         </Tab>
                         <Tab eventKey="recintos" title="Resumen de Recintos">
-                            <ResumenRecintos />
+                            <ResumenRecintos onRecintosCalculated={handleRecintosCalculated}/>
                         </Tab>
                         <Tab eventKey="indicadores" title="Indicadores Finales">
                             <IndicadoresFinales />
@@ -89,7 +93,7 @@ const Results = () => {
                                 }
                             }}
                             className="mb-3"
-                            disabled={isButtonDisabled} // Disable button until processing is complete
+                            disabled={isButtonDisabled} 
                         >
                             Descarga datos procesados por el motor
                         </CustomButton>

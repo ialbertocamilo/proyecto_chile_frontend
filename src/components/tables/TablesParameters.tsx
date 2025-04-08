@@ -45,7 +45,10 @@ export default function TablesParameters({
               <thead
                 className="border-bottom"
                 style={{
-                  backgroundColor: "transparent", // Fondo transparente
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                  backgroundColor: "#fff", // Fondo transparente
                   color: "var(--primary-color)", // Color del texto: color primario
                 }}
               >

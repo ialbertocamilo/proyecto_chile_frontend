@@ -651,7 +651,7 @@ const ProjectWorkflowPart1: React.FC = () => {
 
                 {/* Fila para Número de viviendas / oficinas x nivel */}
                 <div className="row mb-3">
-                  <div className="col-12">
+                  <div className="col-12 col-md-6">
                     <label className="form-label">
                       Número de viviendas / oficinas x nivel{" "}
                       {isFieldEmpty("number_homes_per_level") && (

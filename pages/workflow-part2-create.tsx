@@ -19,6 +19,9 @@ import ModalCreate from "../src/components/common/ModalCreate";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataCreate";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
+// Importamos ProjectStatus para el estado y cálculo
+import ProjectStatus from "@/components/projects/ProjectStatus"; // 
+
 interface Detail {
   id_detail: number;
   scantilon_location: string;
@@ -125,6 +128,9 @@ const WorkFlowpar2createPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
+  // Estado para saber el status del proyecto (ej. "En proceso", etc.)
+  const [projectStatus, setProjectStatus] = useState("En proceso"); // <-- Integrado
+
   // Estados generales
   const [projectId, setProjectId] = useState<number | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -190,7 +196,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     layer_thickness: null,
   });
 
-  // Nuevo estado para el detalle en edición (modal)
+  // Estado para el detalle en edición (modal)
   const [editingDetail, setEditingDetail] = useState<Detail | null>(null);
 
   // Estados para ProjectInfoHeader
@@ -203,6 +209,23 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   // Estado para el modal de Detalles Generales
   const [showDetallesModal, setShowDetallesModal] = useState(false);
+
+  // Función opcional para cargar el estado del proyecto real desde tu backend:
+  const fetchProjectData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      if (!projectId) return;
+      const { data: projectData } = await axios.get(
+        `${constantUrlApiEndpoint}/projects/${projectId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Ajustar si tu backend envía otra propiedad
+      setProjectStatus(projectData?.status || "En proceso");
+    } catch (error) {
+      console.error("Error al obtener el estado del proyecto:", error);
+    }
+  };
 
   useEffect(() => {
     const storedProjectId = localStorage.getItem("project_id");
@@ -241,6 +264,13 @@ const WorkFlowpar2createPage: React.FC = () => {
     const pColor = getCssVarValue("--primary-color", "#3ca7b7");
     setPrimaryColor(pColor);
   }, []);
+
+  // Cuando tengamos projectId, podríamos buscar el estado real:
+  useEffect(() => {
+    if (projectId) {
+      fetchProjectData();
+    }
+  }, [projectId]);
 
   // Inicializa el input de porcentaje al abrir el modal de Ventana
   useEffect(() => {
@@ -379,7 +409,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   useEffect(() => {
     if (editingDetail) {
-      // Acciones adicionales al editar el detalle
+      // Acciones adicionales al editar el detalle si hace falta
     }
   }, [editingDetail]);
 
@@ -413,18 +443,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  const handleEditDetail = (detail: Detail) => {
-    setShowDetallesModal(false);
-    if ((!detail.material_id || detail.material_id === 0) && detail.material) {
-      const foundMaterial = materials.find(
-        (mat) => mat.name === detail.material
-      );
-      detail.material_id = foundMaterial ? foundMaterial.id : 0;
-    }
-    fetchMaterials();
-    setEditingDetail(detail);
-  };
-
+  // Crear Detalle
   const handleCreateNewDetail = async () => {
     if (!showNewDetailRow) return;
     if (
@@ -459,7 +478,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-            "Todos los detalles ya estaban en el proyecto"
+              "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -506,6 +525,19 @@ const WorkFlowpar2createPage: React.FC = () => {
   const saveDetails = () => {
     setShowTabsInStep4(true);
     setTabStep4("muros");
+  };
+
+  // Editar detalle con Modal
+  const handleEditDetail = (detail: Detail) => {
+    setShowDetallesModal(false);
+    if ((!detail.material_id || detail.material_id === 0) && detail.material) {
+      const foundMaterial = materials.find(
+        (mat) => mat.name === detail.material
+      );
+      detail.material_id = foundMaterial ? foundMaterial.id : 0;
+    }
+    fetchMaterials();
+    setEditingDetail(detail);
   };
 
   const handleConfirmEditDetail = async () => {
@@ -563,6 +595,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
+  // Eliminar detalle
   const handleDeleteDetail = async (detailId: number) => {
     const token = getToken();
     if (!token || !projectId) return;
@@ -593,6 +626,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     setShowConfirmModal(true);
   };
 
+  // Eliminar ventana/puerta
   const confirmDeleteElement = (elementId: number, type: string) => {
     setShowDetallesModal(false);
     setDeleteAction(() => () => handleDeleteElement(elementId, type));
@@ -608,13 +642,9 @@ const WorkFlowpar2createPage: React.FC = () => {
       await axios.delete(url, { headers });
       notify("Elemento eliminado exitosamente.");
       if (type === "window") {
-        setVentanasTabList((prev) =>
-          prev.filter((item) => item.id !== elementId)
-        );
+        setVentanasTabList((prev) => prev.filter((item) => item.id !== elementId));
       } else if (type === "door") {
-        setPuertasTabList((prev) =>
-          prev.filter((item) => item.id !== elementId)
-        );
+        setPuertasTabList((prev) => prev.filter((item) => item.id !== elementId));
       }
     } catch (error: unknown) {
       console.error("Error al eliminar el elemento:", error);
@@ -622,6 +652,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
+  // Editar muros
   const handleEditClick = (detail: TabItem) => {
     setEditingRowId(detail.id || null);
     setEditingColors({
@@ -662,15 +693,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingColors.interior },
-                  exterior: { name: editingColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingColors.interior },
+                    exterior: { name: editingColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -681,6 +712,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
+  // Editar techumbre
   const handleEditTechClick = (detail: TabItem) => {
     setEditingTechRowId(detail.id || null);
     setEditingTechColors({
@@ -721,15 +753,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingTechColors.interior },
-                  exterior: { name: editingTechColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingTechColors.interior },
+                    exterior: { name: editingTechColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -740,6 +772,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
+  // Editar pisos
   const handleEditPisoClick = (detail: TabItem) => {
     setEditingPisoRowId(detail.id || null);
     setEditingPisoForm({
@@ -790,21 +823,21 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                ref_aisl_vertical: {
-                  lambda: Number(editingPisoForm.vertical.lambda),
-                  e_aisl: Number(editingPisoForm.vertical.e_aisl),
-                  d: Number(editingPisoForm.vertical.d),
+                ...item,
+                info: {
+                  ...item.info,
+                  ref_aisl_vertical: {
+                    lambda: Number(editingPisoForm.vertical.lambda),
+                    e_aisl: Number(editingPisoForm.vertical.e_aisl),
+                    d: Number(editingPisoForm.vertical.d),
+                  },
+                  ref_aisl_horizontal: {
+                    lambda: Number(editingPisoForm.horizontal.lambda),
+                    e_aisl: Number(editingPisoForm.horizontal.e_aisl),
+                    d: Number(editingPisoForm.horizontal.d),
+                  },
                 },
-                ref_aisl_horizontal: {
-                  lambda: Number(editingPisoForm.horizontal.lambda),
-                  e_aisl: Number(editingPisoForm.horizontal.e_aisl),
-                  d: Number(editingPisoForm.horizontal.d),
-                },
-              },
-            }
+              }
             : item
         )
       );
@@ -815,6 +848,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
+  // Editar Puerta
   const handleConfirmPuertaEdit = async (puerta: Puerta) => {
     if (!projectId) return;
     const token = getToken();
@@ -853,6 +887,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
+  // Editar Ventana
   const handleConfirmVentanaEdit = async (ventana: Ventana) => {
     if (!projectId) return;
     const token = getToken();
@@ -915,9 +950,9 @@ const WorkFlowpar2createPage: React.FC = () => {
     const detailType = detailTypeMapping[tabStep4];
     const filteredDetails = detailType
       ? fetchedDetails.filter(
-        (det) =>
-          det.scantilon_location.toLowerCase() === detailType.toLowerCase()
-      )
+          (det) =>
+            det.scantilon_location.toLowerCase() === detailType.toLowerCase()
+        )
       : fetchedDetails;
 
     const columnsDetails = [
@@ -946,7 +981,9 @@ const WorkFlowpar2createPage: React.FC = () => {
               className="btn-table"
               variant="editIcon"
               onClick={() => handleEditDetail(det)}
-              disabled={det.created_status == "default" || det.created_status == "global"}
+              disabled={
+                det.created_status == "default" || det.created_status == "global"
+              }
             >
               Editar
             </CustomButton>
@@ -954,7 +991,9 @@ const WorkFlowpar2createPage: React.FC = () => {
               className="btn-table"
               variant="deleteIcon"
               onClick={() => confirmDeleteDetail(det.id_detail)}
-              disabled={det.created_status == "default" || det.created_status == "global"}
+              disabled={
+                det.created_status == "default" || det.created_status == "global"
+              }
             >
               <span className="material-icons">delete</span>
             </CustomButton>
@@ -963,9 +1002,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       };
     });
 
-    return (
-      <TablesParameters columns={columnsDetails} data={data} />
-    );
+    return <TablesParameters columns={columnsDetails} data={data} />;
   };
 
   const renderInitialDetails = () => {
@@ -1007,7 +1044,9 @@ const WorkFlowpar2createPage: React.FC = () => {
                   scantilon_location: (
                     <span style={textStyle}>{det.scantilon_location}</span>
                   ),
-                  name_detail: <span style={textStyle}>{det.name_detail}</span>,
+                  name_detail: (
+                    <span style={textStyle}>{det.name_detail}</span>
+                  ),
                   material: <span style={textStyle}>{det.material}</span>,
                   layer_thickness: (
                     <span style={textStyle}>{det.layer_thickness}</span>
@@ -1749,6 +1788,14 @@ const WorkFlowpar2createPage: React.FC = () => {
         </div>
       </Card>
 
+      {/* Integración de ProjectStatus */}
+      {projectId && (
+        <ProjectStatus
+          status={projectStatus}
+          projectId={String(projectId)}
+        />
+      )}
+
       {/* Modal para editar Detalle Constructivo */}
       {editingDetail && (
         <ModalCreate
@@ -1861,12 +1908,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_vidrio: Number(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_vidrio: Number(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1888,12 +1935,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          fs_vidrio: Number(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            fs_vidrio: Number(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1909,12 +1956,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          frame_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            frame_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1930,12 +1977,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          clousure_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            clousure_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2032,12 +2079,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_puerta_opaca: Number(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_puerta_opaca: Number(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2053,12 +2100,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          name_ventana: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            name_ventana: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2090,12 +2137,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev && prev.atributs
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          porcentaje_vidrio: Math.round(val) / 100,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: Math.round(val) / 100,
+                          },
+                        }
                       : prev
                   );
                 }}
@@ -2221,7 +2268,6 @@ const WorkFlowpar2createPage: React.FC = () => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Nombre Detalle"
                 value={newDetailForm.name_detail}
                 onChange={(e) =>
                   setNewDetailForm({
@@ -2278,9 +2324,8 @@ const WorkFlowpar2createPage: React.FC = () => {
 
       {/* Modal para mostrar Detalles Generales filtrados según el tipo */}
       {showDetallesModal && (
-        // Aquí iría el componente/modal para mostrar los detalles generales
         <ModalCreate
-          onSave={() => { }}
+          onSave={() => {}}
           detail={null}
           isOpen={showDetallesModal}
           title="Detalles Generales"

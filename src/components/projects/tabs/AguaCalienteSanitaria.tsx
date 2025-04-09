@@ -21,7 +21,6 @@ const AguaCalienteSanitaria = () => {
         consumo: number;
     }
 
-
     const [tableData, setTableData] = useState<TableRow[]>([]);
     const [demandaACS, setDemandaACS] = useState<number>(100);
     const [consumoACS, setConsumoACS] = useState<number>(3.251);
@@ -45,23 +44,35 @@ const AguaCalienteSanitaria = () => {
         }
     }, [])
 
+
     useEffect(() => {
-        if (tempRedResult.constant && waterMonthly.constant) {
-            const tRedValues = Object.values(tempRedResult.constant?.atributs?.monthly ?? {}) as number[];
-            const waterValues = Object.values(waterMonthly.constant?.atributs?.monthly ?? {}) as number[];
+        const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-            const result = waterValues.map((month, index) =>
-                (month * (tAcs - (tRedValues[index] ?? 0))) / 860
-            );
+        // Calculate total daily consumption from table data
+        const sumTotalConsumo = tableData.reduce((acc, row) => acc + (row.cantidad * row.consumo), 0);
 
-            const totalDemandaACS = Math.floor(result.reduce((acc, value) => acc + value, 0));
-            setDemandaACS(totalDemandaACS);
-        }
-    }, [tempRedResult.constant, waterMonthly.constant, tAcs]);
+        // Calculate monthly consumption (liters per month)
+        const litrosMes = daysInMonth.map(days => sumTotalConsumo * days);
 
+        console.log("Total consumo diario:", sumTotalConsumo);
+        console.log("Litros por mes:", litrosMes);
+        tempRedResult.constant?.atributs?.monthly
+        const monthlyTemp = Object.entries(tempRedResult.constant?.atributs?.monthly || {})
+            .sort((a, b) => {
+                const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+                return months.indexOf(a[0]) - months.indexOf(b[0]);
+            })
+            .map(([_, value]) => Number(value));
+
+        console.log(monthlyTemp)
+        const litrosDtMes = litrosMes.map((litros, index) =>
+            litros * (tAcs - Number(monthlyTemp[index])));
+
+        const sumLitrosDtmes = litrosDtMes.reduce((acc, value) => acc + value, 0);
+        setDemandaACS(sumLitrosDtmes / 860);
+    }, [tableData, tAcs]);
 
     const [combustibleLabel, setCombustibleLabel] = useState<string>('');
-
 
     useEffect(() => {
         if (result.constant?.atributs) {
@@ -92,7 +103,6 @@ const AguaCalienteSanitaria = () => {
         const option = options.find(opt => opt.value === code);
         return option ? option[key] : 1;
     };
-
 
     const getValueFromCode = (options: any[], name: string, key: string) => {
         const option = options.find(opt => opt?.code === name)

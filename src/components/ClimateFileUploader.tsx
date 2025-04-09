@@ -26,7 +26,7 @@ const ClimateFileUploader: React.FC = () => {
     }, []);
 
     const onDrop = (acceptedFiles: File[]) => {
-        setUploadedCsvFiles([...uploadedCsvFiles, ...acceptedFiles]);
+        setUploadedCsvFiles(acceptedFiles.slice(0, 1));
     };
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({

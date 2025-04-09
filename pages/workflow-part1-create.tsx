@@ -77,7 +77,6 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   // Estados para obtener zonas y la zona seleccionada
   const [zones, setZones] = useState<any[]>([]);
-  const [selectedZone, setSelectedZone] = useState<string>("");
 
   // Definición de los pasos para la sidebar
   const steps = [

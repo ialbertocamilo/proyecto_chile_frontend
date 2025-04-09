@@ -1,5 +1,5 @@
-import { Card } from "react-bootstrap";
 import { ChartLoader } from "./ChartLoader";
+import Card from "@/components/common/Card";
 
 interface PerformanceData {
     co2_equivalent: {
@@ -26,16 +26,9 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
     return (
         <Card>
         <div className="container mb-4">
-            <div className="row justify-content-end mb-3">
-                <div className="col-auto">
-                    <select className="form-select">
-                        <option>Selecciona la región</option>
-                    </select>
-                </div>
-            </div>
             <div className="row mb-4">
                 <div className="col-12">
-                    <h3 className="h6 text-muted mb-3">tCO2 equivalente</h3>
+                    <h3 className="h6 text-muted mb-3 mt-2">tCO2 equivalente</h3>
                     <div className="row">
                         <div className="col-md-6">
                             <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
@@ -88,7 +81,7 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
                 </div>
             </div>
         </div>
-            
+
             </Card>
     );
 };

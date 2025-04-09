@@ -69,7 +69,7 @@ const AguaCalienteSanitaria = () => {
             litros * (tAcs - Number(monthlyTemp[index])));
 
         const sumLitrosDtmes = litrosDtMes.reduce((acc, value) => acc + value, 0);
-        setDemandaACS(sumLitrosDtmes / 860);
+        setDemandaACS(parseFloat((sumLitrosDtmes / 860).toFixed(2))); // Limitar a 2 decimales
     }, [tableData, tAcs]);
 
     const [combustibleLabel, setCombustibleLabel] = useState<string>('');

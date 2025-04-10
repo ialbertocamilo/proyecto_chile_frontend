@@ -9,7 +9,7 @@ import { notify } from "@/utils/notify";
 
 const TabWindowCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id");
-  const projectId = localStorage.getItem("project_id_edit");
+  const projectId = localStorage.getItem("project_id");
   const token = localStorage.getItem("token") || "";
 
   // Función para formatear valores: si es 0 o "N/A" devuelve "-"

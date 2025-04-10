@@ -688,8 +688,20 @@ const WorkFlowpar2editPage: React.FC = () => {
       };
     });
     return (
-      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-        <TablesParameters columns={columnsDetails} data={data} />
+      <div>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+          <CustomButton variant="save" onClick={handleNewButtonClick}>
+            + Nuevo
+          </CustomButton>
+        </div>
+        <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+          <TablesParameters columns={columnsDetails} data={data} />
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
+          <CustomButton variant="save" onClick={saveDetails}>
+            Grabar datos
+          </CustomButton>
+        </div>
       </div>
     );
   };
@@ -805,20 +817,30 @@ const WorkFlowpar2editPage: React.FC = () => {
             />
           </div>
         ) : (
-          <CustomButton
-            className="btn-table"
-            variant="editIcon"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingRowId(item.id || null);
-              setEditingColors({
-                interior: item.info?.surface_color?.interior?.name || "Intermedio",
-                exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
-              });
-            }}
-          >
-            Editar
-          </CustomButton>
+          <div>
+            <CustomButton
+              className="btn-table"
+              variant="editIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingRowId(item.id || null);
+                setEditingColors({
+                  interior: item.info?.surface_color?.interior?.name || "Intermedio",
+                  exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
+                });
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              variant="deleteIcon"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+              }}
+            >
+              <span className="material-icons">delete</span>
+            </CustomButton>
+          </div>
         ),
       };
     });
@@ -907,6 +929,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             />
           </div>
         ) : (
+          <div>
           <CustomButton
             variant="editIcon"
             className="btn-table"
@@ -921,6 +944,15 @@ const WorkFlowpar2editPage: React.FC = () => {
           >
             Editar
           </CustomButton>
+          <CustomButton
+          variant="deleteIcon"
+          onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+          }}
+        >
+          <span className="material-icons">delete</span>
+        </CustomButton>
+        </div>
         ),
       };
     });
@@ -1189,6 +1221,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             />
           </div>
         ) : (
+          <div>
           <CustomButton
             className="btn-table"
             variant="editIcon"
@@ -1211,6 +1244,15 @@ const WorkFlowpar2editPage: React.FC = () => {
           >
             Editar
           </CustomButton>
+          <CustomButton
+          variant="deleteIcon"
+          onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+          }}
+        >
+          <span className="material-icons">delete</span>
+        </CustomButton>
+        </div>
         ),
       };
     });

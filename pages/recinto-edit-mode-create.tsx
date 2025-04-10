@@ -77,6 +77,7 @@ const RecintoEditModeCreate: React.FC = () => {
     const name = localStorage.getItem("project_name") || "Nombre del Proyecto";
     const department = localStorage.getItem("project_department") || "Región";
     const pid = localStorage.getItem("project_id") || "";
+    console.log("ID del proyecto:", pid);
     setProjectName(name);
     setProjectDepartment(department);
     setProjectId(pid);

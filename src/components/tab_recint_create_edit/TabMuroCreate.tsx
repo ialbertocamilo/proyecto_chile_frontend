@@ -112,7 +112,7 @@ const TabMuroCreate: React.FC = () => {
 
   // Obtener el project_id desde localStorage
   useEffect(() => {
-    const storedProjectId = localStorage.getItem("project_id_edit");
+    const storedProjectId = localStorage.getItem("project_id");
     if (storedProjectId) {
       setProjectId(storedProjectId);
     }

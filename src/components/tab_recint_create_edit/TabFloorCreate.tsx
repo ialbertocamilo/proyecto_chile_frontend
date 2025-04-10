@@ -46,7 +46,7 @@ interface FloorOption {
 const TabFloorCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id") || "12";
   console.log("Enclosure ID:", enclosure_id);
-  const projectId = localStorage.getItem("project_id_edit") || "37";
+  const projectId = localStorage.getItem("project_id") || "37";
   const token = localStorage.getItem("token") || "";
 
   const [tableData, setTableData] = useState<FloorData[]>([]);

@@ -48,7 +48,7 @@ const RecintoCreateEdit: React.FC = () => {
   useEffect(() => {
     const name = localStorage.getItem("project_name_edit") || "Nombre del Proyecto";
     const department = localStorage.getItem("project_department_edit") || "Región";
-    const pid = localStorage.getItem("project_id_edit") || "";
+    const pid = localStorage.getItem("project_id") || "";
     setProjectName(name);
     setProjectDepartment(department);
     setProjectId(pid);

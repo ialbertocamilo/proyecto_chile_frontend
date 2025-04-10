@@ -39,7 +39,7 @@ interface EditingValues {
 
 const TabCeilingCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id") || "13";
-  const projectId = localStorage.getItem("project_id_edit") || "37";
+  const projectId = localStorage.getItem("project_id") || "37";
   const token = localStorage.getItem("token") || "";
 
   const [data, setData] = useState<CeilingData[]>([]);

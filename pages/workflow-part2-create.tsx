@@ -20,7 +20,7 @@ import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataCreat
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
 // Importamos ProjectStatus para el estado y cálculo
-import ProjectStatus from "@/components/projects/ProjectStatus"; // 
+import ProjectStatus from "@/components/projects/ProjectStatus";
 
 interface Detail {
   id_detail: number;
@@ -81,13 +81,7 @@ interface Constant {
   is_deleted: boolean;
 }
 
-type TabStep4 =
-  | "detalles"
-  | "muros"
-  | "techumbre"
-  | "pisos"
-  | "ventanas"
-  | "puertas";
+type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
 
 interface Ventana {
   id: number;
@@ -129,7 +123,7 @@ const WorkFlowpar2createPage: React.FC = () => {
   const router = useRouter();
 
   // Estado para saber el status del proyecto (ej. "En proceso", etc.)
-  const [projectStatus, setProjectStatus] = useState("En proceso"); // <-- Integrado
+  const [projectStatus, setProjectStatus] = useState("En proceso");
 
   // Estados generales
   const [projectId, setProjectId] = useState<number | null>(null);
@@ -178,11 +172,11 @@ const WorkFlowpar2createPage: React.FC = () => {
   const [editingVentanaForm, setEditingVentanaForm] = useState<Ventana | null>(null);
   const [editingPuertaForm, setEditingPuertaForm] = useState<Puerta | null>(null);
 
-  // Estados locales para manejar el input de porcentaje como cadena
+  // Estados locales para manejar el input de porcentaje
   const [ventanaFmInput, setVentanaFmInput] = useState<string>("");
   const [puertaPorcentajeInput, setPuertaPorcentajeInput] = useState<string>("");
 
-  // Estado para el formulario de creación de detalle
+  // Estado para el formulario de creación de detalle (fila en tabla). Se deja tal cual
   const [showNewDetailRow, setShowNewDetailRow] = useState(false);
   const [newDetailForm, setNewDetailForm] = useState<{
     scantilon_location: string;
@@ -199,18 +193,26 @@ const WorkFlowpar2createPage: React.FC = () => {
   // Estado para el detalle en edición (modal)
   const [editingDetail, setEditingDetail] = useState<Detail | null>(null);
 
-  // Estados para ProjectInfoHeader
-  const [projectName, setProjectName] = useState("");
-  const [projectDepartment, setProjectDepartment] = useState("");
-
   // Estado para el modal de confirmación de eliminación
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [deleteAction, setDeleteAction] = useState<(() => void) | null>(null);
 
-  // Estado para el modal de Detalles Generales
+  // Estado para el modal de Detalles generales (que se abre al dar clic en el + de Acciones)
   const [showDetallesModal, setShowDetallesModal] = useState(false);
 
-  // Función opcional para cargar el estado del proyecto real desde tu backend:
+  // Estados para ProjectInfoHeader
+  const [projectName, setProjectName] = useState("");
+  const [projectDepartment, setProjectDepartment] = useState("");
+
+  // NUEVO: estados y lógica para el modal de creación de Detalle (botón + Nuevo, arriba)
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newDetalle, setNewDetalle] = useState({
+    name_detail: "",
+    colorExterior: "Intermedio",
+    colorInterior: "Intermedio",
+  });
+
+  // Función opcional para cargar el estado real del proyecto
   const fetchProjectData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -220,7 +222,6 @@ const WorkFlowpar2createPage: React.FC = () => {
         `${constantUrlApiEndpoint}/projects/${projectId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Ajustar si tu backend envía otra propiedad
       setProjectStatus(projectData?.status || "En proceso");
     } catch (error) {
       console.error("Error al obtener el estado del proyecto:", error);
@@ -232,10 +233,8 @@ const WorkFlowpar2createPage: React.FC = () => {
     if (storedProjectId) {
       setProjectId(Number(storedProjectId));
     }
-    const storedProjectName =
-      localStorage.getItem("project_name") || "Nombre no definido";
-    const storedProjectDepartment =
-      localStorage.getItem("project_department") || "Región no definida";
+    const storedProjectName = localStorage.getItem("project_name") || "Nombre no definido";
+    const storedProjectDepartment = localStorage.getItem("project_department") || "Región no definida";
     setProjectName(storedProjectName);
     setProjectDepartment(storedProjectDepartment);
     setHasLoaded(true);
@@ -243,10 +242,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   useEffect(() => {
     if (hasLoaded && projectId === null) {
-      notify(
-        "Ningún proyecto está seleccionado",
-        "Serás redirigido a la creación de proyecto"
-      );
+      notify("Ningún proyecto está seleccionado", "Serás redirigido a la creación de proyecto");
       router.push("/workflow-part1-create");
     }
   }, [hasLoaded, projectId, router]);
@@ -265,14 +261,13 @@ const WorkFlowpar2createPage: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
 
-  // Cuando tengamos projectId, podríamos buscar el estado real:
   useEffect(() => {
     if (projectId) {
       fetchProjectData();
     }
   }, [projectId]);
 
-  // Inicializa el input de porcentaje al abrir el modal de Ventana
+  // Inicialización inputs de edición en modales
   useEffect(() => {
     if (editingVentanaForm) {
       setVentanaFmInput(
@@ -283,7 +278,6 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   }, [editingVentanaForm]);
 
-  // Inicializa el input de porcentaje al abrir el modal de Puerta
   useEffect(() => {
     if (editingPuertaForm && editingPuertaForm.atributs) {
       setPuertaPorcentajeInput(
@@ -409,7 +403,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   useEffect(() => {
     if (editingDetail) {
-      // Acciones adicionales al editar el detalle si hace falta
+      // Acciones adicionales al editar el detalle (si hiciera falta)
     }
   }, [editingDetail]);
 
@@ -443,7 +437,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // Crear Detalle
+  // Crear Detalle (para filas en tabla)
   const handleCreateNewDetail = async () => {
     if (!showNewDetailRow) return;
     if (
@@ -478,7 +472,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-            "Todos los detalles ya estaban en el proyecto"
+              "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -517,9 +511,13 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
+  // Botón + Nuevo2 (para crear detalles específicos)
   const handleNewButtonClick = () => {
-    setShowNewDetailRow(true);
+    // Solo abre el modal para crear un nuevo Detalle Constructivo
+    setShowCreateModal(true);
     fetchMaterials();
+    // Ya no afecta al modal de Detalles generales
+    setShowDetallesModal(false);
   };
 
   const saveDetails = () => {
@@ -527,7 +525,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     setTabStep4("muros");
   };
 
-  // Editar detalle con Modal
+  // Editar detalle con Modal (Detalles constructivos ya existentes)
   const handleEditDetail = (detail: Detail) => {
     setShowDetallesModal(false);
     if ((!detail.material_id || detail.material_id === 0) && detail.material) {
@@ -602,18 +600,40 @@ const WorkFlowpar2createPage: React.FC = () => {
     try {
       const detail = fetchedDetails.find((d) => d.id_detail === detailId);
       const tipo = detail ? detail.scantilon_location.toLowerCase() : "";
-      const url = `${constantUrlApiEndpoint}/user/details/${detailId}/delete?project_id=${projectId}`;
+      // Actualizar estados locales inmediatamente
+      setFetchedDetails(prevDetails => prevDetails.filter(d => d.id_detail !== detailId));
+      
+      // Actualizar todas las listas de detalles usando una función que verifica tanto id como id_detail
+      const filterById = (item: any) => {
+        // Si el item tiene id_detail, usamos ese
+        if (item.id_detail !== undefined) {
+          return item.id_detail !== detailId;
+        }
+        // Si no tiene id_detail pero tiene id, usamos id
+        if (item.id !== undefined) {
+          return item.id !== detailId;
+        }
+        // Si no tiene ninguno de los dos, lo mantenemos (no debería ocurrir)
+        return true;
+      };
+      
+      setMurosTabList(prevList => prevList.filter(filterById));
+      setTechumbreTabList(prevList => prevList.filter(filterById));
+      setPisosTabList(prevList => prevList.filter(filterById));
+      
+      const url = `${constantUrlApiEndpoint}/user/${detailId}/details/delete?project_id=${projectId}`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.delete(url, { headers });
       notify(response.data.message);
-      if (tipo === "muro") {
-        fetchMurosDetails();
-      } else if (tipo === "techo") {
-        fetchTechumbreDetails();
-      } else if (tipo === "piso") {
-        fetchPisosDetails();
-      }
-      fetchFetchedDetails();
+      
+      // Actualizar datos del backend
+      await fetchFetchedDetails();
+      
+      // Actualizar las listas específicas según el tipo
+      if (tipo === "muro") await fetchMurosDetails();
+      if (tipo === "techo") await fetchTechumbreDetails();
+      if (tipo === "piso") await fetchPisosDetails();
+      
     } catch (error: unknown) {
       console.error("Error al eliminar el detalle:", error);
       notify("Error al eliminar el detalle.");
@@ -693,15 +713,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingColors.interior },
-                  exterior: { name: editingColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingColors.interior },
+                    exterior: { name: editingColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -753,15 +773,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                surface_color: {
-                  interior: { name: editingTechColors.interior },
-                  exterior: { name: editingTechColors.exterior },
+                ...item,
+                info: {
+                  ...item.info,
+                  surface_color: {
+                    interior: { name: editingTechColors.interior },
+                    exterior: { name: editingTechColors.exterior },
+                  },
                 },
-              },
-            }
+              }
             : item
         )
       );
@@ -823,21 +843,21 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-              ...item,
-              info: {
-                ...item.info,
-                ref_aisl_vertical: {
-                  lambda: Number(editingPisoForm.vertical.lambda),
-                  e_aisl: Number(editingPisoForm.vertical.e_aisl),
-                  d: Number(editingPisoForm.vertical.d),
+                ...item,
+                info: {
+                  ...item.info,
+                  ref_aisl_vertical: {
+                    lambda: Number(editingPisoForm.vertical.lambda),
+                    e_aisl: Number(editingPisoForm.vertical.e_aisl),
+                    d: Number(editingPisoForm.vertical.d),
+                  },
+                  ref_aisl_horizontal: {
+                    lambda: Number(editingPisoForm.horizontal.lambda),
+                    e_aisl: Number(editingPisoForm.horizontal.e_aisl),
+                    d: Number(editingPisoForm.horizontal.d),
+                  },
                 },
-                ref_aisl_horizontal: {
-                  lambda: Number(editingPisoForm.horizontal.lambda),
-                  e_aisl: Number(editingPisoForm.horizontal.e_aisl),
-                  d: Number(editingPisoForm.horizontal.d),
-                },
-              },
-            }
+              }
             : item
         )
       );
@@ -926,6 +946,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
+  // Función que abre el modal de Detalles Generales al dar clic en el botón + de la columna Acciones
   const openDetallesModal = (e: React.MouseEvent<HTMLDivElement>) => {
     const targetTag = (e.target as HTMLElement).tagName.toLowerCase();
     if (
@@ -946,13 +967,14 @@ const WorkFlowpar2createPage: React.FC = () => {
     pisos: "Piso",
   };
 
+  // Contenido del modal de Detalles Generales
   const renderDetallesModalContent = () => {
     const detailType = detailTypeMapping[tabStep4];
     const filteredDetails = detailType
       ? fetchedDetails.filter(
-        (det) =>
-          det.scantilon_location.toLowerCase() === detailType.toLowerCase()
-      )
+          (det) =>
+            det.scantilon_location.toLowerCase() === detailType.toLowerCase()
+        )
       : fetchedDetails;
 
     const columnsDetails = [
@@ -982,7 +1004,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               variant="editIcon"
               onClick={() => handleEditDetail(det)}
               disabled={
-                det.created_status == "default" || det.created_status == "global"
+                det.created_status === "default" || det.created_status === "global"
               }
             >
               Editar
@@ -992,7 +1014,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               variant="deleteIcon"
               onClick={() => confirmDeleteDetail(det.id_detail)}
               disabled={
-                det.created_status == "default" || det.created_status == "global"
+                det.created_status === "default" || det.created_status === "global"
               }
             >
               <span className="material-icons">delete</span>
@@ -1004,7 +1026,6 @@ const WorkFlowpar2createPage: React.FC = () => {
 
     return (
       <>
-        {/* Botón + Nuevo arriba de la tabla */}
         <div
           style={{
             display: "flex",
@@ -1012,26 +1033,51 @@ const WorkFlowpar2createPage: React.FC = () => {
             marginBottom: "1rem",
           }}
         >
-          <CustomButton variant="save" onClick={handleNewButtonClick}>
-            + Nuevo
+          <CustomButton variant="save" onClick={async () => {
+            const token = localStorage.getItem("token");
+            const projectId = localStorage.getItem("project_id");
+            if (!token || !projectId) {
+              notify("Token o ID de proyecto no encontrado", "Inicia sesión.");
+              return;
+            }
+            try {
+              const response = await axios.post(
+                `${constantUrlApiEndpoint}/user/detail-create?project_id=${projectId}`,
+                {
+                  scantilon_location: "Muro",
+                  name_detail: "Nuevo Detalle",
+                  material_id: 0,
+                  layer_thickness: 0
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                  }
+                }
+              );
+              
+              if (response.data.detail) {
+                // Actualizar la lista de detalles
+                await fetchFetchedDetails();
+                notify("Detalle creado exitosamente");
+              }
+            } catch (error) {
+              console.error("Error al crear el detalle:", error);
+              notify("Error al crear el detalle");
+            }
+          }}>
+            + Nuevo1
           </CustomButton>
         </div>
-
-        {/* Tabla de datos */}
         <TablesParameters columns={columnsDetails} data={data} />
-
-        {/* Botón Grabar datos al final, alineado a la derecha */}
         <div
           style={{
             display: "flex",
             justifyContent: "flex-end",
             marginTop: "1rem",
           }}
-        >
-          <CustomButton variant="save" onClick={saveDetails}>
-            Grabar datos
-          </CustomButton>
-        </div>
+        ></div>
       </>
     );
   };
@@ -1165,6 +1211,16 @@ const WorkFlowpar2createPage: React.FC = () => {
           <div>
             <CustomButton
               className="btn-table"
+              variant="addIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDetallesModal(true);
+              }}
+            >
+              +
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
               variant="editIcon"
               onClick={(e) => {
                 e.stopPropagation();
@@ -1177,6 +1233,10 @@ const WorkFlowpar2createPage: React.FC = () => {
               variant="deleteIcon"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
+                const detailId = item.id_detail || item.id;
+                if (detailId) {
+                  confirmDeleteDetail(detailId);
+                }
               }}
             >
               <span className="material-icons">delete</span>
@@ -1187,7 +1247,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     });
 
     return (
-      <div onClick={openDetallesModal} style={{ overflowX: "auto" }}>
+      <div style={{ overflowX: "auto" }}>
         {murosTabList.length > 0 ? (
           <TablesParameters columns={columnsMuros} data={murosData} />
         ) : (
@@ -1255,6 +1315,16 @@ const WorkFlowpar2createPage: React.FC = () => {
         ) : (
           <div>
             <CustomButton
+              className="btn-table"
+              variant="addIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDetallesModal(true);
+              }}
+            >
+              +
+            </CustomButton>
+            <CustomButton
               variant="editIcon"
               className="btn-table"
               onClick={(e) => {
@@ -1268,6 +1338,10 @@ const WorkFlowpar2createPage: React.FC = () => {
               variant="deleteIcon"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
+                const detailId = item.id_detail || item.id;
+                if (detailId) {
+                  confirmDeleteDetail(detailId);
+                }
               }}
             >
               <span className="material-icons">delete</span>
@@ -1278,7 +1352,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     });
 
     return (
-      <div onClick={openDetallesModal} style={{ minWidth: "600px" }}>
+      <div style={{ minWidth: "600px", overflowX: "auto" }}>
         {techumbreTabList.length > 0 ? (
           <TablesParameters columns={columnsTech} data={techData} />
         ) : (
@@ -1501,6 +1575,16 @@ const WorkFlowpar2createPage: React.FC = () => {
           <div>
             <CustomButton
               className="btn-table"
+              variant="addIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDetallesModal(true);
+              }}
+            >
+              +
+            </CustomButton>
+            <CustomButton
+              className="btn-table"
               variant="editIcon"
               onClick={(e) => {
                 e.stopPropagation();
@@ -1513,6 +1597,10 @@ const WorkFlowpar2createPage: React.FC = () => {
               variant="deleteIcon"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
+                const detailId = item.id_detail || item.id;
+                if (detailId) {
+                  confirmDeleteDetail(detailId);
+                }
               }}
             >
               <span className="material-icons">delete</span>
@@ -1523,7 +1611,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     });
 
     return (
-      <div onClick={openDetallesModal} style={{ minWidth: "600px" }}>
+      <div style={{ minWidth: "600px", overflowX: "auto" }}>
         {pisosTabList.length > 0 ? (
           <TablesParameters
             columns={columnsPisos}
@@ -1726,8 +1814,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             marginBottom: "1rem",
           }}
         >
+          {/* Botón + Nuevo (para crear Detalle Constructivo). NO se toca ni se elimina */}
           <CustomButton variant="save" onClick={handleNewButtonClick}>
-            + Nuevo
+            + Nuevo2
           </CustomButton>
         </div>
         <ul
@@ -1748,15 +1837,11 @@ const WorkFlowpar2createPage: React.FC = () => {
                   padding: "10px",
                   backgroundColor: "#fff",
                   color:
-                    tabStep4 === item.key
-                      ? primaryColor
-                      : "var(--secondary-color)",
+                    tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
                   borderBottom:
-                    tabStep4 === item.key
-                      ? `3px solid ${primaryColor}`
-                      : "none",
+                    tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -1801,6 +1886,51 @@ const WorkFlowpar2createPage: React.FC = () => {
       title: "Recinto",
     },
   ];
+
+  // Nueva función que guarda el Detalle Constructivo desde el modal + Nuevo (el de arriba)
+  const handleSaveDetalle = async () => {
+    if (!newDetalle.name_detail || !newDetalle.colorInterior || !newDetalle.colorExterior) {
+      notify("Por favor, complete todos los campos del Detalle Constructivo.");
+      return;
+    }
+    const projectId = localStorage.getItem("project_id");
+    const token = getToken();
+    if (!token || !projectId) return;
+    // Se determina el tipo según la pestaña activa; si no se reconoce, "Muro"
+    const type = detailTypeMapping[tabStep4] || "Muro";
+    const payload = {
+      info: {
+        surface_color: {
+          interior: { name: newDetalle.colorInterior },
+          exterior: { name: newDetalle.colorExterior },
+        },
+      },
+      name_detail: newDetalle.name_detail,
+    };
+
+    try {
+      const url = `${constantUrlApiEndpoint}/user/${type}/detail-part-create?project_id=${projectId}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+      await axios.post(url, payload, { headers });
+      notify("Detalle creado exitosamente.");
+      if (type === "Muro") {
+        fetchMurosDetails();
+      } else if (type === "Techo") {
+        fetchTechumbreDetails();
+      } else if (type === "Piso") {
+        fetchPisosDetails();
+      }
+      setShowCreateModal(false);
+      setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
+      fetchFetchedDetails();
+    } catch (error) {
+      console.error("Error al crear detalle constructivo:", error);
+      notify("Error al crear el Detalle Constructivo.");
+    }
+  };
 
   return (
     <>
@@ -1857,7 +1987,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         />
       )}
 
-      {/* Modal para editar Detalle Constructivo */}
+      {/* Modal para editar Detalle Constructivo existente */}
       {editingDetail && (
         <ModalCreate
           isOpen={true}
@@ -1930,7 +2060,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         </ModalCreate>
       )}
 
-      {/* Modal para editar Ventana usando ModalCreate */}
+      {/* Modal para editar Ventana */}
       {editingVentanaForm && (
         <ModalCreate
           isOpen={true}
@@ -1969,12 +2099,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_vidrio: Number(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_vidrio: Number(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -1996,12 +2126,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          fs_vidrio: Number(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            fs_vidrio: Number(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2017,12 +2147,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          frame_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            frame_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2038,12 +2168,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          clousure_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            clousure_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2057,9 +2187,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 value={editingVentanaForm.u_marco || ""}
                 min="0"
                 onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
+                  if (e.key === "-") e.preventDefault();
                 }}
                 onChange={(e) =>
                   setEditingVentanaForm((prev) =>
@@ -2078,9 +2206,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 className="form-control"
                 value={ventanaFmInput}
                 onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
+                  if (e.key === "-") e.preventDefault();
                 }}
                 onChange={(e) => {
                   let val = Number(e.target.value);
@@ -2101,7 +2227,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         </ModalCreate>
       )}
 
-      {/* Modal para editar Puerta usando ModalCreate */}
+      {/* Modal para editar Puerta */}
       {editingPuertaForm && (
         <ModalCreate
           isOpen={true}
@@ -2140,12 +2266,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_puerta_opaca: Number(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_puerta_opaca: Number(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2161,12 +2287,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          name_ventana: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            name_ventana: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2198,12 +2324,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev && prev.atributs
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          porcentaje_vidrio: Math.round(val) / 100,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: Math.round(val) / 100,
+                          },
+                        }
                       : prev
                   );
                 }}
@@ -2236,11 +2362,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 max="100"
                 step="any"
                 className="form-control"
-                value={
-                  editingPuertaForm.fm !== undefined
-                    ? Math.round(editingPuertaForm.fm * 100)
-                    : ""
-                }
+                value={editingPuertaForm.fm ? Math.round(editingPuertaForm.fm * 100) : ""}
                 onKeyDown={(e) => {
                   if (e.key === "-") {
                     e.preventDefault();
@@ -2249,9 +2371,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 onChange={(e) => {
                   let val = Number(e.target.value);
                   if (isNaN(val)) {
-                    setEditingPuertaForm((prev) =>
-                      prev ? { ...prev, fm: 0 } : prev
-                    );
+                    setPuertaPorcentajeInput("");
                     return;
                   }
                   if (val > 100) val = 100;
@@ -2266,135 +2386,90 @@ const WorkFlowpar2createPage: React.FC = () => {
         </ModalCreate>
       )}
 
-      {/* Modal de confirmación para eliminar */}
+      {/* Modal de Detalles Generales, abierto al dar clic en el + de Acciones */}
+      {showDetallesModal && (
+        <ModalCreate 
+          onSave={() => {}}
+          isOpen={true}
+          title="Detalles Generales"
+          onClose={() => setShowDetallesModal(false)}
+          modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
+        >
+          {renderDetallesModalContent()}
+        </ModalCreate>
+      )}
+
+      {/* Modal de confirmación de borrado */}
       {showConfirmModal && (
         <ModalCreate
-          detail={null}
-          isOpen={showConfirmModal}
-          title="Confirmación"
+          isOpen={true}
+          saveLabel="Confirmar"
+          title="Confirmar eliminación"
           onClose={() => {
             setShowConfirmModal(false);
             setDeleteAction(null);
           }}
           onSave={() => {
-            if (deleteAction) deleteAction();
+            if (deleteAction) {
+              deleteAction();
+            }
             setShowConfirmModal(false);
             setDeleteAction(null);
           }}
-          saveLabel="Eliminar"
         >
-          <div>
-            <p>¿Estás seguro de que deseas eliminar este elemento?</p>
-          </div>
+          <p>¿Está seguro que desea eliminar este elemento?</p>
         </ModalCreate>
       )}
 
-      {/* Modal para crear nuevo Detalle */}
-      {showNewDetailRow && (
+      {/* Modal para crear un nuevo Detalle Constructivo (botón + Nuevo) */}
+      {showCreateModal && (
         <ModalCreate
-          isOpen={showNewDetailRow}
-          onClose={() => setShowNewDetailRow(false)}
-          detail={null}
-          materials={materials.map((mat) => ({ ...mat, id: String(mat.id) }))}
-          onSave={handleCreateNewDetail}
-          title="Nuevo Detalle"
-          saveLabel="Crear Detalle"
+          isOpen={true}
+          title="Crear Nuevo Detalle"
+          onClose={() => setShowCreateModal(false)}
+          onSave={handleSaveDetalle}
         >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleCreateNewDetail();
-            }}
-          >
+          <form>
             <div className="form-group">
-              <label>Selecciones</label>
-              <select
-                className="form-control"
-                value={newDetailForm.scantilon_location}
-                onChange={(e) =>
-                  setNewDetailForm({
-                    ...newDetailForm,
-                    scantilon_location: e.target.value,
-                  })
-                }
-              >
-                <option value="">Seleccione una opción</option>
-                <option value="Muro">Muro</option>
-                <option value="Techo">Techo</option>
-                <option value="Piso">Piso</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Nombre Detalle</label>
+              <label>Nombre del Detalle</label>
               <input
                 type="text"
                 className="form-control"
-                value={newDetailForm.name_detail}
+                value={newDetalle.name_detail}
                 onChange={(e) =>
-                  setNewDetailForm({
-                    ...newDetailForm,
-                    name_detail: e.target.value,
-                  })
+                  setNewDetalle((prev) => ({ ...prev, name_detail: e.target.value }))
                 }
               />
             </div>
             <div className="form-group">
-              <label>Material</label>
+              <label>Color Exterior</label>
               <select
                 className="form-control"
-                value={newDetailForm.material_id}
+                value={newDetalle.colorExterior}
                 onChange={(e) =>
-                  setNewDetailForm({
-                    ...newDetailForm,
-                    material_id: Number(e.target.value),
-                  })
+                  setNewDetalle((prev) => ({ ...prev, colorExterior: e.target.value }))
                 }
               >
-                <option value={0}>Seleccione Material</option>
-                {materials.map((material) => (
-                  <option key={material.id} value={material.id}>
-                    {material.name}
-                  </option>
-                ))}
+                <option value="Claro">Claro</option>
+                <option value="Oscuro">Oscuro</option>
+                <option value="Intermedio">Intermedio</option>
               </select>
             </div>
             <div className="form-group">
-              <label>Espesor capa (cm)</label>
-              <input
-                type="number"
+              <label>Color Interior</label>
+              <select
                 className="form-control"
-                placeholder="Espesor capa (cm)"
-                value={newDetailForm.layer_thickness ?? ""}
-                min="0"
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}
+                value={newDetalle.colorInterior}
                 onChange={(e) =>
-                  setNewDetailForm({
-                    ...newDetailForm,
-                    layer_thickness: Number(e.target.value),
-                  })
+                  setNewDetalle((prev) => ({ ...prev, colorInterior: e.target.value }))
                 }
-              />
+              >
+                <option value="Claro">Claro</option>
+                <option value="Oscuro">Oscuro</option>
+                <option value="Intermedio">Intermedio</option>
+              </select>
             </div>
           </form>
-        </ModalCreate>
-      )}
-
-      {/* Modal para mostrar Detalles Generales filtrados según el tipo */}
-      {showDetallesModal && (
-        <ModalCreate
-          onSave={() => { }}
-          detail={null}
-          isOpen={showDetallesModal}
-          title="Detalles Generales"
-          onClose={() => setShowDetallesModal(false)}
-          modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
-          hideFooter={true}
-        >
-          {renderDetallesModalContent()}
         </ModalCreate>
       )}
     </>

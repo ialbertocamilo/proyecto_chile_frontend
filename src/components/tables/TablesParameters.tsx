@@ -110,7 +110,9 @@ export default function TablesParameters({
                         className="text-center align-middle"
                         style={{
                           padding: "8px 2px",
-                          minWidth: "100px", // Asegura un ancho mínimo para las celdas
+                          minWidth: "100px",
+                          cursor: "pointer",
+                          transition: "background-color 0.2s",
                         }}
                       >
                         {col.renderCell ? col.renderCell(row) : row[col.field]}

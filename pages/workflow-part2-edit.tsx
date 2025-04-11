@@ -24,6 +24,8 @@ import TabRecintDataCreate from "../src/components/tab_recint_data/TabRecintData
 // IMPORTANTE: Importamos el componente ActionButtonsConfirm
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import ProjectStatus from "@/components/projects/ProjectStatus";
+import AddDetailOnLayer from "@/components/projects/AddDetailOnLayer";
+import { useApi } from "@/hooks/useApi";
 
 // Funciones auxiliares para formatear valores
 const formatValue = (value: number | null | undefined): string => {
@@ -183,7 +185,17 @@ interface Puerta {
 const WorkFlowpar2editPage: React.FC = () => {
   useAuth();
   const router = useRouter();
+  const api = useApi()
 
+  const [detailList, SetDetailsList]=useState<any>()
+
+  const OnDetailOpened = (e: any) => {
+    setShowDetallesModal(true)
+
+    api.get(`detail-part/${e?.id}`).then((data) => {
+      SetDetailsList(data)
+    })
+  }
   // ===================== ESTADOS GENERALES ======================
   const [projectId, setProjectId] = useState<number | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -651,7 +663,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
       { headerName: "Acción", field: "acciones" },
     ];
-    const data = filteredDetails.map((det) => {
+    const data = detailList?.map((det:any) => {
       const textStyle =
         det.created_status === "created"
           ? { color: "var(--primary-color)", fontWeight: "bold" }
@@ -818,6 +830,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           </div>
         ) : (
           <div>
+            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
             <CustomButton
               className="btn-table"
               variant="editIcon"
@@ -845,7 +858,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       };
     });
     return (
-      <div onClick={() => setShowDetallesModal(true)}>
+      <div >
         {murosTabList.length > 0 ? (
           <TablesParameters columns={columnsMuros} data={murosData} />
         ) : (
@@ -1257,7 +1270,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       };
     });
     return (
-      <div onClick={() => setShowDetallesModal(true)}>
+      <div >
         {pisosTabList.length > 0 ? (
           <TablesParameters columns={columnsPisos} data={pisosData} multiHeader={multiHeaderPisos} />
         ) : (
@@ -1629,7 +1642,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       <ModalCreate
         detail={null}
         isOpen={showNewDetailRow}
-        title="Crear Nuevo Detalle"
+        title="Crear Nueva Capa"
         onClose={() => {
           setShowNewDetailRow(false);
           // Reinicia el formulario si es necesario:

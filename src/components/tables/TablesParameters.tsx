@@ -102,9 +102,9 @@ export default function TablesParameters({
               </thead>
 
               <tbody>
-                {data.map((row, rowIndex) => (
+                {data?.map((row, rowIndex) => (
                   <tr key={rowIndex}>
-                    {columns.map((col) => (
+                    {columns?.map((col) => (
                       <td
                         key={col.field}
                         className="text-center align-middle"

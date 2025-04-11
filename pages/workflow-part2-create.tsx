@@ -1,26 +1,29 @@
+import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
+import Breadcrumb from "@/components/common/Breadcrumb";
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataCreate";
+import TablesParameters from "@/components/tables/TablesParameters";
+import VerticalDivider from "@/components/ui/HorizontalDivider";
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
 import GooIcons from "../public/GoogleIcons";
+import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
+import ModalCreate from "../src/components/common/ModalCreate";
+import SearchParameters from "../src/components/inputs/SearchParameters";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-import Breadcrumb from "@/components/common/Breadcrumb";
-import TablesParameters from "@/components/tables/TablesParameters";
-import VerticalDivider from "@/components/ui/HorizontalDivider";
-import SearchParameters from "../src/components/inputs/SearchParameters";
-import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
-import ModalCreate from "../src/components/common/ModalCreate";
-import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataCreate";
-import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
 // Importamos ProjectStatus para el estado y cálculo
+import AddDetailOnLayer from "@/components/projects/AddDetailOnLayer";
 import ProjectStatus from "@/components/projects/ProjectStatus";
+import { useApi } from "@/hooks/useApi";
+import { createDetail } from "@/service/details";
 
 interface Detail {
   id_detail: number;
@@ -122,6 +125,14 @@ const WorkFlowpar2createPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
+  const OnDetailOpened = (e: any) => {
+    console.log(e)
+    setShowDetallesModal(true)
+
+    api.get(`detail-part/${e?.id}`).then((data) => {
+      SetDetailsList(data)
+    })
+  }
   // Estado para saber el status del proyecto (ej. "En proceso", etc.)
   const [projectStatus, setProjectStatus] = useState("En proceso");
 
@@ -145,6 +156,8 @@ const WorkFlowpar2createPage: React.FC = () => {
   const [puertasTabList, setPuertasTabList] = useState<Puerta[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
 
+
+  const [selectedItem, SetSelectedItem] = useState<any>()
   // Estados para edición en otras pestañas (Muros, Techumbre, Pisos, etc.)
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [editingColors, setEditingColors] = useState<{
@@ -211,6 +224,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     colorExterior: "Intermedio",
     colorInterior: "Intermedio",
   });
+
 
   // Función opcional para cargar el estado real del proyecto
   const fetchProjectData = async () => {
@@ -472,7 +486,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-              "Todos los detalles ya estaban en el proyecto"
+            "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -602,7 +616,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const tipo = detail ? detail.scantilon_location.toLowerCase() : "";
       // Actualizar estados locales inmediatamente
       setFetchedDetails(prevDetails => prevDetails.filter(d => d.id_detail !== detailId));
-      
+
       // Actualizar todas las listas de detalles usando una función que verifica tanto id como id_detail
       const filterById = (item: any) => {
         // Si el item tiene id_detail, usamos ese
@@ -616,24 +630,24 @@ const WorkFlowpar2createPage: React.FC = () => {
         // Si no tiene ninguno de los dos, lo mantenemos (no debería ocurrir)
         return true;
       };
-      
+
       setMurosTabList(prevList => prevList.filter(filterById));
       setTechumbreTabList(prevList => prevList.filter(filterById));
       setPisosTabList(prevList => prevList.filter(filterById));
-      
+
       const url = `${constantUrlApiEndpoint}/user/${detailId}/details/delete?project_id=${projectId}`;
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.delete(url, { headers });
       notify(response.data.message);
-      
+
       // Actualizar datos del backend
       await fetchFetchedDetails();
-      
+
       // Actualizar las listas específicas según el tipo
       if (tipo === "muro") await fetchMurosDetails();
       if (tipo === "techo") await fetchTechumbreDetails();
       if (tipo === "piso") await fetchPisosDetails();
-      
+
     } catch (error: unknown) {
       console.error("Error al eliminar el detalle:", error);
       notify("Error al eliminar el detalle.");
@@ -713,15 +727,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingColors.interior },
-                    exterior: { name: editingColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingColors.interior },
+                  exterior: { name: editingColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -773,15 +787,15 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  surface_color: {
-                    interior: { name: editingTechColors.interior },
-                    exterior: { name: editingTechColors.exterior },
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                surface_color: {
+                  interior: { name: editingTechColors.interior },
+                  exterior: { name: editingTechColors.exterior },
                 },
-              }
+              },
+            }
             : item
         )
       );
@@ -843,21 +857,21 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  ref_aisl_vertical: {
-                    lambda: Number(editingPisoForm.vertical.lambda),
-                    e_aisl: Number(editingPisoForm.vertical.e_aisl),
-                    d: Number(editingPisoForm.vertical.d),
-                  },
-                  ref_aisl_horizontal: {
-                    lambda: Number(editingPisoForm.horizontal.lambda),
-                    e_aisl: Number(editingPisoForm.horizontal.e_aisl),
-                    d: Number(editingPisoForm.horizontal.d),
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                ref_aisl_vertical: {
+                  lambda: Number(editingPisoForm.vertical.lambda),
+                  e_aisl: Number(editingPisoForm.vertical.e_aisl),
+                  d: Number(editingPisoForm.vertical.d),
                 },
-              }
+                ref_aisl_horizontal: {
+                  lambda: Number(editingPisoForm.horizontal.lambda),
+                  e_aisl: Number(editingPisoForm.horizontal.e_aisl),
+                  d: Number(editingPisoForm.horizontal.d),
+                },
+              },
+            }
             : item
         )
       );
@@ -967,15 +981,9 @@ const WorkFlowpar2createPage: React.FC = () => {
     pisos: "Piso",
   };
 
-  // Contenido del modal de Detalles Generales
+  const [detailsList, SetDetailsList] = useState<Detail[]>([])
+  const api = useApi()
   const renderDetallesModalContent = () => {
-    const detailType = detailTypeMapping[tabStep4];
-    const filteredDetails = detailType
-      ? fetchedDetails.filter(
-          (det) =>
-            det.scantilon_location.toLowerCase() === detailType.toLowerCase()
-        )
-      : fetchedDetails;
 
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
@@ -985,7 +993,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "Acción", field: "accion" },
     ];
 
-    const data = filteredDetails.map((det) => {
+    const data = detailsList.map((det: any) => {
       const textStyle =
         det.created_status === "created"
           ? { color: "var(--primary-color)", fontWeight: "bold" }
@@ -1034,40 +1042,9 @@ const WorkFlowpar2createPage: React.FC = () => {
           }}
         >
           <CustomButton variant="save" onClick={async () => {
-            const token = localStorage.getItem("token");
-            const projectId = localStorage.getItem("project_id");
-            if (!token || !projectId) {
-              notify("Token o ID de proyecto no encontrado", "Inicia sesión.");
-              return;
-            }
-            try {
-              const response = await axios.post(
-                `${constantUrlApiEndpoint}/user/detail-create?project_id=${projectId}`,
-                {
-                  scantilon_location: "Muro",
-                  name_detail: "Nuevo Detalle",
-                  material_id: 0,
-                  layer_thickness: 0
-                },
-                {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                  }
-                }
-              );
-              
-              if (response.data.detail) {
-                // Actualizar la lista de detalles
-                await fetchFetchedDetails();
-                notify("Detalle creado exitosamente");
-              }
-            } catch (error) {
-              console.error("Error al crear el detalle:", error);
-              notify("Error al crear el detalle");
-            }
+            createDetail(selectedItem.id)
           }}>
-            + Nuevo1
+            + Nuevo
           </CustomButton>
         </div>
         <TablesParameters columns={columnsDetails} data={data} />
@@ -1161,7 +1138,10 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "Acciones", field: "acciones" },
     ];
 
+
+
     const murosData = murosTabList.map((item) => {
+
       const isEditing = editingRowId === item.id;
       return {
         nombreAbreviado: item.name_detail,
@@ -1209,16 +1189,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           </div>
         ) : (
           <div>
-            <CustomButton
-              className="btn-table"
-              variant="addIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDetallesModal(true);
-              }}
-            >
-              +
-            </CustomButton>
+            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
             <CustomButton
               className="btn-table"
               variant="editIcon"
@@ -1247,7 +1218,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     });
 
     return (
-      <div style={{ overflowX: "auto" }}>
+      <div style={{ overflowX: "auto" }} >
         {murosTabList.length > 0 ? (
           <TablesParameters columns={columnsMuros} data={murosData} />
         ) : (
@@ -1314,16 +1285,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           </div>
         ) : (
           <div>
-            <CustomButton
-              className="btn-table"
-              variant="addIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDetallesModal(true);
-              }}
-            >
-              +
-            </CustomButton>
+            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
             <CustomButton
               variant="editIcon"
               className="btn-table"
@@ -1816,7 +1778,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         >
           {/* Botón + Nuevo (para crear Detalle Constructivo). NO se toca ni se elimina */}
           <CustomButton variant="save" onClick={handleNewButtonClick}>
-            + Nuevo2
+            + Nuevo
           </CustomButton>
         </div>
         <ul
@@ -2099,12 +2061,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_vidrio: Number(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_vidrio: Number(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2126,12 +2088,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            fs_vidrio: Number(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          fs_vidrio: Number(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2147,12 +2109,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            frame_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          frame_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2168,12 +2130,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            clousure_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          clousure_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2266,12 +2228,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_puerta_opaca: Number(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_puerta_opaca: Number(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2287,12 +2249,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            name_ventana: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          name_ventana: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2324,12 +2286,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev && prev.atributs
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: Math.round(val) / 100,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          porcentaje_vidrio: Math.round(val) / 100,
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -2388,8 +2350,8 @@ const WorkFlowpar2createPage: React.FC = () => {
 
       {/* Modal de Detalles Generales, abierto al dar clic en el + de Acciones */}
       {showDetallesModal && (
-        <ModalCreate 
-          onSave={() => {}}
+        <ModalCreate
+          onSave={() => { }}
           isOpen={true}
           title="Detalles Generales"
           onClose={() => setShowDetallesModal(false)}
@@ -2425,13 +2387,13 @@ const WorkFlowpar2createPage: React.FC = () => {
       {showCreateModal && (
         <ModalCreate
           isOpen={true}
-          title="Crear Nuevo Detalle"
+          title="Crear Nueva Capa"
           onClose={() => setShowCreateModal(false)}
           onSave={handleSaveDetalle}
         >
           <form>
             <div className="form-group">
-              <label>Nombre del Detalle</label>
+              <label>Nombre </label>
               <input
                 type="text"
                 className="form-control"

@@ -23,7 +23,8 @@ import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import AddDetailOnLayer from "@/components/projects/AddDetailOnLayer";
 import ProjectStatus from "@/components/projects/ProjectStatus";
 import { useApi } from "@/hooks/useApi";
-import { createDetail } from "@/service/details";
+import { createDetail, updateChildDetail } from "@/service/details";
+import EditDetailMuroChild from "@/components/projects/constructive_details/muros/EditDetailMuroChild";
 
 interface Detail {
   id_detail: number;
@@ -32,6 +33,7 @@ interface Detail {
   material_id: number;
   material: string;
   layer_thickness: number;
+  id?: string;
   created_status: string; // "default" o "created" o "global"
 }
 
@@ -125,13 +127,19 @@ const WorkFlowpar2createPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
-  const OnDetailOpened = (e: any) => {
-    console.log(e)
-    setShowDetallesModal(true)
 
-    api.get(`detail-part/${e?.id}`).then((data) => {
+
+  const fetchDetailModal = (detail_id: any) => {
+    api.get(`detail-part/${detail_id}`).then((data) => {
       SetDetailsList(data)
     })
+  }
+  const OnDetailOpened = (e: any) => {
+    console.log(e)
+    SetSelectedItem(e)
+    setShowDetallesModal(true)
+    fetchDetailModal(e?.id)
+
   }
   // Estado para saber el status del proyecto (ej. "En proceso", etc.)
   const [projectStatus, setProjectStatus] = useState("En proceso");
@@ -451,79 +459,6 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // Crear Detalle (para filas en tabla)
-  const handleCreateNewDetail = async () => {
-    if (!showNewDetailRow) return;
-    if (
-      !newDetailForm.scantilon_location ||
-      !newDetailForm.name_detail ||
-      !newDetailForm.material_id
-    ) {
-      notify("Por favor complete todos los campos de Detalle.");
-      return;
-    }
-    const token = getToken();
-    if (!token) return;
-    try {
-      const createUrl = `${constantUrlApiEndpoint}/user/details/create?project_id=${projectId}`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-      const response = await axios.post(createUrl, newDetailForm, { headers });
-      const newDetailId = response.data.detail.id;
-      if (!newDetailId) {
-        notify("El backend no devolvió un ID de Detalle válido.");
-        return;
-      }
-      if (projectId) {
-        const selectUrl = `${constantUrlApiEndpoint}/projects/${projectId}/details/select`;
-        const detailIds = [newDetailId];
-        try {
-          await axios.post(selectUrl, detailIds, { headers });
-          notify("Detalle creado y añadido al proyecto exitosamente.");
-        } catch (selectError: unknown) {
-          if (
-            axios.isAxiosError(selectError) &&
-            selectError.response?.data?.detail ===
-            "Todos los detalles ya estaban en el proyecto"
-          ) {
-            notify("Detalle creado exitosamente.");
-          } else {
-            console.error("Error al añadir detalle al proyecto:", selectError);
-            notify("Detalle creado pero no se añadió al proyecto.");
-          }
-        }
-      } else {
-        notify(
-          "No se añadió el Detalle al proyecto (ID de proyecto no disponible)."
-        );
-      }
-      const tipo = newDetailForm.scantilon_location.toLowerCase();
-      if (tipo === "muro") {
-        fetchMurosDetails();
-      } else if (tipo === "techo") {
-        fetchTechumbreDetails();
-      } else if (tipo === "piso") {
-        fetchPisosDetails();
-      }
-      fetchFetchedDetails();
-      setShowNewDetailRow(false);
-      setNewDetailForm({
-        scantilon_location: "",
-        name_detail: "",
-        material_id: 0,
-        layer_thickness: null,
-      });
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error en la creación del detalle:", error.response?.data);
-        notify("Error en la creación del Detalle.");
-      } else {
-        notify("Error desconocido al crear el Detalle.");
-      }
-    }
-  };
 
   // Botón + Nuevo2 (para crear detalles específicos)
   const handleNewButtonClick = () => {
@@ -534,14 +469,11 @@ const WorkFlowpar2createPage: React.FC = () => {
     setShowDetallesModal(false);
   };
 
-  const saveDetails = () => {
-    setShowTabsInStep4(true);
-    setTabStep4("muros");
-  };
-
+  const [detailChild,SetDetailChild]=useState<Detail | null>(null)
   // Editar detalle con Modal (Detalles constructivos ya existentes)
   const handleEditDetail = (detail: Detail) => {
     setShowDetallesModal(false);
+    SetDetailChild(detail)
     if ((!detail.material_id || detail.material_id === 0) && detail.material) {
       const foundMaterial = materials.find(
         (mat) => mat.name === detail.material
@@ -549,6 +481,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       detail.material_id = foundMaterial ? foundMaterial.id : 0;
     }
     fetchMaterials();
+    console.log("On edit", detail)
     setEditingDetail(detail);
   };
 
@@ -577,7 +510,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     const token = getToken();
     if (!token || !projectId) return;
     try {
-      const url = `${constantUrlApiEndpoint}/user/details/${editingDetail.id_detail}/update?project_id=${projectId}`;
+      const url = `${constantUrlApiEndpoint}/user/details/${editingDetail.id_detail || editingDetail?.id}/update?project_id=${projectId}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -960,18 +893,6 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
-  // Función que abre el modal de Detalles Generales al dar clic en el botón + de la columna Acciones
-  const openDetallesModal = (e: React.MouseEvent<HTMLDivElement>) => {
-    const targetTag = (e.target as HTMLElement).tagName.toLowerCase();
-    if (
-      targetTag === "input" ||
-      targetTag === "select" ||
-      targetTag === "textarea"
-    ) {
-      return;
-    }
-    setShowDetallesModal(true);
-  };
 
   const renderMainHeader = () => <Title text="Desarrollo de proyecto" />;
 
@@ -1042,7 +963,11 @@ const WorkFlowpar2createPage: React.FC = () => {
           }}
         >
           <CustomButton variant="save" onClick={async () => {
-            createDetail(selectedItem.id)
+            console.log(selectedItem)
+            createDetail(selectedItem?.id).then(() => {
+              fetchDetailModal(selectedItem?.id)
+            })
+
           }}>
             + Nuevo
           </CustomButton>

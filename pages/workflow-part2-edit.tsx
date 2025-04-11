@@ -187,7 +187,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   const router = useRouter();
   const api = useApi()
 
-  const [detailList, SetDetailsList]=useState<any>()
+  const [detailList, SetDetailsList] = useState<any>()
 
   const OnDetailOpened = (e: any) => {
     setShowDetallesModal(true)
@@ -663,7 +663,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
       { headerName: "Acción", field: "acciones" },
     ];
-    const data = detailList?.map((det:any) => {
+    const data = detailList?.map((det: any) => {
       const textStyle =
         det.created_status === "created"
           ? { color: "var(--primary-color)", fontWeight: "bold" }
@@ -943,29 +943,31 @@ const WorkFlowpar2editPage: React.FC = () => {
           </div>
         ) : (
           <div>
-          <CustomButton
-            variant="editIcon"
-            className="btn-table"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingTechRowId(item.id || null);
-              setEditingTechColors({
-                interior: item.info?.surface_color?.interior?.name || "Intermedio",
-                exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
-              });
-            }}
-          >
-            Editar
-          </CustomButton>
-          <CustomButton
-          variant="deleteIcon"
-          onClick={(e: React.MouseEvent) => {
-            e.stopPropagation();
-          }}
-        >
-          <span className="material-icons">delete</span>
-        </CustomButton>
-        </div>
+
+            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
+            <CustomButton
+              variant="editIcon"
+              className="btn-table"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingTechRowId(item.id || null);
+                setEditingTechColors({
+                  interior: item.info?.surface_color?.interior?.name || "Intermedio",
+                  exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
+                });
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              variant="deleteIcon"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+              }}
+            >
+              <span className="material-icons">delete</span>
+            </CustomButton>
+          </div>
         ),
       };
     });
@@ -1235,37 +1237,39 @@ const WorkFlowpar2editPage: React.FC = () => {
           </div>
         ) : (
           <div>
-          <CustomButton
-            className="btn-table"
-            variant="editIcon"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingPisosRowId(item.id || null);
-              setEditingPisosData({
-                ref_aisl_vertical: {
-                  lambda: item.info?.ref_aisl_vertical?.lambda?.toString() || "",
-                  e_aisl: item.info?.ref_aisl_vertical?.e_aisl?.toString() || "",
-                  d: item.info?.ref_aisl_vertical?.d?.toString() || "",
-                },
-                ref_aisl_horizontal: {
-                  lambda: item.info?.ref_aisl_horizontal?.lambda?.toString() || "",
-                  e_aisl: item.info?.ref_aisl_horizontal?.e_aisl?.toString() || "",
-                  d: item.info?.ref_aisl_horizontal?.d?.toString() || "",
-                },
-              });
-            }}
-          >
-            Editar
-          </CustomButton>
-          <CustomButton
-          variant="deleteIcon"
-          onClick={(e: React.MouseEvent) => {
-            e.stopPropagation();
-          }}
-        >
-          <span className="material-icons">delete</span>
-        </CustomButton>
-        </div>
+
+            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
+            <CustomButton
+              className="btn-table"
+              variant="editIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingPisosRowId(item.id || null);
+                setEditingPisosData({
+                  ref_aisl_vertical: {
+                    lambda: item.info?.ref_aisl_vertical?.lambda?.toString() || "",
+                    e_aisl: item.info?.ref_aisl_vertical?.e_aisl?.toString() || "",
+                    d: item.info?.ref_aisl_vertical?.d?.toString() || "",
+                  },
+                  ref_aisl_horizontal: {
+                    lambda: item.info?.ref_aisl_horizontal?.lambda?.toString() || "",
+                    e_aisl: item.info?.ref_aisl_horizontal?.e_aisl?.toString() || "",
+                    d: item.info?.ref_aisl_horizontal?.d?.toString() || "",
+                  },
+                });
+              }}
+            >
+              Editar
+            </CustomButton>
+            <CustomButton
+              variant="deleteIcon"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+              }}
+            >
+              <span className="material-icons">delete</span>
+            </CustomButton>
+          </div>
         ),
       };
     });

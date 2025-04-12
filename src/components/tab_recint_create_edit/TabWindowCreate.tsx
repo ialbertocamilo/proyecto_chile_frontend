@@ -32,6 +32,7 @@ const TabWindowCreate: React.FC = () => {
   const [rowToDelete, setRowToDelete] = useState<any>(null);
 
   const initialFormData = {
+    alojado_en: "",
     window_id: 0,
     characteristics: "",
     angulo_azimut: "",
@@ -160,7 +161,7 @@ const TabWindowCreate: React.FC = () => {
           caracteristicas: item.characteristics,
           anguloAzimut: item.angulo_azimut,
           orientacion: item.orientation,
-          alojadoEn: detailName, // Mostramos el nombre del detalle
+          alojadoEn: item.alojado_en, // Mostramos el nombre del detalle
           housed_in_id: item.housed_in, // Guardamos el ID para la edición
           tipoCierre: item.clousure_type, // lectura
           posicionVentanal: item.position,

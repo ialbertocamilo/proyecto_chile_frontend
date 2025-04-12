@@ -17,11 +17,12 @@ interface Muro {
 }
 
 interface Ventana {
+  alojado_en: string;
   id: number;
   window_name: string;
   position: string;
   orientation: string;
-  anguloAzimut: string;
+  angulo_azimut: string;
   characteristics?: string;
   housed_in?: number | string;
   clousure_type?: string;
@@ -913,9 +914,9 @@ const RecintoView: React.FC = () => {
                 id: win.id,
                 tipoVano: win.window_name,
                 caracteristicas: win.characteristics || "",
-                anguloAzimut: win.anguloAzimut,
+                anguloAzimut: win.angulo_azimut,
                 orientacion: win.orientation,
-                alojadoEn: win.housed_in,
+                alojadoEn: win.alojado_en,
                 tipoCierre: win.clousure_type,
                 posicionVentanal: win.position,
                 aislacion: win.with_no_return,

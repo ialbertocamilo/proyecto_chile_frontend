@@ -84,7 +84,7 @@ const ProjectListPage = () => {
 
   const handleGoToWorkflow = (project_edit: Project): void => {
     console.log("[handleGoToWorkflow] Navegando al workflow para el proyecto:", project_edit.id);
-    localStorage.setItem("project_id_edit", String(project_edit.id));
+    localStorage.setItem("project_id", String(project_edit.id));
     localStorage.setItem("project_department_edit", project_edit.divisions?.department || "");
     localStorage.setItem("project_name_edit", project_edit.name_project || "");
     router.push(`/workflow-part1-edit?id=${project_edit.id}`);

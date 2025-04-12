@@ -34,7 +34,7 @@ const LOCAL_STORAGE_KEY = "recintoFormData";
 
 const TabRecintDataEdit: React.FC = () => {
   const router = useRouter();
-  const projectId = localStorage.getItem("project_id_edit") || "44";
+  const projectId = localStorage.getItem("project_id") || "44";
   const token = localStorage.getItem("token") || "";
 
   // Estados para la tabla principal

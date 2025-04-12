@@ -323,7 +323,7 @@ const ProjectWorkflowPart1: React.FC = () => {
 
       if (router.query.id) {
         const projectIdParam =
-          Array.isArray(router.query.id) ? router.query.id[0] : router.query.id || localStorage.getItem("project_id_edit");
+          Array.isArray(router.query.id) ? router.query.id[0] : router.query.id || localStorage.getItem("project_id");
 
         await axios.put(
           `${constantUrlApiEndpoint}/my-projects/${projectIdParam}/update`,

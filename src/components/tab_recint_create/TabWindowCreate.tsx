@@ -32,6 +32,7 @@ const TabWindowCreate: React.FC = () => {
   const [rowToDelete, setRowToDelete] = useState<any>(null);
 
   const initialFormData = {
+    alojado_en: "",
     window_id: 0,
     characteristics: "",
     angulo_azimut: "",
@@ -159,7 +160,7 @@ const TabWindowCreate: React.FC = () => {
           caracteristicas: item.characteristics,
           anguloAzimut: item.angulo_azimut,
           orientacion: item.orientation,
-          alojadoEn: detailName, // Mostramos el nombre del detalle en lugar del ID
+          alojadoEn: item.alojado_en, // Mostramos el nombre del detalle en lugar del ID
           tipoCierre: item.clousure_type,
           posicionVentanal: item.position,
           aislacion: item.with_no_return,
@@ -550,7 +551,7 @@ const TabWindowCreate: React.FC = () => {
         editingRow === row.id ? (
           <select
             className="form-control"
-            value={editData.housed_in}
+            value={editData.alojado_en}
             onChange={(e) =>
               handleEditChange("housed_in", Number(e.target.value))
             }

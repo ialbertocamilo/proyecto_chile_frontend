@@ -440,7 +440,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         </div>
                         <div className="mb-3">
                           <label className="form-label" style={{ width: "100%", height: "20px" }}>
-                            Project Metadata (Zona)
+                            Zona
                           </label>
                           <textarea
                             className="form-control"

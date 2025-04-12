@@ -220,12 +220,9 @@ const TabFloorCreate: React.FC = () => {
       editValues.floor_id === 0 ||
       !editValues.characteristic ||
       editValues.area === undefined ||
-      editValues.area === null ||
-      editValues.parameter === undefined ||
-      editValues.parameter === null ||
-      !editValues.is_ventilated
+      editValues.area === null
     ) {
-      notify("Debe completar todos los campos del formulario correctamente");
+      notify("Debe completar todos los campos obligatorios del formulario");
       return false;
     }
     return true;

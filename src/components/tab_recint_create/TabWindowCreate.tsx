@@ -149,6 +149,9 @@ const TabWindowCreate: React.FC = () => {
           ? windowElement.name_element
           : `Ventana ${item.window_id}`;
 
+        const detail = details.find((d: any) => d.id === item.housed_in);
+        const detailName = detail ? detail.name_detail : `Detalle ${item.housed_in}`;
+
         return {
           id: item.id,
           window_id: item.window_id,
@@ -156,7 +159,7 @@ const TabWindowCreate: React.FC = () => {
           caracteristicas: item.characteristics,
           anguloAzimut: item.angulo_azimut,
           orientacion: item.orientation,
-          alojadoEn: item.housed_in,
+          alojadoEn: detailName, // Mostramos el nombre del detalle en lugar del ID
           tipoCierre: item.clousure_type,
           posicionVentanal: item.position,
           aislacion: item.with_no_return,

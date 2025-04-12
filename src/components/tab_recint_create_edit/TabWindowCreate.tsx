@@ -149,6 +149,10 @@ const TabWindowCreate: React.FC = () => {
           ? windowElement.name_element
           : `Ventana ${item.window_id}`;
 
+        // Buscar el detalle correspondiente
+        const detail = details.find((d: any) => d.id === item.housed_in);
+        const detailName = detail ? detail.name_detail : `Detalle ${item.housed_in}`;
+
         return {
           id: item.id,
           window_id: item.window_id,
@@ -156,7 +160,8 @@ const TabWindowCreate: React.FC = () => {
           caracteristicas: item.characteristics,
           anguloAzimut: item.angulo_azimut,
           orientacion: item.orientation,
-          alojadoEn: item.housed_in,
+          alojadoEn: detailName, // Mostramos el nombre del detalle
+          housed_in_id: item.housed_in, // Guardamos el ID para la edición
           tipoCierre: item.clousure_type, // lectura
           posicionVentanal: item.position,
           aislacion: item.with_no_return,
@@ -321,7 +326,7 @@ const TabWindowCreate: React.FC = () => {
       window_id: row.window_id,
       characteristics: row.caracteristicas,
       angulo_azimut: row.anguloAzimut,
-      housed_in: row.alojadoEn,
+      housed_in: row.housed_in_id, // Usamos el ID guardado para la edición
       position: row.posicionVentanal,
       with_no_return: row.aislacion,
       high: row.alto,
@@ -453,11 +458,22 @@ const TabWindowCreate: React.FC = () => {
     }
   };
 
-  // Estilo para inputs de FAV
+  // Estilos para inputs y selectores
   const favInputStyle = {
     height: "20px",
     fontSize: "14px",
     width: "120px",
+  };
+
+  const selectStyle = {
+    height: "32px",
+    fontSize: "14px",
+    width: "100%",
+    padding: "4px 8px",
+    border: "1px solid #ccc",
+    borderRadius: "4px",
+    backgroundColor: "white",
+    cursor: "pointer",
   };
 
   const columns = [
@@ -468,6 +484,7 @@ const TabWindowCreate: React.FC = () => {
         editingRow === row.id ? (
           <select
             className="form-control"
+            style={selectStyle}
             value={editData.window_id}
             onChange={(e) => handleEditChange("window_id", Number(e.target.value))}
           >
@@ -489,6 +506,7 @@ const TabWindowCreate: React.FC = () => {
         editingRow === row.id ? (
           <select
             className="form-control"
+            style={selectStyle}
             value={editData.characteristics}
             onChange={(e) => handleEditChange("characteristics", e.target.value)}
           >
@@ -510,6 +528,7 @@ const TabWindowCreate: React.FC = () => {
         editingRow === row.id ? (
           <select
             className="form-control"
+            style={selectStyle}
             value={editData.angulo_azimut}
             onChange={(e) => handleEditChange("angulo_azimut", e.target.value)}
           >
@@ -536,6 +555,7 @@ const TabWindowCreate: React.FC = () => {
         editingRow === row.id ? (
           <select
             className="form-control"
+            style={selectStyle}
             value={editData.housed_in}
             onChange={(e) => handleEditChange("housed_in", Number(e.target.value))}
           >
@@ -562,6 +582,7 @@ const TabWindowCreate: React.FC = () => {
         editingRow === row.id ? (
           <select
             className="form-control"
+            style={selectStyle}
             value={editData.position}
             onChange={(e) => handleEditChange("position", e.target.value)}
           >
@@ -583,6 +604,7 @@ const TabWindowCreate: React.FC = () => {
         editingRow === row.id ? (
           <select
             className="form-control"
+            style={selectStyle}
             value={editData.with_no_return}
             onChange={(e) => handleEditChange("with_no_return", e.target.value)}
           >
@@ -607,6 +629,7 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
+            style={selectStyle}
             value={editData.high}
             onChange={(e) => handleEditChange("high", Number(e.target.value))}
             onKeyDown={(e) => {
@@ -629,6 +652,7 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
+            style={selectStyle}
             value={editData.broad}
             onChange={(e) => handleEditChange("broad", Number(e.target.value))}
             onKeyDown={(e) => {
@@ -677,7 +701,8 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
-            style={favInputStyle}
+            style={selectStyle}
+// Remove duplicate style attribute
             value={favEditData.fav1_D}
             onChange={(e) =>
               handleFavEditChange("fav1_D", Number(e.target.value))
@@ -706,7 +731,8 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
-            style={favInputStyle}
+            style={selectStyle}
+// Remove duplicate style attribute and keep favInputStyle
             value={favEditData.fav1_L}
             onChange={(e) =>
               handleFavEditChange("fav1_L", Number(e.target.value))
@@ -735,7 +761,7 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
-            style={favInputStyle}
+            style={selectStyle}
             value={favEditData.fav2izq_P}
             onChange={(e) =>
               handleFavEditChange("fav2izq_P", Number(e.target.value))
@@ -764,7 +790,7 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
-            style={favInputStyle}
+            style={selectStyle}
             value={favEditData.fav2izq_S}
             onChange={(e) =>
               handleFavEditChange("fav2izq_S", Number(e.target.value))
@@ -793,7 +819,7 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
-            style={favInputStyle}
+            style={selectStyle}
             value={favEditData.fav2der_P}
             onChange={(e) =>
               handleFavEditChange("fav2der_P", Number(e.target.value))
@@ -822,7 +848,7 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
-            style={favInputStyle}
+            style={selectStyle}
             value={favEditData.fav2der_S}
             onChange={(e) =>
               handleFavEditChange("fav2der_S", Number(e.target.value))
@@ -851,7 +877,7 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
-            style={favInputStyle}
+            style={selectStyle}
             value={favEditData.fav3_E}
             onChange={(e) =>
               handleFavEditChange("fav3_E", Number(e.target.value))
@@ -880,7 +906,7 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
-            style={favInputStyle}
+            style={selectStyle}
             value={favEditData.fav3_T}
             onChange={(e) =>
               handleFavEditChange("fav3_T", Number(e.target.value))
@@ -909,7 +935,7 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
-            style={favInputStyle}
+            style={selectStyle}
             value={favEditData.fav3_beta}
             onChange={(e) =>
               handleFavEditChange("fav3_beta", Number(e.target.value))
@@ -938,7 +964,7 @@ const TabWindowCreate: React.FC = () => {
             min="0"
             step="any"
             className="form-control"
-            style={favInputStyle}
+            style={selectStyle}
             value={favEditData.fav3_alpha}
             onChange={(e) =>
               handleFavEditChange("fav3_alpha", Number(e.target.value))
@@ -1058,6 +1084,7 @@ const TabWindowCreate: React.FC = () => {
                 id="window_id"
                 name="window_id"
                 className="form-control"
+            style={selectStyle}
                 value={formData.window_id}
                 onChange={handleInputChange}
               >
@@ -1082,6 +1109,7 @@ const TabWindowCreate: React.FC = () => {
                 id="characteristics"
                 name="characteristics"
                 className="form-control"
+            style={selectStyle}
                 value={formData.characteristics}
                 onChange={handleInputChange}
               >
@@ -1103,6 +1131,7 @@ const TabWindowCreate: React.FC = () => {
                 id="angulo_azimut"
                 name="angulo_azimut"
                 className="form-control"
+            style={selectStyle}
                 value={formData.angulo_azimut}
                 onChange={handleInputChange}
               >
@@ -1125,6 +1154,7 @@ const TabWindowCreate: React.FC = () => {
                 id="housed_in"
                 name="housed_in"
                 className="form-control"
+            style={selectStyle}
                 value={formData.housed_in}
                 onChange={handleInputChange}
               >
@@ -1146,6 +1176,7 @@ const TabWindowCreate: React.FC = () => {
                 id="position"
                 name="position"
                 className="form-control"
+            style={selectStyle}
                 value={formData.position}
                 onChange={handleInputChange}
               >
@@ -1167,6 +1198,7 @@ const TabWindowCreate: React.FC = () => {
                 id="with_no_return"
                 name="with_no_return"
                 className="form-control"
+            style={selectStyle}
                 value={formData.with_no_return}
                 onChange={handleInputChange}
               >
@@ -1191,6 +1223,7 @@ const TabWindowCreate: React.FC = () => {
                 id="high"
                 name="high"
                 className="form-control"
+            style={selectStyle}
                 value={formData.high}
                 onChange={handleInputChange}
                 onKeyDown={(e) => {
@@ -1213,6 +1246,7 @@ const TabWindowCreate: React.FC = () => {
                 id="broad"
                 name="broad"
                 className="form-control"
+            style={selectStyle}
                 value={formData.broad}
                 onChange={handleInputChange}
                 onKeyDown={(e) => {

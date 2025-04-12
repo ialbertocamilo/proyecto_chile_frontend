@@ -18,6 +18,8 @@ import SearchParameters from "../src/components/inputs/SearchParameters";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import DeleteDetailButton from "@/components/common/DeleteDetailButton";
+
 
 // Importamos ProjectStatus para el estado y cálculo
 import AddDetailOnLayer from "@/components/projects/AddDetailOnLayer";
@@ -469,7 +471,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     setShowDetallesModal(false);
   };
 
-  const [detailChild,SetDetailChild]=useState<Detail | null>(null)
+  const [detailChild, SetDetailChild] = useState<Detail | null>(null)
   // Editar detalle con Modal (Detalles constructivos ya existentes)
   const handleEditDetail = (detail: Detail) => {
     setShowDetallesModal(false);
@@ -510,7 +512,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     const token = getToken();
     if (!token || !projectId) return;
     try {
-      const url = `${constantUrlApiEndpoint}/user/details/${editingDetail.id_detail || editingDetail?.id}/update?project_id=${projectId}`;
+      const url = `${constantUrlApiEndpoint}/user/detail-update/${editingDetail.id_detail || editingDetail?.id}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -521,17 +523,55 @@ const WorkFlowpar2createPage: React.FC = () => {
         material_id: editingDetail.material_id,
         layer_thickness: editingDetail.layer_thickness,
       };
-      const response = await axios.put(url, payload, { headers });
-      notify(response.data.success);
+      const response = await axios.patch(url, payload, { headers });
+      notify(response.data.success || "Detalle actualizado exitosamente");
+      
+      // Actualizar los estados locales inmediatamente
+      setFetchedDetails(prevDetails =>
+        prevDetails.map(detail =>
+          detail.id_detail === editingDetail.id_detail
+            ? { ...detail, ...payload }
+            : detail
+        )
+      );
+
+      // Actualizar las listas específicas según el tipo
       const tipo = editingDetail.scantilon_location.toLowerCase();
       if (tipo === "muro") {
-        fetchMurosDetails();
+        setMurosTabList(prevList =>
+          prevList.map(item =>
+            (item.id_detail === editingDetail.id_detail || item.id === editingDetail.id)
+              ? { ...item, ...payload }
+              : item
+          )
+        );
+        await fetchMurosDetails();
       } else if (tipo === "techo") {
-        fetchTechumbreDetails();
+        setTechumbreTabList(prevList =>
+          prevList.map(item =>
+            (item.id_detail === editingDetail.id_detail || item.id === editingDetail.id)
+              ? { ...item, ...payload }
+              : item
+          )
+        );
+        await fetchTechumbreDetails();
       } else if (tipo === "piso") {
-        fetchPisosDetails();
+        setPisosTabList(prevList =>
+          prevList.map(item =>
+            (item.id_detail === editingDetail.id_detail || item.id === editingDetail.id)
+              ? { ...item, ...payload }
+              : item
+          )
+        );
+        await fetchPisosDetails();
       }
-      fetchFetchedDetails();
+
+      // Actualizar el detalle en el modal
+      if (selectedItem?.id === editingDetail.id_detail) {
+        SetDetailsList(prevDetail => ({ ...prevDetail, ...payload }));
+      }
+
+      await fetchFetchedDetails();
       setEditingDetail(null);
       setShowDetallesModal(true);
     } catch (error: unknown) {
@@ -938,16 +978,14 @@ const WorkFlowpar2createPage: React.FC = () => {
             >
               Editar
             </CustomButton>
-            <CustomButton
-              className="btn-table"
-              variant="deleteIcon"
-              onClick={() => confirmDeleteDetail(det.id_detail)}
-              disabled={
-                det.created_status === "default" || det.created_status === "global"
-              }
-            >
-              <span className="material-icons">delete</span>
-            </CustomButton>
+            <DeleteDetailButton
+              detailId={det.id}
+              onDelete={() => {
+                // Puedes definir la acción tras la eliminación. Por ejemplo, recargar
+                // los detalles desde el backend o actualizarlos localmente:
+                fetchDetailModal(selectedItem?.id);
+              }}
+            />
           </>
         ),
       };
@@ -2273,12 +2311,12 @@ const WorkFlowpar2createPage: React.FC = () => {
         </ModalCreate>
       )}
 
-      {/* Modal de Detalles Generales, abierto al dar clic en el + de Acciones */}
+      {/* Modal de Detalles, abierto al dar clic en el + de Acciones */}
       {showDetallesModal && (
         <ModalCreate
           onSave={() => { }}
           isOpen={true}
-          title="Detalles Generales"
+          title={`Detalles ${selectedItem?.name_detail || ''}`}
           onClose={() => setShowDetallesModal(false)}
           modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
         >

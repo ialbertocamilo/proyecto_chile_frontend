@@ -346,8 +346,8 @@ const WorkFlowpar2createPage: React.FC = () => {
       const response = await axios.get(url, { headers });
       const allConstants: Constant[] = response.data.constants || [];
       const materialsList: Material[] = allConstants.filter((c: Constant) =>
-          c.name === "materials" && c.type === "definition materials"
-        ).map((c: Constant) => ({ id: c.id, name: c.atributs.name }));
+        c.name === "materials" && c.type === "definition materials"
+      ).map((c: Constant) => ({ id: c.id, name: c.atributs.name }));
       setMaterials(materialsList);
     } catch (error: unknown) {
       console.error("Error al obtener materiales:", error);
@@ -693,21 +693,21 @@ const WorkFlowpar2createPage: React.FC = () => {
         prev.map((item) =>
           item.id === detail.id
             ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  ref_aisl_vertical: {
-                    lambda: Number(editingPisoForm.vertical.lambda),
-                    e_aisl: Number(editingPisoForm.vertical.e_aisl),
-                    d: Number(editingPisoForm.vertical.d),
-                  },
-                  ref_aisl_horizontal: {
-                    lambda: Number(editingPisoForm.horizontal.lambda),
-                    e_aisl: Number(editingPisoForm.horizontal.e_aisl),
-                    d: Number(editingPisoForm.horizontal.d),
-                  },
+              ...item,
+              info: {
+                ...item.info,
+                ref_aisl_vertical: {
+                  lambda: Number(editingPisoForm.vertical.lambda),
+                  e_aisl: Number(editingPisoForm.vertical.e_aisl),
+                  d: Number(editingPisoForm.vertical.d),
                 },
-              }
+                ref_aisl_horizontal: {
+                  lambda: Number(editingPisoForm.horizontal.lambda),
+                  e_aisl: Number(editingPisoForm.horizontal.e_aisl),
+                  d: Number(editingPisoForm.horizontal.d),
+                },
+              },
+            }
             : item
         )
       );
@@ -1319,9 +1319,11 @@ const WorkFlowpar2createPage: React.FC = () => {
 
     return (
       <div>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-          <CustomButton variant="save" onClick={handleNewButtonClick}>+ Nuevo</CustomButton>
-        </div>
+        {(tabStep4 !== "ventanas" && tabStep4 !== "puertas") && (
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+            <CustomButton variant="save" onClick={handleNewButtonClick}>+ Nuevo</CustomButton>
+          </div>
+        )}
         <ul className="nav" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", padding: 0, listStyle: "none" }}>
           {tabs.map((item) => (
             <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
@@ -1609,7 +1611,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {/* Modal de Detalles, abierto al dar clic en el + de Acciones */}
       {showDetallesModal && (
         <ModalCreate
-          onSave={() => {}}
+          onSave={() => { }}
           isOpen={true}
           title={`Detalles ${selectedItem?.name_detail || ''}`}
           onClose={() => setShowDetallesModal(false)}
@@ -1647,26 +1649,30 @@ const WorkFlowpar2createPage: React.FC = () => {
                 onChange={(e) => setNewDetalle((prev) => ({ ...prev, name_detail: e.target.value }))}
               />
             </div>
-            <div className="form-group">
-              <label>Color Exterior</label>
-              <select className="form-control" value={newDetalle.colorExterior}
-                onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorExterior: e.target.value }))}
-              >
-                <option value="Claro">Claro</option>
-                <option value="Oscuro">Oscuro</option>
-                <option value="Intermedio">Intermedio</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Color Interior</label>
-              <select className="form-control" value={newDetalle.colorInterior}
-                onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorInterior: e.target.value }))}
-              >
-                <option value="Claro">Claro</option>
-                <option value="Oscuro">Oscuro</option>
-                <option value="Intermedio">Intermedio</option>
-              </select>
-            </div>
+            {tabStep4 !== "pisos" && (
+              <>
+                <div className="form-group">
+                  <label>Color Exterior</label>
+                  <select className="form-control" value={newDetalle.colorExterior}
+                    onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorExterior: e.target.value }))}
+                  >
+                    <option value="Claro">Claro</option>
+                    <option value="Oscuro">Oscuro</option>
+                    <option value="Intermedio">Intermedio</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Color Interior</label>
+                  <select className="form-control" value={newDetalle.colorInterior}
+                    onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorInterior: e.target.value }))}
+                  >
+                    <option value="Claro">Claro</option>
+                    <option value="Oscuro">Oscuro</option>
+                    <option value="Intermedio">Intermedio</option>
+                  </select>
+                </div>
+              </>
+            )}
           </form>
         </ModalCreate>
       )}

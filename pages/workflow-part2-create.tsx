@@ -143,6 +143,12 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchDetailModal(e?.id)
 
   }
+  const titleMapping: { [key in TabStep4]?: string } = {
+    muros: "Muro",
+    techumbre: "Techo",
+    pisos: "Piso",
+    // Si deseas incluir ventanas y puertas, también podrías hacerlo
+  };
   // Estado para saber el status del proyecto (ej. "En proceso", etc.)
   const [projectStatus, setProjectStatus] = useState("En proceso");
 
@@ -2350,7 +2356,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {showCreateModal && (
         <ModalCreate
           isOpen={true}
-          title="Crear Nueva Capa"
+          title={`Crear Nuevo ${titleMapping[tabStep4] || "Detalle"}`}
           onClose={() => setShowCreateModal(false)}
           onSave={handleSaveDetalle}
         >

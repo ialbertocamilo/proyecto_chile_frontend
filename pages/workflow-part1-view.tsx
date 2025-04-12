@@ -83,6 +83,14 @@ const ProjectWorkflowPart1: React.FC = () => {
     setPrimaryColor(pColor);
   }, []);
 
+  // Actualizamos el header del proyecto cuando cambien los datos relevantes
+  useEffect(() => {
+    setProjectHeaderData({
+      projectName: localStorage.getItem('project_name_view') || "",
+      region: localStorage.getItem('project_department_view') || "" // o cualquier otra propiedad que defina la región
+    });
+  }, [formData.name_project, formData.department]);
+
   // Obtener datos del localStorage para el header del proyecto
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -196,7 +204,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   }, [formData.latitude, formData.longitude]);
 
   // Función para obtener el id del proyecto desde localStorage
-  const getProjectId = () => localStorage.getItem("project_id_view") || "";
+  const getProjectId = () => localStorage.getItem("project_id") || "";
 
   // Definición de los pasos para la sidebar (modo vista)
   const steps = [

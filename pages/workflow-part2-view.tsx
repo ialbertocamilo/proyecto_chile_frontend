@@ -136,7 +136,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       if (router.query.id) {
         setProjectId(Number(router.query.id));
       } else {
-        const storedProjectId = localStorage.getItem("project_id_view");
+        const storedProjectId = localStorage.getItem("project_id");
         if (storedProjectId) {
           setProjectId(Number(storedProjectId));
         }

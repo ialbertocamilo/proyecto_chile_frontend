@@ -194,7 +194,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     name_detail: string;
     material_id: number;
     layer_thickness: number | null;
-  }>({
+  }>( {
     scantilon_location: "",
     name_detail: "",
     material_id: 0,
@@ -279,10 +279,36 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   }, [editingPuertaForm]);
 
+  // Llamada para obtener materiales cuando se abra el modal de creación o edición de Detalle
+  useEffect(() => {
+    if (showCreateModal || editingDetail) {
+      fetchMaterials();
+    }
+  }, [showCreateModal, editingDetail]);
+
   const getToken = () => {
     const token = localStorage.getItem("token");
     if (!token) { notify("Token no encontrado", "Inicia sesión."); }
     return token;
+  };
+
+  const fetchMaterials = async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/user/constants/?page=1&per_page=700`;
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(url, { headers });
+      const allConstants: Constant[] = response.data.constants || [];
+      // Se filtra por material según el atributo name y type
+      const materialsList: Material[] = allConstants
+        .filter((c: Constant) => c.name === "materials" && c.type === "definition materials")
+        .map((c: Constant) => ({ id: c.id, name: c.atributs.name }));
+      setMaterials(materialsList);
+    } catch (error: unknown) {
+      console.error("Error al obtener materiales:", error);
+      notify("Error al obtener Materiales.");
+    }
   };
 
   const fetchData = useCallback(async <T,>(endpoint: string, setter: (data: T) => void) => {
@@ -342,26 +368,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       .catch((error) => { console.error("Error al obtener datos de puertas:", error); notify("Error al obtener datos de puertas. Ver consola."); });
   }, []);
 
-  const fetchMaterials = async () => {
-    const token = getToken();
-    if (!token) return;
-    try {
-      const url = `${constantUrlApiEndpoint}/user/constants/?page=1&per_page=700`;
-      const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(url, { headers });
-      const allConstants: Constant[] = response.data.constants || [];
-      // Se filtra por material, pero ya que no se requiere buscar el nombre a partir del id,
-      // solo se deja esta función en caso de necesitar cargar la lista completa.
-      const materialsList: Material[] = allConstants.filter((c: Constant) =>
-        c.name === "materials" && c.type === "definition materials"
-      ).map((c: Constant) => ({ id: c.id, name: c.atributs.name }));
-      setMaterials(materialsList);
-    } catch (error: unknown) {
-      console.error("Error al obtener materiales:", error);
-      notify("Error al obtener Materiales.");
-    }
-  };
-
   useEffect(() => { if (editingDetail) { /* Acciones adicionales si es necesario */ } }, [editingDetail]);
 
   useEffect(() => { if (step === 4 && projectId) { fetchFetchedDetails(); } }, [step, fetchFetchedDetails, projectId]);
@@ -380,7 +386,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   const handleNewButtonClick = () => {
     setShowCreateModal(true);
-    fetchMaterials();
+    // Se llama a fetchMaterials desde useEffect al detectar que showCreateModal es true
     setShowDetallesModal(false);
   };
 
@@ -421,7 +427,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       };
       await axios.patch(url, payload, { headers });
       notify("Detalle actualizado exitosamente");
-      // En lugar de actualizar parcialmente, se refrescan todas las tablas involucradas
+      // Se refrescan todas las tablas involucradas
       fetchFetchedDetails();
       fetchMurosDetails();
       fetchTechumbreDetails();
@@ -466,7 +472,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       await axios.patch(url, payload, { headers });
       notify("Detalle actualizado exitosamente");
       // Se refrescan todos los detalles
-      console.log(detail.id)
       fetchDetailModal(selectedItem?.id);
       fetchFetchedDetails();
       fetchMurosDetails();
@@ -728,6 +733,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             onChange={(e) =>
               setEditingDetailData((prev) => ({ ...prev, material_id: Number(e.target.value) }))
             }
+            onClick={fetchMaterials}
           >
             <option value={0}>Seleccione un material</option>
             {materials.map((mat) => (
@@ -1408,6 +1414,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               <label>Material</label>
               <select className="form-control" value={editingDetail.material_id || 0}
                 onChange={(e) => setEditingDetail((prev) => prev ? { ...prev, material_id: Number(e.target.value) } : prev)}
+                onClick={fetchMaterials}
               >
                 <option value={0}>Seleccione un material</option>
                 {materials.map((mat) => (<option key={mat.id} value={mat.id}>{mat.name}</option>))}

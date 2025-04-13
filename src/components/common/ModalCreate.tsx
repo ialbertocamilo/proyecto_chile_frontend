@@ -26,6 +26,9 @@ interface ModalCreateProps {
   onRowClick?: (row: any) => void;
   /** NUEVA PROP: oculta por completo el footer (botones) si es true */
   hideFooter?: boolean;
+  /** NUEVAS PROPS: controlan la visibilidad de cada botón */
+  showCancelButton?: boolean;
+  showSaveButton?: boolean;
 }
 
 const ModalCreate: React.FC<ModalCreateProps> = ({
@@ -38,6 +41,8 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
   modalStyle,
   overlayStyle,
   hideFooter = false, // Valor por defecto: false (no oculta el footer)
+  showCancelButton = true, // Se muestra por defecto el botón de cancelar
+  showSaveButton = true, // Se muestra por defecto el botón de guardar
 }) => {
   const [isClient, setIsClient] = useState<boolean>(false);
   const [windowWidth, setWindowWidth] = useState<number>(0);
@@ -136,31 +141,35 @@ const ModalCreate: React.FC<ModalCreateProps> = ({
               marginTop: '24px',
             }}
           >
-            <CancelButton onClick={onClose} />
-            <CustomButton onClick={onSave} style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'all 0.2s ease-in-out',
-        backgroundColor: 'var(--primary-color)',
-        border: 'none',
-        fontSize: '14px',
-        borderRadius: '8px',
-        padding: '10px 16px',
-        cursor: 'pointer',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-        fontWeight: 500,
-        letterSpacing: '0.3px',
-        minWidth: 'max-content',
-        whiteSpace: 'normal',
-        lineHeight: 1.5,
-        height: 'auto',
-        width: '100px',
-      }}
-      className="btn btn-sm mt-2 m-2 hover:opacity-80 transition-opacity duration-200"
-    >
-              {saveLabel}
-            </CustomButton>
+            {showCancelButton && <CancelButton onClick={onClose} />}
+            {showSaveButton && (
+              <CustomButton
+                onClick={onSave}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease-in-out',
+                  backgroundColor: 'var(--primary-color)',
+                  border: 'none',
+                  fontSize: '14px',
+                  borderRadius: '8px',
+                  padding: '10px 16px',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                  fontWeight: 500,
+                  letterSpacing: '0.3px',
+                  minWidth: 'max-content',
+                  whiteSpace: 'normal',
+                  lineHeight: 1.5,
+                  height: 'auto',
+                  width: '100px',
+                }}
+                className="btn btn-sm mt-2 m-2 hover:opacity-80 transition-opacity duration-200"
+              >
+                {saveLabel}
+              </CustomButton>
+            )}
           </div>
         )}
       </div>

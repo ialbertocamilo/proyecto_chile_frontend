@@ -1577,6 +1577,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           title={`Detalles ${selectedItem?.name_detail || ''}`}
           onClose={() => setShowDetallesModal(false)}
           modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
+          showSaveButton={false}
         >
           {renderDetallesModalContent()}
         </ModalCreate>

@@ -1597,46 +1597,56 @@ const WorkFlowpar2createPage: React.FC = () => {
 
       {/* Modal para crear un nuevo Detalle Constructivo (botón + Nuevo) */}
       {showCreateModal && (
-        <ModalCreate
-          isOpen={true}
-          title={`Crear Nuevo ${titleMapping[tabStep4] || "Detalle"}`}
-          onClose={() => setShowCreateModal(false)}
-          onSave={handleSaveDetalle}
-        >
-          <form>
-            <div className="form-group">
-              <label>Nombre </label>
-              <input type="text" className="form-control" value={newDetalle.name_detail}
-                onChange={(e) => setNewDetalle((prev) => ({ ...prev, name_detail: e.target.value }))}
-              />
-            </div>
-            {tabStep4 !== "pisos" && (
-              <>
-                <div className="form-group">
-                  <label>Color Exterior</label>
-                  <select className="form-control" value={newDetalle.colorExterior}
-                    onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorExterior: e.target.value }))}
-                  >
-                    <option value="Claro">Claro</option>
-                    <option value="Oscuro">Oscuro</option>
-                    <option value="Intermedio">Intermedio</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Color Interior</label>
-                  <select className="form-control" value={newDetalle.colorInterior}
-                    onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorInterior: e.target.value }))}
-                  >
-                    <option value="Claro">Claro</option>
-                    <option value="Oscuro">Oscuro</option>
-                    <option value="Intermedio">Intermedio</option>
-                  </select>
-                </div>
-              </>
-            )}
-          </form>
-        </ModalCreate>
+  <ModalCreate
+    isOpen={true}
+    title={`Crear Nuevo ${titleMapping[tabStep4] || "Detalle"}`}
+    onClose={() => {
+      setShowCreateModal(false);
+      setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
+    }}
+    onSave={handleSaveDetalle}
+  >
+    <form>
+      <div className="form-group">
+        <label>Nombre </label>
+        <input
+          type="text"
+          className="form-control"
+          value={newDetalle.name_detail}
+          onChange={(e) => setNewDetalle((prev) => ({ ...prev, name_detail: e.target.value }))}
+        />
+      </div>
+      {tabStep4 !== "pisos" && (
+        <>
+          <div className="form-group">
+            <label>Color Exterior</label>
+            <select
+              className="form-control"
+              value={newDetalle.colorExterior}
+              onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorExterior: e.target.value }))}
+            >
+              <option value="Claro">Claro</option>
+              <option value="Oscuro">Oscuro</option>
+              <option value="Intermedio">Intermedio</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Color Interior</label>
+            <select
+              className="form-control"
+              value={newDetalle.colorInterior}
+              onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorInterior: e.target.value }))}
+            >
+              <option value="Claro">Claro</option>
+              <option value="Oscuro">Oscuro</option>
+              <option value="Intermedio">Intermedio</option>
+            </select>
+          </div>
+        </>
       )}
+    </form>
+  </ModalCreate>
+)}
     </>
   );
 };

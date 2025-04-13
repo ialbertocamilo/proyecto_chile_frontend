@@ -24,7 +24,7 @@ const TabRecintDataView: React.FC = () => {
   const router = useRouter();
   const token = typeof window !== "undefined" ? localStorage.getItem("token") ?? null : null;
   const [projectId, setProjectId] = useState<string | null>(
-    typeof window !== "undefined" ? localStorage.getItem("project_id_view") : null
+    typeof window !== "undefined" ? localStorage.getItem("project_id") : null
   );
   const [data, setData] = useState<EnclosureGeneralData[]>([]);
 

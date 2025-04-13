@@ -117,7 +117,7 @@ const RecintoCreateEdit: React.FC = () => {
   
   const actualizarStatus = async () => {
     try {
-      const project_id = localStorage.getItem("project_id_edit");
+      const project_id = localStorage.getItem("project_id");
       if (!project_id) {
         notify("No se encontró el project_id.");
         return;

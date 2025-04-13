@@ -14,8 +14,8 @@ import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import ModalCreate from "../src/components/common/ModalCreate";
-import SearchParameters from "../src/components/inputs/SearchParameters";
-import Title from "../src/components/Title";
+import SearchParameters from "@/components/inputs/SearchParameters";
+import Title from "@/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import DeleteDetailButton from "@/components/common/DeleteDetailButton";
@@ -126,22 +126,27 @@ const WorkFlowpar2createPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
+  // Se eliminó la lógica de búsqueda de material basada en map, ya que detail.material contiene el nombre.
+
   const fetchDetailModal = (detail_id: any) => {
     api.get(`detail-part/${detail_id}`).then((data) => {
       SetDetailsList(data);
     });
   };
+
   const OnDetailOpened = (e: any) => {
     console.log(e);
     SetSelectedItem(e);
     setShowDetallesModal(true);
     fetchDetailModal(e?.id);
   };
+
   const titleMapping: { [key in TabStep4]?: string } = {
     muros: "Muro",
     techumbre: "Techo",
     pisos: "Piso",
   };
+
   const [projectStatus, setProjectStatus] = useState("En proceso");
   const [projectId, setProjectId] = useState<number | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -189,7 +194,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     name_detail: string;
     material_id: number;
     layer_thickness: number | null;
-  }>({
+  }>( {
     scantilon_location: "",
     name_detail: "",
     material_id: 0,
@@ -274,10 +279,36 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   }, [editingPuertaForm]);
 
+  // Llamada para obtener materiales cuando se abra el modal de creación o edición de Detalle
+  useEffect(() => {
+    if (showCreateModal || editingDetail) {
+      fetchMaterials();
+    }
+  }, [showCreateModal, editingDetail]);
+
   const getToken = () => {
     const token = localStorage.getItem("token");
     if (!token) { notify("Token no encontrado", "Inicia sesión."); }
     return token;
+  };
+
+  const fetchMaterials = async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const url = `${constantUrlApiEndpoint}/user/constants/?page=1&per_page=700`;
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(url, { headers });
+      const allConstants: Constant[] = response.data.constants || [];
+      // Se filtra por material según el atributo name y type
+      const materialsList: Material[] = allConstants
+        .filter((c: Constant) => c.name === "materials" && c.type === "definition materials")
+        .map((c: Constant) => ({ id: c.id, name: c.atributs.name }));
+      setMaterials(materialsList);
+    } catch (error: unknown) {
+      console.error("Error al obtener materiales:", error);
+      notify("Error al obtener Materiales.");
+    }
   };
 
   const fetchData = useCallback(async <T,>(endpoint: string, setter: (data: T) => void) => {
@@ -337,24 +368,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       .catch((error) => { console.error("Error al obtener datos de puertas:", error); notify("Error al obtener datos de puertas. Ver consola."); });
   }, []);
 
-  const fetchMaterials = async () => {
-    const token = getToken();
-    if (!token) return;
-    try {
-      const url = `${constantUrlApiEndpoint}/user/constants/?page=1&per_page=700`;
-      const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(url, { headers });
-      const allConstants: Constant[] = response.data.constants || [];
-      const materialsList: Material[] = allConstants.filter((c: Constant) =>
-          c.name === "materials" && c.type === "definition materials"
-        ).map((c: Constant) => ({ id: c.id, name: c.atributs.name }));
-      setMaterials(materialsList);
-    } catch (error: unknown) {
-      console.error("Error al obtener materiales:", error);
-      notify("Error al obtener Materiales.");
-    }
-  };
-
   useEffect(() => { if (editingDetail) { /* Acciones adicionales si es necesario */ } }, [editingDetail]);
 
   useEffect(() => { if (step === 4 && projectId) { fetchFetchedDetails(); } }, [step, fetchFetchedDetails, projectId]);
@@ -373,23 +386,20 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   const handleNewButtonClick = () => {
     setShowCreateModal(true);
-    fetchMaterials();
+    // Se llama a fetchMaterials desde useEffect al detectar que showCreateModal es true
     setShowDetallesModal(false);
   };
 
   const [detailChild, SetDetailChild] = useState<Detail | null>(null);
+  // Función simplificada: ya no se busca el material (ya viene en detail.material)
   const handleEditDetail = (detail: Detail) => {
     setShowDetallesModal(false);
     SetDetailChild(detail);
-    if ((!detail.material_id || detail.material_id === 0) && detail.material) {
-      const foundMaterial = materials.find((mat) => mat.name === detail.material);
-      detail.material_id = foundMaterial ? foundMaterial.id : 0;
-    }
-    fetchMaterials();
     console.log("On edit", detail);
     setEditingDetail(detail);
   };
 
+  // Modal de edición (no inline)
   const handleConfirmEditDetail = async () => {
     if (!editingDetail) return;
     if (!editingDetail.scantilon_location.trim() || !editingDetail.name_detail.trim()) {
@@ -415,46 +425,13 @@ const WorkFlowpar2createPage: React.FC = () => {
         material_id: editingDetail.material_id,
         layer_thickness: editingDetail.layer_thickness,
       };
-      const response = await axios.patch(url, payload, { headers });
-      notify(response.data.success || "Detalle actualizado exitosamente");
-      setFetchedDetails(prevDetails =>
-        prevDetails.map(detail =>
-          detail.id_detail === editingDetail.id_detail ? { ...detail, ...payload } : detail
-        )
-      );
-      const tipo = editingDetail.scantilon_location.toLowerCase();
-      if (tipo === "muro") {
-        setMurosTabList(prevList =>
-          prevList.map(item =>
-            (item.id_detail === editingDetail.id_detail || item.id === editingDetail.id)
-              ? { ...item, ...payload }
-              : item
-          )
-        );
-        await fetchMurosDetails();
-      } else if (tipo === "techo") {
-        setTechumbreTabList(prevList =>
-          prevList.map(item =>
-            (item.id_detail === editingDetail.id_detail || item.id === editingDetail.id)
-              ? { ...item, ...payload }
-              : item
-          )
-        );
-        await fetchTechumbreDetails();
-      } else if (tipo === "piso") {
-        setPisosTabList(prevList =>
-          prevList.map(item =>
-            (item.id_detail === editingDetail.id_detail || item.id === editingDetail.id)
-              ? { ...item, ...payload }
-              : item
-          )
-        );
-        await fetchPisosDetails();
-      }
-      if (selectedItem?.id === editingDetail.id_detail) {
-        SetDetailsList(prevDetail => ({ ...prevDetail, ...payload }));
-      }
-      await fetchFetchedDetails();
+      await axios.patch(url, payload, { headers });
+      notify("Detalle actualizado exitosamente");
+      // Se refrescan todas las tablas involucradas
+      fetchFetchedDetails();
+      fetchMurosDetails();
+      fetchTechumbreDetails();
+      fetchPisosDetails();
       setEditingDetail(null);
       setShowDetallesModal(true);
     } catch (error: unknown) {
@@ -465,16 +442,14 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   // Funciones de edición inline en el Modal de Detalles
   const handleInlineEdit = (detail: Detail) => {
-    setEditingDetailId(detail.id_detail);
-    let materialId = detail.material_id;
-    if ((!materialId || materialId === 0) && detail.material) {
-      const found = materials.find((mat) => mat.name === detail.material);
-      materialId = found ? found.id : 0;
-    }
-    setEditingDetailData({ material_id: materialId, layer_thickness: detail.layer_thickness });
+    const uniqueId = detail.id_detail || Number(detail.id);
+    setEditingDetailId(uniqueId);
+    // Se asigna directamente el material_id del detail sin buscar en el array materials
+    setEditingDetailData({ material_id: detail.material_id, layer_thickness: detail.layer_thickness });
   };
 
   const handleConfirmInlineEdit = async (detail: Detail) => {
+    const uniqueId = detail.id_detail || Number(detail.id);
     if (editingDetailData.material_id <= 0) {
       notify("Por favor, seleccione un material válido.");
       return;
@@ -484,9 +459,9 @@ const WorkFlowpar2createPage: React.FC = () => {
       return;
     }
     const token = getToken();
-    if (!token || !detail.id_detail) return;
+    if (!token || !uniqueId) return;
     try {
-      const url = `${constantUrlApiEndpoint}/user/detail-update/${detail.id_detail}`;
+      const url = `${constantUrlApiEndpoint}/user/detail-update/${uniqueId}`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const payload = {
         scantilon_location: detail.scantilon_location,
@@ -494,11 +469,14 @@ const WorkFlowpar2createPage: React.FC = () => {
         material_id: editingDetailData.material_id,
         layer_thickness: editingDetailData.layer_thickness,
       };
-      const response = await axios.patch(url, payload, { headers });
-      notify(response.data.success || "Detalle actualizado exitosamente");
-      SetDetailsList((prev) =>
-        prev.map((d) => d.id_detail === detail.id_detail ? { ...d, ...payload } : d)
-      );
+      await axios.patch(url, payload, { headers });
+      notify("Detalle actualizado exitosamente");
+      // Se refrescan todos los detalles
+      fetchDetailModal(selectedItem?.id);
+      fetchFetchedDetails();
+      fetchMurosDetails();
+      fetchTechumbreDetails();
+      fetchPisosDetails();
     } catch (error) {
       console.error("Error al actualizar el detalle:", error);
       notify("Error al actualizar el detalle.");
@@ -558,9 +536,9 @@ const WorkFlowpar2createPage: React.FC = () => {
       await axios.delete(url, { headers });
       notify("Elemento eliminado exitosamente.");
       if (type === "window") {
-        setVentanasTabList((prev) => prev.filter((item) => item.id !== elementId));
+        fetchVentanasDetails();
       } else if (type === "door") {
-        setPuertasTabList((prev) => prev.filter((item) => item.id !== elementId));
+        fetchPuertasDetails();
       }
     } catch (error: unknown) {
       console.error("Error al eliminar el elemento:", error);
@@ -594,13 +572,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const payload = { info: { surface_color: { interior: { name: editingColors.interior }, exterior: { name: editingColors.exterior } } } };
       await axios.put(url, payload, { headers });
       notify("Detalle tipo Muro actualizado con éxito.");
-      setMurosTabList((prev) =>
-        prev.map((item) =>
-          item.id === detail.id
-            ? { ...item, info: { ...item.info, surface_color: { interior: { name: editingColors.interior }, exterior: { name: editingColors.exterior } } } }
-            : item
-        )
-      );
+      fetchMurosDetails();
       setEditingRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
@@ -634,13 +606,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const payload = { info: { surface_color: { interior: { name: editingTechColors.interior }, exterior: { name: editingTechColors.exterior } } } };
       await axios.put(url, payload, { headers });
       notify("Detalle tipo Techo actualizado con éxito.");
-      setTechumbreTabList((prev) =>
-        prev.map((item) =>
-          item.id === detail.id
-            ? { ...item, info: { ...item.info, surface_color: { interior: { name: editingTechColors.interior }, exterior: { name: editingTechColors.exterior } } } }
-            : item
-        )
-      );
+      fetchTechumbreDetails();
       setEditingTechRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
@@ -689,28 +655,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       };
       await axios.put(url, payload, { headers });
       notify("Detalle tipo Piso actualizado con éxito");
-      setPisosTabList((prev) =>
-        prev.map((item) =>
-          item.id === detail.id
-            ? {
-                ...item,
-                info: {
-                  ...item.info,
-                  ref_aisl_vertical: {
-                    lambda: Number(editingPisoForm.vertical.lambda),
-                    e_aisl: Number(editingPisoForm.vertical.e_aisl),
-                    d: Number(editingPisoForm.vertical.d),
-                  },
-                  ref_aisl_horizontal: {
-                    lambda: Number(editingPisoForm.horizontal.lambda),
-                    e_aisl: Number(editingPisoForm.horizontal.e_aisl),
-                    d: Number(editingPisoForm.horizontal.d),
-                  },
-                },
-              }
-            : item
-        )
-      );
+      fetchPisosDetails();
       setEditingPisoRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle de Piso:", error);
@@ -728,9 +673,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const payload = { name_element: puerta.name_element, type: "door", atributs: puerta.atributs, u_marco: puerta.u_marco, fm: puerta.fm };
       await axios.put(url, payload, { headers });
       notify("Detalle tipo Puerta actualizado con éxito.");
-      setPuertasTabList((prev) =>
-        prev.map((item) => item.id === puerta.id ? { ...item, ...puerta } : item)
-      );
+      fetchPuertasDetails();
       setEditingPuertaForm(null);
     } catch (error: any) {
       console.error("Error al actualizar puerta:", error);
@@ -752,9 +695,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const payload = { name_element: ventana.name_element, type: "window", atributs: ventana.atributs, u_marco: ventana.u_marco, fm: ventana.fm };
       await axios.put(url, payload, { headers });
       notify("Detalle tipo Ventana actualizado con éxito.");
-      setVentanasTabList((prev) =>
-        prev.map((item) => item.id === ventana.id ? { ...item, ...ventana } : item)
-      );
+      fetchVentanasDetails();
       setEditingVentanaForm(null);
     } catch (error: any) {
       console.error("Error al actualizar ventana:", error);
@@ -777,9 +718,6 @@ const WorkFlowpar2createPage: React.FC = () => {
   const [detailsList, SetDetailsList] = useState<Detail[]>([]);
   const api = useApi();
 
-  // Render del contenido del Modal de Detalles con edición inline.
-  // Se aplica textStyle para el color primary en detalles creados.
-  // Si Material es "0" o "N/A", o si Espesor capa es 0 o no positivo, se muestra un guion.
   const renderDetallesModalContent = () => {
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
@@ -790,8 +728,9 @@ const WorkFlowpar2createPage: React.FC = () => {
     ];
 
     const data = detailsList.map((det: any) => {
+      const uniqueId = det.id_detail || det.id;
       const textStyle = det.created_status === "created" ? { color: "var(--primary-color)", fontWeight: "bold" } : {};
-      const isEditing = editingDetailId === det.id_detail;
+      const isEditing = editingDetailId === uniqueId;
       return {
         scantilon_location: <span style={textStyle}>{det.scantilon_location}</span>,
         name_detail: <span style={textStyle}>{det.name_detail}</span>,
@@ -1168,9 +1107,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           </div>
         ) : (
           <div>
-            <CustomButton className="btn-table" variant="addIcon" onClick={(e) => { e.stopPropagation(); setShowDetallesModal(true); }}>
-              +
-            </CustomButton>
+            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
             <CustomButton className="btn-table" variant="editIcon" onClick={(e) => { e.stopPropagation(); handleEditPisoClick(item); }}>
               Editar
             </CustomButton>
@@ -1319,9 +1256,11 @@ const WorkFlowpar2createPage: React.FC = () => {
 
     return (
       <div>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-          <CustomButton variant="save" onClick={handleNewButtonClick}>+ Nuevo</CustomButton>
-        </div>
+        {(tabStep4 !== "ventanas" && tabStep4 !== "puertas") && (
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+            <CustomButton variant="save" onClick={handleNewButtonClick}>+ Nuevo</CustomButton>
+          </div>
+        )}
         <ul className="nav" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", padding: 0, listStyle: "none" }}>
           {tabs.map((item) => (
             <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
@@ -1369,6 +1308,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     { stepNumber: 7, iconName: "design_services", title: "Recinto" },
   ];
 
+  // Función para guardar nuevo detalle; se refrescan las tablas completas tras crear
   const handleSaveDetalle = async () => {
     if (!newDetalle.name_detail || !newDetalle.colorInterior || !newDetalle.colorExterior) {
       notify("Por favor, complete todos los campos del Detalle Constructivo.");
@@ -1378,7 +1318,36 @@ const WorkFlowpar2createPage: React.FC = () => {
     const token = getToken();
     if (!token || !projectId) return;
     const type = detailTypeMapping[tabStep4] || "Muro";
-    const payload = { info: { surface_color: { interior: { name: newDetalle.colorInterior }, exterior: { name: newDetalle.colorExterior } } }, name_detail: newDetalle.name_detail };
+    let payload;
+
+    if (type === "Piso") {
+      payload = {
+        name_detail: newDetalle.name_detail,
+        info: {
+          ref_aisl_vertical: {
+            d: 0,
+            e_aisl: 0,
+            lambda: 0,
+          },
+          ref_aisl_horizontal: {
+            d: 0,
+            e_aisl: 0,
+            lambda: 0,
+          },
+        },
+      };
+    } else {
+      payload = {
+        name_detail: newDetalle.name_detail,
+        info: {
+          surface_color: {
+            interior: { name: newDetalle.colorInterior },
+            exterior: { name: newDetalle.colorExterior },
+          },
+        },
+      };
+    }
+
     try {
       const url = `${constantUrlApiEndpoint}/user/${type}/detail-part-create?project_id=${projectId}`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
@@ -1400,7 +1369,9 @@ const WorkFlowpar2createPage: React.FC = () => {
     <>
       <GooIcons />
       <Card>
-        <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem" }}>{renderMainHeader()}</div>
+        <div className="d-flex align-items-center w-100" style={{ marginBottom: "2rem" }}>
+          {renderMainHeader()}
+        </div>
         <div className="d-flex align-items-center gap-4">
           <ProjectInfoHeader projectName={projectName} region={projectDepartment} />
           <div className="ms-auto" style={{ display: "flex" }}>
@@ -1431,7 +1402,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {editingDetail && (
         <ModalCreate
           isOpen={true}
-          title="Editar Detalle Constructivo"
+          title={`Editar Detalle: ${editingDetail.name_detail}`}
           detail={editingDetail}
           onClose={() => setEditingDetail(null)}
           onSave={handleConfirmEditDetail}
@@ -1609,11 +1580,12 @@ const WorkFlowpar2createPage: React.FC = () => {
       {/* Modal de Detalles, abierto al dar clic en el + de Acciones */}
       {showDetallesModal && (
         <ModalCreate
-          onSave={() => {}}
+          onSave={() => { }}
           isOpen={true}
           title={`Detalles ${selectedItem?.name_detail || ''}`}
           onClose={() => setShowDetallesModal(false)}
           modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
+          showSaveButton={false}
         >
           {renderDetallesModalContent()}
         </ModalCreate>
@@ -1634,42 +1606,56 @@ const WorkFlowpar2createPage: React.FC = () => {
 
       {/* Modal para crear un nuevo Detalle Constructivo (botón + Nuevo) */}
       {showCreateModal && (
-        <ModalCreate
-          isOpen={true}
-          title={`Crear Nuevo ${titleMapping[tabStep4] || "Detalle"}`}
-          onClose={() => setShowCreateModal(false)}
-          onSave={handleSaveDetalle}
-        >
-          <form>
-            <div className="form-group">
-              <label>Nombre </label>
-              <input type="text" className="form-control" value={newDetalle.name_detail}
-                onChange={(e) => setNewDetalle((prev) => ({ ...prev, name_detail: e.target.value }))}
-              />
-            </div>
-            <div className="form-group">
-              <label>Color Exterior</label>
-              <select className="form-control" value={newDetalle.colorExterior}
-                onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorExterior: e.target.value }))}
-              >
-                <option value="Claro">Claro</option>
-                <option value="Oscuro">Oscuro</option>
-                <option value="Intermedio">Intermedio</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Color Interior</label>
-              <select className="form-control" value={newDetalle.colorInterior}
-                onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorInterior: e.target.value }))}
-              >
-                <option value="Claro">Claro</option>
-                <option value="Oscuro">Oscuro</option>
-                <option value="Intermedio">Intermedio</option>
-              </select>
-            </div>
-          </form>
-        </ModalCreate>
+  <ModalCreate
+    isOpen={true}
+    title={`Crear Nuevo ${titleMapping[tabStep4] || "Detalle"}`}
+    onClose={() => {
+      setShowCreateModal(false);
+      setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
+    }}
+    onSave={handleSaveDetalle}
+  >
+    <form>
+      <div className="form-group">
+        <label>Nombre </label>
+        <input
+          type="text"
+          className="form-control"
+          value={newDetalle.name_detail}
+          onChange={(e) => setNewDetalle((prev) => ({ ...prev, name_detail: e.target.value }))}
+        />
+      </div>
+      {tabStep4 !== "pisos" && (
+        <>
+          <div className="form-group">
+            <label>Color Exterior</label>
+            <select
+              className="form-control"
+              value={newDetalle.colorExterior}
+              onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorExterior: e.target.value }))}
+            >
+              <option value="Claro">Claro</option>
+              <option value="Oscuro">Oscuro</option>
+              <option value="Intermedio">Intermedio</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Color Interior</label>
+            <select
+              className="form-control"
+              value={newDetalle.colorInterior}
+              onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorInterior: e.target.value }))}
+            >
+              <option value="Claro">Claro</option>
+              <option value="Oscuro">Oscuro</option>
+              <option value="Intermedio">Intermedio</option>
+            </select>
+          </div>
+        </>
       )}
+    </form>
+  </ModalCreate>
+)}
     </>
   );
 };

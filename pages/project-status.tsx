@@ -113,7 +113,7 @@ const ProjectListStatusEditPage = () => {
   };
 
   const handleViewProject = (project_view: Project) => {
-    localStorage.setItem("project_id_view", project_view.id.toString());
+    localStorage.setItem("project_id", project_view.id.toString());
     localStorage.setItem("project_name_view", toUpperCase(project_view.name_project) || "N/A");
     localStorage.setItem(
       "project_department_view",

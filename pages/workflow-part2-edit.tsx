@@ -290,7 +290,7 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // ===================== INIT ======================
   useEffect(() => {
-    const storedProjectId = localStorage.getItem("project_id_edit");
+    const storedProjectId = localStorage.getItem("project_id");
     if (storedProjectId) {
       setProjectId(Number(storedProjectId));
     }

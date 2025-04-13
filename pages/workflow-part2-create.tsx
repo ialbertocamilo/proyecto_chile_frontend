@@ -492,11 +492,19 @@ const WorkFlowpar2createPage: React.FC = () => {
     try {
       const detail = fetchedDetails.find((d) => d.id_detail === detailId);
       const tipo = detail ? detail.scantilon_location.toLowerCase() : "";
-      // Se elimina de la base de datos y se refrescan las tablas completas
+      setFetchedDetails(prevDetails => prevDetails.filter(d => d.id_detail !== detailId));
+      const filterById = (item: any) => {
+        if (item.id_detail !== undefined) return item.id_detail !== detailId;
+        if (item.id !== undefined) return item.id !== detailId;
+        return true;
+      };
+      setMurosTabList(prevList => prevList.filter(filterById));
+      setTechumbreTabList(prevList => prevList.filter(filterById));
+      setPisosTabList(prevList => prevList.filter(filterById));
       const url = `${constantUrlApiEndpoint}/user/${detailId}/details/delete?project_id=${projectId}`;
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(url, { headers });
-      notify("Detalle eliminado exitosamente.");
+      const response = await axios.delete(url, { headers });
+      notify(response.data.message);
       await fetchFetchedDetails();
       if (tipo === "muro") await fetchMurosDetails();
       if (tipo === "techo") await fetchTechumbreDetails();

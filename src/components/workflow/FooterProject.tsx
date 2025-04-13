@@ -1,12 +1,22 @@
 import React from "react";
+//Components
+import ProjectStatus from "@/components/projects/ProjectStatus";
 
-interface FooterProjectProps {}
+interface FooterProjectProps {
+  projectId: number | null;
+  projectStatus: string | null;
+}
 
-const FooterProject: React.FC<FooterProjectProps> = ({}) => {
+const FooterProject: React.FC<FooterProjectProps> = (props) => {
   return (
-    <div>
-      <h2>dsa</h2>
-    </div>
+    <>
+      {props.projectId && (
+        <ProjectStatus
+          status={props.projectStatus || ""}
+          projectId={String(props.projectId)}
+        />
+      )}
+    </>
   );
 };
 

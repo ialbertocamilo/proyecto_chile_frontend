@@ -43,6 +43,8 @@ interface TabItem {
   id?: number;
   name_detail: string;
   value_u?: number;
+
+  created_status?:string;
   info?: {
     surface_color?: {
       exterior?: { name: string; value?: number };
@@ -879,9 +881,11 @@ const WorkFlowpar2createPage: React.FC = () => {
 
     const murosData = murosTabList.map((item) => {
       const isEditing = editingRowId === item.id;
+      // TODO aqui modificar cuando los datos sean created o global
+      // const textStyle = item.created_status === "created" ? { color: "var(--primary-color)", fontWeight: "bold" } : {};
       return {
-        nombreAbreviado: item.name_detail,
-        valorU: item.value_u?.toFixed(3) ?? "--",
+        nombreAbreviado: item.name_detail ,
+        valorU:item.value_u?.toFixed(3),
         colorExterior: isEditing ? (
           <select value={editingColors.exterior} onChange={(e) => setEditingColors((prev) => ({ ...prev, exterior: e.target.value }))}>
             <option value="Claro">Claro</option>

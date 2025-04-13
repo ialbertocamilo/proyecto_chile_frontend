@@ -20,18 +20,18 @@ const Login: NextPageWithLayout = () => {
   const router = useRouter();
 
   // Verifica si el usuario está logueado y redirige a /dashboard
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  const roleId = localStorage.getItem("role_id");
-  
-  if (token) {
-    if (roleId === "1") {
-      router.push("/dashboard");
-    } else {
-      router.push("/project-list");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const roleId = localStorage.getItem("role_id");
+
+    if (token) {
+      if (roleId === "1") {
+        router.push("/dashboard");
+      } else {
+        router.push("/project-list");
+      }
     }
-  }
-}, [router]);
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,18 +46,18 @@ useEffect(() => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
+      console.log(response)
 
       const data = await response.json();
 
-      console.log(data)
-      if (data?.detail){
+      if (data?.detail) {
         throw new Error(data?.detail)
       }
       if (!response.ok) {
         // Usa 'detail' si existe, de lo contrario 'message', 'error', etc.
         throw new Error(data.detail || data.message || data.error || "Credenciales incorrectas.");
       }
-    
+
 
       // Si la respuesta es exitosa, guardamos datos y redirigimos
       localStorage.setItem("User", data.token);

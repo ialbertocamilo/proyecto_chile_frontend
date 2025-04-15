@@ -2,6 +2,7 @@ import ActionButtons from "@/components/common/ActionButtons";
 import CustomButton from "@/components/common/CustomButton";
 import ModalCreate from "@/components/common/ModalCreate";
 import TablesParameters from "@/components/tables/TablesParameters";
+import { useApi } from "@/hooks/useApi";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import { useRouter } from "next/router";
@@ -34,6 +35,7 @@ const LOCAL_STORAGE_KEY = "recintoFormData";
 
 const TabRecintDataEdit: React.FC = () => {
   const router = useRouter();
+  const api = useApi()
   const projectId = localStorage.getItem("project_id") || "44";
   const token = localStorage.getItem("token") || "";
 
@@ -48,17 +50,8 @@ const TabRecintDataEdit: React.FC = () => {
   // 1. Funciones para fetch de datos (solo para recintos)
   // ===========================================================
   const fetchEnclosureGenerals = async () => {
-    const url = `${constantUrlApiEndpoint}/enclosure-generals/${projectId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!response.ok) return;
-    const responseData: EnclosureGeneralData[] = await response.json();
-    setData(responseData);
+    const response =await api.get(`/enclosure-generals/${projectId}`)
+    setData(response);
   };
 
   // ===========================================================
@@ -66,7 +59,6 @@ const TabRecintDataEdit: React.FC = () => {
   // ===========================================================
   useEffect(() => {
     fetchEnclosureGenerals();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ===========================================================
@@ -93,28 +85,21 @@ const TabRecintDataEdit: React.FC = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = async () => {
-    if (!itemToDelete) return;
-    const url = `${constantUrlApiEndpoint}/enclosure-generals-delete/${projectId}/${itemToDelete.id}`;
-    try {
-      const response = await fetch(url, {
-        method: "DELETE",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al eliminar el recinto");
-      setData(prevData => prevData.filter(item => item.id !== itemToDelete.id));
-      notify("Recinto eliminado exitosamente");
-      setShowDeleteModal(false);
-      setItemToDelete(null);
-      await fetchEnclosureGenerals();
-    } catch (error) {
-      console.error(error);
-      notify("Error al eliminar");
-    }
-  };
+const confirmDelete = async () => {
+  if (!itemToDelete) return;
+  
+  try {
+    await api.del(`/enclosure-generals-delete/${projectId}/${itemToDelete.id}`);
+    setData(prevData => prevData.filter(item => item.id !== itemToDelete.id));
+    notify("Recinto eliminado exitosamente");
+    setShowDeleteModal(false);
+    setItemToDelete(null);
+    await fetchEnclosureGenerals();
+  } catch (error) {
+    console.error(error);
+    notify("Error al eliminar");
+  }
+};
 
   const cancelDelete = () => {
     setShowDeleteModal(false);
@@ -135,9 +120,9 @@ const TabRecintDataEdit: React.FC = () => {
   // ===========================================================
   const columns = [
     {
-      headerName: "ID",
+      headerName: "Cod",
       field: "id",
-      renderCell: (row: EnclosureGeneralData) => row.id,
+      renderCell: (row: EnclosureGeneralData) => ("REC-"+row.id),
     },
     {
       headerName: "Nombre Recinto",
@@ -168,11 +153,6 @@ const TabRecintDataEdit: React.FC = () => {
       headerName: "Localidad",
       field: "comuna_id",
       renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
-    },
-    {
-      headerName: "Zona Térmica",
-      field: "zona_termica",
-      renderCell: (row: EnclosureGeneralData) => row.zona_termica,
     },
     {
       headerName: "Acciones",

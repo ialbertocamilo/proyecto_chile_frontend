@@ -43,8 +43,6 @@ interface TabItem {
   id?: number;
   name_detail: string;
   value_u?: number;
-
-  created_status?:string;
   info?: {
     surface_color?: {
       exterior?: { name: string; value?: number };
@@ -169,6 +167,12 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   const [selectedItem, SetSelectedItem] = useState<any>();
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
+  // Nuevo estado para editar el nombre abreviado (name_detail) en Muros
+  const [editingNombreAbreviado, setEditingNombreAbreviado] = useState<string>("");
+  // Estados para editar nombre abreviado en Techumbre y Pisos
+  const [editingNombreAbreviadoTech, setEditingNombreAbreviadoTech] = useState<string>("");
+  const [editingNombreAbreviadoPiso, setEditingNombreAbreviadoPiso] = useState<string>("");
+
   const [editingColors, setEditingColors] = useState<{ interior: string; exterior: string; }>({
     interior: "Intermedio",
     exterior: "Intermedio",
@@ -194,7 +198,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   // Estados para edición inline en el modal de Detalles
   const [editingDetailId, setEditingDetailId] = useState<number | null>(null);
-  const [editingDetailData, setEditingDetailData] = useState<{ material_id: number; layer_thickness: number; }>({
+  const [editingDetailData, setEditingDetailData] = useState<{ material_id: number; layer_thickness: number; }>( {
     material_id: 0,
     layer_thickness: 0,
   });
@@ -481,19 +485,11 @@ const WorkFlowpar2createPage: React.FC = () => {
     try {
       const detail = fetchedDetails.find((d) => d.id_detail === detailId);
       const tipo = detail ? detail.scantilon_location.toLowerCase() : "";
-      setFetchedDetails(prevDetails => prevDetails.filter(d => d.id_detail !== detailId));
-      const filterById = (item: any) => {
-        if (item.id_detail !== undefined) return item.id_detail !== detailId;
-        if (item.id !== undefined) return item.id !== detailId;
-        return true;
-      };
-      setMurosTabList(prevList => prevList.filter(filterById));
-      setTechumbreTabList(prevList => prevList.filter(filterById));
-      setPisosTabList(prevList => prevList.filter(filterById));
+      // Se elimina de la base de datos y se refrescan las tablas completas
       const url = `${constantUrlApiEndpoint}/user/${detailId}/details/delete?project_id=${projectId}`;
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.delete(url, { headers });
-      notify(response.data.message);
+      await axios.delete(url, { headers });
+      notify("Detalle eliminado exitosamente.");
       await fetchFetchedDetails();
       if (tipo === "muro") await fetchMurosDetails();
       if (tipo === "techo") await fetchTechumbreDetails();
@@ -535,12 +531,15 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
+  // Función de edición inline para Muros: se actualiza también el Nombre Abreviado
   const handleEditClick = (detail: TabItem) => {
     setEditingRowId(detail.id || null);
     setEditingColors({
       interior: detail.info?.surface_color?.interior?.name || "Intermedio",
       exterior: detail.info?.surface_color?.exterior?.name || "Intermedio",
     });
+    // Asigna el valor actual del nombre abreviado para muros
+    setEditingNombreAbreviado(detail.name_detail);
   };
 
   const handleCancelEdit = (detail: TabItem) => {
@@ -551,6 +550,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     setEditingRowId(null);
   };
 
+  // Al confirmar la edición inline de muros, se envía el nuevo name_detail
   const handleConfirmEdit = async (detail: TabItem) => {
     if (!projectId) return;
     const token = getToken();
@@ -558,7 +558,16 @@ const WorkFlowpar2createPage: React.FC = () => {
     try {
       const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Muro/${detail.id}`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-      const payload = { info: { surface_color: { interior: { name: editingColors.interior }, exterior: { name: editingColors.exterior } } } };
+      // Se agrega el name_detail con el valor de editingNombreAbreviado
+      const payload = {
+        name_detail: editingNombreAbreviado,
+        info: { 
+          surface_color: { 
+            interior: { name: editingColors.interior },
+            exterior: { name: editingColors.exterior }
+          }
+        }
+      };
       await axios.put(url, payload, { headers });
       notify("Detalle tipo Muro actualizado con éxito.");
       fetchMurosDetails();
@@ -569,12 +578,15 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   };
 
+  // Funciones de edición para Techumbre, se agrega edición del nombre abreviado
   const handleEditTechClick = (detail: TabItem) => {
     setEditingTechRowId(detail.id || null);
     setEditingTechColors({
       interior: detail.info?.surface_color?.interior?.name || "Intermedio",
       exterior: detail.info?.surface_color?.exterior?.name || "Intermedio",
     });
+    // Asigna el valor actual del nombre abreviado para techo
+    setEditingNombreAbreviadoTech(detail.name_detail);
   };
 
   const handleCancelTechEdit = (detail: TabItem) => {
@@ -592,17 +604,26 @@ const WorkFlowpar2createPage: React.FC = () => {
     try {
       const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Techo/${detail.id}`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-      const payload = { info: { surface_color: { interior: { name: editingTechColors.interior }, exterior: { name: editingTechColors.exterior } } } };
+      const payload = { 
+        name_detail: editingNombreAbreviadoTech, // Se envía el nuevo nombre abreviado
+        info: { 
+          surface_color: { 
+            interior: { name: editingTechColors.interior },
+            exterior: { name: editingTechColors.exterior }
+          }
+        } 
+      };
       await axios.put(url, payload, { headers });
       notify("Detalle tipo Techo actualizado con éxito.");
       fetchTechumbreDetails();
       setEditingTechRowId(null);
     } catch (error: unknown) {
       console.error("Error al actualizar detalle:", error);
-      notify("Error al actualizar detalle. Ver consola.");
+      notify("Error al actualizar Detalle. Ver consola.");
     }
   };
 
+  // Funciones de edición para Pisos, se agrega edición del nombre abreviado junto a los campos de aislamiento
   const handleEditPisoClick = (detail: TabItem) => {
     setEditingPisoRowId(detail.id || null);
     setEditingPisoForm({
@@ -617,6 +638,8 @@ const WorkFlowpar2createPage: React.FC = () => {
         d: detail.info?.ref_aisl_horizontal?.d?.toString() || "",
       },
     });
+    // Asigna el valor actual del nombre abreviado para piso
+    setEditingNombreAbreviadoPiso(detail.name_detail);
   };
 
   const handleCancelPisoEdit = () => { setEditingPisoRowId(null); };
@@ -629,6 +652,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Piso/${detail.id}`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const payload = {
+        name_detail: editingNombreAbreviadoPiso,  // Se actualiza el nombre abreviado para piso
         info: {
           ref_aisl_vertical: {
             d: Number(editingPisoForm.vertical.d),
@@ -776,7 +800,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             </CustomButton>
             <DeleteDetailButton
               detailId={det.id}
-              onDelete={() => { fetchDetailModal(selectedItem?.id); }}
+              onDelete={() => {fetchFetchedDetails(), fetchMurosDetails(), fetchTechumbreDetails(), fetchPisosDetails(), fetchDetailModal(selectedItem?.id); }}
             />
           </>
         ),
@@ -869,11 +893,21 @@ const WorkFlowpar2createPage: React.FC = () => {
 
     const murosData = murosTabList.map((item) => {
       const isEditing = editingRowId === item.id;
-      // TODO aqui modificar cuando los datos sean created o global
-      // const textStyle = item.created_status === "created" ? { color: "var(--primary-color)", fontWeight: "bold" } : {};
       return {
-        nombreAbreviado: item.name_detail ,
-        valorU:item.value_u?.toFixed(3),
+        nombreAbreviado: isEditing ? (
+          <input
+            type="text"
+            className="form-control"
+            value={editingNombreAbreviado}
+            onChange={(e) => {
+              console.log("Nuevo nombre:", e.target.value);
+              setEditingNombreAbreviado(e.target.value);
+            }}
+          />
+        ) : (
+          item.name_detail
+        ),
+        valorU: item.value_u?.toFixed(3) ?? "--",
         colorExterior: isEditing ? (
           <select value={editingColors.exterior} onChange={(e) => setEditingColors((prev) => ({ ...prev, exterior: e.target.value }))}>
             <option value="Claro">Claro</option>
@@ -929,7 +963,16 @@ const WorkFlowpar2createPage: React.FC = () => {
     const techData = techumbreTabList.map((item) => {
       const isEditing = editingTechRowId === item.id;
       return {
-        nombreAbreviado: item.name_detail,
+        nombreAbreviado: isEditing ? (
+          <input
+            type="text"
+            className="form-control"
+            value={editingNombreAbreviadoTech}
+            onChange={(e) => setEditingNombreAbreviadoTech(e.target.value)}
+          />
+        ) : (
+          item.name_detail
+        ),
         valorU: item.value_u?.toFixed(3) ?? "--",
         colorExterior: isEditing ? (
           <select value={editingTechColors.exterior} onChange={(e) => setEditingTechColors((prev) => ({ ...prev, exterior: e.target.value }))}>
@@ -1023,7 +1066,17 @@ const WorkFlowpar2createPage: React.FC = () => {
       const horiz = item.info?.ref_aisl_horizontal || {};
       const isEditing = editingPisoRowId === item.id;
       return {
-        nombre: item.name_detail,
+        // Permite editar el nombre abreviado en la tabla de Pisos
+        nombre: isEditing ? (
+          <input
+            type="text"
+            className="form-control"
+            value={editingNombreAbreviadoPiso}
+            onChange={(e) => setEditingNombreAbreviadoPiso(e.target.value)}
+          />
+        ) : (
+          item.name_detail
+        ),
         uValue: formatNumber(item.value_u),
         bajoPisoLambda: formatNumber(bajoPiso.lambda),
         bajoPisoEAisl: bajoPiso.e_aisl != null && bajoPiso.e_aisl !== 0 ? bajoPiso.e_aisl : "-",
@@ -1598,56 +1651,56 @@ const WorkFlowpar2createPage: React.FC = () => {
 
       {/* Modal para crear un nuevo Detalle Constructivo (botón + Nuevo) */}
       {showCreateModal && (
-  <ModalCreate
-    isOpen={true}
-    title={`Crear Nuevo ${titleMapping[tabStep4] || "Detalle"}`}
-    onClose={() => {
-      setShowCreateModal(false);
-      setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
-    }}
-    onSave={handleSaveDetalle}
-  >
-    <form>
-      <div className="form-group">
-        <label>Nombre </label>
-        <input
-          type="text"
-          className="form-control"
-          value={newDetalle.name_detail}
-          onChange={(e) => setNewDetalle((prev) => ({ ...prev, name_detail: e.target.value }))}
-        />
-      </div>
-      {tabStep4 !== "pisos" && (
-        <>
-          <div className="form-group">
-            <label>Color Exterior</label>
-            <select
-              className="form-control"
-              value={newDetalle.colorExterior}
-              onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorExterior: e.target.value }))}
-            >
-              <option value="Claro">Claro</option>
-              <option value="Oscuro">Oscuro</option>
-              <option value="Intermedio">Intermedio</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Color Interior</label>
-            <select
-              className="form-control"
-              value={newDetalle.colorInterior}
-              onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorInterior: e.target.value }))}
-            >
-              <option value="Claro">Claro</option>
-              <option value="Oscuro">Oscuro</option>
-              <option value="Intermedio">Intermedio</option>
-            </select>
-          </div>
-        </>
+        <ModalCreate
+          isOpen={true}
+          title={`Crear Nuevo ${titleMapping[tabStep4] || "Detalle"}`}
+          onClose={() => {
+            setShowCreateModal(false);
+            setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
+          }}
+          onSave={handleSaveDetalle}
+        >
+          <form>
+            <div className="form-group">
+              <label>Nombre </label>
+              <input
+                type="text"
+                className="form-control"
+                value={newDetalle.name_detail}
+                onChange={(e) => setNewDetalle((prev) => ({ ...prev, name_detail: e.target.value }))}
+              />
+            </div>
+            {tabStep4 !== "pisos" && (
+              <>
+                <div className="form-group">
+                  <label>Color Exterior</label>
+                  <select
+                    className="form-control"
+                    value={newDetalle.colorExterior}
+                    onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorExterior: e.target.value }))}
+                  >
+                    <option value="Claro">Claro</option>
+                    <option value="Oscuro">Oscuro</option>
+                    <option value="Intermedio">Intermedio</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Color Interior</label>
+                  <select
+                    className="form-control"
+                    value={newDetalle.colorInterior}
+                    onChange={(e) => setNewDetalle((prev) => ({ ...prev, colorInterior: e.target.value }))}
+                  >
+                    <option value="Claro">Claro</option>
+                    <option value="Oscuro">Oscuro</option>
+                    <option value="Intermedio">Intermedio</option>
+                  </select>
+                </div>
+              </>
+            )}
+          </form>
+        </ModalCreate>
       )}
-    </form>
-  </ModalCreate>
-)}
     </>
   );
 };

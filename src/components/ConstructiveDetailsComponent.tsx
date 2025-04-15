@@ -1,3 +1,4 @@
+// ConstructiveDetailsComponent.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -9,6 +10,9 @@ import { constantUrlApiEndpoint } from "../utils/constant-url-endpoint";
 import TablesParameters from "@/components/tables/TablesParameters";
 import SearchParameters from "./inputs/SearchParameters";
 import ModalCreate from "./common/ModalCreate";
+import NewDetailCreator from "@/components/constructive_details/NewDetailCreator";
+// Se importa el nuevo componente que encapsula la lógica del modal de Detalle
+import DetailModal from "@/components/constructive_details/DetailModal";
 
 interface Detail {
   id_detail: number;
@@ -91,6 +95,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
   // Estados para la vista de "Detalles Generales"
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [showTabsInStep4, setShowTabsInStep4] = useState(true);
+  // Se usa tabStep4 para filtrar la vista de Detalles
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
   // Estados para cada pestaña (Muros, Techumbre, Pisos)
@@ -101,22 +106,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
   // Materiales
   const [materials, setMaterials] = useState<Material[]>([]);
 
-  // Estado para crear nuevo detalle
-  const [showNewDetailRow, setShowNewDetailRow] = useState(false);
-  const [isCreatingDetail, setIsCreatingDetail] = useState(false);
-  const [newDetailForm, setNewDetailForm] = useState<{
-    scantilon_location: string;
-    name_detail: string;
-    material_id: number;
-    layer_thickness: number | null;
-  }>({
-    scantilon_location: "",
-    name_detail: "",
-    material_id: 0,
-    layer_thickness: null,
-  });
-
-  // Estados para eliminar y editar detalle (vista general)
+  // Estados para eliminación y edición de detalle (vista general)
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingDetail, setDeletingDetail] = useState<Detail | null>(null);
   const [editingDetail, setEditingDetail] = useState<Detail | null>(null);
@@ -125,8 +115,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const [showInlineDeleteModal, setShowInlineDeleteModal] = useState(false);
   const [deletingInlineDetail, setDeletingInlineDetail] = useState<TabItem | null>(null);
 
-  // Estado para mostrar modal "Detalles Generales"
-  const [showGeneralDetailsModal, setShowGeneralDetailsModal] = useState(false);
+  // Estado para mostrar el modal de Detalles y almacenar el elemento seleccionado
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<{ id: number; name_detail: string } | null>(null);
 
   // Estados para edición inline
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
@@ -177,7 +168,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   }, []);
 
-  // Aquí se actualizan las tablas de acuerdo al tipo de detalle
+  // Se refrescan las tablas según el tipo de detalle
   const fetchMurosDetails = useCallback(() => {
     fetchData<TabItem[]>(
       `${constantUrlApiEndpoint}/details/all/Muro/`,
@@ -272,71 +263,15 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   }, [editingDetail, materials]);
 
-  // Función para crear nuevo detalle
-  const handleCreateNewDetail = async () => {
-    if (
-      !newDetailForm.scantilon_location ||
-      !newDetailForm.name_detail ||
-      !newDetailForm.material_id
-    ) {
-      notify("Por favor complete todos los campos de Detalle.");
-      return;
-    }
-    const token = getToken();
-    if (!token) return;
-    setIsCreatingDetail(true);
-    try {
-      const createUrl = `${constantUrlApiEndpoint}/admin/details/create`;
-      const response = await axios.post(createUrl, newDetailForm, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      console.log("Respuesta de creación:", response);
-      notify("Detalle creado exitosamente.");
-      // Refrescar la lista general y la tabla específica según el tipo de detalle
-      await fetchFetchedDetails();
-      const tipo = newDetailForm.scantilon_location.toLowerCase();
-      if (tipo === "muro") {
-        fetchMurosDetails();
-      } else if (tipo === "techo") {
-        fetchTechumbreDetails();
-      } else if (tipo === "piso") {
-        fetchPisosDetails();
-      }
-      setShowNewDetailRow(false);
-      setNewDetailForm({
-        scantilon_location: "",
-        name_detail: "",
-        material_id: 0,
-        layer_thickness: null,
-      });
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error en la creación del detalle:", error.response?.data);
-        notify("Error en la creación del Detalle.");
-      } else {
-        notify("Error desconocido al crear el Detalle.");
-      }
-    } finally {
-      setIsCreatingDetail(false);
-    }
+  // Función de refresco para usar tanto en vista general como en pestañas
+  const refreshDetails = async () => {
+    await fetchFetchedDetails();
+    if (tabStep4 === "muros") fetchMurosDetails();
+    else if (tabStep4 === "techumbre") fetchTechumbreDetails();
+    else if (tabStep4 === "pisos") fetchPisosDetails();
   };
 
-  // Botón "Nuevo" (abre modal para crear detalle)
-  const handleNewButtonClick = () => {
-    setShowNewDetailRow(true);
-    fetchMaterials();
-  };
-
-  // Botón "Volver" en la vista inicial
-  const saveDetails = () => {
-    setShowTabsInStep4(true);
-    setTabStep4("muros");
-  };
-
-  // ELIMINACIÓN DE DETALLE (Vista General)
+  // ----- Funciones para eliminación, edición y edición inline mantienen su lógica original -----
   const confirmDeleteDetail = async () => {
     if (!deletingDetail) return;
     const token = getToken();
@@ -349,35 +284,28 @@ const ConstructiveDetailsComponent: React.FC = () => {
       await axios.delete(url, {
         headers: { Authorization: `Bearer ${token}`, accept: "application/json" },
       });
-      console.log("Detalle eliminado");
       notify("Detalle correctamente eliminado");
       await fetchFetchedDetails();
       const tipo = deletingDetail.scantilon_location.toLowerCase();
-      if (tipo === "muro") {
-        fetchMurosDetails();
-      } else if (tipo === "techo") {
-        fetchTechumbreDetails();
-      } else if (tipo === "piso") {
-        fetchPisosDetails();
-      }
+      if (tipo === "muro") fetchMurosDetails();
+      else if (tipo === "techo") fetchTechumbreDetails();
+      else if (tipo === "piso") fetchPisosDetails();
     } catch (error: unknown) {
       console.error("Error al eliminar detalle:", error);
       notify("Error", "No se pudo eliminar el detalle.");
     } finally {
       setShowDeleteModal(false);
       setDeletingDetail(null);
-      setShowGeneralDetailsModal(true);
+      setShowDetailsModal(true);
     }
   };
 
-  // Función para abrir el modal de eliminación inline en tablas
   const handleInlineDeleteModal = (item: TabItem, e: React.MouseEvent) => {
     e.stopPropagation();
     setDeletingInlineDetail(item);
     setShowInlineDeleteModal(true);
   };
 
-  // Función para confirmar la eliminación inline en tablas
   const confirmInlineDeleteDetail = async () => {
     if (!deletingInlineDetail) return;
     const token = getToken();
@@ -391,7 +319,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
         },
       });
       notify("Detalle eliminado correctamente.");
-      // Se actualiza también la tabla general de detalles
       await fetchFetchedDetails();
       if (tabStep4 === "muros") fetchMurosDetails();
       else if (tabStep4 === "techumbre") fetchTechumbreDetails();
@@ -405,10 +332,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   };
 
-  // EDICIÓN DE DETALLE GENERAL (Modal)
   const handleEditDetail = (detail: Detail, e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowGeneralDetailsModal(false);
+    setShowDetailsModal(false);
     fetchMaterials();
     setEditingDetail(detail);
   };
@@ -448,15 +374,11 @@ const ConstructiveDetailsComponent: React.FC = () => {
         notify("Actualizado con éxito.");
         await fetchFetchedDetails();
         const tipo = editingDetail.scantilon_location.toLowerCase();
-        if (tipo === "muro") {
-          fetchMurosDetails();
-        } else if (tipo === "techo") {
-          fetchTechumbreDetails();
-        } else if (tipo === "piso") {
-          fetchPisosDetails();
-        }
+        if (tipo === "muro") fetchMurosDetails();
+        else if (tipo === "techo") fetchTechumbreDetails();
+        else if (tipo === "piso") fetchPisosDetails();
         setEditingDetail(null);
-        setShowGeneralDetailsModal(true);
+        setShowDetailsModal(true);
       } catch (error: unknown) {
         console.error("Error al actualizar el detalle:", error);
         notify("Error al actualizar el detalle.");
@@ -464,7 +386,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
     })();
   };
 
-  // Funciones de edición inline
   const handleInlineEdit = (item: TabItem, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingRowId(item.id_detail ?? item.id ?? null);
@@ -542,7 +463,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   };
 
-  // Renderizado "Detalles Generales" (Vista Inicial)
+  // Renderizado "Detalles Generales" (Vista Inicial Filtrada)
   const renderInitialDetails = (inModal: boolean = false) => {
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
@@ -599,16 +520,30 @@ const ConstructiveDetailsComponent: React.FC = () => {
           {det.layer_thickness}
         </span>
       ),
+      // Se agrega el botón "Ver" para abrir el DetailModal junto a los botones Editar y Eliminar
       acciones: (
         <>
-          <CustomButton variant="editIcon" onClick={(e) => handleEditDetail(det, e)}>
+          <CustomButton
+            variant="viewIcon"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedItem({ id: det.id_detail, name_detail: det.name_detail });
+              setShowDetailsModal(true);
+            }}
+          >
+            Ver
+          </CustomButton>
+          <CustomButton
+            variant="editIcon"
+            onClick={(e) => handleEditDetail(det, e)}
+          >
             Editar
           </CustomButton>
           <CustomButton
             variant="deleteIcon"
             onClick={(e) => {
               e.stopPropagation();
-              setShowGeneralDetailsModal(false);
+              setShowDetailsModal(false);
               setDeletingDetail(det);
               setShowDeleteModal(true);
             }}
@@ -626,7 +561,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={searchQuery}
             onChange={setSearchQuery}
             placeholder="Buscar..."
-            onNew={handleNewButtonClick}
+            onNew={() => {}}
             newButtonText="Nuevo"
             style={{ marginBottom: "1rem" }}
           />
@@ -640,7 +575,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               variant="save"
               onClick={(e) => {
                 e.stopPropagation();
-                if (inModal) setShowGeneralDetailsModal(false);
+                if (inModal) setShowDetailsModal(false);
                 else setShowTabsInStep4(false);
               }}
             >
@@ -652,11 +587,19 @@ const ConstructiveDetailsComponent: React.FC = () => {
     );
   };
 
-  // Renderizado de las pestañas (Muros, Techumbre, Pisos)
+  // Render de pestañas (Muros, Techumbre, Pisos)
   const renderDetailsTabs = () => (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-        <CustomButton onClick={handleNewButtonClick}>+ Nuevo</CustomButton>
+        {/* Se utiliza el componente NewDetailCreator en lugar de CustomButton */}
+        <NewDetailCreator
+          detailType={(() => {
+            if (tabStep4 === "muros") return "Muro";
+            if (tabStep4 === "techumbre") return "Techo";
+            return "Piso";
+          })()}
+          onDetailCreated={refreshDetails}
+        />
       </div>
       <ul
         className="nav"
@@ -695,17 +638,17 @@ const ConstructiveDetailsComponent: React.FC = () => {
       </ul>
       <div>
         {tabStep4 === "muros" && (
-          <div onClick={() => setShowGeneralDetailsModal(true)}>
+          <div onClick={() => setShowDetailsModal(true)}>
             {renderMurosTable()}
           </div>
         )}
         {tabStep4 === "techumbre" && (
-          <div onClick={() => setShowGeneralDetailsModal(true)}>
+          <div onClick={() => setShowDetailsModal(true)}>
             {renderTechumbreTable()}
           </div>
         )}
         {tabStep4 === "pisos" && (
-          <div onClick={() => setShowGeneralDetailsModal(true)}>
+          <div onClick={() => setShowDetailsModal(true)}>
             {renderPisosTable()}
           </div>
         )}
@@ -713,8 +656,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     </div>
   );
 
-  // Renderizado de Tablas con edición inline
-  // MUROS
+  // --- Render de tablas de edición inline (Muros, Techumbre, Pisos) ---
   const renderMurosTable = () => {
     const columnsMuros = [
       { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
@@ -774,6 +716,17 @@ const ConstructiveDetailsComponent: React.FC = () => {
           </div>
         ) : (
           <>
+            {/* Agregamos el botón "Ver" para abrir el DetailModal */}
+            <CustomButton
+              variant="viewIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedItem({ id: item.id_detail ?? item.id ?? 0, name_detail: item.name_detail });
+                setShowDetailsModal(true);
+              }}
+            >
+              Ver
+            </CustomButton>
             <CustomButton
               className="btn-table"
               variant="editIcon"
@@ -810,7 +763,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
     );
   };
 
-  // TECHUMBRE
   const renderTechumbreTable = () => {
     const columnsTech = [
       { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
@@ -871,6 +823,16 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ) : (
           <>
             <CustomButton
+              variant="viewIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedItem({ id: item.id_detail ?? item.id ?? 0, name_detail: item.name_detail });
+                setShowDetailsModal(true);
+              }}
+            >
+              Ver
+            </CustomButton>
+            <CustomButton
               variant="editIcon"
               className="btn-table"
               onClick={(e) => {
@@ -906,12 +868,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
     );
   };
 
-  // Función auxiliar para formatear números (en vista, no en inputs de edición)
-  const formatNumber = (num: number | undefined, decimals = 3) => {
-    return num != null && num !== 0 ? num.toFixed(decimals) : "-";
-  };
-
-  // PISOS
   const renderPisosTable = () => {
     const columnsPisos = [
       { headerName: "Nombre", field: "nombre" },
@@ -948,7 +904,6 @@ const ConstructiveDetailsComponent: React.FC = () => {
           Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
             ? item.info.aislacion_bajo_piso.e_aisl
             : "-",
-        // Para los campos de edición se usa input; si el valor es 0 o vacío, se deja el campo en blanco para edición.
         vertLambda: isEditing ? (
           <input
             type="number"
@@ -1113,6 +1068,16 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ) : (
           <>
             <CustomButton
+              variant="viewIcon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedItem({ id: item.id_detail ?? item.id ?? 0, name_detail: item.name_detail });
+                setShowDetailsModal(true);
+              }}
+            >
+              Ver
+            </CustomButton>
+            <CustomButton
               className="btn-table"
               variant="editIcon"
               onClick={(e) => {
@@ -1178,95 +1143,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
         {showTabsInStep4 ? renderDetailsTabs() : renderInitialDetails()}
       </div>
 
-      {/* MODAL: Crear Nuevo Detalle */}
-      <ModalCreate
-        isOpen={showNewDetailRow}
-        onClose={() => {
-          setShowNewDetailRow(false);
-        }}
-        onSave={() => {
-          handleCreateNewDetail();
-        }}
-        title="Nuevo Detalle"
-        saveLabel="Crear Detalle"
-        detail={newDetailForm}
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleCreateNewDetail();
-          }}
-        >
-          <div className="form-group">
-            <label>Selecciones</label>
-            <select
-              className="form-control"
-              value={newDetailForm.scantilon_location}
-              onChange={(e) =>
-                setNewDetailForm({ ...newDetailForm, scantilon_location: e.target.value })
-              }
-            >
-              <option value="">Seleccione una opción</option>
-              <option value="Muro">Muro</option>
-              <option value="Techo">Techo</option>
-              <option value="Piso">Piso</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Nombre Detalle</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Nombre Detalle"
-              value={newDetailForm.name_detail}
-              onChange={(e) =>
-                setNewDetailForm({ ...newDetailForm, name_detail: e.target.value })
-              }
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-          <div className="form-group">
-            <label>Material</label>
-            <select
-              className="form-control"
-              value={newDetailForm.material_id}
-              onChange={(e) =>
-                setNewDetailForm({ ...newDetailForm, material_id: Number(e.target.value) })
-              }
-              onClick={(e) => e.stopPropagation()}
-            >
-              <option value={0}>Seleccione Material</option>
-              {materials.map((material) => (
-                <option key={material.id} value={material.id}>
-                  {material.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Espesor capa (cm)</label>
-            <input
-              type="number"
-              min="1"
-              className="form-control"
-              placeholder="Espesor capa (cm)"
-              value={newDetailForm.layer_thickness ?? ""}
-              onChange={(e) =>
-                setNewDetailForm({
-                  ...newDetailForm,
-                  layer_thickness: Number(e.target.value),
-                })
-              }
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => {
-                if (e.key === "-") e.preventDefault();
-              }}
-            />
-          </div>
-        </form>
-      </ModalCreate>
-
-      {/* MODAL: Confirmar Eliminación (Vista General) */}
+      {/* --- MODAL: Confirmar Eliminación (Vista General) --- */}
       <ModalCreate
         isOpen={showDeleteModal}
         onClose={() => {
@@ -1286,7 +1163,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
         </p>
       </ModalCreate>
 
-      {/* MODAL: Confirmar Eliminación Inline en Tablas */}
+      {/* --- MODAL: Confirmar Eliminación Inline en Tablas --- */}
       <ModalCreate
         isOpen={showInlineDeleteModal}
         onClose={() => {
@@ -1306,7 +1183,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
         </p>
       </ModalCreate>
 
-      {/* MODAL: Editar Detalle (Vista General) */}
+      {/* --- MODAL: Editar Detalle (Vista General) --- */}
       {editingDetail && (
         <ModalCreate
           isOpen={true}
@@ -1421,26 +1298,17 @@ const ConstructiveDetailsComponent: React.FC = () => {
         </ModalCreate>
       )}
 
-      {/* MODAL: Detalles Generales (Vista Filtrada) */}
-      <ModalCreate
-        isOpen={showGeneralDetailsModal}
-        onClose={() => {
-          setShowGeneralDetailsModal(false);
-        }}
-        onSave={() => {
-          // No necesita acción de guardado
-        }}
-        title="Detalles Generales"
-        detail={null}
-        modalStyle={{
-          maxWidth: "70%",
-          width: "70%",
-          padding: "32px",
-        }}
-        hideFooter={true}
-      >
-        {renderInitialDetails(true)}
-      </ModalCreate>
+      {/* --- MODAL: Detalle (Integración del nuevo componente DetailModal) --- */}
+      {showDetailsModal && selectedItem && (
+        <DetailModal
+          isOpen={showDetailsModal}
+          onClose={() => setShowDetailsModal(false)}
+          selectedItem={selectedItem}
+          refreshParent={fetchFetchedDetails}
+          materials={materials}
+          fetchMaterials={fetchMaterials}
+        />
+      )}
     </div>
   );
 };

@@ -26,6 +26,9 @@ import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import ProjectStatus from "@/components/projects/ProjectStatus";
 import AddDetailOnLayer from "@/components/projects/AddDetailOnLayer";
 import { useApi } from "@/hooks/useApi";
+import { createDetail } from "@/service/details";
+import DeleteDetailButton from "@/components/common/DeleteDetailButton";
+import { IDetail } from "@/shared/interfaces/detail.interface";
 
 // Funciones auxiliares para formatear valores
 const formatValue = (value: number | null | undefined): string => {
@@ -188,13 +191,18 @@ const WorkFlowpar2editPage: React.FC = () => {
   const api = useApi()
 
   const [detailList, SetDetailsList] = useState<any>()
+  const [selectedItem, SetSelectedItem] = useState<any>();
 
+  const fetchDetailModal = (detail_id: any) => {
+    api.get(`detail-part/${detail_id}`).then((data) => {
+      SetDetailsList(data);
+    });
+  };
   const OnDetailOpened = (e: any) => {
     setShowDetallesModal(true)
-
-    api.get(`detail-part/${e?.id}`).then((data) => {
-      SetDetailsList(data)
-    })
+    console.log(e);
+    SetSelectedItem(e);
+    fetchDetailModal(e?.id);
   }
   // ===================== ESTADOS GENERALES ======================
   const [projectId, setProjectId] = useState<number | null>(null);
@@ -229,7 +237,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   const [selectedDetail, setSelectedDetail] = useState<Detail | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDetallesModal, setShowDetallesModal] = useState(false);
-  const [editingDetail, setEditingDetail] = useState<Detail | null>(null);
+  const [editingDetail, setEditingDetail] = useState<IDetail | null>(null);
 
   // ===================== ESTADOS PARA VENTANAS, PUERTAS Y DEMÁS ======================
   const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
@@ -562,50 +570,73 @@ const WorkFlowpar2editPage: React.FC = () => {
     setTabStep4("muros");
   };
 
-  // ===================== EDICIÓN DE DETALLE ======================
-  const handleEditDetail = (detail: Detail) => {
-    setEditingDetail(detail);
-    // Opcional: cargar materiales si aún no se han cargado
-    if (materials.length === 0) fetchMaterials();
-  };
 
-  const handleConfirmDetailEdit = async () => {
-    if (!editingDetail || !projectId) return;
+  const handleConfirmEditDetail = async () => {
+    if (!editingDetail) return;
+    if (!editingDetail.scantilon_location.trim() || !editingDetail.name_detail.trim()) {
+      notify("Los campos 'Ubicación Detalle' y 'Nombre Detalle' no pueden estar vacíos.");
+      return;
+    }
+    if (!editingDetail.material_id || editingDetail.material_id <= 0) {
+      notify("Por favor, seleccione un material válido.");
+      return;
+    }
+    if (editingDetail.layer_thickness === null || editingDetail.layer_thickness <= 0) {
+      notify("El 'Espesor de la capa' debe ser un valor mayor a 0.");
+      return;
+    }
     const token = getToken();
-    if (!token) return;
+    if (!token || !projectId) return;
     try {
-      const url = `${constantUrlApiEndpoint}/user/details/${editingDetail.id_detail}/update?project_id=${projectId}`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
+      const url = `${constantUrlApiEndpoint}/user/detail-update/${editingDetail.id_detail || editingDetail?.id}`;
+      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const payload = {
         scantilon_location: editingDetail.scantilon_location,
         name_detail: editingDetail.name_detail,
-        material_id: editingDetail.id_material,
+        material_id: editingDetail.material_id,
         layer_thickness: editingDetail.layer_thickness,
       };
-      await axios.put(url, payload, { headers });
-      notify("Detalle actualizado");
-      // Guarda la ubicación antes de limpiar el estado
-      const updatedLocation = editingDetail.scantilon_location.toLowerCase();
-      setEditingDetail(null);
+      await axios.patch(url, payload, { headers });
+      notify("Detalle actualizado exitosamente");
+      // Se refrescan todas las tablas involucradas
       fetchFetchedDetails();
-      if (updatedLocation === "muro") fetchMurosDetails();
-      else if (updatedLocation === "techo") fetchTechumbreDetails();
-      else if (updatedLocation === "piso") fetchPisosDetails();
+      fetchMurosDetails();
+      fetchTechumbreDetails();
+      fetchPisosDetails();
+      setEditingDetail(null);
+      setShowDetallesModal(true);
     } catch (error: unknown) {
-      console.error(error);
-      notify("Error al actualizar el detalle");
+      console.error("Error al actualizar el detalle:", error);
+      notify("Error al actualizar el Detalle.");
     }
   };
-
-  // ===================== ELIMINACIÓN DE DETALLE ======================
-  const handleDeleteDetail = (detail: Detail) => {
-    setDeleteItem({ id: detail.id_detail, type: "detail" });
-    setShowDeleteModal(true);
-  };
-
+const handleConfirmInlineEdit = async (detail: IDetail) => {
+    const uniqueId = detail.id_detail || Number(detail.id);
+    if (editingDetailData.material_id <= 0) {
+        notify("Por favor, seleccione un material válido.");
+        return;
+    }
+    if (editingDetailData.layer_thickness <= 0) {
+        notify("El 'Espesor de capa' debe ser un valor mayor a 0.");
+        return;
+    }
+    try {
+        const url = `/user/detail-update/${uniqueId}`;
+        await api.patch(url, {
+            scantilon_location: detail.scantilon_location,
+            name_detail: detail.name_detail,
+            material_id: editingDetailData.material_id,
+            layer_thickness: editingDetailData.layer_thickness,
+        });
+        notify("Detalle actualizado exitosamente");
+        // Se refrescan todos los detalles
+        fetchDetailModal(selectedItem?.id);
+    } catch (error) {
+        console.error("Error al actualizar el detalle:", error);
+        notify("Error al actualizar el detalle.");
+    }
+    setEditingDetailId(null);
+};
   const confirmDelete = async () => {
     if (!deleteItem || !projectId) return;
     const token = getToken();
@@ -643,81 +674,109 @@ const WorkFlowpar2editPage: React.FC = () => {
   };
 
   // ===================== RENDER DEL MODAL PARA DETALLES GENERALES ======================
+  const [editingDetailData, setEditingDetailData] = useState<{ material_id: number; layer_thickness: number; }>({
+    material_id: 0,
+    layer_thickness: 0,
+  });
+  const [editingDetailId, setEditingDetailId] = useState<number | null>(null);
   const renderDetallesModalContent = () => {
-    const detailTypeMapping: { [key in TabStep4]?: string } = {
-      muros: "Muro",
-      techumbre: "Techo",
-      pisos: "Piso",
-    };
-    const detailType = detailTypeMapping[tabStep4];
-    const filteredDetails = detailType
-      ? fetchedDetails.filter(
-        (det) =>
-          det.scantilon_location.toLowerCase() === detailType.toLowerCase()
-      )
-      : fetchedDetails;
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
       { headerName: "Nombre Detalle", field: "name_detail" },
       { headerName: "Material", field: "material" },
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
-      { headerName: "Acción", field: "acciones" },
+      { headerName: "Acción", field: "accion" },
     ];
+    const handleInlineEdit = (detail: IDetail) => {
+      const uniqueId = detail.id_detail || Number(detail.id);
+      setEditingDetailId(uniqueId);
+      // Se asigna directamente el material_id del detail sin buscar en el array materials
+      setEditingDetailData({ material_id: detail.material_id, layer_thickness: detail.layer_thickness });
+    };
+  
+    const handleCancelInlineEdit = () => { setEditingDetailId(null); };
     const data = detailList?.map((det: any) => {
-      const textStyle =
-        det.created_status === "created"
-          ? { color: "var(--primary-color)", fontWeight: "bold" }
-          : {};
+      const uniqueId = det.id_detail || det.id;
+      const textStyle = det.created_status === "created" ? { color: "var(--primary-color)", fontWeight: "bold" } : {};
+      const isEditing = editingDetailId === uniqueId;
       return {
         scantilon_location: <span style={textStyle}>{det.scantilon_location}</span>,
         name_detail: <span style={textStyle}>{det.name_detail}</span>,
-        material: <span style={textStyle}>{det.material}</span>,
-        layer_thickness: <span style={textStyle}>{det.layer_thickness}</span>,
-        acciones: (
+        material: isEditing ? (
+          <select
+            className="form-control"
+            value={editingDetailData.material_id}
+            onChange={(e) =>
+              setEditingDetailData((prev) => ({ ...prev, material_id: Number(e.target.value) }))
+            }
+            onClick={fetchMaterials}
+          >
+            <option value={0}>Seleccione un material</option>
+            {materials.map((mat) => (
+              <option key={mat.id} value={mat.id}>{mat.name}</option>
+            ))}
+          </select>
+        ) : (
+          <span style={textStyle}>
+            {det.material && det.material !== "0" && det.material.toUpperCase() !== "N/A" ? det.material : "-"}
+          </span>
+        ),
+        layer_thickness: isEditing ? (
+          <input
+            type="number"
+            className="form-control"
+            min="0"
+            step="any"
+            value={editingDetailData.layer_thickness}
+            onKeyDown={(e) => { if (e.key === "-") e.preventDefault(); }}
+            onChange={(e) =>
+              setEditingDetailData((prev) => ({ ...prev, layer_thickness: Number(e.target.value) }))
+            }
+          />
+        ) : (
+          <span style={textStyle}>
+            {det.layer_thickness && det.layer_thickness > 0 ? det.layer_thickness : "-"}
+          </span>
+        ),
+        accion: isEditing ? (
+          <ActionButtonsConfirm
+            onAccept={() => handleConfirmInlineEdit(det)}
+            onCancel={handleCancelInlineEdit}
+          />
+        ) : (
           <>
             <CustomButton
+              className="btn-table"
               variant="editIcon"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                handleEditDetail(det);
-              }}
-              disabled={det.created_status == "default" || det.created_status == "global"}
+              onClick={() => handleInlineEdit(det)}
+              disabled={det.created_status === "default" || det.created_status === "global"}
             >
               Editar
             </CustomButton>
-            <CustomButton
-              variant="deleteIcon"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                handleDeleteDetail(det);
-              }}
-              disabled={det.created_status == "default" || det.created_status == "global"}
-            >
-              <span className="material-icons">delete</span>
-            </CustomButton>
+            <DeleteDetailButton
+              detailId={det.id}
+              onDelete={() => { fetchDetailModal(selectedItem?.id); }}
+            />
           </>
         ),
       };
     });
+
     return (
-      <div>
+      <>
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-          <CustomButton variant="save" onClick={handleNewButtonClick}>
+          <CustomButton
+            variant="save"
+            onClick={async () => { createDetail(selectedItem?.id).then(() => { fetchDetailModal(selectedItem?.id); }); }}
+          >
             + Nuevo
           </CustomButton>
         </div>
-        <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-          <TablesParameters columns={columnsDetails} data={data} />
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
-          <CustomButton variant="save" onClick={saveDetails}>
-            Grabar datos
-          </CustomButton>
-        </div>
-      </div>
+      
+        <TablesParameters columns={columnsDetails} data={data} />
+      </>
     );
   };
-
   // ===================== RENDER INICIAL DETALLES (sin pestañas) ======================
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
@@ -1448,11 +1507,11 @@ const WorkFlowpar2editPage: React.FC = () => {
     ] as { key: TabStep4; label: string }[];
     return (
       <div className="mt-4">
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-          <CustomButton variant="save" onClick={handleNewButtonClick}>
-            + Nuevo
-          </CustomButton>
-        </div>
+        {(tabStep4 !== "ventanas" && tabStep4 !== "puertas") && (
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+            <CustomButton variant="save" onClick={handleNewButtonClick}>+ Nuevo</CustomButton>
+          </div>
+        )}
         <ul className="nav">
           {tabs.map((item) => (
             <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
@@ -1748,7 +1807,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       <ModalCreate
         detail={null}
         isOpen={showDetallesModal}
-        title="Detalles Generales"
+        title={`Detalles ${selectedItem?.name_detail || ''}`}
         onClose={() => setShowDetallesModal(false)}
         onSave={() => { }}
         hideFooter={true}
@@ -1759,12 +1818,12 @@ const WorkFlowpar2editPage: React.FC = () => {
       {/* Modal para editar un Detalle */}
       {editingDetail && (
         <ModalCreate
-          isOpen={true}
-          title="Editar Detalle"
-          detail={editingDetail}
-          onClose={() => setEditingDetail(null)}
-          onSave={handleConfirmDetailEdit}
-        >
+        isOpen={true}
+        title={`Editar Detalle: ${editingDetail.name_detail}`}
+        detail={editingDetail}
+        onClose={() => setEditingDetail(null)}
+        onSave={handleConfirmEditDetail}
+      >
           <form>
             <div className="form-group">
               <label>Ubicación</label>

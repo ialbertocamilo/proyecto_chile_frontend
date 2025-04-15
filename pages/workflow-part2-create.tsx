@@ -190,19 +190,6 @@ const WorkFlowpar2createPage: React.FC = () => {
   const [ventanaFmInput, setVentanaFmInput] = useState<string>("");
   const [puertaPorcentajeInput, setPuertaPorcentajeInput] = useState<string>("");
 
-  const [showNewDetailRow, setShowNewDetailRow] = useState(false);
-  const [newDetailForm, setNewDetailForm] = useState<{
-    scantilon_location: string;
-    name_detail: string;
-    material_id: number;
-    layer_thickness: number | null;
-  }>( {
-    scantilon_location: "",
-    name_detail: "",
-    material_id: 0,
-    layer_thickness: null,
-  });
-
   const [editingDetail, setEditingDetail] = useState<Detail | null>(null);
 
   // Estados para edición inline en el modal de Detalles
@@ -806,6 +793,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             + Nuevo
           </CustomButton>
         </div>
+      
         <TablesParameters columns={columnsDetails} data={data} />
       </>
     );

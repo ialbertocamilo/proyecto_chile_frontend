@@ -802,26 +802,25 @@ const WorkFlowpar2createPage: React.FC = () => {
   const handleDeleteDetail = async (detailId: number) => {
     const token = getToken();
     if (!token || !projectId) return;
-
+  
     try {
-      const detail = fetchedDetails.find((d) => d.id_detail === detailId);
-      const tipo = detail ? detail.scantilon_location.toLowerCase() : "";
       const url = `${constantUrlApiEndpoint}/user/${detailId}/details/delete?project_id=${projectId}`;
-      const headers = { Authorization: `Bearer ${token}` };
-
-      await axios.delete(url, { headers });
+      await axios.delete(url, { headers: { Authorization: `Bearer ${token}` } });
       notify("Detalle eliminado exitosamente.");
-
-      // Refresh
+  
+      // *** Aquí refrescas las tablas ***
       await fetchFetchedDetails();
-      if (tipo === "muro") await fetchMurosDetails();
-      if (tipo === "techo") await fetchTechumbreDetails();
-      if (tipo === "piso") await fetchPisosDetails();
+      await fetchMurosDetails();
+      await fetchTechumbreDetails();
+      await fetchPisosDetails();
+      // Si tenías abierto el modal de capas:
+      if (selectedItem?.id) await fetchDetailModal(selectedItem.id);
     } catch (error) {
-      console.error("Error al eliminar el detalle:", error);
+      console.error(error);
       notify("Error al eliminar el detalle.");
     }
   };
+  
 
   const confirmDeleteDetail = (detailId: number) => {
     setShowDetallesModal(false);
@@ -1410,7 +1409,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           </div>
         ) : (
           <div>
-            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
+            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />           
             <CustomButton
               className="btn-table"
               variant="editIcon"

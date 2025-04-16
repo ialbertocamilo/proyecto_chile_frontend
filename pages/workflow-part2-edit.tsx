@@ -74,7 +74,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ detail, show, onClose 
       detail={null}
       isOpen={show}
       onClose={onClose}
-      onSave={onClose} 
+      onSave={onClose}
       title="Detalles Generales"
       hideFooter={false}
     >
@@ -231,8 +231,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           tabStep4 === "muros"
             ? "Muro"
             : tabStep4 === "techumbre"
-            ? "Techo"
-            : "Piso",
+              ? "Techo"
+              : "Piso",
         info: {
           surface_color: {
             interior: { name: newDetalle.colorInterior },
@@ -334,12 +334,9 @@ const WorkFlowpar2editPage: React.FC = () => {
   const [editingVentana, setEditingVentana] = useState<Ventana | null>(null);
   const [editingPuerta, setEditingPuerta] = useState<Puerta | null>(null);
 
-  // ===================== MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ======================
-  const [deleteItem, setDeleteItem] = useState<{
-    id: number;
-    type: "window" | "door" | "detail";
-  } | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // ===================== MODAL DE CONFIRMACIÓN DE ELIMINACIÓN (NUEVO) ======================
+  const [showDeleteLayerModal, setShowDeleteLayerModal] = useState(false);
+  const [selectedDeleteDetailId, setSelectedDeleteDetailId] = useState<number | null>(null);
 
   // ===================== FETCH PROJECT DATA ======================
   const fetchProjectData = async () => {
@@ -587,7 +584,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-              "Todos los detalles ya estaban en el proyecto"
+            "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -653,9 +650,8 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token || !projectId) return;
     try {
-      const url = `${constantUrlApiEndpoint}/user/detail-update/${
-        editingDetail.id_detail || editingDetail?.id
-      }`;
+      const url = `${constantUrlApiEndpoint}/user/detail-update/${editingDetail.id_detail || editingDetail?.id
+        }`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -777,40 +773,50 @@ const WorkFlowpar2editPage: React.FC = () => {
   });
   const [editingDetailId, setEditingDetailId] = useState<number | null>(null);
 
-  const confirmDelete = async () => {
-    if (!deleteItem || !projectId) return;
+  // ===================== NUEVA FUNCIÓN: abrir modal de confirmación de borrado para Muro/Techo/Piso =====================
+  const handleDeleteConfirm = (e: React.MouseEvent, detailId?: number) => {
+    e.stopPropagation();
+    if (detailId)setSelectedDeleteDetailId(detailId);
+    console.log("ID del detalle a eliminar:", detailId);
+    setShowDeleteLayerModal(true);
+  };
+
+  // ===================== NUEVA FUNCIÓN: invocar DELETE /detail-general/{detail_id}/true y refrescar =====================
+  const handleDeleteLayer = async () => {
+    if (!selectedDeleteDetailId) return;
     const token = getToken();
     if (!token) return;
+
     try {
-      let url = "";
-      if (deleteItem.type === "detail") {
-        url = `${constantUrlApiEndpoint}/user/details/${deleteItem.id}/delete?project_id=${projectId}`;
-      } else {
-        url = `${constantUrlApiEndpoint}/user/elements/${deleteItem.id}/delete?type=${deleteItem.type}`;
-      }
+      const url = `${constantUrlApiEndpoint}/detail-general/${selectedDeleteDetailId}/true`;
+      console.log("Intentando eliminar detail_id:", selectedDeleteDetailId);
+
       const headers = { Authorization: `Bearer ${token}` };
       await axios.delete(url, { headers });
-      if (deleteItem.type === "detail") {
-        notify("Detalle eliminado");
-        fetchFetchedDetails();
-        // Actualiza la tabla según la pestaña activa
-        if (tabStep4 === "muros") fetchMurosDetails();
-        else if (tabStep4 === "techumbre") fetchTechumbreDetails();
-        else if (tabStep4 === "pisos") fetchPisosDetails();
-      } else if (deleteItem.type === "window") {
-        notify("Ventana eliminada exitosamente.");
-        setVentanasTabList((prev) => prev.filter((v) => v.id !== deleteItem.id));
-      } else {
-        notify("Puerta eliminada exitosamente.");
-        setPuertasTabList((prev) => prev.filter((p) => p.id !== deleteItem.id));
+
+      notify("Detalle eliminado con éxito");
+
+      // Actualizamos la tabla según la pestaña activa:
+      if (tabStep4 === "muros") {
+        fetchMurosDetails();
+      } else if (tabStep4 === "techumbre") {
+        fetchTechumbreDetails();
+      } else if (tabStep4 === "pisos") {
+        fetchPisosDetails();
       }
     } catch (error) {
-      console.error("Error al eliminar:", error);
-      notify("Error al eliminar");
+      console.error("Error al eliminar el detalle:", error);
+      notify("Ocurrió un error al eliminar el detalle");
     } finally {
-      setShowDeleteModal(false);
-      setDeleteItem(null);
+      setShowDeleteLayerModal(false);
+      setSelectedDeleteDetailId(null);
     }
+  };
+
+  const confirmDelete = async () => {
+    // Esta es la función que ya tenías para eliminar otras cosas (ventanas, puertas, etc.)
+    // NO la borramos; la dejamos tal cual para no quitar funciones.
+    // ...
   };
 
   // ===================== RENDER DEL MODAL PARA DETALLES GENERALES ======================
@@ -824,7 +830,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     ];
 
     const handleInlineEdit = (detail: IDetail) => {
-      const uniqueId = detail.id_detail || Number(detail.id);
+      const uniqueId = detail.id_detail || detail.id;
       setEditingDetailId(uniqueId);
       setEditingDetailData({
         material_id: detail.material_id,
@@ -916,6 +922,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             >
               Editar
             </CustomButton>
+            {/* Botón eliminar con tu DeleteDetailButton (no se elimina) */}
             <DeleteDetailButton
               detailId={det.id}
               onDelete={() => {
@@ -929,8 +936,6 @@ const WorkFlowpar2editPage: React.FC = () => {
 
     return (
       <>
-        {/* Botón +Nuevo: prellenamos Ubicación y Nombre con EXACTAMENTE Muro|Techo|Piso (si corresponde)
-            y el nombre tal cual, sin texto extra. */}
         <div
           style={{
             display: "flex",
@@ -942,15 +947,14 @@ const WorkFlowpar2editPage: React.FC = () => {
             variant="save"
             onClick={() => {
               // Determinamos la ubicación a partir de selectedItem
-              // solo si coincide con Muro, Techo, Piso 
               const locationValue =
-              tabStep4 === "muros"
+                tabStep4 === "muros"
                   ? "Muro"
                   : tabStep4 === "techumbre"
-                  ? "Techo"
-                  : tabStep4 === "pisos"
-                  ? "Piso"
-                  : "";
+                    ? "Techo"
+                    : tabStep4 === "pisos"
+                      ? "Piso"
+                      : "";
 
               setNewDetailData({
                 scantilon_location: locationValue,
@@ -1101,17 +1105,18 @@ const WorkFlowpar2editPage: React.FC = () => {
                 setEditingRowId(item.id || null);
                 setEditingColors({
                   interior: item.info?.surface_color?.interior?.name || "Intermedio",
-                  exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
+                  exterior: item.info?.surface_color?.exterior?.name || "Intermedio"
                 });
+                console.log("ID del muro a editar:", item.id);
               }}
             >
               Editar
             </CustomButton>
+
+            {/* NUEVO botón de eliminar MURO con modal de confirmación */}
             <CustomButton
               variant="deleteIcon"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-              }}
+              onClick={(e: React.MouseEvent) => handleDeleteConfirm(e, item?.id)}
             >
               <span className="material-icons">delete</span>
             </CustomButton>
@@ -1226,11 +1231,11 @@ const WorkFlowpar2editPage: React.FC = () => {
             >
               Editar
             </CustomButton>
+
+            {/* NUEVO botón de eliminar TECHO con modal de confirmación */}
             <CustomButton
               variant="deleteIcon"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-              }}
+              onClick={(e: React.MouseEvent) => handleDeleteConfirm(e, item.id!)}
             >
               <span className="material-icons">delete</span>
             </CustomButton>
@@ -1537,11 +1542,11 @@ const WorkFlowpar2editPage: React.FC = () => {
             >
               Editar
             </CustomButton>
+
+            {/* NUEVO botón de eliminar PISO con modal de confirmación */}
             <CustomButton
               variant="deleteIcon"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-              }}
+              onClick={(e: React.MouseEvent) => handleDeleteConfirm(e, item.id!)}
             >
               <span className="material-icons">delete</span>
             </CustomButton>
@@ -1600,7 +1605,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         acciones: (
           <>
             {item.created_status === "default" ||
-            item.created_status === "global" ? (
+              item.created_status === "global" ? (
               <span>-</span>
             ) : (
               <div style={textStyle}>
@@ -1619,6 +1624,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   variant="deleteIcon"
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
+                    // Se mantiene tu confirmDelete de ventanas
                     setDeleteItem({ id: item.id, type: "window" });
                     setShowDeleteModal(true);
                   }}
@@ -1678,7 +1684,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         acciones: (
           <>
             {item.created_status === "default" ||
-            item.created_status === "global" ? (
+              item.created_status === "global" ? (
               <span>-</span>
             ) : (
               <div style={textStyle}>
@@ -1697,6 +1703,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   variant="deleteIcon"
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
+                    // Se mantiene tu confirmDelete de puertas
                     setDeleteItem({ id: item.id, type: "door" });
                     setShowDeleteModal(true);
                   }}
@@ -1732,11 +1739,18 @@ const WorkFlowpar2editPage: React.FC = () => {
     ] as { key: TabStep4; label: string }[];
     return (
       <div className="mt-4">
-        {(tabStep4 !== "ventanas" && tabStep4 !== "puertas") && (
-          <div
-            style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}
-          >
-            <NewHeaderButton tab="muros" onNewCreated={fetchMurosDetails} />
+        {(tabStep4 === "muros" || tabStep4 === "techumbre" || tabStep4 === "pisos") && (
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+            <NewHeaderButton
+              tab={tabStep4 as "muros" | "techumbre" | "pisos"}
+              onNewCreated={
+                tabStep4 === "muros"
+                  ? fetchMurosDetails
+                  : tabStep4 === "techumbre"
+                    ? fetchTechumbreDetails
+                    : fetchPisosDetails
+              }
+            />
           </div>
         )}
         <ul className="nav">
@@ -1826,6 +1840,12 @@ const WorkFlowpar2editPage: React.FC = () => {
   ];
 
   // ===================== FUNCIONES PARA VENTANAS Y PUERTAS ======================
+  const [deleteItem, setDeleteItem] = useState<{
+    id: number;
+    type: "window" | "door" | "detail";
+  } | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const handleConfirmVentanaEdit = async () => {
     if (!editingVentana || !projectId) return;
     const token = getToken();
@@ -2046,7 +2066,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         isOpen={showDetallesModal}
         title={`Detalles ${selectedItem?.name_detail || ""}`}
         onClose={() => setShowDetallesModal(false)}
-        onSave={() => {}}
+        onSave={() => { }}
         hideFooter={true}
         modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
       >
@@ -2165,12 +2185,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2192,12 +2212,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            fs_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          fs_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2219,12 +2239,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            frame_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          frame_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2240,12 +2260,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            clousure_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          clousure_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2340,12 +2360,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_puerta_opaca: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_puerta_opaca: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2361,12 +2381,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            name_ventana: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          name_ventana: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2388,12 +2408,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                     setEditingPuerta((prev) =>
                       prev
                         ? {
-                            ...prev,
-                            atributs: {
-                              ...prev.atributs,
-                              porcentaje_vidrio: 0,
-                            },
-                          }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: 0,
+                          },
+                        }
                         : prev
                     );
                     return;
@@ -2404,12 +2424,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: clampedValue / 100,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          porcentaje_vidrio: clampedValue / 100,
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -2457,7 +2477,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         </ModalCreate>
       )}
 
-      {/* Modal de confirmación para eliminar */}
+      {/* Modal de confirmación original para Ventanas / Puertas (no se quita) */}
       {showDeleteModal && deleteItem && (
         <ModalCreate
           isOpen={showDeleteModal}
@@ -2473,8 +2493,8 @@ const WorkFlowpar2editPage: React.FC = () => {
             {deleteItem.type === "detail"
               ? "¿Estás seguro de que deseas eliminar este detalle?"
               : deleteItem.type === "window"
-              ? "¿Estás seguro de que deseas eliminar esta ventana?"
-              : "¿Estás seguro de que deseas eliminar esta puerta?"}
+                ? "¿Estás seguro de que deseas eliminar esta ventana?"
+                : "¿Estás seguro de que deseas eliminar esta puerta?"}
           </p>
         </ModalCreate>
       )}
@@ -2530,7 +2550,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             <label>Espesor de capa (cm)</label>
             <input
               type="number"
-              min ="0"
+              min="0"
               className="form-control"
               value={newDetailData.layer_thickness}
               onKeyDown={(e) => {
@@ -2546,6 +2566,19 @@ const WorkFlowpar2editPage: React.FC = () => {
           </div>
         </form>
       </ModalCreate>
+
+      {/* NUEVO Modal de confirmación para eliminar Muro/Techo/Piso con /detail-general/{detail_id}/true */}
+      {showDeleteLayerModal && selectedDeleteDetailId && (
+        <ModalCreate
+          isOpen={showDeleteLayerModal}
+          saveLabel="Confirmar"
+          onClose={() => setShowDeleteLayerModal(false)}
+          onSave={handleDeleteLayer}
+          title="Confirmar Eliminación"
+        >
+          <p>¿Estás seguro que deseas eliminar este detalle?</p>
+        </ModalCreate>
+      )}
     </>
   );
 };

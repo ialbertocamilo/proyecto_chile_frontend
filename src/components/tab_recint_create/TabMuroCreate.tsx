@@ -9,6 +9,7 @@ import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 //ThermicBridgesModal
 import ThermalBridgesModal from "@/components/modals/ThermalBridgesModal";
+import GoogleIcons from "public/GoogleIcons";
 
 // Interfaz para muros
 interface Wall {
@@ -1038,126 +1039,133 @@ const TabMuroCreate: React.FC = () => {
   }
 
   return (
-    <div className="container-fluid">
-      {renderContent()}
-      <ModalCreate
-        isOpen={isWallModalOpen}
-        onClose={() => setIsWallModalOpen(false)}
-        onSave={handleCreateWall}
-        title="Crear Nuevo Muro"
-      >
-        <form>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="wall_id" className="col-sm-3 col-form-label">
-              Muro
-            </label>
-            <div className="col-sm-9">
-              <select
-                id="wall_id"
-                name="wall_id"
-                className="form-control form-control-sm"
-                value={newWall.wall_id || ""}
-                onChange={handleWallInputChange}
+    <>
+      <GoogleIcons />
+      <div className="container-fluid">
+        {renderContent()}
+        <ModalCreate
+          isOpen={isWallModalOpen}
+          onClose={() => setIsWallModalOpen(false)}
+          onSave={handleCreateWall}
+          title="Crear Nuevo Muro"
+        >
+          <form>
+            <div className="row align-items-center mb-3">
+              <label htmlFor="wall_id" className="col-sm-3 col-form-label">
+                Muro
+              </label>
+              <div className="col-sm-9">
+                <select
+                  id="wall_id"
+                  name="wall_id"
+                  className="form-control form-control-sm"
+                  value={newWall.wall_id || ""}
+                  onChange={handleWallInputChange}
+                >
+                  <option value="">Seleccione...</option>
+                  {wallOptions.map((wall) => (
+                    <option key={wall.id} value={wall.id}>
+                      {wall.name_detail}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="row align-items-center mb-3">
+              <label
+                htmlFor="characteristics"
+                className="col-sm-3 col-form-label"
               >
-                <option value="">Seleccione...</option>
-                {wallOptions.map((wall) => (
-                  <option key={wall.id} value={wall.id}>
-                    {wall.name_detail}
+                Características
+              </label>
+              <div className="col-sm-9">
+                <select
+                  id="characteristics"
+                  name="characteristics"
+                  className="form-control form-control-sm"
+                  value={newWall.characteristics}
+                  onChange={handleWallInputChange}
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="Exterior">Exterior</option>
+                  <option value="Inter Recintos Clim">
+                    Inter Recintos Clim
                   </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label
-              htmlFor="characteristics"
-              className="col-sm-3 col-form-label"
-            >
-              Características
-            </label>
-            <div className="col-sm-9">
-              <select
-                id="characteristics"
-                name="characteristics"
-                className="form-control form-control-sm"
-                value={newWall.characteristics}
-                onChange={handleWallInputChange}
-              >
-                <option value="">Seleccione...</option>
-                <option value="Exterior">Exterior</option>
-                <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">
-                  Inter Recintos No Clim
-                </option>
-              </select>
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="angulo_azimut" className="col-sm-3 col-form-label">
-              Ángulo Azimut
-            </label>
-            <div className="col-sm-9">
-              <select
-                id="angulo_azimut"
-                name="angulo_azimut"
-                className="form-control form-control-sm"
-                value={newWall.angulo_azimut}
-                onChange={handleWallInputChange}
-              >
-                <option value="">Seleccione...</option>
-                {angleOptions.map((option, index) => (
-                  <option key={index} value={option}>
-                    {option}
+                  <option value="Inter Recintos No Clim">
+                    Inter Recintos No Clim
                   </option>
-                ))}
-              </select>
+                </select>
+              </div>
             </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="area" className="col-sm-3 col-form-label">
-              Área [m²]
-            </label>
-            <div className="col-sm-9">
-              <input
-                id="area"
-                min="0"
-                type="number"
-                name="area"
-                className="form-control form-control-sm"
-                value={newWall.area}
-                onKeyDown={(e) => {
-                  if (e.key === "-") e.preventDefault();
-                }}
-                onChange={handleWallInputChange}
-              />
+            <div className="row align-items-center mb-3">
+              <label
+                htmlFor="angulo_azimut"
+                className="col-sm-3 col-form-label"
+              >
+                Ángulo Azimut
+              </label>
+              <div className="col-sm-9">
+                <select
+                  id="angulo_azimut"
+                  name="angulo_azimut"
+                  className="form-control form-control-sm"
+                  value={newWall.angulo_azimut}
+                  onChange={handleWallInputChange}
+                >
+                  <option value="">Seleccione...</option>
+                  {angleOptions.map((option, index) => (
+                    <option key={index} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
-        </form>
-      </ModalCreate>
-      <ModalCreate
-        isOpen={isDeleteModalOpen}
-        onClose={handleCancelDelete}
-        onSave={handleConfirmDeleteWall}
-        title="Confirmar Eliminación"
-        saveLabel="Eliminar"
-      >
-        {wallToDelete && (
-          <p>
-            ¿Está seguro de eliminar el muro{" "}
-            <strong>{wallToDelete.name}</strong>?
-          </p>
-        )}
-      </ModalCreate>
-      <ThermalBridgesModal
-        isOpen={showModalThermicBridges}
-        handleClose={() => setShowModalThermicBridges(false);setEditingBridgeId(null);
-    setEditingBridgeData(null);}
-        bridgeId={editingBridgeId}
-        bridgeData={editingBridgeData}
-        detailOptions={detailOptions}
-        onSaveSuccess={fetchData} // Pass the fetch function as a callback
-      />
-    </div>
+            <div className="row align-items-center mb-3">
+              <label htmlFor="area" className="col-sm-3 col-form-label">
+                Área [m²]
+              </label>
+              <div className="col-sm-9">
+                <input
+                  id="area"
+                  min="0"
+                  type="number"
+                  name="area"
+                  className="form-control form-control-sm"
+                  value={newWall.area}
+                  onKeyDown={(e) => {
+                    if (e.key === "-") e.preventDefault();
+                  }}
+                  onChange={handleWallInputChange}
+                />
+              </div>
+            </div>
+          </form>
+        </ModalCreate>
+        <ModalCreate
+          isOpen={isDeleteModalOpen}
+          onClose={handleCancelDelete}
+          onSave={handleConfirmDeleteWall}
+          title="Confirmar Eliminación"
+          saveLabel="Eliminar"
+        >
+          {wallToDelete && (
+            <p>
+              ¿Está seguro de eliminar el muro{" "}
+              <strong>{wallToDelete.name}</strong>?
+            </p>
+          )}
+        </ModalCreate>
+        <ThermalBridgesModal
+          isOpen={showModalThermicBridges}
+          handleClose={() => setShowModalThermicBridges(false)}
+          bridgeId={editingBridgeId}
+          bridgeData={editingBridgeData}
+          detailOptions={detailOptions}
+          onSaveSuccess={fetchData} // Pass the fetch function as a callback
+        />
+      </div>
+    </>
   );
 };
 

@@ -96,12 +96,17 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({ detailType, onDetai
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error al crear detalle constructivo:", error.response || error);
+        if (error.response && error.response.data && error.response.data.detail) {
+          notify(error.response.data.detail);
+        } else {
+          notify("Error al crear el Detalle Constructivo.");
+        }  
       } else if (error instanceof Error) {
         console.error("Error al crear detalle constructivo:", error.message);
+        notify("Error al crear el Detalle Constructivo.");
       } else {
         console.error("Error al crear detalle constructivo:", error);
       }
-      notify("Error al crear el Detalle Constructivo.");
     }
   };
 

@@ -490,10 +490,8 @@ const WorkFlowpar2createPage: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}` };
       await axios.delete(url, { headers });
       notify("Detalle eliminado exitosamente.");
-      await fetchFetchedDetails();
-      if (tipo === "muro") await fetchMurosDetails();
-      if (tipo === "techo") await fetchTechumbreDetails();
-      if (tipo === "piso") await fetchPisosDetails();
+      setFetchedDetails(prevDetails => prevDetails.filter(d => d.id_detail !== detailId));
+      setMurosTabList(prevMuros => prevMuros.filter(muro => muro.id !== detailId));
     } catch (error: unknown) {
       console.error("Error al eliminar el detalle:", error);
       notify("Error al eliminar el detalle.");
@@ -1653,7 +1651,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {showCreateModal && (
         <ModalCreate
           isOpen={true}
-          title={`Crear Nuevo ${titleMapping[tabStep4] || "Detalle"}`}
+          title={`Crear nueva cabecera de ${titleMapping[tabStep4] || "Detalle"}`}
           onClose={() => {
             setShowCreateModal(false);
             setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });

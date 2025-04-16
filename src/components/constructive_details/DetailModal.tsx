@@ -186,7 +186,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
     const idDetail = det.id_detail ?? det.id;
     const isEditing = editingDetailId === idDetail;
     const textStyle =
-      det.created_status === "created"
+      det.created_status === "created" || det.created_status === "global"
         ? { color: "var(--primary-color)", fontWeight: "bold" }
         : {};
     return {
@@ -251,7 +251,6 @@ const DetailModal: React.FC<DetailModalProps> = ({
             className="btn-table"
             variant="editIcon"
             onClick={() => handleInlineEdit(det)}
-            disabled={det.created_status === "default" || det.created_status === "global"}
           >
             Editar
           </CustomButton>

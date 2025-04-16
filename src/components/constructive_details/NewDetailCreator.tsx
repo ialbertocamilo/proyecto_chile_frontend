@@ -120,7 +120,7 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({ detailType, onDetai
       {showModal && (
         <ModalCreate
           isOpen={true}
-          title={`Crear Nuevo ${detailType}`}
+          title={`Crear nueva cabecera de ${detailType}`}
           onClose={() => {
             setShowModal(false);
             // Resetea el formulario al cerrar el modal

@@ -51,7 +51,23 @@ const DetailModal: React.FC<DetailModalProps> = ({
     layer_thickness: 0,
   });
 
-  // Se carga la lista de detalles según el id del elemento seleccionado
+  // Estado para el Modal "Crear nuevo detalle"
+  const [isNewDetailModalOpen, setIsNewDetailModalOpen] = useState(false);
+  const [newDetailData, setNewDetailData] = useState<{
+    scantilon_location: string;
+    name_detail: string;
+    material_id: number;
+    layer_thickness: number;
+  }>({
+    scantilon_location: "",
+    name_detail: "",
+    material_id: 0,
+    layer_thickness: 0,
+  });
+
+  // ======================================================
+  // =            OBTENER LISTA DE DETALLES              =
+  // ======================================================
   const fetchDetails = useCallback(async () => {
     if (!selectedItem?.id) return;
     const token = localStorage.getItem("token");
@@ -78,33 +94,83 @@ const DetailModal: React.FC<DetailModalProps> = ({
     }
   }, [isOpen, fetchDetails]);
 
-  // Función para crear un nuevo detalle
-  const handleNewDetail = async () => {
+  // ======================================================
+  // =   ABRIR EL MODAL Y PRELLENAR CON DATOS DE TABLA    =
+  // ======================================================
+  const handleOpenNewDetailModal = () => {
+    // Si ya hay detalles, toma la fila que tú quieras (por ejemplo, la primera) como referencia
+    if (details.length > 0) {
+      setNewDetailData({
+        scantilon_location: details[0].scantilon_location,
+        name_detail: details[0].name_detail,
+        material_id: 0,      // en 0 para que el usuario elija material
+        layer_thickness: 0,  // en 0 para que el usuario indique espesor
+      });
+    } else {
+      // Si no hay detalles, deja ambos en blanco (o ponle un valor por defecto)
+      setNewDetailData({
+        scantilon_location: "",
+        name_detail: "",
+        material_id: 0,
+        layer_thickness: 0,
+      });
+    }
+    setIsNewDetailModalOpen(true);
+  };
+
+  // ======================================================
+  // =            CREAR NUEVO DETALLE (MODAL)             =
+  // ======================================================
+  const handleCreateDetail = async () => {
     if (!selectedItem?.id) return;
     const token = localStorage.getItem("token");
     if (!token) {
       notify("Token no encontrado, por favor inicia sesión");
       return;
     }
+
+    // Validaciones simples
+    if (!newDetailData.scantilon_location) {
+      notify("Por favor, indica la ubicación del detalle.");
+      return;
+    }
+    if (!newDetailData.name_detail) {
+      notify("Por favor, indica el nombre del detalle.");
+      return;
+    }
+    if (newDetailData.material_id <= 0) {
+      notify("Por favor, selecciona un material.");
+      return;
+    }
+    if (newDetailData.layer_thickness <= 0) {
+      notify("El espesor de capa debe ser mayor a 0.");
+      return;
+    }
+
     try {
       const headers = { Authorization: `Bearer ${token}` };
-
-      // Se define el objeto con los campos obligatorios requeridos por el backend,
-      // incluyendo el created_status como "created"
-      const nuevoDetalle = {
-        scantilon_location: "Ubicación predeterminada",
-        name_detail: "Nuevo Detalle",
-        material_id: materials.length > 0 ? materials[0].id : 0,
-        layer_thickness: 1,
-        created_status: "created",
-      };
-
       await axios.post(
         `${constantUrlApiEndpoint}/admin/detail-create/${selectedItem.id}`,
-        nuevoDetalle,
+        {
+          scantilon_location: newDetailData.scantilon_location,
+          name_detail: newDetailData.name_detail,
+          material_id: newDetailData.material_id,
+          layer_thickness: newDetailData.layer_thickness,
+        },
         { headers }
       );
       notify("Detalle creado exitosamente");
+      setIsNewDetailModalOpen(false);
+
+      // Limpia los campos del modal
+      setNewDetailData({
+        scantilon_location: "",
+        name_detail: "",
+        material_id: 0,
+        layer_thickness: 0,
+      });
+
+      // Recarga lista de detalles
       fetchDetails();
       if (refreshParent) {
         refreshParent();
@@ -115,7 +181,9 @@ const DetailModal: React.FC<DetailModalProps> = ({
     }
   };
 
-  // Funciones para la edición en línea
+  // ======================================================
+  // =         EDICIÓN EN LÍNEA DE DETALLES EXISTENTES    =
+  // ======================================================
   const handleInlineEdit = (detail: Detail) => {
     const idDetail = detail.id_detail ?? detail.id;
     setEditingDetailId(idDetail || null);
@@ -173,7 +241,9 @@ const DetailModal: React.FC<DetailModalProps> = ({
     setEditingDetailId(null);
   };
 
-  // Definición de columnas y preparación de datos para la tabla
+  // ======================================================
+  // =         COLUMNAS Y DATOS PARA TABLA DETALLES       =
+  // ======================================================
   const columnsDetails = [
     { headerName: "Ubicación Detalle", field: "scantilon_location" },
     { headerName: "Nombre Detalle", field: "name_detail" },
@@ -189,6 +259,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
       det.created_status === "created" || det.created_status === "global"
         ? { color: "var(--primary-color)", fontWeight: "bold" }
         : {};
+
     return {
       scantilon_location: <span style={textStyle}>{det.scantilon_location}</span>,
       name_detail: <span style={textStyle}>{det.name_detail}</span>,
@@ -269,6 +340,9 @@ const DetailModal: React.FC<DetailModalProps> = ({
     };
   });
 
+  // ======================================================
+  // =                  RENDER DEL MODAL                  =
+  // ======================================================
   return (
     <ModalCreate
       isOpen={isOpen}
@@ -278,12 +352,83 @@ const DetailModal: React.FC<DetailModalProps> = ({
       modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
       showSaveButton={false}
     >
+      {/* Botón que abre el Modal "Crear nuevo detalle" con valores prellenados */}
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-        <CustomButton variant="save" onClick={handleNewDetail}>
+        <CustomButton variant="save" onClick={handleOpenNewDetailModal}>
           + Nuevo
         </CustomButton>
       </div>
+
       <TablesParameters columns={columnsDetails} data={data} />
+
+      {/* Modal interno para CREAR un nuevo Detalle */}
+      <ModalCreate
+        isOpen={isNewDetailModalOpen}
+        title="Crear Nueva capa"
+        onSave={handleCreateDetail}
+        onClose={() => setIsNewDetailModalOpen(false)}
+        modalStyle={{ maxWidth: "40%", width: "40%", padding: "16px" }}
+      >
+        <div style={{ marginBottom: "1rem" }}>
+          <label>Ubicación del Detalle:</label>
+          <input
+            type="text"
+            className="form-control"
+            value={newDetailData.scantilon_location}
+            readOnly
+          />
+        </div>
+
+        <div style={{ marginBottom: "1rem" }}>
+          <label>Nombre del Detalle:</label>
+          <input
+            type="text"
+            className="form-control"
+            value={newDetailData.name_detail}
+            readOnly
+          />
+        </div>
+
+        <div style={{ marginBottom: "1rem" }}>
+          <label>Material:</label>
+          <select
+            className="form-control"
+            value={newDetailData.material_id}
+            onChange={(e) =>
+              setNewDetailData((prev) => ({ ...prev, material_id: Number(e.target.value) }))
+            }
+            onClick={fetchMaterials}
+          >
+            <option value={0}>Seleccione un material</option>
+            {materials.map((mat) => (
+              <option key={mat.id} value={mat.id}>
+                {mat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "1rem" }}>
+          <label>Espesor de Capa (cm):</label>
+          <input
+            type="number"
+            className="form-control"
+            min="0"
+            step="any"
+            value={newDetailData.layer_thickness}
+            onKeyDown={(e) => {
+              // Evitar que ingrese valores negativos
+              if (e.key === "-") e.preventDefault();
+            }}
+            onChange={(e) =>
+              setNewDetailData((prev) => ({
+                ...prev,
+                layer_thickness: Number(e.target.value),
+              }))
+            }
+          />
+        </div>
+      </ModalCreate>
     </ModalCreate>
   );
 };

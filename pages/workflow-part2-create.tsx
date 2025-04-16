@@ -126,8 +126,7 @@ const WorkFlowpar2createPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
-  // Se eliminó la lógica de búsqueda de material basada en map, ya que detail.material contiene el nombre.
-
+  // La función fetchDetailModal permanece igual.
   const fetchDetailModal = (detail_id: any) => {
     api.get(`detail-part/${detail_id}`).then((data) => {
       SetDetailsList(data);
@@ -141,6 +140,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     fetchDetailModal(e?.id);
   };
 
+  // Mapeo de nombre que se usará para prellenar los campos en base a la pestaña.
   const titleMapping: { [key in TabStep4]?: string } = {
     muros: "Muro",
     techumbre: "Techo",
@@ -167,9 +167,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   const [selectedItem, SetSelectedItem] = useState<any>();
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
-  // Nuevo estado para editar el nombre abreviado (name_detail) en Muros
   const [editingNombreAbreviado, setEditingNombreAbreviado] = useState<string>("");
-  // Estados para editar nombre abreviado en Techumbre y Pisos
   const [editingNombreAbreviadoTech, setEditingNombreAbreviadoTech] = useState<string>("");
   const [editingNombreAbreviadoPiso, setEditingNombreAbreviadoPiso] = useState<string>("");
 
@@ -198,7 +196,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   // Estados para edición inline en el modal de Detalles
   const [editingDetailId, setEditingDetailId] = useState<number | null>(null);
-  const [editingDetailData, setEditingDetailData] = useState<{ material_id: number; layer_thickness: number; }>( {
+  const [editingDetailData, setEditingDetailData] = useState<{ material_id: number; layer_thickness: number; }>({
     material_id: 0,
     layer_thickness: 0,
   });
@@ -215,6 +213,15 @@ const WorkFlowpar2createPage: React.FC = () => {
     name_detail: "",
     colorExterior: "Intermedio",
     colorInterior: "Intermedio",
+  });
+
+  // NUEVO ESTADO: Modal para crear un nuevo detalle desde el modal de Detalles
+  const [showDetailFormModal, setShowDetailFormModal] = useState(false);
+  const [newDetailData, setNewDetailData] = useState({
+    scantilon_location: "",
+    name_detail: "",
+    material_id: 0,
+    layer_thickness: 0,
   });
 
   const fetchProjectData = async () => {
@@ -377,9 +384,20 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
   }, [showTabsInStep4, tabStep4, fetchMurosDetails, fetchTechumbreDetails, fetchPisosDetails, fetchVentanasDetails, fetchPuertasDetails]);
 
+  /* MODIFICACIÓN:
+     Se cambia la acción del botón + Nuevo para abrir un modal de creación de detalle.
+     Se prellena "Ubicación Detalle" y "Nombre Detalle" usando selectedItem (si existe) y, de lo contrario,
+     se utiliza el valor por defecto según la pestaña (Muro, Techo o Piso) definido en titleMapping.
+  */
   const handleNewButtonClick = () => {
-    setShowCreateModal(true);
-    // Se llama a fetchMaterials desde useEffect al detectar que showCreateModal es true
+    const defaultValue = titleMapping[tabStep4] || "";
+    setNewDetailData({
+      scantilon_location: selectedItem?.scantilon_location || defaultValue,
+      name_detail: selectedItem?.name_detail || defaultValue,
+      material_id: 0,
+      layer_thickness: 0,
+    });
+    setShowDetailFormModal(true);
     setShowDetallesModal(false);
   };
 
@@ -605,7 +623,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Techo/${detail.id}`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const payload = { 
-        name_detail: editingNombreAbreviadoTech, // Se envía el nuevo nombre abreviado
+        name_detail: editingNombreAbreviadoTech,
         info: { 
           surface_color: { 
             interior: { name: editingTechColors.interior },
@@ -652,7 +670,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Piso/${detail.id}`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       const payload = {
-        name_detail: editingNombreAbreviadoPiso,  // Se actualiza el nombre abreviado para piso
+        name_detail: editingNombreAbreviadoPiso,
         info: {
           ref_aisl_vertical: {
             d: Number(editingPisoForm.vertical.d),
@@ -812,7 +830,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
           <CustomButton
             variant="save"
-            onClick={async () => { createDetail(selectedItem?.id).then(() => { fetchDetailModal(selectedItem?.id); }); }}
+            onClick={handleNewButtonClick}
           >
             + Nuevo
           </CustomButton>
@@ -1066,7 +1084,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       const horiz = item.info?.ref_aisl_horizontal || {};
       const isEditing = editingPisoRowId === item.id;
       return {
-        // Permite editar el nombre abreviado en la tabla de Pisos
         nombre: isEditing ? (
           <input
             type="text"
@@ -1293,8 +1310,8 @@ const WorkFlowpar2createPage: React.FC = () => {
     if (!showTabsInStep4) return null;
     const tabs = [
       { key: "muros", label: "Muros" },
-      { key: "techumbre", label: "Techumbre" },
-      { key: "pisos", label: "Pisos" },
+      { key: "techumbre", label: "Techo" },
+      { key: "pisos", label: "Piso" },
       { key: "ventanas", label: "Ventanas" },
       { key: "puertas", label: "Puertas" },
     ] as { key: TabStep4; label: string }[];
@@ -1353,7 +1370,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     { stepNumber: 7, iconName: "design_services", title: "Recinto" },
   ];
 
-  // Función para guardar nuevo detalle; se refrescan las tablas completas tras crear
+  // Función para guardar nuevo detalle de la cabecera (creado desde el modal de Cabecera)
   const handleSaveDetalle = async () => {
     if (!newDetalle.name_detail || !newDetalle.colorInterior || !newDetalle.colorExterior) {
       notify("Por favor, complete todos los campos del Detalle Constructivo.");
@@ -1394,7 +1411,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     }
 
     try {
-      const url = `${constantUrlApiEndpoint}/user/${type}/detail-part-create?project_id=${projectId}`;
+      const url = `${constantUrlApiEndpoint}/user/detail-part-create?project_id=${projectId}`;
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       await axios.post(url, payload, { headers });
       notify("Detalle creado exitosamente.");
@@ -1653,7 +1670,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {showCreateModal && (
         <ModalCreate
           isOpen={true}
-          title={`Crear Nuevo ${titleMapping[tabStep4] || "Detalle"}`}
+          title={`Crear nueva cabecera de ${titleMapping[tabStep4] || "Detalle"}`}
           onClose={() => {
             setShowCreateModal(false);
             setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
@@ -1698,6 +1715,116 @@ const WorkFlowpar2createPage: React.FC = () => {
                 </div>
               </>
             )}
+          </form>
+        </ModalCreate>
+      )}
+
+      {/* Modal para crear un nuevo detalle desde el Modal de Detalles */}
+      {showDetailFormModal && (
+        <ModalCreate
+          isOpen={true}
+          title="Crear Nueva Cabecera"
+          onClose={() => {
+            setShowDetailFormModal(false);
+            setShowDetallesModal(true);
+            setNewDetailData({
+              scantilon_location: "",
+              name_detail: "",
+              material_id: 0,
+              layer_thickness: 0,
+            });
+          }}
+          onSave={async () => {
+            if (
+              !newDetailData.scantilon_location.trim() ||
+              !newDetailData.name_detail.trim() ||
+              newDetailData.material_id <= 0 ||
+              newDetailData.layer_thickness <= 0
+            ) {
+              notify("Por favor, complete todos los campos de forma válida.");
+              return;
+            }
+            try {
+              const token = getToken();
+              // Se obtiene el detail_part_id desde selectedItem: usa id_detail o id
+              const detailPartId = selectedItem?.id_detail || selectedItem?.id;
+              if (!token || !detailPartId) {
+                notify("No se encontró el identificador del detalle.");
+                return;
+              }
+              // Se utiliza el endpoint correcto: /user/detail-create/{detail_part_id}
+              const url = `${constantUrlApiEndpoint}/user/detail-create/${detailPartId}`;
+              const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+              await axios.post(url, newDetailData, { headers });
+              notify("Detalle creado exitosamente.");
+              fetchDetailModal(selectedItem?.id);
+              fetchFetchedDetails();
+              setShowDetailFormModal(false);
+              setNewDetailData({
+                scantilon_location: "",
+                name_detail: "",
+                material_id: 0,
+                layer_thickness: 0,
+              });
+              setShowDetallesModal(true)
+            } catch (error) {
+              console.error("Error al crear el detalle:", error);
+              notify("Error al crear el detalle.");
+            }
+          }}
+        >
+          <form>
+            <div className="form-group">
+              <label>Ubicación Detalle</label>
+              <input
+                type="text"
+                className="form-control"
+                value={newDetailData.scantilon_location}
+                readOnly
+              />
+            </div>
+            <div className="form-group">
+              <label>Nombre Detalle</label>
+              <input
+                type="text"
+                className="form-control"
+                value={newDetailData.name_detail}
+                readOnly
+              />
+            </div>
+            <div className="form-group">
+              <label>Material</label>
+              <select
+                className="form-control"
+                value={newDetailData.material_id}
+                onChange={(e) =>
+                  setNewDetailData((prev) => ({ ...prev, material_id: Number(e.target.value) }))
+                }
+                onClick={fetchMaterials}
+              >
+                <option value={0}>Seleccione un material</option>
+                {materials.map((mat) => (
+                  <option key={mat.id} value={mat.id}>
+                    {mat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Espesor de capa (cm)</label>
+              <input
+                type="number"
+                className="form-control"
+                min="0"
+                value={newDetailData.layer_thickness}
+                onChange={(e) =>
+                  setNewDetailData((prev) => ({ ...prev, layer_thickness: Number(e.target.value) }))
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "-") e.preventDefault();
+                }}
+              />
+            </div>
           </form>
         </ModalCreate>
       )}

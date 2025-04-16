@@ -13,6 +13,8 @@ import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import NewHeaderButton from "@/components/constructive_details/NewHeaderButton";
+
 
 // Importamos nuestro componente genérico de tablas
 import Breadcrumb from "@/components/common/Breadcrumb";
@@ -192,11 +194,59 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   const [detailList, SetDetailsList] = useState<any>()
   const [selectedItem, SetSelectedItem] = useState<any>();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newDetalle, setNewDetalle] = useState({
+    name_detail: "",
+    colorExterior: "Intermedio",
+    colorInterior: "Intermedio",
+  });
 
   const fetchDetailModal = (detail_id: any) => {
     api.get(`detail-part/${detail_id}`).then((data) => {
       SetDetailsList(data);
     });
+  };
+
+  const handleNewDetailButtonClick = () => {
+    setShowCreateModal(true);
+    setShowDetallesModal(false);
+  };
+
+  const handleCreateNewDetailModal = async () => {
+    if (!newDetalle.name_detail || !newDetalle.colorInterior || !newDetalle.colorExterior) {
+      notify("Todos los campos son obligatorios");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token || !projectId) return;
+
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const payload = {
+        name_detail: newDetalle.name_detail,
+        project_id: projectId,
+        scantilon_location: tabStep4 === "muros" ? "Muro" : tabStep4 === "techumbre" ? "Techo" : "Piso",
+        info: {
+          surface_color: {
+            interior: { name: newDetalle.colorInterior },
+            exterior: { name: newDetalle.colorExterior },
+          },
+        },
+      };
+
+      await axios.post(`${constantUrlApiEndpoint}/user/details/`, payload, { headers });
+      notify("Detalle creado exitosamente");
+      setShowCreateModal(false);
+      setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
+
+      if (tabStep4 === "muros") fetchMurosDetails();
+      else if (tabStep4 === "techumbre") fetchTechumbreDetails();
+      else if (tabStep4 === "pisos") fetchPisosDetails();
+    } catch (error) {
+      console.error("Error al crear el detalle:", error);
+      notify("Error al crear el detalle");
+    }
   };
   const OnDetailOpened = (e: any) => {
     setShowDetallesModal(true)
@@ -1509,7 +1559,8 @@ const handleConfirmInlineEdit = async (detail: IDetail) => {
       <div className="mt-4">
         {(tabStep4 !== "ventanas" && tabStep4 !== "puertas") && (
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-            <CustomButton variant="save" onClick={handleNewButtonClick}>+ Nuevo</CustomButton>
+            <NewHeaderButton
+            tab="muros" onNewCreated={fetchMurosDetails} />
           </div>
         )}
         <ul className="nav">

@@ -655,6 +655,11 @@ const WorkFlowpar2createPage: React.FC = () => {
       // Recarga la tabla del modal
       fetchDetailModal(selectedItem.id);
 
+      // Recargar las tablas principales para actualizar el valor U
+      if (tabStep4 === "muros") await fetchMurosDetails();
+      if (tabStep4 === "techumbre") await fetchTechumbreDetails();
+      if (tabStep4 === "pisos") await fetchPisosDetails();
+
       // Cierra el modal y resetea los campos
       setShowNewDetailModal(false);
       setNewDetailData({
@@ -782,9 +787,12 @@ const WorkFlowpar2createPage: React.FC = () => {
       // Recarga
       fetchDetailModal(selectedItem?.id);
       fetchFetchedDetails();
-      fetchMurosDetails();
-      fetchTechumbreDetails();
-      fetchPisosDetails();
+
+      // Recargar las tablas principales para actualizar el valor U
+      if (tabStep4 === "muros") await fetchMurosDetails();
+      if (tabStep4 === "techumbre") await fetchTechumbreDetails();
+      if (tabStep4 === "pisos") await fetchPisosDetails();
+
     } catch (error) {
       console.error("Error al actualizar el detalle:", error);
       notify("Error al actualizar el detalle.");

@@ -727,6 +727,15 @@ const WorkFlowpar2editPage: React.FC = () => {
       // Refresca la tabla en el modal
       fetchDetailModal(selectedItem.id);
 
+      // Actualiza los detalles en la tabla principal según el tipo
+      if (tabStep4 === "muros") {
+        fetchMurosDetails();
+      } else if (tabStep4 === "techumbre") {
+        fetchTechumbreDetails();
+      } else if (tabStep4 === "pisos") {
+        fetchPisosDetails();
+      }
+
       // Resetea formulario
       setNewDetailData({
         scantilon_location: "",

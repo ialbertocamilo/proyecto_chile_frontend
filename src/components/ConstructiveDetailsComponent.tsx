@@ -251,9 +251,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
   const refreshDetails = async () => {
     await fetchFetchedDetails();
-    if (tabStep4 === "muros") fetchMurosDetails();
-    else if (tabStep4 === "techumbre") fetchTechumbreDetails();
-    else if (tabStep4 === "pisos") fetchPisosDetails();
+    if (tabStep4 === "muros") await fetchMurosDetails();
+    else if (tabStep4 === "techumbre") await fetchTechumbreDetails();
+    else if (tabStep4 === "pisos") await fetchPisosDetails();
   };
 
   const confirmDeleteDetail = async () => {
@@ -1329,9 +1329,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
       {showDetailsModal && selectedItem && (
         <DetailModal
           isOpen={showDetailsModal}
-          onClose={() => setShowDetailsModal(false)}
+          onClose={() => {
+            setShowDetailsModal(false);
+            refreshDetails();
+          }}
           selectedItem={selectedItem}
-          refreshParent={fetchFetchedDetails}
+          refreshParent={refreshDetails}
           materials={materials}
           fetchMaterials={fetchMaterials}
         />

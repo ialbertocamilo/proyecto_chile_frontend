@@ -965,7 +965,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       setEditingTechRowId(null);
     } catch (error) {
       console.error("Error al actualizar detalle:", error);
-      notify("Error al actualizar Detalle. Ver consola.");
+      notify("Ya existe un detalle con el nombre asignado.");
     }
   };
 
@@ -1027,7 +1027,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       setEditingPisoRowId(null);
     } catch (error) {
       console.error("Error al actualizar detalle de Piso:", error);
-      notify("Error al actualizar detalle de Piso. Ver consola.");
+      notify("Ya existe un detalle con el nombre asignado.");
     }
   };
 

@@ -910,7 +910,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           <input
             type="text"
             className="form-control form-control-sm"
-            value={editValues.name_detail || item.name_detail}
+            value={editValues.name_detail ?? ""}
             onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
               setEditValues((prev: Record<string, any>) => ({

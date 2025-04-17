@@ -1250,7 +1250,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingTechRowId(null);
                 } catch (error) {
                   console.error("Error updating techumbre:", error);
-                  notify("Error al actualizar techumbre");
+                  notify("Ya existe un detalle con el nombre asignado.");
                 }
               }}
               onCancel={() => {
@@ -1568,7 +1568,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPisosRowId(null);
                 } catch (error) {
                   console.error("Error updating piso:", error);
-                  notify("Error al actualizar piso");
+                  notify("Ya existe un detalle con el nombre asignado.");
                 }
               }}
               onCancel={() => {

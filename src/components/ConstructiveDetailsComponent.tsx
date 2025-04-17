@@ -445,7 +445,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       handleInlineCancel();
     } catch (error: any) {
       console.error("Error al actualizar detalle inline:", error);
-      notify("Error al actualizar el detalle.");
+      notify("Ya existe un detalle con el nombre asignado.");
     }
   };
 
@@ -661,7 +661,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           <input
             type="text"
             className="form-control form-control-sm"
-            value={editValues.name_detail || item.name_detail}
+            value={editValues.name_detail ?? ""}
             onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
               setEditValues((prev: Record<string, any>) => ({
@@ -673,7 +673,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u && Number(item.value_u) !== 0 ? Number(item.value_u).toFixed(3) : "--",
+        valorU: item.value_u && Number(item.value_u) !== 0 ? Number(item.value_u).toFixed(3) : "-",
         colorExterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}
@@ -793,7 +793,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u ? item.value_u.toFixed(3) : "--",
+        valorU: item.value_u ? item.value_u.toFixed(3) : "-",
         colorExterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}

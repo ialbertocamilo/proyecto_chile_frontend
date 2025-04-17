@@ -770,6 +770,9 @@ const WorkFlowpar2editPage: React.FC = () => {
       notify("Detalle actualizado exitosamente");
       // Se refrescan todos los detalles
       fetchDetailModal(selectedItem?.id);
+      fetchMurosDetails();
+      fetchTechumbreDetails();
+      fetchPisosDetails();
     } catch (error) {
       console.error("Error al actualizar el detalle:", error);
       notify("Error al actualizar el detalle.");
@@ -1112,7 +1115,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingRowId(null);
                 } catch (error) {
                   console.error("Error updating muro:", error);
-                  notify("Error al actualizar muro");
+                  notify("Ya existe un detalle con el nombre asignado.");
                 }
               }}
               onCancel={() => {

@@ -39,7 +39,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       {onDetails && (
         <button
           type="button"
-          className="button btn-small px-3 btn btn-primary btn-icon-only btn-table-list"
+          className="button btn-small px-3 btn btn-icon-only btn-table-list button-thermic-bridges"
           onClick={onDetails}
           disabled={isDisabled}
           style={{
@@ -48,6 +48,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             alignItems: "center",
             justifyContent: "center",
             width: "2.5rem !important",
+            backgroundColor: "#359ea7 !important",
           }}
         >
           <span
@@ -56,6 +57,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              color: "#fff",
             }}
             className="btn-icon-content material-icons animate__animated"
           >

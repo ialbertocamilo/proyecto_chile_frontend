@@ -402,6 +402,6 @@ h6 {
   display: "flex";
   align-items: "center";
   justify-content: "center";
-  width: "2.5rem !important";
-  background-color: "#359ea7 !important";
+  width: 2.5rem !important;
+  background-color: #359ea7 !important;
 }

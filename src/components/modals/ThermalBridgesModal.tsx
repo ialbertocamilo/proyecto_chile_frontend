@@ -106,207 +106,209 @@ const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
       title="Puentes Térmicos"
       saveLabel="Guardar"
     >
-      <div className="flex flex-col gap-4">P01</div>
-      <div style={{ display: "flex" }} className="mb-3 flex flex-row gap-4">
-        <div>
-          <label htmlFor="po1_length" className="form-label">
-            Longitud [m]
-          </label>
-          <input
-            type="number"
-            name="po1_length"
-            min="0"
-            step="0.01"
-            autoFocus={true}
-            value={editingBridgeData?.po1_length ?? 0}
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-            onChange={handleEditBridgeChange}
-            onBlur={(e) => {
-              const rounded = parseFloat(e.target.value).toFixed(2);
-              setEditingBridgeData({
-                ...editingBridgeData!,
-                po1_length: Number(rounded),
-              });
-            }}
-            className="form-control form-control-sm"
-          />
+      <div className="container-fluid p-0">
+        <div className="flex flex-col gap-4">P01</div>
+        <div className="row mb-3">
+          <div className="col-4">
+            <label htmlFor="po1_length" className="form-label">
+              L[m]
+            </label>
+            <input
+              type="number"
+              name="po1_length"
+              min="0"
+              step="0.01"
+              autoFocus={true}
+              value={editingBridgeData?.po1_length ?? 0}
+              onKeyDown={(e) => {
+                if (e.key === "-") e.preventDefault();
+              }}
+              onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({
+                  ...editingBridgeData!,
+                  po1_length: Number(rounded),
+                });
+              }}
+              className="form-control form-control-sm"
+            />
+          </div>
+          <div className="col-4">
+            <label htmlFor="po1_id_element" className="form-label">
+              Elemento
+            </label>
+            <select
+              name="po1_id_element"
+              value={editingBridgeData?.po1_id_element ?? ""}
+              onChange={handleEditBridgeChange}
+              className="form-control form-control-sm"
+            >
+              <option value="">Seleccione...</option>
+              {detailOptions.map((detail) => (
+                <option key={detail.id} value={detail.id}>
+                  {detail.name_detail}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div>
-          <label htmlFor="po1_id_element" className="form-label">
-            Elemento
-          </label>
-          <select
-            name="po1_id_element"
-            value={editingBridgeData?.po1_id_element ?? ""}
-            onChange={handleEditBridgeChange}
-            className="form-control form-control-sm"
-          >
-            <option value="">Seleccione...</option>
-            {detailOptions.map((detail) => (
-              <option key={detail.id} value={detail.id}>
-                {detail.name_detail}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-col gap-4">P02</div>
+        <div className="row mb-3">
+          <div className="col-4">
+            <label htmlFor="po2_length">L[m]</label>
+            <input
+              type="number"
+              name="po2_length"
+              min="0"
+              step="0.01"
+              value={editingBridgeData?.po2_length ?? 0}
+              onKeyDown={(e) => {
+                if (e.key === "-") e.preventDefault();
+              }}
+              onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({
+                  ...editingBridgeData!,
+                  po1_length: Number(rounded),
+                });
+              }}
+              className="form-control form-control-sm"
+            />
+          </div>
+          <div className="col-4">
+            <label htmlFor="po2_id_element" className="form-label">
+              Elemento
+            </label>
+            <select
+              name="po2_id_element"
+              value={editingBridgeData?.po2_id_element ?? ""}
+              onChange={handleEditBridgeChange}
+              className="form-control form-control-sm"
+            >
+              <option value="">Seleccione...</option>
+              {detailOptions.map((detail) => (
+                <option key={detail.id} value={detail.id}>
+                  {detail.name_detail}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-      </div>
-      <div className="flex flex-col gap-4">P02</div>
-      <div style={{ display: "flex" }} className="mb-3 flex flex-row gap-4">
-        <div>
-          <label htmlFor="po2_length">Longitud[m]</label>
-          <input
-            type="number"
-            name="po2_length"
-            min="0"
-            step="0.01"
-            value={editingBridgeData?.po2_length ?? 0}
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-            onChange={handleEditBridgeChange}
-            onBlur={(e) => {
-              const rounded = parseFloat(e.target.value).toFixed(2);
-              setEditingBridgeData({
-                ...editingBridgeData!,
-                po1_length: Number(rounded),
-              });
-            }}
-            className="form-control form-control-sm"
-          />
+        <div className="flex flex-col gap-4">P03</div>
+        <div className="row mb-3">
+          <div className="col-4">
+            <label htmlFor="po3_length" className="form-label">
+              L[m]
+            </label>
+            <input
+              type="number"
+              name="po3_length"
+              min="0"
+              step="0.01"
+              value={editingBridgeData?.po3_length ?? 0}
+              onKeyDown={(e) => {
+                if (e.key === "-") e.preventDefault();
+              }}
+              onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({
+                  ...editingBridgeData!,
+                  po1_length: Number(rounded),
+                });
+              }}
+              className="form-control form-control-sm"
+            />
+          </div>
+          <div className="col-4">
+            <label htmlFor="po3_id_element" className="form-label">
+              Elemento
+            </label>
+            <select
+              name="po3_id_element"
+              value={editingBridgeData?.po3_id_element ?? ""}
+              onChange={handleEditBridgeChange}
+              className="form-control form-control-sm"
+            >
+              <option value="">Seleccione...</option>
+              {detailOptions.map((detail) => (
+                <option key={detail.id} value={detail.id}>
+                  {detail.name_detail}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div>
-          <label htmlFor="po2_id_element" className="form-label">
-            Elemento
-          </label>
-          <select
-            name="po2_id_element"
-            value={editingBridgeData?.po2_id_element ?? ""}
-            onChange={handleEditBridgeChange}
-            className="form-control form-control-sm"
-          >
-            <option value="">Seleccione...</option>
-            {detailOptions.map((detail) => (
-              <option key={detail.id} value={detail.id}>
-                {detail.name_detail}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="flex flex-col gap-4">P03</div>
-      <div style={{ display: "flex" }} className="mb-3 flex flex-row gap-4">
-        <div>
-          <label htmlFor="po1_length" className="form-label">
-            Longitud [m]
-          </label>
-          <input
-            type="number"
-            name="po3_length"
-            min="0"
-            step="0.01"
-            value={editingBridgeData?.po3_length ?? 0}
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-            onChange={handleEditBridgeChange}
-            onBlur={(e) => {
-              const rounded = parseFloat(e.target.value).toFixed(2);
-              setEditingBridgeData({
-                ...editingBridgeData!,
-                po1_length: Number(rounded),
-              });
-            }}
-            className="form-control form-control-sm"
-          />
-        </div>
-        <div>
-          <label htmlFor="po3_id_element" className="form-label">
-            Elemento
-          </label>
-          <select
-            name="po3_id_element"
-            value={editingBridgeData?.po3_id_element ?? ""}
-            onChange={handleEditBridgeChange}
-            className="form-control form-control-sm"
-          >
-            <option value="">Seleccione...</option>
-            {detailOptions.map((detail) => (
-              <option key={detail.id} value={detail.id}>
-                {detail.name_detail}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="flex flex-col gap-4">P04</div>
-      <div style={{ display: "flex" }} className="flex flex-row gap-4">
-        <div>
-          <label htmlFor="po4_length" className="form-label">
-            Longitud [m]
-          </label>
-          <input
-            type="number"
-            name="po4_length"
-            min="0"
-            step="0.01"
-            value={editingBridgeData?.po4_length ?? 0}
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-            onChange={handleEditBridgeChange}
-            onBlur={(e) => {
-              const rounded = parseFloat(e.target.value).toFixed(2);
-              setEditingBridgeData({
-                ...editingBridgeData!,
-                po1_length: Number(rounded),
-              });
-            }}
-            className="form-control form-control-sm"
-          />
-        </div>
-        <div>
-          <label htmlFor="po4_e_aislacion" className="form-label">
-            e Aislación [cm]
-          </label>
-          <input
-            type="number"
-            name="po4_e_aislacion"
-            min="0"
-            step="0.01"
-            value={editingBridgeData?.po4_e_aislacion ?? 0}
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-            onChange={handleEditBridgeChange}
-            onBlur={(e) => {
-              const rounded = parseFloat(e.target.value).toFixed(2);
-              setEditingBridgeData({
-                ...editingBridgeData!,
-                po4_e_aislacion: Number(rounded),
-              });
-            }}
-            className="form-control form-control-sm"
-          />
-        </div>
-        <div>
-          <label htmlFor="po4_id_element" className="form-label">
-            Elemento
-          </label>
-          <select
-            name="po4_id_element"
-            value={editingBridgeData?.po4_id_element ?? ""}
-            onChange={handleEditBridgeChange}
-            className="form-control form-control-sm"
-          >
-            <option value="">Seleccione...</option>
-            {detailOptions.map((detail) => (
-              <option key={detail.id} value={detail.id}>
-                {detail.name_detail}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-col gap-4">P04</div>
+        <div className="row mb-3">
+          <div className="col-4">
+            <label htmlFor="po4_length" className="form-label">
+              L[m]
+            </label>
+            <input
+              type="number"
+              name="po4_length"
+              min="0"
+              step="0.01"
+              value={editingBridgeData?.po4_length ?? 0}
+              onKeyDown={(e) => {
+                if (e.key === "-") e.preventDefault();
+              }}
+              onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({
+                  ...editingBridgeData!,
+                  po1_length: Number(rounded),
+                });
+              }}
+              className="form-control form-control-sm"
+            />
+          </div>
+          <div className="col-4">
+            <label htmlFor="po4_id_element" className="form-label">
+              Elemento
+            </label>
+            <select
+              name="po4_id_element"
+              value={editingBridgeData?.po4_id_element ?? ""}
+              onChange={handleEditBridgeChange}
+              className="form-control form-control-sm"
+            >
+              <option value="">Seleccione...</option>
+              {detailOptions.map((detail) => (
+                <option key={detail.id} value={detail.id}>
+                  {detail.name_detail}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-4">
+            <label htmlFor="po4_e_aislacion" className="form-label">
+              e Aislación [cm]
+            </label>
+            <input
+              type="number"
+              name="po4_e_aislacion"
+              min="0"
+              step="0.01"
+              value={editingBridgeData?.po4_e_aislacion ?? 0}
+              onKeyDown={(e) => {
+                if (e.key === "-") e.preventDefault();
+              }}
+              onChange={handleEditBridgeChange}
+              onBlur={(e) => {
+                const rounded = parseFloat(e.target.value).toFixed(2);
+                setEditingBridgeData({
+                  ...editingBridgeData!,
+                  po4_e_aislacion: Number(rounded),
+                });
+              }}
+              className="form-control form-control-sm"
+            />
+          </div>
         </div>
       </div>
     </ModalCreate>

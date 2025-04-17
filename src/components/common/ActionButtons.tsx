@@ -37,13 +37,40 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         disabled={isDisabled}
       />
       {onDetails && (
-        <CustomButton
-          variant="deleteIcon"
-          className="btn-table-list"
+        <button
+          type="button"
+          className="button btn-small px-3 btn btn-icon-only btn-table-list button-thermic-bridges"
           onClick={onDetails}
-          title="Puentes Térmicos"
           disabled={isDisabled}
-        />
+          style={{
+            margin: "0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "2.5rem !important",
+            backgroundColor: "#359ea7 !important",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "1.5rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+            }}
+            className="btn-icon-content material-icons animate__animated"
+          >
+            thermostat
+          </span>
+        </button>
+        // <CustomButton
+        //   variant="deleteIcon"
+        //   className="btn-table-list"
+        //   onClick={onDetails}
+        //   title="Puentes Térmicos"
+        //   disabled={isDisabled}
+        // />
       )}
     </div>
   );

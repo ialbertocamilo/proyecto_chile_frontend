@@ -309,15 +309,17 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // ===================== EDICIÓN MUROS / TECHUMBRE ======================
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
-  const [editingColors, setEditingColors] = useState<{ interior: string; exterior: string }>({
+  const [editingColors, setEditingColors] = useState<{ interior: string; exterior: string; nombreAbreviado: string }>({
     interior: "Intermedio",
     exterior: "Intermedio",
+    nombreAbreviado: "",
   });
   const [editingTechRowId, setEditingTechRowId] = useState<number | null>(null);
-  const [editingTechColors, setEditingTechColors] = useState<{ interior: string; exterior: string }>(
+  const [editingTechColors, setEditingTechColors] = useState<{ interior: string; exterior: string; nombreAbreviado: string }>(
     {
       interior: "Intermedio",
       exterior: "Intermedio",
+      nombreAbreviado: "",
     }
   );
   // ===================== EDICIÓN PISOS ======================
@@ -325,9 +327,11 @@ const WorkFlowpar2editPage: React.FC = () => {
   const [editingPisosData, setEditingPisosData] = useState<{
     ref_aisl_vertical: { lambda: string; e_aisl: string; d: string };
     ref_aisl_horizontal: { lambda: string; e_aisl: string; d: string };
+    nombre: string;
   }>({
     ref_aisl_vertical: { lambda: "", e_aisl: "", d: "" },
     ref_aisl_horizontal: { lambda: "", e_aisl: "", d: "" },
+    nombre: "",
   });
 
   // ===================== EDICIÓN VENTANAS / PUERTAS ======================
@@ -1028,7 +1032,19 @@ const WorkFlowpar2editPage: React.FC = () => {
       const isEditing = editingRowId === item.id;
       return {
         __detail: item,
-        nombreAbreviado: item.name_detail,
+        nombreAbreviado: isEditing ? (
+          <input
+            type="text"
+            className="form-control"
+            value={editingColors.nombreAbreviado}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) =>
+              setEditingColors((prev) => ({ ...prev, nombreAbreviado: e.target.value }))
+            }
+          />
+        ) : (
+          item.name_detail
+        ),
         valorU: formatValue(item.value_u),
         colorExterior: isEditing ? (
           <select
@@ -1068,6 +1084,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   const headers = { Authorization: `Bearer ${token}` };
                   const payload = {
                     ...item,
+                    name_detail: editingColors.nombreAbreviado,
                     info: {
                       ...item.info,
                       surface_color: {
@@ -1090,6 +1107,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 setEditingColors({
                   interior: "Intermedio",
                   exterior: "Intermedio",
+                  nombreAbreviado: "",
                 });
               }}
             />
@@ -1105,7 +1123,8 @@ const WorkFlowpar2editPage: React.FC = () => {
                 setEditingRowId(item.id || null);
                 setEditingColors({
                   interior: item.info?.surface_color?.interior?.name || "Intermedio",
-                  exterior: item.info?.surface_color?.exterior?.name || "Intermedio"
+                  exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
+                  nombreAbreviado: item.name_detail || "",
                 });
                 console.log("ID del muro a editar:", item.id);
               }}
@@ -1148,7 +1167,19 @@ const WorkFlowpar2editPage: React.FC = () => {
       const isEditing = editingTechRowId === item.id;
       return {
         __detail: item,
-        nombreAbreviado: item.name_detail,
+        nombreAbreviado: isEditing ? (
+          <input
+            type="text"
+            className="form-control"
+            value={editingTechColors.nombreAbreviado}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) =>
+              setEditingTechColors((prev) => ({ ...prev, nombreAbreviado: e.target.value }))
+            }
+          />
+        ) : (
+          item.name_detail
+        ),
         valorU: formatValue(item.value_u),
         colorExterior: isEditing ? (
           <select
@@ -1188,6 +1219,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   const headers = { Authorization: `Bearer ${token}` };
                   const payload = {
                     ...item,
+                    name_detail: editingTechColors.nombreAbreviado,
                     info: {
                       ...item.info,
                       surface_color: {
@@ -1210,6 +1242,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 setEditingTechColors({
                   interior: "Intermedio",
                   exterior: "Intermedio",
+                  nombreAbreviado: "",
                 });
               }}
             />
@@ -1226,6 +1259,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 setEditingTechColors({
                   interior: item.info?.surface_color?.interior?.name || "Intermedio",
                   exterior: item.info?.surface_color?.exterior?.name || "Intermedio",
+                  nombreAbreviado: item.name_detail || "",
                 });
               }}
             >
@@ -1302,7 +1336,19 @@ const WorkFlowpar2editPage: React.FC = () => {
       return {
         __detail: item,
         id: item.id,
-        nombre: item.name_detail,
+        nombre: isEditing ? (
+          <input
+            type="text"
+            className="form-control"
+            value={editingPisosData.nombre}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) =>
+              setEditingPisosData((prev) => ({ ...prev, nombre: e.target.value }))
+            }
+          />
+        ) : (
+          item.name_detail
+        ),
         uValue: formatValue(item.value_u),
         bajoPisoLambda: formatValue(item.info?.aislacion_bajo_piso?.lambda),
         bajoPisoEAisl: formatValue(item.info?.aislacion_bajo_piso?.e_aisl),
@@ -1483,6 +1529,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   const headers = { Authorization: `Bearer ${token}` };
                   const payload = {
                     ...item,
+                    name_detail: editingPisosData.nombre,
                     info: {
                       ...item.info,
                       ref_aisl_vertical: {
@@ -1513,6 +1560,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 setEditingPisosData({
                   ref_aisl_vertical: { lambda: "", e_aisl: "", d: "" },
                   ref_aisl_horizontal: { lambda: "", e_aisl: "", d: "" },
+                  nombre: "",
                 });
               }}
             />
@@ -1537,6 +1585,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                     e_aisl: item.info?.ref_aisl_horizontal?.e_aisl?.toString() || "",
                     d: item.info?.ref_aisl_horizontal?.d?.toString() || "",
                   },
+                  nombre: item.name_detail || "",
                 });
               }}
             >

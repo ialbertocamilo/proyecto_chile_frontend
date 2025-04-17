@@ -17,6 +17,7 @@ interface CustomButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>
   | 'cancelIcon'
   | 'viewIcon'
   | 'closed'
+  | 'layersIcon'
   | 'borderless';
   type?: 'button' | 'submit';
   isLoading?: boolean;
@@ -86,6 +87,13 @@ const CustomButton: FC<CustomButtonProps> = ({
     content = (
       <span className="btn-icon-content material-icons" style={{ fontSize: `${iconSize}px` }}>
         format_list_bulleted
+      </span>
+    );
+    tooltipText = 'Ver lista';
+  } else if (variant === 'layersIcon') {
+    content = (
+      <span className="btn-icon-content material-icons" style={{ fontSize: `${iconSize}px` }}>
+        layers
       </span>
     );
     tooltipText = 'Ver lista';

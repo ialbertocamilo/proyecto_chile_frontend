@@ -458,7 +458,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Acciones", field: "acciones" },
     ];
 
-    let filteredData = fetchedDetails.filter((det) => {
+    const filteredData = fetchedDetails.filter((det) => {
       const searchLower = searchQuery.toLowerCase();
       const detailMatches =
         det.scantilon_location.toLowerCase().includes(searchLower) ||

@@ -620,7 +620,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       fetchFetchedDetails();
     } catch (error) {
       console.error("Error al crear detalle constructivo:", error);
-      notify("Error al crear el Detalle Constructivo.");
+      notify("Ya existe un detalle con el nombre ingresado.");
     }
   };
 

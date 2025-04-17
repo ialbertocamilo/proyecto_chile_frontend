@@ -23,9 +23,11 @@ const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
   );
   useEffect(() => {
     console.log("data mounted");
+    // console.log("props.detailOptions", props.detailOptions);
+    // console.log("props.bridgeData", props.bridgeData);
     setEditingBridgeData(props.bridgeData);
     setDetailOptions(props.detailOptions);
-  }, []);
+  }, [props.bridgeId]);
 
   const getAuthData = () => {
     const token = localStorage.getItem("token");

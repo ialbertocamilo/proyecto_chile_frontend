@@ -433,6 +433,12 @@ const TabMuroCreate: React.FC = () => {
     setEditingBridgeData(null);
   };
 
+  const handleCloseEditBridge = () => {
+    setShowModalThermicBridges(false);
+    setEditingBridgeId(null);
+    setEditingBridgeData(null);
+  };
+
   // Columnas para la tabla de muros
   const murosColumns = [
     {
@@ -1158,7 +1164,7 @@ const TabMuroCreate: React.FC = () => {
         </ModalCreate>
         <ThermalBridgesModal
           isOpen={showModalThermicBridges}
-          handleClose={() => setShowModalThermicBridges(false)}
+          handleClose={handleCloseEditBridge}
           bridgeId={editingBridgeId}
           bridgeData={editingBridgeData}
           detailOptions={detailOptions}

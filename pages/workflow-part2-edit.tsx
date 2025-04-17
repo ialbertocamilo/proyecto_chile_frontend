@@ -939,6 +939,10 @@ const WorkFlowpar2editPage: React.FC = () => {
             <DeleteDetailButton
               detailId={det.id}
               onDelete={() => {
+                fetchMurosDetails();
+                fetchPisosDetails();
+                fetchTechumbreDetails();
+                fetchFetchedDetails();
                 fetchDetailModal(selectedItem?.id);
               }}
             />

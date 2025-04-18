@@ -33,7 +33,7 @@ const CustomButton: FC<CustomButtonProps> = ({
   children,
   className = '',
   disabled,
-  margin = '0.3rem',
+  margin = '0.5rem',
   icon: Icon,
   iconSize = 24, // Puedes cambiar el valor por defecto aquí
   type = 'button',

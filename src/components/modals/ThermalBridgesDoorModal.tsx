@@ -171,7 +171,7 @@ const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
                 setEditingBridgeData({
                   ...editingBridgeData!,
-                  po1_length: Number(rounded),
+                  po2_length: Number(rounded),
                 });
               }}
               className="form-control form-control-sm"
@@ -216,7 +216,7 @@ const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
                 setEditingBridgeData({
                   ...editingBridgeData!,
-                  po1_length: Number(rounded),
+                  po3_length: Number(rounded),
                 });
               }}
               className="form-control form-control-sm"
@@ -261,7 +261,7 @@ const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
                 setEditingBridgeData({
                   ...editingBridgeData!,
-                  po1_length: Number(rounded),
+                  po4_length: Number(rounded),
                 });
               }}
               className="form-control form-control-sm"

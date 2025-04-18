@@ -6,6 +6,7 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
+import ThermalBridgesWindowModal from "../modals/ThermalBridgesWindowModal";
 
 const TabWindowCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id") || "12";
@@ -126,6 +127,28 @@ const TabWindowCreate: React.FC = () => {
     fetchWindowOptions();
   }, [token]);
 
+  //ThermalBridgesModal OPEN
+  const [showModalThermicBridges, setShowModalThermicBridges] =
+    useState<boolean>(false);
+
+  function handleThermicBridgesWindow(row: any) {
+    // console.log("Puentes térmicos para el bridgeId:", bridgeId);
+    console.log("row", row);
+    handleFavEditClick(row);
+
+    console.log("editData", editData);
+    console.log("favEditData", favEditData);
+    // console.log("editingBridgeData", editingBridgeData);
+    // console.log("detailOptions", detailOptions);
+    setShowModalThermicBridges(true);
+  }
+  //ThermalBridgesModal FIN
+  const handleCloseEditBridge = () => {
+    setShowModalThermicBridges(false);
+    setEditingFavRow(null);
+    setEditData(null);
+  };
+
   // Obtener ventanas y FAVs (se ejecuta cuando windowOptions ya tiene datos)
   const fetchWindowEnclosures = async () => {
     try {
@@ -151,7 +174,9 @@ const TabWindowCreate: React.FC = () => {
           : `Ventana ${item.window_id}`;
 
         const detail = details.find((d: any) => d.id === item.housed_in);
-        const detailName = detail ? detail.name_detail : `Detalle ${item.housed_in}`;
+        const detailName = detail
+          ? detail.name_detail
+          : `Detalle ${item.housed_in}`;
 
         return {
           id: item.id,
@@ -252,9 +277,7 @@ const TabWindowCreate: React.FC = () => {
     setFormData({
       ...formData,
       [name]:
-        name === "housed_in" || name === "window_id"
-          ? Number(value)
-          : value,
+        name === "housed_in" || name === "window_id" ? Number(value) : value,
     });
   };
 
@@ -274,8 +297,7 @@ const TabWindowCreate: React.FC = () => {
         },
         body: JSON.stringify(formData),
       });
-      if (!response.ok)
-        throw new Error("Error en la creación de la ventana");
+      if (!response.ok) throw new Error("Error en la creación de la ventana");
       const dataResponse = await response.json();
       console.log("Ventana creada:", dataResponse);
       notify("Ventana creada exitosamente");
@@ -363,8 +385,7 @@ const TabWindowCreate: React.FC = () => {
           broad: editData.broad,
         }),
       });
-      if (!response.ok)
-        throw new Error("Error al actualizar la ventana");
+      if (!response.ok) throw new Error("Error al actualizar la ventana");
       const dataResponse = await response.json();
       console.log("Actualización ventana:", dataResponse);
       notify("Ventana actualizada exitosamente");
@@ -401,17 +422,30 @@ const TabWindowCreate: React.FC = () => {
 
   const handleConfirmEditFav = async () => {
     const {
-      fav1_D, fav1_L, fav2izq_P, fav2izq_S, fav2der_P, fav2der_S,
-      fav3_E, fav3_T, fav3_beta, fav3_alpha
+      fav1_D,
+      fav1_L,
+      fav2izq_P,
+      fav2izq_S,
+      fav2der_P,
+      fav2der_S,
+      fav3_E,
+      fav3_T,
+      fav3_beta,
+      fav3_alpha,
     } = favEditData;
 
     // Validar que ninguno sea negativo
     if (
-      fav1_D < 0 || fav1_L < 0 ||
-      fav2izq_P < 0 || fav2izq_S < 0 ||
-      fav2der_P < 0 || fav2der_S < 0 ||
-      fav3_E < 0 || fav3_T < 0 ||
-      fav3_beta < 0 || fav3_alpha < 0
+      fav1_D < 0 ||
+      fav1_L < 0 ||
+      fav2izq_P < 0 ||
+      fav2izq_S < 0 ||
+      fav2der_P < 0 ||
+      fav2der_S < 0 ||
+      fav3_E < 0 ||
+      fav3_T < 0 ||
+      fav3_beta < 0 ||
+      fav3_alpha < 0
     ) {
       notify("No se permiten valores negativos en FAV");
       return;
@@ -447,8 +481,7 @@ const TabWindowCreate: React.FC = () => {
           },
         }),
       });
-      if (!response.ok)
-        throw new Error("Error al actualizar los favs");
+      if (!response.ok) throw new Error("Error al actualizar los favs");
       const favDataResponse = await response.json();
       console.log("Actualización FAV:", favDataResponse);
       notify("FAV actualizado exitosamente");
@@ -523,9 +556,7 @@ const TabWindowCreate: React.FC = () => {
           <select
             className="form-control"
             value={editData.angulo_azimut}
-            onChange={(e) =>
-              handleEditChange("angulo_azimut", e.target.value)
-            }
+            onChange={(e) => handleEditChange("angulo_azimut", e.target.value)}
           >
             <option value="">Seleccione un ángulo</option>
             {angleOptions.map((option, index) => (
@@ -541,8 +572,7 @@ const TabWindowCreate: React.FC = () => {
     {
       headerName: "Orientación",
       field: "orientacion",
-      renderCell: (row: any) =>
-        formatCell(row.orientacion),
+      renderCell: (row: any) => formatCell(row.orientacion),
     },
     {
       headerName: "Alojado en",
@@ -601,9 +631,7 @@ const TabWindowCreate: React.FC = () => {
           <select
             className="form-control"
             value={editData.with_no_return}
-            onChange={(e) =>
-              handleEditChange("with_no_return", e.target.value)
-            }
+            onChange={(e) => handleEditChange("with_no_return", e.target.value)}
           >
             <option value="">Seleccione una opción</option>
             {withNoReturnOptions.map((option, index) => (
@@ -627,9 +655,7 @@ const TabWindowCreate: React.FC = () => {
             step="any"
             className="form-control"
             value={editData.high}
-            onChange={(e) =>
-              handleEditChange("high", Number(e.target.value))
-            }
+            onChange={(e) => handleEditChange("high", Number(e.target.value))}
             onKeyDown={(e) => {
               if (e.key === "-") {
                 e.preventDefault();
@@ -651,9 +677,7 @@ const TabWindowCreate: React.FC = () => {
             step="any"
             className="form-control"
             value={editData.broad}
-            onChange={(e) =>
-              handleEditChange("broad", Number(e.target.value))
-            }
+            onChange={(e) => handleEditChange("broad", Number(e.target.value))}
             onKeyDown={(e) => {
               if (e.key === "-") {
                 e.preventDefault();
@@ -685,345 +709,349 @@ const TabWindowCreate: React.FC = () => {
           <ActionButtons
             onEdit={() => handleEditClick(row)}
             onDelete={() => handleDeleteClick(row)}
+            onThermalBridge={() => handleThermicBridgesWindow(row)}
           />
         ),
     },
     // ========================================
     // FAV (con inputs sin permitir negativos)
-    {
-      headerName: "D [m]",
-      field: "fav1_D",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav1_D}
-            onChange={(e) =>
-              handleFavEditChange("fav1_D", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-          />
-        ) : (
-          formatCell(row.fav1_D)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "840px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "L [m]",
-      field: "fav1_L",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav1_L}
-            onChange={(e) =>
-              handleFavEditChange("fav1_L", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-          />
-        ) : (
-          formatCell(row.fav1_L)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "760px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "P [m]",
-      field: "fav2izq_P",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2izq_P}
-            onChange={(e) =>
-              handleFavEditChange("fav2izq_P", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-          />
-        ) : (
-          formatCell(row.fav2izq_P)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "680px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "S [m]",
-      field: "fav2izq_S",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2izq_S}
-            onChange={(e) =>
-              handleFavEditChange("fav2izq_S", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-          />
-        ) : (
-          formatCell(row.fav2izq_S)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "600px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "P [m]",
-      field: "fav2der_P",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2der_P}
-            onChange={(e) =>
-              handleFavEditChange("fav2der_P", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-          />
-        ) : (
-          formatCell(row.fav2der_P)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "520px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "S [m]",
-      field: "fav2der_S",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2der_S}
-            onChange={(e) =>
-              handleFavEditChange("fav2der_S", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-          />
-        ) : (
-          formatCell(row.fav2der_S)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "440px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "E [m]",
-      field: "fav3_E",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3_E}
-            onChange={(e) =>
-              handleFavEditChange("fav3_E", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-          />
-        ) : (
-          formatCell(row.fav3_E)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "360px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "T [m]",
-      field: "fav3_T",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3_T}
-            onChange={(e) =>
-              handleFavEditChange("fav3_T", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-          />
-        ) : (
-          formatCell(row.fav3_T)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "280px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "β [°]",
-      field: "fav3_beta",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3_beta}
-            onChange={(e) =>
-              handleFavEditChange("fav3_beta", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-          />
-        ) : (
-          formatCell(row.fav3_beta)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "200px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "α [°]",
-      field: "fav3_alpha",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3_alpha}
-            onChange={(e) =>
-              handleFavEditChange("fav3_alpha", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-          />
-        ) : (
-          formatCell(row.fav3_alpha)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "120px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "Acciones FAV",
-      field: "acciones_fav",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <ActionButtonsConfirm
-            onAccept={handleConfirmEditFav}
-            onCancel={() => {
-              setEditingFavRow(null);
-              setFavEditData(null);
-            }}
-          />
-        ) : (
-          <CustomButton variant="editIcon" onClick={() => handleFavEditClick(row)}>
-            Editar FAV
-          </CustomButton>
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "0px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
+    // {
+    //   headerName: "D [m]",
+    //   field: "fav1_D",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <input
+    //         type="number"
+    //         min="0"
+    //         step="any"
+    //         className="form-control"
+    //         style={favInputStyle}
+    //         value={favEditData.fav1_D}
+    //         onChange={(e) =>
+    //           handleFavEditChange("fav1_D", Number(e.target.value))
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "-") {
+    //             e.preventDefault();
+    //           }
+    //         }}
+    //       />
+    //     ) : (
+    //       formatCell(row.fav1_D)
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "840px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
+    // {
+    //   headerName: "L [m]",
+    //   field: "fav1_L",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <input
+    //         type="number"
+    //         min="0"
+    //         step="any"
+    //         className="form-control"
+    //         style={favInputStyle}
+    //         value={favEditData.fav1_L}
+    //         onChange={(e) =>
+    //           handleFavEditChange("fav1_L", Number(e.target.value))
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "-") {
+    //             e.preventDefault();
+    //           }
+    //         }}
+    //       />
+    //     ) : (
+    //       formatCell(row.fav1_L)
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "760px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
+    // {
+    //   headerName: "P [m]",
+    //   field: "fav2izq_P",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <input
+    //         type="number"
+    //         min="0"
+    //         step="any"
+    //         className="form-control"
+    //         style={favInputStyle}
+    //         value={favEditData.fav2izq_P}
+    //         onChange={(e) =>
+    //           handleFavEditChange("fav2izq_P", Number(e.target.value))
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "-") {
+    //             e.preventDefault();
+    //           }
+    //         }}
+    //       />
+    //     ) : (
+    //       formatCell(row.fav2izq_P)
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "680px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
+    // {
+    //   headerName: "S [m]",
+    //   field: "fav2izq_S",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <input
+    //         type="number"
+    //         min="0"
+    //         step="any"
+    //         className="form-control"
+    //         style={favInputStyle}
+    //         value={favEditData.fav2izq_S}
+    //         onChange={(e) =>
+    //           handleFavEditChange("fav2izq_S", Number(e.target.value))
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "-") {
+    //             e.preventDefault();
+    //           }
+    //         }}
+    //       />
+    //     ) : (
+    //       formatCell(row.fav2izq_S)
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "600px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
+    // {
+    //   headerName: "P [m]",
+    //   field: "fav2der_P",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <input
+    //         type="number"
+    //         min="0"
+    //         step="any"
+    //         className="form-control"
+    //         style={favInputStyle}
+    //         value={favEditData.fav2der_P}
+    //         onChange={(e) =>
+    //           handleFavEditChange("fav2der_P", Number(e.target.value))
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "-") {
+    //             e.preventDefault();
+    //           }
+    //         }}
+    //       />
+    //     ) : (
+    //       formatCell(row.fav2der_P)
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "520px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
+    // {
+    //   headerName: "S [m]",
+    //   field: "fav2der_S",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <input
+    //         type="number"
+    //         min="0"
+    //         step="any"
+    //         className="form-control"
+    //         style={favInputStyle}
+    //         value={favEditData.fav2der_S}
+    //         onChange={(e) =>
+    //           handleFavEditChange("fav2der_S", Number(e.target.value))
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "-") {
+    //             e.preventDefault();
+    //           }
+    //         }}
+    //       />
+    //     ) : (
+    //       formatCell(row.fav2der_S)
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "440px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
+    // {
+    //   headerName: "E [m]",
+    //   field: "fav3_E",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <input
+    //         type="number"
+    //         min="0"
+    //         step="any"
+    //         className="form-control"
+    //         style={favInputStyle}
+    //         value={favEditData.fav3_E}
+    //         onChange={(e) =>
+    //           handleFavEditChange("fav3_E", Number(e.target.value))
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "-") {
+    //             e.preventDefault();
+    //           }
+    //         }}
+    //       />
+    //     ) : (
+    //       formatCell(row.fav3_E)
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "360px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
+    // {
+    //   headerName: "T [m]",
+    //   field: "fav3_T",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <input
+    //         type="number"
+    //         min="0"
+    //         step="any"
+    //         className="form-control"
+    //         style={favInputStyle}
+    //         value={favEditData.fav3_T}
+    //         onChange={(e) =>
+    //           handleFavEditChange("fav3_T", Number(e.target.value))
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "-") {
+    //             e.preventDefault();
+    //           }
+    //         }}
+    //       />
+    //     ) : (
+    //       formatCell(row.fav3_T)
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "280px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
+    // {
+    //   headerName: "β [°]",
+    //   field: "fav3_beta",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <input
+    //         type="number"
+    //         min="0"
+    //         step="any"
+    //         className="form-control"
+    //         style={favInputStyle}
+    //         value={favEditData.fav3_beta}
+    //         onChange={(e) =>
+    //           handleFavEditChange("fav3_beta", Number(e.target.value))
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "-") {
+    //             e.preventDefault();
+    //           }
+    //         }}
+    //       />
+    //     ) : (
+    //       formatCell(row.fav3_beta)
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "200px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
+    // {
+    //   headerName: "α [°]",
+    //   field: "fav3_alpha",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <input
+    //         type="number"
+    //         min="0"
+    //         step="any"
+    //         className="form-control"
+    //         style={favInputStyle}
+    //         value={favEditData.fav3_alpha}
+    //         onChange={(e) =>
+    //           handleFavEditChange("fav3_alpha", Number(e.target.value))
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "-") {
+    //             e.preventDefault();
+    //           }
+    //         }}
+    //       />
+    //     ) : (
+    //       formatCell(row.fav3_alpha)
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "120px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
+    // {
+    //   headerName: "Acciones FAV",
+    //   field: "acciones_fav",
+    //   renderCell: (row: any) =>
+    //     editingFavRow === row.id ? (
+    //       <ActionButtonsConfirm
+    //         onAccept={handleConfirmEditFav}
+    //         onCancel={() => {
+    //           setEditingFavRow(null);
+    //           setFavEditData(null);
+    //         }}
+    //       />
+    //     ) : (
+    //       <CustomButton
+    //         variant="editIcon"
+    //         onClick={() => handleFavEditClick(row)}
+    //       >
+    //         Editar FAV
+    //       </CustomButton>
+    //     ),
+    //   cellStyle: {
+    //     position: "sticky",
+    //     right: "0px",
+    //     background: "#fff",
+    //     zIndex: 1,
+    //   },
+    // },
   ];
 
   const multiHeader = {
@@ -1041,24 +1069,24 @@ const TabWindowCreate: React.FC = () => {
         { label: "Ancho (W) [m]", rowSpan: 2 },
         { label: "Marco", rowSpan: 2 },
         { label: "Acciones Ventana", rowSpan: 2 },
-        { label: "FAV 1", colSpan: 2 },
-        { label: "FAV 2 izq", colSpan: 2 },
-        { label: "FAV 2 Der", colSpan: 2 },
-        { label: "FAV 3", colSpan: 4 },
-        { label: "Acciones FAV", rowSpan: 2 },
+        // { label: "FAV 1", colSpan: 2 },
+        // { label: "FAV 2 izq", colSpan: 2 },
+        // { label: "FAV 2 Der", colSpan: 2 },
+        // { label: "FAV 3", colSpan: 4 },
+        // { label: "Acciones FAV", rowSpan: 2 },
       ],
-      [
-        { label: "D [m]" },
-        { label: "L [m]" },
-        { label: "P [m]" },
-        { label: "S [m]" },
-        { label: "P [m]" },
-        { label: "S [m]" },
-        { label: "E [m]" },
-        { label: "T [m]" },
-        { label: "β [°]" },
-        { label: "α [°]" },
-      ],
+      // [
+      //   { label: "D [m]" },
+      //   { label: "L [m]" },
+      //   { label: "P [m]" },
+      //   { label: "S [m]" },
+      //   { label: "P [m]" },
+      //   { label: "S [m]" },
+      //   { label: "E [m]" },
+      //   { label: "T [m]" },
+      //   { label: "β [°]" },
+      //   { label: "α [°]" },
+      // ],
     ],
   };
 
@@ -1287,6 +1315,14 @@ const TabWindowCreate: React.FC = () => {
           )}
         </div>
       </ModalCreate>
+      <ThermalBridgesWindowModal
+        isOpen={showModalThermicBridges}
+        handleClose={handleCloseEditBridge}
+        bridgeId={favEditData?.fav_id}
+        bridgeData={favEditData}
+        detailOptions={details}
+        onSaveSuccess={fetchWindowEnclosures} // Pass the fetch function as a callback
+      />
     </div>
   );
 };

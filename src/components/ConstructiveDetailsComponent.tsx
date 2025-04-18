@@ -251,9 +251,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
   const refreshDetails = async () => {
     await fetchFetchedDetails();
-    if (tabStep4 === "muros") fetchMurosDetails();
-    else if (tabStep4 === "techumbre") fetchTechumbreDetails();
-    else if (tabStep4 === "pisos") fetchPisosDetails();
+    if (tabStep4 === "muros") await fetchMurosDetails();
+    else if (tabStep4 === "techumbre") await fetchTechumbreDetails();
+    else if (tabStep4 === "pisos") await fetchPisosDetails();
   };
 
   const confirmDeleteDetail = async () => {
@@ -445,7 +445,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       handleInlineCancel();
     } catch (error: any) {
       console.error("Error al actualizar detalle inline:", error);
-      notify("Error al actualizar el detalle.");
+      notify("Ya existe un detalle con el nombre asignado.");
     }
   };
 
@@ -661,7 +661,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           <input
             type="text"
             className="form-control form-control-sm"
-            value={editValues.name_detail || item.name_detail}
+            value={editValues.name_detail ?? ""}
             onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
               setEditValues((prev: Record<string, any>) => ({
@@ -673,7 +673,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u && Number(item.value_u) !== 0 ? Number(item.value_u).toFixed(3) : "--",
+        valorU: item.value_u && Number(item.value_u) !== 0 ? Number(item.value_u).toFixed(3) : "-",
         colorExterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}
@@ -793,7 +793,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u ? item.value_u.toFixed(3) : "--",
+        valorU: item.value_u ? item.value_u.toFixed(3) : "-",
         colorExterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}
@@ -910,7 +910,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           <input
             type="text"
             className="form-control form-control-sm"
-            value={editValues.name_detail || item.name_detail}
+            value={editValues.name_detail ?? ""}
             onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
               setEditValues((prev: Record<string, any>) => ({
@@ -1329,9 +1329,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
       {showDetailsModal && selectedItem && (
         <DetailModal
           isOpen={showDetailsModal}
-          onClose={() => setShowDetailsModal(false)}
+          onClose={() => {
+            setShowDetailsModal(false);
+            refreshDetails();
+          }}
           selectedItem={selectedItem}
-          refreshParent={fetchFetchedDetails}
+          refreshParent={refreshDetails}
           materials={materials}
           fetchMaterials={fetchMaterials}
         />

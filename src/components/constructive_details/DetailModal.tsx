@@ -95,26 +95,44 @@ const DetailModal: React.FC<DetailModalProps> = ({
   }, [isOpen, fetchDetails]);
 
   // ======================================================
+  // =            OBTENER INFORMACIÓN DE DETALLE          =
+  // ======================================================
+  const fetchDetailInfo = async (detailId: number) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      notify("Token no encontrado, por favor inicia sesión");
+      return null;
+    }
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(
+        `${constantUrlApiEndpoint}/admin/detail-part/${detailId}`,
+        { headers }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching detail info:", error);
+      notify("Error al obtener información del detalle");
+      return null;
+    }
+  };
+
+  // ======================================================
   // =   ABRIR EL MODAL Y PRELLENAR CON DATOS DE TABLA    =
   // ======================================================
-  const handleOpenNewDetailModal = () => {
-    // Si ya hay detalles, toma la fila que tú quieras (por ejemplo, la primera) como referencia
-    if (details.length > 0) {
-      setNewDetailData({
-        scantilon_location: details[0].scantilon_location,
-        name_detail: details[0].name_detail,
-        material_id: 0,      // en 0 para que el usuario elija material
-        layer_thickness: 0,  // en 0 para que el usuario indique espesor
-      });
-    } else {
-      // Si no hay detalles, deja ambos en blanco (o ponle un valor por defecto)
-      setNewDetailData({
-        scantilon_location: "",
-        name_detail: "",
-        material_id: 0,
-        layer_thickness: 0,
-      });
-    }
+  const handleOpenNewDetailModal = async () => {
+    if (!selectedItem?.id) return;
+
+    const detailInfo = await fetchDetailInfo(selectedItem.id);
+    if (!detailInfo) return;
+
+    setNewDetailData({
+      scantilon_location: detailInfo.type || "",
+      name_detail: detailInfo.name_detail || "",
+      material_id: 0,
+      layer_thickness: 0,
+    });
+
     setIsNewDetailModalOpen(true);
   };
 

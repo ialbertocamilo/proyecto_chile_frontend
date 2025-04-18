@@ -86,7 +86,7 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({ tab, onNewCreated }) 
       if (onNewCreated) onNewCreated();
     } catch (error) {
       console.error("Error al crear el detalle constructivo:", error);
-      notify("Error al crear el Detalle Constructivo.");
+      notify("Ya existe un detalle con el nombre asignado.");
     }
   };
 

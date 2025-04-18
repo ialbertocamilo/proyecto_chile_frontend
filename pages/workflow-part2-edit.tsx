@@ -727,6 +727,15 @@ const WorkFlowpar2editPage: React.FC = () => {
       // Refresca la tabla en el modal
       fetchDetailModal(selectedItem.id);
 
+      // Actualiza los detalles en la tabla principal según el tipo
+      if (tabStep4 === "muros") {
+        fetchMurosDetails();
+      } else if (tabStep4 === "techumbre") {
+        fetchTechumbreDetails();
+      } else if (tabStep4 === "pisos") {
+        fetchPisosDetails();
+      }
+
       // Resetea formulario
       setNewDetailData({
         scantilon_location: "",
@@ -761,6 +770,9 @@ const WorkFlowpar2editPage: React.FC = () => {
       notify("Detalle actualizado exitosamente");
       // Se refrescan todos los detalles
       fetchDetailModal(selectedItem?.id);
+      fetchMurosDetails();
+      fetchTechumbreDetails();
+      fetchPisosDetails();
     } catch (error) {
       console.error("Error al actualizar el detalle:", error);
       notify("Error al actualizar el detalle.");
@@ -930,6 +942,10 @@ const WorkFlowpar2editPage: React.FC = () => {
             <DeleteDetailButton
               detailId={det.id}
               onDelete={() => {
+                fetchMurosDetails();
+                fetchPisosDetails();
+                fetchTechumbreDetails();
+                fetchFetchedDetails();
                 fetchDetailModal(selectedItem?.id);
               }}
             />
@@ -1099,7 +1115,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingRowId(null);
                 } catch (error) {
                   console.error("Error updating muro:", error);
-                  notify("Error al actualizar muro");
+                  notify("Ya existe un detalle con el nombre asignado.");
                 }
               }}
               onCancel={() => {
@@ -1234,7 +1250,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingTechRowId(null);
                 } catch (error) {
                   console.error("Error updating techumbre:", error);
-                  notify("Error al actualizar techumbre");
+                  notify("Ya existe un detalle con el nombre asignado.");
                 }
               }}
               onCancel={() => {
@@ -1552,7 +1568,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPisosRowId(null);
                 } catch (error) {
                   console.error("Error updating piso:", error);
-                  notify("Error al actualizar piso");
+                  notify("Ya existe un detalle con el nombre asignado.");
                 }
               }}
               onCancel={() => {

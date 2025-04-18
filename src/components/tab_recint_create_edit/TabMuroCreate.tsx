@@ -7,7 +7,7 @@ import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
-import ThermalBridgesModal from "../modals/ThermalBridgesModal";
+import ThermalBridgesWallModal from "../modals/ThermalBridgesWallModal";
 
 // Interfaz para muros
 interface Wall {
@@ -621,7 +621,7 @@ const TabMuroCreate: React.FC = () => {
           <ActionButtons
             onEdit={() => handleEditWall(row.id!)}
             onDelete={() => handleOpenDeleteModal(row)}
-            onDetails={() => handleThermicBridgesWall(row.bridgeId!)}
+            onThermalBridge={() => handleThermicBridgesWall(row.bridgeId!)}
           />
         );
       },
@@ -1173,7 +1173,7 @@ const TabMuroCreate: React.FC = () => {
           </p>
         )}
       </ModalCreate>
-      <ThermalBridgesModal
+      <ThermalBridgesWallModal
         isOpen={showModalThermicBridges}
         handleClose={handleCloseEditBridge}
         bridgeId={editingBridgeId}

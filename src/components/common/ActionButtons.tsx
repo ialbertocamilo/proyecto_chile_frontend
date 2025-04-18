@@ -4,14 +4,14 @@ import CustomButton from "./CustomButton";
 interface ActionButtonsProps {
   onEdit: () => void;
   onDelete: () => void;
-  onDetails?: () => void;
+  onThermalBridge?: () => void;
   isDisabled?: boolean;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
   onEdit,
   onDelete,
-  onDetails,
+  onThermalBridge,
   isDisabled = false,
 }) => {
   return (
@@ -36,11 +36,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         title="Eliminar"
         disabled={isDisabled}
       />
-      {onDetails && (
+      {onThermalBridge && (
         <button
           type="button"
           className="button btn-small px-3 btn btn-icon-only btn-table-list button-thermic-bridges"
-          onClick={onDetails}
+          onClick={onThermalBridge}
           disabled={isDisabled}
           style={{
             margin: "0",

@@ -504,6 +504,7 @@ const TabDoorCreate: React.FC = () => {
     }
   };
 
+  //Cerrar el modal
   const handleCloseEditBridge = () => {
     setShowModalThermicBridges(false);
     setEditingFavRow(null);

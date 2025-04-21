@@ -1799,8 +1799,8 @@ const WorkFlowpar2editPage: React.FC = () => {
       { key: "muros", label: "Muros" },
       { key: "techumbre", label: "Techumbre" },
       { key: "pisos", label: "Pisos" },
-      { key: "ventanas", label: "Ventanas" },
-      { key: "puertas", label: "Puertas" },
+      // { key: "ventanas", label: "Ventanas" },
+      // { key: "puertas", label: "Puertas" },
     ] as { key: TabStep4; label: string }[];
     return (
       <div className="mt-4">
@@ -1851,8 +1851,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           {tabStep4 === "muros" && renderMurosParameters()}
           {tabStep4 === "techumbre" && renderTechumbreParameters()}
           {tabStep4 === "pisos" && renderPisosParameters()}
-          {tabStep4 === "ventanas" && renderVentanasParameters()}
-          {tabStep4 === "puertas" && renderPuertasParameters()}
+          {/* {tabStep4 === "ventanas" && renderVentanasParameters()}
+          {tabStep4 === "puertas" && renderPuertasParameters()} */}
         </div>
       </div>
     );

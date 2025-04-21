@@ -2016,8 +2016,11 @@ const WorkFlowpar2createPage: React.FC = () => {
       { key: "muros", label: "Muros" },
       { key: "techumbre", label: "Techumbre" },
       { key: "pisos", label: "Pisos" },
+      // Pestañas de ventanas y puertas comentadas temporalmente
+      /*
       { key: "ventanas", label: "Ventanas" },
       { key: "puertas", label: "Puertas" },
+      */
     ] as { key: TabStep4; label: string }[];
 
     return (
@@ -2071,9 +2074,11 @@ const WorkFlowpar2createPage: React.FC = () => {
           {tabStep4 === "muros" && renderMurosTable()}
           {tabStep4 === "techumbre" && renderTechumbreTable()}
           {tabStep4 === "pisos" && renderPisosTable()}
+          {/* Renderizado de tablas de ventanas y puertas comentado temporalmente
           {tabStep4 === "ventanas" && renderVentanasTable()}
           {tabStep4 === "puertas" && renderPuertasTable()}
-        </div>
+          */}
+        </div> 
       </div>
     );
   };

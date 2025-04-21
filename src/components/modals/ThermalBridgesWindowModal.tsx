@@ -56,41 +56,6 @@ const ThermalBridgesWindowModal: FC<ThermalBridgesWindowModalProps> = (
     }
     return { token, enclosure_id };
   };
-  // ThermalBridgesModalSave
-  // async function handleSaveThermalBridgesModal() {
-  //   // Aquí puedes definir la lógica para guardar los puentes térmicos
-  //   console.log("props.detailOptions", detailOptions);
-  //   console.log("Guardar puentes térmicos");
-
-  //   if (!props.bridgeId || !editingBridgeData) return;
-  //   const authData = getAuthData();
-  //   if (!authData) return;
-  //   try {
-  //     const response = await fetch(
-  //       `${constantUrlApiEndpoint}/thermal-bridge-update/${props.bridgeId}`,
-  //       {
-  //         method: "PUT",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${authData.token}`,
-  //         },
-  //         body: JSON.stringify(editingBridgeData),
-  //       }
-  //     );
-  //     if (!response.ok) throw new Error("Error al actualizar puente térmico");
-  //     notify("Puente térmico actualizado exitosamente");
-  //     setEditingBridgeId(null);
-  //     setEditingBridgeData(null);
-  //     if (props.onSaveSuccess) {
-  //       props.onSaveSuccess();
-  //     }
-  //   } catch (error) {
-  //     notify("Error al actualizar puente térmico");
-  //     console.error(error);
-  //   }
-
-  //   props.handleClose();
-  // }
 
   const handleSaveThermalBridgesModal = async () => {
     const {

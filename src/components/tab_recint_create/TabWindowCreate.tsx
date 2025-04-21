@@ -1321,7 +1321,7 @@ const TabWindowCreate: React.FC = () => {
         bridgeId={favEditData?.fav_id}
         bridgeData={favEditData}
         detailOptions={details}
-        onSaveSuccess={fetchWindowEnclosures} // Pass the fetch function as a callback
+        onSaveSuccess={fetchWindowEnclosures}
       />
     </div>
   );

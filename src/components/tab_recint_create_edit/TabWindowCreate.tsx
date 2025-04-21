@@ -6,6 +6,7 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
+import ThermalBridgesWindowModal from "../modals/ThermalBridgesWindowModal";
 
 const TabWindowCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id");
@@ -126,6 +127,27 @@ const TabWindowCreate: React.FC = () => {
     fetchWindowOptions();
   }, [token]);
 
+  const [showModalThermicBridges, setShowModalThermicBridges] =
+    useState<boolean>(false);
+
+  function handleThermicBridgesWindow(row: any) {
+    // console.log("Puentes térmicos para el bridgeId:", bridgeId);
+    console.log("row", row);
+    handleFavEditClick(row);
+
+    console.log("editData", editData);
+    console.log("favEditData", favEditData);
+    // console.log("editingBridgeData", editingBridgeData);
+    // console.log("detailOptions", detailOptions);
+    setShowModalThermicBridges(true);
+  }
+  //ThermalBridgesModal FIN
+  const handleCloseEditBridge = () => {
+    setShowModalThermicBridges(false);
+    setEditingFavRow(null);
+    setEditData(null);
+  };
+
   // Obtener ventanas y FAVs
   const fetchWindowEnclosures = async () => {
     try {
@@ -152,7 +174,9 @@ const TabWindowCreate: React.FC = () => {
 
         // Buscar el detalle correspondiente
         const detail = details.find((d: any) => d.id === item.housed_in);
-        const detailName = detail ? detail.name_detail : `Detalle ${item.housed_in}`;
+        const detailName = detail
+          ? detail.name_detail
+          : `Detalle ${item.housed_in}`;
 
         return {
           id: item.id,
@@ -255,9 +279,7 @@ const TabWindowCreate: React.FC = () => {
     setFormData({
       ...formData,
       [name]:
-        name === "housed_in" || name === "window_id"
-          ? Number(value)
-          : value,
+        name === "housed_in" || name === "window_id" ? Number(value) : value,
     });
   };
 
@@ -401,16 +423,29 @@ const TabWindowCreate: React.FC = () => {
 
   const handleConfirmEditFav = async () => {
     const {
-      fav1_D, fav1_L, fav2izq_P, fav2izq_S, fav2der_P, fav2der_S,
-      fav3_E, fav3_T, fav3_beta, fav3_alpha
+      fav1_D,
+      fav1_L,
+      fav2izq_P,
+      fav2izq_S,
+      fav2der_P,
+      fav2der_S,
+      fav3_E,
+      fav3_T,
+      fav3_beta,
+      fav3_alpha,
     } = favEditData;
 
     if (
-      fav1_D < 0 || fav1_L < 0 ||
-      fav2izq_P < 0 || fav2izq_S < 0 ||
-      fav2der_P < 0 || fav2der_S < 0 ||
-      fav3_E < 0 || fav3_T < 0 ||
-      fav3_beta < 0 || fav3_alpha < 0
+      fav1_D < 0 ||
+      fav1_L < 0 ||
+      fav2izq_P < 0 ||
+      fav2izq_S < 0 ||
+      fav2der_P < 0 ||
+      fav2der_S < 0 ||
+      fav3_E < 0 ||
+      fav3_T < 0 ||
+      fav3_beta < 0 ||
+      fav3_alpha < 0
     ) {
       notify("No se permiten valores negativos en FAV");
       return;
@@ -487,7 +522,9 @@ const TabWindowCreate: React.FC = () => {
             className="form-control"
             style={selectStyle}
             value={editData.window_id}
-            onChange={(e) => handleEditChange("window_id", Number(e.target.value))}
+            onChange={(e) =>
+              handleEditChange("window_id", Number(e.target.value))
+            }
           >
             <option value={0}>Seleccione un elemento</option>
             {windowOptions.map((element: any) => (
@@ -509,7 +546,9 @@ const TabWindowCreate: React.FC = () => {
             className="form-control"
             style={selectStyle}
             value={editData.characteristics}
-            onChange={(e) => handleEditChange("characteristics", e.target.value)}
+            onChange={(e) =>
+              handleEditChange("characteristics", e.target.value)
+            }
           >
             <option value="">Seleccione una opción</option>
             {characteristicsOptions.map((option, index) => (
@@ -558,7 +597,9 @@ const TabWindowCreate: React.FC = () => {
             className="form-control"
             style={selectStyle}
             value={editData.housed_in}
-            onChange={(e) => handleEditChange("housed_in", Number(e.target.value))}
+            onChange={(e) =>
+              handleEditChange("housed_in", Number(e.target.value))
+            }
           >
             <option value={0}>Seleccione un detalle</option>
             {details.map((detail: any) => (
@@ -687,12 +728,13 @@ const TabWindowCreate: React.FC = () => {
           <ActionButtons
             onEdit={() => handleEditClick(row)}
             onDelete={() => handleDeleteClick(row)}
+            onThermalBridge={() => handleThermicBridgesWindow(row)}
           />
         ),
     },
     // ========================================
     // FAV (con inputs sin permitir negativos y formateo de valores)
-    {
+    /* {
       headerName: "D [m]",
       field: "fav1_D",
       renderCell: (row: any) =>
@@ -703,7 +745,7 @@ const TabWindowCreate: React.FC = () => {
             step="any"
             className="form-control"
             style={selectStyle}
-// Remove duplicate style attribute
+            // Remove duplicate style attribute
             value={favEditData.fav1_D}
             onChange={(e) =>
               handleFavEditChange("fav1_D", Number(e.target.value))
@@ -733,7 +775,7 @@ const TabWindowCreate: React.FC = () => {
             step="any"
             className="form-control"
             style={selectStyle}
-// Remove duplicate style attribute and keep favInputStyle
+            // Remove duplicate style attribute and keep favInputStyle
             value={favEditData.fav1_L}
             onChange={(e) =>
               handleFavEditChange("fav1_L", Number(e.target.value))
@@ -997,7 +1039,10 @@ const TabWindowCreate: React.FC = () => {
             }}
           />
         ) : (
-          <CustomButton variant="editIcon" onClick={() => handleFavEditClick(row)}>
+          <CustomButton
+            variant="editIcon"
+            onClick={() => handleFavEditClick(row)}
+          >
             Editar FAV
           </CustomButton>
         ),
@@ -1007,7 +1052,7 @@ const TabWindowCreate: React.FC = () => {
         background: "#fff",
         zIndex: 1,
       },
-    },
+    }, */
   ];
 
   const multiHeader = {
@@ -1025,13 +1070,13 @@ const TabWindowCreate: React.FC = () => {
         { label: "Ancho (W) [m]", rowSpan: 2 },
         { label: "Marco", rowSpan: 2 },
         { label: "Acciones Ventana", rowSpan: 2 },
-        { label: "FAV 1", colSpan: 2 },
+        /* { label: "FAV 1", colSpan: 2 },
         { label: "FAV 2 izq", colSpan: 2 },
         { label: "FAV 2 Der", colSpan: 2 },
         { label: "FAV 3", colSpan: 4 },
-        { label: "Acciones FAV", rowSpan: 2 },
+        { label: "Acciones FAV", rowSpan: 2 }, */
       ],
-      [
+      /* [
         { label: "D [m]" },
         { label: "L [m]" },
         { label: "P [m]" },
@@ -1042,7 +1087,7 @@ const TabWindowCreate: React.FC = () => {
         { label: "T [m]" },
         { label: "β [°]" },
         { label: "α [°]" },
-      ],
+      ], */
     ],
   };
 
@@ -1085,7 +1130,7 @@ const TabWindowCreate: React.FC = () => {
                 id="window_id"
                 name="window_id"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.window_id}
                 onChange={handleInputChange}
               >
@@ -1110,7 +1155,7 @@ const TabWindowCreate: React.FC = () => {
                 id="characteristics"
                 name="characteristics"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.characteristics}
                 onChange={handleInputChange}
               >
@@ -1132,7 +1177,7 @@ const TabWindowCreate: React.FC = () => {
                 id="angulo_azimut"
                 name="angulo_azimut"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.angulo_azimut}
                 onChange={handleInputChange}
               >
@@ -1155,7 +1200,7 @@ const TabWindowCreate: React.FC = () => {
                 id="housed_in"
                 name="housed_in"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.housed_in}
                 onChange={handleInputChange}
               >
@@ -1177,7 +1222,7 @@ const TabWindowCreate: React.FC = () => {
                 id="position"
                 name="position"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.position}
                 onChange={handleInputChange}
               >
@@ -1199,7 +1244,7 @@ const TabWindowCreate: React.FC = () => {
                 id="with_no_return"
                 name="with_no_return"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.with_no_return}
                 onChange={handleInputChange}
               >
@@ -1224,7 +1269,7 @@ const TabWindowCreate: React.FC = () => {
                 id="high"
                 name="high"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.high}
                 onChange={handleInputChange}
                 onKeyDown={(e) => {
@@ -1247,7 +1292,7 @@ const TabWindowCreate: React.FC = () => {
                 id="broad"
                 name="broad"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.broad}
                 onChange={handleInputChange}
                 onKeyDown={(e) => {
@@ -1279,6 +1324,14 @@ const TabWindowCreate: React.FC = () => {
           )}
         </div>
       </ModalCreate>
+      <ThermalBridgesWindowModal
+        isOpen={showModalThermicBridges}
+        handleClose={handleCloseEditBridge}
+        bridgeId={favEditData?.fav_id}
+        bridgeData={favEditData}
+        detailOptions={details}
+        onSaveSuccess={fetchWindowEnclosures} // Pass the fetch function as a callback
+      />
     </div>
   );
 };

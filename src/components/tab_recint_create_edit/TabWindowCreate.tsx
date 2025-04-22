@@ -1093,11 +1093,6 @@ const TabWindowCreate: React.FC = () => {
 
   return (
     <div>
-      <TablesParameters
-        columns={columns}
-        data={tableData}
-        multiHeader={multiHeader}
-      />
       <div
         style={{
           marginTop: "1rem",
@@ -1112,6 +1107,11 @@ const TabWindowCreate: React.FC = () => {
           Crear Ventana
         </CustomButton>
       </div>
+      <TablesParameters
+        columns={columns}
+        data={tableData}
+        multiHeader={multiHeader}
+      />
       {/* Modal de creación */}
       <ModalCreate
         isOpen={showModal}

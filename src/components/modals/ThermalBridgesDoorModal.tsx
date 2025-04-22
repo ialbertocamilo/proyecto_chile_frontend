@@ -235,14 +235,14 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
               type="number"
               className="form-control"
               style={favInputStyle}
-              value={favEditData?.fav2DerP ?? ""}
+              value={favEditData?.fav2DerS ?? ""}
               onKeyDown={(e) => {
                 if (e.key === "-") {
                   e.preventDefault();
                 }
               }}
               onChange={(e) =>
-                handleFavEditChange("fav2DerP", Number(e.target.value))
+                handleFavEditChange("fav2DerS", Number(e.target.value))
               }
             />
           </div>

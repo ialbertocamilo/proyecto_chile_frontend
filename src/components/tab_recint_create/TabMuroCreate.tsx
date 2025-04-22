@@ -865,7 +865,7 @@ const TabMuroCreate: React.FC = () => {
   // Crear un multiheader único
   const mergedMultiHeader = {
     rows: [
-      [{ label: "Muros y Puentes Térmicos", colSpan: mergedColumns.length }],
+      // [{ label: "Muros", colSpan: mergedColumns.length }],
       [
         ...[
           { label: "Muros" },
@@ -967,17 +967,17 @@ const TabMuroCreate: React.FC = () => {
   // Renderizado único: se muestra solo la tabla fusionada y el botón de “Nuevo Muro”
   const renderContent = () => (
     <div className="col-12">
+      <div className="d-flex justify-content-end gap-2 mt-3 w-100">
+        <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
+          Nuevo Muro
+        </CustomButton>
+      </div>
       <div className="table-responsive">
         <TablesParameters
           columns={mergedColumns}
           data={mergedData}
           multiHeader={mergedMultiHeader}
         />
-      </div>
-      <div className="d-flex justify-content-end gap-2 mt-3 w-100">
-        <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
-          Nuevo Muro
-        </CustomButton>
       </div>
     </div>
   );

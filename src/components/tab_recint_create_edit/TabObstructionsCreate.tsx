@@ -7,6 +7,11 @@ import ModalCreate from "../common/ModalCreate";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
+interface AngleAzimutOption {
+  range_az: string;
+  orientation: string;
+}
+
 interface ObstructionsData {
   id: number; // id de la orientación
   division_id: number | null; // id de la división (nuevo)
@@ -34,7 +39,7 @@ const ObstructionTable: React.FC = () => {
   const [tableLoading, setTableLoading] = useState<boolean>(false);
   // Modal para crear Obstrucciones (ya existente)
   const [showModal, setShowModal] = useState(false);
-  const [angleOptions, setAngleOptions] = useState<string[]>([]);
+  const [angleOptions, setAngleOptions] = useState<AngleAzimutOption[]>([]);
   // selectedAngle se usará tanto en el modal de creación como en la edición inline
   const [selectedAngle, setSelectedAngle] = useState<string>("");
   // Estado para controlar la visibilidad del botón "+"
@@ -131,7 +136,7 @@ const ObstructionTable: React.FC = () => {
   useEffect(() => {
     if (showModal) {
       setSelectedAngle("");
-      fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
+      fetch(`${constantUrlApiEndpoint}/angle-azimut-and-orientation`, {
         method: "GET",
         headers: {
           "accept": "application/json",
@@ -139,7 +144,7 @@ const ObstructionTable: React.FC = () => {
         }
       })
         .then((response) => response.json())
-        .then((data: string[]) => {
+        .then((data: { range_az: string; orientation: string }[]) => {
           setAngleOptions(data);
         })
         .catch((error) => {
@@ -351,6 +356,11 @@ const ObstructionTable: React.FC = () => {
     setSelectedAngle(event.target.value);
   };
 
+  // Función auxiliar para formatear la opción del ángulo azimut
+  const formatAngleOption = (option: { range_az: string; orientation: string }) => {
+    return `${option.range_az} - ${option.orientation}`;
+  };
+
   // Función para cerrar el modal de Obstrucciones
   const handleCloseModal = () => {
     setShowModal(false);
@@ -539,12 +549,12 @@ const ObstructionTable: React.FC = () => {
               onChange={(e) => setSelectedAngle(e.target.value)}
             >
               {angleOptions
-                .filter(angle =>
-                  !tableData.some(obstruction => obstruction.anguloAzimut === angle && obstruction.id !== row.id)
+                .filter(option =>
+                  !tableData.some(obstruction => obstruction.anguloAzimut === option.range_az && obstruction.id !== row.id)
                 )
-                .map((angle, index) => (
-                  <option key={index} value={angle}>
-                    {angle}
+                .map((option, index) => (
+                  <option key={index} value={option.range_az}>
+                    {formatAngleOption(option)}
                   </option>
                 ))}
             </select>
@@ -783,10 +793,10 @@ const ObstructionTable: React.FC = () => {
               Seleccione una opción
             </option>
             {angleOptions
-              .filter(angle => !tableData.some(obstruction => obstruction.anguloAzimut === angle))
-              .map((angle, index) => (
-                <option key={index} value={angle}>
-                  {angle}
+              .filter(option => !tableData.some(obstruction => obstruction.anguloAzimut === option.range_az))
+              .map((option, index) => (
+                <option key={index} value={option.range_az}>
+                  {formatAngleOption(option)}
                 </option>
               ))}
           </select>

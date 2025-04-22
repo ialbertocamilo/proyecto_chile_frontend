@@ -7,6 +7,11 @@ import ModalCreate from "../common/ModalCreate";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 
+interface AngleAzimutOption {
+  range_az: string;
+  orientation: string;
+}
+
 interface ObstructionsData {
   uniqueKey: string; // Nueva propiedad para identificar de forma única cada fila
   divisionKey?: string;
@@ -37,7 +42,7 @@ const ObstructionTable: React.FC = () => {
   const [tableLoading, setTableLoading] = useState<boolean>(false);
   // Modal para crear Obstrucciones (ya existente)
   const [showModal, setShowModal] = useState(false);
-  const [angleOptions, setAngleOptions] = useState<string[]>([]);
+  const [angleOptions, setAngleOptions] = useState<AngleAzimutOption[]>([]);
   // selectedAngle se usará tanto en el modal de creación como en la edición inline
   const [selectedAngle, setSelectedAngle] = useState<string>("");
   // Estado para controlar la visibilidad del botón "+"
@@ -135,7 +140,7 @@ const ObstructionTable: React.FC = () => {
   useEffect(() => {
     if (showModal) {
       setSelectedAngle("");
-      fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
+      fetch(`${constantUrlApiEndpoint}/angle-azimut-and-orientation`, {
         method: "GET",
         headers: {
           "accept": "application/json",
@@ -143,7 +148,7 @@ const ObstructionTable: React.FC = () => {
         }
       })
         .then((response) => response.json())
-        .then((data: string[]) => {
+        .then((data: AngleAzimutOption[]) => {
           setAngleOptions(data);
         })
         .catch((error) => {
@@ -549,12 +554,12 @@ const ObstructionTable: React.FC = () => {
               onChange={(e) => setSelectedAngle(e.target.value)}
             >
               {angleOptions
-                .filter(angle =>
-                  !tableData.some(obstruction => obstruction.anguloAzimut === angle && obstruction.uniqueKey !== row.uniqueKey)
+                .filter(angleOption =>
+                  !tableData.some(obstruction => obstruction.anguloAzimut === angleOption.range_az && obstruction.uniqueKey !== row.uniqueKey)
                 )
-                .map((angle, index) => (
-                  <option key={index} value={angle}>
-                    {angle}
+                .map((angleOption, index) => (
+                  <option key={index} value={angleOption.range_az}>
+                    {angleOption.range_az} - {angleOption.orientation}
                   </option>
                 ))}
             </select>
@@ -793,10 +798,10 @@ const ObstructionTable: React.FC = () => {
               Seleccione una opción
             </option>
             {angleOptions
-              .filter(angle => !tableData.some(obstruction => obstruction.anguloAzimut === angle))
+              .filter(angle => !tableData.some(obstruction => obstruction.anguloAzimut === angle.range_az))
               .map((angle, index) => (
-                <option key={index} value={angle}>
-                  {angle}
+                <option key={index} value={angle.range_az}>
+                  {`${angle.range_az} - ${angle.orientation}`}
                 </option>
               ))}
           </select>

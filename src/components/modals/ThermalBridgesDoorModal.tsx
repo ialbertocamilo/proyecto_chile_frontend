@@ -124,7 +124,7 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
       // onClose={props.handleClose}
       onClose={props.handleClose}
       onSave={handleSaveThermalBridgesModal}
-      title="Puentes Térmicos"
+      title="Factor de Accesibilidad"
       saveLabel="Guardar"
     >
       <div className="container-fluid p-0">

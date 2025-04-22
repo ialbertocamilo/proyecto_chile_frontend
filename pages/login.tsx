@@ -23,6 +23,8 @@ const Login: NextPageWithLayout = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const roleId = localStorage.getItem("role_id");
+    const savedEmail = localStorage.getItem("savedEmail");
+    const savedPassword = localStorage.getItem("savedPassword");
 
     if (token) {
       if (roleId === "1") {
@@ -30,6 +32,13 @@ const Login: NextPageWithLayout = () => {
       } else {
         router.push("/project-list");
       }
+    }
+
+    // Cargar credenciales guardadas si existen
+    if (savedEmail && savedPassword) {
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setRemember(true);
     }
   }, [router]);
 
@@ -63,6 +72,15 @@ const Login: NextPageWithLayout = () => {
       localStorage.setItem("User", data.token);
       localStorage.setItem("email", email);
       localStorage.setItem("user_name", data.name || "Usuario");
+
+      // Guardar credenciales si 'Recuérdame' está marcado
+      if (remember) {
+        localStorage.setItem("savedEmail", email);
+        localStorage.setItem("savedPassword", password);
+      } else {
+        localStorage.removeItem("savedEmail");
+        localStorage.removeItem("savedPassword");
+      }
 
       console.log("User data", data);
       setTimeout(() => {

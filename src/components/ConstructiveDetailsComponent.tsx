@@ -673,7 +673,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u && Number(item.value_u) !== 0 ? Number(item.value_u).toFixed(3) : "-",
+        valorU: item.value_u && Number(item.value_u) !== 0 ? Number(item.value_u).toFixed(2) : "-",
         colorExterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}
@@ -793,7 +793,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u ? item.value_u.toFixed(3) : "-",
+        valorU: item.value_u ? item.value_u.toFixed(2) : "-",
         colorExterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}
@@ -924,12 +924,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ),
         uValue:
           item.value_u && Number(item.value_u) !== 0
-            ? Number(item.value_u).toFixed(3)
+            ? Number(item.value_u).toFixed(2)
             : "-",
         bajoPisoLambda:
           item.info?.aislacion_bajo_piso?.lambda &&
           Number(item.info.aislacion_bajo_piso.lambda) !== 0
-            ? Number(item.info.aislacion_bajo_piso.lambda).toFixed(3)
+            ? Number(item.info.aislacion_bajo_piso.lambda).toFixed(2)
             : "-",
         bajoPisoEAisl:
           item.info?.aislacion_bajo_piso?.e_aisl &&
@@ -944,7 +944,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={
               editValues.vertLambda !== undefined
                 ? editValues.vertLambda
-                : (vert.lambda && Number(vert.lambda) !== 0 ? Number(vert.lambda).toFixed(3) : "")
+                : (vert.lambda && Number(vert.lambda) !== 0 ? Number(vert.lambda).toFixed(2) : "")
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -958,7 +958,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               if (e.key === "-") e.preventDefault();
             }}
           />
-        ) : (vert.lambda && Number(vert.lambda) !== 0 ? Number(vert.lambda).toFixed(3) : "-"),
+        ) : (vert.lambda && Number(vert.lambda) !== 0 ? Number(vert.lambda).toFixed(2) : "-"),
         vertEAisl: isEditing ? (
           <input
             type="number"
@@ -1021,7 +1021,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={
               editValues.horizLambda !== undefined
                 ? editValues.horizLambda
-                : (horiz.lambda && Number(horiz.lambda) !== 0 ? Number(horiz.lambda).toFixed(3) : "")
+                : (horiz.lambda && Number(horiz.lambda) !== 0 ? Number(horiz.lambda).toFixed(2) : "")
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1035,7 +1035,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
               if (e.key === "-") e.preventDefault();
             }}
           />
-        ) : (horiz.lambda && Number(horiz.lambda) !== 0 ? Number(horiz.lambda).toFixed(3) : "-"),
+        ) : (horiz.lambda && Number(horiz.lambda) !== 0 ? Number(horiz.lambda).toFixed(2) : "-"),
         horizEAisl: isEditing ? (
           <input
             type="number"

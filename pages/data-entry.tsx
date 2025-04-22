@@ -1414,6 +1414,7 @@ const DataEntryPage: React.FC = () => {
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="FM [%]" value={windowData.fm} />
+                <div className="input-group">
                 <input
                   type="number"
                   min="0"
@@ -1435,6 +1436,8 @@ const DataEntryPage: React.FC = () => {
                   }}
                   onKeyDown={handleNumberKeyDown}
                 />
+                <span className="input-group-text">%</span>
+                </div>
               </div>
             </div>
           ) : (
@@ -1506,6 +1509,7 @@ const DataEntryPage: React.FC = () => {
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="% Vidrio" value={doorData.porcentaje_vidrio} required={false} />
+                <div className="input-group">
                 <input
                   type="number"
                   min="0"
@@ -1527,6 +1531,8 @@ const DataEntryPage: React.FC = () => {
                   }}
                   onKeyDown={handleNumberKeyDown}
                 />
+                <span className="input-group-text">%</span>
+                </div>
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="U Marco [W/m2K]" value={doorData.u_marco} />
@@ -1544,6 +1550,7 @@ const DataEntryPage: React.FC = () => {
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="FM [%]" value={doorData.fm} />
+                <div className="input-group">
                 <input
                   type="number"
                   min="0"
@@ -1565,6 +1572,8 @@ const DataEntryPage: React.FC = () => {
                   }}
                   onKeyDown={handleNumberKeyDown}
                 />
+                 <span className="input-group-text">%</span>
+              </div>
               </div>
             </div>
           )}

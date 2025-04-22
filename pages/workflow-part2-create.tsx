@@ -1373,7 +1373,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u?.toFixed(3) ?? "--",
+        valorU: item.value_u?.toFixed(2) ?? "--",
         colorExterior: isEditing ? (
           <select
             value={editingColors.exterior}
@@ -1481,7 +1481,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u?.toFixed(3) ?? "--",
+        valorU: item.value_u?.toFixed(2) ?? "--",
         colorExterior: isEditing ? (
           <select
             value={editingTechColors.exterior}
@@ -1592,7 +1592,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   const formatNumber = (
     num: number | string | undefined,
-    decimals = 3
+    decimals = 2
   ): string => {
     const parsedNum = Number(num);
     return !isNaN(parsedNum) && parsedNum !== 0

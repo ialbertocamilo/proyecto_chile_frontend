@@ -15,6 +15,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 import ModalCreate from "../src/components/common/ModalCreate";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataView";
+import CustomButton from "../src/components/common/CustomButton";
 
 interface Detail {
   id_detail: number;
@@ -339,11 +340,21 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
+      {
+        headerName: "Acciones",
+        field: "actions",
+        renderCell: () => (
+          <CustomButton
+            variant="layersIcon"
+            onClick={() => {}}
+          />
+        ),
+      },
     ];
 
     const murosData = murosTabList.map((item) => ({
       name_detail: item.name_detail,
-      valorU: item.value_u?.toFixed(3) ?? "--",
+      valorU: item.value_u?.toFixed(2) ?? "-",
       colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
       colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
     }));
@@ -361,11 +372,21 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
+      {
+        headerName: "Acciones",
+        field: "actions",
+        renderCell: () => (
+          <CustomButton
+            variant="layersIcon"
+            onClick={() => {}}
+          />
+        ),
+      },
     ];
 
     const techData = techumbreTabList.map((item) => ({
       name_detail: item.name_detail,
-      valorU: item.value_u?.toFixed(3) ?? "--",
+      valorU: item.value_u?.toFixed(2) ?? "-",
       colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
       colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
     }));
@@ -400,6 +421,16 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
       { headerName: "e Aisl [cm]", field: "horizEAisl" },
       { headerName: "D [cm]", field: "horizD" },
+      {
+        headerName: "Acciones",
+        field: "actions",
+        renderCell: () => (
+          <CustomButton
+            variant="layersIcon"
+            onClick={() => {}}
+          />
+        ),
+      },
     ];
 
     const multiHeaderPisos = {
@@ -430,13 +461,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
       const horiz = item.info?.ref_aisl_horizontal || {};
       return {
         nombre: item.name_detail,
-        uValue: formatValue(item.value_u, 3),
-        bajoPisoLambda: formatValue(bajoPiso.lambda, 3),
+        uValue: formatValue(item.value_u, 2),
+        bajoPisoLambda: formatValue(bajoPiso.lambda, 2),
         bajoPisoEAisl: formatValue(bajoPiso.e_aisl),
-        vertLambda: formatValue(vert.lambda, 3),
+        vertLambda: formatValue(vert.lambda, 2),
         vertEAisl: formatValue(vert.e_aisl),
         vertD: formatValue(vert.d),
-        horizLambda: formatValue(horiz.lambda, 3),
+        horizLambda: formatValue(horiz.lambda, 2),
         horizEAisl: formatValue(horiz.e_aisl),
         horizD: formatValue(horiz.d),
       };

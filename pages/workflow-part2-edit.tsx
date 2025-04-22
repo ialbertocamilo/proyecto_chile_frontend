@@ -34,7 +34,7 @@ const formatValue = (value: number | null | undefined): string => {
   if (value === undefined || value === null || value === 0 || isNaN(Number(value))) {
     return "-";
   }
-  return Number(value).toFixed(3);
+  return Number(value).toFixed(2);
 };
 
 const formatPercentage = (value: number | null | undefined): string => {

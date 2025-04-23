@@ -388,7 +388,7 @@ const ObstructionTable: React.FC = () => {
     range_az: string;
     orientation: string;
   }) => {
-    return `${option.range_az} - ${option.orientation}`;
+    return `${option.range_az} (${option.orientation})`;
   };
 
   // Función para cerrar el modal de Obstrucciones

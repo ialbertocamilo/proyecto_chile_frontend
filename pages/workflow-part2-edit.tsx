@@ -2741,7 +2741,8 @@ const WorkFlowpar2editPage: React.FC = () => {
               type="number"
               min="0"
               className="form-control"
-              value={newDetailData.layer_thickness}
+              placeholder="cm"
+              value={newDetailData.layer_thickness > 0 ? newDetailData.layer_thickness : ""}
               onKeyDown={(e) => {
                 if (e.key === "-") e.preventDefault();
               }}

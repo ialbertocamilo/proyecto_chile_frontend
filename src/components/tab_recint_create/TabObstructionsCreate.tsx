@@ -857,7 +857,7 @@ const ObstructionTable: React.FC = () => {
               )
               .map((angle, index) => (
                 <option key={index} value={angle.range_az}>
-                  {`${angle.range_az} - ${angle.orientation}`}
+                  {`${angle.range_az}  (${angle.orientation})`}
                 </option>
               ))}
           </select>

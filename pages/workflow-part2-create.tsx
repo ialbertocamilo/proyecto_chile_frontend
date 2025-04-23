@@ -2763,7 +2763,8 @@ const WorkFlowpar2createPage: React.FC = () => {
               <input
                 type="number"
                 className="form-control"
-                value={newDetailData.layer_thickness}
+                placeholder="cm"
+                value={newDetailData.layer_thickness > 0 ? newDetailData.layer_thickness : ""}
                 min="0"
                 step="any"
                 onKeyDown={(e) => {

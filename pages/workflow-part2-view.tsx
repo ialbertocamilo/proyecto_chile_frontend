@@ -15,6 +15,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 import ModalCreate from "../src/components/common/ModalCreate";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataView";
+import CustomButton from "../src/components/common/CustomButton";
 
 interface Detail {
   id_detail: number;
@@ -76,7 +77,13 @@ interface Puerta {
   fm?: number;
 }
 
-type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
+type TabStep4 =
+  | "detalles"
+  | "muros"
+  | "techumbre"
+  | "pisos"
+  | "ventanas"
+  | "puertas";
 
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
@@ -339,11 +346,18 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
+      {
+        headerName: "Acciones",
+        field: "actions",
+        renderCell: () => (
+          <CustomButton variant="layersIcon" onClick={() => {}} />
+        ),
+      },
     ];
 
     const murosData = murosTabList.map((item) => ({
       name_detail: item.name_detail,
-      valorU: item.value_u?.toFixed(3) ?? "--",
+      valorU: item.value_u?.toFixed(2) ?? "-",
       colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
       colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
     }));
@@ -361,11 +375,18 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
+      {
+        headerName: "Acciones",
+        field: "actions",
+        renderCell: () => (
+          <CustomButton variant="layersIcon" onClick={() => {}} />
+        ),
+      },
     ];
 
     const techData = techumbreTabList.map((item) => ({
       name_detail: item.name_detail,
-      valorU: item.value_u?.toFixed(3) ?? "--",
+      valorU: item.value_u?.toFixed(2) ?? "-",
       colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
       colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
     }));
@@ -400,6 +421,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
       { headerName: "e Aisl [cm]", field: "horizEAisl" },
       { headerName: "D [cm]", field: "horizD" },
+      {
+        headerName: "Acciones",
+        field: "actions",
+        renderCell: () => (
+          <CustomButton variant="layersIcon" onClick={() => {}} />
+        ),
+      },
     ];
 
     const multiHeaderPisos = {
@@ -430,13 +458,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
       const horiz = item.info?.ref_aisl_horizontal || {};
       return {
         nombre: item.name_detail,
-        uValue: formatValue(item.value_u, 3),
-        bajoPisoLambda: formatValue(bajoPiso.lambda, 3),
+        uValue: formatValue(item.value_u, 2),
+        bajoPisoLambda: formatValue(bajoPiso.lambda, 2),
         bajoPisoEAisl: formatValue(bajoPiso.e_aisl),
-        vertLambda: formatValue(vert.lambda, 3),
+        vertLambda: formatValue(vert.lambda, 2),
         vertEAisl: formatValue(vert.e_aisl),
         vertD: formatValue(vert.d),
-        horizLambda: formatValue(horiz.lambda, 3),
+        horizLambda: formatValue(horiz.lambda, 2),
         horizEAisl: formatValue(horiz.e_aisl),
         horizD: formatValue(horiz.d),
       };
@@ -620,8 +648,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-
-
   // ==================== RENDER PESTAÑAS (DATOS CONSTRUCTIVOS) ====================
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
@@ -652,11 +678,16 @@ const WorkFlowpar2viewPage: React.FC = () => {
                   width: "100%",
                   padding: "10px",
                   backgroundColor: "#fff",
-                  color: tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
+                  color:
+                    tabStep4 === item.key
+                      ? primaryColor
+                      : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
                   borderBottom:
-                    tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
+                    tabStep4 === item.key
+                      ? `3px solid ${primaryColor}`
+                      : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -671,10 +702,19 @@ const WorkFlowpar2viewPage: React.FC = () => {
         {/* Se agrega onClick solo para tabs que no sean "puertas" ni "ventanas" */}
         <div
           style={{
-            height: (tabStep4 === "ventanas" || tabStep4 === "puertas") ? "auto" : "400px",
-            overflowY: (tabStep4 === "ventanas" || tabStep4 === "puertas") ? "hidden" : "auto",
+            height:
+              tabStep4 === "ventanas" || tabStep4 === "puertas"
+                ? "auto"
+                : "400px",
+            overflowY:
+              tabStep4 === "ventanas" || tabStep4 === "puertas"
+                ? "hidden"
+                : "auto",
             position: "relative",
-            cursor: tabStep4 !== "puertas" && tabStep4 !== "ventanas" ? "pointer" : "default",
+            cursor:
+              tabStep4 !== "puertas" && tabStep4 !== "ventanas"
+                ? "pointer"
+                : "default",
           }}
           onClick={
             tabStep4 !== "puertas" && tabStep4 !== "ventanas"
@@ -682,7 +722,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
               : undefined
           }
         >
-
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>{renderMurosTable()}</div>
           )}
@@ -793,7 +832,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
     {
       stepNumber: 1,
       iconName: "assignment_ind",
-      title: "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+      title:
+        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
       route: `/workflow-part1-view?id=${projectId}&step=1`,
     },
     {
@@ -853,7 +893,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
                 activeStep={step}
                 steps={sidebarSteps}
                 onClickAction={(route: string) => router.push(route)}
-                onStepChange={() => { }}
+                onStepChange={() => {}}
               />
             </div>
 
@@ -870,7 +910,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         detail=""
         isOpen={showGeneralDetailsModal}
         onClose={() => setShowGeneralDetailsModal(false)}
-        onSave={() => { }}
+        onSave={() => {}}
         title="Detalles Generales"
         hideFooter={true}
         modalStyle={{

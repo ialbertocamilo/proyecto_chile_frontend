@@ -433,7 +433,8 @@ const DetailModal: React.FC<DetailModalProps> = ({
             className="form-control"
             min="0"
             step="any"
-            value={newDetailData.layer_thickness}
+            placeholder="cm"
+            value={newDetailData.layer_thickness > 0 ? newDetailData.layer_thickness : ""}
             onKeyDown={(e) => {
               // Evitar que ingrese valores negativos
               if (e.key === "-") e.preventDefault();

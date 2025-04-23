@@ -957,35 +957,35 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           value: searchVentilacion,
           onChange: setSearchVentilacion,
           onNew: () => handleNuevoClick("ventilacion"),
-          placeholder: "Buscar recinto...",
+          placeholder: "Buscar perfil de uso...",
         };
       case "iluminacion":
         return {
           value: searchIluminacion,
           onChange: setSearchIluminacion,
           onNew: () => handleNuevoClick("iluminacion"),
-          placeholder: "Buscar recinto...",
+          placeholder: "Buscar perfil de uso...",
         };
       case "cargas":
         return {
           value: searchCargas,
           onChange: setSearchCargas,
           onNew: () => handleNuevoClick("cargas"),
-          placeholder: "Buscar recinto...",
+          placeholder: "Buscar perfil de uso...",
         };
       case "horario":
         return {
           value: searchHorario,
           onChange: setSearchHorario,
           onNew: () => handleNuevoClick("horario"),
-          placeholder: "Buscar recinto...",
+          placeholder: "Buscar perfil de uso...",
         };
       default:
         return {
           value: "",
           onChange: () => { },
           onNew: () => { },
-          placeholder: "Buscar recinto...",
+          placeholder: "Buscar perfil de uso...",
         };
     }
   };

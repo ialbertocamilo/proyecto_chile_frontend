@@ -6,6 +6,7 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
+import ThermalBridgesDoorModal from "../modals/ThermalBridgesDoorModal";
 
 interface DoorData {
   id: number;
@@ -149,12 +150,15 @@ const TabDoorCreate: React.FC = () => {
         });
 
         // Obtener opciones de ángulo
-        const angleResponse = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const angleResponse = await fetch(
+          `${constantUrlApiEndpoint}/angle-azimut`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         if (!angleResponse.ok) {
           throw new Error("Error al obtener las opciones de ángulo azimut");
         }
@@ -162,12 +166,15 @@ const TabDoorCreate: React.FC = () => {
         setAngleOptions(angleOpts);
 
         // Obtener opciones de puerta
-        const doorResponse = await fetch(`${constantUrlApiEndpoint}/user/elements/?type=door`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const doorResponse = await fetch(
+          `${constantUrlApiEndpoint}/user/elements/?type=door`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         if (!doorResponse.ok) {
           throw new Error("Error al obtener las opciones de puertas");
         }
@@ -176,7 +183,9 @@ const TabDoorCreate: React.FC = () => {
 
         // Actualizar el nombre de la puerta en la tabla si se encuentra en doorOptions
         const updatedData = mergedData.map((row) => {
-          const doorInfo = doorData.find((door: any) => door.id === row.door_id);
+          const doorInfo = doorData.find(
+            (door: any) => door.id === row.door_id
+          );
           if (doorInfo) {
             return { ...row, tipoPuente: doorInfo.name_element };
           }
@@ -268,7 +277,9 @@ const TabDoorCreate: React.FC = () => {
 
       // Actualizar el nombre de la puerta usando doorOptions ya cargado
       const updatedData = mergedData.map((row) => {
-        const doorInfo = doorOptions.find((door: any) => door.id === row.door_id);
+        const doorInfo = doorOptions.find(
+          (door: any) => door.id === row.door_id
+        );
         if (doorInfo) {
           return { ...row, tipoPuente: doorInfo.name_element };
         }
@@ -289,8 +300,28 @@ const TabDoorCreate: React.FC = () => {
     const tipoPuente = doorInfo ? doorInfo.name_element : row.tipoPuente;
     setEditingRow({ ...row, tipoPuente });
   };
+  //ThermalBridgesModal OPEN
+  const [showModalThermicBridges, setShowModalThermicBridges] =
+    useState<boolean>(false);
+  const handleCloseEditBridge = () => {
+    setShowModalThermicBridges(false);
+    setEditingFavRow(null);
+    // setData([]);
+  };
+  function handleThermicBridgesDoor(row: any) {
+    // console.log("Puentes térmicos para el bridgeId:", bridgeId);
+    console.log("row", row);
+    handleFavEditClick(row);
 
-  const handleRowFieldChange = (field: keyof DoorData, value: string | number) => {
+    console.log("favEditData", favEditData);
+    // console.log("editingBridgeData", editingBridgeData);
+    // console.log("detailOptions", detailOptions);
+    setShowModalThermicBridges(true);
+  }
+  const handleRowFieldChange = (
+    field: keyof DoorData,
+    value: string | number
+  ) => {
     if (editingRow) {
       setEditingRow({ ...editingRow, [field]: value });
     }
@@ -299,7 +330,9 @@ const TabDoorCreate: React.FC = () => {
   const handleAccept = async () => {
     if (!editingRow) return;
     try {
-      const selectedDoor = doorOptions.find((door: any) => door.name_element === editingRow.tipoPuente);
+      const selectedDoor = doorOptions.find(
+        (door: any) => door.name_element === editingRow.tipoPuente
+      );
       const doorId = selectedDoor ? selectedDoor.id : 0;
       const payload = {
         door_id: doorId,
@@ -371,7 +404,12 @@ const TabDoorCreate: React.FC = () => {
             fav1: { d: favEditData.fav1D, l: favEditData.fav1L },
             fav2_izq: { p: favEditData.fav2izqP, s: favEditData.fav2izqS },
             fav2_der: { p: favEditData.fav2DerP, s: favEditData.fav2DerS },
-            fav3: { e: favEditData.fav3E, t: favEditData.fav3T, beta: favEditData.fav3Beta, alfa: favEditData.fav3Alpha },
+            fav3: {
+              e: favEditData.fav3E,
+              t: favEditData.fav3T,
+              beta: favEditData.fav3Beta,
+              alfa: favEditData.fav3Alpha,
+            },
           }),
         }
       );
@@ -492,7 +530,9 @@ const TabDoorCreate: React.FC = () => {
             <select
               className="form-control"
               value={editingRow.tipoPuente}
-              onChange={(e) => handleRowFieldChange("tipoPuente", e.target.value)}
+              onChange={(e) =>
+                handleRowFieldChange("tipoPuente", e.target.value)
+              }
             >
               {doorOptions.map((door: any) => (
                 <option key={door.id} value={door.name_element}>
@@ -514,12 +554,16 @@ const TabDoorCreate: React.FC = () => {
             <select
               className="form-control"
               value={editingRow.characteristics}
-              onChange={(e) => handleRowFieldChange("characteristics", e.target.value)}
+              onChange={(e) =>
+                handleRowFieldChange("characteristics", e.target.value)
+              }
             >
               <option value="">Seleccione una opción</option>
               <option value="Exterior">Exterior</option>
               <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-              <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+              <option value="Inter Recintos No Clim">
+                Inter Recintos No Clim
+              </option>
             </select>
           );
         }
@@ -535,7 +579,9 @@ const TabDoorCreate: React.FC = () => {
             <select
               className="form-control"
               value={editingRow.anguloAzimut}
-              onChange={(e) => handleRowFieldChange("anguloAzimut", e.target.value)}
+              onChange={(e) =>
+                handleRowFieldChange("anguloAzimut", e.target.value)
+              }
             >
               <option value="">Seleccione un ángulo</option>
               {angleOptions.map((option, index) => (
@@ -565,7 +611,9 @@ const TabDoorCreate: React.FC = () => {
               min={0}
               className="form-control"
               value={editingRow.high}
-              onChange={(e) => handleRowFieldChange("high", Number(e.target.value))}
+              onChange={(e) =>
+                handleRowFieldChange("high", Number(e.target.value))
+              }
               onKeyDown={preventHyphen}
             />
           );
@@ -584,7 +632,9 @@ const TabDoorCreate: React.FC = () => {
               min={0}
               className="form-control"
               value={editingRow.broad}
-              onChange={(e) => handleRowFieldChange("broad", Number(e.target.value))}
+              onChange={(e) =>
+                handleRowFieldChange("broad", Number(e.target.value))
+              }
               onKeyDown={preventHyphen}
             />
           );
@@ -598,7 +648,10 @@ const TabDoorCreate: React.FC = () => {
       renderCell: (row: DoorData) => {
         if (editingRow && editingRow.id === row.id) {
           return (
-            <ActionButtonsConfirm onAccept={handleAccept} onCancel={handleCancel} />
+            <ActionButtonsConfirm
+              onAccept={handleAccept}
+              onCancel={handleCancel}
+            />
           );
         }
         return (
@@ -608,12 +661,13 @@ const TabDoorCreate: React.FC = () => {
               setDeletingRow(row);
               setShowDeleteModal(true);
             }}
+            onThermalBridge={() => handleThermicBridgesDoor(row)}
           />
         );
       },
     },
     // Columnas FAV
-    {
+    /* {
       headerName: "D [m]",
       field: "fav1D",
       renderCell: (row: DoorData) =>
@@ -623,13 +677,20 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav1D}
-            onChange={(e) => handleFavEditChange("fav1D", Number(e.target.value))}
+            onChange={(e) =>
+              handleFavEditChange("fav1D", Number(e.target.value))
+            }
             onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav1D)
         ),
-      cellStyle: { position: "sticky", right: "240px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "240px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "L [m]",
@@ -641,13 +702,20 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav1L}
-            onChange={(e) => handleFavEditChange("fav1L", Number(e.target.value))}
+            onChange={(e) =>
+              handleFavEditChange("fav1L", Number(e.target.value))
+            }
             onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav1L)
         ),
-      cellStyle: { position: "sticky", right: "160px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "160px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "P [m]",
@@ -659,13 +727,20 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2izqP}
-            onChange={(e) => handleFavEditChange("fav2izqP", Number(e.target.value))}
+            onChange={(e) =>
+              handleFavEditChange("fav2izqP", Number(e.target.value))
+            }
             onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav2izqP)
         ),
-      cellStyle: { position: "sticky", right: "80px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "80px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "S [m]",
@@ -677,13 +752,20 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2izqS}
-            onChange={(e) => handleFavEditChange("fav2izqS", Number(e.target.value))}
+            onChange={(e) =>
+              handleFavEditChange("fav2izqS", Number(e.target.value))
+            }
             onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav2izqS)
         ),
-      cellStyle: { position: "sticky", right: "0px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "0px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "P [m]",
@@ -695,13 +777,20 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2DerP}
-            onChange={(e) => handleFavEditChange("fav2DerP", Number(e.target.value))}
+            onChange={(e) =>
+              handleFavEditChange("fav2DerP", Number(e.target.value))
+            }
             onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav2DerP)
         ),
-      cellStyle: { position: "sticky", right: "-80px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "-80px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "S [m]",
@@ -713,13 +802,20 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav2DerS}
-            onChange={(e) => handleFavEditChange("fav2DerS", Number(e.target.value))}
+            onChange={(e) =>
+              handleFavEditChange("fav2DerS", Number(e.target.value))
+            }
             onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav2DerS)
         ),
-      cellStyle: { position: "sticky", right: "-160px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "-160px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "E [m]",
@@ -731,13 +827,20 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3E}
-            onChange={(e) => handleFavEditChange("fav3E", Number(e.target.value))}
+            onChange={(e) =>
+              handleFavEditChange("fav3E", Number(e.target.value))
+            }
             onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav3E)
         ),
-      cellStyle: { position: "sticky", right: "-240px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "-240px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "T [m]",
@@ -749,13 +852,20 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3T}
-            onChange={(e) => handleFavEditChange("fav3T", Number(e.target.value))}
+            onChange={(e) =>
+              handleFavEditChange("fav3T", Number(e.target.value))
+            }
             onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav3T)
         ),
-      cellStyle: { position: "sticky", right: "-320px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "-320px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "β [°]",
@@ -767,13 +877,20 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3Beta}
-            onChange={(e) => handleFavEditChange("fav3Beta", Number(e.target.value))}
+            onChange={(e) =>
+              handleFavEditChange("fav3Beta", Number(e.target.value))
+            }
             onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav3Beta)
         ),
-      cellStyle: { position: "sticky", right: "-400px", background: "#fff", zIndex: 1 },
+      cellStyle: {
+        position: "sticky",
+        right: "-400px",
+        background: "#fff",
+        zIndex: 1,
+      },
     },
     {
       headerName: "α [°]",
@@ -785,14 +902,21 @@ const TabDoorCreate: React.FC = () => {
             className="form-control"
             style={favInputStyle}
             value={favEditData.fav3Alpha}
-            onChange={(e) => handleFavEditChange("fav3Alpha", Number(e.target.value))}
+            onChange={(e) =>
+              handleFavEditChange("fav3Alpha", Number(e.target.value))
+            }
             onKeyDown={preventHyphen}
           />
         ) : (
           displayValue(row.fav3Alpha)
         ),
-      cellStyle: { position: "sticky", right: "-480px", background: "#fff", zIndex: 1 },
-    },
+      cellStyle: {
+        position: "sticky",
+        right: "-480px",
+        background: "#fff",
+        zIndex: 1,
+      },
+    }, 
     // La columna de acciones FAV se mueve al final
     {
       headerName: "Acciones FAV",
@@ -807,11 +931,14 @@ const TabDoorCreate: React.FC = () => {
             }}
           />
         ) : (
-          <CustomButton variant="editIcon" onClick={() => handleFavEditClick(row)}>
+          <CustomButton
+            variant="editIcon"
+            onClick={() => handleFavEditClick(row)}
+          >
             Editar FAV
           </CustomButton>
         ),
-    },
+    },*/
   ];
 
   const multiHeader = {
@@ -824,13 +951,13 @@ const TabDoorCreate: React.FC = () => {
         { label: "Alto [m]", rowSpan: 2 },
         { label: "Ancho [m]", rowSpan: 2 },
         { label: "Acciones", rowSpan: 2 },
-        { label: "FAV 1", colSpan: 2 },
+        /*         { label: "FAV 1", colSpan: 2 },
         { label: "FAV 2 izq", colSpan: 2 },
         { label: "FAV 2 Der", colSpan: 2 },
         { label: "FAV 3", colSpan: 4 },
-        { label: "Acciones FAV", rowSpan: 2 },
+        { label: "Acciones FAV", rowSpan: 2 }, */
       ],
-      [
+      /* [
         { label: "D [m]" },
         { label: "L [m]" },
         { label: "P [m]" },
@@ -841,13 +968,12 @@ const TabDoorCreate: React.FC = () => {
         { label: "T [m]" },
         { label: "β [°]" },
         { label: "α [m]" },
-      ],
+      ], */
     ],
   };
 
   return (
     <div>
-      <TablesParameters columns={columns} data={data} multiHeader={multiHeader} />
       <div style={{ marginTop: "20px" }}>
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={handleCreate}>
@@ -855,6 +981,11 @@ const TabDoorCreate: React.FC = () => {
           </CustomButton>
         </div>
       </div>
+      <TablesParameters
+        columns={columns}
+        data={data}
+        multiHeader={multiHeader}
+      />
 
       {/* Modal para crear nueva puerta */}
       <ModalCreate
@@ -899,7 +1030,9 @@ const TabDoorCreate: React.FC = () => {
                 <option value="">Seleccione una opción</option>
                 <option value="Exterior">Exterior</option>
                 <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+                <option value="Inter Recintos No Clim">
+                  Inter Recintos No Clim
+                </option>
               </select>
             </div>
           </div>
@@ -986,6 +1119,14 @@ const TabDoorCreate: React.FC = () => {
           </div>
         </div>
       </ModalCreate>
+      <ThermalBridgesDoorModal
+        isOpen={showModalThermicBridges}
+        handleClose={handleCloseEditBridge}
+        bridgeId={favEditData?.fav_id}
+        bridgeData={favEditData}
+        // detailOptions={details}
+        onSaveSuccess={fetchDoorData}
+      />
     </div>
   );
 };

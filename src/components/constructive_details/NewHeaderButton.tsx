@@ -98,7 +98,7 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({ tab, onNewCreated }) 
       {showCreateModal && (
         <ModalCreate
           isOpen={true}
-          title={`Crear nueva cabecera de ${titleMapping[tab]}`}
+          title={`Crear Nuevo ${titleMapping[tab]}`}
           onClose={() => {
             setShowCreateModal(false);
             setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });

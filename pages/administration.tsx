@@ -1230,6 +1230,7 @@ const AdministrationPage: React.FC = () => {
             </div>
             <div className="form-group">
               <label>FM [%]</label>
+              <div className="input-group">
               <input
                 type="number"
                 className="form-control"
@@ -1250,6 +1251,10 @@ const AdministrationPage: React.FC = () => {
                 min="0"
                 max="100"
               />
+              <div className="input-group-append">
+              <span className="input-group-text">%</span>
+              </div>
+              </div>
             </div>
           </form>
         </ModalCreate>
@@ -1415,6 +1420,7 @@ const AdministrationPage: React.FC = () => {
             </div>
             <div className="form-group">
               <label>% Vidrio</label>
+              <div className="input-group">
               <input
                 type="number"
                 className="form-control"
@@ -1435,6 +1441,10 @@ const AdministrationPage: React.FC = () => {
                 min="0"
                 max="100"
               />
+              <div className="input-group-append">
+              <span className="input-group-text">%</span>
+              </div>
+            </div>
             </div>
             <div className="form-group">
               <label>U Marco [W/m2K]</label>
@@ -1460,6 +1470,7 @@ const AdministrationPage: React.FC = () => {
             </div>
             <div className="form-group">
               <label>FM [%]</label>
+              <div className="input-group">
               <input
                 type="number"
                 className="form-control"
@@ -1480,6 +1491,10 @@ const AdministrationPage: React.FC = () => {
                 min="0"
                 max="100"
               />
+              <div className="input-group-append">
+              <span className="input-group-text">%</span>
+              </div>
+              </div>
             </div>
           </form>
         </ModalCreate>

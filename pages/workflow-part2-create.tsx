@@ -87,7 +87,13 @@ interface Constant {
   is_deleted: boolean;
 }
 
-type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
+type TabStep4 =
+  | "detalles"
+  | "muros"
+  | "techumbre"
+  | "pisos"
+  | "ventanas"
+  | "puertas";
 
 interface Ventana {
   id: number;
@@ -150,7 +156,8 @@ const WorkFlowpar2createPage: React.FC = () => {
   const [selectedItem, SetSelectedItem] = useState<any>(null);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   // Nuevo estado para editar el nombre abreviado (name_detail) en Muros
-  const [editingNombreAbreviado, setEditingNombreAbreviado] = useState<string>("");
+  const [editingNombreAbreviado, setEditingNombreAbreviado] =
+    useState<string>("");
   // Estados para editar nombre abreviado en Techumbre y Pisos
   const [editingNombreAbreviadoTech, setEditingNombreAbreviadoTech] =
     useState<string>("");
@@ -191,7 +198,8 @@ const WorkFlowpar2createPage: React.FC = () => {
     null
   );
   const [ventanaFmInput, setVentanaFmInput] = useState<string>("");
-  const [puertaPorcentajeInput, setPuertaPorcentajeInput] = useState<string>("");
+  const [puertaPorcentajeInput, setPuertaPorcentajeInput] =
+    useState<string>("");
 
   // Edición de un detalle (Modal no-inline)
   const [editingDetail, setEditingDetail] = useState<Detail | null>(null);
@@ -294,7 +302,8 @@ const WorkFlowpar2createPage: React.FC = () => {
 
       const materialsList: Material[] = allConstants
         .filter(
-          (c: Constant) => c.name === "materials" && c.type === "definition materials"
+          (c: Constant) =>
+            c.name === "materials" && c.type === "definition materials"
         )
         .map((c: Constant) => ({
           id: c.id,
@@ -382,9 +391,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       setPuertaPorcentajeInput(
         editingPuertaForm.atributs.porcentaje_vidrio !== undefined
           ? String(
-              Math.round(
-                editingPuertaForm.atributs.porcentaje_vidrio * 100
-              )
+              Math.round(editingPuertaForm.atributs.porcentaje_vidrio * 100)
             )
           : ""
       );
@@ -554,7 +561,11 @@ const WorkFlowpar2createPage: React.FC = () => {
   // "handleSaveDetalle" = crea un Detalle constructivo (Muro, Techo o Piso)
   // con su color exterior/interior
   const handleSaveDetalle = async () => {
-    if (!newDetalle.name_detail || !newDetalle.colorInterior || !newDetalle.colorExterior) {
+    if (
+      !newDetalle.name_detail ||
+      !newDetalle.colorInterior ||
+      !newDetalle.colorExterior
+    ) {
       notify("Por favor, complete todos los campos del Detalle Constructivo.");
       return;
     }
@@ -792,7 +803,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       if (tabStep4 === "muros") await fetchMurosDetails();
       if (tabStep4 === "techumbre") await fetchTechumbreDetails();
       if (tabStep4 === "pisos") await fetchPisosDetails();
-
     } catch (error) {
       console.error("Error al actualizar el detalle:", error);
       notify("Error al actualizar el detalle.");
@@ -810,12 +820,14 @@ const WorkFlowpar2createPage: React.FC = () => {
   const handleDeleteDetail = async (detailId: number) => {
     const token = getToken();
     if (!token || !projectId) return;
-  
+
     try {
       const url = `${constantUrlApiEndpoint}/user/${detailId}/details/delete?project_id=${projectId}`;
-      await axios.delete(url, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       notify("Detalle eliminado exitosamente.");
-  
+
       // *** Aquí refrescas las tablas ***
       await fetchFetchedDetails();
       await fetchMurosDetails();
@@ -828,7 +840,6 @@ const WorkFlowpar2createPage: React.FC = () => {
       notify("Error al eliminar el detalle.");
     }
   };
-  
 
   const confirmDeleteDetail = (detailId: number) => {
     setShowDetallesModal(false);
@@ -1156,7 +1167,9 @@ const WorkFlowpar2createPage: React.FC = () => {
           </select>
         ) : (
           <span style={textStyle}>
-            {det.material && det.material !== "0" && det.material.toUpperCase() !== "N/A"
+            {det.material &&
+            det.material !== "0" &&
+            det.material.toUpperCase() !== "N/A"
               ? det.material
               : "-"}
           </span>
@@ -1303,9 +1316,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                   scantilon_location: (
                     <span style={textStyle}>{det.scantilon_location}</span>
                   ),
-                  name_detail: (
-                    <span style={textStyle}>{det.name_detail}</span>
-                  ),
+                  name_detail: <span style={textStyle}>{det.name_detail}</span>,
                   material: (
                     <span style={textStyle}>
                       {det.material &&
@@ -1373,7 +1384,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u?.toFixed(3) ?? "--",
+        valorU: item.value_u?.toFixed(2) ?? "--",
         colorExterior: isEditing ? (
           <select
             value={editingColors.exterior}
@@ -1417,7 +1428,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           </div>
         ) : (
           <div>
-            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />           
+            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
             <CustomButton
               className="btn-table"
               variant="editIcon"
@@ -1481,7 +1492,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u?.toFixed(3) ?? "--",
+        valorU: item.value_u?.toFixed(2) ?? "--",
         colorExterior: isEditing ? (
           <select
             value={editingTechColors.exterior}
@@ -1575,7 +1586,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         { label: "Aislamiento bajo piso", colSpan: 2 },
         { label: "Ref Aisl Vert.", colSpan: 3 },
         { label: "Ref Aisl Horiz.", colSpan: 3 },
-        { label: "Acciones", rowSpan: 2 },
+        { label: "Acciones", rowSpan: 2, colSpan: 3 },
       ],
       [
         { label: "I [W/mK]" },
@@ -1592,7 +1603,7 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   const formatNumber = (
     num: number | string | undefined,
-    decimals = 3
+    decimals = 2
   ): string => {
     const parsedNum = Number(num);
     return !isNaN(parsedNum) && parsedNum !== 0
@@ -1612,7 +1623,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
       { headerName: "e Aisl [cm] (horiz)", field: "horizEAisl" },
       { headerName: "D [cm] (horiz)", field: "horizD" },
-      { headerName: "Acciones", field: "acciones" },
+      { headerName: "Acciones", field: "acciones", colSpan: 4 },
     ];
 
     const pisosData = pisosTabList.map((item) => {
@@ -1778,14 +1789,14 @@ const WorkFlowpar2createPage: React.FC = () => {
         ),
 
         acciones: isEditing ? (
-          <div onClick={(e) => e.stopPropagation()}>
+          <div style={{ width: "160px" }} onClick={(e) => e.stopPropagation()}>
             <ActionButtonsConfirm
               onAccept={() => handleConfirmPisoEdit(item)}
               onCancel={() => handleCancelPisoEdit()}
             />
           </div>
         ) : (
-          <div>
+          <div style={{ width: "160px" }}>
             <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
             <CustomButton
               className="btn-table"
@@ -1877,7 +1888,8 @@ const WorkFlowpar2createPage: React.FC = () => {
           </span>
         ),
         acciones:
-          item.created_status === "default" || item.created_status === "global" ? (
+          item.created_status === "default" ||
+          item.created_status === "global" ? (
             <span>-</span>
           ) : (
             <div style={textStyle}>
@@ -1967,7 +1979,8 @@ const WorkFlowpar2createPage: React.FC = () => {
           </span>
         ),
         acciones:
-          item.created_status === "default" || item.created_status === "global" ? (
+          item.created_status === "default" ||
+          item.created_status === "global" ? (
             <span>-</span>
           ) : (
             <div style={textStyle}>
@@ -2016,8 +2029,11 @@ const WorkFlowpar2createPage: React.FC = () => {
       { key: "muros", label: "Muros" },
       { key: "techumbre", label: "Techumbre" },
       { key: "pisos", label: "Pisos" },
+      // Pestañas de ventanas y puertas comentadas temporalmente
+      /*
       { key: "ventanas", label: "Ventanas" },
       { key: "puertas", label: "Puertas" },
+      */
     ] as { key: TabStep4; label: string }[];
 
     return (
@@ -2025,7 +2041,11 @@ const WorkFlowpar2createPage: React.FC = () => {
         {/* Si NO es ventanas o puertas, mostramos el + Nuevo arriba a la derecha */}
         {tabStep4 !== "ventanas" && tabStep4 !== "puertas" && (
           <div
-            style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "1rem",
+            }}
           >
             <CustomButton variant="save" onClick={handleNewButtonClick}>
               + Nuevo
@@ -2051,11 +2071,15 @@ const WorkFlowpar2createPage: React.FC = () => {
                   padding: "10px",
                   backgroundColor: "#fff",
                   color:
-                    tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
+                    tabStep4 === item.key
+                      ? primaryColor
+                      : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
                   borderBottom:
-                    tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
+                    tabStep4 === item.key
+                      ? `3px solid ${primaryColor}`
+                      : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -2071,8 +2095,10 @@ const WorkFlowpar2createPage: React.FC = () => {
           {tabStep4 === "muros" && renderMurosTable()}
           {tabStep4 === "techumbre" && renderTechumbreTable()}
           {tabStep4 === "pisos" && renderPisosTable()}
+          {/* Renderizado de tablas de ventanas y puertas comentado temporalmente
           {tabStep4 === "ventanas" && renderVentanasTable()}
           {tabStep4 === "puertas" && renderPuertasTable()}
+          */}
         </div>
       </div>
     );
@@ -2114,7 +2140,10 @@ const WorkFlowpar2createPage: React.FC = () => {
           {renderMainHeader()}
         </div>
         <div className="d-flex align-items-center gap-4">
-          <ProjectInfoHeader projectName={projectName} region={projectDepartment} />
+          <ProjectInfoHeader
+            projectName={projectName}
+            region={projectDepartment}
+          />
           <div className="ms-auto" style={{ display: "flex" }}>
             <Breadcrumb
               items={[{ title: "Proyecto Nuevo", href: "/", active: true }]}
@@ -2127,7 +2156,11 @@ const WorkFlowpar2createPage: React.FC = () => {
         <div className="row">
           <div className="col-lg-3 col-12 order-lg-first order-first">
             <div className="mb-3 mb-lg-0">
-              <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
+              <AdminSidebar
+                activeStep={step}
+                onStepChange={setStep}
+                steps={sidebarSteps}
+              />
             </div>
             <VerticalDivider />
           </div>
@@ -2146,7 +2179,9 @@ const WorkFlowpar2createPage: React.FC = () => {
         </div>
       </Card>
 
-      {projectId && <ProjectStatus status={projectStatus} projectId={String(projectId)} />}
+      {projectId && (
+        <ProjectStatus status={projectStatus} projectId={String(projectId)} />
+      )}
 
       {/* 
           MODAL: Edición de Detalle (no-inline).
@@ -2354,9 +2389,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 }}
                 onChange={(e) =>
                   setEditingVentanaForm((prev) =>
-                    prev
-                      ? { ...prev, u_marco: Number(e.target.value) }
-                      : prev
+                    prev ? { ...prev, u_marco: Number(e.target.value) } : prev
                   )
                 }
               />
@@ -2412,9 +2445,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 value={editingPuertaForm.name_element}
                 onChange={(e) =>
                   setEditingPuertaForm((prev) =>
-                    prev
-                      ? { ...prev, name_element: e.target.value }
-                      : prev
+                    prev ? { ...prev, name_element: e.target.value } : prev
                   )
                 }
               />
@@ -2599,7 +2630,9 @@ const WorkFlowpar2createPage: React.FC = () => {
       {showCreateModal && (
         <ModalCreate
           isOpen={true}
-          title={`Crear nueva cabecera de ${titleMapping[tabStep4] || "Detalle"}`}
+          title={`Crear nueva cabecera de ${
+            titleMapping[tabStep4] || "Detalle"
+          }`}
           onClose={() => {
             setShowCreateModal(false);
             setNewDetalle({
@@ -2730,7 +2763,8 @@ const WorkFlowpar2createPage: React.FC = () => {
               <input
                 type="number"
                 className="form-control"
-                value={newDetailData.layer_thickness}
+                placeholder="cm"
+                value={newDetailData.layer_thickness > 0 ? newDetailData.layer_thickness : ""}
                 min="0"
                 step="any"
                 onKeyDown={(e) => {

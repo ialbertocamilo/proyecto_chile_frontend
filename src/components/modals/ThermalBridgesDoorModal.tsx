@@ -10,23 +10,28 @@ interface ThermalBridgesModalProps {
   handleClose: () => void;
   bridgeId: number | null;
   bridgeData: ThermalBridge | null;
-  detailOptions: WallDetail[];
+  detailOptions?: WallDetail[];
   onSaveSuccess?: () => void; // Callback to trigger after saving
 }
 
-const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
+const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
+  const token = localStorage.getItem("token") || "";
+
   const [editingBridgeId, setEditingBridgeId] = useState<number | null>(null);
   const [editingBridgeData, setEditingBridgeData] =
     useState<ThermalBridge | null>();
-  const [detailOptions, setDetailOptions] = useState<WallDetail[]>(
+  const [favEditData, setFavEditData] = useState<any>(null);
+
+  /*const [detailOptions, setDetailOptions] = useState<WallDetail[]>(
     props.detailOptions
-  );
+  );*/
   useEffect(() => {
     console.log("data mounted");
-    // console.log("props.detailOptions", props.detailOptions);
+    console.log("props.bridgeId", props.bridgeId);
+    console.log("props.favEditData", props.bridgeData);
+    setFavEditData(props.bridgeData);
     // console.log("props.bridgeData", props.bridgeData);
-    setEditingBridgeData(props.bridgeData);
-    setDetailOptions(props.detailOptions);
+    // setDetailOptions(props.detailOptions);
   }, [props.bridgeId]);
 
   const getAuthData = () => {
@@ -44,26 +49,37 @@ const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
   // ThermalBridgesModalSave
   async function handleSaveThermalBridgesModal() {
     // Aquí puedes definir la lógica para guardar los puentes térmicos
-    console.log("props.detailOptions", detailOptions);
+    // console.log("props.detailOptions", detailOptions);
     console.log("Guardar puentes térmicos");
 
-    if (!props.bridgeId || !editingBridgeData) return;
     const authData = getAuthData();
     if (!authData) return;
     try {
       const response = await fetch(
-        `${constantUrlApiEndpoint}/thermal-bridge-update/${props.bridgeId}`,
+        `${constantUrlApiEndpoint}/door/fav-enclosures-update/${favEditData.fav_id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${authData.token}`,
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(editingBridgeData),
+          body: JSON.stringify({
+            fav1: { d: favEditData.fav1D, l: favEditData.fav1L },
+            fav2_izq: { p: favEditData.fav2izqP, s: favEditData.fav2izqS },
+            fav2_der: { p: favEditData.fav2DerP, s: favEditData.fav2DerS },
+            fav3: {
+              e: favEditData.fav3E,
+              t: favEditData.fav3T,
+              beta: favEditData.fav3Beta,
+              alfa: favEditData.fav3Alpha,
+            },
+          }),
         }
       );
-      if (!response.ok) throw new Error("Error al actualizar puente térmico");
-      notify("Puente térmico actualizado exitosamente");
+      if (!response.ok) throw new Error("Error al actualizar los favs");
+      const favDataResponse = await response.json();
+      console.log("Actualización FAV:", favDataResponse);
+      notify("FAV actualizado exitosamente");
       setEditingBridgeId(null);
       setEditingBridgeData(null);
       if (props.onSaveSuccess) {
@@ -76,6 +92,9 @@ const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
 
     props.handleClose();
   }
+  const handleFavEditChange = (field: string, value: any) => {
+    setFavEditData((prev: any) => ({ ...prev, [field]: value }));
+  };
   // ThermalBridgesModalClose
   function handleCloseThermalBridgesModal() {
     // Aquí puedes definir la lógica para guardar los puentes térmicos
@@ -84,6 +103,8 @@ const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
     setEditingBridgeData(null);
     props.handleClose();
   }
+  // Estilo para inputs FAV
+  const favInputStyle = { height: "20px", fontSize: "14px", width: "120px" };
 
   const handleEditBridgeChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -103,210 +124,205 @@ const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
       // onClose={props.handleClose}
       onClose={props.handleClose}
       onSave={handleSaveThermalBridgesModal}
-      title="Puentes Térmicos"
+      title="Factor de Accesibilidad"
       saveLabel="Guardar"
     >
       <div className="container-fluid p-0">
-        <div className="flex flex-col gap-4">P01</div>
+        <div className="flex flex-col gap-4">FAV 1</div>
         <div className="row mb-3">
           <div className="col-4">
             <label htmlFor="po1_length" className="form-label">
-              L[m]
+              D [m]
             </label>
             <input
               type="number"
-              name="po1_length"
-              min="0"
-              step="0.01"
-              autoFocus={true}
-              value={editingBridgeData?.po1_length ?? 0}
+              className="form-control"
+              style={favInputStyle}
+              value={favEditData?.fav1D ?? ""}
               onKeyDown={(e) => {
-                if (e.key === "-") e.preventDefault();
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
               }}
-              onChange={handleEditBridgeChange}
-              onBlur={(e) => {
-                const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingBridgeData({
-                  ...editingBridgeData!,
-                  po1_length: Number(rounded),
-                });
-              }}
-              className="form-control form-control-sm"
+              onChange={(e) =>
+                handleFavEditChange("fav1D", Number(e.target.value))
+              }
             />
           </div>
           <div className="col-4">
-            <label htmlFor="po1_id_element" className="form-label">
-              Elemento
+            <label htmlFor="po1_length" className="form-label">
+              L [m]
             </label>
-            <select
-              name="po1_id_element"
-              value={editingBridgeData?.po1_id_element ?? ""}
-              onChange={handleEditBridgeChange}
-              className="form-control form-control-sm"
-            >
-              <option value="">Seleccione...</option>
-              {detailOptions.map((detail) => (
-                <option key={detail.id} value={detail.id}>
-                  {detail.name_detail}
-                </option>
-              ))}
-            </select>
+            <input
+              type="number"
+              className="form-control"
+              style={favInputStyle}
+              value={favEditData?.fav1L ?? ""}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) =>
+                handleFavEditChange("fav1L", Number(e.target.value))
+              }
+            />
           </div>
         </div>
-        <div className="flex flex-col gap-4">P02</div>
+        <div className="flex flex-col gap-4">FAV 2 Izq</div>
         <div className="row mb-3">
           <div className="col-4">
-            <label htmlFor="po2_length">L[m]</label>
+            <label htmlFor="po2_length">P [m]</label>
             <input
               type="number"
-              name="po2_length"
-              min="0"
-              step="0.01"
-              value={editingBridgeData?.po2_length ?? 0}
+              className="form-control"
+              style={favInputStyle}
+              value={favEditData?.fav2izqP ?? ""}
               onKeyDown={(e) => {
-                if (e.key === "-") e.preventDefault();
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
               }}
-              onChange={handleEditBridgeChange}
-              onBlur={(e) => {
-                const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingBridgeData({
-                  ...editingBridgeData!,
-                  po2_length: Number(rounded),
-                });
-              }}
-              className="form-control form-control-sm"
+              onChange={(e) =>
+                handleFavEditChange("fav2izqP", Number(e.target.value))
+              }
             />
           </div>
           <div className="col-4">
-            <label htmlFor="po2_id_element" className="form-label">
-              Elemento
-            </label>
-            <select
-              name="po2_id_element"
-              value={editingBridgeData?.po2_id_element ?? ""}
-              onChange={handleEditBridgeChange}
-              className="form-control form-control-sm"
-            >
-              <option value="">Seleccione...</option>
-              {detailOptions.map((detail) => (
-                <option key={detail.id} value={detail.id}>
-                  {detail.name_detail}
-                </option>
-              ))}
-            </select>
+            <label htmlFor="po2_length">S [m]</label>
+            <input
+              type="number"
+              className="form-control"
+              style={favInputStyle}
+              value={favEditData?.fav2izqS ?? ""}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) =>
+                handleFavEditChange("fav2izqS", Number(e.target.value))
+              }
+            />
           </div>
         </div>
-        <div className="flex flex-col gap-4">P03</div>
+        <div className="flex flex-col gap-4">FAV 2 DER</div>
         <div className="row mb-3">
           <div className="col-4">
             <label htmlFor="po3_length" className="form-label">
-              L[m]
+              P [m]
             </label>
             <input
               type="number"
-              name="po3_length"
-              min="0"
-              step="0.01"
-              value={editingBridgeData?.po3_length ?? 0}
+              className="form-control"
+              style={favInputStyle}
+              value={favEditData?.fav2DerP ?? ""}
               onKeyDown={(e) => {
-                if (e.key === "-") e.preventDefault();
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
               }}
-              onChange={handleEditBridgeChange}
-              onBlur={(e) => {
-                const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingBridgeData({
-                  ...editingBridgeData!,
-                  po3_length: Number(rounded),
-                });
-              }}
-              className="form-control form-control-sm"
+              onChange={(e) =>
+                handleFavEditChange("fav2DerP", Number(e.target.value))
+              }
             />
           </div>
           <div className="col-4">
-            <label htmlFor="po3_id_element" className="form-label">
-              Elemento
+            <label htmlFor="po3_length" className="form-label">
+              S [m]
             </label>
-            <select
-              name="po3_id_element"
-              value={editingBridgeData?.po3_id_element ?? ""}
-              onChange={handleEditBridgeChange}
-              className="form-control form-control-sm"
-            >
-              <option value="">Seleccione...</option>
-              {detailOptions.map((detail) => (
-                <option key={detail.id} value={detail.id}>
-                  {detail.name_detail}
-                </option>
-              ))}
-            </select>
+            <input
+              type="number"
+              className="form-control"
+              style={favInputStyle}
+              value={favEditData?.fav2DerS ?? ""}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) =>
+                handleFavEditChange("fav2DerS", Number(e.target.value))
+              }
+            />
           </div>
         </div>
-        <div className="flex flex-col gap-4">P04</div>
+        <div className="flex flex-col gap-4">FAV 3</div>
         <div className="row mb-3">
-          <div className="col-4">
+          <div className="col-3">
             <label htmlFor="po4_length" className="form-label">
-              L[m]
+              E [m]
             </label>
             <input
               type="number"
-              name="po4_length"
-              min="0"
-              step="0.01"
-              value={editingBridgeData?.po4_length ?? 0}
+              className="form-control"
+              style={favInputStyle}
+              value={favEditData?.fav3E ?? ""}
               onKeyDown={(e) => {
-                if (e.key === "-") e.preventDefault();
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
               }}
-              onChange={handleEditBridgeChange}
-              onBlur={(e) => {
-                const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingBridgeData({
-                  ...editingBridgeData!,
-                  po4_length: Number(rounded),
-                });
-              }}
-              className="form-control form-control-sm"
+              onChange={(e) =>
+                handleFavEditChange("fav3E", Number(e.target.value))
+              }
             />
           </div>
-          <div className="col-4">
-            <label htmlFor="po4_id_element" className="form-label">
-              Elemento
-            </label>
-            <select
-              name="po4_id_element"
-              value={editingBridgeData?.po4_id_element ?? ""}
-              onChange={handleEditBridgeChange}
-              className="form-control form-control-sm"
-            >
-              <option value="">Seleccione...</option>
-              {detailOptions.map((detail) => (
-                <option key={detail.id} value={detail.id}>
-                  {detail.name_detail}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="col-4">
-            <label htmlFor="po4_e_aislacion" className="form-label">
-              e Aislación [cm]
+          <div className="col-3">
+            <label htmlFor="po4_length" className="form-label">
+              T [m]
             </label>
             <input
               type="number"
-              name="po4_e_aislacion"
-              min="0"
-              step="0.01"
-              value={editingBridgeData?.po4_e_aislacion ?? 0}
+              className="form-control"
+              style={favInputStyle}
+              value={favEditData?.fav3T ?? ""}
               onKeyDown={(e) => {
-                if (e.key === "-") e.preventDefault();
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
               }}
-              onChange={handleEditBridgeChange}
-              onBlur={(e) => {
-                const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingBridgeData({
-                  ...editingBridgeData!,
-                  po4_e_aislacion: Number(rounded),
-                });
+              onChange={(e) =>
+                handleFavEditChange("fav3T", Number(e.target.value))
+              }
+            />
+          </div>
+          <div className="col-3">
+            <label htmlFor="po4_e_aislacion" className="form-label">
+              β [°]
+            </label>
+            <input
+              type="number"
+              className="form-control"
+              style={favInputStyle}
+              value={favEditData?.fav3Beta ?? ""}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
               }}
-              className="form-control form-control-sm"
+              onChange={(e) =>
+                handleFavEditChange("fav3Beta", Number(e.target.value))
+              }
+            />
+          </div>
+          <div className="col-3">
+            <label htmlFor="po4_e_aislacion" className="form-label">
+              α [°]
+            </label>
+            <input
+              type="number"
+              className="form-control"
+              style={favInputStyle}
+              value={favEditData?.fav3Alpha ?? ""}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) =>
+                handleFavEditChange("fav3Alpha", Number(e.target.value))
+              }
             />
           </div>
         </div>
@@ -315,4 +331,4 @@ const ThermalBridgesModal: FC<ThermalBridgesModalProps> = (props) => {
   );
 };
 
-export default ThermalBridgesModal;
+export default ThermalBridgesDoorModal;

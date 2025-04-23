@@ -296,7 +296,9 @@ const TabFloorCreate: React.FC = () => {
           <select
             className="form-control"
             value={editValues.floor_id}
-            onChange={(e) => handleEditChange("floor_id", Number(e.target.value))}
+            onChange={(e) =>
+              handleEditChange("floor_id", Number(e.target.value))
+            }
           >
             <option value={0}>Seleccione un piso</option>
             {floorOptions.map((option) => (
@@ -316,7 +318,9 @@ const TabFloorCreate: React.FC = () => {
             <option value="">Seleccione una opción</option>
             <option value="Exterior">Exterior</option>
             <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-            <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+            <option value="Inter Recintos No Clim">
+              Inter Recintos No Clim
+            </option>
           </select>
         );
       case "area":
@@ -346,7 +350,9 @@ const TabFloorCreate: React.FC = () => {
                 e.preventDefault();
               }
             }}
-            onChange={(e) => handleEditChange("parameter", Number(e.target.value))}
+            onChange={(e) =>
+              handleEditChange("parameter", Number(e.target.value))
+            }
           />
         );
       case "pisoVentilado":
@@ -372,15 +378,19 @@ const TabFloorCreate: React.FC = () => {
       headerName: "Pisos",
       field: "pisos",
       renderCell: (row: FloorData) => {
-        return editingRowIndex === row.index ? renderEditableCell("pisos", row) : row.pisos;
-      }
+        return editingRowIndex === row.index
+          ? renderEditableCell("pisos", row)
+          : row.pisos;
+      },
     },
     {
       headerName: "Características espacio contiguo al elemento",
       field: "caracteristicas",
       renderCell: (row: FloorData) => {
-        return editingRowIndex === row.index ? renderEditableCell("caracteristicas", row) : row.caracteristicas;
-      }
+        return editingRowIndex === row.index
+          ? renderEditableCell("caracteristicas", row)
+          : row.caracteristicas;
+      },
     },
     {
       headerName: "Área [m²]",
@@ -390,14 +400,14 @@ const TabFloorCreate: React.FC = () => {
           return renderEditableCell("area", row);
         }
         return row.area === 0 ? "-" : row.area;
-      }
+      },
     },
     {
       headerName: "U [W/m²K]",
       field: "uValue",
       renderCell: (row: FloorData) => {
         return row.uValue === 0 ? "-" : row.uValue.toFixed(2);
-      }
+      },
     },
     {
       headerName: "Perímetro Suelo [m]",
@@ -407,7 +417,7 @@ const TabFloorCreate: React.FC = () => {
           return renderEditableCell("perimetroSuelo", row);
         }
         return row.perimetroSuelo === 0 ? "-" : row.perimetroSuelo;
-      }
+      },
     },
     {
       headerName: "Piso ventilado",
@@ -416,8 +426,10 @@ const TabFloorCreate: React.FC = () => {
         if (editingRowIndex === row.index) {
           return renderEditableCell("pisoVentilado", row);
         }
-        return row.pisoVentilado === "N/A" || row.pisoVentilado === "" ? "-" : row.pisoVentilado;
-      }
+        return row.pisoVentilado === "N/A" || row.pisoVentilado === ""
+          ? "-"
+          : row.pisoVentilado;
+      },
     },
     { headerName: "PT P06 L [m]", field: "ptP06L" },
     {
@@ -509,13 +521,6 @@ const TabFloorCreate: React.FC = () => {
 
   return (
     <div>
-      {tableLoading ? (
-        <div className="text-center p-4">
-          <p>Cargando datos de pisos...</p>
-        </div>
-      ) : (
-        <TablesParameters columns={columns} data={tableData} />
-      )}
       <div style={{ marginTop: "20px" }}>
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={() => setShowModal(true)}>
@@ -523,6 +528,13 @@ const TabFloorCreate: React.FC = () => {
           </CustomButton>
         </div>
       </div>
+      {tableLoading ? (
+        <div className="text-center p-4">
+          <p>Cargando datos de pisos...</p>
+        </div>
+      ) : (
+        <TablesParameters columns={columns} data={tableData} />
+      )}
 
       {/* Modal de Creación */}
       <ModalCreate
@@ -554,7 +566,9 @@ const TabFloorCreate: React.FC = () => {
                   </option>
                 ))}
               </select>
-              {loading && <small className="text-muted">Cargando opciones...</small>}
+              {loading && (
+                <small className="text-muted">Cargando opciones...</small>
+              )}
             </div>
           </div>
 
@@ -574,7 +588,9 @@ const TabFloorCreate: React.FC = () => {
                 <option value="">Seleccione una opción</option>
                 <option value="Exterior">Exterior</option>
                 <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+                <option value="Inter Recintos No Clim">
+                  Inter Recintos No Clim
+                </option>
               </select>
             </div>
           </div>
@@ -660,7 +676,10 @@ const TabFloorCreate: React.FC = () => {
         <div className="container">
           <div className="row mb-3">
             <div className="">
-              <p>¿Está seguro que desea eliminar el piso <strong>{rowToDelete?.pisos}</strong>?</p>
+              <p>
+                ¿Está seguro que desea eliminar el piso{" "}
+                <strong>{rowToDelete?.pisos}</strong>?
+              </p>
             </div>
           </div>
         </div>

@@ -1586,7 +1586,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         { label: "Aislamiento bajo piso", colSpan: 2 },
         { label: "Ref Aisl Vert.", colSpan: 3 },
         { label: "Ref Aisl Horiz.", colSpan: 3 },
-        { label: "Acciones", rowSpan: 3 },
+        { label: "Acciones", rowSpan: 2, colSpan: 3 },
       ],
       [
         { label: "I [W/mK]" },
@@ -1623,7 +1623,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
       { headerName: "e Aisl [cm] (horiz)", field: "horizEAisl" },
       { headerName: "D [cm] (horiz)", field: "horizD" },
-      { headerName: "Acciones", field: "acciones" },
+      { headerName: "Acciones", field: "acciones", colSpan: 4 },
     ];
 
     const pisosData = pisosTabList.map((item) => {
@@ -1789,14 +1789,14 @@ const WorkFlowpar2createPage: React.FC = () => {
         ),
 
         acciones: isEditing ? (
-          <div onClick={(e) => e.stopPropagation()}>
+          <div style={{ width: "160px" }} onClick={(e) => e.stopPropagation()}>
             <ActionButtonsConfirm
               onAccept={() => handleConfirmPisoEdit(item)}
               onCancel={() => handleCancelPisoEdit()}
             />
           </div>
         ) : (
-          <div>
+          <div style={{ width: "160px" }}>
             <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
             <CustomButton
               className="btn-table"

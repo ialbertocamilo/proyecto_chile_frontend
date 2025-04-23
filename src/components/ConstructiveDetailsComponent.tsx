@@ -105,10 +105,14 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const [editingDetail, setEditingDetail] = useState<Detail | null>(null);
 
   const [showInlineDeleteModal, setShowInlineDeleteModal] = useState(false);
-  const [deletingInlineDetail, setDeletingInlineDetail] = useState<TabItem | null>(null);
+  const [deletingInlineDetail, setDeletingInlineDetail] =
+    useState<TabItem | null>(null);
 
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<{ id: number; name_detail: string } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{
+    id: number;
+    name_detail: string;
+  } | null>(null);
 
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [editValues, setEditValues] = useState<any>({});
@@ -240,8 +244,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       materials.length > 0
     ) {
       const foundMaterial = materials.find(
-        (mat) =>
-          mat.name.toLowerCase() === editingDetail.material.toLowerCase()
+        (mat) => mat.name.toLowerCase() === editingDetail.material.toLowerCase()
       );
       if (foundMaterial) {
         setEditingDetail({ ...editingDetail, material_id: foundMaterial.id });
@@ -266,7 +269,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
     try {
       const url = `${constantUrlApiEndpoint}/admin/details/${deletingDetail.id_detail}/delete`;
       await axios.delete(url, {
-        headers: { Authorization: `Bearer ${token}`, accept: "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          accept: "application/json",
+        },
       });
       notify("Detalle correctamente eliminado");
       await fetchFetchedDetails();
@@ -326,15 +332,23 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const handleConfirmEditDetail = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!editingDetail) return;
-    if (!editingDetail.scantilon_location.trim() || !editingDetail.name_detail.trim()) {
-      notify("Los campos 'Ubicación Detalle' y 'Nombre Detalle' no pueden estar vacíos.");
+    if (
+      !editingDetail.scantilon_location.trim() ||
+      !editingDetail.name_detail.trim()
+    ) {
+      notify(
+        "Los campos 'Ubicación Detalle' y 'Nombre Detalle' no pueden estar vacíos."
+      );
       return;
     }
     if (!editingDetail.material_id || editingDetail.material_id <= 0) {
       notify("Por favor, seleccione un material válido.");
       return;
     }
-    if (editingDetail.layer_thickness === null || editingDetail.layer_thickness <= 0) {
+    if (
+      editingDetail.layer_thickness === null ||
+      editingDetail.layer_thickness <= 0
+    ) {
       notify("El 'Espesor de la capa' debe ser un valor mayor a 0.");
       return;
     }
@@ -410,12 +424,15 @@ const ConstructiveDetailsComponent: React.FC = () => {
             ref_aisl_vertical: {
               d: editValues.vertD !== "" ? editValues.vertD : null,
               e_aisl: editValues.vertEAisl !== "" ? editValues.vertEAisl : null,
-              lambda: editValues.vertLambda !== "" ? editValues.vertLambda : null,
+              lambda:
+                editValues.vertLambda !== "" ? editValues.vertLambda : null,
             },
             ref_aisl_horizontal: {
               d: editValues.horizD !== "" ? editValues.horizD : null,
-              e_aisl: editValues.horizEAisl !== "" ? editValues.horizEAisl : null,
-              lambda: editValues.horizLambda !== "" ? editValues.horizLambda : null,
+              e_aisl:
+                editValues.horizEAisl !== "" ? editValues.horizEAisl : null,
+              lambda:
+                editValues.horizLambda !== "" ? editValues.horizLambda : null,
             },
           },
         };
@@ -468,11 +485,17 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
       if (inModal) {
         if (tabStep4 === "muros") {
-          return detailMatches && det.scantilon_location.toLowerCase() === "muro";
+          return (
+            detailMatches && det.scantilon_location.toLowerCase() === "muro"
+          );
         } else if (tabStep4 === "techumbre") {
-          return detailMatches && det.scantilon_location.toLowerCase() === "techo";
+          return (
+            detailMatches && det.scantilon_location.toLowerCase() === "techo"
+          );
         } else if (tabStep4 === "pisos") {
-          return detailMatches && det.scantilon_location.toLowerCase() === "piso";
+          return (
+            detailMatches && det.scantilon_location.toLowerCase() === "piso"
+          );
         }
       }
       return detailMatches;
@@ -482,7 +505,11 @@ const ConstructiveDetailsComponent: React.FC = () => {
       const isEditing = editingRowId === det.id_detail;
       return {
         scantilon_location: (
-          <span style={{ color: det.created_status !== "default" ? primaryColor : "black" }}>
+          <span
+            style={{
+              color: det.created_status !== "default" ? primaryColor : "black",
+            }}
+          >
             {det.scantilon_location}
           </span>
         ),
@@ -492,22 +519,37 @@ const ConstructiveDetailsComponent: React.FC = () => {
             className="form-control"
             value={editValues.name_detail || det.name_detail}
             onChange={(e) =>
-              setEditValues((prev: any) => ({ ...prev, name_detail: e.target.value }))
+              setEditValues((prev: any) => ({
+                ...prev,
+                name_detail: e.target.value,
+              }))
             }
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <span style={{ color: det.created_status !== "default" ? primaryColor : "black" }}>
+          <span
+            style={{
+              color: det.created_status !== "default" ? primaryColor : "black",
+            }}
+          >
             {det.name_detail}
           </span>
         ),
         material: (
-          <span style={{ color: det.created_status !== "default" ? primaryColor : "black" }}>
+          <span
+            style={{
+              color: det.created_status !== "default" ? primaryColor : "black",
+            }}
+          >
             {det.material}
           </span>
         ),
         layer_thickness: (
-          <span style={{ color: det.created_status !== "default" ? primaryColor : "black" }}>
+          <span
+            style={{
+              color: det.created_status !== "default" ? primaryColor : "black",
+            }}
+          >
             {det.layer_thickness}
           </span>
         ),
@@ -517,7 +559,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
               variant="layersIcon"
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedItem({ id: det.id_detail, name_detail: det.name_detail });
+                setSelectedItem({
+                  id: det.id_detail,
+                  name_detail: det.name_detail,
+                });
                 setShowDetailsModal(true);
               }}
             >
@@ -580,7 +625,13 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
   const renderDetailsTabs = () => (
     <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "1rem",
+        }}
+      >
         <NewDetailCreator
           detailType={(() => {
             if (tabStep4 === "muros") return "Muro";
@@ -611,10 +662,14 @@ const ConstructiveDetailsComponent: React.FC = () => {
                 width: "100%",
                 padding: "10px",
                 backgroundColor: "#fff",
-                color: tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
+                color:
+                  tabStep4 === item.key
+                    ? primaryColor
+                    : "var(--secondary-color)",
                 border: "none",
                 cursor: "pointer",
-                borderBottom: tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
+                borderBottom:
+                  tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
                 fontFamily: "var(--font-family-base)",
                 fontWeight: "normal",
               }}
@@ -673,11 +728,18 @@ const ConstructiveDetailsComponent: React.FC = () => {
         ) : (
           item.name_detail
         ),
-        valorU: item.value_u && Number(item.value_u) !== 0 ? Number(item.value_u).toFixed(2) : "-",
+        valorU:
+          item.value_u && Number(item.value_u) !== 0
+            ? Number(item.value_u).toFixed(2)
+            : "-",
         colorExterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}
-            value={editValues.exterior || item.info?.surface_color?.exterior?.name || ""}
+            value={
+              editValues.exterior ||
+              item.info?.surface_color?.exterior?.name ||
+              ""
+            }
             onChange={(e) =>
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
@@ -695,7 +757,11 @@ const ConstructiveDetailsComponent: React.FC = () => {
         colorInterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}
-            value={editValues.interior || item.info?.surface_color?.interior?.name || ""}
+            value={
+              editValues.interior ||
+              item.info?.surface_color?.interior?.name ||
+              ""
+            }
             onChange={(e) =>
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
@@ -723,7 +789,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
               variant="layersIcon"
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedItem({ id: item.id_detail ?? item.id ?? 0, name_detail: item.name_detail });
+                setSelectedItem({
+                  id: item.id_detail ?? item.id ?? 0,
+                  name_detail: item.name_detail,
+                });
                 setShowDetailsModal(true);
               }}
             >
@@ -797,7 +866,11 @@ const ConstructiveDetailsComponent: React.FC = () => {
         colorExterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}
-            value={editValues.exterior || item.info?.surface_color?.exterior?.name || ""}
+            value={
+              editValues.exterior ||
+              item.info?.surface_color?.exterior?.name ||
+              ""
+            }
             onChange={(e) =>
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
@@ -815,7 +888,11 @@ const ConstructiveDetailsComponent: React.FC = () => {
         colorInterior: isEditing ? (
           <select
             onClick={(e) => e.stopPropagation()}
-            value={editValues.interior || item.info?.surface_color?.interior?.name || ""}
+            value={
+              editValues.interior ||
+              item.info?.surface_color?.interior?.name ||
+              ""
+            }
             onChange={(e) =>
               setEditValues((prev: Record<string, any>) => ({
                 ...prev,
@@ -843,7 +920,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
               variant="layersIcon"
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedItem({ id: item.id_detail ?? item.id ?? 0, name_detail: item.name_detail });
+                setSelectedItem({
+                  id: item.id_detail ?? item.id ?? 0,
+                  name_detail: item.name_detail,
+                });
                 setShowDetailsModal(true);
               }}
             >
@@ -944,7 +1024,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={
               editValues.vertLambda !== undefined
                 ? editValues.vertLambda
-                : (vert.lambda && Number(vert.lambda) !== 0 ? Number(vert.lambda).toFixed(2) : "")
+                : vert.lambda && Number(vert.lambda) !== 0
+                ? Number(vert.lambda).toFixed(2)
+                : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -958,7 +1040,11 @@ const ConstructiveDetailsComponent: React.FC = () => {
               if (e.key === "-") e.preventDefault();
             }}
           />
-        ) : (vert.lambda && Number(vert.lambda) !== 0 ? Number(vert.lambda).toFixed(2) : "-"),
+        ) : vert.lambda && Number(vert.lambda) !== 0 ? (
+          Number(vert.lambda).toFixed(2)
+        ) : (
+          "-"
+        ),
         vertEAisl: isEditing ? (
           <input
             type="number"
@@ -967,7 +1053,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={
               editValues.vertEAisl !== undefined
                 ? editValues.vertEAisl
-                : (vert.e_aisl && Number(vert.e_aisl) !== 0 ? vert.e_aisl : "")
+                : vert.e_aisl && Number(vert.e_aisl) !== 0
+                ? vert.e_aisl
+                : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -994,7 +1082,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={
               editValues.vertD !== undefined
                 ? editValues.vertD
-                : (vert.d && Number(vert.d) !== 0 ? vert.d : "")
+                : vert.d && Number(vert.d) !== 0
+                ? vert.d
+                : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1021,7 +1111,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={
               editValues.horizLambda !== undefined
                 ? editValues.horizLambda
-                : (horiz.lambda && Number(horiz.lambda) !== 0 ? Number(horiz.lambda).toFixed(2) : "")
+                : horiz.lambda && Number(horiz.lambda) !== 0
+                ? Number(horiz.lambda).toFixed(2)
+                : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1035,7 +1127,11 @@ const ConstructiveDetailsComponent: React.FC = () => {
               if (e.key === "-") e.preventDefault();
             }}
           />
-        ) : (horiz.lambda && Number(horiz.lambda) !== 0 ? Number(horiz.lambda).toFixed(2) : "-"),
+        ) : horiz.lambda && Number(horiz.lambda) !== 0 ? (
+          Number(horiz.lambda).toFixed(2)
+        ) : (
+          "-"
+        ),
         horizEAisl: isEditing ? (
           <input
             type="number"
@@ -1044,7 +1140,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={
               editValues.horizEAisl !== undefined
                 ? editValues.horizEAisl
-                : (horiz.e_aisl && Number(horiz.e_aisl) !== 0 ? horiz.e_aisl : "")
+                : horiz.e_aisl && Number(horiz.e_aisl) !== 0
+                ? horiz.e_aisl
+                : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1071,7 +1169,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={
               editValues.horizD !== undefined
                 ? editValues.horizD
-                : (horiz.d && Number(horiz.d) !== 0 ? horiz.d : "")
+                : horiz.d && Number(horiz.d) !== 0
+                ? horiz.d
+                : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1098,12 +1198,15 @@ const ConstructiveDetailsComponent: React.FC = () => {
             />
           </div>
         ) : (
-          <>
+          <div style={{ width: "160px" }}>
             <CustomButton
               variant="layersIcon"
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedItem({ id: item.id_detail ?? item.id ?? 0, name_detail: item.name_detail });
+                setSelectedItem({
+                  id: item.id_detail ?? item.id ?? 0,
+                  name_detail: item.name_detail,
+                });
                 setShowDetailsModal(true);
               }}
             >
@@ -1128,7 +1231,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             >
               Eliminar
             </CustomButton>
-          </>
+          </div>
         ),
       };
     });
@@ -1285,10 +1388,16 @@ const ConstructiveDetailsComponent: React.FC = () => {
               <label>Material</label>
               <select
                 className="form-control"
-                value={editingDetail.material_id ? editingDetail.material_id.toString() : ""}
+                value={
+                  editingDetail.material_id
+                    ? editingDetail.material_id.toString()
+                    : ""
+                }
                 onChange={(e) =>
                   setEditingDetail((prev) =>
-                    prev ? { ...prev, material_id: Number(e.target.value) } : prev
+                    prev
+                      ? { ...prev, material_id: Number(e.target.value) }
+                      : prev
                   )
                 }
                 onClick={(e) => {
@@ -1313,7 +1422,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
                 value={editingDetail.layer_thickness}
                 onChange={(e) =>
                   setEditingDetail((prev) =>
-                    prev ? { ...prev, layer_thickness: Number(e.target.value) } : prev
+                    prev
+                      ? { ...prev, layer_thickness: Number(e.target.value) }
+                      : prev
                   )
                 }
                 onClick={(e) => e.stopPropagation()}

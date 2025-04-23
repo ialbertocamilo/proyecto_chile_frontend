@@ -77,7 +77,13 @@ interface Puerta {
   fm?: number;
 }
 
-type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
+type TabStep4 =
+  | "detalles"
+  | "muros"
+  | "techumbre"
+  | "pisos"
+  | "ventanas"
+  | "puertas";
 
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
@@ -344,10 +350,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         headerName: "Acciones",
         field: "actions",
         renderCell: () => (
-          <CustomButton
-            variant="layersIcon"
-            onClick={() => {}}
-          />
+          <CustomButton variant="layersIcon" onClick={() => {}} />
         ),
       },
     ];
@@ -376,10 +379,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         headerName: "Acciones",
         field: "actions",
         renderCell: () => (
-          <CustomButton
-            variant="layersIcon"
-            onClick={() => {}}
-          />
+          <CustomButton variant="layersIcon" onClick={() => {}} />
         ),
       },
     ];
@@ -425,10 +425,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         headerName: "Acciones",
         field: "actions",
         renderCell: () => (
-          <CustomButton
-            variant="layersIcon"
-            onClick={() => {}}
-          />
+          <CustomButton variant="layersIcon" onClick={() => {}} />
         ),
       },
     ];
@@ -651,8 +648,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-
-
   // ==================== RENDER PESTAÑAS (DATOS CONSTRUCTIVOS) ====================
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
@@ -683,11 +678,16 @@ const WorkFlowpar2viewPage: React.FC = () => {
                   width: "100%",
                   padding: "10px",
                   backgroundColor: "#fff",
-                  color: tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
+                  color:
+                    tabStep4 === item.key
+                      ? primaryColor
+                      : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
                   borderBottom:
-                    tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
+                    tabStep4 === item.key
+                      ? `3px solid ${primaryColor}`
+                      : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -702,10 +702,19 @@ const WorkFlowpar2viewPage: React.FC = () => {
         {/* Se agrega onClick solo para tabs que no sean "puertas" ni "ventanas" */}
         <div
           style={{
-            height: (tabStep4 === "ventanas" || tabStep4 === "puertas") ? "auto" : "400px",
-            overflowY: (tabStep4 === "ventanas" || tabStep4 === "puertas") ? "hidden" : "auto",
+            height:
+              tabStep4 === "ventanas" || tabStep4 === "puertas"
+                ? "auto"
+                : "400px",
+            overflowY:
+              tabStep4 === "ventanas" || tabStep4 === "puertas"
+                ? "hidden"
+                : "auto",
             position: "relative",
-            cursor: tabStep4 !== "puertas" && tabStep4 !== "ventanas" ? "pointer" : "default",
+            cursor:
+              tabStep4 !== "puertas" && tabStep4 !== "ventanas"
+                ? "pointer"
+                : "default",
           }}
           onClick={
             tabStep4 !== "puertas" && tabStep4 !== "ventanas"
@@ -713,7 +722,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
               : undefined
           }
         >
-
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>{renderMurosTable()}</div>
           )}
@@ -824,7 +832,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
     {
       stepNumber: 1,
       iconName: "assignment_ind",
-      title: "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+      title:
+        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
       route: `/workflow-part1-view?id=${projectId}&step=1`,
     },
     {
@@ -884,7 +893,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
                 activeStep={step}
                 steps={sidebarSteps}
                 onClickAction={(route: string) => router.push(route)}
-                onStepChange={() => { }}
+                onStepChange={() => {}}
               />
             </div>
 
@@ -901,7 +910,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         detail=""
         isOpen={showGeneralDetailsModal}
         onClose={() => setShowGeneralDetailsModal(false)}
-        onSave={() => { }}
+        onSave={() => {}}
         title="Detalles Generales"
         hideFooter={true}
         modalStyle={{

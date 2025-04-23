@@ -2630,7 +2630,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {showCreateModal && (
         <ModalCreate
           isOpen={true}
-          title={`Crear nueva cabecera de ${
+          title={`Crear Nuevo ${
             titleMapping[tabStep4] || "Detalle"
           }`}
           onClose={() => {

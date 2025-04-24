@@ -799,17 +799,17 @@ const DataEntryPage: React.FC = () => {
           ),
           specific_heat: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {mat.atributs.specific_heat}
+              {mat.atributs.specific_heat.toFixed(2)}
             </span>
           ) : (
-            mat.atributs.specific_heat
+            mat.atributs.specific_heat.toFixed(2)
           ),
           density: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {mat.atributs.density}
+              {mat.atributs.density.toFixed(2)}
             </span>
           ) : (
-            mat.atributs.density
+            mat.atributs.density.toFixed(2)
           ),
           action: mat.user_id == null ? (
             <span>-</span>
@@ -866,7 +866,7 @@ const DataEntryPage: React.FC = () => {
     if (modalElementType === "ventanas") {
       const columnsVentanas = [
         { headerName: "Nombre Elemento", field: "name_element" },
-        { headerName: "U Vidrio [W/m2K]", field: "u_vidrio" },
+        { headerName: "U Vidrio [W/m2K]", field: "u_vidrio", },
         { headerName: "FS Vidrio", field: "fs_vidrio" },
         { headerName: "Tipo Cierre", field: "clousure_type" },
         { headerName: "Tipo Marco", field: "frame_type" },
@@ -895,10 +895,10 @@ const DataEntryPage: React.FC = () => {
               el.atributs.u_vidrio && el.atributs.u_vidrio > 0 ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {el.atributs.u_vidrio}
+                    {Number(el.atributs.u_vidrio).toFixed(2)}
                   </span>
                 ) : (
-                  el.atributs.u_vidrio
+                  Number(el.atributs.u_vidrio).toFixed(2)
                 )
               ) : (
                 "--"
@@ -907,10 +907,10 @@ const DataEntryPage: React.FC = () => {
               el.atributs.fs_vidrio && el.atributs.fs_vidrio > 0 ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {el.atributs.fs_vidrio}
+                    {Number(el.atributs.fs_vidrio).toFixed(2)}
                   </span>
                 ) : (
-                  el.atributs.fs_vidrio
+                  Number(el.atributs.fs_vidrio).toFixed(2)
                 )
               ) : (
                 "--"
@@ -931,17 +931,17 @@ const DataEntryPage: React.FC = () => {
             ),
             u_marco: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {el.u_marco}
+                {Number(el.u_marco).toFixed(2)}
               </span>
             ) : (
-              el.u_marco
+              Number(el.u_marco).toFixed(2)
             ),
             fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {Math.round(el.fm * 100) + "%"}
+                {(Math.round(el.fm * 100) / 100).toFixed(2) + "%"}
               </span>
             ) : (
-              Math.round(el.fm * 100) + "%"
+              (Math.round(el.fm * 100) / 100).toFixed(2) + "%"
             ),
             acciones: el.user_id == null ? (
               <span>-</span>

@@ -21,8 +21,13 @@ interface InteractiveMapProps {
   initialLng?: number;
 }
 
-const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect, initialLat, initialLng ,onLocationDetails}) => {
-  L.Icon.Default.imagePath = 'https://unpkg.com/leaflet@1.7.1/dist/images/';
+const InteractiveMap: React.FC<InteractiveMapProps> = ({
+  onLocationSelect,
+  initialLat,
+  initialLng,
+  onLocationDetails,
+}) => {
+  L.Icon.Default.imagePath = "https://unpkg.com/leaflet@1.7.1/dist/images/";
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
   const zoomRef = useRef<number>(13);
@@ -31,17 +36,17 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect, initi
     if (!mapRef.current) {
       mapRef.current = L.map("map", {
         zoomControl: true,
-        attributionControl: true
+        attributionControl: true,
       }).setView(
         initialLat && initialLng ? [initialLat, initialLng] : [0, 0],
         zoomRef.current
       );
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '© OpenStreetMap contributors',
+        attribution: "© OpenStreetMap contributors",
       }).addTo(mapRef.current);
 
-      mapRef.current.on('zoomend', () => {
+      mapRef.current.on("zoomend", () => {
         if (mapRef.current) {
           zoomRef.current = mapRef.current.getZoom();
         }
@@ -52,12 +57,14 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect, initi
         onLocationSelect({ lat, lng });
 
         try {
-          const response = await axios.get(`/api/map_locator?lat=${lat}&long=${lng}`);
+          const response = await axios.get(
+            `/api/map_locator?lat=${lat}&long=${lng}`
+          );
           if (onLocationDetails) {
             onLocationDetails(response.data?.results);
           }
         } catch (error) {
-          console.error('Error al obtener la ubicación:', error);
+          console.error("Error al obtener la ubicación:", error);
         }
 
         if (markerRef.current) {
@@ -74,7 +81,9 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect, initi
       if (markerRef.current) {
         markerRef.current.setLatLng([initialLat, initialLng]);
       } else {
-        markerRef.current = L.marker([initialLat, initialLng]).addTo(mapRef.current);
+        markerRef.current = L.marker([initialLat, initialLng]).addTo(
+          mapRef.current
+        );
       }
       mapRef.current.setView([initialLat, initialLng], zoomRef.current);
     }
@@ -97,7 +106,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onLocationSelect, initi
         height: "400px",
         width: "100%",
         position: "relative",
-        overflow: "hidden"
+        overflow: "hidden",
       }}
     ></div>
   );

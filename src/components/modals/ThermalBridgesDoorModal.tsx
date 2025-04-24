@@ -52,6 +52,35 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
     // console.log("props.detailOptions", detailOptions);
     console.log("Guardar puentes térmicos");
 
+    const {
+      fav1D,
+      fav1L,
+      fav2izq_P,
+      fav2izq_S,
+      fav2der_P,
+      fav2der_S,
+      fav3_E,
+      fav3_T,
+      fav3_beta,
+      fav3_alpha,
+    } = favEditData;
+
+    if (
+      fav1D < 0 ||
+      fav1L < 0 ||
+      fav2izq_P < 0 ||
+      fav2izq_S < 0 ||
+      fav2der_P < 0 ||
+      fav2der_S < 0 ||
+      fav3_E < 0 ||
+      fav3_T < 0 ||
+      fav3_beta < 0 ||
+      fav3_alpha < 0
+    ) {
+      notify("No se permiten valores negativos en FAV");
+      return;
+    }
+
     const authData = getAuthData();
     if (!authData) return;
     try {
@@ -136,6 +165,8 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
             </label>
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               style={favInputStyle}
               value={favEditData?.fav1D ?? ""}
@@ -155,6 +186,8 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
             </label>
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               style={favInputStyle}
               value={favEditData?.fav1L ?? ""}
@@ -175,6 +208,8 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
             <label htmlFor="po2_length">P [m]</label>
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               style={favInputStyle}
               value={favEditData?.fav2izqP ?? ""}
@@ -192,6 +227,8 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
             <label htmlFor="po2_length">S [m]</label>
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               style={favInputStyle}
               value={favEditData?.fav2izqS ?? ""}
@@ -214,6 +251,8 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
             </label>
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               style={favInputStyle}
               value={favEditData?.fav2DerP ?? ""}
@@ -233,6 +272,8 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
             </label>
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               style={favInputStyle}
               value={favEditData?.fav2DerS ?? ""}
@@ -255,6 +296,8 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
             </label>
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               style={favInputStyle}
               value={favEditData?.fav3E ?? ""}
@@ -274,6 +317,8 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
             </label>
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               style={favInputStyle}
               value={favEditData?.fav3T ?? ""}
@@ -293,6 +338,8 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
             </label>
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               style={favInputStyle}
               value={favEditData?.fav3Beta ?? ""}
@@ -312,6 +359,8 @@ const ThermalBridgesDoorModal: FC<ThermalBridgesModalProps> = (props) => {
             </label>
             <input
               type="number"
+              min="0"
+              step="any"
               className="form-control"
               style={favInputStyle}
               value={favEditData?.fav3Alpha ?? ""}

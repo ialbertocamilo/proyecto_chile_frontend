@@ -18,14 +18,14 @@ const InteractiveMap2: React.FC<InteractiveMapProps> = ({
   const zoomRef = useRef<number>(13);
 
   useEffect(() => {
-    let map2 = L.map("map2").setView([initialLat, initialLng], 13);
+    const map2 = L.map("map2").setView([initialLat, initialLng], 13);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map2);
 
-    let marker = L.marker([-16.419167000391106, -71.52432686007376], {
+    const marker = L.marker([-16.419167000391106, -71.52432686007376], {
       draggable: true,
       autoPan: true,
     }).addTo(map2);

@@ -105,7 +105,7 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
           />
         </div>
         <div className="col-12 col-md-8 mb-3">
-          <NoSSRInteractiveMap
+          {/* <NoSSRInteractiveMap
             onLocationSelect={(latlng) => {
               handleFormInputChange("latitude", latlng.lat);
               handleFormInputChange("longitude", latlng.lng);
@@ -125,9 +125,16 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
                 detailsTextArea.value = details;
               }
             }}
-          />
-          {/* <NoSSRInteractiveMap2 initialLat={formData.latitude}
-            initialLng={formData.longitude}></NoSSRInteractiveMap2> */}
+          /> */}
+          <NoSSRInteractiveMap2
+            initialLat={formData.latitude}
+            initialLng={formData.longitude}
+            handleFormInputChange={handleFormInputChange}
+            onLocationSelect={(latlng) => {
+              handleFormInputChange("latitude", latlng.lat);
+              handleFormInputChange("longitude", latlng.lng);
+            }}
+          ></NoSSRInteractiveMap2>
         </div>
         <div className="col-12 col-md-4">
           <label

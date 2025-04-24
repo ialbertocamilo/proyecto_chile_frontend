@@ -783,6 +783,7 @@ const DataEntryPage: React.FC = () => {
       )
       .map((mat) => {
         const isDefault = mat.create_status === "default" || mat.create_status === "global";
+        const formattedConductivity = mat.atributs.conductivity.toFixed(3);
         return {
           materialName: (
             <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : undefined}>
@@ -791,10 +792,10 @@ const DataEntryPage: React.FC = () => {
           ),
           conductivity: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {mat.atributs.conductivity}
+              {mat.atributs.conductivity.toFixed(3)}
             </span>
           ) : (
-            mat.atributs.conductivity
+            mat.atributs.conductivity.toFixed(3)
           ),
           specific_heat: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -1735,8 +1736,10 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>FM [%]</label>
+              <div className="input-group">
               <input
                 type="number"
+                placeholder="FM"
                 min="0"
                 max="100"
                 className="form-control"
@@ -1759,6 +1762,8 @@ const DataEntryPage: React.FC = () => {
                   );
                 }}
               />
+              <span className="input-group-text">%</span>
+              </div>
             </div>
           </div>
         </ModalCreate>
@@ -1849,7 +1854,9 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>% Vidrio</label>
+              <div className="input-group">
               <input
+              placeholder="% Vidrio"
                 type="number"
                 max="100"
                 className="form-control"
@@ -1880,6 +1887,9 @@ const DataEntryPage: React.FC = () => {
                   );
                 }}
               />
+              <span className="input-group-text">%</span>
+              </div>
+
             </div>
             <div className="form-group mb-3">
               <label>U Marco [W/m²K]</label>
@@ -1902,7 +1912,9 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>FM [%]</label>
+              <div className="input-group">
               <input
+              placeholder="FM"
                 type="number"
                 max="100"
                 className="form-control"
@@ -1926,6 +1938,8 @@ const DataEntryPage: React.FC = () => {
                   );
                 }}
               />
+              <span className="input-group-text">%</span>
+              </div>
             </div>
           </div>
         </ModalCreate>

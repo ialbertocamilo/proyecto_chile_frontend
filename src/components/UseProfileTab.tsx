@@ -1004,7 +1004,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             { key: "ventilacion", label: "Ventilacion y caudales" },
             { key: "iluminacion", label: "Iluminacion" },
             { key: "cargas", label: "Cargas internas" },
-            { key: "horario", label: "Horario y Clima" },
+            { key: "horario", label: "Climatización" },
           ].map((item) => (
             <li key={item.key} className="flex-fill">
               <button

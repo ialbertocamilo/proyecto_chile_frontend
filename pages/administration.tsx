@@ -66,7 +66,7 @@ const formatValue = (value: any, decimals: number = 2): React.ReactNode => {
 
 const formatPercentage = (value: number): string => {
   if (value === 0) return "-";
-  return Math.round(value * 100) + "%";  // Round to whole number for FM
+  return value.toFixed(2) + "%";  // Changed to show 2 decimal places
 };
 
 const AdministrationPage: React.FC = () => {
@@ -292,10 +292,10 @@ const AdministrationPage: React.FC = () => {
         ),
         fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {formatPercentage(el.fm)}
+            {formatPercentage(el.fm * 100)}
           </span>
         ) : (
-          formatPercentage(el.fm)
+          formatPercentage(el.fm * 100)
         ),
         action: (
           <ActionButtons
@@ -382,10 +382,10 @@ const AdministrationPage: React.FC = () => {
         ),
         fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {formatPercentage(el.fm)}
+            {formatPercentage(el.fm * 100)}
           </span>
         ) : (
-          formatPercentage(el.fm)
+          formatPercentage(el.fm * 100)
         ),
         action: (
           <ActionButtons

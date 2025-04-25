@@ -938,10 +938,10 @@ const DataEntryPage: React.FC = () => {
             ),
             fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {(Math.round(el.fm * 100) / 100).toFixed(2) + "%"}
+                {el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"}
               </span>
             ) : (
-              (Math.round(el.fm * 100) / 100).toFixed(2) + "%"
+              el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"
             ),
             acciones: el.user_id == null ? (
               <span>-</span>
@@ -1046,13 +1046,15 @@ const DataEntryPage: React.FC = () => {
               el.atributs.porcentaje_vidrio !== undefined ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {Math.round(el.atributs.porcentaje_vidrio * 100) + "%"}
+                    {el.atributs.porcentaje_vidrio === 0 ? "-" : 
+                     (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"}
                   </span>
                 ) : (
-                  Math.round(el.atributs.porcentaje_vidrio * 100) + "%"
+                  el.atributs.porcentaje_vidrio === 0 ? "-" : 
+                  (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"
                 )
               ) : (
-                "0%"
+                "-"
               ),
             u_marco: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -1063,10 +1065,10 @@ const DataEntryPage: React.FC = () => {
             ),
             fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {Math.round(el.fm * 100) + "%"}
+                {el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"}
               </span>
             ) : (
-              Math.round(el.fm * 100) + "%"
+              el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"
             ),
             acciones: el.user_id == null ? (
               <span>-</span>

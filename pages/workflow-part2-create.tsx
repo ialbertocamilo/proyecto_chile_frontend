@@ -321,7 +321,7 @@ const WorkFlowpar2createPage: React.FC = () => {
   // useEffects de inicialización
   // -------------------------
   useEffect(() => {
-    const storedProjectId = localStorage.getItem("project_id");
+    const storedProjectId = localStorage.getItem("last_created_project");
     if (storedProjectId) {
       setProjectId(Number(storedProjectId));
     }
@@ -2630,9 +2630,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {showCreateModal && (
         <ModalCreate
           isOpen={true}
-          title={`Crear Nuevo ${
-            titleMapping[tabStep4] || "Detalle"
-          }`}
+          title={`Crear Nuevo ${titleMapping[tabStep4] || "Detalle"}`}
           onClose={() => {
             setShowCreateModal(false);
             setNewDetalle({
@@ -2764,7 +2762,11 @@ const WorkFlowpar2createPage: React.FC = () => {
                 type="number"
                 className="form-control"
                 placeholder="cm"
-                value={newDetailData.layer_thickness > 0 ? newDetailData.layer_thickness : ""}
+                value={
+                  newDetailData.layer_thickness > 0
+                    ? newDetailData.layer_thickness
+                    : ""
+                }
                 min="0"
                 step="any"
                 onKeyDown={(e) => {

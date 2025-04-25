@@ -57,16 +57,16 @@ interface ConfirmModalProps {
 }
 
 // Funciones auxiliares para formatear los valores
-const formatValue = (value: any): React.ReactNode => {
+const formatValue = (value: any, decimals: number = 2): React.ReactNode => {
   if (value === 0 || value === "N/A") {
     return "-";
   }
-  return value;
+  return typeof value === 'number' ? value.toFixed(decimals) : value;
 };
 
 const formatPercentage = (value: number): string => {
   if (value === 0) return "-";
-  return (value * 100).toFixed(0) + "%";
+  return value.toFixed(2) + "%";  // Changed to show 2 decimal places
 };
 
 const AdministrationPage: React.FC = () => {
@@ -184,24 +184,24 @@ const AdministrationPage: React.FC = () => {
         ),
         conductivity: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {formatValue(mat.atributs.conductivity)}
+            {formatValue(mat.atributs.conductivity, 3)}
           </span>
         ) : (
-          formatValue(mat.atributs.conductivity)
+          formatValue(mat.atributs.conductivity, 3)
         ),
         specific_heat: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {formatValue(mat.atributs.specific_heat)}
+            {formatValue(mat.atributs.specific_heat, 2)}
           </span>
         ) : (
-          formatValue(mat.atributs.specific_heat)
+          formatValue(mat.atributs.specific_heat, 2)
         ),
         density: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {formatValue(mat.atributs.density)}
+            {formatValue(mat.atributs.density, 2)}
           </span>
         ) : (
-          formatValue(mat.atributs.density)
+          formatValue(mat.atributs.density, 2)
         ),
         action: (
           <ActionButtons
@@ -292,10 +292,10 @@ const AdministrationPage: React.FC = () => {
         ),
         fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {formatPercentage(el.fm)}
+            {formatPercentage(el.fm * 100)}
           </span>
         ) : (
-          formatPercentage(el.fm)
+          formatPercentage(el.fm * 100)
         ),
         action: (
           <ActionButtons
@@ -382,10 +382,10 @@ const AdministrationPage: React.FC = () => {
         ),
         fm: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {formatPercentage(el.fm)}
+            {formatPercentage(el.fm * 100)}
           </span>
         ) : (
-          formatPercentage(el.fm)
+          formatPercentage(el.fm * 100)
         ),
         action: (
           <ActionButtons

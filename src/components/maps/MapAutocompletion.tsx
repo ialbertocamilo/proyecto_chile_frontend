@@ -1,29 +1,43 @@
-import axios from 'axios'
-import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
-import { Autocompletion } from './Autocompletion'
+import axios from "axios";
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+import { Autocompletion } from "./Autocompletion";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 
 interface MapAutocompletionProps {
   formData: {
-    latitude: number
-    longitude: number
-    address: string
-    zone?: string
-  }
-  handleFormInputChange: (field: any, value: any) => void
+    latitude: number;
+    longitude: number;
+    address: string;
+    zone?: string;
+  };
+  handleFormInputChange: (field: any, value: any) => void;
 }
 
-const NoSSRInteractiveMap = dynamic(() => import("@/components/InteractiveMap"), {
-  ssr: false,
-});
+const NoSSRInteractiveMap = dynamic(
+  () => import("@/components/InteractiveMap"),
+  {
+    ssr: false,
+  }
+);
+const NoSSRInteractiveMap2 = dynamic(
+  () => import("@/components/InteractiveMap2"),
+  {
+    ssr: false,
+  }
+);
 
-export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, handleFormInputChange }) => {
-  const [locationSearch, setLocationSearch] = useState('')
-  const [completionList, setCompletionList] = useState<{
-    Title: string;
-    Position: [number, number];
-  }[]>([]);
+export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
+  formData,
+  handleFormInputChange,
+}) => {
+  const [locationSearch, setLocationSearch] = useState("");
+  const [completionList, setCompletionList] = useState<
+    {
+      Title: string;
+      Position: [number, number];
+    }[]
+  >([]);
 
   useEffect(() => {
     if (!locationSearch.trim()) return;
@@ -31,7 +45,9 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
     const delaySearch = setTimeout(() => {
       console.log("Buscando ubicación:", locationSearch);
       axios
-        .get(`/api/map?q=${locationSearch}&lat=${formData.latitude}&long=${formData.longitude}`)
+        .get(
+          `/api/map?q=${locationSearch}&lat=${formData.latitude}&long=${formData.longitude}`
+        )
         .then((response) => {
           const { data } = response;
           console.log("Respuesta de ubicación", data.results.ResultItems);
@@ -62,7 +78,9 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
           if (display_name && display_name !== formData.address) {
             handleFormInputChange("address", display_name);
             // Opcional: también puedes actualizar manualmente el textarea si es necesario
-            const detailsTextArea = document.getElementById("locationDetails") as HTMLTextAreaElement;
+            const detailsTextArea = document.getElementById(
+              "locationDetails"
+            ) as HTMLTextAreaElement;
             if (detailsTextArea) {
               detailsTextArea.value = `Dirección: ${display_name}`;
             }
@@ -87,7 +105,7 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
           />
         </div>
         <div className="col-12 col-md-8 mb-3">
-          <NoSSRInteractiveMap
+          {/* <NoSSRInteractiveMap
             onLocationSelect={(latlng) => {
               handleFormInputChange("latitude", latlng.lat);
               handleFormInputChange("longitude", latlng.lng);
@@ -100,19 +118,30 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
                 `Dirección: ${locationDetails?.Label || "N/A"}`,
               ].join("\n");
               handleFormInputChange("address", details);
-              const detailsTextArea = document.getElementById("locationDetails") as HTMLTextAreaElement;
+              const detailsTextArea = document.getElementById(
+                "locationDetails"
+              ) as HTMLTextAreaElement;
               if (detailsTextArea) {
                 detailsTextArea.value = details;
               }
             }}
-          />
+          /> */}
+          <NoSSRInteractiveMap2
+            initialLat={formData.latitude}
+            initialLng={formData.longitude}
+            handleFormInputChange={handleFormInputChange}
+            onLocationSelect={(latlng) => {
+              handleFormInputChange("latitude", latlng.lat);
+              handleFormInputChange("longitude", latlng.lng);
+            }}
+          ></NoSSRInteractiveMap2>
         </div>
         <div className="col-12 col-md-4">
           <label
             className="form-label"
             style={{
               width: "100%",
-              marginBottom: "8px"
+              marginBottom: "8px",
             }}
           >
             Datos de ubicaciones encontradas
@@ -124,7 +153,7 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
             readOnly
             style={{
               width: "100%",
-              resize: "none"
+              resize: "none",
             }}
           />
           <label className="form-label">Detalles de la ubicación</label>
@@ -136,14 +165,14 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
             value={formData.address}
             style={{
               width: "100%",
-              resize: "none"
+              resize: "none",
             }}
           />
           {/* Se coloca el componente ZoneSelector justo debajo del recuadro de "Detalles de la ubicación" */}
           <div className="mt-3">
-            <ZoneSelector 
+            <ZoneSelector
               initialZone={formData.zone || ""}
-              latitude={formData.latitude} 
+              latitude={formData.latitude}
               longitude={formData.longitude}
               handleFormInputChange={handleFormInputChange}
             />
@@ -151,8 +180,8 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({ formData, 
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default MapAutocompletion;
 
@@ -168,7 +197,12 @@ interface ZoneSelectorProps {
   initialZone?: string;
 }
 
-const ZoneSelector: React.FC<ZoneSelectorProps> = ({ latitude, longitude, handleFormInputChange, initialZone = "" }) => {
+const ZoneSelector: React.FC<ZoneSelectorProps> = ({
+  latitude,
+  longitude,
+  handleFormInputChange,
+  initialZone = "",
+}) => {
   const [zones, setZones] = useState<Zone[]>([]);
   const [selectedZone, setSelectedZone] = useState<string>(initialZone);
 
@@ -179,7 +213,9 @@ const ZoneSelector: React.FC<ZoneSelectorProps> = ({ latitude, longitude, handle
   useEffect(() => {
     if (latitude && longitude) {
       axios
-        .get(`${constantUrlApiEndpoint}/zones?latitude=${latitude}&longitude=${longitude}`)
+        .get(
+          `${constantUrlApiEndpoint}/zones?latitude=${latitude}&longitude=${longitude}`
+        )
         .then((response) => {
           setZones(response.data);
         })

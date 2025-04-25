@@ -783,6 +783,7 @@ const DataEntryPage: React.FC = () => {
       )
       .map((mat) => {
         const isDefault = mat.create_status === "default" || mat.create_status === "global";
+        const formattedConductivity = mat.atributs.conductivity.toFixed(3);
         return {
           materialName: (
             <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : undefined}>
@@ -791,24 +792,24 @@ const DataEntryPage: React.FC = () => {
           ),
           conductivity: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {mat.atributs.conductivity}
+              {mat.atributs.conductivity.toFixed(3)}
             </span>
           ) : (
-            mat.atributs.conductivity
+            mat.atributs.conductivity.toFixed(3)
           ),
           specific_heat: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {mat.atributs.specific_heat}
+              {mat.atributs.specific_heat.toFixed(2)}
             </span>
           ) : (
-            mat.atributs.specific_heat
+            mat.atributs.specific_heat.toFixed(2)
           ),
           density: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {mat.atributs.density}
+              {mat.atributs.density.toFixed(2)}
             </span>
           ) : (
-            mat.atributs.density
+            mat.atributs.density.toFixed(2)
           ),
           action: mat.user_id == null ? (
             <span>-</span>
@@ -865,7 +866,7 @@ const DataEntryPage: React.FC = () => {
     if (modalElementType === "ventanas") {
       const columnsVentanas = [
         { headerName: "Nombre Elemento", field: "name_element" },
-        { headerName: "U Vidrio [W/m2K]", field: "u_vidrio" },
+        { headerName: "U Vidrio [W/m2K]", field: "u_vidrio", },
         { headerName: "FS Vidrio", field: "fs_vidrio" },
         { headerName: "Tipo Cierre", field: "clousure_type" },
         { headerName: "Tipo Marco", field: "frame_type" },
@@ -894,10 +895,10 @@ const DataEntryPage: React.FC = () => {
               el.atributs.u_vidrio && el.atributs.u_vidrio > 0 ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {el.atributs.u_vidrio}
+                    {Number(el.atributs.u_vidrio).toFixed(2)}
                   </span>
                 ) : (
-                  el.atributs.u_vidrio
+                  Number(el.atributs.u_vidrio).toFixed(2)
                 )
               ) : (
                 "--"
@@ -906,10 +907,10 @@ const DataEntryPage: React.FC = () => {
               el.atributs.fs_vidrio && el.atributs.fs_vidrio > 0 ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {el.atributs.fs_vidrio}
+                    {Number(el.atributs.fs_vidrio).toFixed(2)}
                   </span>
                 ) : (
-                  el.atributs.fs_vidrio
+                  Number(el.atributs.fs_vidrio).toFixed(2)
                 )
               ) : (
                 "--"
@@ -930,17 +931,17 @@ const DataEntryPage: React.FC = () => {
             ),
             u_marco: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {el.u_marco}
+                {Number(el.u_marco).toFixed(2)}
               </span>
             ) : (
-              el.u_marco
+              Number(el.u_marco).toFixed(2)
             ),
             fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {Math.round(el.fm * 100) + "%"}
+                {el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"}
               </span>
             ) : (
-              Math.round(el.fm * 100) + "%"
+              el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"
             ),
             acciones: el.user_id == null ? (
               <span>-</span>
@@ -1045,13 +1046,15 @@ const DataEntryPage: React.FC = () => {
               el.atributs.porcentaje_vidrio !== undefined ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {Math.round(el.atributs.porcentaje_vidrio * 100) + "%"}
+                    {el.atributs.porcentaje_vidrio === 0 ? "-" : 
+                     (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"}
                   </span>
                 ) : (
-                  Math.round(el.atributs.porcentaje_vidrio * 100) + "%"
+                  el.atributs.porcentaje_vidrio === 0 ? "-" : 
+                  (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"
                 )
               ) : (
-                "0%"
+                "-"
               ),
             u_marco: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -1062,10 +1065,10 @@ const DataEntryPage: React.FC = () => {
             ),
             fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {Math.round(el.fm * 100) + "%"}
+                {el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"}
               </span>
             ) : (
-              Math.round(el.fm * 100) + "%"
+              el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"
             ),
             acciones: el.user_id == null ? (
               <span>-</span>
@@ -1735,8 +1738,10 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>FM [%]</label>
+              <div className="input-group">
               <input
                 type="number"
+                placeholder="FM"
                 min="0"
                 max="100"
                 className="form-control"
@@ -1759,6 +1764,8 @@ const DataEntryPage: React.FC = () => {
                   );
                 }}
               />
+              <span className="input-group-text">%</span>
+              </div>
             </div>
           </div>
         </ModalCreate>
@@ -1849,7 +1856,9 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>% Vidrio</label>
+              <div className="input-group">
               <input
+              placeholder="% Vidrio"
                 type="number"
                 max="100"
                 className="form-control"
@@ -1880,6 +1889,9 @@ const DataEntryPage: React.FC = () => {
                   );
                 }}
               />
+              <span className="input-group-text">%</span>
+              </div>
+
             </div>
             <div className="form-group mb-3">
               <label>U Marco [W/m²K]</label>
@@ -1902,7 +1914,9 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>FM [%]</label>
+              <div className="input-group">
               <input
+              placeholder="FM"
                 type="number"
                 max="100"
                 className="form-control"
@@ -1926,6 +1940,8 @@ const DataEntryPage: React.FC = () => {
                   );
                 }}
               />
+              <span className="input-group-text">%</span>
+              </div>
             </div>
           </div>
         </ModalCreate>

@@ -15,9 +15,18 @@ import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 // Cargamos el mapa sin SSR
-const NoSSRInteractiveMap = dynamic(() => import("../src/components/InteractiveMap"), {
-  ssr: false,
-});
+const NoSSRInteractiveMap = dynamic(
+  () => import("../src/components/InteractiveMap"),
+  {
+    ssr: false,
+  }
+);
+const NoSSRInteractiveMap2 = dynamic(
+  () => import("../src/components/InteractiveMap2"),
+  {
+    ssr: false,
+  }
+);
 
 type Country = "" | "Perú" | "Chile";
 
@@ -54,7 +63,7 @@ const initialFormData: FormData = {
   built_surface: 0,
   latitude: -33.4589314398474,
   longitude: -70.6703553846175,
-  address: ""
+  address: "",
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -86,8 +95,8 @@ const ProjectWorkflowPart1: React.FC = () => {
   // Actualizamos el header del proyecto cuando cambien los datos relevantes
   useEffect(() => {
     setProjectHeaderData({
-      projectName: localStorage.getItem('project_name_view') || "",
-      region: localStorage.getItem('project_department_view') || "" // o cualquier otra propiedad que defina la región
+      projectName: localStorage.getItem("project_name_view") || "",
+      region: localStorage.getItem("project_department_view") || "", // o cualquier otra propiedad que defina la región
     });
   }, [formData.name_project, formData.department]);
 
@@ -99,7 +108,10 @@ const ProjectWorkflowPart1: React.FC = () => {
       const currentLatitude = formData.latitude.toString();
       const currentLongitude = formData.longitude.toString();
 
-      if (storedLatitude === currentLatitude && storedLongitude === currentLongitude) {
+      if (
+        storedLatitude === currentLatitude &&
+        storedLongitude === currentLongitude
+      ) {
         const storedAddress = localStorage.getItem("project_address");
         if (storedAddress) {
           setFormData((prev) => ({ ...prev, address: storedAddress }));
@@ -139,7 +151,9 @@ const ProjectWorkflowPart1: React.FC = () => {
       return;
     }
     const projectIdParam = router.query.id;
-    const projectIdStr = Array.isArray(projectIdParam) ? projectIdParam[0] : projectIdParam;
+    const projectIdStr = Array.isArray(projectIdParam)
+      ? projectIdParam[0]
+      : projectIdParam;
     const fetchProjectData = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -164,7 +178,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           built_surface: projectData.built_surface || 0,
           latitude: projectData.latitude || -33.4589314398474,
           longitude: projectData.longitude || -70.6703553846175,
-          address: projectData.divisions?.address || ""
+          address: projectData.divisions?.address || "",
         });
         // Extraer la zona desde project_metadata, asumiendo que la propiedad se llama "zone"
         setProjectMetadata(projectData.project_metadata?.zone || "");
@@ -211,7 +225,8 @@ const ProjectWorkflowPart1: React.FC = () => {
     {
       stepNumber: 1,
       iconName: "assignment_ind",
-      title: "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+      title:
+        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
     },
     {
       stepNumber: 2,
@@ -274,9 +289,16 @@ const ProjectWorkflowPart1: React.FC = () => {
       <div>
         <div>{renderMainHeader()}</div>
         <Card>
-          <div className="d-flex flex-wrap" style={{ alignItems: "stretch", gap: 0 }}>
+          <div
+            className="d-flex flex-wrap"
+            style={{ alignItems: "stretch", gap: 0 }}
+          >
             {/* Sidebar para cambiar de step */}
-            <AdminSidebar activeStep={step} onStepChange={handleSidebarStepChange} steps={steps} />
+            <AdminSidebar
+              activeStep={step}
+              onStepChange={handleSidebarStepChange}
+              steps={steps}
+            />
             <div className="content p-4" style={{ flex: 1 }}>
               {step === 1 && (
                 <>
@@ -284,21 +306,44 @@ const ProjectWorkflowPart1: React.FC = () => {
                   <div className="row mb-3">
                     <div className="col-12 col-md-6">
                       <label className="form-label">Nombre del proyecto</label>
-                      <input type="text" className="form-control" value={formData.name_project} disabled />
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.name_project}
+                        disabled
+                      />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Nombre del propietario</label>
-                      <input type="text" className="form-control" value={formData.owner_name} disabled />
+                      <label className="form-label">
+                        Nombre del propietario
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.owner_name}
+                        disabled
+                      />
                     </div>
                   </div>
                   <div className="row mb-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Apellido del propietario</label>
-                      <input type="text" className="form-control" value={formData.owner_lastname} disabled />
+                      <label className="form-label">
+                        Apellido del propietario
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.owner_lastname}
+                        disabled
+                      />
                     </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">País</label>
-                      <select className="form-control" value={formData.country} disabled>
+                      <select
+                        className="form-control"
+                        value={formData.country}
+                        disabled
+                      >
                         <option value="">Seleccione un país</option>
                         {Object.keys(locationData).map((country) => (
                           <option key={country} value={country}>
@@ -311,10 +356,16 @@ const ProjectWorkflowPart1: React.FC = () => {
                   <div className="row mb-3">
                     <div className="col-12 col-md-6">
                       <label className="form-label">Región</label>
-                      <select className="form-control" value={formData.department} disabled>
+                      <select
+                        className="form-control"
+                        value={formData.department}
+                        disabled
+                      >
                         <option value="">Seleccione un departamento</option>
                         {formData.country &&
-                          Object.keys(locationData[formData.country]?.departments || {}).map((dept) => (
+                          Object.keys(
+                            locationData[formData.country]?.departments || {}
+                          ).map((dept) => (
                             <option key={dept} value={dept}>
                               {dept}
                             </option>
@@ -323,11 +374,19 @@ const ProjectWorkflowPart1: React.FC = () => {
                     </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">Ciudad</label>
-                      <select className="form-control" value={formData.province} disabled>
+                      <select
+                        className="form-control"
+                        value={formData.province}
+                        disabled
+                      >
                         <option value="">Seleccione una provincia</option>
                         {formData.country &&
                           formData.department &&
-                          (locationData[formData.country]?.departments?.[formData.department] || []).map((prov) => (
+                          (
+                            locationData[formData.country]?.departments?.[
+                              formData.department
+                            ] || []
+                          ).map((prov) => (
                             <option key={prov} value={prov}>
                               {prov}
                             </option>
@@ -338,15 +397,28 @@ const ProjectWorkflowPart1: React.FC = () => {
                   <div className="row mb-3">
                     <div className="col-12 col-md-6">
                       <label className="form-label">Distrito</label>
-                      <input type="text" className="form-control" value={formData.district} disabled />
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.district}
+                        disabled
+                      />
                     </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">Tipo de edificación</label>
-                      <select className="form-control" value={formData.building_type} disabled>
-                        <option value="">Seleccione un tipo de edificación</option>
+                      <select
+                        className="form-control"
+                        value={formData.building_type}
+                        disabled
+                      >
+                        <option value="">
+                          Seleccione un tipo de edificación
+                        </option>
                         <option value="Unifamiliar">Unifamiliar</option>
                         <option value="Duplex">Duplex</option>
-                        <option value="Vertical / Departamentos">Vertical / Departamentos</option>
+                        <option value="Vertical / Departamentos">
+                          Vertical / Departamentos
+                        </option>
                       </select>
                     </div>
                   </div>
@@ -354,17 +426,39 @@ const ProjectWorkflowPart1: React.FC = () => {
                   <div className="row mb-3">
                     <div className="col-12 col-md-6">
                       <label className="form-label">Número de niveles</label>
-                      <input type="number" min="0" className="form-control" value={formData.number_levels} disabled />
+                      <input
+                        type="number"
+                        min="0"
+                        className="form-control"
+                        value={formData.number_levels}
+                        disabled
+                      />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Superficie construida (m²)</label>
-                      <input type="number" min="0" className="form-control" value={formData.built_surface} disabled />
+                      <label className="form-label">
+                        Superficie construida (m²)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="form-control"
+                        value={formData.built_surface}
+                        disabled
+                      />
                     </div>
                   </div>
                   <div className="row mb-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Número de viviendas / oficinas x nivel</label>
-                      <input type="number" min="0" className="form-control" value={formData.number_homes_per_level} disabled />
+                      <label className="form-label">
+                        Número de viviendas / oficinas x nivel
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="form-control"
+                        value={formData.number_homes_per_level}
+                        disabled
+                      />
                     </div>
                     <div className="col-12 col-md-6">
                       {/* Columna vacía para mantener la estructura de dos columnas */}
@@ -414,16 +508,23 @@ const ProjectWorkflowPart1: React.FC = () => {
                     <div className="row">
                       <div className="col-12 col-md-8 mb-3">
                         <div style={{ pointerEvents: "none" }}>
-                          <NoSSRInteractiveMap
+                          {/* <NoSSRInteractiveMap
                             onLocationSelect={() => {}}
                             initialLat={formData.latitude}
                             initialLng={formData.longitude}
-                          />
+                          /> */}
+                          <NoSSRInteractiveMap2
+                            initialLat={formData.latitude}
+                            initialLng={formData.longitude}
+                          ></NoSSRInteractiveMap2>
                         </div>
                       </div>
                       <div className="col-12 col-md-4">
                         <div className="mb-3">
-                          <label className="form-label" style={{ width: "100%", height: "20px" }}>
+                          <label
+                            className="form-label"
+                            style={{ width: "100%", height: "20px" }}
+                          >
                             Datos de ubicaciones encontradas
                           </label>
                           <textarea
@@ -435,7 +536,10 @@ const ProjectWorkflowPart1: React.FC = () => {
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label" style={{ width: "100%", height: "20px" }}>
+                          <label
+                            className="form-label"
+                            style={{ width: "100%", height: "20px" }}
+                          >
                             Detalles de la ubicación
                           </label>
                           <textarea
@@ -447,7 +551,10 @@ const ProjectWorkflowPart1: React.FC = () => {
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label" style={{ width: "100%", height: "20px" }}>
+                          <label
+                            className="form-label"
+                            style={{ width: "100%", height: "20px" }}
+                          >
                             Zona
                           </label>
                           <textarea

@@ -411,7 +411,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         ida: minSalubridad.ida || "N/A",
         ocupacion: minSalubridad.ocupacion || "N/A",
         caudalImpuestoVentNoct: (condition.caudal_impuesto?.vent_noct ?? 0).toFixed(2),
-        infiltraciones: condition.infiltraciones ?? 0,
+        infiltraciones: (condition.infiltraciones ?? 0).toFixed(2),
         recuperadorCalor: condition.recuperador_calor ?? 0,
       };
 

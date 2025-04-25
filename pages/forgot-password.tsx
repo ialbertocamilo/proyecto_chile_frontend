@@ -154,49 +154,42 @@ const ForgotPassword: NextPageWithLayout = () => {
               />
             </div>
 
-            <CustomButton
-              type="submit"
-              variant="save"
-              className="btn btn-block w-100"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span>
-                  <i className="bi bi-arrow-repeat spin"></i> Cargando...
-                </span>
-              ) : (
-                "Recuperar contraseña"
-              )}
-            </CustomButton>
+            <div className="d-flex gap-3">
+              <CustomButton
+                type="button"
+                variant="back"
+                onClick={() => router.back()}
+                style={{
+                  backgroundColor: "#dc3545",
+                  color: "#ffffff",
+                  border: "none",
+                  fontFamily: "var(--font-family-base)",
+                  boxShadow: "none",
+                  padding: "8px 16px",
+                  flex: "1"
+                }}
+              >
+                Cancelar
+              </CustomButton>
+
+              <CustomButton
+                type="submit"
+                variant="save"
+                className="btn btn-block"
+                disabled={isLoading}
+                style={{ flex: "1" }}
+              >
+                {isLoading ? (
+                  <span>
+                    <i className="bi bi-arrow-repeat spin"></i> Cargando...
+                  </span>
+                ) : (
+                  "Recuperar contraseña"
+                )}
+              </CustomButton>
+            </div>
           </form>
         )}
-
-        {/* Botón de regresar centrado */}
-        <div className="text-center mt-4">
-          <CustomButton
-            type="button"
-            variant="back"
-            onClick={() => router.back()}
-            style={{
-              backgroundColor: "transparent",
-              color: "#ffffff",
-              border: "none",
-              fontFamily: "var(--font-family-base)",
-              fontSize: "0.875rem",
-              boxShadow: "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              margin: "0 auto",
-              width: "auto",
-              padding: "8px 16px",
-              minWidth: "auto",
-            }}
-          >
-            <i className="bi bi-arrow-left"></i>
-          </CustomButton>
-        </div>
       </div>
       <style jsx>{`
         .spin {

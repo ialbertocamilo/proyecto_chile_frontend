@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
@@ -17,6 +18,7 @@ import ModalCreate from "../src/components/common/ModalCreate";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataView";
 import CustomButton from "../src/components/common/CustomButton";
 
+/* ==================== TIPOS ==================== */
 interface Detail {
   id_detail: number;
   scantilon_location: string;
@@ -55,6 +57,7 @@ interface TabItem {
 }
 
 interface Ventana {
+  id?: number;
   name_element: string;
   atributs?: {
     u_vidrio?: number;
@@ -67,6 +70,7 @@ interface Ventana {
 }
 
 interface Puerta {
+  id?: number;
   name_element: string;
   atributs?: {
     u_puerta_opaca?: number;
@@ -77,6 +81,7 @@ interface Puerta {
   fm?: number;
 }
 
+/* Los tabs que corresponden a Step4 */
 type TabStep4 =
   | "detalles"
   | "muros"
@@ -85,6 +90,7 @@ type TabStep4 =
   | "ventanas"
   | "puertas";
 
+/* ==================== HELPERS ==================== */
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement)
@@ -93,38 +99,45 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
+/* ================================================= */
+/* ==========  COMPONENTE PRINCIPAL  =============== */
+/* ================================================= */
 const WorkFlowpar2viewPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
-  // ==================== ESTADOS PRINCIPALES ====================
+  /* ==================== ESTADOS PRINCIPALES ==================== */
   const [projectId, setProjectId] = useState<number | null>(null);
   const [step, setStep] = useState<number>(4);
   const [hasLoaded, setHasLoaded] = useState(false);
 
+  /* Detalles generales del modal */
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // La vista por defecto mostrará los tabs (datos constructivos)
+  /* Vista por defecto: tabs (datos constructivos) */
   const [showTabsInStep4, setShowTabsInStep4] = useState(true);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
+  /* Listas para cada tab */
   const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
   const [techumbreTabList, setTechumbreTabList] = useState<TabItem[]>([]);
   const [pisosTabList, setPisosTabList] = useState<TabItem[]>([]);
   const [ventanasTabList, setVentanasTabList] = useState<Ventana[]>([]);
   const [puertasTabList, setPuertasTabList] = useState<Puerta[]>([]);
 
+  /* Control de color en tabs */
   const primaryColor = getCssVarValue("--primary-color", "#3ca7b7");
 
-  // Estado para el modal de detalles generales
+  /* Estado para el modal y el id de detail-part seleccionado */
   const [showGeneralDetailsModal, setShowGeneralDetailsModal] = useState(false);
+  const [selectedDetailId, setSelectedDetailId] = useState<number | null>(null);
 
-  // ==================== ESTADOS PARA CABECERA ====================
+  /* ==================== ESTADOS PARA CABECERA ==================== */
   const [projectName, setProjectName] = useState("");
   const [projectDepartment, setProjectDepartment] = useState("");
 
-  // Ejemplo de recintos (hardcodeado)
+  /* Ejemplo de recintos (hardcodeado) */
   const recintos = [
     {
       id: 1,
@@ -137,7 +150,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     },
   ];
 
-  // ==================== OBTENCIÓN DE projectId y paso ====================
+  /* ==================== OBTENCIÓN DE projectId y paso ==================== */
   useEffect(() => {
     if (router.isReady) {
       if (router.query.id) {
@@ -158,7 +171,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     }
   }, [router.isReady, router.query.id, router.query.step]);
 
-  // ==================== OBTENER DATOS DEL LOCAL STORAGE PARA CABECERA ====================
+  /* ==================== OBTENER DATOS DEL LOCAL STORAGE PARA CABECERA ==================== */
   useEffect(() => {
     const name = localStorage.getItem("project_name_view") || "";
     const department = localStorage.getItem("project_department_view") || "";
@@ -166,6 +179,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     setProjectDepartment(department);
   }, []);
 
+  /* ==================== REDIRECCIÓN SI NO HAY projectId ==================== */
   useEffect(() => {
     if (hasLoaded && projectId === null) {
       Swal.fire(
@@ -178,33 +192,34 @@ const WorkFlowpar2viewPage: React.FC = () => {
     }
   }, [hasLoaded, projectId, router]);
 
-  // ==================== LLAMADAS A ENDPOINTS ====================
-  const fetchFetchedDetails = async () => {
+  /* =============================================================== */
+  /* ================  LLAMADAS A ENDPOINTS  ======================== */
+  /* =============================================================== */
+
+  /* ---------- Nuevo endpoint /detail-part/{detail_part_id} ---------- */
+  const fetchDetailPart = async (detailPartId: number) => {
     try {
-      if (!projectId) {
-        console.log("Project ID is not available ");
-        return;
-      }
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/admin/details/?project_id=${projectId}`;
+      const url = `${constantUrlApiEndpoint}/detail-part/${detailPartId}`;
       const headers = { Authorization: `Bearer ${token}` };
-      console.log("Fetching details with project ID:", projectId);
       const response = await axios.get(url, { headers });
+      /* La API devuelve un array según el ejemplo, así que guardamos tal cual */
       setFetchedDetails(response.data || []);
     } catch (error: unknown) {
-      console.error("Error al obtener detalles:", error);
+      console.error("Error al obtener detalle-part:", error);
       if (axios.isAxiosError(error)) {
         console.error("Status:", error.response?.status);
-        console.error("Response data:", error.response?.data);
+        console.error("Response:", error.response?.data);
       }
-      Swal.fire("Error", "Error al obtener detalles. Ver consola.");
+      Swal.fire("Error", "Error al obtener detalles del elemento.");
     }
   };
 
+  /* ---------------- Endpoints existentes para cada tab ---------------- */
   const fetchMurosDetails = useCallback(async () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");
@@ -290,15 +305,23 @@ const WorkFlowpar2viewPage: React.FC = () => {
     }
   }, []);
 
-  // ==================== EFECTOS SEGÚN STEP ====================
+  /* ==================== EFECTO PARA DETAIL-PART ==================== */
+  useEffect(() => {
+    if (showGeneralDetailsModal && selectedDetailId !== null) {
+      fetchDetailPart(selectedDetailId);
+    }
+  }, [showGeneralDetailsModal, selectedDetailId]);
+
+  /* ==================== EFECTOS SEGÚN STEP ==================== */
   useEffect(() => {
     if (step === 4 && projectId !== null) {
-      // Aquí se podría llamar a alguna función si se necesita al iniciar el step 4
+      // Posible lógica al iniciar step 4
     }
   }, [step, projectId]);
 
   useEffect(() => {
     if (showTabsInStep4) {
+      /* "muros" por defecto */
       setTabStep4("muros");
     }
   }, [showTabsInStep4]);
@@ -328,18 +351,28 @@ const WorkFlowpar2viewPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // ==================== NUEVO EFECTO: FETCH PARA DETALLES GENERALES ====================
-  useEffect(() => {
-    if (showGeneralDetailsModal && projectId) {
-      fetchFetchedDetails();
-    }
-  }, [showGeneralDetailsModal, projectId]);
-
-  // ==================== RENDER CABECERA ====================
+  /* =============================================================== */
+  /* ================    RENDER CABECERA      ====================== */
+  /* =============================================================== */
   const renderMainHeader = () =>
     step >= 4 && <Title text="Vista de Desarrollo de proyecto" />;
 
-  // ==================== RENDER DE TABLAS (MUROS, TECHUMBRE, ETC.) ====================
+  /* =============================================================== */
+  /* =====      HELPERS PARA BOTÓN LAYERS (abrir modal)         ==== */
+  /* =============================================================== */
+  const handleOpenLayersModal = (detailId: number | undefined | null) => {
+    if (!detailId) {
+      Swal.fire("Error", "No se encontró el ID del detalle.");
+      return;
+    }
+    setSelectedDetailId(detailId);
+    setShowGeneralDetailsModal(true);
+  };
+
+  /* =============================================================== */
+  /* ================  RENDER DE TABLAS (MUROS, ETC.) ============== */
+  /* =============================================================== */
+
   const renderMurosTable = () => {
     const columnsMuros = [
       { headerName: "Nombre Abreviado", field: "name_detail" },
@@ -349,13 +382,17 @@ const WorkFlowpar2viewPage: React.FC = () => {
       {
         headerName: "Acciones",
         field: "actions",
-        renderCell: () => (
-          <CustomButton variant="layersIcon" onClick={() => {}} />
+        renderCell: (row: any) => (
+          <CustomButton
+            variant="layersIcon"
+            onClick={() => handleOpenLayersModal(row.id_detail ?? row.id)}
+          />
         ),
       },
     ];
 
     const murosData = murosTabList.map((item) => ({
+      id_detail: item.id_detail ?? item.id, // necesario para obtener el id
       name_detail: item.name_detail,
       valorU: item.value_u?.toFixed(2) ?? "-",
       colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
@@ -378,13 +415,17 @@ const WorkFlowpar2viewPage: React.FC = () => {
       {
         headerName: "Acciones",
         field: "actions",
-        renderCell: () => (
-          <CustomButton variant="layersIcon" onClick={() => {}} />
+        renderCell: (row: any) => (
+          <CustomButton
+            variant="layersIcon"
+            onClick={() => handleOpenLayersModal(row.id_detail ?? row.id)}
+          />
         ),
       },
     ];
 
     const techData = techumbreTabList.map((item) => ({
+      id_detail: item.id_detail ?? item.id,
       name_detail: item.name_detail,
       valorU: item.value_u?.toFixed(2) ?? "-",
       colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
@@ -399,7 +440,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
   };
 
   const renderPisosTable = () => {
-    // Función helper para formatear valores numéricos
+    /* Helper para formatear valores */
     const formatValue = (value: any, fixed?: number): string => {
       if (value === undefined || value === null || value === 0) {
         return "-";
@@ -424,8 +465,11 @@ const WorkFlowpar2viewPage: React.FC = () => {
       {
         headerName: "Acciones",
         field: "actions",
-        renderCell: () => (
-          <CustomButton variant="layersIcon" onClick={() => {}} />
+        renderCell: (row: any) => (
+          <CustomButton
+            variant="layersIcon"
+            onClick={() => handleOpenLayersModal(row.id_detail ?? row.id)}
+          />
         ),
       },
     ];
@@ -457,6 +501,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       const vert = item.info?.ref_aisl_vertical || {};
       const horiz = item.info?.ref_aisl_horizontal || {};
       return {
+        id_detail: item.id_detail ?? item.id,
         nombre: item.name_detail,
         uValue: formatValue(item.value_u, 2),
         bajoPisoLambda: formatValue(bajoPiso.lambda, 2),
@@ -485,6 +530,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
+  /* Ventanas y puertas no usan modal, así que sin botón */
   const renderVentanasTable = () => {
     const columnsVentanas = [
       { headerName: "Nombre Elemento", field: "name_element" },
@@ -539,7 +585,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ) : (
             "--"
           ),
-          // Multiplicamos fm por 100 y lo formateamos a dos decimales
           fm: item.fm ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
               {(item.fm * 100).toFixed(2)}
@@ -602,7 +647,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ) : (
             "--"
           ),
-          // Multiplicamos porcentaje_vidrio por 100 y lo formateamos a dos decimales
           porcentaje_vidrio: item.atributs?.porcentaje_vidrio ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
               {(item.atributs.porcentaje_vidrio * 100).toFixed(2)}
@@ -648,7 +692,9 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // ==================== RENDER PESTAÑAS (DATOS CONSTRUCTIVOS) ====================
+  /* =============================================================== */
+  /* ================  RENDER PESTAÑAS STEP 4 ====================== */
+  /* =============================================================== */
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
     const tabs = [
@@ -699,7 +745,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ))}
         </ul>
 
-        {/* Se agrega onClick solo para tabs que no sean "puertas" ni "ventanas" */}
         <div
           style={{
             height:
@@ -718,7 +763,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           }}
           onClick={
             tabStep4 !== "puertas" && tabStep4 !== "ventanas"
-              ? () => setShowGeneralDetailsModal(true)
+              ? undefined /* se abre con el botón ahora */
               : undefined
           }
         >
@@ -742,16 +787,18 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // ==================== RENDER DETALLES GENERALES (para el modal sin searchbar) ====================
+  /* =============================================================== */
+  /* =========   CONTENIDO DEL MODAL (Detalles Generales)   ========= */
+  /* =============================================================== */
   const renderGeneralDetailsContent = () => {
-    // Filtra los detalles según la pestaña activa (muros, techumbre o pisos)
+    /* Filtra según la pestaña activa y búsqueda */
     const filteredDetails = fetchedDetails.filter((det) => {
       let typeMatch = false;
       const location = det.scantilon_location.toLowerCase();
+
       if (tabStep4 === "muros") {
         typeMatch = location === "muro";
       } else if (tabStep4 === "techumbre") {
-        // Asumiendo que en la respuesta se usa "techo" o "techumbre" para techumbre
         typeMatch = location === "techo" || location === "techumbre";
       } else if (tabStep4 === "pisos") {
         typeMatch = location === "piso";
@@ -767,7 +814,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return typeMatch && searchMatch;
     });
 
-    // Mapeamos para transformar TODOS los campos a color primario cuando created_status es "default"
+    /* Mapeo para colorear filas creadas */
     const detailsData = filteredDetails.map((det) => {
       if (det.created_status === "created") {
         return {
@@ -815,19 +862,21 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // ==================== RENDER RECINTO ===================
-  const renderRecinto = () => {
-    return (
-      <>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div></div>
-        </div>
-        <TabRecintDataCreate />
-      </>
-    );
-  };
+  /* =============================================================== */
+  /* ==================== RENDER RECINTO =========================== */
+  /* =============================================================== */
+  const renderRecinto = () => (
+    <>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div></div>
+      </div>
+      <TabRecintDataCreate />
+    </>
+  );
 
-  // ==================== PASOS / SIDEBAR ====================
+  /* =============================================================== */
+  /* ==================== PASOS / SIDEBAR ========================== */
+  /* =============================================================== */
   const sidebarSteps = [
     {
       stepNumber: 1,
@@ -856,6 +905,9 @@ const WorkFlowpar2viewPage: React.FC = () => {
     },
   ];
 
+  /* =============================================================== */
+  /* ========================  RETURN ============================== */
+  /* =============================================================== */
   return (
     <>
       <GooIcons />
@@ -905,7 +957,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Modal para detalles generales sin searchbar, sin botón "Cerrar" en el footer y de tamaño "xl" */}
+      {/* Modal para detalles generales */}
       <ModalCreate
         detail=""
         isOpen={showGeneralDetailsModal}

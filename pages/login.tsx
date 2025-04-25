@@ -19,77 +19,63 @@ const Login: NextPageWithLayout = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const router = useRouter();
 
-  // Verifica estado de sesión y precarga email si corresponde
+  // Verifica si el usuario está logueado y redirige a /dashboard
   useEffect(() => {
-    // Buscamos sesión persistente o temporal
-    const token =
-      localStorage.getItem("token") ||
-      sessionStorage.getItem("token");
-  
+    const token = localStorage.getItem("token");
+    const roleId = localStorage.getItem("role_id");
+
     if (token) {
-      // ya logueado → redirigir
-      const roleId =
-        localStorage.getItem("role_id") ||
-        sessionStorage.getItem("role_id");
-      if (roleId === "1") router.push("/dashboard");
-      else router.push("/project-list");
-      return;
+      if (roleId === "1") {
+        router.push("/dashboard");
+      } else {
+        router.push("/project-list");
+      }
     }
-  
-    // No hay sesión → precargar email si existe savedEmail
-    const savedEmail = localStorage.getItem("savedEmail");
-    setEmail(savedEmail ?? "");
-    setRemember(!!savedEmail);
-    setPassword("");
   }, [router]);
-  
-  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
+    const requestBody = { email, password };
+
     try {
       const response = await fetch(`${constantUrlApiEndpoint}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(requestBody),
       });
+      console.log(response)
 
       const data = await response.json();
+
+      if (data?.detail) {
+        throw new Error(data?.detail)
+      }
       if (!response.ok) {
+        // Usa 'detail' si existe, de lo contrario 'message', 'error', etc.
         throw new Error(data.detail || data.message || data.error || "Credenciales incorrectas.");
       }
 
-      // Guardar token para mantener sesión
-      localStorage.setItem("token", data.token);
+
+      // Si la respuesta es exitosa, guardamos datos y redirigimos
       localStorage.setItem("User", data.token);
-      // Guardar rol y email para 2FA
-      localStorage.setItem("role_id", String(data.role_id));
-      localStorage.setItem("user_name", data.name || "Usuario");
       localStorage.setItem("email", email);
+      localStorage.setItem("user_name", data.name || "Usuario");
 
-      // Guardar o eliminar email según "Recuérdame"
-      if (remember) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role_id", String(data.role_id));
-        localStorage.setItem("savedEmail", email);
-      } else {
-        sessionStorage.setItem("token", data.token);
-        sessionStorage.setItem("role_id", String(data.role_id));
-        localStorage.removeItem("savedEmail"); // quita el email guardado
-      }
-
-      // Redirigir a autenticación de dos factores
-      setTimeout(() => router.push("/twofactorauth"), 200);
+      console.log("User data", data);
+      setTimeout(() => {
+        router.push("/twofactorauth");
+      }, 200);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      console.error("Error al iniciar sesión:", message);
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <div
@@ -101,97 +87,108 @@ const Login: NextPageWithLayout = () => {
       <div className="row">
         <div className="col-12 p-0">
           <div className="login-card login-dark">
-            <div className="login-main">
-              <div className="col-12 p-0 d-flex justify-content-center">
-                <Image
-                  src="/assets/images/ceela.png"
-                  alt="Ceela Logo"
-                  width={120}
-                  height={120}
-                  className="img-fluid mt-4 mb-3"
-                  style={{ objectFit: "contain" }}
-                />
-              </div>
-              <hr />
-              <form className="theme-form" onSubmit={handleSubmit}>
-                <h4 style={{ color: "var(--primary-color)" }}>
-                  Ingresa a tu cuenta
-                </h4>
-                <p>Ingresa tu email y contraseña para iniciar sesión</p>
-
-                {error && <p className="text-danger text-center fw-bold">{error}</p>}
-
-                <div className="form-group">
-                  <label className="col-form-label">Dirección de correo</label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    placeholder="Test@gmail.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+            <div>
+              <div className="login-main">
+                <div className="col-12 p-0 d-flex justify-content-center">
+                  <Image
+                    src="/assets/images/ceela.png"
+                    alt="Ceela Logo"
+                    width={120}
+                    height={120}
+                    className="img-fluid mt-4 mb-3"
+                    style={{ objectFit: "contain" }}
                   />
                 </div>
+                <br />
+                <hr />
+                <form className="theme-form" onSubmit={handleSubmit}>
+                  <h4 style={{ color: "var(--primary-color)" }}>
+                    Ingresa a tu cuenta
+                  </h4>
+                  <p>Ingresa tu email y contraseña para iniciar sesión</p>
 
-                <div className="form-group">
-                  <label className="col-form-label">Contraseña</label>
-                  <div className="form-input position-relative">
+                  {error && <p className="text-danger text-center fw-bold">{error}</p>}
+
+                  <div className="form-group">
+                    <label className="col-form-label">Dirección de correo</label>
                     <input
-                      type={showPassword ? "text" : "password"}
+                      type="email"
                       className="form-control"
-                      placeholder="********"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Test@gmail.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       required
                     />
-                    <div
-                      className="show-hide"
-                      style={{ cursor: "pointer", color: "var(--primary-color)" }}
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? "Ocultar" : "Mostrar"}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="col-form-label">Contraseña</label>
+                    <div className="form-input position-relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className="form-control"
+                        placeholder="********"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <div
+                        className="show-hide"
+                        style={{ cursor: "pointer", color: "var(--primary-color)" }}
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? "Ocultar" : "Mostrar"}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="form-group mb-0">
-                  <div className="checkbox p-0">
-                    <input
-                      id="remember"
-                      type="checkbox"
-                      checked={remember}
-                      onChange={(e) => setRemember(e.target.checked)}
-                    />
-                    <label className="text-muted" htmlFor="remember">
-                      Recuérdame
-                    </label>
-                  </div>
-                  <Link className="link" style={{ color: "var(--primary-color)" }} href="/forgot-password">
-                    ¿Olvidaste tu contraseña?
-                  </Link>
-                  <div className="text-end mt-3">
-                    <button
-                      className="btn btn-block w-100"
-                      type="submit"
-                      disabled={loading}
-                      style={{
-                        backgroundColor: "var(--primary-color)",
-                        borderColor: "var(--primary-color)",
-                        color: "#fff",
-                      }}
+                  <div className="form-group mb-0">
+                    <div className="checkbox p-0">
+                      <input
+                        id="remember"
+                        type="checkbox"
+                        checked={remember}
+                        onChange={(e) => setRemember(e.target.checked)}
+                      />
+                      <label className="text-muted" htmlFor="remember">
+                        Recuerdame
+                      </label>
+                    </div>
+                    <Link
+                      style={{ color: "var(--primary-color)" }}
+                      className="link"
+                      href="/forgot-password"
                     >
-                      {loading ? "Ingresando..." : "Iniciar sesión"}
-                    </button>
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                    <div className="text-end mt-3">
+                      <button
+                        className="btn btn-block w-100"
+                        type="submit"
+                        disabled={loading}
+                        style={{
+                          backgroundColor: "var(--primary-color)",
+                          borderColor: "var(--primary-color)",
+                          color: "#fff",
+                        }}
+                      >
+                        {loading ? "Ingresando..." : "Iniciar sesión"}
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <p className="mt-4 mb-0 text-center">
-                  ¿No tienes cuenta?
-                  <Link className="ms-2" style={{ color: "var(--primary-color)" }} href="/register">
-                    Crear cuenta
-                  </Link>
-                </p>
-              </form>
+                  <p className="mt-4 mb-0 text-center">
+                    ¿No tienes cuenta?
+                    <Link
+                      style={{ color: "var(--primary-color)" }}
+                      className="ms-2"
+                      href="/register"
+                    >
+                      Crear cuenta
+                    </Link>
+                  </p>
+                </form>
+              </div>
             </div>
           </div>
         </div>

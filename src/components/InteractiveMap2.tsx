@@ -7,7 +7,7 @@ interface InteractiveMapProps {
   initialLat?: number;
   initialLng?: number;
   onLocationSelect?: (latlng: { lat: number; lng: number }) => void;
-  handleFormInputChange: (field: any, value: any) => void;
+  handleFormInputChange?: (field: any, value: any) => void;
 }
 
 const InteractiveMap2: React.FC<InteractiveMapProps> = ({
@@ -68,13 +68,17 @@ const InteractiveMap2: React.FC<InteractiveMapProps> = ({
               duration: 1.5,
             }
           );
-          handleFormInputChange("latitude", coordinates.lat);
-          handleFormInputChange("longitude", coordinates.lng);
+          if (handleFormInputChange) {
+            handleFormInputChange("latitude", lat);
+            handleFormInputChange("longitude", lng);
+          }
           console.log("Marker dragged to:", lat, lng);
         });
       }
-      handleFormInputChange("latitude", coordinates.lat);
-      handleFormInputChange("longitude", coordinates.lng);
+      if (handleFormInputChange) {
+        handleFormInputChange("latitude", initialLat);
+        handleFormInputChange("longitude", initialLng);
+      }
     }
   }, [initialLat, initialLng]);
 

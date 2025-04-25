@@ -245,13 +245,27 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
         />
       )}
 
-      <div className="text-center mt-3">
-        <p>
-          <strong>HORA DE INICIO:</strong> {hoursRange.start}
-          &nbsp;&nbsp;
-          <strong>HORA FINAL:</strong> {hoursRange.end}
-        </p>
-      </div>
+<div className="text-center mt-3">
+  <p>
+    <strong>
+      <span 
+        title="Las horas se definen por el valor activo entre todos los perfiles de uso"
+        style={{ cursor: 'pointer' }} // Estilo opcional para indicar que es interactivo
+      >
+        HORA DE INICIO:
+      </span>
+    </strong> {hoursRange.start}
+    &nbsp;&nbsp;
+    <strong>
+      <span 
+        title="Las horas se definen por el valor activo entre todos los perfiles de uso"
+        style={{ cursor: 'pointer' }}
+      >
+        HORA FINAL:
+      </span>
+    </strong> {hoursRange.end}
+  </p>
+</div>
 
       {showModal && (
         <ModalCreate

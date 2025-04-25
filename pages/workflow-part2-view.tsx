@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
@@ -552,14 +551,14 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ),
           u_vidrio: item.atributs?.u_vidrio ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.atributs.u_vidrio.toFixed(3)}
+              {item.atributs.u_vidrio.toFixed(2)}
             </span>
           ) : (
             "--"
           ),
           fs_vidrio: item.atributs?.fs_vidrio ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.atributs.fs_vidrio}
+              {Number(item.atributs.fs_vidrio).toFixed(2)}
             </span>
           ) : (
             "--"
@@ -580,7 +579,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ),
           u_marco: item.u_marco ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.u_marco.toFixed(3)}
+              {item.u_marco.toFixed(2)}
             </span>
           ) : (
             "--"
@@ -596,13 +595,11 @@ const WorkFlowpar2viewPage: React.FC = () => {
       } else {
         return {
           name_element: item.name_element,
-          u_vidrio: item.atributs?.u_vidrio
-            ? item.atributs.u_vidrio.toFixed(3)
-            : "--",
-          fs_vidrio: item.atributs?.fs_vidrio ?? "--",
+          u_vidrio: item.atributs?.u_vidrio ? item.atributs.u_vidrio.toFixed(2) : "--",
+          fs_vidrio: item.atributs?.fs_vidrio ? Number(item.atributs.fs_vidrio).toFixed(2) : "--",
           frame_type: item.atributs?.frame_type ?? "--",
           clousure_type: item.atributs?.clousure_type ?? "--",
-          u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+          u_marco: item.u_marco ? item.u_marco.toFixed(2) : "--",
           fm: item.fm ? (item.fm * 100).toFixed(2) : "--",
         };
       }
@@ -635,7 +632,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ),
           u_puerta: item.atributs?.u_puerta_opaca ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.atributs.u_puerta_opaca.toFixed(3)}
+              {item.atributs.u_puerta_opaca.toFixed(2)}
             </span>
           ) : (
             "--"
@@ -656,7 +653,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ),
           u_marco: item.u_marco ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.u_marco.toFixed(3)}
+              {item.u_marco.toFixed(2)}
             </span>
           ) : (
             "--"
@@ -673,13 +670,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
         return {
           name_element: item.name_element,
           u_puerta: item.atributs?.u_puerta_opaca
-            ? item.atributs.u_puerta_opaca.toFixed(3)
+            ? item.atributs.u_puerta_opaca.toFixed(2)
             : "--",
           name_ventana: item.atributs?.name_ventana ?? "--",
           porcentaje_vidrio: item.atributs?.porcentaje_vidrio
             ? (item.atributs.porcentaje_vidrio * 100).toFixed(2)
             : "--",
-          u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+          u_marco: item.u_marco ? item.u_marco.toFixed(2) : "--",
           fm: item.fm ? (item.fm * 100).toFixed(2) : "--",
         };
       }

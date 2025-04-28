@@ -1105,7 +1105,7 @@ const TabWindowCreate: React.FC = () => {
         <div className="d-flex justify-content-end gap-2 w-100"></div>
         <CustomButton variant="save" onClick={handleCreateWindow}>
           <Plus className="me-1" size={16} />
-          Crear Ventana
+          Nueva Ventana
         </CustomButton>
       </div>
       <TablesParameters

@@ -1020,7 +1020,7 @@ const TabDoorCreate: React.FC = () => {
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={handleCreate}>
             <Plus className="me-1" size={16} />
-            Crear Puerta
+            Nueva Puerta
           </CustomButton>
         </div>
       </div>

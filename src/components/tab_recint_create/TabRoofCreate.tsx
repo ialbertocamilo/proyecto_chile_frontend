@@ -434,7 +434,7 @@ const TabCeilingCreate: React.FC = () => {
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={handleCreate}>
             <Plus className="me-1" size={16} />
-            Crear Techo
+            Nuevo Techo
           </CustomButton>
         </div>
       </div>

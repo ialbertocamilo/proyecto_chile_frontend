@@ -526,7 +526,7 @@ const TabFloorCreate: React.FC = () => {
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={() => setShowModal(true)}>
             <Plus className="me-1" size={16} />
-            Crear Piso
+            Nuevo Piso
           </CustomButton>
         </div>
       </div>

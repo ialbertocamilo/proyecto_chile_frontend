@@ -311,12 +311,11 @@ const AguaCalienteSanitaria = () => {
             </Card.Title>
             <div
               style={{
-                display: "block",
                 marginBottom: "15px",
               }}
             >
               <CustomButton
-                style={{ marginLeft: "auto" }}
+                style={{ display: "block", marginLeft: "auto" }}
                 className="mt-3"
                 onClick={addRow}
               >
@@ -364,10 +363,11 @@ const AguaCalienteSanitaria = () => {
                     <td>{(row.cantidad * row.consumo).toFixed(2)}</td>
                     <td>
                       <CustomButton
-                        color="red"
+                        variant="deleteIcon"
+                        color="#dc3545"
                         onClick={() => deleteRow(index)}
                       >
-                        <Trash2 className="me-1" size={16} /> Eliminar
+                        <Trash2 className="me-1" size={16} />
                       </CustomButton>
                     </td>
                   </tr>

@@ -59,8 +59,7 @@ const ForgotPassword: NextPageWithLayout = () => {
       className="forgot-password-container d-flex justify-content-center align-items-center"
       style={{
         height: "100vh",
-        background:
-          "url('/assets/images/background.jpg') no-repeat center center/cover",
+        background: "url('/assets/images/login_background.png') no-repeat center center/cover",
         fontFamily: "var(--font-family-base)",
       }}
     >
@@ -159,15 +158,8 @@ const ForgotPassword: NextPageWithLayout = () => {
                 type="button"
                 variant="back"
                 onClick={() => router.back()}
-                style={{
-                  backgroundColor: "#dc3545",
-                  color: "#ffffff",
-                  border: "none",
-                  fontFamily: "var(--font-family-base)",
-                  boxShadow: "none",
-                  padding: "8px 16px",
-                  flex: "1"
-                }}
+                color="red"
+                style={{ height: "38px", display: "flex", alignItems: "center" }}
               >
                 Cancelar
               </CustomButton>
@@ -177,7 +169,7 @@ const ForgotPassword: NextPageWithLayout = () => {
                 variant="save"
                 className="btn btn-block"
                 disabled={isLoading}
-                style={{ flex: "1" }}
+                style={{ flex: "1", height: "38px", display: "flex", alignItems: "center", justifyContent: "center" }}
               >
                 {isLoading ? (
                   <span>

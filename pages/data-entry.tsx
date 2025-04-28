@@ -1204,7 +1204,7 @@ const DataEntryPage: React.FC = () => {
             }
           }}
           title={editingMaterialId ? "Editar Material" : "Nuevo Material"}
-          saveLabel={editingMaterialId ? "Guardar Cambios" : "Crear Material"}
+          saveLabel={editingMaterialId ? "Editar Datos" : "Crear Material"}
         >
           <div>
             <div className="form-group mb-3">
@@ -1587,6 +1587,7 @@ const DataEntryPage: React.FC = () => {
       {editingWindowData && (
         <ModalCreate
           isOpen={true}
+          saveLabel="Editar Datos"
           title="Editar Ventana"
           onClose={() => setEditingWindowData(null)}
           onSave={() => {
@@ -1775,6 +1776,7 @@ const DataEntryPage: React.FC = () => {
       {editingDoorData && (
         <ModalCreate
           isOpen={true}
+          saveLabel="Editar Datos"
           title="Editar Puerta"
           onClose={() => setEditingDoorData(null)}
           onSave={() => {

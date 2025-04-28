@@ -968,7 +968,7 @@ const AdministrationPage: React.FC = () => {
           title={
             selectedMaterialId ? "Editar Material" : "Agregar Nuevo Material"
           }
-          saveLabel={selectedMaterialId ? "Guardar Cambios" : "Crear Material"}
+          saveLabel={selectedMaterialId ? "Editar Datos" : "Crear Material"}
         >
           <form
             onSubmit={(e) => {
@@ -1147,7 +1147,7 @@ const AdministrationPage: React.FC = () => {
                 }
           }
           title={selectedWindowId ? "Editar Ventana" : "Agregar Nueva Ventana"}
-          saveLabel={selectedWindowId ? "Editar Ventana" : "Crear Ventana"}
+          saveLabel={selectedWindowId ? "Editar Datos" : "Crear Ventana"}
         >
           <form
             onSubmit={(e) => {
@@ -1410,7 +1410,7 @@ const AdministrationPage: React.FC = () => {
                 }
           }
           title={selectedDoorId ? "Editar Puerta" : "Agregar Nueva Puerta"}
-          saveLabel={selectedDoorId ? "Editar Puerta" : "Crear Puerta"}
+          saveLabel={selectedDoorId ? "Editar Datos" : "Crear Puerta"}
         >
           <form
             onSubmit={(e) => {

@@ -2694,7 +2694,8 @@ const WorkFlowpar2editPage: React.FC = () => {
         isOpen={showCreateDetailModal}
         onClose={() => setShowCreateDetailModal(false)}
         onSave={handleCreateDetail}
-        title="Crear Detalle"
+        title="Crear Nueva Capa"
+        saveLabel="Crear Capa"
       >
         <form>
           <div className="form-group">

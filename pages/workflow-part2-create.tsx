@@ -2722,6 +2722,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         <ModalCreate
           isOpen={true}
           title="Crear Nueva Capa"
+          saveLabel="Crear Capa"
           onClose={() => setShowNewDetailModal(false)}
           onSave={handleSaveNewDetail}
         >

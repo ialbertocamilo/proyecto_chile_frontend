@@ -201,15 +201,17 @@ const ProjectListPage = () => {
       cell: ({ row }: { row: Project }) => (
         <div>
           {/* Botón de IFC */}
-          <CustomButton
-            className="btn-table-list"
-            onClick={() => router.push("/ifc")}
-            title="Ir a IFC"
-          >
-            <span className="material-icons" style={{ fontSize: "24px" }}>
-              apartment
-            </span>
-          </CustomButton>
+          {row.status === "registrado" && (
+            <CustomButton
+              className="btn-table-list"
+              onClick={() => router.push("/ifc")}
+              title="Ir a IFC"
+            >
+              <span className="material-icons" style={{ fontSize: "24px" }}>
+                apartment
+              </span>
+            </CustomButton>
+          )}
 
           {/* Botón de Editar */}
           <CustomButton

@@ -7,6 +7,7 @@ import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import ThermalBridgesDoorModal from "../modals/ThermalBridgesDoorModal";
+import { Plus } from "lucide-react";
 
 interface DoorData {
   id: number;
@@ -1018,6 +1019,7 @@ const TabDoorCreate: React.FC = () => {
       <div style={{ marginTop: "20px" }}>
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={handleCreate}>
+            <Plus className="me-1" size={16} />
             Crear Puerta
           </CustomButton>
         </div>

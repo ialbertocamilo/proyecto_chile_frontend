@@ -10,6 +10,7 @@ import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 //ThermicBridgesModal
 import ThermalBridgesWallModal from "@/components/modals/ThermalBridgesWallModal";
 import GoogleIcons from "public/GoogleIcons";
+import { Plus } from "lucide-react";
 
 // Interfaz para muros
 interface Wall {
@@ -969,6 +970,7 @@ const TabMuroCreate: React.FC = () => {
     <div className="col-12">
       <div className="d-flex justify-content-end gap-2 mt-3 w-100">
         <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
+          <Plus className="me-1" size={16} />
           Nuevo Muro
         </CustomButton>
       </div>

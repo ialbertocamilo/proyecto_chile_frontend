@@ -6,6 +6,7 @@ import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import ModalCreate from "../common/ModalCreate";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
+import { Plus } from "lucide-react";
 
 interface AngleAzimutOption {
   range_az: string;
@@ -818,6 +819,7 @@ const ObstructionTable: React.FC = () => {
       <div style={{ marginTop: "20px" }}>
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={() => setShowModal(true)}>
+            <Plus className="me-1" size={16} />
             Crear Obstrucciones
           </CustomButton>
         </div>

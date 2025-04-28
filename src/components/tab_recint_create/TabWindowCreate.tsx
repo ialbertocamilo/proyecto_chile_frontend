@@ -7,6 +7,7 @@ import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import ThermalBridgesWindowModal from "../modals/ThermalBridgesWindowModal";
+import { Plus } from "lucide-react";
 
 const TabWindowCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id") || "12";
@@ -1103,6 +1104,7 @@ const TabWindowCreate: React.FC = () => {
       >
         <div className="d-flex justify-content-end gap-2 w-100"></div>
         <CustomButton variant="save" onClick={handleCreateWindow}>
+          <Plus className="me-1" size={16} />
           Crear Ventana
         </CustomButton>
       </div>

@@ -26,7 +26,10 @@ interface NewDetailCreatorProps {
  * Al hacer clic en el botón se abre un modal con el formulario correspondiente y se ejecuta
  * la llamada al endpoint indicado para crear el detalle en la base de datos.
  */
-const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({ detailType, onDetailCreated }) => {
+const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
+  detailType,
+  onDetailCreated,
+}) => {
   const [showModal, setShowModal] = useState(false);
   const [newDetail, setNewDetail] = useState({
     name_detail: "",
@@ -48,12 +51,14 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({ detailType, onDetai
       notify("Por favor, complete el campo de nombre.");
       return;
     }
-    if (detailType !== "Piso" && (!newDetail.colorInterior || !newDetail.colorExterior)) {
+    if (
+      detailType !== "Piso" &&
+      (!newDetail.colorInterior || !newDetail.colorExterior)
+    ) {
       notify("Por favor, complete los campos de color interior y exterior.");
       return;
     }
 
-  
     const token = getToken();
     if (!token) return;
 
@@ -92,15 +97,26 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({ detailType, onDetai
       onDetailCreated();
       // Cierra el modal y resetea el formulario
       setShowModal(false);
-      setNewDetail({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
+      setNewDetail({
+        name_detail: "",
+        colorExterior: "Intermedio",
+        colorInterior: "Intermedio",
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("Error al crear detalle constructivo:", error.response || error);
-        if (error.response && error.response.data && error.response.data.detail) {
+        console.error(
+          "Error al crear detalle constructivo:",
+          error.response || error
+        );
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.detail
+        ) {
           notify(error.response.data.detail);
         } else {
           notify("Error al crear el Detalle Constructivo.");
-        }  
+        }
       } else if (error instanceof Error) {
         console.error("Error al crear detalle constructivo:", error.message);
         notify("Error al crear el Detalle Constructivo.");
@@ -124,9 +140,14 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({ detailType, onDetai
           onClose={() => {
             setShowModal(false);
             // Resetea el formulario al cerrar el modal
-            setNewDetail({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
+            setNewDetail({
+              name_detail: "",
+              colorExterior: "Intermedio",
+              colorInterior: "Intermedio",
+            });
           }}
           onSave={handleSaveDetail}
+          saveLabel={`Crear ${detailType}`}
         >
           <form>
             <div className="form-group">
@@ -136,7 +157,10 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({ detailType, onDetai
                 className="form-control"
                 value={newDetail.name_detail}
                 onChange={(e) =>
-                  setNewDetail((prev) => ({ ...prev, name_detail: e.target.value }))
+                  setNewDetail((prev) => ({
+                    ...prev,
+                    name_detail: e.target.value,
+                  }))
                 }
               />
             </div>
@@ -149,7 +173,10 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({ detailType, onDetai
                     className="form-control"
                     value={newDetail.colorExterior}
                     onChange={(e) =>
-                      setNewDetail((prev) => ({ ...prev, colorExterior: e.target.value }))
+                      setNewDetail((prev) => ({
+                        ...prev,
+                        colorExterior: e.target.value,
+                      }))
                     }
                   >
                     <option value="Claro">Claro</option>
@@ -163,7 +190,10 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({ detailType, onDetai
                     className="form-control"
                     value={newDetail.colorInterior}
                     onChange={(e) =>
-                      setNewDetail((prev) => ({ ...prev, colorInterior: e.target.value }))
+                      setNewDetail((prev) => ({
+                        ...prev,
+                        colorInterior: e.target.value,
+                      }))
                     }
                   >
                     <option value="Claro">Claro</option>

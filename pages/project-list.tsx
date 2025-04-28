@@ -55,7 +55,10 @@ const ProjectListPage = () => {
 
   // Estados para controlar el modal de eliminación
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [projectToDelete, setProjectToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
 
   const { get } = useApiNext();
   useEffect(() => {
@@ -83,9 +86,15 @@ const ProjectListPage = () => {
   };
 
   const handleGoToWorkflow = (project_edit: Project): void => {
-    console.log("[handleGoToWorkflow] Navegando al workflow para el proyecto:", project_edit.id);
+    console.log(
+      "[handleGoToWorkflow] Navegando al workflow para el proyecto:",
+      project_edit.id
+    );
     localStorage.setItem("project_id", String(project_edit.id));
-    localStorage.setItem("project_department_edit", project_edit.divisions?.department || "");
+    localStorage.setItem(
+      "project_department_edit",
+      project_edit.divisions?.department || ""
+    );
     localStorage.setItem("project_name_edit", project_edit.name_project || "");
     router.push(`/workflow-part1-edit?id=${project_edit.id}`);
   };
@@ -190,7 +199,7 @@ const ProjectListPage = () => {
       label: "Acciones",
       minWidth: 100,
       cell: ({ row }: { row: Project }) => (
-        <div  >
+        <div>
           {/* Botón de IFC */}
           <CustomButton
             className="btn-table-list"
@@ -227,20 +236,24 @@ const ProjectListPage = () => {
         <Card>
           <div className="d-flex align-items-center w-100">
             <Title text="Listado de Proyectos" />
-            <Breadcrumb items={[{ title: 'Proyectos', href: '/project-list', active: true }]} />
+            <Breadcrumb
+              items={[
+                { title: "Proyectos", href: "/project-list", active: true },
+              ]}
+            />
           </div>
         </Card>
-        
+
         <DataTable
           data={projects}
           columns={tableColumns}
           loading={loading}
-          createText="Proyecto Nuevo"
+          createText="Nuevo Proyecto"
           createUrl="/workflow-part1-create"
           pageSize={10}
           showButton={true}
         />
-  
+
         {/* Se movieron los charts debajo de la tabla */}
         <div className="row mt-4 mb-4">
           <div className="col-md-6">
@@ -251,7 +264,7 @@ const ProjectListPage = () => {
           </div>
         </div>
       </div>
-  
+
       {showDeleteModal && projectToDelete && (
         <ModalCreate
           isOpen={showDeleteModal}
@@ -264,12 +277,14 @@ const ProjectListPage = () => {
           saveLabel="Eliminar"
         >
           <p>
-            ¿Estás seguro de eliminar el proyecto <strong>{projectToDelete.name}</strong> (ID: {projectToDelete.id})? <br />
+            ¿Estás seguro de eliminar el proyecto{" "}
+            <strong>{projectToDelete.name}</strong> (ID: {projectToDelete.id})?{" "}
+            <br />
             Esta acción no se puede deshacer.
           </p>
         </ModalCreate>
       )}
-  
+
       <style jsx>{`
         .status-badge {
           font-family: var(--font-family-base);
@@ -281,7 +296,6 @@ const ProjectListPage = () => {
       `}</style>
     </>
   );
-  
 };
 
 export default ProjectListPage;

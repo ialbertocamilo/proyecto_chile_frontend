@@ -1033,7 +1033,7 @@ const TabDoorCreate: React.FC = () => {
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Grabar Datos"
+        saveLabel="Crear Puerta"
         title="Crear Puerta"
       >
         <div className="container">

@@ -549,7 +549,7 @@ const TabFloorCreate: React.FC = () => {
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Grabar Datos"
+        saveLabel="Crear Piso"
         title="Crear Piso"
       >
         <div className="container">

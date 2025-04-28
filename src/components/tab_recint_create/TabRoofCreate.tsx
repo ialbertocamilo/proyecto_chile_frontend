@@ -441,7 +441,7 @@ const TabCeilingCreate: React.FC = () => {
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Grabar Datos"
+        saveLabel="Crear Techo"
         title="Crear Techo"
       >
         <div className="container">

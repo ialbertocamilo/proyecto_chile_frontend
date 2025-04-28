@@ -1051,6 +1051,7 @@ const TabMuroCreate: React.FC = () => {
         onClose={() => setIsWallModalOpen(false)}
         onSave={handleCreateWall}
         title="Crear Nuevo Muro"
+        saveLabel="Crear Muro"
       >
         <form>
           <div className="row align-items-center mb-3">

@@ -833,7 +833,7 @@ const ObstructionTable: React.FC = () => {
       {/* Modal existente para crear obstrucciones */}
       <ModalCreate
         isOpen={showModal}
-        saveLabel="Grabar Datos"
+        saveLabel="Crear Obstrucción"
         onClose={() => setShowModal(false)}
         onSave={handleCreateObstruction}
         title="Crear Obstrucción"

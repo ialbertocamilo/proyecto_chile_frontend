@@ -279,7 +279,9 @@ const DetailModal: React.FC<DetailModalProps> = ({
         : {};
 
     return {
-      scantilon_location: <span style={textStyle}>{det.scantilon_location}</span>,
+      scantilon_location: (
+        <span style={textStyle}>{det.scantilon_location}</span>
+      ),
       name_detail: <span style={textStyle}>{det.name_detail}</span>,
       material: isEditing ? (
         <select
@@ -302,7 +304,9 @@ const DetailModal: React.FC<DetailModalProps> = ({
         </select>
       ) : (
         <span style={textStyle}>
-          {det.material && det.material !== "0" && det.material.toUpperCase() !== "N/A"
+          {det.material &&
+          det.material !== "0" &&
+          det.material.toUpperCase() !== "N/A"
             ? det.material
             : "-"}
         </span>
@@ -326,7 +330,9 @@ const DetailModal: React.FC<DetailModalProps> = ({
         />
       ) : (
         <span style={textStyle}>
-          {det.layer_thickness && det.layer_thickness > 0 ? det.layer_thickness : "-"}
+          {det.layer_thickness && det.layer_thickness > 0
+            ? det.layer_thickness
+            : "-"}
         </span>
       ),
       accion: isEditing ? (
@@ -371,7 +377,13 @@ const DetailModal: React.FC<DetailModalProps> = ({
       showSaveButton={false}
     >
       {/* Botón que abre el Modal "Crear nuevo detalle" con valores prellenados */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "1rem",
+        }}
+      >
         <CustomButton variant="save" onClick={handleOpenNewDetailModal}>
           + Nuevo
         </CustomButton>
@@ -386,6 +398,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
         onSave={handleCreateDetail}
         onClose={() => setIsNewDetailModalOpen(false)}
         modalStyle={{ maxWidth: "40%", width: "40%", padding: "16px" }}
+        saveLabel="Crear Capa"
       >
         <div style={{ marginBottom: "1rem" }}>
           <label>Ubicación del Detalle:</label>
@@ -413,7 +426,10 @@ const DetailModal: React.FC<DetailModalProps> = ({
             className="form-control"
             value={newDetailData.material_id}
             onChange={(e) =>
-              setNewDetailData((prev) => ({ ...prev, material_id: Number(e.target.value) }))
+              setNewDetailData((prev) => ({
+                ...prev,
+                material_id: Number(e.target.value),
+              }))
             }
             onClick={fetchMaterials}
           >
@@ -434,7 +450,11 @@ const DetailModal: React.FC<DetailModalProps> = ({
             min="0"
             step="any"
             placeholder="cm"
-            value={newDetailData.layer_thickness > 0 ? newDetailData.layer_thickness : ""}
+            value={
+              newDetailData.layer_thickness > 0
+                ? newDetailData.layer_thickness
+                : ""
+            }
             onKeyDown={(e) => {
               // Evitar que ingrese valores negativos
               if (e.key === "-") e.preventDefault();

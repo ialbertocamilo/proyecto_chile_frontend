@@ -61,30 +61,27 @@ const formatValue = (value: any, decimals: number = 2): React.ReactNode => {
   if (value === 0 || value === "N/A") {
     return "-";
   }
-  return typeof value === 'number' ? value.toFixed(decimals) : value;
+  return typeof value === "number" ? value.toFixed(decimals) : value;
 };
 
 const formatPercentage = (value: number): string => {
   if (value === 0) return "-";
-  return value.toFixed(2) + "%";  // Changed to show 2 decimal places
+  return value.toFixed(2) + "%"; // Changed to show 2 decimal places
 };
 
 const AdministrationPage: React.FC = () => {
   useAuth();
   const { handleCreate, handleEdit, handleDelete } = useCrudOperations();
-  const {
-    materialsList,
-    elementsList,
-    fetchMaterialsList,
-    fetchElements,
-  } = useAdministration();
+  const { materialsList, elementsList, fetchMaterialsList, fetchElements } =
+    useAdministration();
 
   // Variable para el color primario
   const primaryColor = "var(--primary-color)";
 
   // Estados para steps y tabs
   const [step, setStep] = useState<number>(3);
-  const [tabElementosOperables, setTabElementosOperables] = useState("ventanas");
+  const [tabElementosOperables, setTabElementosOperables] =
+    useState("ventanas");
 
   // Estados para búsquedas
   const [searchMaterial, setSearchMaterial] = useState("");
@@ -98,7 +95,9 @@ const AdministrationPage: React.FC = () => {
     specific_heat: 0,
     density: 0,
   });
-  const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(null);
+  const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(
+    null
+  );
 
   // Estados para modales de ventanas
   const [showNewWindowModal, setShowNewWindowModal] = useState(false);
@@ -127,10 +126,12 @@ const AdministrationPage: React.FC = () => {
 
   // Estado para modal de confirmación
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [confirmModalProps, setConfirmModalProps] = useState<ConfirmModalProps>({
-    onConfirm: async () => Promise.resolve(),
-    message: "",
-  });
+  const [confirmModalProps, setConfirmModalProps] = useState<ConfirmModalProps>(
+    {
+      onConfirm: async () => Promise.resolve(),
+      message: "",
+    }
+  );
 
   // Función para configurar el modal de confirmación
   const confirmDelete = (
@@ -246,7 +247,8 @@ const AdministrationPage: React.FC = () => {
       el.name_element.toLowerCase().includes(searchElement.toLowerCase())
     )
     .map((el) => {
-      const isDefault = (el as { created_status?: string }).created_status === "default";
+      const isDefault =
+        (el as { created_status?: string }).created_status === "default";
       return {
         name_element: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -271,7 +273,9 @@ const AdministrationPage: React.FC = () => {
         ),
         clousure_type: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {formatValue((el.atributs as ElementAttributesWindow).clousure_type)}
+            {formatValue(
+              (el.atributs as ElementAttributesWindow).clousure_type
+            )}
           </span>
         ) : (
           formatValue((el.atributs as ElementAttributesWindow).clousure_type)
@@ -306,7 +310,8 @@ const AdministrationPage: React.FC = () => {
                 name_element: el.name_element,
                 u_vidrio: (el.atributs as ElementAttributesWindow).u_vidrio,
                 fs_vidrio: (el.atributs as ElementAttributesWindow).fs_vidrio,
-                clousure_type: (el.atributs as ElementAttributesWindow).clousure_type,
+                clousure_type: (el.atributs as ElementAttributesWindow)
+                  .clousure_type,
                 frame_type: (el.atributs as ElementAttributesWindow).frame_type,
                 u_marco: el.u_marco,
                 fm: Math.round(el.fm * 100), // Redondear a entero
@@ -343,7 +348,8 @@ const AdministrationPage: React.FC = () => {
       el.name_element.toLowerCase().includes(searchElement.toLowerCase())
     )
     .map((el) => {
-      const isDefault = (el as { created_status?: string }).created_status === "default";
+      const isDefault =
+        (el as { created_status?: string }).created_status === "default";
       return {
         name_element: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -368,10 +374,14 @@ const AdministrationPage: React.FC = () => {
         ),
         porcentaje_vidrio: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
-            {formatPercentage((el.atributs as ElementAttributesDoor).porcentaje_vidrio)}
+            {formatPercentage(
+              (el.atributs as ElementAttributesDoor).porcentaje_vidrio
+            )}
           </span>
         ) : (
-          formatPercentage((el.atributs as ElementAttributesDoor).porcentaje_vidrio)
+          formatPercentage(
+            (el.atributs as ElementAttributesDoor).porcentaje_vidrio
+          )
         ),
         u_marco: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -394,7 +404,8 @@ const AdministrationPage: React.FC = () => {
               setSelectedDoorId(el.id);
               setNewDoor({
                 name_element: el.name_element,
-                u_puerta_opaca: (el.atributs as ElementAttributesDoor).u_puerta_opaca,
+                u_puerta_opaca: (el.atributs as ElementAttributesDoor)
+                  .u_puerta_opaca,
                 ventana_id: (el.atributs as ElementAttributesDoor).ventana_id,
                 u_marco: el.u_marco,
                 fm: Math.round(el.fm * 100), // Redondear a entero
@@ -472,7 +483,9 @@ const AdministrationPage: React.FC = () => {
         newWindow.clousure_type.trim() === "" ||
         newWindow.frame_type.trim() === ""
       ) {
-        notify("Por favor complete todos los campos de la ventana correctamente");
+        notify(
+          "Por favor complete todos los campos de la ventana correctamente"
+        );
         return;
       }
 
@@ -529,7 +542,9 @@ const AdministrationPage: React.FC = () => {
         newDoor.fm < 0 ||
         newDoor.fm > 100
       ) {
-        notify("Por favor complete todos los campos de la puerta correctamente");
+        notify(
+          "Por favor complete todos los campos de la puerta correctamente"
+        );
         return;
       }
 
@@ -565,7 +580,9 @@ const AdministrationPage: React.FC = () => {
         fm: newDoor.fm, // Se envía el valor tal como se ingresa en la UI
         atributs: {
           ventana_id: newDoor.ventana_id,
-          name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
+          name_ventana: ventanaSeleccionada
+            ? ventanaSeleccionada.name_element
+            : "",
           u_puerta_opaca: newDoor.u_puerta_opaca,
           porcentaje_vidrio: newDoor.porcentaje_vidrio,
         },
@@ -655,7 +672,9 @@ const AdministrationPage: React.FC = () => {
         fm: newDoor.fm / 100, // Se envía el valor tal como se muestra en la UI
         atributs: {
           ventana_id: newDoor.ventana_id,
-          name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
+          name_ventana: ventanaSeleccionada
+            ? ventanaSeleccionada.name_element
+            : "",
           u_puerta_opaca: newDoor.u_puerta_opaca,
           porcentaje_vidrio: newDoor.porcentaje_vidrio / 100,
         },
@@ -699,11 +718,15 @@ const AdministrationPage: React.FC = () => {
 
   // Actualización de la barra lateral con la incorporación del nuevo paso para carga de clima.
   const sidebarSteps = [
-    { stepNumber: 3, iconName: "imagesearch_roller", title: "Lista de Materiales" },
+    {
+      stepNumber: 3,
+      iconName: "imagesearch_roller",
+      title: "Lista de Materiales",
+    },
     { stepNumber: 4, iconName: "build", title: "Detalles Constructivos" },
     { stepNumber: 5, iconName: "home", title: "Ventanas y Puertas" },
     { stepNumber: 6, iconName: "deck", title: "Perfil de Uso" },
-    { stepNumber: 7, iconName: "cloud_upload", title: "Archivo clima" }
+    { stepNumber: 7, iconName: "cloud_upload", title: "Archivo clima" },
   ];
 
   return (
@@ -729,7 +752,11 @@ const AdministrationPage: React.FC = () => {
         <div className="row">
           {/* Sidebar */}
           <div className="col-12 col-md-3">
-            <AdminSidebar activeStep={step} onStepChange={setStep} steps={sidebarSteps} />
+            <AdminSidebar
+              activeStep={step}
+              onStepChange={setStep}
+              steps={sidebarSteps}
+            />
           </div>
 
           {/* Contenido principal */}
@@ -747,7 +774,10 @@ const AdministrationPage: React.FC = () => {
                 />
                 <div style={{ overflow: "hidden", padding: "10px" }}>
                   <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                    <TablesParameters columns={materialsColumns} data={materialsData} />
+                    <TablesParameters
+                      columns={materialsColumns}
+                      data={materialsData}
+                    />
                   </div>
                 </div>
               </>
@@ -815,7 +845,9 @@ const AdministrationPage: React.FC = () => {
                                   ? "solid var(--primary-color)"
                                   : "none",
                             }}
-                            onClick={() => setTabElementosOperables(tab.toLowerCase())}
+                            onClick={() =>
+                              setTabElementosOperables(tab.toLowerCase())
+                            }
                           >
                             {tab}
                           </button>
@@ -823,10 +855,24 @@ const AdministrationPage: React.FC = () => {
                       ))}
                     </ul>
                   </div>
-                  <div style={{ maxHeight: "500px", overflowY: "auto", padding: "10px" }}>
+                  <div
+                    style={{
+                      maxHeight: "500px",
+                      overflowY: "auto",
+                      padding: "10px",
+                    }}
+                  >
                     <TablesParameters
-                      columns={tabElementosOperables === "ventanas" ? windowsColumns : doorsColumns}
-                      data={tabElementosOperables === "ventanas" ? windowsData : doorsData}
+                      columns={
+                        tabElementosOperables === "ventanas"
+                          ? windowsColumns
+                          : doorsColumns
+                      }
+                      data={
+                        tabElementosOperables === "ventanas"
+                          ? windowsData
+                          : doorsData
+                      }
                     />
                   </div>
                 </div>
@@ -919,7 +965,9 @@ const AdministrationPage: React.FC = () => {
                   }
                 }
           }
-          title={selectedMaterialId ? "Editar Material" : "Agregar Nuevo Material"}
+          title={
+            selectedMaterialId ? "Editar Material" : "Agregar Nuevo Material"
+          }
           saveLabel={selectedMaterialId ? "Guardar Cambios" : "Crear Material"}
         >
           <form
@@ -1045,7 +1093,9 @@ const AdministrationPage: React.FC = () => {
                     newWindow.clousure_type.trim() === "" ||
                     newWindow.frame_type.trim() === ""
                   ) {
-                    notify("Por favor complete todos los campos de la ventana correctamente");
+                    notify(
+                      "Por favor complete todos los campos de la ventana correctamente"
+                    );
                     return;
                   }
 
@@ -1097,7 +1147,7 @@ const AdministrationPage: React.FC = () => {
                 }
           }
           title={selectedWindowId ? "Editar Ventana" : "Agregar Nueva Ventana"}
-          saveLabel={selectedWindowId ? "Guardar Cambios" : "Crear Ventana"}
+          saveLabel={selectedWindowId ? "Editar Ventana" : "Crear Ventana"}
         >
           <form
             onSubmit={(e) => {
@@ -1231,29 +1281,29 @@ const AdministrationPage: React.FC = () => {
             <div className="form-group">
               <label>FM [%]</label>
               <div className="input-group">
-              <input
-                type="number"
-                className="form-control"
-                placeholder="FM (%)"
-                value={newWindow.fm}
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}
-                onChange={(e) => {
-                  let value = parseFloat(e.target.value);
-                  if (isNaN(value)) value = 0;
-                  if (value < 0) value = 0;
-                  if (value > 100) value = 100;
-                  setNewWindow((prev) => ({ ...prev, fm: value }));
-                }}
-                min="0"
-                max="100"
-              />
-              <div className="input-group-append">
-              <span className="input-group-text">%</span>
-              </div>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="FM (%)"
+                  value={newWindow.fm}
+                  onKeyDown={(e) => {
+                    if (e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onChange={(e) => {
+                    let value = parseFloat(e.target.value);
+                    if (isNaN(value)) value = 0;
+                    if (value < 0) value = 0;
+                    if (value > 100) value = 100;
+                    setNewWindow((prev) => ({ ...prev, fm: value }));
+                  }}
+                  min="0"
+                  max="100"
+                />
+                <div className="input-group-append">
+                  <span className="input-group-text">%</span>
+                </div>
               </div>
             </div>
           </form>
@@ -1288,13 +1338,20 @@ const AdministrationPage: React.FC = () => {
                     newDoor.fm < 0 ||
                     newDoor.fm > 100
                   ) {
-                    notify("Por favor complete todos los campos de la puerta correctamente");
+                    notify(
+                      "Por favor complete todos los campos de la puerta correctamente"
+                    );
                     return;
                   }
 
                   if (newDoor.ventana_id !== 0) {
-                    if (newDoor.porcentaje_vidrio < 0 || newDoor.porcentaje_vidrio > 100) {
-                      notify("Asegúrese de que el % de vidrio esté entre 0 y 100");
+                    if (
+                      newDoor.porcentaje_vidrio < 0 ||
+                      newDoor.porcentaje_vidrio > 100
+                    ) {
+                      notify(
+                        "Asegúrese de que el % de vidrio esté entre 0 y 100"
+                      );
                       return;
                     }
                   } else {
@@ -1324,7 +1381,9 @@ const AdministrationPage: React.FC = () => {
                     fm: newDoor.fm,
                     atributs: {
                       ventana_id: newDoor.ventana_id,
-                      name_ventana: ventanaSeleccionada ? ventanaSeleccionada.name_element : "",
+                      name_ventana: ventanaSeleccionada
+                        ? ventanaSeleccionada.name_element
+                        : "",
                       u_puerta_opaca: newDoor.u_puerta_opaca,
                       porcentaje_vidrio: newDoor.porcentaje_vidrio,
                     },
@@ -1351,7 +1410,7 @@ const AdministrationPage: React.FC = () => {
                 }
           }
           title={selectedDoorId ? "Editar Puerta" : "Agregar Nueva Puerta"}
-          saveLabel={selectedDoorId ? "Guardar Cambios" : "Crear Puerta"}
+          saveLabel={selectedDoorId ? "Editar Puerta" : "Crear Puerta"}
         >
           <form
             onSubmit={(e) => {
@@ -1421,30 +1480,33 @@ const AdministrationPage: React.FC = () => {
             <div className="form-group">
               <label>% Vidrio</label>
               <div className="input-group">
-              <input
-                type="number"
-                className="form-control"
-                placeholder="% Vidrio"
-                value={newDoor.porcentaje_vidrio}
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}
-                onChange={(e) => {
-                  let value = parseFloat(e.target.value);
-                  if (isNaN(value)) value = 0;
-                  if (value < 0) value = 0;
-                  if (value > 100) value = 100;
-                  setNewDoor((prev) => ({ ...prev, porcentaje_vidrio: value }));
-                }}
-                min="0"
-                max="100"
-              />
-              <div className="input-group-append">
-              <span className="input-group-text">%</span>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="% Vidrio"
+                  value={newDoor.porcentaje_vidrio}
+                  onKeyDown={(e) => {
+                    if (e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onChange={(e) => {
+                    let value = parseFloat(e.target.value);
+                    if (isNaN(value)) value = 0;
+                    if (value < 0) value = 0;
+                    if (value > 100) value = 100;
+                    setNewDoor((prev) => ({
+                      ...prev,
+                      porcentaje_vidrio: value,
+                    }));
+                  }}
+                  min="0"
+                  max="100"
+                />
+                <div className="input-group-append">
+                  <span className="input-group-text">%</span>
+                </div>
               </div>
-            </div>
             </div>
             <div className="form-group">
               <label>U Marco [W/m2K]</label>
@@ -1471,29 +1533,29 @@ const AdministrationPage: React.FC = () => {
             <div className="form-group">
               <label>FM [%]</label>
               <div className="input-group">
-              <input
-                type="number"
-                className="form-control"
-                placeholder="FM (%)"
-                value={newDoor.fm}
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}
-                onChange={(e) => {
-                  let value = parseFloat(e.target.value);
-                  if (isNaN(value)) value = 0;
-                  if (value < 0) value = 0;
-                  if (value > 100) value = 100;
-                  setNewDoor((prev) => ({ ...prev, fm: value }));
-                }}
-                min="0"
-                max="100"
-              />
-              <div className="input-group-append">
-              <span className="input-group-text">%</span>
-              </div>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="FM (%)"
+                  value={newDoor.fm}
+                  onKeyDown={(e) => {
+                    if (e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onChange={(e) => {
+                    let value = parseFloat(e.target.value);
+                    if (isNaN(value)) value = 0;
+                    if (value < 0) value = 0;
+                    if (value > 100) value = 100;
+                    setNewDoor((prev) => ({ ...prev, fm: value }));
+                  }}
+                  min="0"
+                  max="100"
+                />
+                <div className="input-group-append">
+                  <span className="input-group-text">%</span>
+                </div>
               </div>
             </div>
           </form>

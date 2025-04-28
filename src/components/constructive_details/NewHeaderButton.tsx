@@ -23,7 +23,10 @@ const titleMapping: { [key in NewHeaderButtonProps["tab"]]: string } = {
   pisos: "Piso",
 };
 
-const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({ tab, onNewCreated }) => {
+const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({
+  tab,
+  onNewCreated,
+}) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newDetalle, setNewDetalle] = useState({
     name_detail: "",
@@ -77,12 +80,19 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({ tab, onNewCreated }) 
 
     try {
       const url = `${constantUrlApiEndpoint}/user/${type}/detail-part-create?project_id=${projectId}`;
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
       await axios.post(url, payload, { headers });
       notify(`Detalle de ${type} creado exitosamente.`);
       // Se cierra el modal y se reinicia el formulario
       setShowCreateModal(false);
-      setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
+      setNewDetalle({
+        name_detail: "",
+        colorExterior: "Intermedio",
+        colorInterior: "Intermedio",
+      });
       if (onNewCreated) onNewCreated();
     } catch (error) {
       console.error("Error al crear el detalle constructivo:", error);
@@ -101,9 +111,14 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({ tab, onNewCreated }) 
           title={`Crear Nuevo ${titleMapping[tab]}`}
           onClose={() => {
             setShowCreateModal(false);
-            setNewDetalle({ name_detail: "", colorExterior: "Intermedio", colorInterior: "Intermedio" });
+            setNewDetalle({
+              name_detail: "",
+              colorExterior: "Intermedio",
+              colorInterior: "Intermedio",
+            });
           }}
           onSave={handleSaveDetalle}
+          saveLabel={`Crear ${titleMapping[tab]}`}
         >
           <form>
             <div className="form-group">
@@ -112,7 +127,9 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({ tab, onNewCreated }) 
                 type="text"
                 className="form-control"
                 value={newDetalle.name_detail}
-                onChange={(e) => setNewDetalle({ ...newDetalle, name_detail: e.target.value })}
+                onChange={(e) =>
+                  setNewDetalle({ ...newDetalle, name_detail: e.target.value })
+                }
               />
             </div>
             {/* Solo se muestran los campos de color para Muro y Techo */}
@@ -124,7 +141,10 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({ tab, onNewCreated }) 
                     className="form-control"
                     value={newDetalle.colorExterior}
                     onChange={(e) =>
-                      setNewDetalle({ ...newDetalle, colorExterior: e.target.value })
+                      setNewDetalle({
+                        ...newDetalle,
+                        colorExterior: e.target.value,
+                      })
                     }
                   >
                     <option value="Claro">Claro</option>
@@ -138,7 +158,10 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({ tab, onNewCreated }) 
                     className="form-control"
                     value={newDetalle.colorInterior}
                     onChange={(e) =>
-                      setNewDetalle({ ...newDetalle, colorInterior: e.target.value })
+                      setNewDetalle({
+                        ...newDetalle,
+                        colorInterior: e.target.value,
+                      })
                     }
                   >
                     <option value="Claro">Claro</option>

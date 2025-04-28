@@ -2650,6 +2650,7 @@ const WorkFlowpar2createPage: React.FC = () => {
             });
           }}
           onSave={handleSaveDetalle}
+          saveLabel={`Crear ${titleMapping[tabStep4] || "Detalle"}`}
         >
           <form>
             <div className="form-group">

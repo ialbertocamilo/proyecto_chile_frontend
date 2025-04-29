@@ -364,7 +364,6 @@ const AguaCalienteSanitaria = () => {
                     <td>
                       <CustomButton
                         variant="deleteIcon"
-                        color="#dc3545"
                         onClick={() => deleteRow(index)}
                       >
                         <Trash2 className="me-1" size={16} />

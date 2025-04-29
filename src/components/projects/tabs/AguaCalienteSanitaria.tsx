@@ -304,87 +304,91 @@ const AguaCalienteSanitaria = () => {
   return (
     <Row className="mb-4">
       <Col md={12}>
-        <Card className="shadow">
+        {/* <Card className="shadow"> */}
+        {/* <Card.Body> */}
+        {/* <Card.Title className="text-center text-dark"> */}
+        {/* Agua Caliente Sanitaria */}
+        {/* </Card.Title> */}
+        <div
+          style={{
+            marginBottom: "15px",
+          }}
+        >
+          <CustomButton
+            style={{ display: "block", marginLeft: "auto" }}
+            className="mt-3"
+            onClick={addRow}
+          >
+            <Plus className="me-1" size={16} /> Nueva Fila
+          </CustomButton>
+        </div>
+        <Table responsive className="table-sm mb-0">
+          <thead className="">
+            <tr>
+              <th style={{ textAlign: "center" }}>
+                Tipo de ocupación para sistema ACS
+              </th>
+              <th style={{ textAlign: "center" }}>Cantidad personas</th>
+              <th style={{ textAlign: "center" }}>
+                <span className="fw-bold">[l/pers-día]</span>
+              </th>
+              <th style={{ textAlign: "center" }}>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tableData.map((row, index) => (
+              <tr key={index}>
+                <td>
+                  <Form.Select
+                    value={row.tipo}
+                    onChange={(e) =>
+                      handleInputChange(index, "tipo", e.target.value)
+                    }
+                  >
+                    {acsDataList.map((option, i) => (
+                      <option key={i} value={option.tipo}>
+                        {option.tipo}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </td>
+                <td>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    value={row.cantidad}
+                    onChange={(e) =>
+                      handleInputChange(index, "cantidad", e.target.value)
+                    }
+                  />
+                </td>
+                <td>{(row.cantidad * row.consumo).toFixed(2)}</td>
+                <td>
+                  <CustomButton
+                    variant="deleteIcon"
+                    onClick={() => deleteRow(index)}
+                  >
+                    <Trash2 className="me-1" size={16} />
+                  </CustomButton>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+        <Card className="shadow col-10 mx-auto">
           <Card.Body>
-            <Card.Title className="text-center text-dark">
-              Agua Caliente Sanitaria
-            </Card.Title>
-            <div
-              style={{
-                marginBottom: "15px",
-              }}
-            >
-              <CustomButton
-                style={{ display: "block", marginLeft: "auto" }}
-                className="mt-3"
-                onClick={addRow}
-              >
-                <Plus className="me-1" size={16} /> Nueva Fila
-              </CustomButton>
-            </div>
-            <Table bordered responsive className="table-sm mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th>Tipo de ocupación para sistema ACS</th>
-                  <th>Cantidad personas</th>
-                  <th>
-                    <span className="fw-bold">[l/pers-día]</span>
-                  </th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableData.map((row, index) => (
-                  <tr key={index}>
-                    <td>
-                      <Form.Select
-                        value={row.tipo}
-                        onChange={(e) =>
-                          handleInputChange(index, "tipo", e.target.value)
-                        }
-                      >
-                        {acsDataList.map((option, i) => (
-                          <option key={i} value={option.tipo}>
-                            {option.tipo}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </td>
-                    <td>
-                      <Form.Control
-                        type="number"
-                        min="0"
-                        value={row.cantidad}
-                        onChange={(e) =>
-                          handleInputChange(index, "cantidad", e.target.value)
-                        }
-                      />
-                    </td>
-                    <td>{(row.cantidad * row.consumo).toFixed(2)}</td>
-                    <td>
-                      <CustomButton
-                        variant="deleteIcon"
-                        onClick={() => deleteRow(index)}
-                      >
-                        <Trash2 className="me-1" size={16} />
-                      </CustomButton>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-
             <div className="mt-3">
               <Form.Group as={Row} className="align-items-center">
-                <Form.Label column sm={2} className="text-end">
+                <Form.Label column sm={4} className="text-end font-bold">
                   T&apos; ACS
                 </Form.Label>
-                <Col sm={4} className="text-end">
+                <Col sm={5} className="text-end">
                   <Form.Control
                     type="number"
                     min="0"
                     value={tAcs}
                     onChange={(e) => setTAcs(parseFloat(e.target.value) || 0)}
+                    style={{ color: "#2ab0c5" }}
                   />
                 </Col>
                 <Col sm="auto" className="align-self-center">
@@ -394,10 +398,10 @@ const AguaCalienteSanitaria = () => {
             </div>
             <div className="mt-3">
               <Form.Group as={Row} className="align-items-center">
-                <Form.Label column sm={2} className="text-end">
+                <Form.Label column sm={4} className="text-end">
                   Demanda ACS
                 </Form.Label>
-                <Col sm={4} className="text-end">
+                <Col sm={5} className="text-end">
                   <div className="form-control-plaintext fw-bold">
                     {demandaACS}
                   </div>
@@ -410,13 +414,14 @@ const AguaCalienteSanitaria = () => {
 
             <div className="mt-3">
               <Form.Group as={Row} className="align-items-center">
-                <Form.Label column sm={2} className="text-end">
+                <Form.Label column sm={4} className="text-end">
                   Combustible
                 </Form.Label>
-                <Col sm={4} className="text-end">
+                <Col sm={5} className="text-end">
                   <Form.Select
                     value={combustible}
                     onChange={handleCombustibleChange}
+                    style={{ color: "#2ab0c5" }}
                   >
                     <option value="">Seleccione</option>
                     {combustibleOptions.map((option, i) => (
@@ -436,13 +441,14 @@ const AguaCalienteSanitaria = () => {
             </div>
             <div className="mt-3">
               <Form.Group as={Row} className="align-items-center">
-                <Form.Label column sm={2} className="text-end">
+                <Form.Label column sm={4} className="text-end">
                   Rendimiento
                 </Form.Label>
-                <Col sm={4} className="text-end">
+                <Col sm={5} className="text-end">
                   <Form.Select
                     value={rendimiento}
                     onChange={(e) => setRendimiento(e.target.value)}
+                    style={{ color: "#2ab0c5" }}
                   >
                     <option value="">Seleccione</option>
                     {rendimientoOptions.map((option, i) => (
@@ -466,15 +472,16 @@ const AguaCalienteSanitaria = () => {
             </div>
             <div className="mt-3">
               <Form.Group as={Row} className="align-items-center">
-                <Form.Label column sm={2} className="text-end">
+                <Form.Label column sm={4} className="text-end">
                   Sist. Distribución
                 </Form.Label>
-                <Col sm={4} className="text-end">
+                <Col sm={5} className="text-end">
                   <Form.Select
                     value={sistDistribucion}
                     onChange={(e) =>
                       setSistDistribucion(String(e.target.value))
                     }
+                    style={{ color: "#2ab0c5" }}
                   >
                     <option value="">Seleccione</option>
                     {sistDistribucionOptions.map((option, i) => (
@@ -498,13 +505,14 @@ const AguaCalienteSanitaria = () => {
             </div>
             <div className="mt-3">
               <Form.Group as={Row} className="align-items-center">
-                <Form.Label column sm={2} className="text-end">
+                <Form.Label column sm={4} className="text-end">
                   Sist. Control
                 </Form.Label>
-                <Col sm={4} className="text-end">
+                <Col sm={5} className="text-end">
                   <Form.Select
                     value={sistControl}
                     onChange={(e) => setSistControl(e.target.value)}
+                    style={{ color: "#2ab0c5" }}
                   >
                     <option value="">Seleccione</option>
                     {sistControlOptions.map((option, i) => (
@@ -528,10 +536,10 @@ const AguaCalienteSanitaria = () => {
             </div>
             <div className="mt-3">
               <Form.Group as={Row} className="align-items-center">
-                <Form.Label column sm={2} className="text-end">
+                <Form.Label column sm={4} className="text-end">
                   Consumo ACS
                 </Form.Label>
-                <Col sm={4} className="text-end">
+                <Col sm={5} className="text-end">
                   <div className="form-control-plaintext fw-bold">
                     {consumoACS}
                   </div>
@@ -543,10 +551,10 @@ const AguaCalienteSanitaria = () => {
             </div>
             <div className="mt-3">
               <Form.Group as={Row} className="align-items-center">
-                <Form.Label column sm={2} className="text-end">
+                <Form.Label column sm={4} className="text-end">
                   Consumo Energía primaria ACS
                 </Form.Label>
-                <Col sm={4} className="text-end">
+                <Col sm={5} className="text-end">
                   <div className="form-control-plaintext fw-bold">
                     {consumoEnergiaPrimariaACS}
                   </div>
@@ -558,10 +566,10 @@ const AguaCalienteSanitaria = () => {
             </div>
             <div className="mt-3">
               <Form.Group as={Row} className="align-items-center">
-                <Form.Label column sm={2} className="text-end">
+                <Form.Label column sm={4} className="text-end">
                   CO2eq Energía primaria
                 </Form.Label>
-                <Col sm={4} className="text-end">
+                <Col sm={5} className="text-end">
                   <div className="form-control-plaintext fw-bold">
                     {co2eqEnergiaPrimaria}
                   </div>
@@ -573,6 +581,8 @@ const AguaCalienteSanitaria = () => {
             </div>
           </Card.Body>
         </Card>
+        {/* </Card.Body> */}
+        {/* </Card> */}
       </Col>
     </Row>
   );

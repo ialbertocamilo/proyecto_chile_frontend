@@ -19,9 +19,10 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
   const [typeSelect, setTypeSelect] = useState<string>('usuarios');
   const [tipologia, setTipologia] = useState<string>('');
   const [hoursRange, setHoursRange] = useState<HoursRange>({ start: '08:00', end: '18:00' });
+  const [isEditingHours, setIsEditingHours] = useState<boolean>(false);
+  const [tempHours, setTempHours] = useState<HoursRange>({ start: '08:00', end: '18:00' });
   const chartRef = useRef<any>(null);
 
-  // Formatea un raw (string o number) a "HH:MM"
   const format24h = (raw: string | number): string => {
     let hours: number;
     let minutes: number = 0;
@@ -41,7 +42,6 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     return `${hh}:${mm}`;
   };
 
-  // ————— Función reutilizable para recargar sólo las horas oficiales —————
   const fetchWorkingHours = async () => {
     if (perfilId === null) return;
     const token = localStorage.getItem("token");
@@ -63,13 +63,11 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     }
   };
 
-  // ————— 1) Cargo el perfilId desde localStorage —————
   useEffect(() => {
     const storedId = localStorage.getItem("perfil_id");
     if (storedId) setPerfilId(parseInt(storedId, 10));
   }, []);
 
-  // ————— 2) Fetch inicial de tipología + horas oficiales —————
   useEffect(() => {
     if (perfilId === null) return;
     const token = localStorage.getItem("token");
@@ -95,7 +93,6 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     fetchInfo();
   }, [perfilId]);
 
-  // ————— 3) Fetch de los datos del schedule —————
   useEffect(() => {
     if (perfilId === null) return;
     const token = localStorage.getItem("token");
@@ -117,7 +114,6 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     fetchData();
   }, [typeSelect, perfilId]);
 
-  // ————— Configuración del gráfico —————
   const hours = Array.from({ length: 24 }, (_, i) => (i + 1).toString());
   const values = data ? hours.map((_, i) => data[`hour_${i + 1}`] ?? 0) : [];
   const option = {
@@ -133,7 +129,55 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     }]
   };
 
-  // ————— 4) Actualizar schedule en el servidor + refrescar horas oficiales —————
+  const handleHoursUpdate = async () => {
+    if (perfilId === null) return;
+    const token = localStorage.getItem("token");
+    
+    try {
+      const res = await fetch(
+        `${constantUrlApiEndpoint}/user/enclosure-typing/${perfilId}`,
+        { headers: { accept: 'application/json', Authorization: `Bearer ${token}` } }
+      );
+      const result = await res.json();
+      const internalLoad = result.building_conditions?.find((bc: any) => bc.type === 'internal_loads');
+      
+      const payload = {
+        type: "internal_loads",
+        attributes: {
+          ...internalLoad?.details,
+          horario: {
+            funcionamiento_semanal: "5x2",
+            laboral: {
+              inicio: parseInt(tempHours.start.split(':')[0]),
+              fin: parseInt(tempHours.end.split(':')[0])
+            }
+          }
+        }
+      };
+
+      const updateRes = await fetch(
+        `${constantUrlApiEndpoint}/building_condition/${result.enclosure_id}/update?section=user`,
+        {
+          method: 'PATCH',
+          headers: {
+            accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (updateRes.ok) {
+        setHoursRange(tempHours);
+        setIsEditingHours(false);
+        onUpdate && onUpdate();
+      }
+    } catch (error) {
+      console.error("Error updating hours", error);
+    }
+  };
+
   const updateSchedule = async (newData: ScheduleData) => {
     if (perfilId === null) return;
     const token = localStorage.getItem("token");
@@ -155,7 +199,6 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
         return;
       }
 
-      // Re-fetch del schedule actualizado
       const resp = await fetch(
         `${constantUrlApiEndpoint}/${typeSelect}/schedule/${perfilId}`,
         { headers: { accept: 'application/json', Authorization: `Bearer ${token}` } }
@@ -163,7 +206,6 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
       const updated = await resp.json();
       setData(updated);
 
-      // ¡Aquí refrescamos las horas oficiales!
       await fetchWorkingHours();
 
       onUpdate && onUpdate();
@@ -172,7 +214,6 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     }
   };
 
-  // ————— Estados y handlers del modal —————
   const [currentHourIndex, setCurrentHourIndex] = useState<number | null>(null);
   const [currentValue, setCurrentValue] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState<number>(0);
@@ -195,7 +236,6 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     }
     schedule[`hour_${currentHourIndex + 1}`] = inputValue;
 
-    // Actualiza el gráfico en la UI inmediatamente
     chartRef.current
       ?.getEchartsInstance()
       .setOption({
@@ -213,6 +253,63 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     setCurrentHourIndex(null);
     setCurrentValue(null);
   };
+
+  const renderHoursSection = () => (
+    <div className="text-center mt-3">
+      <p>
+        <strong>
+          <span>HORA DE INICIO: </span>
+        </strong>
+        {isEditingHours ? (
+          <input
+            type="time"
+            value={tempHours.start}
+            onChange={(e) => setTempHours(prev => ({ ...prev, start: e.target.value }))}
+            className="mx-2"
+          />
+        ) : (
+          <span>{hoursRange.start}</span>
+        )}
+        &nbsp;&nbsp;
+        <strong>
+          <span>HORA FINAL: </span>
+        </strong>
+        {isEditingHours ? (
+          <input
+            type="time"
+            value={tempHours.end}
+            onChange={(e) => setTempHours(prev => ({ ...prev, end: e.target.value }))}
+            className="mx-2"
+          />
+        ) : (
+          <span>{hoursRange.end}</span>
+        )}
+      </p>
+      <div className="mt-2">
+        {isEditingHours ? (
+          <>
+            <button className="btn btn-primary mx-2" onClick={handleHoursUpdate}>Guardar</button>
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => {
+                setTempHours(hoursRange);
+                setIsEditingHours(false);
+              }}
+            >
+              Cancelar
+            </button>
+          </>
+        ) : (
+          <button className="btn btn-outline-primary" onClick={() => {
+            setTempHours(hoursRange);
+            setIsEditingHours(true);
+          }}>
+            Editar Horario
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="apache-container">
@@ -245,27 +342,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
         />
       )}
 
-<div className="text-center mt-3">
-  <p>
-    <strong>
-      <span 
-        title="Las horas se definen por el valor activo entre todos los perfiles de uso"
-        style={{ cursor: 'pointer' }} // Estilo opcional para indicar que es interactivo
-      >
-        HORA DE INICIO:
-      </span>
-    </strong> {hoursRange.start}
-    &nbsp;&nbsp;
-    <strong>
-      <span 
-        title="Las horas se definen por el valor activo entre todos los perfiles de uso"
-        style={{ cursor: 'pointer' }}
-      >
-        HORA FINAL:
-      </span>
-    </strong> {hoursRange.end}
-  </p>
-</div>
+      {renderHoursSection()}
 
       {showModal && (
         <ModalCreate

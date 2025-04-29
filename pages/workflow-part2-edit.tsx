@@ -320,7 +320,11 @@ const WorkFlowpar2editPage: React.FC = () => {
   const [editingDetail, setEditingDetail] = useState<IDetail | null>(null);
 
   // ===================== ESTADOS PARA VENTANAS, PUERTAS Y DEMÁS ======================
-  const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
+  interface ExtendedTabItem extends TabItem {
+    created_status?: string;
+  }
+  
+  const [murosTabList, setMurosTabList] = useState<ExtendedTabItem[]>([]);
   const [techumbreTabList, setTechumbreTabList] = useState<TabItem[]>([]);
   const [pisosTabList, setPisosTabList] = useState<TabItem[]>([]);
   const [ventanasTabList, setVentanasTabList] = useState<Ventana[]>([]);
@@ -984,6 +988,10 @@ const WorkFlowpar2editPage: React.FC = () => {
             </CustomButton>
             {/* Botón eliminar con tu DeleteDetailButton (no se elimina) */}
             <DeleteDetailButton
+            disabled={
+              det.created_status === "default" ||
+              det.created_status === "global"
+            }
               detailId={det.id}
               onDelete={() => {
                 fetchMurosDetails();
@@ -1007,32 +1015,33 @@ const WorkFlowpar2editPage: React.FC = () => {
             marginBottom: "1rem",
           }}
         >
-          <CustomButton
-            variant="save"
-            onClick={() => {
-              // Determinamos la ubicación a partir de selectedItem
-              const locationValue =
-                tabStep4 === "muros"
-                  ? "Muro"
-                  : tabStep4 === "techumbre"
-                  ? "Techo"
-                  : tabStep4 === "pisos"
-                  ? "Piso"
-                  : "";
+          {/* Solo mostrar el botón si NO es un detalle por defecto o global */}
+          {selectedItem && selectedItem.created_status !== "default" && selectedItem.created_status !== "global" && (
+            <CustomButton
+              variant="save"
+              onClick={() => {
+                const locationValue =
+                  tabStep4 === "muros"
+                    ? "Muro"
+                    : tabStep4 === "techumbre"
+                    ? "Techo"
+                    : tabStep4 === "pisos"
+                    ? "Piso"
+                    : "";
 
-              setNewDetailData({
-                scantilon_location: locationValue,
-                name_detail: selectedItem?.name_detail || "",
-                material_id: 0,
-                layer_thickness: 0,
-              });
-              setShowCreateDetailModal(true);
-            }}
-          >
-            + Nuevo
-          </CustomButton>
+                setNewDetailData({
+                  scantilon_location: locationValue,
+                  name_detail: selectedItem?.name_detail || "",
+                  material_id: 0,
+                  layer_thickness: 0,
+                });
+                setShowCreateDetailModal(true);
+              }}
+            >
+              + Nuevo
+            </CustomButton>
+          )}
         </div>
-
         <TablesParameters columns={columnsDetails} data={data} />
       </>
     );
@@ -1091,20 +1100,32 @@ const WorkFlowpar2editPage: React.FC = () => {
       return {
         __detail: item,
         nombreAbreviado: isEditing ? (
-          <input
-            type="text"
-            className="form-control"
-            value={editingColors.nombreAbreviado}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingColors((prev) => ({
-                ...prev,
-                nombreAbreviado: e.target.value,
-              }))
-            }
-          />
+          "created_status" in item && (item.created_status === "default" || item.created_status === "global") ? (
+            <input
+              type="text"
+              className="form-control"
+              value={editingColors.nombreAbreviado}
+              readOnly
+              disabled
+            />
+          ) : (
+            <input
+              type="text"
+              className="form-control"
+              value={editingColors.nombreAbreviado}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) =>
+                setEditingColors((prev) => ({
+                  ...prev,
+                  nombreAbreviado: e.target.value,
+                }))
+              }
+            />
+          )
         ) : (
-          item.name_detail
+          <span style={"created_status" in item && item.created_status === "created" ? { color: "var(--primary-color)", fontWeight: "bold" } : {}}>
+            {item.name_detail}
+          </span>
         ),
         valorU: formatValue(item.value_u),
         colorExterior: isEditing ? (
@@ -1207,6 +1228,10 @@ const WorkFlowpar2editPage: React.FC = () => {
 
             {/* NUEVO botón de eliminar MURO con modal de confirmación */}
             <CustomButton
+            disabled={
+              "created_status" in item && item.created_status === "default" ||
+              "created_status" in item && item.created_status === "global"
+            }
               variant="deleteIcon"
               onClick={(e: React.MouseEvent) =>
                 handleDeleteConfirm(e, item?.id)
@@ -1243,20 +1268,32 @@ const WorkFlowpar2editPage: React.FC = () => {
       return {
         __detail: item,
         nombreAbreviado: isEditing ? (
-          <input
-            type="text"
-            className="form-control"
-            value={editingTechColors.nombreAbreviado}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingTechColors((prev) => ({
-                ...prev,
-                nombreAbreviado: e.target.value,
-              }))
-            }
-          />
+          "created_status" in item && (item.created_status === "default" || item.created_status === "global") ? (
+            <input
+              type="text"
+              className="form-control" 
+              value={editingTechColors.nombreAbreviado}
+              readOnly
+              disabled
+            />
+          ) : (
+            <input
+              type="text"
+              className="form-control"
+              value={editingTechColors.nombreAbreviado}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) =>
+                setEditingTechColors((prev) => ({
+                  ...prev,
+                  nombreAbreviado: e.target.value,
+                }))
+              }
+            />
+          )
         ) : (
-          item.name_detail
+          <span style={"created_status" in item && item.created_status === "created" ? { color: "var(--primary-color)", fontWeight: "bold" } : {}}>
+            {item.name_detail}
+          </span>
         ),
         valorU: formatValue(item.value_u),
         colorExterior: isEditing ? (
@@ -1358,6 +1395,10 @@ const WorkFlowpar2editPage: React.FC = () => {
 
             {/* NUEVO botón de eliminar TECHO con modal de confirmación */}
             <CustomButton
+            disabled={
+              "created_status" in item && item.created_status === "default" ||
+              "created_status" in item && item.created_status === "global"
+            }
               variant="deleteIcon"
               onClick={(e: React.MouseEvent) =>
                 handleDeleteConfirm(e, item.id!)
@@ -1429,20 +1470,32 @@ const WorkFlowpar2editPage: React.FC = () => {
         __detail: item,
         id: item.id,
         nombre: isEditing ? (
-          <input
-            type="text"
-            className="form-control"
-            value={editingPisosData.nombre}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingPisosData((prev) => ({
-                ...prev,
-                nombre: e.target.value,
-              }))
-            }
-          />
+          "created_status" in item && (item.created_status === "default" || item.created_status === "global") ? (
+            <input
+              type="text"
+              className="form-control"
+              value={editingPisosData.nombre}
+              readOnly
+              disabled
+            />
+          ) : (
+            <input
+              type="text"
+              className="form-control"
+              value={editingPisosData.nombre}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) =>
+                setEditingPisosData((prev) => ({
+                  ...prev,
+                  nombre: e.target.value,
+                }))
+              }
+            />
+          )
         ) : (
-          item.name_detail
+          <span style={"created_status" in item && item.created_status === "created" ? { color: "var(--primary-color)", fontWeight: "bold" } : {}}>
+            {item.name_detail}
+          </span>
         ),
         uValue: formatValue(item.value_u),
         bajoPisoLambda: formatValue(item.info?.aislacion_bajo_piso?.lambda),
@@ -1705,6 +1758,10 @@ const WorkFlowpar2editPage: React.FC = () => {
 
             {/* NUEVO botón de eliminar PISO con modal de confirmación */}
             <CustomButton
+            disabled={
+              "created_status" in item && item.created_status === "default" ||
+              "created_status" in item && item.created_status === "global"
+            }
               variant="deleteIcon"
               onClick={(e: React.MouseEvent) =>
                 handleDeleteConfirm(e, item.id!)

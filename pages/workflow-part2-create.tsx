@@ -146,9 +146,13 @@ const WorkFlowpar2createPage: React.FC = () => {
   const [showTabsInStep4, setShowTabsInStep4] = useState(true);
   const [tabStep4, setTabStep4] = useState<TabStep4>("muros");
 
-  const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
-  const [techumbreTabList, setTechumbreTabList] = useState<TabItem[]>([]);
-  const [pisosTabList, setPisosTabList] = useState<TabItem[]>([]);
+  interface ExtendedTabItem extends TabItem {
+    created_status?: string;
+  }
+
+  const [murosTabList, setMurosTabList] = useState<ExtendedTabItem[]>([]);
+  const [techumbreTabList, setTechumbreTabList] = useState<ExtendedTabItem[]>([]);
+  const [pisosTabList, setPisosTabList] = useState<ExtendedTabItem[]>([]);
   const [ventanasTabList, setVentanasTabList] = useState<Ventana[]>([]);
   const [puertasTabList, setPuertasTabList] = useState<Puerta[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -1216,6 +1220,10 @@ const WorkFlowpar2createPage: React.FC = () => {
               Editar
             </CustomButton>
             <DeleteDetailButton
+            disabled={
+              det.created_status === "default" ||
+              det.created_status === "global"
+            }
               detailId={det.id}
               onDelete={() => {
                 // Tras borrado, refresca
@@ -1242,6 +1250,10 @@ const WorkFlowpar2createPage: React.FC = () => {
           }}
         >
           <CustomButton
+          disabled={
+            selectedItem?.created_status === "default" ||
+            selectedItem?.created_status === "global"
+            }
             variant="save"
             onClick={() => {
               // PRELLENAR CAMPOS segun la pestaña:
@@ -1372,14 +1384,23 @@ const WorkFlowpar2createPage: React.FC = () => {
       const isEditing = editingRowId === item.id;
       return {
         nombreAbreviado: isEditing ? (
-          <input
-            type="text"
-            className="form-control"
-            value={editingNombreAbreviado}
-            onChange={(e) => {
-              setEditingNombreAbreviado(e.target.value);
-            }}
-          />
+          item.created_status === "default" || item.created_status === "global" ? (
+            <input
+              type="text"
+              className="form-control"
+              value={editingNombreAbreviado}
+              readOnly
+            />
+          ) : (
+            <input
+              type="text"
+              className="form-control"
+              value={editingNombreAbreviado}
+              onChange={(e) => {
+                setEditingNombreAbreviado(e.target.value);
+              }}
+            />
+          )
         ) : (
           item.name_detail
         ),
@@ -1435,6 +1456,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                 e.stopPropagation();
                 handleEditClick(item);
               }}
+             
             >
               Editar
             </CustomButton>
@@ -1447,6 +1469,10 @@ const WorkFlowpar2createPage: React.FC = () => {
                   confirmDeleteDetail(detailId);
                 }
               }}
+              disabled={
+                item.created_status === "default" ||
+                item.created_status === "global"
+              }
             >
               <span className="material-icons">delete</span>
             </CustomButton>
@@ -1486,12 +1512,21 @@ const WorkFlowpar2createPage: React.FC = () => {
         const isEditing = editingTechRowId === item.id;
         return {
           nombreAbreviado: isEditing ? (
-            <input
-              type="text"
-              className="form-control"
-              value={editingNombreAbreviadoTech}
-              onChange={(e) => setEditingNombreAbreviadoTech(e.target.value)}
-            />
+            item.created_status === "default" || item.created_status === "global" ? (
+              <input
+                type="text"
+                className="form-control"
+                value={editingNombreAbreviadoTech}
+                readOnly
+              />
+            ) : (
+              <input
+                type="text"
+                className="form-control"
+                value={editingNombreAbreviadoTech}
+                onChange={(e) => setEditingNombreAbreviadoTech(e.target.value)}
+              />
+            )
           ) : (
             item.name_detail
           ),
@@ -1559,6 +1594,10 @@ const WorkFlowpar2createPage: React.FC = () => {
                     confirmDeleteDetail(detailId);
                   }
                 }}
+                disabled={
+                  item.created_status === "default" ||
+                  item.created_status === "global"
+                }
               >
                 <span className="material-icons">delete</span>
               </CustomButton>
@@ -1637,12 +1676,21 @@ const WorkFlowpar2createPage: React.FC = () => {
 
       return {
         nombre: isEditing ? (
-          <input
-            type="text"
-            className="form-control"
-            value={editingNombreAbreviadoPiso}
-            onChange={(e) => setEditingNombreAbreviadoPiso(e.target.value)}
-          />
+          item.created_status === "default" || item.created_status === "global" ? (
+            <input
+              type="text"
+              className="form-control"
+              value={editingNombreAbreviadoPiso}
+              readOnly
+            />
+          ) : (
+            <input
+              type="text"
+              className="form-control"
+              value={editingNombreAbreviadoPiso}
+              onChange={(e) => setEditingNombreAbreviadoPiso(e.target.value)}
+            />
+          )
         ) : (
           item.name_detail
         ),
@@ -1820,6 +1868,10 @@ const WorkFlowpar2createPage: React.FC = () => {
                   confirmDeleteDetail(detailId);
                 }
               }}
+              disabled={
+                item.created_status === "default" ||
+                item.created_status === "global"
+              }
             >
               <span className="material-icons">delete</span>
             </CustomButton>

@@ -1210,6 +1210,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             onAccept={() => handleConfirmInlineEdit(det)}
             onCancel={handleCancelInlineEdit}
           />
+        ) : det.created_status === "default" ||
+          det.created_status === "global" ? (
+          <span>-</span>
         ) : (
           <>
             <CustomButton
@@ -1459,6 +1462,10 @@ const WorkFlowpar2createPage: React.FC = () => {
             <div>
               <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
               <CustomButton
+              disabled={
+                item.created_status === "default" ||
+                item.created_status === "global"
+                }
                 className="btn-table"
                 variant="editIcon"
                 onClick={(e) => {
@@ -1585,6 +1592,10 @@ const WorkFlowpar2createPage: React.FC = () => {
             <div>
               <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
               <CustomButton
+              disabled={
+                item.created_status === "default" ||
+                item.created_status === "global"
+                }
                 variant="editIcon"
                 className="btn-table"
                 onClick={(e) => {
@@ -1867,6 +1878,10 @@ const WorkFlowpar2createPage: React.FC = () => {
             <div style={{ width: "160px" }}>
               <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
               <CustomButton
+              disabled={
+                item.created_status === "default" ||
+                item.created_status === "global"
+                }
                 className="btn-table"
                 variant="editIcon"
                 onClick={(e) => {

@@ -250,8 +250,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           tabStep4 === "muros"
             ? "Muro"
             : tabStep4 === "techumbre"
-            ? "Techo"
-            : "Piso",
+              ? "Techo"
+              : "Piso",
         info: {
           surface_color: {
             interior: { name: newDetalle.colorInterior },
@@ -623,7 +623,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-              "Todos los detalles ya estaban en el proyecto"
+            "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -700,9 +700,8 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token || !projectId) return;
     try {
-      const url = `${constantUrlApiEndpoint}/user/detail-update/${
-        editingDetail.id_detail || editingDetail?.id
-      }`;
+      const url = `${constantUrlApiEndpoint}/user/detail-update/${editingDetail.id_detail || editingDetail?.id
+        }`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -939,8 +938,8 @@ const WorkFlowpar2editPage: React.FC = () => {
         ) : (
           <span style={textStyle}>
             {det.material &&
-            det.material !== "0" &&
-            det.material.toUpperCase() !== "N/A"
+              det.material !== "0" &&
+              det.material.toUpperCase() !== "N/A"
               ? det.material
               : "-"}
           </span>
@@ -974,6 +973,9 @@ const WorkFlowpar2editPage: React.FC = () => {
             onAccept={() => handleConfirmInlineEdit(det)}
             onCancel={handleCancelInlineEdit}
           />
+        ) : det.created_status === "default" ||
+          det.created_status === "global" ? (
+          <span>-</span>
         ) : (
           <>
             <CustomButton
@@ -1027,10 +1029,10 @@ const WorkFlowpar2editPage: React.FC = () => {
                     tabStep4 === "muros"
                       ? "Muro"
                       : tabStep4 === "techumbre"
-                      ? "Techo"
-                      : tabStep4 === "pisos"
-                      ? "Piso"
-                      : "";
+                        ? "Techo"
+                        : tabStep4 === "pisos"
+                          ? "Piso"
+                          : "";
 
                   setNewDetailData({
                     scantilon_location: locationValue,
@@ -1104,8 +1106,8 @@ const WorkFlowpar2editPage: React.FC = () => {
         __detail: item,
         nombreAbreviado: isEditing ? (
           "created_status" in item &&
-          (item.created_status === "default" ||
-            item.created_status === "global") ? (
+            (item.created_status === "default" ||
+              item.created_status === "global") ? (
             <input
               type="text"
               className="form-control"
@@ -1219,6 +1221,11 @@ const WorkFlowpar2editPage: React.FC = () => {
           <div>
             <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
             <CustomButton
+              disabled={
+                ("created_status" in item &&
+                  item.created_status === "default") ||
+                ("created_status" in item && item.created_status === "global")
+              }
               className="btn-table"
               variant="editIcon"
               onClick={(e) => {
@@ -1281,8 +1288,8 @@ const WorkFlowpar2editPage: React.FC = () => {
         __detail: item,
         nombreAbreviado: isEditing ? (
           "created_status" in item &&
-          (item.created_status === "default" ||
-            item.created_status === "global") ? (
+            (item.created_status === "default" ||
+              item.created_status === "global") ? (
             <input
               type="text"
               className="form-control"
@@ -1396,6 +1403,11 @@ const WorkFlowpar2editPage: React.FC = () => {
           <div>
             <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
             <CustomButton
+              disabled={
+                ("created_status" in item &&
+                  item.created_status === "default") ||
+                ("created_status" in item && item.created_status === "global")
+              }
               variant="editIcon"
               className="btn-table"
               onClick={(e) => {
@@ -1492,8 +1504,8 @@ const WorkFlowpar2editPage: React.FC = () => {
         id: item.id,
         nombre: isEditing ? (
           "created_status" in item &&
-          (item.created_status === "default" ||
-            item.created_status === "global") ? (
+            (item.created_status === "default" ||
+              item.created_status === "global") ? (
             <input
               type="text"
               className="form-control"
@@ -1758,6 +1770,11 @@ const WorkFlowpar2editPage: React.FC = () => {
           <div style={{ width: "160px" }}>
             <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
             <CustomButton
+            disabled={
+              ("created_status" in item &&
+                item.created_status === "default") ||
+              ("created_status" in item && item.created_status === "global")  
+            }
               className="btn-table"
               variant="editIcon"
               onClick={(e) => {
@@ -1854,7 +1871,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         acciones: (
           <>
             {item.created_status === "default" ||
-            item.created_status === "global" ? (
+              item.created_status === "global" ? (
               <span>-</span>
             ) : (
               <div style={textStyle}>
@@ -1933,7 +1950,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         acciones: (
           <>
             {item.created_status === "default" ||
-            item.created_status === "global" ? (
+              item.created_status === "global" ? (
               <span>-</span>
             ) : (
               <div style={textStyle}>
@@ -1991,25 +2008,25 @@ const WorkFlowpar2editPage: React.FC = () => {
         {(tabStep4 === "muros" ||
           tabStep4 === "techumbre" ||
           tabStep4 === "pisos") && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginBottom: "1rem",
-            }}
-          >
-            <NewHeaderButton
-              tab={tabStep4 as "muros" | "techumbre" | "pisos"}
-              onNewCreated={
-                tabStep4 === "muros"
-                  ? fetchMurosDetails
-                  : tabStep4 === "techumbre"
-                  ? fetchTechumbreDetails
-                  : fetchPisosDetails
-              }
-            />
-          </div>
-        )}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: "1rem",
+              }}
+            >
+              <NewHeaderButton
+                tab={tabStep4 as "muros" | "techumbre" | "pisos"}
+                onNewCreated={
+                  tabStep4 === "muros"
+                    ? fetchMurosDetails
+                    : tabStep4 === "techumbre"
+                      ? fetchTechumbreDetails
+                      : fetchPisosDetails
+                }
+              />
+            </div>
+          )}
         <ul className="nav">
           {tabs.map((item) => (
             <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
@@ -2342,7 +2359,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         isOpen={showDetallesModal}
         title={`Detalles ${selectedItem?.name_detail || ""}`}
         onClose={() => setShowDetallesModal(false)}
-        onSave={() => {}}
+        onSave={() => { }}
         showSaveButton={false}
         modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
       >
@@ -2461,12 +2478,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2488,12 +2505,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            fs_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          fs_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2515,12 +2532,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            frame_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          frame_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2536,12 +2553,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            clousure_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          clousure_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2638,12 +2655,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_puerta_opaca: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_puerta_opaca: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2659,12 +2676,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            name_ventana: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          name_ventana: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2686,12 +2703,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                     setEditingPuerta((prev) =>
                       prev
                         ? {
-                            ...prev,
-                            atributs: {
-                              ...prev.atributs,
-                              porcentaje_vidrio: 0,
-                            },
-                          }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: 0,
+                          },
+                        }
                         : prev
                     );
                     return;
@@ -2702,12 +2719,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: clampedValue / 100,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          porcentaje_vidrio: clampedValue / 100,
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -2775,8 +2792,8 @@ const WorkFlowpar2editPage: React.FC = () => {
             {deleteItem.type === "detail"
               ? "¿Estás seguro de que deseas eliminar este detalle?"
               : deleteItem.type === "window"
-              ? "¿Estás seguro de que deseas eliminar esta ventana?"
-              : "¿Estás seguro de que deseas eliminar esta puerta?"}
+                ? "¿Estás seguro de que deseas eliminar esta ventana?"
+                : "¿Estás seguro de que deseas eliminar esta puerta?"}
           </p>
         </ModalCreate>
       )}

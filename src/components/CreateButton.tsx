@@ -58,6 +58,7 @@ const CreateButton: React.FC<CreateButtonProps> = ({
           type="button"
           onClick={handleBackClick}
           style={buttonStyle}
+          color='red'
         >
           {backText ? backText : <ArrowLeft className="w-4 h-4 mr-1" />}
         </CustomButton>

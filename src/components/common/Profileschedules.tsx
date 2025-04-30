@@ -2,6 +2,7 @@ import ReactECharts from 'echarts-for-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { constantUrlApiEndpoint } from "../../utils/constant-url-endpoint";
 import ModalCreate from './ModalCreate';
+import CustomButton from "@/components/common/CustomButton";
 
 interface ScheduleData {
   [key: string]: number | string | null;
@@ -53,10 +54,10 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
       const result = await res.json();
       const internalLoad = result.building_conditions?.find((bc: any) => bc.type === 'internal_loads');
       const inicioRaw = internalLoad?.details?.horario?.laboral?.inicio;
-      const finRaw    = internalLoad?.details?.horario?.laboral?.fin;
+      const finRaw = internalLoad?.details?.horario?.laboral?.fin;
       setHoursRange({
         start: inicioRaw != null ? format24h(inicioRaw) : '08:00',
-        end:   finRaw    != null ? format24h(finRaw)    : '18:00',
+        end: finRaw != null ? format24h(finRaw) : '18:00',
       });
     } catch (error) {
       console.error("Error fetching working hours", error);
@@ -81,10 +82,10 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
         setTipologia(result.name);
         const internalLoad = result.building_conditions?.find((bc: any) => bc.type === 'internal_loads');
         const inicioRaw = internalLoad?.details?.horario?.laboral?.inicio;
-        const finRaw    = internalLoad?.details?.horario?.laboral?.fin;
+        const finRaw = internalLoad?.details?.horario?.laboral?.fin;
         setHoursRange({
           start: inicioRaw != null ? format24h(inicioRaw) : '08:00',
-          end:   finRaw    != null ? format24h(finRaw)    : '18:00',
+          end: finRaw != null ? format24h(finRaw) : '18:00',
         });
       } catch (error) {
         console.error("Error fetching tipología y horas", error);
@@ -132,7 +133,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
   const handleHoursUpdate = async () => {
     if (perfilId === null) return;
     const token = localStorage.getItem("token");
-    
+
     try {
       const res = await fetch(
         `${constantUrlApiEndpoint}/user/enclosure-typing/${perfilId}`,
@@ -140,7 +141,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
       );
       const result = await res.json();
       const internalLoad = result.building_conditions?.find((bc: any) => bc.type === 'internal_loads');
-      
+
       const payload = {
         type: "internal_loads",
         attributes: {
@@ -288,24 +289,31 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
       <div className="mt-2">
         {isEditingHours ? (
           <>
-            <button className="btn btn-primary mx-2" onClick={handleHoursUpdate}>Guardar</button>
-            <button 
-              className="btn btn-secondary" 
+            <CustomButton
+              color='red'
+              className="btn btn-secondary"
               onClick={() => {
                 setTempHours(hoursRange);
                 setIsEditingHours(false);
               }}
             >
               Cancelar
-            </button>
+            </CustomButton>
+            <CustomButton
+              className="btn btn-primary mx-2"
+              onClick={handleHoursUpdate}
+            >
+              Guardar
+            </CustomButton>
           </>
         ) : (
-          <button className="btn btn-outline-primary" onClick={() => {
+          <CustomButton 
+          className="btn btn-outline-primary" onClick={() => {
             setTempHours(hoursRange);
             setIsEditingHours(true);
           }}>
             Editar Horario
-          </button>
+          </CustomButton>
         )}
       </div>
     </div>

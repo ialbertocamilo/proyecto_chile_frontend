@@ -757,7 +757,7 @@ const ObstructionTable: React.FC = () => {
       },
     },
     {
-      headerName: "Acciones izquierda",
+      headerName: "Acciones",
       field: "accionesDivision",
       renderCell: (row: ObstructionsData) => {
         if (editingDivisionRowKey === row.uniqueKey) {
@@ -869,7 +869,7 @@ const ObstructionTable: React.FC = () => {
       {/* Modal para crear División */}
       <ModalCreate
         isOpen={showDivisionModal}
-        saveLabel="Grabar Datos"
+        saveLabel="Crear División"
         onClose={() => {
           setShowDivisionModal(false);
           setCurrentOrientation(null);

@@ -93,14 +93,26 @@ const AguaCalienteSanitaria = () => {
         ];
         return months.indexOf(a[0]) - months.indexOf(b[0]);
       })
-      .map(([_, value]) => Number(value));
+      .map(([_, value]) => (isNaN(Number(value)) ? 0 : Number(value)));
 
     console.log(monthlyTemp);
-    const litrosDtMes = litrosMes.map(
-      (litros, index) => litros * (tAcs - Number(monthlyTemp[index]))
-    );
+    const litrosDtMes = litrosMes.map((litros, index) => {
+      const value = litros * (tAcs - Number(monthlyTemp[index]));
+      return isNaN(value) ? 0 : value;
+    });
 
     const sumLitrosDtmes = litrosDtMes.reduce((acc, value) => acc + value, 0);
+    console.log("valores ACS");
+    console.log(tableData);
+    console.log(tAcs);
+    console.log(tempRedResult.constant?.atributs?.monthly);
+    console.log(daysInMonth);
+    console.log(sumTotalConsumo);
+    console.log(litrosMes);
+    console.log(monthlyTemp);
+    console.log(litrosDtMes);
+    console.log(sumLitrosDtmes);
+    console.log(demandaACS);
     setDemandaACS(parseFloat((sumLitrosDtmes / 860).toFixed(2))); // Limitar a 2 decimales
   }, [tableData, tAcs]);
 
@@ -362,8 +374,10 @@ const AguaCalienteSanitaria = () => {
                     }
                   />
                 </td>
-                <td>{(row.cantidad * row.consumo).toFixed(2)}</td>
-                <td>
+                <td style={{ textAlign: "center" }}>
+                  {(row.cantidad * row.consumo).toFixed(2)}
+                </td>
+                <td style={{ textAlign: "center" }}>
                   <CustomButton
                     variant="deleteIcon"
                     onClick={() => deleteRow(index)}
@@ -581,6 +595,33 @@ const AguaCalienteSanitaria = () => {
             </div>
           </Card.Body>
         </Card>
+        <CustomButton
+          onClick={() => console.log("Guardar Datos")}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.2s ease-in-out",
+            backgroundColor: "var(--primary-color)",
+            border: "none",
+            fontSize: "14px",
+            borderRadius: "8px",
+            padding: "10px 16px",
+            cursor: "pointer",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+            fontWeight: 500,
+            letterSpacing: "0.3px",
+            minWidth: "max-content",
+            whiteSpace: "normal",
+            lineHeight: 1.5,
+            height: "auto",
+            width: "100px",
+            float: "right",
+          }}
+          className="btn btn-sm mt-2 m-2 hover:opacity-80 transition-opacity duration-200"
+        >
+          Guardar Datos
+        </CustomButton>
         {/* </Card.Body> */}
         {/* </Card> */}
       </Col>

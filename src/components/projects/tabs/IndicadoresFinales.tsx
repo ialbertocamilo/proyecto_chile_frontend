@@ -105,11 +105,11 @@ export default function IndicadoresFinales() {
                   {demandaData.map((item, idx) => (
                     <tr key={idx}>
                       <td className="">{item.concepto}</td>
-                      <td style={{ textAlign: "right" }}>{item.kwh_m2_ano}</td>
-                      <td style={{ textAlign: "right" }}>
+                      <td style={{ textAlign: "center" }}>{item.kwh_m2_ano}</td>
+                      <td style={{ textAlign: "center" }}>
                         {item.kwh_ano.toLocaleString()}
                       </td>
-                      <td style={{ textAlign: "right" }}>{item.vsCasoBase}</td>
+                      <td style={{ textAlign: "center" }}>{item.vsCasoBase}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -146,11 +146,11 @@ export default function IndicadoresFinales() {
                   {consumoPrimario.map((item, idx) => (
                     <tr key={idx}>
                       <td>{item.concepto}</td>
-                      <td style={{ textAlign: "right" }}>{item.kwh_m2_ano}</td>
-                      <td style={{ textAlign: "right" }}>
+                      <td style={{ textAlign: "center" }}>{item.kwh_m2_ano}</td>
+                      <td style={{ textAlign: "center" }}>
                         {item.kwh_ano.toLocaleString()}
                       </td>
-                      <td style={{ textAlign: "right" }}>{item.vsCasoBase}</td>
+                      <td style={{ textAlign: "center" }}>{item.vsCasoBase}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -178,7 +178,7 @@ export default function IndicadoresFinales() {
                   {hrsDisconfort.map((item, idx) => (
                     <tr key={idx}>
                       <td>{item.concepto}</td>
-                      <td style={{ textAlign: "right" }}>
+                      <td style={{ textAlign: "center" }}>
                         {item.hrs_ano} {item.nota && <small>{item.nota}</small>}
                       </td>
                     </tr>

@@ -139,7 +139,7 @@ const WorkFlowpar2createPage: React.FC = () => {
   const [projectStatus, setProjectStatus] = useState("En proceso");
   const [projectId, setProjectId] = useState<number | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const [step, setStep] = useState<number>(4);
+  const [step, setStep] = useState<number>(8);
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -2200,12 +2200,12 @@ const WorkFlowpar2createPage: React.FC = () => {
   // Pasos del Sidebar
   // -----------------------------------
   const sidebarSteps = [
-    { stepNumber: 4, iconName: "build", title: "Detalles constructivos" },
     {
       stepNumber: 8,
       iconName: "water_drop",
       title: "Agua Caliente Sanitaria",
     },
+    { stepNumber: 4, iconName: "build", title: "Detalles constructivos" },
     { stepNumber: 7, iconName: "design_services", title: "Recinto" },
   ];
 

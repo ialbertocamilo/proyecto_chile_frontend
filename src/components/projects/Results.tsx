@@ -51,9 +51,18 @@ const Results = () => {
             style={
               {
                 "--bs-nav-tabs-link-active-color": "var(--primary-color)",
-                "--bs-nav-tabs-border-color": "var(--primary-color)",
-                "--bs-nav-tabs-link-hover-color": "var(--primary-color)",
-                "--bs-nav-tabs-link-hover-bg": "#f8f9fa",
+                "--bs-nav-link-font-weight": "normal",
+                fontFamily: "var(--font-family-base)",
+                border: "none",
+                "--bs-nav-link-color": "#bbc4cb",
+                "--bs-nav-link-hover-color": "rgb(42, 176, 197)",
+                "--bs-nav-tabs-link-hover-border-color": "transparent",
+                "--bs-nav-tabs-link-active-border-color":
+                  "transparent transparent rgb(42, 176, 197) transparent",
+                "--bs-nav-tabs-border-width": "3px",
+                "--bs-nav-tabs-border-radius": "0px",
+                "--bs-nav-link-padding-x": "10px",
+                "--bs-nav-link-padding-y": "10px",
               } as React.CSSProperties
             }
           >

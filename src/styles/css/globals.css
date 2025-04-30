@@ -405,3 +405,7 @@ h6 {
   width: 2.5rem !important;
   background-color: #359ea7 !important;
 }
+
+.nav-tabs .nav-link:not(.active) {
+  color: #bbc4cb !important;
+}

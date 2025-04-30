@@ -288,7 +288,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== ESTADOS GENERALES ======================
   const [projectId, setProjectId] = useState<number | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const [step, setStep] = useState<number>(4);
+  const [step, setStep] = useState<number>(8);
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [searchQuery, setSearchQuery] = useState("");
   const [projectStatus, setProjectStatus] = useState("En proceso");
@@ -2091,14 +2091,14 @@ const WorkFlowpar2editPage: React.FC = () => {
       title: "Ubicación del proyecto",
     },
     {
-      stepNumber: 4,
-      iconName: "build",
-      title: "Detalles constructivos",
-    },
-    {
       stepNumber: 8,
       iconName: "water_drop",
       title: "Agua Caliente Sanitaria",
+    },
+    {
+      stepNumber: 4,
+      iconName: "build",
+      title: "Detalles constructivos",
     },
     {
       stepNumber: 7,

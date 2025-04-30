@@ -442,13 +442,25 @@
     "@babel/helper-string-parser" "^7.25.9"
     "@babel/helper-validator-identifier" "^7.25.9"
 
-"@bytestone/ifc-component@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.npmjs.org/@bytestone/ifc-component/-/ifc-component-0.0.2.tgz"
-  integrity sha512-swS2YSZrADYbU8/oUFcz8tMp9f1CaPk06cxoG9p3gahUo7kh8CyS1RKg97pyCTQISsttpVVOK7dtrsKd06/BsQ==
+"@bytestone/ifc-component@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@bytestone/ifc-component/-/ifc-component-0.0.3.tgz#4056451c8a56787c41d080d6678121b97fca0811"
+  integrity sha512-fEnVPCf6n5pUNK+z1a7ThofuTSttETN6UxBaMnTlzkitDRBjlEOh4DRF7Wv9ARiWe4aKVMUatcDqDVGElf3IKw==
   dependencies:
     "@xeokit/xeokit-sdk" "^2.6.69"
     commander "^13.1.0"
+    tsup "^8.4.0"
+    web-ifc "^0.0.68"
+
+"@bytestone/ifc-component@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@bytestone/ifc-component/-/ifc-component-0.1.5.tgz#bc062deb043cd4386da64904249c78f3f193a1cc"
+  integrity sha512-XtwHrSz98kAYYEtwVO53ncSfQ66JdeZ5MUIXC29PnqweaNpn/ULjVSccaue1opVB6tw3V/2gE4vAy725WBE85g==
+  dependencies:
+    "@bytestone/ifc-component" "^0.0.3"
+    "@xeokit/xeokit-sdk" "^2.6.69"
+    commander "^13.1.0"
+    flatted "^3.3.3"
     tsup "^8.4.0"
     web-ifc "^0.0.68"
 
@@ -4578,6 +4590,11 @@ flatted@^3.2.9:
   version "3.3.2"
   resolved "https://registry.npmjs.org/flatted/-/flatted-3.3.2.tgz"
   integrity sha512-AiwGJM8YcNOaobumgtng+6NHuOqC3A7MixFeDafM3X9cIUM+xUXoS5Vfgf+OihAYe20fxqNM9yPBXJzRtZ/4eA==
+
+flatted@^3.3.3:
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.3.3.tgz#67c8fad95454a7c7abebf74bb78ee74a44023358"
+  integrity sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==
 
 follow-redirects@^1.0.0, follow-redirects@^1.14.0, follow-redirects@^1.15.6:
   version "1.15.9"

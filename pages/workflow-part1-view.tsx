@@ -234,6 +234,11 @@ const ProjectWorkflowPart1: React.FC = () => {
       title: "Ubicación del proyecto",
     },
     {
+      stepNumber: 8,
+      iconName: "water_drop",
+      title: "Agua Caliente Sanitaria",
+    },
+    {
       stepNumber: 6,
       iconName: "build",
       title: "Detalles constructivos",
@@ -254,6 +259,8 @@ const ProjectWorkflowPart1: React.FC = () => {
       router.push(`/workflow-part2-view?id=${projectId}&step=4`);
     } else if (newStep === 7) {
       router.push(`/workflow-part2-view?id=${projectId}&step=7`);
+    } else if (newStep === 8) {
+      router.push(`/workflow-part2-view?id=${projectId}&step=8`);
     }
   };
 

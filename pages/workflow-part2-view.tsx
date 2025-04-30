@@ -16,6 +16,7 @@ import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 import ModalCreate from "../src/components/common/ModalCreate";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataView";
 import CustomButton from "../src/components/common/CustomButton";
+import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
 
 /* ==================== TIPOS ==================== */
 interface Detail {
@@ -595,8 +596,12 @@ const WorkFlowpar2viewPage: React.FC = () => {
       } else {
         return {
           name_element: item.name_element,
-          u_vidrio: item.atributs?.u_vidrio ? item.atributs.u_vidrio.toFixed(2) : "--",
-          fs_vidrio: item.atributs?.fs_vidrio ? Number(item.atributs.fs_vidrio).toFixed(2) : "--",
+          u_vidrio: item.atributs?.u_vidrio
+            ? item.atributs.u_vidrio.toFixed(2)
+            : "--",
+          fs_vidrio: item.atributs?.fs_vidrio
+            ? Number(item.atributs.fs_vidrio).toFixed(2)
+            : "--",
           frame_type: item.atributs?.frame_type ?? "--",
           clousure_type: item.atributs?.clousure_type ?? "--",
           u_marco: item.u_marco ? item.u_marco.toFixed(2) : "--",
@@ -889,6 +894,11 @@ const WorkFlowpar2viewPage: React.FC = () => {
       route: `/workflow-part1-view?id=${projectId}&step=2`,
     },
     {
+      stepNumber: 8,
+      iconName: "water_drop",
+      title: "Agua Caliente Sanitaria",
+    },
+    {
       stepNumber: 4,
       iconName: "build",
       title: "Detalles constructivos",
@@ -949,6 +959,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
             <div className="col-12 col-md-9 p-4">
               {step === 4 && showTabsInStep4 && renderStep4Tabs()}
               {step === 7 && renderRecinto()}
+              {step === 8 && <AguaCalienteSanitaria />}
             </div>
           </div>
         </Card>

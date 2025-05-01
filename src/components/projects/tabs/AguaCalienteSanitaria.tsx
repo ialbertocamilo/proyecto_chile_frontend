@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import { Card, Col, Form, Row, Table } from "react-bootstrap";
 import CustomButton from "../../common/CustomButton"; // Assuming CustomButton is located here
 
-const AguaCalienteSanitaria = () => {
+interface AguaCalienteSanitariaProps {
+  onlyView?: boolean;
+}
+
+const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
+  onlyView = false,
+}) => {
   const result = useConstants("energy_systems", "general");
   const occupancyResult = useConstants("acs", "occupancy");
   const tempRedResult = useConstants("temperature", "red");
@@ -102,17 +108,6 @@ const AguaCalienteSanitaria = () => {
     });
 
     const sumLitrosDtmes = litrosDtMes.reduce((acc, value) => acc + value, 0);
-    console.log("valores ACS");
-    console.log(tableData);
-    console.log(tAcs);
-    console.log(tempRedResult.constant?.atributs?.monthly);
-    console.log(daysInMonth);
-    console.log(sumTotalConsumo);
-    console.log(litrosMes);
-    console.log(monthlyTemp);
-    console.log(litrosDtMes);
-    console.log(sumLitrosDtmes);
-    console.log(demandaACS);
     setDemandaACS(parseFloat((sumLitrosDtmes / 860).toFixed(2))); // Limitar a 2 decimales
   }, [tableData, tAcs]);
 
@@ -352,6 +347,7 @@ const AguaCalienteSanitaria = () => {
               <tr key={index}>
                 <td>
                   <Form.Select
+                    disabled={onlyView}
                     value={row.tipo}
                     onChange={(e) =>
                       handleInputChange(index, "tipo", e.target.value)
@@ -366,6 +362,7 @@ const AguaCalienteSanitaria = () => {
                 </td>
                 <td>
                   <Form.Control
+                    disabled={onlyView}
                     type="number"
                     min="0"
                     value={row.cantidad}
@@ -378,12 +375,14 @@ const AguaCalienteSanitaria = () => {
                   {(row.cantidad * row.consumo).toFixed(2)}
                 </td>
                 <td style={{ textAlign: "center" }}>
-                  <CustomButton
-                    variant="deleteIcon"
-                    onClick={() => deleteRow(index)}
-                  >
-                    <Trash2 className="me-1" size={16} />
-                  </CustomButton>
+                  {onlyView && (
+                    <CustomButton
+                      variant="deleteIcon"
+                      onClick={() => deleteRow(index)}
+                    >
+                      <Trash2 className="me-1" size={16} />
+                    </CustomButton>
+                  )}
                 </td>
               </tr>
             ))}
@@ -398,6 +397,7 @@ const AguaCalienteSanitaria = () => {
                 </Form.Label>
                 <Col sm={5} className="text-end">
                   <Form.Control
+                    disabled={onlyView}
                     type="number"
                     min="0"
                     value={tAcs}
@@ -433,6 +433,7 @@ const AguaCalienteSanitaria = () => {
                 </Form.Label>
                 <Col sm={5} className="text-end">
                   <Form.Select
+                    disabled={onlyView}
                     value={combustible}
                     onChange={handleCombustibleChange}
                     style={{ color: "#2ab0c5" }}
@@ -460,6 +461,7 @@ const AguaCalienteSanitaria = () => {
                 </Form.Label>
                 <Col sm={5} className="text-end">
                   <Form.Select
+                    disabled={onlyView}
                     value={rendimiento}
                     onChange={(e) => setRendimiento(e.target.value)}
                     style={{ color: "#2ab0c5" }}
@@ -491,6 +493,7 @@ const AguaCalienteSanitaria = () => {
                 </Form.Label>
                 <Col sm={5} className="text-end">
                   <Form.Select
+                    disabled={onlyView}
                     value={sistDistribucion}
                     onChange={(e) =>
                       setSistDistribucion(String(e.target.value))
@@ -524,6 +527,7 @@ const AguaCalienteSanitaria = () => {
                 </Form.Label>
                 <Col sm={5} className="text-end">
                   <Form.Select
+                    disabled={onlyView}
                     value={sistControl}
                     onChange={(e) => setSistControl(e.target.value)}
                     style={{ color: "#2ab0c5" }}
@@ -595,33 +599,35 @@ const AguaCalienteSanitaria = () => {
             </div>
           </Card.Body>
         </Card>
-        <CustomButton
-          onClick={() => console.log("Guardar Datos")}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "all 0.2s ease-in-out",
-            backgroundColor: "var(--primary-color)",
-            border: "none",
-            fontSize: "14px",
-            borderRadius: "8px",
-            padding: "10px 16px",
-            cursor: "pointer",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-            fontWeight: 500,
-            letterSpacing: "0.3px",
-            minWidth: "max-content",
-            whiteSpace: "normal",
-            lineHeight: 1.5,
-            height: "auto",
-            width: "100px",
-            float: "right",
-          }}
-          className="btn btn-sm mt-2 m-2 hover:opacity-80 transition-opacity duration-200"
-        >
-          Guardar Datos
-        </CustomButton>
+        {onlyView && (
+          <CustomButton
+            onClick={() => console.log("Guardar Datos")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.2s ease-in-out",
+              backgroundColor: "var(--primary-color)",
+              border: "none",
+              fontSize: "14px",
+              borderRadius: "8px",
+              padding: "10px 16px",
+              cursor: "pointer",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              fontWeight: 500,
+              letterSpacing: "0.3px",
+              minWidth: "max-content",
+              whiteSpace: "normal",
+              lineHeight: 1.5,
+              height: "auto",
+              width: "100px",
+              float: "right",
+            }}
+            className="btn btn-sm mt-2 m-2 hover:opacity-80 transition-opacity duration-200"
+          >
+            Guardar Datos
+          </CustomButton>
+        )}
         {/* </Card.Body> */}
         {/* </Card> */}
       </Col>

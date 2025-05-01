@@ -959,7 +959,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
             <div className="col-12 col-md-9 p-4">
               {step === 4 && showTabsInStep4 && renderStep4Tabs()}
               {step === 7 && renderRecinto()}
-              {step === 8 && <AguaCalienteSanitaria />}
+              {step === 8 && <AguaCalienteSanitaria onlyView={true} />}
             </div>
           </div>
         </Card>

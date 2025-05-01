@@ -409,3 +409,19 @@ h6 {
 .nav-tabs .nav-link:not(.active) {
   color: #bbc4cb !important;
 }
+
+.nav-pill-info {
+  background: white;
+  border-radius: 0 !important;
+  color: #359ea7 !important;
+}
+.nav-pill-info:hover {
+  /* border-bottom: 3px solid #359ea7; */
+  background: white !important;
+  border-radius: 0 !important;
+}
+.nav-pill-info.nav-link.active {
+  background: white !important;
+  border-bottom: 3px solid #359ea7;
+  border-radius: 0 !important;
+}

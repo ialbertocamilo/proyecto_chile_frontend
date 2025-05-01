@@ -9,7 +9,7 @@ import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import { Plus } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
-/*  Tipos                                                                    */
+/*  Tipos                                                                     */
 /* -------------------------------------------------------------------------- */
 
 interface AngleAzimutOption {
@@ -75,41 +75,57 @@ const useObstructionsFetch = (token: string) => {
         const rows: ObstructionsData[] = [];
 
         data.orientations.forEach((o: any) => {
-          /* fila principal */
-          rows.push({
-            id: o.orientation_id,
-            division_id: null,
-            index: rows.length + 1,
-            división: "-",
-            floor_id: o.enclosure_id,
-            a: 0,
-            b: 0,
-            d: 0,
-            anguloAzimut: o.azimut,
-            orientación: o.orientation,
-            obstrucción: 0,
-            mainRow: true,
-          });
+          /** ----------------------------------------------------------------
+           * 1) Filtrar divisiones eliminadas
+           * 2) Ordenarlas por num_orientation
+           * ----------------------------------------------------------------*/
+          const divisions: DivisionAPI[] =
+            o.divisions
+              ?.filter((d: DivisionAPI) => !d.is_deleted)
+              .sort(
+                (a: DivisionAPI, b: DivisionAPI) => a.num_orientation - b.num_orientation,
+              ) || [];
 
-          /* divisiones */
-          o.divisions
-            ?.sort((a: DivisionAPI, b: DivisionAPI) => a.num_orientation - b.num_orientation)
-            .forEach((div: DivisionAPI) => {
-              rows.push({
-                id: o.orientation_id,
-                division_id: div.division_id,
-                index: rows.length + 1,
-                división: div.division,
-                floor_id: o.enclosure_id,
-                a: div.a,
-                b: div.b,
-                d: div.d,
-                anguloAzimut: o.azimut,
-                orientación: o.orientation,
-                obstrucción: div.num_orientation,
-                mainRow: false,
-              });
+          /** ---------------------------------------------------------------
+           * Si NO hay divisiones todavía, creamos la fila principal;        *
+           * cuando haya al menos una división, esa fila ya no es necesaria. *
+           * -------------------------------------------------------------- */
+          if (divisions.length === 0) {
+            rows.push({
+              id: o.orientation_id,
+              division_id: null,
+              index: rows.length + 1,
+              división: "-",
+              floor_id: o.enclosure_id,
+              a: 0,
+              b: 0,
+              d: 0,
+              anguloAzimut: o.azimut,
+              orientación: o.orientation,
+              obstrucción: 0,
+              mainRow: true,
             });
+          }
+
+          /** ---------------------------------------------------------------
+           * Añadimos las divisiones existentes                              *
+           * -------------------------------------------------------------- */
+          divisions.forEach((div, i) => {
+            rows.push({
+              id: o.orientation_id,
+              division_id: div.division_id,
+              index: rows.length + 1,
+              división: div.division,
+              floor_id: o.enclosure_id,
+              a: div.a,
+              b: div.b,
+              d: div.d,
+              anguloAzimut: o.azimut,
+              orientación: o.orientation,
+              obstrucción: i + 1, // enumerar 1,2,3…
+              mainRow: false,
+            });
+          });
         });
 
         setTableData(rows);
@@ -409,49 +425,29 @@ const ObstructionTable: React.FC = () => {
     {
       headerName: "Ángulo Azimut",
       field: "anguloAzimut",
-      renderCell: (row: ObstructionsData) => {
-        if (!row.mainRow) return "";
-        if (editingRowId === row.id) {
-          return (
-            <select
-              className="form-control"
-              value={selectedAngle}
-              onChange={(e) => setSelectedAngle(e.target.value)}
-            >
-              {angleOptions
-                .filter(
-                  (o) => !tableData.some((r) => r.anguloAzimut === o.range_az && r.id !== row.id)
-                )
-                .map((o, i) => (
-                  <option key={i} value={o.range_az}>
-                    {formatAngleOption(o)}
-                  </option>
-                ))}
-            </select>
-          );
-        }
-        return row.anguloAzimut;
-      },
+      renderCell: (row: ObstructionsData) =>
+        // Muestra en la fila “principal” (obstrucción 0) o en la primera división (obstrucción 1)
+        row.obstrucción <= 1 ? row.anguloAzimut : "",
     },
     {
       headerName: "Orientación",
       field: "orientación",
-      renderCell: (row: ObstructionsData) => (row.mainRow ? row.orientación ?? "-" : ""),
+      renderCell: (row: ObstructionsData) =>
+        row.obstrucción <= 1 ? row.orientación ?? "-" : "",
     },
     {
       headerName: "Acciones",
       field: "acciones",
       renderCell: (row: ObstructionsData) => {
-        if (!row.mainRow) return "";
-        if (editingRowId === row.id) {
-          return (
-            <ActionButtonsConfirm
-              onAccept={() => handleEdit(row)}
-              onCancel={() => setEditingRowId(null)}
-            />
-          );
-        }
-        return (
+        // Solo botones en la fila principal o en la primera división
+        if (row.obstrucción > 1) return "";
+  
+        return editingRowId === row.id ? (
+          <ActionButtonsConfirm
+            onAccept={() => handleEdit(row)}
+            onCancel={() => setEditingRowId(null)}
+          />
+        ) : (
           <ActionButtons
             onEdit={() => {
               setEditingRowId(row.id);
@@ -480,17 +476,13 @@ const ObstructionTable: React.FC = () => {
                 setEditingDivisionValues({ ...editingDivisionValues, division: e.target.value })
               }
             >
-              {[
-                "División 1",
-                "División 2",
-                "División 3",
-                "División 4",
-                "División 5",
-              ].map((div, i) => (
-                <option key={i} value={div}>
-                  {div}
-                </option>
-              ))}
+              {["División 1", "División 2", "División 3", "División 4", "División 5"].map(
+                (div, i) => (
+                  <option key={i} value={div}>
+                    {div}
+                  </option>
+                ),
+              )}
             </select>
           );
         }
@@ -688,17 +680,13 @@ const ObstructionTable: React.FC = () => {
             value={selectedDivision}
             onChange={(e) => setSelectedDivision(e.target.value)}
           >
-            {[
-              "División 1",
-              "División 2",
-              "División 3",
-              "División 4",
-              "División 5",
-            ].map((div, i) => (
-              <option key={i} value={div}>
-                {div}
-              </option>
-            ))}
+            {["División 1", "División 2", "División 3", "División 4", "División 5"].map(
+              (div, i) => (
+                <option key={i} value={div}>
+                  {div}
+                </option>
+              ),
+            )}
           </select>
         </div>
         <div className="form-group mt-2">

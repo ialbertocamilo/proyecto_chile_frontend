@@ -8,24 +8,39 @@ import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import { Plus } from "lucide-react";
 
+/* -------------------------------------------------------------------------- */
+/*  Tipos                                                                    */
+/* -------------------------------------------------------------------------- */
+
 interface AngleAzimutOption {
   range_az: string;
   orientation: string;
 }
 
+interface DivisionAPI {
+  a: number;
+  b: number;
+  d: number;
+  division: string;
+  division_id: number;
+  num_orientation: number;
+  orientation_id: number;
+  is_deleted: boolean;
+}
+
 interface ObstructionsData {
-  id: number; // id de la orientación
-  division_id: number | null; // id de la división (nuevo)
+  id: number;           // orientation_id
+  division_id: number | null;
   index: number;
   división: string;
   floor_id: number;
-  b: number;
   a: number;
+  b: number;
   d: number;
   anguloAzimut: string;
   orientación: any;
-  obstrucción: number;
-  mainRow: boolean; // Propiedad para identificar la fila principal
+  obstrucción: number;  // num_orientation
+  mainRow: boolean;
 }
 
 interface EditingValues {
@@ -34,27 +49,23 @@ interface EditingValues {
   area: number;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Componente                                                                */
+/* -------------------------------------------------------------------------- */
+
 const ObstructionTable: React.FC = () => {
+  /* ---------- Estados ----------------------------------------------------- */
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [tableData, setTableData] = useState<ObstructionsData[]>([]);
   const [tableLoading, setTableLoading] = useState<boolean>(false);
-  // Modal para crear Obstrucciones (ya existente)
+
+  // Modal Obstrucciones
   const [showModal, setShowModal] = useState(false);
   const [angleOptions, setAngleOptions] = useState<AngleAzimutOption[]>([]);
-  // selectedAngle se usará tanto en el modal de creación como en la edición inline
   const [selectedAngle, setSelectedAngle] = useState<string>("");
-  // Estado para controlar la visibilidad del botón "+"
-  const [showPlus, setShowPlus] = useState<boolean>(true);
-  const [editingValues, setEditingValues] = useState<EditingValues>({
-    roof_id: 0,
-    characteristic: "",
-    area: 0,
-  });
 
-  // Estado para edición inline de división
-  const [editingDivisionRowId, setEditingDivisionRowId] = useState<
-    number | null
-  >(null);
+  // División inline
+  const [editingDivisionRowId, setEditingDivisionRowId] = useState<number | null>(null);
   const [editingDivisionValues, setEditingDivisionValues] = useState({
     division: "",
     a: 0,
@@ -62,33 +73,34 @@ const ObstructionTable: React.FC = () => {
     d: 0,
   });
 
-  // Nuevo estado para el modal de creación de División
+  // Modal Crear División
   const [showDivisionModal, setShowDivisionModal] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState("División 1");
   const [aValue, setAValue] = useState<string>("");
   const [bValue, setBValue] = useState<string>("");
   const [dValue, setDValue] = useState<string>("");
+  const [currentOrientation, setCurrentOrientation] = useState<ObstructionsData | null>(null);
 
-  // Nuevo estado para almacenar la orientación seleccionada para agregar división
-  const [currentOrientation, setCurrentOrientation] =
-    useState<ObstructionsData | null>(null);
-
-  // Estados para el modal de confirmación de eliminación de obstrucción
+  // Confirmación de eliminación
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [rowToDelete, setRowToDelete] = useState<ObstructionsData | null>(null);
 
-  // NUEVOS estados para la confirmación de eliminación de división
-  const [showConfirmDivisionModal, setShowConfirmDivisionModal] =
-    useState(false);
-  const [rowToDeleteDivision, setRowToDeleteDivision] =
-    useState<ObstructionsData | null>(null);
+  // Confirmación de eliminación de división
+  const [showConfirmDivisionModal, setShowConfirmDivisionModal] = useState(false);
+  const [rowToDeleteDivision, setRowToDeleteDivision] = useState<ObstructionsData | null>(null);
 
-  // Nuevo estado para el contador de división
-  const [divisionCounter, setDivisionCounter] = useState<number>(0);
+  // Otros estados heredados
+  const [editingValues, setEditingValues] = useState<EditingValues>({
+    roof_id: 0,
+    characteristic: "",
+    area: 0,
+  });
 
   const token = localStorage.getItem("token") || "";
 
-  // Cargar datos existentes desde el servidor al montar el componente
+  /* ------------------------------------------------------------------------ */
+  /*  Carga inicial: GET /obstruction/{enclosure_id}                          */
+  /* ------------------------------------------------------------------------ */
   useEffect(() => {
     const enclosureId = localStorage.getItem("recinto_id");
     if (!enclosureId) {
@@ -96,6 +108,7 @@ const ObstructionTable: React.FC = () => {
       return;
     }
     setTableLoading(true);
+
     fetch(`${constantUrlApiEndpoint}/obstruction/${enclosureId}`, {
       method: "GET",
       headers: {
@@ -105,32 +118,47 @@ const ObstructionTable: React.FC = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        // Mapea los datos recibidos a la estructura que usa la tabla
-        const mappedData = data.orientations.map(
-          (orientation: any, index: number) => {
-            // Si existe al menos una división, se toma la primera
-            const divisionData =
-              orientation.divisions && orientation.divisions.length > 0
-                ? orientation.divisions[0]
-                : null;
+        const rows: ObstructionsData[] = [];
 
-            return {
-              id: orientation.orientation_id, // id de la orientación
-              division_id: divisionData ? divisionData.division_id : null, // id de la división
-              index: index + 1,
-              división: divisionData ? divisionData.division : "-",
-              floor_id: orientation.enclosure_id, // O el valor que corresponda
-              a: divisionData ? divisionData.a : 0,
-              b: divisionData ? divisionData.b : 0,
-              d: divisionData ? divisionData.d : 0,
-              anguloAzimut: orientation.azimut,
-              orientación: orientation.orientation,
-              obstrucción: 0, // Puedes ajustar este valor según corresponda
-              mainRow: true, // Fila principal con datos de orientación
-            };
-          }
-        );
-        setTableData(mappedData);
+        data.orientations.forEach((o: any) => {
+          /* Fila principal: solo orientación */
+          rows.push({
+            id: o.orientation_id,
+            division_id: null,
+            index: rows.length + 1,
+            división: "-",
+            floor_id: o.enclosure_id,
+            a: 0,
+            b: 0,
+            d: 0,
+            anguloAzimut: o.azimut,
+            orientación: o.orientation,
+            obstrucción: 0,
+            mainRow: true,
+          });
+
+          /* Fila por cada división */
+          o.divisions
+            ?.sort((a: DivisionAPI, b: DivisionAPI) => a.num_orientation - b.num_orientation)
+            .forEach((div: DivisionAPI) => {
+              rows.push({
+                id: o.orientation_id,
+                division_id: div.division_id,
+                index: rows.length + 1,
+                división: div.division,
+                floor_id: o.enclosure_id,
+                a: div.a,
+                b: div.b,
+                d: div.d,
+                anguloAzimut: o.azimut,
+                orientación: o.orientation,
+                obstrucción: div.num_orientation,
+                mainRow: false,
+              });
+            });
+        });
+
+        setTableData(rows);
         setTableLoading(false);
       })
       .catch((error) => {
@@ -140,34 +168,42 @@ const ObstructionTable: React.FC = () => {
       });
   }, [token]);
 
-  // Se carga la información del endpoint cuando se abre el modal de Obstrucciones
+  /* ------------------------------------------------------------------------ */
+  /*  Cargar opciones ángulo azimut cuando se abre modal                      */
+  /* ------------------------------------------------------------------------ */
   useEffect(() => {
-    if (showModal) {
-      setSelectedAngle("");
-      fetch(`${constantUrlApiEndpoint}/angle-azimut-and-orientation`, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((response) => response.json())
-        .then((data: { range_az: string; orientation: string }[]) => {
-          setAngleOptions(data);
-        })
-        .catch((error) => {
-          console.error("Error fetching angle azimut options:", error);
-          notify("Error al cargar las opciones de ángulo azimut", "error");
-        });
-    }
+    if (!showModal) return;
+
+    setSelectedAngle("");
+    fetch(`${constantUrlApiEndpoint}/angle-azimut-and-orientation`, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((r) => r.json())
+      .then((data: AngleAzimutOption[]) => setAngleOptions(data))
+      .catch((err) => {
+        console.error("Error fetching angle azimut options:", err);
+        notify("Error al cargar las opciones de ángulo azimut", "error");
+      });
   }, [showModal, token]);
 
-  // Función para editar la orientación (ya existente)
+  /* ------------------------------------------------------------------------ */
+  /*  Utilidades                                                              */
+  /* ------------------------------------------------------------------------ */
+  const preventMinus = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "-") e.preventDefault();
+  };
+
+  const formatAngleOption = (o: AngleAzimutOption) => `${o.range_az} (${o.orientation})`;
+
+  /* ------------------------------------------------------------------------ */
+  /*  CRUD Orientación                                                        */
+  /* ------------------------------------------------------------------------ */
   const handleEdit = (row: ObstructionsData) => {
-    const newAngle = window.prompt(
-      "Seleccione el nuevo ángulo azimut:",
-      row.anguloAzimut
-    );
+    const newAngle = window.prompt("Seleccione el nuevo ángulo azimut:", row.anguloAzimut);
     if (!newAngle) return;
 
     fetch(`${constantUrlApiEndpoint}/orientation-update/${row.id}`, {
@@ -179,31 +215,23 @@ const ObstructionTable: React.FC = () => {
       },
       body: JSON.stringify({ azimut: newAngle }),
     })
-      .then((response) => response.json())
+      .then((r) => r.json())
       .then((data) => {
-        const updatedRow = {
-          ...row,
-          anguloAzimut: data.azimut,
-          orientación: data.orientation,
-        };
-        setTableData((prevData) =>
-          prevData.map((r) => (r.id === row.id ? updatedRow : r))
-        );
+        const updated = { ...row, anguloAzimut: data.azimut, orientación: data.orientation };
+        setTableData((prev) => prev.map((r) => (r.id === row.id && r.mainRow ? updated : r)));
         notify("Orientación actualizada correctamente", "success");
       })
-      .catch((error) => {
-        console.error("Error updating orientation:", error);
+      .catch((e) => {
+        console.error("Error updating orientation:", e);
         notify("Error al actualizar orientación", "error");
       });
   };
 
-  // Función para eliminar la obstrucción utilizando modal de confirmación
   const handleDelete = (row: ObstructionsData) => {
     setRowToDelete(row);
     setShowConfirmModal(true);
   };
 
-  // Función para confirmar la eliminación de la obstrucción
   const confirmDeletion = () => {
     if (!rowToDelete) return;
 
@@ -214,36 +242,33 @@ const ObstructionTable: React.FC = () => {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((response) => response.json())
       .then(() => {
-        setTableData((prevData) =>
-          prevData.filter((r) => r.id !== rowToDelete.id)
-        );
+        setTableData((prev) => prev.filter((r) => r.id !== rowToDelete.id));
         notify("Obstrucción eliminada exitosamente", "success");
         setShowConfirmModal(false);
         setRowToDelete(null);
       })
-      .catch((error) => {
-        console.error("Error deleting orientation:", error);
+      .catch((e) => {
+        console.error("Error deleting orientation:", e);
         notify("Error al eliminar obstrucción", "error");
         setShowConfirmModal(false);
         setRowToDelete(null);
       });
   };
 
-  const handleCancel = () => {
-    setEditingRowId(null);
-    setEditingValues({
-      roof_id: 0,
-      characteristic: "",
-      area: 0,
-    });
-  };
+  const handleCreateObstruction = () => {
+    if (!selectedAngle) {
+      notify("Debe seleccionar un ángulo azimut", "error");
+      return;
+    }
+    const enclosureId = localStorage.getItem("recinto_id");
+    if (!enclosureId) {
+      notify("No se encontró el recinto_id en el LocalStorage", "error");
+      return;
+    }
 
-  // Función para aceptar la edición inline del ángulo azimut
-  const handleAcceptEdit = (row: ObstructionsData) => {
-    fetch(`${constantUrlApiEndpoint}/orientation-update/${row.id}`, {
-      method: "PUT",
+    fetch(`${constantUrlApiEndpoint}/orientation-create/${enclosureId}`, {
+      method: "POST",
       headers: {
         accept: "application/json",
         Authorization: `Bearer ${token}`,
@@ -251,31 +276,35 @@ const ObstructionTable: React.FC = () => {
       },
       body: JSON.stringify({ azimut: selectedAngle }),
     })
-      .then((response) => response.json())
+      .then((r) => r.json())
       .then((data) => {
-        const updatedRow = {
-          ...row,
-          anguloAzimut: data.azimut,
+        const newRow: ObstructionsData = {
+          id: data.id,
+          division_id: null,
+          index: tableData.length + 1,
+          división: "-",
+          floor_id: 0,
+          a: 0,
+          b: 0,
+          d: 0,
+          anguloAzimut: selectedAngle,
           orientación: data.orientation,
+          obstrucción: 0,
+          mainRow: true,
         };
-        setTableData((prevData) =>
-          prevData.map((r) => (r.id === row.id ? updatedRow : r))
-        );
-        notify("Orientación actualizada correctamente", "success");
-        setEditingRowId(null);
+        setTableData([...tableData, newRow]);
+        setShowModal(false);
+        notify("Obstrucción creada correctamente", "success");
       })
-      .catch((error) => {
-        console.error("Error updating orientation:", error);
-        notify("Error al actualizar orientación", "error");
+      .catch((e) => {
+        console.error("Error al crear orientación:", e);
+        notify("Error al crear orientación", "error");
       });
   };
 
-  // Funciones para editar la división inline
-  const handleCancelDivisionEdit = () => {
-    setEditingDivisionRowId(null);
-  };
-
-  // Función para aceptar la edición inline de la división usando el endpoint PUT /division-update/{division_id}
+  /* ------------------------------------------------------------------------ */
+  /*  CRUD División                                                           */
+  /* ------------------------------------------------------------------------ */
   const handleAcceptDivisionEdit = (row: ObstructionsData) => {
     if (!row.division_id) {
       notify("No se encontró el id de división para actualizar", "error");
@@ -297,169 +326,59 @@ const ObstructionTable: React.FC = () => {
       },
       body: JSON.stringify(payload),
     })
-      .then((response) => response.json())
+      .then((r) => r.json())
       .then((data) => {
-        const updatedRow: ObstructionsData = {
+        const updated: ObstructionsData = {
           ...row,
           división: data.division,
           a: data.a,
           b: data.b,
           d: data.d,
           division_id: data.id,
-          mainRow: row.mainRow, // conservar el estado de fila principal o no
         };
-        setTableData((prevData) =>
-          prevData.map((r) => (r.id === row.id ? updatedRow : r))
+        setTableData((prev) =>
+          prev.map((r) => (r.division_id === row.division_id ? updated : r))
         );
         notify("División actualizada correctamente", "success");
         setEditingDivisionRowId(null);
       })
-      .catch((error) => {
-        console.error("Error updating division:", error);
+      .catch((e) => {
+        console.error("Error updating division:", e);
         notify("Error al actualizar división", "error");
       });
   };
 
-  // Función para eliminar una división
   const confirmDivisionDeletion = () => {
-    if (!rowToDeleteDivision) return;
-    if (!rowToDeleteDivision.division_id) {
+    if (!rowToDeleteDivision || !rowToDeleteDivision.division_id) {
       notify("No se encontró el id de división para eliminar", "error");
       setShowConfirmDivisionModal(false);
       setRowToDeleteDivision(null);
       return;
     }
-    fetch(
-      `${constantUrlApiEndpoint}/division-delete/${rowToDeleteDivision.division_id}`,
-      {
-        method: "DELETE",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-      .then((response) => response.json())
+
+    fetch(`${constantUrlApiEndpoint}/division-delete/${rowToDeleteDivision.division_id}`, {
+      method: "DELETE",
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then(() => {
-        if (rowToDeleteDivision.mainRow) {
-          // Si la división está en la fila principal, se resetean los datos solo en esa fila principal
-          setTableData((prevData) =>
-            prevData.map((r) =>
-              r.id === rowToDeleteDivision.id &&
-              r.mainRow === true &&
-              r.division_id === rowToDeleteDivision.division_id
-                ? { ...r, division_id: null, división: "-", a: 0, b: 0, d: 0 }
-                : r
-            )
-          );
-        } else {
-          // Si es una fila secundaria, se elimina únicamente la fila con ese division_id
-          setTableData((prevData) =>
-            prevData.filter(
-              (r) => r.division_id !== rowToDeleteDivision.division_id
-            )
-          );
-        }
+        setTableData((prev) =>
+          prev.filter((r) => r.division_id !== rowToDeleteDivision.division_id)
+        );
         notify("División eliminada exitosamente", "success");
         setShowConfirmDivisionModal(false);
         setRowToDeleteDivision(null);
       })
-      .catch((error) => {
-        console.error("Error deleting division:", error);
+      .catch((e) => {
+        console.error("Error deleting division:", e);
         notify("Error al eliminar división", "error");
         setShowConfirmDivisionModal(false);
         setRowToDeleteDivision(null);
       });
   };
 
-  // Función para prevenir la entrada del guion "-" en los inputs numéricos
-  const preventMinus = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "-") {
-      e.preventDefault();
-    }
-  };
-
-  // Manejador del cambio en el select para ángulo azimut (usado en el modal de creación)
-  const handleAngleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedAngle(event.target.value);
-  };
-
-  // Función auxiliar para formatear la opción del ángulo azimut
-  const formatAngleOption = (option: {
-    range_az: string;
-    orientation: string;
-  }) => {
-    return `${option.range_az} (${option.orientation})`;
-  };
-
-  // Función para cerrar el modal de Obstrucciones
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
-  // Función para crear la orientación (ya existente)
-  const handleCreateObstruction = () => {
-    if (!selectedAngle) {
-      notify("Debe seleccionar un ángulo azimut", "error");
-      return;
-    }
-
-    const enclosureId = localStorage.getItem("recinto_id");
-    if (!enclosureId) {
-      notify("No se encontró el recinto_id en el LocalStorage", "error");
-      return;
-    }
-    fetch(`${constantUrlApiEndpoint}/orientation-create/${enclosureId}`, {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ azimut: selectedAngle }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const newObstruction: ObstructionsData = {
-          id: data.id,
-          division_id: null,
-          index: tableData.length + 1,
-          división: "-",
-          floor_id: 0,
-          b: 0,
-          a: 0,
-          d: 0,
-          anguloAzimut: selectedAngle,
-          orientación: data.orientation,
-          obstrucción: 0,
-          mainRow: true,
-        };
-
-        setTableData([...tableData, newObstruction]);
-        setShowPlus(true);
-        setShowModal(false);
-        notify("Obstrucción creada correctamente", "success");
-      })
-      .catch((error) => {
-        console.error("Error al crear orientación:", error);
-        notify("Error al crear orientación", "error");
-      });
-  };
-
-  // Función auxiliar para obtener el menor número positivo libre para la división en un ángulo dado
-  const getNextDivisionCounter = (angle: string) => {
-    const existingNumbers = tableData
-      .filter((row) => row.anguloAzimut === angle && row.división !== "-")
-      .map((row) => row.obstrucción);
-    let counter = 1;
-    while (existingNumbers.includes(counter)) {
-      counter++;
-    }
-    return counter;
-  };
-
-  // Función para crear la División agregando una nueva fila para la misma orientación.
-  // Si ya existe una fila para esta orientación sin división asignada ("-") se actualiza esa fila (ocupando la primera).
   const handleCreateDivision = () => {
     if (
       aValue === "" ||
@@ -474,10 +393,7 @@ const ObstructionTable: React.FC = () => {
     }
 
     if (!currentOrientation) {
-      notify(
-        "No se ha seleccionado una orientación para agregar la división",
-        "error"
-      );
+      notify("No se ha seleccionado una orientación para agregar la división", "error");
       return;
     }
 
@@ -488,85 +404,67 @@ const ObstructionTable: React.FC = () => {
       d: Number(dValue),
     };
 
-    fetch(
-      `${constantUrlApiEndpoint}/division-create/${currentOrientation.id}`,
-      {
-        method: "POST",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }
-    )
-      .then((response) => response.json())
+    fetch(`${constantUrlApiEndpoint}/division-create/${currentOrientation.id}`, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((r) => r.json())
       .then((data) => {
-        // Se utiliza la función auxiliar para obtener el menor contador libre para el mismo ángulo azimut
-        const newCounter = getNextDivisionCounter(
-          currentOrientation.anguloAzimut
-        );
+        const num = data.num_orientation; // ← número oficial del backend
 
-        // Buscar si ya existe una fila para esta orientación sin división asignada ("-")
-        const existingRowIndex = tableData.findIndex(
+        /* Si ya había una fila "-" para esa orientación, la usamos */
+        const emptyRowIdx = tableData.findIndex(
           (row) => row.id === currentOrientation.id && row.división === "-"
         );
 
-        if (existingRowIndex !== -1) {
-          // Actualizar la fila existente (ocupando la primera)
+        if (emptyRowIdx !== -1) {
           const updatedRow: ObstructionsData = {
-            ...tableData[existingRowIndex],
+            ...tableData[emptyRowIdx],
             division_id: data.id,
             división: data.division,
             a: data.a,
             b: data.b,
             d: data.d,
-            obstrucción: newCounter,
+            obstrucción: num,
           };
-          setTableData((prevData) =>
-            prevData.map((row, idx) =>
-              idx === existingRowIndex ? updatedRow : row
-            )
+          setTableData((prev) =>
+            prev.map((row, idx) => (idx === emptyRowIdx ? updatedRow : row))
           );
         } else {
-          // Agregar una nueva fila para la división sin duplicar la información de orientación
-          const newDivisionRow: ObstructionsData = {
+          /* Insertamos una fila nueva justo después de las divisiones existentes */
+          const newRow: ObstructionsData = {
             ...currentOrientation,
             division_id: data.id,
             división: data.division,
             a: data.a,
             b: data.b,
             d: data.d,
-            obstrucción: newCounter,
+            obstrucción: num,
             index: tableData.length + 1,
-            mainRow: false, // Fila secundaria: se ocultan Ángulo Azimut, Orientación y Acciones
+            mainRow: false,
           };
-          // Buscar el índice de la fila principal para esta orientación
-          const mainRowIndex = tableData.findIndex(
-            (row) => row.id === currentOrientation.id && row.mainRow === true
+
+          const mainIdx = tableData.findIndex(
+            (r) => r.id === currentOrientation.id && r.mainRow
           );
-          if (mainRowIndex !== -1) {
-            // Determinar el índice de inserción: después de la última fila de división existente para esta orientación
-            let insertIndex = mainRowIndex + 1;
-            for (let i = mainRowIndex + 1; i < tableData.length; i++) {
-              if (
-                tableData[i].id === currentOrientation.id &&
-                !tableData[i].mainRow
-              ) {
-                insertIndex = i + 1;
-              } else {
-                break;
-              }
-            }
-            const newData = [...tableData];
-            newData.splice(insertIndex, 0, newDivisionRow);
-            setTableData(newData);
-          } else {
-            // En caso de no encontrar la fila principal, se agrega al final
-            setTableData([...tableData, newDivisionRow]);
+
+          let insertIdx = mainIdx + 1;
+          for (let i = mainIdx + 1; i < tableData.length; i++) {
+            if (tableData[i].id === currentOrientation.id && !tableData[i].mainRow) {
+              insertIdx = i + 1;
+            } else break;
           }
+          const newData = [...tableData];
+          newData.splice(insertIdx, 0, newRow);
+          setTableData(newData);
         }
 
+        /* limpio modal */
         setSelectedDivision("División 1");
         setAValue("");
         setBValue("");
@@ -574,13 +472,15 @@ const ObstructionTable: React.FC = () => {
         setShowDivisionModal(false);
         notify("División creada correctamente", "success");
       })
-      .catch((error) => {
-        console.error("Error al crear División:", error);
+      .catch((e) => {
+        console.error("Error al crear División:", e);
         notify("Error al crear División", "error");
       });
   };
 
-  // Definición de columnas para la tabla de obstrucciones
+  /* ------------------------------------------------------------------------ */
+  /*  Columnas de la tabla                                                    */
+  /* ------------------------------------------------------------------------ */
   const columns = [
     {
       headerName: "Ángulo Azimut",
@@ -596,16 +496,14 @@ const ObstructionTable: React.FC = () => {
             >
               {angleOptions
                 .filter(
-                  (option) =>
+                  (o) =>
                     !tableData.some(
-                      (obstruction) =>
-                        obstruction.anguloAzimut === option.range_az &&
-                        obstruction.id !== row.id
+                      (r) => r.anguloAzimut === o.range_az && r.id !== row.id
                     )
                 )
-                .map((option, index) => (
-                  <option key={index} value={option.range_az}>
-                    {formatAngleOption(option)}
+                .map((o, i) => (
+                  <option key={i} value={o.range_az}>
+                    {formatAngleOption(o)}
                   </option>
                 ))}
             </select>
@@ -617,10 +515,7 @@ const ObstructionTable: React.FC = () => {
     {
       headerName: "Orientación",
       field: "orientación",
-      renderCell: (row: ObstructionsData) => {
-        if (!row.mainRow) return "";
-        return row.orientación ? row.orientación : "-";
-      },
+      renderCell: (row: ObstructionsData) => (row.mainRow ? row.orientación ?? "-" : ""),
     },
     {
       headerName: "Acciones",
@@ -630,18 +525,18 @@ const ObstructionTable: React.FC = () => {
         if (editingRowId === row.id) {
           return (
             <ActionButtonsConfirm
-              onAccept={() => handleAcceptEdit(row)}
-              onCancel={handleCancel}
+              onAccept={() => handleEdit(row)}
+              onCancel={() => setEditingRowId(null)}
             />
           );
         }
         return (
           <ActionButtons
-            onDelete={() => handleDelete(row)}
             onEdit={() => {
               setEditingRowId(row.id);
               setSelectedAngle(row.anguloAzimut);
             }}
+            onDelete={() => handleDelete(row)}
           />
         );
       },
@@ -649,8 +544,7 @@ const ObstructionTable: React.FC = () => {
     {
       headerName: "Obstrucción",
       field: "obstrucción",
-      renderCell: (row: ObstructionsData) =>
-        row.obstrucción === 0 ? "-" : row.obstrucción,
+      renderCell: (row: ObstructionsData) => (row.obstrucción === 0 ? "-" : row.obstrucción),
     },
     {
       headerName: "División",
@@ -662,23 +556,16 @@ const ObstructionTable: React.FC = () => {
               className="form-control"
               value={editingDivisionValues.division}
               onChange={(e) =>
-                setEditingDivisionValues({
-                  ...editingDivisionValues,
-                  division: e.target.value,
-                })
+                setEditingDivisionValues({ ...editingDivisionValues, division: e.target.value })
               }
             >
-              {[
-                "División 1",
-                "División 2",
-                "División 3",
-                "División 4",
-                "División 5",
-              ].map((div, index) => (
-                <option key={index} value={div}>
-                  {div}
-                </option>
-              ))}
+              {["División 1", "División 2", "División 3", "División 4", "División 5"].map(
+                (div, i) => (
+                  <option key={i} value={div}>
+                    {div}
+                  </option>
+                )
+              )}
             </select>
           );
         }
@@ -697,10 +584,7 @@ const ObstructionTable: React.FC = () => {
               min={0}
               value={editingDivisionValues.a}
               onChange={(e) =>
-                setEditingDivisionValues({
-                  ...editingDivisionValues,
-                  a: Number(e.target.value),
-                })
+                setEditingDivisionValues({ ...editingDivisionValues, a: Number(e.target.value) })
               }
               onKeyDown={preventMinus}
             />
@@ -721,10 +605,7 @@ const ObstructionTable: React.FC = () => {
               min={0}
               value={editingDivisionValues.b}
               onChange={(e) =>
-                setEditingDivisionValues({
-                  ...editingDivisionValues,
-                  b: Number(e.target.value),
-                })
+                setEditingDivisionValues({ ...editingDivisionValues, b: Number(e.target.value) })
               }
               onKeyDown={preventMinus}
             />
@@ -745,10 +626,7 @@ const ObstructionTable: React.FC = () => {
               min={0}
               value={editingDivisionValues.d}
               onChange={(e) =>
-                setEditingDivisionValues({
-                  ...editingDivisionValues,
-                  d: Number(e.target.value),
-                })
+                setEditingDivisionValues({ ...editingDivisionValues, d: Number(e.target.value) })
               }
               onKeyDown={preventMinus}
             />
@@ -765,7 +643,7 @@ const ObstructionTable: React.FC = () => {
           return (
             <ActionButtonsConfirm
               onAccept={() => handleAcceptDivisionEdit(row)}
-              onCancel={handleCancelDivisionEdit}
+              onCancel={() => setEditingDivisionRowId(null)}
             />
           );
         }
@@ -814,6 +692,9 @@ const ObstructionTable: React.FC = () => {
     },
   ];
 
+  /* ------------------------------------------------------------------------ */
+  /*  Render                                                                  */
+  /* ------------------------------------------------------------------------ */
   return (
     <div>
       <div style={{ marginTop: "20px" }}>
@@ -824,15 +705,16 @@ const ObstructionTable: React.FC = () => {
           </CustomButton>
         </div>
       </div>
+
       {tableLoading ? (
         <div className="text-center p-4">
-          <p>Cargando datos de pisos...</p>
+          <p>Cargando datos de obstrucciones...</p>
         </div>
       ) : (
         <TablesParameters columns={columns} data={tableData} />
       )}
 
-      {/* Modal existente para crear obstrucciones */}
+      {/* ---------------------------- Modal Obstrucción --------------------- */}
       <ModalCreate
         isOpen={showModal}
         saveLabel="Crear Obstrucción"
@@ -846,29 +728,25 @@ const ObstructionTable: React.FC = () => {
             id="angleAzimutSelect"
             className="form-control"
             value={selectedAngle}
-            onChange={handleAngleChange}
+            onChange={(e) => setSelectedAngle(e.target.value)}
           >
             <option value="" disabled>
               Seleccione una opción
             </option>
             {angleOptions
               .filter(
-                (option) =>
-                  !tableData.some(
-                    (obstruction) =>
-                      obstruction.anguloAzimut === option.range_az
-                  )
+                (o) => !tableData.some((r) => r.anguloAzimut === o.range_az)
               )
-              .map((option, index) => (
-                <option key={index} value={option.range_az}>
-                  {formatAngleOption(option)}
+              .map((o, i) => (
+                <option key={i} value={o.range_az}>
+                  {formatAngleOption(o)}
                 </option>
               ))}
           </select>
         </div>
       </ModalCreate>
 
-      {/* Modal para crear División */}
+      {/* ----------------------------- Modal División ----------------------- */}
       <ModalCreate
         isOpen={showDivisionModal}
         saveLabel="Crear División"
@@ -887,17 +765,13 @@ const ObstructionTable: React.FC = () => {
             value={selectedDivision}
             onChange={(e) => setSelectedDivision(e.target.value)}
           >
-            {[
-              "División 1",
-              "División 2",
-              "División 3",
-              "División 4",
-              "División 5",
-            ].map((div, index) => (
-              <option key={index} value={div}>
-                {div}
-              </option>
-            ))}
+            {["División 1", "División 2", "División 3", "División 4", "División 5"].map(
+              (div, i) => (
+                <option key={i} value={div}>
+                  {div}
+                </option>
+              )
+            )}
           </select>
         </div>
         <div className="form-group mt-2">
@@ -938,7 +812,7 @@ const ObstructionTable: React.FC = () => {
         </div>
       </ModalCreate>
 
-      {/* Modal de confirmación para eliminar obstrucción */}
+      {/* ---------------------- Confirmar eliminación orientación ----------- */}
       <ModalCreate
         isOpen={showConfirmModal}
         saveLabel="Confirmar"
@@ -952,7 +826,7 @@ const ObstructionTable: React.FC = () => {
         <p>¿Estás seguro de eliminar esta obstrucción?</p>
       </ModalCreate>
 
-      {/* Modal de confirmación para eliminar división */}
+      {/* ---------------------- Confirmar eliminación división ------------- */}
       <ModalCreate
         isOpen={showConfirmDivisionModal}
         saveLabel="Confirmar"

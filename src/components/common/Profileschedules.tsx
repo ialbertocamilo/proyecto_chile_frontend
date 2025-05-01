@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { constantUrlApiEndpoint } from "../../utils/constant-url-endpoint";
 import ModalCreate from './ModalCreate';
 import CustomButton from "@/components/common/CustomButton";
+import { useApi } from "@/hooks/useApi";
 
 interface ScheduleData {
   [key: string]: number | string | null;
@@ -23,6 +24,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
   const [isEditingHours, setIsEditingHours] = useState<boolean>(false);
   const [tempHours, setTempHours] = useState<HoursRange>({ start: '08:00', end: '18:00' });
   const chartRef = useRef<any>(null);
+  const api = useApi();
 
   const format24h = (raw: string | number): string => {
     let hours: number;
@@ -130,54 +132,89 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
     }]
   };
 
-  const handleHoursUpdate = async () => {
-    if (perfilId === null) return;
-    const token = localStorage.getItem("token");
+  /**
+ * Envía a la API el nuevo rango horario y refresca la UI.
+ * – Envía el valor completo “HH:mm” que la API espera
+ * – No muta el objeto original que recibimos desde el backend
+ * – Añade comprobaciones de errores para que sea más fácil depurar
+ */
+const handleHoursUpdate = async () => {
+  if (!perfilId) return;                       // ⛑️ 1. protección temprana
 
-    try {
-      const res = await fetch(
-        `${constantUrlApiEndpoint}/user/enclosure-typing/${perfilId}`,
-        { headers: { accept: 'application/json', Authorization: `Bearer ${token}` } }
-      );
-      const result = await res.json();
-      const internalLoad = result.building_conditions?.find((bc: any) => bc.type === 'internal_loads');
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.error("❌ No hay token en localStorage");
+    return;
+  }
 
-      const payload = {
-        type: "internal_loads",
-        attributes: {
-          ...internalLoad?.details,
-          horario: {
-            funcionamiento_semanal: "5x2",
-            laboral: {
-              inicio: parseInt(tempHours.start.split(':')[0]),
-              fin: parseInt(tempHours.end.split(':')[0])
-            }
-          }
-        }
-      };
+  try {
+    /* ───────────────────────────── 2. Obtener datos actuales ───────────────────────────── */
+    const res = await fetch(
+      `${constantUrlApiEndpoint}/user/enclosure-typing/${perfilId}`,
+      { headers: { Accept: "application/json", Authorization: `Bearer ${token}` } }
+    );
 
-      const updateRes = await fetch(
-        `${constantUrlApiEndpoint}/building_condition/${result.enclosure_id}/update?section=user`,
-        {
-          method: 'PATCH',
-          headers: {
-            accept: 'application/json',
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
-        }
-      );
-
-      if (updateRes.ok) {
-        setHoursRange(tempHours);
-        setIsEditingHours(false);
-        onUpdate && onUpdate();
-      }
-    } catch (error) {
-      console.error("Error updating hours", error);
+    if (!res.ok) {
+      console.error("❌ GET enclosure-typing falló:", res.status, await res.text());
+      return;
     }
-  };
+
+    const { id: enclosureId, building_conditions = [] } = await res.json();
+    if (!enclosureId) {
+      console.error("❌ La respuesta no contiene enclosure_id");
+      return;
+    }
+
+    const internalLoad = building_conditions.find(
+      (bc: any) => bc.type === "internal_loads"
+    );
+    if (!internalLoad) {
+      console.error("❌ No se encontró el bloque internal_loads");
+      return;
+    }
+
+    /* ───────────────────────────── 3. Construir el payload ───────────────────────────── */
+    const newHorario = {
+      ...(internalLoad.details?.horario ?? {}),
+      funcionamiento_semanal: "5x2",
+      laboral: {
+        inicio: tempHours.start,   // ⬅️  Enviar “HH:mm” completo
+        fin:    tempHours.end
+      }
+    };
+
+    const payload = {
+      type: "internal_loads",
+      attributes: {
+        ...internalLoad.details,
+        horario: newHorario
+      }
+    };
+    const headers = {
+      Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        };
+    const url = `/building_condition/${enclosureId}/update?section=user`;
+    const patchRes = await api.patch(url, payload, { headers });
+
+    /* ───────────────────────────── 4. PATCH de actualización ───────────────────────────── */
+    
+    
+    console.log("PATCH payload:", payload);
+    /* ───────────────────────────── 5. Refrescar UI ───────────────────────────── */
+    await fetchWorkingHours();      // 🔄 vuelve a pedir los datos para mostrarlos actualizados
+    console.log("✅ Horario actualizado:", patchRes);
+    setIsEditingHours(false);
+    
+    
+  } catch (err) {
+    console.error("❌ Error inesperado en handleHoursUpdate:", err);
+  }
+};
+
+  
+  
 
   const updateSchedule = async (newData: ScheduleData) => {
     if (perfilId === null) return;

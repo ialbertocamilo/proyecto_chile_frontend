@@ -5,6 +5,7 @@ interface Column {
   field: string;
   headerStyle?: React.CSSProperties;
   renderCell?: (row: any) => React.ReactNode;
+  headerClick?: () => void; // Optional property for header click handler
 }
 
 interface TablesParametersProps {
@@ -88,11 +89,15 @@ export default function TablesParameters({
                   </>
                 ) : (
                   <tr>
-                    {columns.map((col) => (
+                    {columns.map((col, index) => (
                       <th
-                        key={col.field}
                         className="text-center align-middle"
-                        style={col.headerStyle}
+                        key={col.field}
+                        onClick={col.headerClick}
+                        style={{
+                          cursor: col.headerClick ? "pointer" : "default",
+                          ...col.headerStyle,
+                        }}
                       >
                         {col.headerName}
                       </th>

@@ -171,7 +171,7 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
               </Nav>
             </Col>
           </Row>
-          <Row className="justify-content-between">
+          <Row className="gx-5 justify-content-between">
             <Col sm={4}>
               <Table>
                 <thead style={{ height: "100px" }}>
@@ -475,7 +475,7 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
             </Col>
           </Row>
         </Tab.Container>
-        <table className="table table-bordered table-hover table-sm align-middle">
+        {/* <table className="table table-bordered table-hover table-sm align-middle">
           <thead>
             <tr>
               <th rowSpan={3}>Recinto</th>
@@ -577,7 +577,7 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
               </tr>
             )}
           </tbody>
-        </table>
+        </table> */}
       </div>
     </div>
   );

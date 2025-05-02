@@ -31,6 +31,8 @@ import DeleteDetailButton from "@/components/common/DeleteDetailButton";
 import { IDetail } from "@/shared/interfaces/detail.interface";
 import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
 
+import SortHandler from "@/utils/sortHandler";
+
 // Funciones auxiliares para formatear valores
 const formatValue = (value: number | null | undefined): string => {
   if (
@@ -251,8 +253,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           tabStep4 === "muros"
             ? "Muro"
             : tabStep4 === "techumbre"
-              ? "Techo"
-              : "Piso",
+            ? "Techo"
+            : "Piso",
         info: {
           surface_color: {
             interior: { name: newDetalle.colorInterior },
@@ -624,7 +626,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-            "Todos los detalles ya estaban en el proyecto"
+              "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -701,8 +703,9 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token || !projectId) return;
     try {
-      const url = `${constantUrlApiEndpoint}/user/detail-update/${editingDetail.id_detail || editingDetail?.id
-        }`;
+      const url = `${constantUrlApiEndpoint}/user/detail-update/${
+        editingDetail.id_detail || editingDetail?.id
+      }`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -939,8 +942,8 @@ const WorkFlowpar2editPage: React.FC = () => {
         ) : (
           <span style={textStyle}>
             {det.material &&
-              det.material !== "0" &&
-              det.material.toUpperCase() !== "N/A"
+            det.material !== "0" &&
+            det.material.toUpperCase() !== "N/A"
               ? det.material
               : "-"}
           </span>
@@ -1030,10 +1033,10 @@ const WorkFlowpar2editPage: React.FC = () => {
                     tabStep4 === "muros"
                       ? "Muro"
                       : tabStep4 === "techumbre"
-                        ? "Techo"
-                        : tabStep4 === "pisos"
-                          ? "Piso"
-                          : "";
+                      ? "Techo"
+                      : tabStep4 === "pisos"
+                      ? "Piso"
+                      : "";
 
                   setNewDetailData({
                     scantilon_location: locationValue,
@@ -1061,7 +1064,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       // opcional: elimina tildes si lo necesitas
       // .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .trim();
-  
+
     return normalized.includes(searchQuery.trim().toLowerCase());
   };
 
@@ -1106,11 +1109,32 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // ===================== RENDER MUROS ======================
   const renderMurosParameters = () => {
+    const { handleSort } = SortHandler({
+      data: murosTabList,
+      onSort: (sortedData: ExtendedTabItem[]) => setMurosTabList(sortedData),
+    });
+
     const columnsMuros = [
-      { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
-      { headerName: "Valor U (W/m²K)", field: "valorU" },
-      { headerName: "Color Exterior", field: "colorExterior" },
-      { headerName: "Color Interior", field: "colorInterior" },
+      {
+        headerName: "Nombre Abreviado",
+        field: "nombreAbreviado",
+        headerClick: () => handleSort("name_detail"),
+      },
+      {
+        headerName: "Valor U (W/m²K)",
+        field: "valorU",
+        headerClick: () => handleSort("value_u"),
+      },
+      {
+        headerName: "Color Exterior",
+        field: "colorExterior",
+        headerClick: () => handleSort("info.surface_color.exterior.name"),
+      },
+      {
+        headerName: "Color Interior",
+        field: "colorInterior",
+        headerClick: () => handleSort("info.surface_color.interior.name"),
+      },
       { headerName: "Acciones", field: "acciones" },
     ];
     const murosData = murosTabList
@@ -1126,8 +1150,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           __detail: item,
           nombreAbreviado: isEditing ? (
             "created_status" in item &&
-              (item.created_status === "default" ||
-                item.created_status === "global") ? (
+            (item.created_status === "default" ||
+              item.created_status === "global") ? (
               <input
                 type="text"
                 className="form-control"
@@ -1282,6 +1306,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           ),
         };
       });
+
     return (
       <div>
         {murosTabList.length > 0 ? (
@@ -1315,8 +1340,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           __detail: item,
           nombreAbreviado: isEditing ? (
             "created_status" in item &&
-              (item.created_status === "default" ||
-                item.created_status === "global") ? (
+            (item.created_status === "default" ||
+              item.created_status === "global") ? (
               <input
                 type="text"
                 className="form-control"
@@ -1539,8 +1564,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           id: item.id,
           nombre: isEditing ? (
             "created_status" in item &&
-              (item.created_status === "default" ||
-                item.created_status === "global") ? (
+            (item.created_status === "default" ||
+              item.created_status === "global") ? (
               <input
                 type="text"
                 className="form-control"
@@ -1748,7 +1773,10 @@ const WorkFlowpar2editPage: React.FC = () => {
             <>{formatValue(Number(horizontal.d))}</>
           ),
           acciones: isEditing ? (
-            <div style={{ width: "160px" }} onClick={(e) => e.stopPropagation()}>
+            <div
+              style={{ width: "160px" }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <ActionButtonsConfirm
                 onAccept={async () => {
                   if (!item.id || !projectId) return;
@@ -1805,11 +1833,11 @@ const WorkFlowpar2editPage: React.FC = () => {
             <div style={{ width: "160px" }}>
               <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
               <CustomButton
-              disabled={
-                ("created_status" in item &&
-                  item.created_status === "default") ||
-                ("created_status" in item && item.created_status === "global")  
-              }
+                disabled={
+                  ("created_status" in item &&
+                    item.created_status === "default") ||
+                  ("created_status" in item && item.created_status === "global")
+                }
                 className="btn-table"
                 variant="editIcon"
                 onClick={(e) => {
@@ -1825,9 +1853,11 @@ const WorkFlowpar2editPage: React.FC = () => {
                     },
                     ref_aisl_horizontal: {
                       lambda:
-                        item.info?.ref_aisl_horizontal?.lambda?.toString() || "",
+                        item.info?.ref_aisl_horizontal?.lambda?.toString() ||
+                        "",
                       e_aisl:
-                        item.info?.ref_aisl_horizontal?.e_aisl?.toString() || "",
+                        item.info?.ref_aisl_horizontal?.e_aisl?.toString() ||
+                        "",
                       d: item.info?.ref_aisl_horizontal?.d?.toString() || "",
                     },
                     nombre: item.name_detail || "",
@@ -1906,7 +1936,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         acciones: (
           <>
             {item.created_status === "default" ||
-              item.created_status === "global" ? (
+            item.created_status === "global" ? (
               <span>-</span>
             ) : (
               <div style={textStyle}>
@@ -1985,7 +2015,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         acciones: (
           <>
             {item.created_status === "default" ||
-              item.created_status === "global" ? (
+            item.created_status === "global" ? (
               <span>-</span>
             ) : (
               <div style={textStyle}>
@@ -2029,98 +2059,101 @@ const WorkFlowpar2editPage: React.FC = () => {
   };
 
   // ===================== RENDER PESTAÑAS STEP4 ======================
-const renderStep4Tabs = () => {
-  if (!showTabsInStep4) return null;
+  const renderStep4Tabs = () => {
+    if (!showTabsInStep4) return null;
 
-  const tabs = [
-    { key: "muros",      label: "Muros"      },
-    { key: "techumbre",  label: "Techumbre"  },
-    { key: "pisos",      label: "Pisos"      },
-    // { key: "ventanas", label: "Ventanas" },
-    // { key: "puertas",  label: "Puertas"  },
-  ] as { key: TabStep4; label: string }[];
+    const tabs = [
+      { key: "muros", label: "Muros" },
+      { key: "techumbre", label: "Techumbre" },
+      { key: "pisos", label: "Pisos" },
+      // { key: "ventanas", label: "Ventanas" },
+      // { key: "puertas",  label: "Puertas"  },
+    ] as { key: TabStep4; label: string }[];
 
-  return (
-    <div className="mt-4">
-      {/* ──────────────────────────────────────────────────────────────
+    return (
+      <div className="mt-4">
+        {/* ──────────────────────────────────────────────────────────────
           Cabecera:  buscador  +  botón “Nuevo” (solo muros/techo/piso)
          ───────────────────────────────────────────────────────────── */}
-      {(tabStep4 === "muros" || tabStep4 === "techumbre" || tabStep4 === "pisos") && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px",
-            marginBottom: "1rem",
-            flexWrap: "wrap",
-          }}
-        >
-          {/* Buscador */}
-          <SearchParameters
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={`Buscar ${tabStep4}`}
-            showNewButton={false}   /* ← no queremos que duplique el +Nuevo */
-            style={{ flex: 1, minWidth: "180px" }}
-            onNew={() => {}}        /* prop obligatoria pero sin uso aquí */
-          />
+        {(tabStep4 === "muros" ||
+          tabStep4 === "techumbre" ||
+          tabStep4 === "pisos") && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+              marginBottom: "1rem",
+              flexWrap: "wrap",
+            }}
+          >
+            {/* Buscador */}
+            <SearchParameters
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={`Buscar ${tabStep4}`}
+              showNewButton={false} /* ← no queremos que duplique el +Nuevo */
+              style={{ flex: 1, minWidth: "180px" }}
+              onNew={() => {}} /* prop obligatoria pero sin uso aquí */
+            />
 
-          {/* Botón + Nuevo */}
-          <NewHeaderButton
-            tab={tabStep4 as "muros" | "techumbre" | "pisos"}
-            onNewCreated={
-              tabStep4 === "muros"
-                ? fetchMurosDetails
-                : tabStep4 === "techumbre"
+            {/* Botón + Nuevo */}
+            <NewHeaderButton
+              tab={tabStep4 as "muros" | "techumbre" | "pisos"}
+              onNewCreated={
+                tabStep4 === "muros"
+                  ? fetchMurosDetails
+                  : tabStep4 === "techumbre"
                   ? fetchTechumbreDetails
                   : fetchPisosDetails
-            }
-          />
-        </div>
-      )}
+              }
+            />
+          </div>
+        )}
 
-      {/* Pestañas */}
-      <ul className="nav">
-        {tabs.map((item) => (
-          <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
-            <button
-              style={{
-                width: "100%",
-                padding: "10px",
-                backgroundColor: "#fff",
-                color:
-                  tabStep4 === item.key
-                    ? primaryColor
-                    : "var(--secondary-color)",
-                border: "none",
-                cursor: "pointer",
-                borderBottom:
-                  tabStep4 === item.key
-                    ? `3px solid ${primaryColor}`
-                    : "none",
-                fontFamily: "var(--font-family-base)",
-              }}
-              onClick={() => setTabStep4(item.key)}
-            >
-              {item.label}
-            </button>
-          </li>
-        ))}
-      </ul>
+        {/* Pestañas */}
+        <ul className="nav">
+          {tabs.map((item) => (
+            <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
+              <button
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                  color:
+                    tabStep4 === item.key
+                      ? primaryColor
+                      : "var(--secondary-color)",
+                  border: "none",
+                  cursor: "pointer",
+                  borderBottom:
+                    tabStep4 === item.key
+                      ? `3px solid ${primaryColor}`
+                      : "none",
+                  fontFamily: "var(--font-family-base)",
+                }}
+                onClick={() => setTabStep4(item.key)}
+              >
+                {item.label}
+              </button>
+            </li>
+          ))}
+        </ul>
 
-      {/* Contenido de cada tab */}
-      <div style={{ height: "400px", position: "relative", marginTop: "1rem" }}>
-        {tabStep4 === "muros"      && renderMurosParameters()}
-        {tabStep4 === "techumbre"  && renderTechumbreParameters()}
-        {tabStep4 === "pisos"      && renderPisosParameters()}
-        {/* {tabStep4 === "ventanas" && renderVentanasParameters()}
+        {/* Contenido de cada tab */}
+        <div
+          style={{ height: "400px", position: "relative", marginTop: "1rem" }}
+        >
+          {tabStep4 === "muros" && renderMurosParameters()}
+          {tabStep4 === "techumbre" && renderTechumbreParameters()}
+          {tabStep4 === "pisos" && renderPisosParameters()}
+          {/* {tabStep4 === "ventanas" && renderVentanasParameters()}
         {tabStep4 === "puertas"    && renderPuertasParameters()} */}
+        </div>
       </div>
-    </div>
-  );
-};
-
+    );
+  };
 
   // ===================== RENDER RECINTO ======================
   const renderRecinto = () => {
@@ -2409,7 +2442,7 @@ const renderStep4Tabs = () => {
         isOpen={showDetallesModal}
         title={`Detalles ${selectedItem?.name_detail || ""}`}
         onClose={() => setShowDetallesModal(false)}
-        onSave={() => { }}
+        onSave={() => {}}
         showSaveButton={false}
         modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
       >
@@ -2528,12 +2561,12 @@ const renderStep4Tabs = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_vidrio: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_vidrio: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2555,12 +2588,12 @@ const renderStep4Tabs = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          fs_vidrio: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            fs_vidrio: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2582,12 +2615,12 @@ const renderStep4Tabs = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          frame_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            frame_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2603,12 +2636,12 @@ const renderStep4Tabs = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          clousure_type: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            clousure_type: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2705,12 +2738,12 @@ const renderStep4Tabs = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          u_puerta_opaca: parseFloat(e.target.value),
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            u_puerta_opaca: parseFloat(e.target.value),
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2726,12 +2759,12 @@ const renderStep4Tabs = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          name_ventana: e.target.value,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            name_ventana: e.target.value,
+                          },
+                        }
                       : prev
                   )
                 }
@@ -2753,12 +2786,12 @@ const renderStep4Tabs = () => {
                     setEditingPuerta((prev) =>
                       prev
                         ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: 0,
-                          },
-                        }
+                            ...prev,
+                            atributs: {
+                              ...prev.atributs,
+                              porcentaje_vidrio: 0,
+                            },
+                          }
                         : prev
                     );
                     return;
@@ -2769,12 +2802,12 @@ const renderStep4Tabs = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        atributs: {
-                          ...prev.atributs,
-                          porcentaje_vidrio: clampedValue / 100,
-                        },
-                      }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: clampedValue / 100,
+                          },
+                        }
                       : prev
                   );
                 }}
@@ -2842,8 +2875,8 @@ const renderStep4Tabs = () => {
             {deleteItem.type === "detail"
               ? "¿Estás seguro de que deseas eliminar este detalle?"
               : deleteItem.type === "window"
-                ? "¿Estás seguro de que deseas eliminar esta ventana?"
-                : "¿Estás seguro de que deseas eliminar esta puerta?"}
+              ? "¿Estás seguro de que deseas eliminar esta ventana?"
+              : "¿Estás seguro de que deseas eliminar esta puerta?"}
           </p>
         </ModalCreate>
       )}

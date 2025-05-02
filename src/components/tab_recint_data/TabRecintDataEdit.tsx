@@ -7,6 +7,8 @@ import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import SearchFilter from "@/components/inputs/SearchFilter";
+
 
 interface EnclosureGeneralData {
   id: number;
@@ -30,6 +32,16 @@ interface IFormData {
   alturaPromedio: string;
   sensorCo2: boolean;
 }
+const searchKeys = [
+  "name_enclosure",
+  "id",
+  "nombre_comuna",
+  "nombre_region",
+  "occupation_profile_id",
+  "co2_sensor",
+  "height",
+  "zona_termica",
+] as const;
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
@@ -167,6 +179,17 @@ const confirmDelete = async () => {
       },
     },
   ];
+  const renderTable = (rows: EnclosureGeneralData[]) => (
+    <>
+      <TablesParameters columns={columns} data={rows} />
+      {rows.length === 0 && (
+        <div style={{ textAlign: "center", padding: "1rem" }}>
+          No hay datos para mostrar
+        </div>
+      )}
+    </>
+  );
+
 
   // ===========================================================
   // 7. Render del componente
@@ -175,27 +198,30 @@ const confirmDelete = async () => {
     <div>
       {/* Botón "+ Nuevo" siempre visible */}
       <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          marginBottom: "1rem",
-        }}
-      >
-        <CustomButton variant="save" onClick={handleCreate}>
-          + Nuevo
-        </CustomButton>
-      </div>
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: "1rem",
+    gap: "1rem",
+  }}
+>
+  {/* 🔍 filtro */}
+  <div style={{ flex: 1 }}>
+    <SearchFilter
+              data={data as unknown as Record<string, unknown>[]}
+              searchKeys={searchKeys as unknown as string[]}
+              placeholder="Buscar recinto…"
+            >
+          {(filtered, query, setQuery) => renderTable(filtered as unknown as EnclosureGeneralData[])}
+        </SearchFilter>
+  </div>
 
-      {/* Siempre se renderiza la estructura de la tabla para mostrar las pestañas */}
-      <TablesParameters columns={columns} data={data} />
-
-      {/* Si no hay datos, se muestra un mensaje informativo */}
-      {data.length === 0 && (
-        <div style={{ textAlign: "center", padding: "1rem" }}>
-          No hay datos para mostrar
-        </div>
-      )}
+  {/* ➕ botón nuevo */}
+  <CustomButton variant="save" onClick={handleCreate}>
+    + Nuevo
+  </CustomButton>
+</div>
 
       {/* Modal de confirmación para eliminar */}
       <ModalCreate

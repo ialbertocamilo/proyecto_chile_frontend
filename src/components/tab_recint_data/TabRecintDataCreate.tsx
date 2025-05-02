@@ -6,6 +6,7 @@ import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import SearchFilter from "@/components/inputs/SearchFilter";
 
 // ===========================================================
 // Interfaces
@@ -37,7 +38,16 @@ interface IFormData {
   alturaPromedio: string;
   sensorCo2: boolean;
 }
-
+const searchKeys = [
+  "name_enclosure",   // nombre
+  "id",               // código REC-##
+  "nombre_comuna",
+  "nombre_region",
+  "occupation_profile_id",
+  "co2_sensor",
+  "height",
+  "zona_termica",
+] as const;
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
 // ===========================================================
@@ -187,7 +197,7 @@ const TabRecintDataCreate: React.FC = () => {
     {
       headerName: "Cod",
       field: "id",
-      renderCell: (row: EnclosureGeneralData) => ("REC-"+row.id),
+      renderCell: (row: EnclosureGeneralData) => ("REC-" + row.id),
     },
     {
       headerName: "Nombre Recinto",
@@ -234,29 +244,47 @@ const TabRecintDataCreate: React.FC = () => {
       ),
     },
   ];
+  const renderTable = (rows: EnclosureGeneralData[]) => (
+    <>
+      <TablesParameters columns={columns} data={rows} />
+      {rows.length === 0 && (
+        <div style={{ textAlign: "center", padding: "1rem" }}>
+          No hay datos para mostrar
+        </div>
+      )}
+    </>
+  );
   return (
     <div>
       <div
         style={{
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "1rem",
+          gap: "1rem",
         }}
       >
+        {/* 🔍  NUEVO: filtro */}
+        <div style={{ flex: 1 /* que crezca */ }}>
+          <SearchFilter
+            data={data as unknown as Record<string, unknown>[]}                
+            searchKeys={[...searchKeys]}  
+            placeholder="Buscar recinto…"
+          >
+            {(
+              filteredRows,             // array filtrado
+              /* query, setQuery */     // (los recibes por si los necesitas)
+            ) => renderTable(filteredRows as unknown as EnclosureGeneralData[])}
+          </SearchFilter>
+        </div>
+
+        {/* ➕  botón “Nuevo” */}
         <CustomButton variant="save" onClick={handleCreate}>
           + Nuevo
         </CustomButton>
       </div>
-      {/* Siempre se renderiza la estructura de la tabla para mostrar las pestañas */}
-      <TablesParameters columns={columns} data={data} />
 
-      {/* Si no hay datos, se muestra un mensaje informativo */}
-      {data.length === 0 && (
-        <div style={{ textAlign: "center", padding: "1rem" }}>
-          No hay datos para mostrar
-        </div>
-      )}
 
       <ModalCreate
         isOpen={showDeleteModal}

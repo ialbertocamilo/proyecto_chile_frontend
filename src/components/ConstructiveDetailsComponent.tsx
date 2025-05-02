@@ -466,6 +466,25 @@ const ConstructiveDetailsComponent: React.FC = () => {
     }
   };
 
+  /** Devuelve una copia filtrada de un array por nombre, colores, U-value, etc. */
+  const searchFilter = (items: TabItem[]) => {
+    if (!searchQuery.trim()) return items; // sin texto → no filtra
+    const q = searchQuery.toLowerCase();
+    return items.filter((it) =>
+      [
+        it.name_detail,
+        it.value_u,
+        it.info?.surface_color?.exterior?.name,
+        it.info?.surface_color?.interior?.name,
+        it.info?.aislacion_bajo_piso?.lambda,
+        it.info?.ref_aisl_vertical?.lambda,
+        it.info?.ref_aisl_horizontal?.lambda,
+      ]
+        .map((v) => (v ?? "").toString().toLowerCase())
+        .some((s) => s.includes(q))
+    );
+  };
+
   const renderInitialDetails = (inModal: boolean = false) => {
     const columnsDetails = [
       { headerName: "Ubicación Detalle", field: "scantilon_location" },
@@ -625,22 +644,43 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
   const renderDetailsTabs = () => (
     <div>
+      {/* Encabezado con buscador + botón Nuevo */}
       <div
         style={{
           display: "flex",
-          justifyContent: "flex-end",
+          gap: "1rem",
+          justifyContent: "space-between",
+          alignItems: "center",
           marginBottom: "1rem",
+          flexWrap: "wrap",
         }}
       >
+        {/* Buscador */}
+        <div style={{ flex: 1, minWidth: "200px" }}>
+          <SearchParameters
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={`Buscar ${tabStep4}`}
+            onNew={() => {}}
+            // si quieres inhabilitar el botón interno del componente:
+            showNewButton={false}
+          />
+        </div>
+
+        {/* Botón + Nuevo */}
         <NewDetailCreator
-          detailType={(() => {
-            if (tabStep4 === "muros") return "Muro";
-            if (tabStep4 === "techumbre") return "Techo";
-            return "Piso";
-          })()}
+          detailType={
+            tabStep4 === "muros"
+              ? "Muro"
+              : tabStep4 === "techumbre"
+              ? "Techo"
+              : "Piso"
+          }
           onDetailCreated={refreshDetails}
         />
       </div>
+
+      {/* Tabs */}
       <ul
         className="nav"
         style={{
@@ -680,11 +720,11 @@ const ConstructiveDetailsComponent: React.FC = () => {
           </li>
         ))}
       </ul>
+
+      {/* Contenido de la tab seleccionada */}
       <div>
         {tabStep4 === "muros" && (
-          <div onClick={() => setShowDetailsModal(true)}>
-            {renderMurosTable()}
-          </div>
+          <div onClick={() => setShowDetailsModal(true)}>{renderMurosTable()}</div>
         )}
         {tabStep4 === "techumbre" && (
           <div onClick={() => setShowDetailsModal(true)}>
@@ -692,9 +732,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
           </div>
         )}
         {tabStep4 === "pisos" && (
-          <div onClick={() => setShowDetailsModal(true)}>
-            {renderPisosTable()}
-          </div>
+          <div onClick={() => setShowDetailsModal(true)}>{renderPisosTable()}</div>
         )}
       </div>
     </div>
@@ -709,7 +747,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Acciones", field: "acciones" },
     ];
 
-    const data = murosTabList.map((item) => {
+    const data = searchFilter(murosTabList).map((item) => {
       const isEditing = editingRowId === (item.id_detail ?? item.id);
       return {
         nombreAbreviado: isEditing ? (
@@ -843,7 +881,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Acciones", field: "acciones" },
     ];
 
-    const data = techumbreTabList.map((item) => {
+    const data = searchFilter(techumbreTabList).map((item) => {
       const isEditing = editingRowId === (item.id_detail ?? item.id);
       return {
         nombreAbreviado: isEditing ? (
@@ -980,7 +1018,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Acciones", field: "acciones" },
     ];
 
-    const data = pisosTabList.map((item) => {
+    const data = searchFilter(pisosTabList).map((item) => {
       const isEditing = editingRowId === (item.id_detail ?? item.id);
       const bajoPiso = item.info?.aislacion_bajo_piso || {};
       const vert = item.info?.ref_aisl_vertical || {};

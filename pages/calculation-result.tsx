@@ -46,6 +46,7 @@ const CalculationResultPage = () => {
       </Card>{" "}
       <Card>
         <Results />
+        
         <CustomButton variant="back" onClick={handleBack}>
           Regresar
         </CustomButton>

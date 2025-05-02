@@ -1,5 +1,5 @@
+import { useApi } from '@/hooks/useApi';
 import { ApexOptions } from 'apexcharts';
-import axios from 'axios';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 import Title from './Title';
@@ -23,6 +23,7 @@ const ChartProjectCreated: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
+    const api = useApi();
     const filterProjectsByYear = (year: number) => {
         const counts = new Array(12).fill(0);
         projects.forEach((project) => {
@@ -37,15 +38,11 @@ const ChartProjectCreated: React.FC = () => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        axios
-            .get<ProjectsResponse>('/api/projects_user', {
-                headers: {
-                    Authorization: token ? `Bearer ${token}` : ''
-                },
+        api
+            .get('/user/projects', {
                 params: { limit: 999999, num_pag: 1 }
             })
-            .then((response) => setProjects(response.data.projects))
+            .then((response:ProjectsResponse) => setProjects(response.projects))
             .catch((error) => console.error("Error fetching projects:", error))
             .finally(() => setLoading(false));
     }, []);
@@ -92,7 +89,7 @@ const ChartProjectCreated: React.FC = () => {
             }]
         },
         colors: ['#00B4D8', '#00B4D8', '#00B4D8', '#00B4D8', '#00B4D8'],
-    
+
         grid: {
             show: false,
         },

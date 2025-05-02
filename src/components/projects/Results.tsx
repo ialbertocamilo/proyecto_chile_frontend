@@ -1,11 +1,10 @@
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
+import { Download } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Container, Tab, Tabs } from "react-bootstrap";
-import Card from "../common/Card";
+import { Container, Spinner, Tab, Tabs } from "react-bootstrap";
 import CustomButton from "../common/CustomButton";
-import AguaCalienteSanitaria from "./tabs/AguaCalienteSanitaria";
 import IndicadoresFinales from "./tabs/IndicadoresFinales";
 import ResumenRecintos from "./tabs/ResumenRecintos";
 
@@ -14,6 +13,7 @@ const Results = () => {
   const { get } = useApi();
   const [loading, setLoading] = useState(true); // Loader state
   const [isButtonDisabled, setIsButtonDisabled] = useState(true); // Button state
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
   const processData = async () => {
     try {
       const projectId = router.query.id;
@@ -36,9 +36,73 @@ const Results = () => {
   const handleRecintosCalculated = (recintos: any[]) => {
     console.log("Recintos calculated:", recintos);
   };
+
+  const api = useApi();
   return (
     <Container fluid className="py-4">
       <h2 className="mb-4 mt-2">Resultados finales</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <CustomButton
+              color="orange"
+              onClick={async () => {
+                setIsButtonDisabled(true);
+                setDownloadProgress(0);
+                try {
+                  const projectId = router.query.id;
+                  if (!projectId) throw new Error("No project id");
+
+                  // Usar axios para mostrar progreso
+                  const response = await api.get(
+                    `/calculator/download/${projectId}`,
+                    {
+                      responseType: "blob",
+                      onDownloadProgress: (event) => {
+                        if (event.total && event.total > 0) {
+                          const percent = Math.round((event.loaded / event.total) * 100);
+                          setDownloadProgress(percent);
+                        } else {
+                          setDownloadProgress(0);
+                        }
+                      },
+                    }
+                  );
+                  const blob = response;
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${projectId}_files.zip`;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  window.URL.revokeObjectURL(url);
+                  notify("Archivos descargados exitosamente.");
+                  setDownloadProgress(null);
+                  setIsButtonDisabled(false);
+                } catch (error) {
+                  console.error("Error al descargar los archivos:", error);
+                  notify("Error al descargar los archivos", "error");
+                  setDownloadProgress(null);
+                  setIsButtonDisabled(false);
+                }
+              }}
+              className="mb-3"
+              disabled={isButtonDisabled}
+            >
+              <Download size={18} style={{ marginRight: 8 }} />
+              Descargar archivos procesados
+            </CustomButton>
+            {isButtonDisabled && (
+              <span style={{ minWidth: 120, display: "flex", alignItems: "center", gap: 8 }}>
+                <Spinner animation="border" size="sm" role="status" />
+                <span>
+                  Descargando...
+                  {downloadProgress !== null && downloadProgress > 0 && (
+                    <> ({downloadProgress}%)</>
+                  )}
+                </span>
+              </span>
+            )}
+          </div>
       <br />
       {loading ? (
         <div className="text-center">Procesando datos...</div>
@@ -78,39 +142,7 @@ const Results = () => {
               <IndicadoresFinales />
             </Tab>
           </Tabs>
-          <Card>
-            <CustomButton
-              onClick={async () => {
-                try {
-                  const projectId = router.query.id;
-
-                  // Proceed to download the generated file
-                  const response = await get(
-                    `/calculator/download/${projectId}`,
-                    { responseType: "blob" }
-                  );
-                  const blob = response.data;
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `project_${projectId}_data.xlsx`;
-                  document.body.appendChild(a);
-                  a.click();
-                  a.remove();
-                  notify("Datos descargados exitosamente.");
-                } catch (error) {
-                  console.error("Error al descargar los datos:", error);
-                  alert(
-                    "Ocurrió un error al descargar los datos. Por favor, inténtelo nuevamente."
-                  );
-                }
-              }}
-              className="mb-3"
-              disabled={isButtonDisabled}
-            >
-              Descarga datos procesados por el motor
-            </CustomButton>
-          </Card>
+          
         </>
       )}
     </Container>

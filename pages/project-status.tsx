@@ -1,3 +1,4 @@
+import { useApi } from "@/hooks/useApi";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/router";
@@ -83,6 +84,7 @@ const ProjectListStatusEditPage = () => {
     fetchProjects();
   }, []);
 
+  const api = useApi()
   const fetchProjects = async (): Promise<void> => {
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -94,12 +96,8 @@ const ProjectListStatusEditPage = () => {
     }
     try {
       console.log("[fetchProjects] Obteniendo proyectos...");
-      const response = await axios.get(`/api/projects`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setProjects(response.data.projects);
+      const response = await api.get(`/admin/projects`, { params: { limit: 999999, num_pag: 1 } });
+      setProjects(response.projects);
     } catch (err: unknown) {
       console.error("[fetchProjects] Error al obtener los proyectos:", err);
       if (axios.isAxiosError(err) && err.response) {

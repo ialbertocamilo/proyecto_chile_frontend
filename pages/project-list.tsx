@@ -2,7 +2,7 @@ import WelcomeCard from "@/components/CardWelcome";
 import ChartProjectCreated from "@/components/ChartProjectCreated";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import ModalCreate from "@/components/common/ModalCreate";
-import { useApiNext } from "@/hooks/useApiNext";
+import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -60,7 +60,7 @@ const ProjectListPage = () => {
     name: string;
   } | null>(null);
 
-  const { get } = useApiNext();
+  const { get } = useApi();
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -69,7 +69,9 @@ const ProjectListPage = () => {
     setLoading(true);
     try {
       console.log("[fetchProjects] 📡 Obteniendo proyectos...");
-      const response = await get("api/projects_user");
+      const response = await get("user/projects", {
+        params: { limit: 999999, num_pag: 1 },
+      });
       console.log("[fetchProjects] Proyectos recibidos:", response);
       setProjects(response.projects);
     } catch (err: unknown) {

@@ -13,7 +13,7 @@ const Results = () => {
   const { get } = useApi();
   const [loading, setLoading] = useState(true); // Loader state
   const [isButtonDisabled, setIsButtonDisabled] = useState(true); // Button state
-  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false); // Estado de descarga
   const processData = async () => {
     try {
       const projectId = router.query.id;
@@ -41,68 +41,52 @@ const Results = () => {
   return (
     <Container fluid className="py-4">
       <h2 className="mb-4 mt-2">Resultados finales</h2>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <CustomButton
-              color="orange"
-              onClick={async () => {
-                setIsButtonDisabled(true);
-                setDownloadProgress(0);
-                try {
-                  const projectId = router.query.id;
-                  if (!projectId) throw new Error("No project id");
-
-                  // Usar axios para mostrar progreso
-                  const response = await api.get(
-                    `/calculator/download/${projectId}`,
-                    {
-                      responseType: "blob",
-                      onDownloadProgress: (event) => {
-                        if (event.total && event.total > 0) {
-                          const percent = Math.round((event.loaded / event.total) * 100);
-                          setDownloadProgress(percent);
-                        } else {
-                          setDownloadProgress(0);
-                        }
-                      },
-                    }
-                  );
-                  const blob = response;
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `${projectId}_files.zip`;
-                  document.body.appendChild(a);
-                  a.click();
-                  a.remove();
-                  window.URL.revokeObjectURL(url);
-                  notify("Archivos descargados exitosamente.");
-                  setDownloadProgress(null);
-                  setIsButtonDisabled(false);
-                } catch (error) {
-                  console.error("Error al descargar los archivos:", error);
-                  notify("Error al descargar los archivos", "error");
-                  setDownloadProgress(null);
-                  setIsButtonDisabled(false);
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <CustomButton
+          color="orange"
+          onClick={async () => {
+            setIsButtonDisabled(true);
+            setIsDownloading(true);
+            try {
+              const projectId = router.query.id;
+              const response = await api.get(
+                `/calculator/download/${projectId}`,
+                {
+                  responseType: "blob",
                 }
-              }}
-              className="mb-3"
-              disabled={isButtonDisabled}
-            >
-              <Download size={18} style={{ marginRight: 8 }} />
-              Descargar archivos procesados
-            </CustomButton>
-            {isButtonDisabled && (
-              <span style={{ minWidth: 120, display: "flex", alignItems: "center", gap: 8 }}>
-                <Spinner animation="border" size="sm" role="status" />
-                <span>
-                  Descargando...
-                  {downloadProgress !== null && downloadProgress > 0 && (
-                    <> ({downloadProgress}%)</>
-                  )}
-                </span>
-              </span>
-            )}
-          </div>
+              );
+              const blob = response;
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `${projectId}_files.zip`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              window.URL.revokeObjectURL(url);
+              notify("Archivos descargados exitosamente.");
+              setIsDownloading(false);
+              setIsButtonDisabled(false);
+            } catch (error) {
+              console.error("Error al descargar los archivos:", error);
+              notify("Error al descargar los archivos", "error");
+              setIsDownloading(false);
+              setIsButtonDisabled(false);
+            }
+          }}
+          className="mb-3"
+          disabled={isButtonDisabled}
+        >
+          <Download size={18} style={{ marginRight: 8 }} />
+          Descargar archivos procesados
+        </CustomButton>
+        {isDownloading && (
+          <span style={{ minWidth: 120, display: "flex", alignItems: "center", gap: 8 }}>
+            <Spinner animation="border" size="sm" role="status" />
+            <span>Descargando...</span>
+          </span>
+        )}
+      </div>
       <br />
       {loading ? (
         <div className="text-center">Procesando datos...</div>
@@ -142,7 +126,7 @@ const Results = () => {
               <IndicadoresFinales />
             </Tab>
           </Tabs>
-          
+
         </>
       )}
     </Container>

@@ -576,36 +576,26 @@ const ObstructionTable: React.FC = () => {
     {
       headerName: "Ángulo Azimut",
       field: "anguloAzimut",
-      renderCell: (row: ObstructionsData) => {
-        if (editingRowKey === row.uniqueKey) {
-          return (
-            <select className="form-control" value={selectedAngle} onChange={(e) => setSelectedAngle(e.target.value)}>
-              {angleOptions
-                .filter((opt) => !tableData.some((obs) => obs.anguloAzimut === opt.range_az && obs.uniqueKey !== row.uniqueKey))
-                .map((opt, idx) => (
-                  <option key={idx} value={opt.range_az}>
-                    {opt.range_az} - {opt.orientation}
-                  </option>
-                ))}
-            </select>
-          );
-        }
-        return row.anguloAzimut;
-      },
+      renderCell: (row: ObstructionsData) => 
+        row.obstrucción <= 1 ? row.anguloAzimut : "",
     },
     {
       headerName: "Orientación",
       field: "orientación",
-      renderCell: (row: ObstructionsData) => row.orientación || "-",
+      renderCell: (row: ObstructionsData) => 
+        row.obstrucción <= 1 ? row.orientación ?? "-" : "",
     },
     {
       headerName: "Acciones",
       field: "acciones",
       renderCell: (row: ObstructionsData) => {
-        if (editingRowKey === row.uniqueKey) {
-          return <ActionButtonsConfirm onAccept={() => handleAcceptEdit(row)} onCancel={handleCancel} />;
-        }
-        return <ActionButtons onDelete={() => handleDelete(row)} onEdit={() => { setEditingRowKey(row.uniqueKey); setSelectedAngle(row.anguloAzimut); }} />;
+        if (row.obstrucción > 1) return null; // No mostrar acciones en filas secundarias
+        return editingRowKey === row.uniqueKey ? (
+          <ActionButtonsConfirm 
+          onAccept={() => handleAcceptEdit(row)} 
+          onCancel={handleCancel} />
+        ) :
+        <ActionButtons onDelete={() => handleDelete(row)} onEdit={() => { setEditingRowKey(row.uniqueKey); setSelectedAngle(row.anguloAzimut); }} />;
       },
     },
     {

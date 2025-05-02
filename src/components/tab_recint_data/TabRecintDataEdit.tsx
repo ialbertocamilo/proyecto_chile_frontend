@@ -62,7 +62,7 @@ const TabRecintDataEdit: React.FC = () => {
   // 1. Funciones para fetch de datos (solo para recintos)
   // ===========================================================
   const fetchEnclosureGenerals = async () => {
-    const response =await api.get(`/enclosure-generals/${projectId}`)
+    const response = await api.get(`/enclosure-generals/${projectId}`)
     setData(response);
   };
 
@@ -97,21 +97,21 @@ const TabRecintDataEdit: React.FC = () => {
     setShowDeleteModal(true);
   };
 
-const confirmDelete = async () => {
-  if (!itemToDelete) return;
-  
-  try {
-    await api.del(`/enclosure-generals-delete/${projectId}/${itemToDelete.id}`);
-    setData(prevData => prevData.filter(item => item.id !== itemToDelete.id));
-    notify("Recinto eliminado exitosamente");
-    setShowDeleteModal(false);
-    setItemToDelete(null);
-    await fetchEnclosureGenerals();
-  } catch (error) {
-    console.error(error);
-    notify("Error al eliminar");
-  }
-};
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      await api.del(`/enclosure-generals-delete/${projectId}/${itemToDelete.id}`);
+      setData(prevData => prevData.filter(item => item.id !== itemToDelete.id));
+      notify("Recinto eliminado exitosamente");
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+      await fetchEnclosureGenerals();
+    } catch (error) {
+      console.error(error);
+      notify("Error al eliminar");
+    }
+  };
 
   const cancelDelete = () => {
     setShowDeleteModal(false);
@@ -134,7 +134,7 @@ const confirmDelete = async () => {
     {
       headerName: "Cod",
       field: "id",
-      renderCell: (row: EnclosureGeneralData) => ("REC-"+row.id),
+      renderCell: (row: EnclosureGeneralData) => ("REC-" + row.id),
     },
     {
       headerName: "Nombre Recinto",
@@ -198,30 +198,29 @@ const confirmDelete = async () => {
     <div>
       {/* Botón "+ Nuevo" siempre visible */}
       <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "1rem",
-    gap: "1rem",
-  }}
->
-  {/* 🔍 filtro */}
-  <div style={{ flex: 1 }}>
-    <SearchFilter
-              data={data as unknown as Record<string, unknown>[]}
-              searchKeys={searchKeys as unknown as string[]}
-              placeholder="Buscar recinto…"
-            >
-          {(filtered, query, setQuery) => renderTable(filtered as unknown as EnclosureGeneralData[])}
-        </SearchFilter>
-  </div>
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "1rem",
+          gap: "1rem",
+        }}
+      >
+        {/* 🔍 filtro */}
+        <div style={{ flex: 1 }}>
+          <SearchFilter
+            data={data as unknown as Record<string, unknown>[]}
+            searchKeys={searchKeys as unknown as string[]}
+            placeholder="Buscar recinto…"
+            showNewButton          // ← activa el botón
+            onNew={handleCreate}
+          >
+            {(filtered, query, setQuery) => renderTable(filtered as unknown as EnclosureGeneralData[])}
+          </SearchFilter>
+        </div>
 
-  {/* ➕ botón nuevo */}
-  <CustomButton variant="save" onClick={handleCreate}>
-    + Nuevo
-  </CustomButton>
-</div>
+        {/* ➕ botón nuevo */}
+      </div>
 
       {/* Modal de confirmación para eliminar */}
       <ModalCreate

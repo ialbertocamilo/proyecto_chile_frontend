@@ -259,7 +259,7 @@ const RecintoView: React.FC = () => {
       [
         ...[
           { label: "Muros" },
-          { label: "Caracteristicas" },
+          { label: "Características espacio contiguo al elemento" },
           { label: "Ángulo Azimut" },
           { label: "Orientación" },
           { label: "Área[m²]" },
@@ -283,7 +283,7 @@ const RecintoView: React.FC = () => {
   // Definición de columnas para la tabla de ventanas
   const ventanaColumns = [
     { headerName: "Tipo de vano Acristalado (incluye marco)", field: "tipoVano" },
-    { headerName: "Características espacio contiguo el elemento", field: "caracteristicas" },
+    { headerName: "Características espacio contiguo al elemento", field: "caracteristicas" },
     { headerName: "Ángulo Azimut", field: "anguloAzimut" },
     { headerName: "Orientación", field: "orientacion" },
     { headerName: "Alojado en", field: "alojadoEn" },
@@ -361,7 +361,7 @@ const RecintoView: React.FC = () => {
     rows: [
       [
         { label: "Tipo de vano Acristalado (incluye marco)", rowSpan: 2 },
-        { label: "Características espacio contiguo el elemento", rowSpan: 2 },
+        { label: "Características espacio contiguo al elemento", rowSpan: 2 },
         { label: "Ángulo Azimut", rowSpan: 2 },
         { label: "Orientación", rowSpan: 2 },
         { label: "Alojado en", rowSpan: 2 },
@@ -463,7 +463,7 @@ const RecintoView: React.FC = () => {
     rows: [
       [
         { label: "Tipo de Puerta", rowSpan: 2 },
-        { label: "Características", rowSpan: 2 },
+        { label: "Características espacio contiguo al elemento", rowSpan: 2 },
         { label: "Ángulo Azimut", rowSpan: 2 },
         { label: "Orientación", rowSpan: 2 },
         { label: "Alto [m]", rowSpan: 2 },

@@ -4,6 +4,7 @@ import { constantUrlApiEndpoint } from "../../utils/constant-url-endpoint";
 import ModalCreate from './ModalCreate';
 import CustomButton from "@/components/common/CustomButton";
 import { useApi } from "@/hooks/useApi";
+import { notify } from '@/utils/notify';
 
 interface ScheduleData {
   [key: string]: number | string | null;
@@ -199,11 +200,12 @@ const handleHoursUpdate = async () => {
     const patchRes = await api.patch(url, payload, { headers });
 
     /* ───────────────────────────── 4. PATCH de actualización ───────────────────────────── */
-    
-    
     console.log("PATCH payload:", payload);
+    
     /* ───────────────────────────── 5. Refrescar UI ───────────────────────────── */
     await fetchWorkingHours();      // 🔄 vuelve a pedir los datos para mostrarlos actualizados
+    notify(`Horario actualizado: Inicio ${tempHours.start} - Fin ${tempHours.end}`, "success");
+    notify("Los cambios se han guardado correctamente", "info");
     console.log("✅ Horario actualizado:", patchRes);
     setIsEditingHours(false);
     

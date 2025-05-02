@@ -268,9 +268,11 @@ const TabRecintDataCreate: React.FC = () => {
         {/* 🔍  NUEVO: filtro */}
         <div style={{ flex: 1 /* que crezca */ }}>
           <SearchFilter
-            data={data as unknown as Record<string, unknown>[]}                
-            searchKeys={[...searchKeys]}  
+            data={data as unknown as Record<string, unknown>[]}
+            searchKeys={[...searchKeys]}
             placeholder="Buscar recinto…"
+            showNewButton          // ← activa el botón
+            onNew={handleCreate}
           >
             {(
               filteredRows,             // array filtrado
@@ -280,9 +282,7 @@ const TabRecintDataCreate: React.FC = () => {
         </div>
 
         {/* ➕  botón “Nuevo” */}
-        <CustomButton variant="save" onClick={handleCreate}>
-          + Nuevo
-        </CustomButton>
+        
       </div>
 
 

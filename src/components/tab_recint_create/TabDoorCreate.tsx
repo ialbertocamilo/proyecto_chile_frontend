@@ -987,7 +987,7 @@ const TabDoorCreate: React.FC = () => {
     rows: [
       [
         { label: "Tipo de Puerta", rowSpan: 2 },
-        { label: "Características", rowSpan: 2 },
+        { label: "Características espacio contiguo al elemento", rowSpan: 2 },
         { label: "Ángulo Azimut", rowSpan: 2 },
         { label: "Orientación", rowSpan: 2 },
         { label: "Alto [m]", rowSpan: 2 },

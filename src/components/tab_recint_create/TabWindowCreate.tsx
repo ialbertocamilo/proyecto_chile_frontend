@@ -527,7 +527,7 @@ const TabWindowCreate: React.FC = () => {
         ),
     },
     {
-      headerName: "Características espacio contiguo el elemento",
+      headerName: "Características espacio contiguo al elemento",
       field: "caracteristicas",
       renderCell: (row: any) =>
         editingRow === row.id ? (
@@ -1059,7 +1059,7 @@ const TabWindowCreate: React.FC = () => {
     rows: [
       [
         { label: "Tipo de vano Acristalado (incluye marco)", rowSpan: 2 },
-        { label: "Características espacio contiguo el elemento", rowSpan: 2 },
+        { label: "Características espacio contiguo al elemento", rowSpan: 2 },
         { label: "Ángulo Azimut", rowSpan: 2 },
         { label: "Orientación", rowSpan: 2 },
         { label: "Alojado en", rowSpan: 2 },

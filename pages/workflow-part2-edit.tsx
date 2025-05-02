@@ -14,6 +14,7 @@ import CustomButton from "../src/components/common/CustomButton";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import NewHeaderButton from "@/components/constructive_details/NewHeaderButton";
+import SearchParameters from "@/components/inputs/SearchParameters";
 
 import Breadcrumb from "@/components/common/Breadcrumb";
 import TablesParameters from "../src/components/tables/TablesParameters";
@@ -1052,6 +1053,18 @@ const WorkFlowpar2editPage: React.FC = () => {
     );
   };
 
+  // Helper function for search filtering
+  const matchSearch = (value: string | number | null | undefined) => {
+    // convierte cualquier cosa a texto, sin romper tipos
+    const normalized = String(value ?? "")
+      .toLowerCase()
+      // opcional: elimina tildes si lo necesitas
+      // .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .trim();
+  
+    return normalized.includes(searchQuery.trim().toLowerCase());
+  };
+
   // ===================== RENDER INICIAL DETALLES (sin pestañas) ======================
   const renderInitialDetails = () => {
     if (showTabsInStep4) return null;
@@ -1100,168 +1113,175 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "Color Interior", field: "colorInterior" },
       { headerName: "Acciones", field: "acciones" },
     ];
-    const murosData = murosTabList.map((item) => {
-      const isEditing = editingRowId === item.id;
-      return {
-        __detail: item,
-        nombreAbreviado: isEditing ? (
-          "created_status" in item &&
-            (item.created_status === "default" ||
-              item.created_status === "global") ? (
-            <input
-              type="text"
-              className="form-control"
-              value={editingColors.nombreAbreviado}
-              readOnly
-              disabled
-            />
+    const murosData = murosTabList
+      .filter(
+        (item) =>
+          matchSearch(item.name_detail) ||
+          matchSearch(item.info?.surface_color?.exterior?.name ?? "") ||
+          matchSearch(item.info?.surface_color?.interior?.name ?? "")
+      )
+      .map((item) => {
+        const isEditing = editingRowId === item.id;
+        return {
+          __detail: item,
+          nombreAbreviado: isEditing ? (
+            "created_status" in item &&
+              (item.created_status === "default" ||
+                item.created_status === "global") ? (
+              <input
+                type="text"
+                className="form-control"
+                value={editingColors.nombreAbreviado}
+                readOnly
+                disabled
+              />
+            ) : (
+              <input
+                type="text"
+                className="form-control"
+                value={editingColors.nombreAbreviado}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) =>
+                  setEditingColors((prev) => ({
+                    ...prev,
+                    nombreAbreviado: e.target.value,
+                  }))
+                }
+              />
+            )
           ) : (
-            <input
-              type="text"
-              className="form-control"
-              value={editingColors.nombreAbreviado}
+            <span
+              style={
+                "created_status" in item && item.created_status === "created"
+                  ? { color: "var(--primary-color)", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {item.name_detail}
+            </span>
+          ),
+          valorU: formatValue(item.value_u),
+          colorExterior: isEditing ? (
+            <select
+              value={editingColors.exterior}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) =>
                 setEditingColors((prev) => ({
                   ...prev,
-                  nombreAbreviado: e.target.value,
+                  exterior: e.target.value,
                 }))
               }
-            />
-          )
-        ) : (
-          <span
-            style={
-              "created_status" in item && item.created_status === "created"
-                ? { color: "var(--primary-color)", fontWeight: "bold" }
-                : {}
-            }
-          >
-            {item.name_detail}
-          </span>
-        ),
-        valorU: formatValue(item.value_u),
-        colorExterior: isEditing ? (
-          <select
-            value={editingColors.exterior}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingColors((prev) => ({
-                ...prev,
-                exterior: e.target.value,
-              }))
-            }
-          >
-            <option value="Claro">Claro</option>
-            <option value="Oscuro">Oscuro</option>
-            <option value="Intermedio">Intermedio</option>
-          </select>
-        ) : (
-          item.info?.surface_color?.exterior?.name || "Desconocido"
-        ),
-        colorInterior: isEditing ? (
-          <select
-            value={editingColors.interior}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingColors((prev) => ({
-                ...prev,
-                interior: e.target.value,
-              }))
-            }
-          >
-            <option value="Claro">Claro</option>
-            <option value="Oscuro">Oscuro</option>
-            <option value="Intermedio">Intermedio</option>
-          </select>
-        ) : (
-          item.info?.surface_color?.interior?.name || "Desconocido"
-        ),
-        acciones: isEditing ? (
-          <div onClick={(e) => e.stopPropagation()}>
-            <ActionButtonsConfirm
-              onAccept={async () => {
-                if (!item.id || !projectId) return;
-                const token = getToken();
-                if (!token) return;
-                try {
-                  const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Muro/${item.id}`;
-                  const headers = { Authorization: `Bearer ${token}` };
-                  const payload = {
-                    ...item,
-                    name_detail: editingColors.nombreAbreviado,
-                    info: {
-                      ...item.info,
-                      surface_color: {
-                        exterior: { name: editingColors.exterior },
-                        interior: { name: editingColors.interior },
+            >
+              <option value="Claro">Claro</option>
+              <option value="Oscuro">Oscuro</option>
+              <option value="Intermedio">Intermedio</option>
+            </select>
+          ) : (
+            item.info?.surface_color?.exterior?.name || "Desconocido"
+          ),
+          colorInterior: isEditing ? (
+            <select
+              value={editingColors.interior}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) =>
+                setEditingColors((prev) => ({
+                  ...prev,
+                  interior: e.target.value,
+                }))
+              }
+            >
+              <option value="Claro">Claro</option>
+              <option value="Oscuro">Oscuro</option>
+              <option value="Intermedio">Intermedio</option>
+            </select>
+          ) : (
+            item.info?.surface_color?.interior?.name || "Desconocido"
+          ),
+          acciones: isEditing ? (
+            <div onClick={(e) => e.stopPropagation()}>
+              <ActionButtonsConfirm
+                onAccept={async () => {
+                  if (!item.id || !projectId) return;
+                  const token = getToken();
+                  if (!token) return;
+                  try {
+                    const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Muro/${item.id}`;
+                    const headers = { Authorization: `Bearer ${token}` };
+                    const payload = {
+                      ...item,
+                      name_detail: editingColors.nombreAbreviado,
+                      info: {
+                        ...item.info,
+                        surface_color: {
+                          exterior: { name: editingColors.exterior },
+                          interior: { name: editingColors.interior },
+                        },
                       },
-                    },
-                  };
-                  await axios.put(url, payload, { headers });
-                  notify("Muro actualizado exitosamente");
-                  fetchMurosDetails();
+                    };
+                    await axios.put(url, payload, { headers });
+                    notify("Muro actualizado exitosamente");
+                    fetchMurosDetails();
+                    setEditingRowId(null);
+                  } catch (error) {
+                    console.error("Error updating muro:", error);
+                    notify("Ya existe un detalle con el nombre asignado.");
+                  }
+                }}
+                onCancel={() => {
                   setEditingRowId(null);
-                } catch (error) {
-                  console.error("Error updating muro:", error);
-                  notify("Ya existe un detalle con el nombre asignado.");
+                  setEditingColors({
+                    interior: "Intermedio",
+                    exterior: "Intermedio",
+                    nombreAbreviado: "",
+                  });
+                }}
+              />
+            </div>
+          ) : (
+            <div>
+              <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
+              <CustomButton
+                disabled={
+                  ("created_status" in item &&
+                    item.created_status === "default") ||
+                  ("created_status" in item && item.created_status === "global")
                 }
-              }}
-              onCancel={() => {
-                setEditingRowId(null);
-                setEditingColors({
-                  interior: "Intermedio",
-                  exterior: "Intermedio",
-                  nombreAbreviado: "",
-                });
-              }}
-            />
-          </div>
-        ) : (
-          <div>
-            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
-            <CustomButton
-              disabled={
-                ("created_status" in item &&
-                  item.created_status === "default") ||
-                ("created_status" in item && item.created_status === "global")
-              }
-              className="btn-table"
-              variant="editIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingRowId(item.id || null);
-                setEditingColors({
-                  interior:
-                    item.info?.surface_color?.interior?.name || "Intermedio",
-                  exterior:
-                    item.info?.surface_color?.exterior?.name || "Intermedio",
-                  nombreAbreviado: item.name_detail || "",
-                });
-                console.log("ID del muro a editar:", item.id);
-              }}
-            >
-              Editar
-            </CustomButton>
+                className="btn-table"
+                variant="editIcon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingRowId(item.id || null);
+                  setEditingColors({
+                    interior:
+                      item.info?.surface_color?.interior?.name || "Intermedio",
+                    exterior:
+                      item.info?.surface_color?.exterior?.name || "Intermedio",
+                    nombreAbreviado: item.name_detail || "",
+                  });
+                  console.log("ID del muro a editar:", item.id);
+                }}
+              >
+                Editar
+              </CustomButton>
 
-            {/* NUEVO botón de eliminar MURO con modal de confirmación */}
-            <CustomButton
-              disabled={
-                ("created_status" in item &&
-                  item.created_status === "default") ||
-                ("created_status" in item && item.created_status === "global")
-              }
-              variant="deleteIcon"
-              onClick={(e: React.MouseEvent) =>
-                handleDeleteConfirm(e, item?.id)
-              }
-            >
-              <span className="material-icons">delete</span>
-            </CustomButton>
-          </div>
-        ),
-      };
-    });
+              {/* NUEVO botón de eliminar MURO con modal de confirmación */}
+              <CustomButton
+                disabled={
+                  ("created_status" in item &&
+                    item.created_status === "default") ||
+                  ("created_status" in item && item.created_status === "global")
+                }
+                variant="deleteIcon"
+                onClick={(e: React.MouseEvent) =>
+                  handleDeleteConfirm(e, item?.id)
+                }
+              >
+                <span className="material-icons">delete</span>
+              </CustomButton>
+            </div>
+          ),
+        };
+      });
     return (
       <div>
         {murosTabList.length > 0 ? (
@@ -1282,167 +1302,174 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "Color Interior", field: "colorInterior" },
       { headerName: "Acciones", field: "acciones" },
     ];
-    const techData = techumbreTabList.map((item) => {
-      const isEditing = editingTechRowId === item.id;
-      return {
-        __detail: item,
-        nombreAbreviado: isEditing ? (
-          "created_status" in item &&
-            (item.created_status === "default" ||
-              item.created_status === "global") ? (
-            <input
-              type="text"
-              className="form-control"
-              value={editingTechColors.nombreAbreviado}
-              readOnly
-              disabled
-            />
+    const techData = techumbreTabList
+      .filter(
+        (item) =>
+          matchSearch(item.name_detail) ||
+          matchSearch(item.info?.surface_color?.exterior?.name ?? "") ||
+          matchSearch(item.info?.surface_color?.interior?.name ?? "")
+      )
+      .map((item) => {
+        const isEditing = editingTechRowId === item.id;
+        return {
+          __detail: item,
+          nombreAbreviado: isEditing ? (
+            "created_status" in item &&
+              (item.created_status === "default" ||
+                item.created_status === "global") ? (
+              <input
+                type="text"
+                className="form-control"
+                value={editingTechColors.nombreAbreviado}
+                readOnly
+                disabled
+              />
+            ) : (
+              <input
+                type="text"
+                className="form-control"
+                value={editingTechColors.nombreAbreviado}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) =>
+                  setEditingTechColors((prev) => ({
+                    ...prev,
+                    nombreAbreviado: e.target.value,
+                  }))
+                }
+              />
+            )
           ) : (
-            <input
-              type="text"
-              className="form-control"
-              value={editingTechColors.nombreAbreviado}
+            <span
+              style={
+                "created_status" in item && item.created_status === "created"
+                  ? { color: "var(--primary-color)", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {item.name_detail}
+            </span>
+          ),
+          valorU: formatValue(item.value_u),
+          colorExterior: isEditing ? (
+            <select
+              value={editingTechColors.exterior}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) =>
                 setEditingTechColors((prev) => ({
                   ...prev,
-                  nombreAbreviado: e.target.value,
+                  exterior: e.target.value,
                 }))
               }
-            />
-          )
-        ) : (
-          <span
-            style={
-              "created_status" in item && item.created_status === "created"
-                ? { color: "var(--primary-color)", fontWeight: "bold" }
-                : {}
-            }
-          >
-            {item.name_detail}
-          </span>
-        ),
-        valorU: formatValue(item.value_u),
-        colorExterior: isEditing ? (
-          <select
-            value={editingTechColors.exterior}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingTechColors((prev) => ({
-                ...prev,
-                exterior: e.target.value,
-              }))
-            }
-          >
-            <option value="Claro">Claro</option>
-            <option value="Oscuro">Oscuro</option>
-            <option value="Intermedio">Intermedio</option>
-          </select>
-        ) : (
-          item.info?.surface_color?.exterior?.name || "Desconocido"
-        ),
-        colorInterior: isEditing ? (
-          <select
-            value={editingTechColors.interior}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) =>
-              setEditingTechColors((prev) => ({
-                ...prev,
-                interior: e.target.value,
-              }))
-            }
-          >
-            <option value="Claro">Claro</option>
-            <option value="Oscuro">Oscuro</option>
-            <option value="Intermedio">Intermedio</option>
-          </select>
-        ) : (
-          item.info?.surface_color?.interior?.name || "Desconocido"
-        ),
-        acciones: isEditing ? (
-          <div onClick={(e) => e.stopPropagation()}>
-            <ActionButtonsConfirm
-              onAccept={async () => {
-                if (!item.id || !projectId) return;
-                const token = getToken();
-                if (!token) return;
-                try {
-                  const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Techo/${item.id}`;
-                  const headers = { Authorization: `Bearer ${token}` };
-                  const payload = {
-                    ...item,
-                    name_detail: editingTechColors.nombreAbreviado,
-                    info: {
-                      ...item.info,
-                      surface_color: {
-                        exterior: { name: editingTechColors.exterior },
-                        interior: { name: editingTechColors.interior },
+            >
+              <option value="Claro">Claro</option>
+              <option value="Oscuro">Oscuro</option>
+              <option value="Intermedio">Intermedio</option>
+            </select>
+          ) : (
+            item.info?.surface_color?.exterior?.name || "Desconocido"
+          ),
+          colorInterior: isEditing ? (
+            <select
+              value={editingTechColors.interior}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) =>
+                setEditingTechColors((prev) => ({
+                  ...prev,
+                  interior: e.target.value,
+                }))
+              }
+            >
+              <option value="Claro">Claro</option>
+              <option value="Oscuro">Oscuro</option>
+              <option value="Intermedio">Intermedio</option>
+            </select>
+          ) : (
+            item.info?.surface_color?.interior?.name || "Desconocido"
+          ),
+          acciones: isEditing ? (
+            <div onClick={(e) => e.stopPropagation()}>
+              <ActionButtonsConfirm
+                onAccept={async () => {
+                  if (!item.id || !projectId) return;
+                  const token = getToken();
+                  if (!token) return;
+                  try {
+                    const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Techo/${item.id}`;
+                    const headers = { Authorization: `Bearer ${token}` };
+                    const payload = {
+                      ...item,
+                      name_detail: editingTechColors.nombreAbreviado,
+                      info: {
+                        ...item.info,
+                        surface_color: {
+                          exterior: { name: editingTechColors.exterior },
+                          interior: { name: editingTechColors.interior },
+                        },
                       },
-                    },
-                  };
-                  await axios.put(url, payload, { headers });
-                  notify("Techumbre actualizada exitosamente");
-                  fetchTechumbreDetails();
+                    };
+                    await axios.put(url, payload, { headers });
+                    notify("Techumbre actualizada exitosamente");
+                    fetchTechumbreDetails();
+                    setEditingTechRowId(null);
+                  } catch (error) {
+                    console.error("Error updating techumbre:", error);
+                    notify("Ya existe un detalle con el nombre asignado.");
+                  }
+                }}
+                onCancel={() => {
                   setEditingTechRowId(null);
-                } catch (error) {
-                  console.error("Error updating techumbre:", error);
-                  notify("Ya existe un detalle con el nombre asignado.");
+                  setEditingTechColors({
+                    interior: "Intermedio",
+                    exterior: "Intermedio",
+                    nombreAbreviado: "",
+                  });
+                }}
+              />
+            </div>
+          ) : (
+            <div>
+              <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
+              <CustomButton
+                disabled={
+                  ("created_status" in item &&
+                    item.created_status === "default") ||
+                  ("created_status" in item && item.created_status === "global")
                 }
-              }}
-              onCancel={() => {
-                setEditingTechRowId(null);
-                setEditingTechColors({
-                  interior: "Intermedio",
-                  exterior: "Intermedio",
-                  nombreAbreviado: "",
-                });
-              }}
-            />
-          </div>
-        ) : (
-          <div>
-            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
-            <CustomButton
-              disabled={
-                ("created_status" in item &&
-                  item.created_status === "default") ||
-                ("created_status" in item && item.created_status === "global")
-              }
-              variant="editIcon"
-              className="btn-table"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingTechRowId(item.id || null);
-                setEditingTechColors({
-                  interior:
-                    item.info?.surface_color?.interior?.name || "Intermedio",
-                  exterior:
-                    item.info?.surface_color?.exterior?.name || "Intermedio",
-                  nombreAbreviado: item.name_detail || "",
-                });
-              }}
-            >
-              Editar
-            </CustomButton>
+                variant="editIcon"
+                className="btn-table"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingTechRowId(item.id || null);
+                  setEditingTechColors({
+                    interior:
+                      item.info?.surface_color?.interior?.name || "Intermedio",
+                    exterior:
+                      item.info?.surface_color?.exterior?.name || "Intermedio",
+                    nombreAbreviado: item.name_detail || "",
+                  });
+                }}
+              >
+                Editar
+              </CustomButton>
 
-            {/* NUEVO botón de eliminar TECHO con modal de confirmación */}
-            <CustomButton
-              disabled={
-                ("created_status" in item &&
-                  item.created_status === "default") ||
-                ("created_status" in item && item.created_status === "global")
-              }
-              variant="deleteIcon"
-              onClick={(e: React.MouseEvent) =>
-                handleDeleteConfirm(e, item.id!)
-              }
-            >
-              <span className="material-icons">delete</span>
-            </CustomButton>
-          </div>
-        ),
-      };
-    });
+              {/* NUEVO botón de eliminar TECHO con modal de confirmación */}
+              <CustomButton
+                disabled={
+                  ("created_status" in item &&
+                    item.created_status === "default") ||
+                  ("created_status" in item && item.created_status === "global")
+                }
+                variant="deleteIcon"
+                onClick={(e: React.MouseEvent) =>
+                  handleDeleteConfirm(e, item.id!)
+                }
+              >
+                <span className="material-icons">delete</span>
+              </CustomButton>
+            </div>
+          ),
+        };
+      });
     return (
       <div>
         {techumbreTabList.length > 0 ? (
@@ -1491,335 +1518,343 @@ const WorkFlowpar2editPage: React.FC = () => {
         ],
       ],
     };
-    const pisosData = pisosTabList.map((item) => {
-      const isEditing = editingPisosRowId === item.id;
-      const vertical = isEditing
-        ? editingPisosData.ref_aisl_vertical
-        : item.info?.ref_aisl_vertical || {};
-      const horizontal = isEditing
-        ? editingPisosData.ref_aisl_horizontal
-        : item.info?.ref_aisl_horizontal || {};
-      return {
-        __detail: item,
-        id: item.id,
-        nombre: isEditing ? (
-          "created_status" in item &&
-            (item.created_status === "default" ||
-              item.created_status === "global") ? (
-            <input
-              type="text"
-              className="form-control"
-              value={editingPisosData.nombre}
-              readOnly
-              disabled
-            />
+    const pisosData = pisosTabList
+      .filter(
+        (item) =>
+          matchSearch(item.name_detail) ||
+          matchSearch(item.info?.aislacion_bajo_piso?.lambda ?? "") ||
+          matchSearch(item.info?.ref_aisl_vertical?.lambda ?? "") ||
+          matchSearch(item.info?.ref_aisl_horizontal?.lambda ?? "")
+      )
+      .map((item) => {
+        const isEditing = editingPisosRowId === item.id;
+        const vertical = isEditing
+          ? editingPisosData.ref_aisl_vertical
+          : item.info?.ref_aisl_vertical || {};
+        const horizontal = isEditing
+          ? editingPisosData.ref_aisl_horizontal
+          : item.info?.ref_aisl_horizontal || {};
+        return {
+          __detail: item,
+          id: item.id,
+          nombre: isEditing ? (
+            "created_status" in item &&
+              (item.created_status === "default" ||
+                item.created_status === "global") ? (
+              <input
+                type="text"
+                className="form-control"
+                value={editingPisosData.nombre}
+                readOnly
+                disabled
+              />
+            ) : (
+              <input
+                type="text"
+                className="form-control"
+                value={editingPisosData.nombre}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) =>
+                  setEditingPisosData((prev) => ({
+                    ...prev,
+                    nombre: e.target.value,
+                  }))
+                }
+              />
+            )
           ) : (
+            <span
+              style={
+                "created_status" in item && item.created_status === "created"
+                  ? { color: "var(--primary-color)", fontWeight: "bold" }
+                  : {}
+              }
+            >
+              {item.name_detail}
+            </span>
+          ),
+          uValue: formatValue(item.value_u),
+          bajoPisoLambda: formatValue(item.info?.aislacion_bajo_piso?.lambda),
+          bajoPisoEAisl: formatValue(item.info?.aislacion_bajo_piso?.e_aisl),
+          vertLambda: isEditing ? (
             <input
-              type="text"
-              className="form-control"
-              value={editingPisosData.nombre}
+              type="number"
+              min="0"
+              className="form-control form-control-sm"
+              value={vertical.lambda}
               onClick={(e) => e.stopPropagation()}
-              onChange={(e) =>
-                setEditingPisosData((prev) => ({
-                  ...prev,
-                  nombre: e.target.value,
-                }))
-              }
-            />
-          )
-        ) : (
-          <span
-            style={
-              "created_status" in item && item.created_status === "created"
-                ? { color: "var(--primary-color)", fontWeight: "bold" }
-                : {}
-            }
-          >
-            {item.name_detail}
-          </span>
-        ),
-        uValue: formatValue(item.value_u),
-        bajoPisoLambda: formatValue(item.info?.aislacion_bajo_piso?.lambda),
-        bajoPisoEAisl: formatValue(item.info?.aislacion_bajo_piso?.e_aisl),
-        vertLambda: isEditing ? (
-          <input
-            type="number"
-            min="0"
-            className="form-control form-control-sm"
-            value={vertical.lambda}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => {
-              const newValue = e.target.value;
-              if (newValue.includes("-")) {
-                return;
-              }
-              setEditingPisosData((prev) => ({
-                ...prev,
-                ref_aisl_vertical: {
-                  ...prev.ref_aisl_vertical,
-                  lambda: newValue,
-                },
-              }));
-            }}
-          />
-        ) : (
-          <>{formatValue(Number(vertical.lambda))}</>
-        ),
-        vertEAisl: isEditing ? (
-          <input
-            type="number"
-            min="0"
-            className="form-control form-control-sm"
-            value={vertical.e_aisl}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => {
-              const newValue = e.target.value;
-              if (newValue.includes("-")) {
-                return;
-              }
-              setEditingPisosData((prev) => ({
-                ...prev,
-                ref_aisl_vertical: {
-                  ...prev.ref_aisl_vertical,
-                  e_aisl: newValue,
-                },
-              }));
-            }}
-          />
-        ) : (
-          <>{formatValue(Number(vertical.e_aisl))}</>
-        ),
-        vertD: isEditing ? (
-          <input
-            type="number"
-            min="0"
-            className="form-control form-control-sm"
-            value={vertical.d}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => {
-              const newValue = e.target.value;
-              if (newValue.includes("-")) {
-                return;
-              }
-              setEditingPisosData((prev) => ({
-                ...prev,
-                ref_aisl_vertical: { ...prev.ref_aisl_vertical, d: newValue },
-              }));
-            }}
-          />
-        ) : (
-          <>{formatValue(Number(vertical.d))}</>
-        ),
-        horizLambda: isEditing ? (
-          <input
-            type="number"
-            min="0"
-            className="form-control form-control-sm"
-            value={horizontal.lambda}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => {
-              const newValue = e.target.value;
-              if (newValue.includes("-")) {
-                return;
-              }
-              setEditingPisosData((prev) => ({
-                ...prev,
-                ref_aisl_horizontal: {
-                  ...prev.ref_aisl_horizontal,
-                  lambda: newValue,
-                },
-              }));
-            }}
-          />
-        ) : (
-          <>{formatValue(Number(horizontal.lambda))}</>
-        ),
-        horizEAisl: isEditing ? (
-          <input
-            type="number"
-            min="0"
-            className="form-control form-control-sm"
-            value={horizontal.e_aisl}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => {
-              const newValue = e.target.value;
-              if (newValue.includes("-")) {
-                return;
-              }
-              setEditingPisosData((prev) => ({
-                ...prev,
-                ref_aisl_horizontal: {
-                  ...prev.ref_aisl_horizontal,
-                  e_aisl: newValue,
-                },
-              }));
-            }}
-          />
-        ) : (
-          <>{formatValue(Number(horizontal.e_aisl))}</>
-        ),
-        horizD: isEditing ? (
-          <input
-            type="number"
-            min="0"
-            className="form-control form-control-sm"
-            value={horizontal.d}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => {
-              const newValue = e.target.value;
-              if (newValue.includes("-")) {
-                return;
-              }
-              setEditingPisosData((prev) => ({
-                ...prev,
-                ref_aisl_horizontal: {
-                  ...prev.ref_aisl_horizontal,
-                  d: newValue,
-                },
-              }));
-            }}
-          />
-        ) : (
-          <>{formatValue(Number(horizontal.d))}</>
-        ),
-        acciones: isEditing ? (
-          <div style={{ width: "160px" }} onClick={(e) => e.stopPropagation()}>
-            <ActionButtonsConfirm
-              onAccept={async () => {
-                if (!item.id || !projectId) return;
-                const token = getToken();
-                if (!token) return;
-                try {
-                  const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Piso/${item.id}`;
-                  const headers = { Authorization: `Bearer ${token}` };
-                  const payload = {
-                    ...item,
-                    name_detail: editingPisosData.nombre,
-                    info: {
-                      ...item.info,
-                      ref_aisl_vertical: {
-                        lambda: parseFloat(
-                          editingPisosData.ref_aisl_vertical.lambda
-                        ),
-                        e_aisl: parseFloat(
-                          editingPisosData.ref_aisl_vertical.e_aisl
-                        ),
-                        d: parseFloat(editingPisosData.ref_aisl_vertical.d),
-                      },
-                      ref_aisl_horizontal: {
-                        lambda: parseFloat(
-                          editingPisosData.ref_aisl_horizontal.lambda
-                        ),
-                        e_aisl: parseFloat(
-                          editingPisosData.ref_aisl_horizontal.e_aisl
-                        ),
-                        d: parseFloat(editingPisosData.ref_aisl_horizontal.d),
-                      },
-                    },
-                  };
-                  await axios.put(url, payload, { headers });
-                  notify("Piso actualizado exitosamente");
-                  fetchPisosDetails();
-                  setEditingPisosRowId(null);
-                } catch (error) {
-                  console.error("Error updating piso:", error);
-                  notify("Ya existe un detalle con el nombre asignado.");
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
                 }
               }}
-              onCancel={() => {
-                setEditingPisosRowId(null);
-                setEditingPisosData({
-                  ref_aisl_vertical: { lambda: "", e_aisl: "", d: "" },
-                  ref_aisl_horizontal: { lambda: "", e_aisl: "", d: "" },
-                  nombre: "",
-                });
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue.includes("-")) {
+                  return;
+                }
+                setEditingPisosData((prev) => ({
+                  ...prev,
+                  ref_aisl_vertical: {
+                    ...prev.ref_aisl_vertical,
+                    lambda: newValue,
+                  },
+                }));
               }}
             />
-          </div>
-        ) : (
-          <div style={{ width: "160px" }}>
-            <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
-            <CustomButton
-            disabled={
-              ("created_status" in item &&
-                item.created_status === "default") ||
-              ("created_status" in item && item.created_status === "global")  
-            }
-              className="btn-table"
-              variant="editIcon"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingPisosRowId(item.id || null);
-                setEditingPisosData({
-                  ref_aisl_vertical: {
-                    lambda:
-                      item.info?.ref_aisl_vertical?.lambda?.toString() || "",
-                    e_aisl:
-                      item.info?.ref_aisl_vertical?.e_aisl?.toString() || "",
-                    d: item.info?.ref_aisl_vertical?.d?.toString() || "",
-                  },
-                  ref_aisl_horizontal: {
-                    lambda:
-                      item.info?.ref_aisl_horizontal?.lambda?.toString() || "",
-                    e_aisl:
-                      item.info?.ref_aisl_horizontal?.e_aisl?.toString() || "",
-                    d: item.info?.ref_aisl_horizontal?.d?.toString() || "",
-                  },
-                  nombre: item.name_detail || "",
-                });
+          ) : (
+            <>{formatValue(Number(vertical.lambda))}</>
+          ),
+          vertEAisl: isEditing ? (
+            <input
+              type="number"
+              min="0"
+              className="form-control form-control-sm"
+              value={vertical.e_aisl}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
               }}
-            >
-              Editar
-            </CustomButton>
-
-            {/* NUEVO botón de eliminar PISO con modal de confirmación */}
-            <CustomButton
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue.includes("-")) {
+                  return;
+                }
+                setEditingPisosData((prev) => ({
+                  ...prev,
+                  ref_aisl_vertical: {
+                    ...prev.ref_aisl_vertical,
+                    e_aisl: newValue,
+                  },
+                }));
+              }}
+            />
+          ) : (
+            <>{formatValue(Number(vertical.e_aisl))}</>
+          ),
+          vertD: isEditing ? (
+            <input
+              type="number"
+              min="0"
+              className="form-control form-control-sm"
+              value={vertical.d}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue.includes("-")) {
+                  return;
+                }
+                setEditingPisosData((prev) => ({
+                  ...prev,
+                  ref_aisl_vertical: { ...prev.ref_aisl_vertical, d: newValue },
+                }));
+              }}
+            />
+          ) : (
+            <>{formatValue(Number(vertical.d))}</>
+          ),
+          horizLambda: isEditing ? (
+            <input
+              type="number"
+              min="0"
+              className="form-control form-control-sm"
+              value={horizontal.lambda}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue.includes("-")) {
+                  return;
+                }
+                setEditingPisosData((prev) => ({
+                  ...prev,
+                  ref_aisl_horizontal: {
+                    ...prev.ref_aisl_horizontal,
+                    lambda: newValue,
+                  },
+                }));
+              }}
+            />
+          ) : (
+            <>{formatValue(Number(horizontal.lambda))}</>
+          ),
+          horizEAisl: isEditing ? (
+            <input
+              type="number"
+              min="0"
+              className="form-control form-control-sm"
+              value={horizontal.e_aisl}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue.includes("-")) {
+                  return;
+                }
+                setEditingPisosData((prev) => ({
+                  ...prev,
+                  ref_aisl_horizontal: {
+                    ...prev.ref_aisl_horizontal,
+                    e_aisl: newValue,
+                  },
+                }));
+              }}
+            />
+          ) : (
+            <>{formatValue(Number(horizontal.e_aisl))}</>
+          ),
+          horizD: isEditing ? (
+            <input
+              type="number"
+              min="0"
+              className="form-control form-control-sm"
+              value={horizontal.d}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                if (e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue.includes("-")) {
+                  return;
+                }
+                setEditingPisosData((prev) => ({
+                  ...prev,
+                  ref_aisl_horizontal: {
+                    ...prev.ref_aisl_horizontal,
+                    d: newValue,
+                  },
+                }));
+              }}
+            />
+          ) : (
+            <>{formatValue(Number(horizontal.d))}</>
+          ),
+          acciones: isEditing ? (
+            <div style={{ width: "160px" }} onClick={(e) => e.stopPropagation()}>
+              <ActionButtonsConfirm
+                onAccept={async () => {
+                  if (!item.id || !projectId) return;
+                  const token = getToken();
+                  if (!token) return;
+                  try {
+                    const url = `${constantUrlApiEndpoint}/project/${projectId}/update_details/Piso/${item.id}`;
+                    const headers = { Authorization: `Bearer ${token}` };
+                    const payload = {
+                      ...item,
+                      name_detail: editingPisosData.nombre,
+                      info: {
+                        ...item.info,
+                        ref_aisl_vertical: {
+                          lambda: parseFloat(
+                            editingPisosData.ref_aisl_vertical.lambda
+                          ),
+                          e_aisl: parseFloat(
+                            editingPisosData.ref_aisl_vertical.e_aisl
+                          ),
+                          d: parseFloat(editingPisosData.ref_aisl_vertical.d),
+                        },
+                        ref_aisl_horizontal: {
+                          lambda: parseFloat(
+                            editingPisosData.ref_aisl_horizontal.lambda
+                          ),
+                          e_aisl: parseFloat(
+                            editingPisosData.ref_aisl_horizontal.e_aisl
+                          ),
+                          d: parseFloat(editingPisosData.ref_aisl_horizontal.d),
+                        },
+                      },
+                    };
+                    await axios.put(url, payload, { headers });
+                    notify("Piso actualizado exitosamente");
+                    fetchPisosDetails();
+                    setEditingPisosRowId(null);
+                  } catch (error) {
+                    console.error("Error updating piso:", error);
+                    notify("Ya existe un detalle con el nombre asignado.");
+                  }
+                }}
+                onCancel={() => {
+                  setEditingPisosRowId(null);
+                  setEditingPisosData({
+                    ref_aisl_vertical: { lambda: "", e_aisl: "", d: "" },
+                    ref_aisl_horizontal: { lambda: "", e_aisl: "", d: "" },
+                    nombre: "",
+                  });
+                }}
+              />
+            </div>
+          ) : (
+            <div style={{ width: "160px" }}>
+              <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
+              <CustomButton
               disabled={
                 ("created_status" in item &&
                   item.created_status === "default") ||
-                ("created_status" in item && item.created_status === "global")
+                ("created_status" in item && item.created_status === "global")  
               }
-              variant="deleteIcon"
-              onClick={(e: React.MouseEvent) =>
-                handleDeleteConfirm(e, item.id!)
-              }
-            >
-              <span className="material-icons">delete</span>
-            </CustomButton>
-          </div>
-        ),
-      };
-    });
+                className="btn-table"
+                variant="editIcon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingPisosRowId(item.id || null);
+                  setEditingPisosData({
+                    ref_aisl_vertical: {
+                      lambda:
+                        item.info?.ref_aisl_vertical?.lambda?.toString() || "",
+                      e_aisl:
+                        item.info?.ref_aisl_vertical?.e_aisl?.toString() || "",
+                      d: item.info?.ref_aisl_vertical?.d?.toString() || "",
+                    },
+                    ref_aisl_horizontal: {
+                      lambda:
+                        item.info?.ref_aisl_horizontal?.lambda?.toString() || "",
+                      e_aisl:
+                        item.info?.ref_aisl_horizontal?.e_aisl?.toString() || "",
+                      d: item.info?.ref_aisl_horizontal?.d?.toString() || "",
+                    },
+                    nombre: item.name_detail || "",
+                  });
+                }}
+              >
+                Editar
+              </CustomButton>
+
+              {/* NUEVO botón de eliminar PISO con modal de confirmación */}
+              <CustomButton
+                disabled={
+                  ("created_status" in item &&
+                    item.created_status === "default") ||
+                  ("created_status" in item && item.created_status === "global")
+                }
+                variant="deleteIcon"
+                onClick={(e: React.MouseEvent) =>
+                  handleDeleteConfirm(e, item.id!)
+                }
+              >
+                <span className="material-icons">delete</span>
+              </CustomButton>
+            </div>
+          ),
+        };
+      });
     return (
       <div>
         {pisosTabList.length > 0 ? (
@@ -1994,83 +2029,98 @@ const WorkFlowpar2editPage: React.FC = () => {
   };
 
   // ===================== RENDER PESTAÑAS STEP4 ======================
-  const renderStep4Tabs = () => {
-    if (!showTabsInStep4) return null;
-    const tabs = [
-      { key: "muros", label: "Muros" },
-      { key: "techumbre", label: "Techumbre" },
-      { key: "pisos", label: "Pisos" },
-      // { key: "ventanas", label: "Ventanas" },
-      // { key: "puertas", label: "Puertas" },
-    ] as { key: TabStep4; label: string }[];
-    return (
-      <div className="mt-4">
-        {(tabStep4 === "muros" ||
-          tabStep4 === "techumbre" ||
-          tabStep4 === "pisos") && (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                marginBottom: "1rem",
-              }}
-            >
-              <NewHeaderButton
-                tab={tabStep4 as "muros" | "techumbre" | "pisos"}
-                onNewCreated={
-                  tabStep4 === "muros"
-                    ? fetchMurosDetails
-                    : tabStep4 === "techumbre"
-                      ? fetchTechumbreDetails
-                      : fetchPisosDetails
-                }
-              />
-            </div>
-          )}
-        <ul className="nav">
-          {tabs.map((item) => (
-            <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
-              <button
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  backgroundColor: "#fff",
-                  color:
-                    tabStep4 === item.key
-                      ? primaryColor
-                      : "var(--secondary-color)",
-                  border: "none",
-                  cursor: "pointer",
-                  borderBottom:
-                    tabStep4 === item.key
-                      ? `3px solid ${primaryColor}`
-                      : "none",
-                  fontFamily: "var(--font-family-base)",
-                  fontWeight: "normal",
-                }}
-                onClick={() => setTabStep4(item.key)}
-              >
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+const renderStep4Tabs = () => {
+  if (!showTabsInStep4) return null;
+
+  const tabs = [
+    { key: "muros",      label: "Muros"      },
+    { key: "techumbre",  label: "Techumbre"  },
+    { key: "pisos",      label: "Pisos"      },
+    // { key: "ventanas", label: "Ventanas" },
+    // { key: "puertas",  label: "Puertas"  },
+  ] as { key: TabStep4; label: string }[];
+
+  return (
+    <div className="mt-4">
+      {/* ──────────────────────────────────────────────────────────────
+          Cabecera:  buscador  +  botón “Nuevo” (solo muros/techo/piso)
+         ───────────────────────────────────────────────────────────── */}
+      {(tabStep4 === "muros" || tabStep4 === "techumbre" || tabStep4 === "pisos") && (
         <div
           style={{
-            height: "400px",
-            position: "relative",
-            marginTop: "1rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+            marginBottom: "1rem",
+            flexWrap: "wrap",
           }}
         >
-          {tabStep4 === "muros" && renderMurosParameters()}
-          {tabStep4 === "techumbre" && renderTechumbreParameters()}
-          {tabStep4 === "pisos" && renderPisosParameters()}
-          {/* {tabStep4 === "ventanas" && renderVentanasParameters()}
-          {tabStep4 === "puertas" && renderPuertasParameters()} */}
+          {/* Buscador */}
+          <SearchParameters
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={`Buscar ${tabStep4}`}
+            showNewButton={false}   /* ← no queremos que duplique el +Nuevo */
+            style={{ flex: 1, minWidth: "180px" }}
+            onNew={() => {}}        /* prop obligatoria pero sin uso aquí */
+          />
+
+          {/* Botón + Nuevo */}
+          <NewHeaderButton
+            tab={tabStep4 as "muros" | "techumbre" | "pisos"}
+            onNewCreated={
+              tabStep4 === "muros"
+                ? fetchMurosDetails
+                : tabStep4 === "techumbre"
+                  ? fetchTechumbreDetails
+                  : fetchPisosDetails
+            }
+          />
         </div>
+      )}
+
+      {/* Pestañas */}
+      <ul className="nav">
+        {tabs.map((item) => (
+          <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
+            <button
+              style={{
+                width: "100%",
+                padding: "10px",
+                backgroundColor: "#fff",
+                color:
+                  tabStep4 === item.key
+                    ? primaryColor
+                    : "var(--secondary-color)",
+                border: "none",
+                cursor: "pointer",
+                borderBottom:
+                  tabStep4 === item.key
+                    ? `3px solid ${primaryColor}`
+                    : "none",
+                fontFamily: "var(--font-family-base)",
+              }}
+              onClick={() => setTabStep4(item.key)}
+            >
+              {item.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {/* Contenido de cada tab */}
+      <div style={{ height: "400px", position: "relative", marginTop: "1rem" }}>
+        {tabStep4 === "muros"      && renderMurosParameters()}
+        {tabStep4 === "techumbre"  && renderTechumbreParameters()}
+        {tabStep4 === "pisos"      && renderPisosParameters()}
+        {/* {tabStep4 === "ventanas" && renderVentanasParameters()}
+        {tabStep4 === "puertas"    && renderPuertasParameters()} */}
       </div>
-    );
-  };
+    </div>
+  );
+};
+
 
   // ===================== RENDER RECINTO ======================
   const renderRecinto = () => {

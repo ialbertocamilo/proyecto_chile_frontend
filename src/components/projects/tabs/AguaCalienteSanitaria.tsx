@@ -316,19 +316,21 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
         {/* <Card.Title className="text-center text-dark"> */}
         {/* Agua Caliente Sanitaria */}
         {/* </Card.Title> */}
-        <div
-          style={{
-            marginBottom: "15px",
-          }}
-        >
-          <CustomButton
-            style={{ display: "block", marginLeft: "auto" }}
-            className="mt-3"
-            onClick={addRow}
+        {!onlyView && (
+          <div
+            style={{
+              marginBottom: "15px",
+            }}
           >
-            <Plus className="me-1" size={16} /> Nueva Fila
-          </CustomButton>
-        </div>
+            <CustomButton
+              style={{ display: "block", marginLeft: "auto" }}
+              className="mt-3"
+              onClick={addRow}
+            >
+              <Plus className="me-1" size={16} /> Nueva Fila
+            </CustomButton>
+          </div>
+        )}
         <Table responsive className="table-sm mb-0">
           <thead className="">
             <tr>
@@ -375,7 +377,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                   {(row.cantidad * row.consumo).toFixed(2)}
                 </td>
                 <td style={{ textAlign: "center" }}>
-                  {onlyView && (
+                  {!onlyView && (
                     <CustomButton
                       variant="deleteIcon"
                       onClick={() => deleteRow(index)}
@@ -599,7 +601,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
             </div>
           </Card.Body>
         </Card>
-        {onlyView && (
+        {!onlyView && (
           <CustomButton
             onClick={() => console.log("Guardar Datos")}
             style={{

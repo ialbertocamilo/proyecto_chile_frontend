@@ -130,22 +130,24 @@ const ObstructionTable: React.FC = () => {
         const mappedData: ObstructionsData[] = [];
 
         data.orientations.forEach((orientation: any, index: number) => {
-          // ----- fila principal (sin división) -----
-          mappedData.push({
-            uniqueKey: `orientation-${orientation.orientation_id}`,
-            id: orientation.orientation_id,
-            division_id: null,
-            index: index + 1,
-            división: "-",
-            floor_id: orientation.enclosure_id,
-            a: 0,
-            b: 0,
-            d: 0,
-            anguloAzimut: orientation.azimut,
-            orientación: orientation.orientation,
-            obstrucción: 0,
-            mainRow: true,
-          });
+          // Solo agregar la fila principal si no hay divisiones
+          if (orientation.divisions.length === 0) {
+            mappedData.push({
+              uniqueKey: `orientation-${orientation.orientation_id}`,
+              id: orientation.orientation_id,
+              division_id: null,
+              index: mappedData.length + 1,
+              división: "-",
+              floor_id: orientation.enclosure_id,
+              a: 0,
+              b: 0,
+              d: 0,
+              anguloAzimut: orientation.azimut,
+              orientación: orientation.orientation,
+              obstrucción: 0,
+              mainRow: true,
+            });
+          }
 
           // ----- filas de divisiones -----
           orientation.divisions.forEach((div: any) => {
@@ -350,19 +352,59 @@ const ObstructionTable: React.FC = () => {
       },
     })
       .then(() => {
-        if (rowToDeleteDivision.mainRow) {
-          // resetear datos en la fila principal
-          setTableData((prev) =>
-            prev.map((r) =>
-              r.uniqueKey === rowToDeleteDivision.uniqueKey
-                ? { ...r, division_id: null, división: "-", a: 0, b: 0, d: 0, obstrucción: 0 }
-                : r
-            )
-          );
-        } else {
-          // eliminar fila secundaria
-          setTableData((prev) => prev.filter((r) => r.uniqueKey !== rowToDeleteDivision.uniqueKey));
-        }
+        // Después de eliminar, refrescar los datos para actualizar las obstrucciones
+        const enclosureId = localStorage.getItem("recinto_id");
+        return fetch(`${constantUrlApiEndpoint}/obstruction/${enclosureId}`, {
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      })
+      .then(response => response.json())
+      .then(data => {
+        const mappedData: ObstructionsData[] = [];
+        data.orientations.forEach((orientation: any, index: number) => {
+          // Solo agregar la fila principal si no hay divisiones
+          if (orientation.divisions.length === 0) {
+            mappedData.push({
+              uniqueKey: `orientation-${orientation.orientation_id}`,
+              id: orientation.orientation_id,
+              division_id: null,
+              index: mappedData.length + 1,
+              división: "-",
+              floor_id: orientation.enclosure_id,
+              a: 0,
+              b: 0,
+              d: 0,
+              anguloAzimut: orientation.azimut,
+              orientación: orientation.orientation,
+              obstrucción: 0,
+              mainRow: true,
+            });
+          }
+
+          orientation.divisions.forEach((div: any) => {
+            mappedData.push({
+              uniqueKey: `orientation-${orientation.orientation_id}-division-${div.division_id}`,
+              divisionKey: `division-${div.division_id}`,
+              id: orientation.orientation_id,
+              division_id: div.division_id,
+              index: mappedData.length + 1,
+              división: div.division,
+              floor_id: orientation.enclosure_id,
+              a: div.a,
+              b: div.b,
+              d: div.d,
+              anguloAzimut: orientation.azimut,
+              orientación: orientation.orientation,
+              obstrucción: div.num_orientation,
+              mainRow: false,
+            });
+          });
+        });
+
+        setTableData(mappedData);
         notify("División eliminada exitosamente", "success");
         setShowConfirmDivisionModal(false);
         setRowToDeleteDivision(null);
@@ -463,57 +505,58 @@ const ObstructionTable: React.FC = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        const newNum = data.num_orientation; // <-- número secuencial entregado
-
-        // ¿Existe fila vacía con "-"?
-        const existingRowIndex = tableData.findIndex(
-          (row) => row.id === currentOrientation.id && row.división === "-"
-        );
-
-        if (existingRowIndex !== -1) {
-          // Sobrescribe la primera fila vacía
-          const updatedRow: ObstructionsData = {
-            ...tableData[existingRowIndex],
-            division_id: data.id,
-            división: data.division,
-            a: data.a,
-            b: data.b,
-            d: data.d,
-            obstrucción: newNum,
-          };
-          setTableData((prev) =>
-            prev.map((row, idx) => (idx === existingRowIndex ? updatedRow : row))
-          );
-        } else {
-          // Inserta nueva fila justo después de las divisiones existentes de esa orientación
-          const newDivisionRow: ObstructionsData = {
-            ...currentOrientation,
-            uniqueKey: `orientation-${currentOrientation.id}-division-${data.id}`,
-            divisionKey: `division-${data.id}`,
-            division_id: data.id,
-            división: data.division,
-            a: data.a,
-            b: data.b,
-            d: data.d,
-            obstrucción: newNum,
-            index: tableData.length + 1,
-            mainRow: false,
-          };
-
-          const mainRowIndex = tableData.findIndex(
-            (row) => row.id === currentOrientation.id && row.mainRow
-          );
-          let insertIndex = mainRowIndex + 1;
-          for (let i = mainRowIndex + 1; i < tableData.length; i++) {
-            if (tableData[i].id === currentOrientation.id && !tableData[i].mainRow) insertIndex = i + 1;
-            else break;
+        // Después de crear, refrescar los datos para actualizar las obstrucciones
+        const enclosureId = localStorage.getItem("recinto_id");
+        return fetch(`${constantUrlApiEndpoint}/obstruction/${enclosureId}`, {
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }).then(response => response.json());
+      })
+      .then(data => {
+        const mappedData: ObstructionsData[] = [];
+        data.orientations.forEach((orientation: any, index: number) => {
+          // Solo agregar la fila principal si no hay divisiones
+          if (orientation.divisions.length === 0) {
+            mappedData.push({
+              uniqueKey: `orientation-${orientation.orientation_id}`,
+              id: orientation.orientation_id,
+              division_id: null,
+              index: mappedData.length + 1,
+              división: "-",
+              floor_id: orientation.enclosure_id,
+              a: 0,
+              b: 0,
+              d: 0,
+              anguloAzimut: orientation.azimut,
+              orientación: orientation.orientation,
+              obstrucción: 0,
+              mainRow: true,
+            });
           }
-          const newData = [...tableData];
-          newData.splice(insertIndex, 0, newDivisionRow);
-          setTableData(newData);
-        }
 
-        // Limpieza & cierre de modal
+          orientation.divisions.forEach((div: any) => {
+            mappedData.push({
+              uniqueKey: `orientation-${orientation.orientation_id}-division-${div.division_id}`,
+              divisionKey: `division-${div.division_id}`,
+              id: orientation.orientation_id,
+              division_id: div.division_id,
+              index: mappedData.length + 1,
+              división: div.division,
+              floor_id: orientation.enclosure_id,
+              a: div.a,
+              b: div.b,
+              d: div.d,
+              anguloAzimut: orientation.azimut,
+              orientación: orientation.orientation,
+              obstrucción: div.num_orientation,
+              mainRow: false,
+            });
+          });
+        });
+
+        setTableData(mappedData);
         setSelectedDivision("División 1");
         setAValue("");
         setBValue("");
@@ -534,7 +577,6 @@ const ObstructionTable: React.FC = () => {
       headerName: "Ángulo Azimut",
       field: "anguloAzimut",
       renderCell: (row: ObstructionsData) => {
-        if (!row.mainRow) return "";
         if (editingRowKey === row.uniqueKey) {
           return (
             <select className="form-control" value={selectedAngle} onChange={(e) => setSelectedAngle(e.target.value)}>
@@ -554,13 +596,12 @@ const ObstructionTable: React.FC = () => {
     {
       headerName: "Orientación",
       field: "orientación",
-      renderCell: (row: ObstructionsData) => (!row.mainRow ? "" : row.orientación || "-"),
+      renderCell: (row: ObstructionsData) => row.orientación || "-",
     },
     {
       headerName: "Acciones",
       field: "acciones",
       renderCell: (row: ObstructionsData) => {
-        if (!row.mainRow) return "";
         if (editingRowKey === row.uniqueKey) {
           return <ActionButtonsConfirm onAccept={() => handleAcceptEdit(row)} onCancel={handleCancel} />;
         }

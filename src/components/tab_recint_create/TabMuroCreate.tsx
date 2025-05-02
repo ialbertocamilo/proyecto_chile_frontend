@@ -870,7 +870,7 @@ const TabMuroCreate: React.FC = () => {
       [
         ...[
           { label: "Muros" },
-          { label: "Caracteristicas" },
+          { label: "Características espacio contiguo al elemento" },
           { label: "Ángulo Azimut" },
           { label: "Orientación" },
           { label: "Área[m²]" },

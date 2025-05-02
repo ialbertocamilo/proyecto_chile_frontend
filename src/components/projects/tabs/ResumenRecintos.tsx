@@ -172,9 +172,9 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
             </Col>
           </Row>
           <Row className="justify-content-between">
-            <Col sm={3}>
+            <Col sm={4}>
               <Table>
-                <thead>
+                <thead style={{ height: "100px" }}>
                   <tr>
                     <th className="text-center" colSpan={1} rowSpan={3}>
                       Recinto
@@ -202,11 +202,11 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                 </tbody>
               </Table>
             </Col>
-            <Col sm={9}>
+            <Col sm={8}>
               <Tab.Content className="overflow-x-scroll">
                 <Tab.Pane eventKey="first">
                   <Table>
-                    <thead>
+                    <thead style={{ height: "100px" }}>
                       <tr>
                         <th className="text-center" colSpan={4}>
                           Demanda
@@ -244,9 +244,9 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                     </tbody>
                   </Table>
                 </Tab.Pane>
-                <Tab.Pane eventKey="second">
+                <Tab.Pane style={{ width: "210%" }} eventKey="second">
                   <Table>
-                    <thead>
+                    <thead style={{ height: "100px" }}>
                       <tr>
                         <th className="text-center" colSpan={15}>
                           Consumo [kWh/m2]
@@ -353,7 +353,7 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="third">
                   <Table>
-                    <thead>
+                    <thead style={{ height: "100px" }}>
                       <tr>
                         <th className="text-center" colSpan={4}>
                           CO2_eq

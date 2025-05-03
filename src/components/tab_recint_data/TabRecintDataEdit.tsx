@@ -32,6 +32,7 @@ interface IFormData {
   perfilOcupacion: number;
   alturaPromedio: string;
   sensorCo2: boolean;
+  levelId: string;
 }
 const searchKeys = [
   "name_enclosure",
@@ -83,6 +84,7 @@ const TabRecintDataEdit: React.FC = () => {
       perfilOcupacion: row.occupation_profile_id,
       alturaPromedio: row.height.toString(),
       sensorCo2: row.co2_sensor === "Si",
+      levelId: row.level_id,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
     localStorage.setItem("recinto_id", row.id.toString());

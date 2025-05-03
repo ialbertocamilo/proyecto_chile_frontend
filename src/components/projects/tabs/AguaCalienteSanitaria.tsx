@@ -1,8 +1,10 @@
 import { useConstants } from "@/hooks/useConstantsHook";
+import axios from "axios";
 import { Plus, Trash2 } from "lucide-react"; // Importing Lucide icons
 import { useEffect, useState } from "react";
 import { Card, Col, Form, Row, Table } from "react-bootstrap";
 import CustomButton from "../../common/CustomButton"; // Assuming CustomButton is located here
+import { notify } from "@/utils/notify";
 
 interface AguaCalienteSanitariaProps {
   onlyView?: boolean;
@@ -308,6 +310,49 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
     }
   };
 
+  const saveData = async () => {
+    try {
+      const projectId = localStorage.getItem('project_id');
+      if (!projectId) {
+        notify('No se encontró el ID del proyecto');
+        return;
+      }
+
+      const requestData = {
+        t_acs: tAcs,
+        demanda_acs: demandaACS,
+        combustible: combustible,
+        rendimiento: rendimiento,
+        sist_distribucion: sistDistribucion,
+        sis_control: sistControl,
+        consumo_acs: consumoACS,
+        consumo_energia_primaria: consumoEnergiaPrimariaACS,
+        energia_primaria: co2eqEnergiaPrimaria,
+        data: tableData.map(row => ({
+          tipo_ocupacion: row.tipo,
+          cantidad_personas: row.cantidad,
+          pers_dia: row.consumo
+        }))
+      };
+
+      const response = await axios.post(
+        `https://ceela-backend-qa.svgdev.tech/agua-caliente/${projectId}`,
+        requestData,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      notify('Datos guardados exitosamente');
+    } catch (error) {
+      console.error('Error saving data:', error);
+      notify('Error al guardar los datos');
+    }
+  };
+
   return (
     <Row className="mb-4">
       <Col md={12}>
@@ -603,7 +648,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
         </Card>
         {!onlyView && (
           <CustomButton
-            onClick={() => console.log("Guardar Datos")}
+            onClick={saveData}
             style={{
               display: "inline-flex",
               alignItems: "center",

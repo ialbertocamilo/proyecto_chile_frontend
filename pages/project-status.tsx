@@ -164,6 +164,7 @@ const ProjectListStatusEditPage = () => {
       id: "actions",
       label: "Acciones",
       minWidth: 100,
+      sortable: false,
       cell: ({ row }: { row: Project }) => (
         <div className="text-center">
           <CustomButton

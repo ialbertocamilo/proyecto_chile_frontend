@@ -65,8 +65,8 @@ export default function TablesParameters({
     const dir = direction === "asc" ? 1 : -1;   // ③
   
     return [...data].sort((a, b) => {
-      let aVal = a[field];
-      let bVal = b[field];
+      const aVal = a[field];
+      const bVal = b[field];
   
       // Null / undefined al final, independientemente de asc/desc
       if (aVal == null) return 1;

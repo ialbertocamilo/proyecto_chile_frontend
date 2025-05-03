@@ -214,8 +214,8 @@ export default function DataTable<T extends { [key: string]: any }>({
     const dir = direction === "asc" ? 1 : -1;
 
     return [...filteredData].sort((a, b) => {
-      let aVal = a[field];
-      let bVal = b[field];
+      const aVal = a[field];
+      const bVal = b[field];
 
       if (aVal == null) return 1;
       if (bVal == null) return -1;

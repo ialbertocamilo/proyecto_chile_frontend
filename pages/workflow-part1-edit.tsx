@@ -168,12 +168,6 @@ const ProjectWorkflowPart1: React.FC = () => {
         value = 0;
       }
       setFormData((prev) => ({ ...prev, [field]: value }));
-      
-      // Update projectNameFromStorage when name_project changes
-      if (field === "name_project") {
-        setProjectNameFromStorage(value as string);
-      }
-      
       if (submitted && value !== "" && value !== 0) {
         setErrors((prev) => ({ ...prev, [field]: "" }));
       }
@@ -839,7 +833,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       >
                         <CustomButton
                           variant="save"
-                          onClick={handleStep1Action}
+                          onClick={enviarProyecto}
                           style={{ height: "50px" }}
                         >
                           <span
@@ -884,25 +878,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         formData={formData}
                         handleFormInputChange={handleFormInputChange}
                       />
-                      <p
-                        style={{
-                          fontSize: "12px",
-                          margin: "0",
-                          letterSpacing: "0",
-                        }}
-                      >
-                        *Para cambiar ubicación mover el marcador en el mapa
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "12px",
-                          margin: "0",
-                          letterSpacing: "0",
-                        }}
-                      >
-                        *Asegurarse que la Zona esté correctamente seleccionada
-                        para que se procese correctamente lo datos del proyecto
-                      </p>
+
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <div className="d-flex">
                           <CustomButton

@@ -24,6 +24,7 @@ interface EnclosureGeneralData {
   nombre_comuna: string;
   nombre_region: string;
   usage_profile_name: string;
+  level_id: string;
 }
 
 interface OccupationProfile {
@@ -220,6 +221,11 @@ const TabRecintDataCreate: React.FC = () => {
       headerName: "Sensor CO2",
       field: "co2_sensor",
       renderCell: (row: EnclosureGeneralData) => row.co2_sensor,
+    },
+    {
+      headerName: "Nivel de Recinto",
+      field: "level_id",
+      renderCell: (row: EnclosureGeneralData) => row.level_id,
     },
     {
       headerName: "Región",

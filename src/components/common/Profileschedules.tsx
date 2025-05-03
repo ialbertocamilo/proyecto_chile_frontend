@@ -198,14 +198,13 @@ const handleHoursUpdate = async () => {
         };
     const url = `/building_condition/${enclosureId}/update?section=user`;
     const patchRes = await api.patch(url, payload, { headers });
-
+    notify(`Horario actualizado con éxito`); // 🔔 3.1. Notificación de éxito
     /* ───────────────────────────── 4. PATCH de actualización ───────────────────────────── */
     console.log("PATCH payload:", payload);
     
     /* ───────────────────────────── 5. Refrescar UI ───────────────────────────── */
     await fetchWorkingHours();      // 🔄 vuelve a pedir los datos para mostrarlos actualizados
-    notify(`Horario actualizado: Inicio ${tempHours.start} - Fin ${tempHours.end}`, "success");
-    notify("Los cambios se han guardado correctamente", "info");
+    
     console.log("✅ Horario actualizado:", patchRes);
     setIsEditingHours(false);
     

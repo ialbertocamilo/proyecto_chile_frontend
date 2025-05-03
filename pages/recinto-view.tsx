@@ -512,7 +512,7 @@ const RecintoView: React.FC = () => {
       renderCell: (row: FloorData) => formatCellValue(row.pisos),
     },
     {
-      headerName: "Características",
+      headerName: "Características espacio contiguo al elemento",
       field: "caracteristicas",
       renderCell: (row: FloorData) => formatCellValue(row.caracteristicas),
     },

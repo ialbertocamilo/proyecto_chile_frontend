@@ -198,6 +198,7 @@ const ProjectListPage = () => {
       id: "actions",
       label: "Acciones",
       minWidth: 100,
+      sortable: false,
       cell: ({ row }: { row: Project }) => (
         <div>
           {/* Botón de IFC */}

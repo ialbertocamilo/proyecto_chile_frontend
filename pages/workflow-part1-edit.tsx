@@ -168,6 +168,12 @@ const ProjectWorkflowPart1: React.FC = () => {
         value = 0;
       }
       setFormData((prev) => ({ ...prev, [field]: value }));
+      
+      // Update projectNameFromStorage when name_project changes
+      if (field === "name_project") {
+        setProjectNameFromStorage(value as string);
+      }
+      
       if (submitted && value !== "" && value !== 0) {
         setErrors((prev) => ({ ...prev, [field]: "" }));
       }

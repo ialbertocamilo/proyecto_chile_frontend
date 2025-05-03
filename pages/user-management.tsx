@@ -198,6 +198,7 @@ const UserManagement = () => {
       id: "active",
       label: "Estado",
       minWidth: "2em",
+      sortable: false,
       cell: ({ row }: { row: User }) => (
         <Checkbox
           checked={row.active}

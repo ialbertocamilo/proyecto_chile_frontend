@@ -1,4 +1,9 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
+
+const collator = new Intl.Collator("es", { sensitivity: "base" }); // ①
+const isNumeric = (v: any) =>                                      // ②
+typeof v === "number" ||
+(!!v && !Array.isArray(v) && !isNaN(parseFloat(v as any)));
 
 interface Column {
   headerName: string | React.ReactNode;
@@ -6,6 +11,7 @@ interface Column {
   headerStyle?: React.CSSProperties;
   renderCell?: (row: any) => React.ReactNode;
   headerClick?: () => void; // Optional property for header click handler
+  sortable?: boolean;
 }
 
 interface TablesParametersProps {
@@ -27,11 +33,56 @@ interface MultiHeader {
   rows: HeaderRow[];
 }
 
+interface SortConfig {
+  field: string;
+  direction: 'asc' | 'desc';
+}
+
 export default function TablesParameters({
   columns,
   data,
   multiHeader,
 }: TablesParametersProps) {
+  const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
+
+ 
+
+  const handleSort = (field: string) => {
+    setSortConfig((current) => {
+      if (current?.field === field) {
+        return current.direction === 'asc' 
+          ? { field, direction: 'desc' } 
+          : null;
+      }
+      return { field, direction: 'asc' };
+    });
+  };
+
+  const sortedData = useMemo(() => {
+    if (!sortConfig) return data;
+  
+    const { field, direction } = sortConfig;
+    const dir = direction === "asc" ? 1 : -1;   // ③
+  
+    return [...data].sort((a, b) => {
+      let aVal = a[field];
+      let bVal = b[field];
+  
+      // Null / undefined al final, independientemente de asc/desc
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+  
+      // ④ Orden numérico robusto
+      if (isNumeric(aVal) && isNumeric(bVal)) {
+        return (parseFloat(aVal) - parseFloat(bVal)) * dir;
+      }
+  
+      // ⑤ Orden alfabético «humano» para español
+      return collator.compare(String(aVal), String(bVal)) * dir;
+    });
+  }, [data, sortConfig]);
+  
+
   return (
     <div className="container-fluid p-0">
       <div className="row g-0">
@@ -75,7 +126,7 @@ export default function TablesParameters({
                           ) < columns.length && (
                             <th
                               colSpan={
-                                columns.length -
+                                columns.length - 
                                 row.reduce(
                                   (acc, cell) => acc + (cell.colSpan ?? 1),
                                   0
@@ -93,13 +144,18 @@ export default function TablesParameters({
                       <th
                         className="text-center align-middle"
                         key={col.field}
-                        onClick={col.headerClick}
+                        onClick={() => col.sortable !== false && handleSort(col.field)}
                         style={{
-                          cursor: col.headerClick ? "pointer" : "default",
+                          cursor: col.sortable !== false ? "pointer" : "default",
                           ...col.headerStyle,
                         }}
                       >
                         {col.headerName}
+                        {sortConfig?.field === col.field && (
+                          <span className="ms-1">
+                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
                       </th>
                     ))}
                   </tr>
@@ -107,7 +163,7 @@ export default function TablesParameters({
               </thead>
 
               <tbody>
-                {data?.map((row, rowIndex) => (
+                {sortedData?.map((row, rowIndex) => (
                   <tr key={rowIndex}>
                     {columns?.map((col) => (
                       <td

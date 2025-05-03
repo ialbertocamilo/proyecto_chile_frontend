@@ -4,6 +4,19 @@ import Card from "./common/Card";
 import IconButton from "./common/IconButton";
 import SearchInput from "./inputs/SearchInput";
 
+
+// ------- helpers de ordenamiento -------
+const collator = new Intl.Collator("es", { sensitivity: "base" });
+
+const isNumeric = (v: any) =>
+  typeof v === "number" ||
+  (!!v && !Array.isArray(v) && !isNaN(parseFloat(v as any)));
+
+interface SortConfig {
+  field: string | number;
+  direction: "asc" | "desc";
+}
+
 interface DataTableProps<T> {
   data: T[];
   columns: {
@@ -12,6 +25,7 @@ interface DataTableProps<T> {
     minWidth?: number;
     format?: any;
     cell?: (props: { row: T }) => React.ReactNode;
+    sortable?: boolean;
   }[];
   loading?: boolean;
   onSearch?: (searchTerm: string) => void;
@@ -43,37 +57,37 @@ const TablePagination: React.FC<{
       }
       return range;
     }
-  
+
     // Siempre mostrar la primera página
     range.push(0);
-  
+
     // Calcular el rango central
     let start = Math.max(page - Math.floor(maxVisiblePages / 2), 1);
     const end = Math.min(start + maxVisiblePages - 1, totalPages - 2);
-  
+
     // Ajustar el inicio si estamos cerca del final
     if (end === totalPages - 2) {
       start = Math.max(end - maxVisiblePages + 1, 1);
     }
-  
+
     // Agregar elipsis inicial si es necesario
     if (start > 1) {
       range.push('...');
     }
-  
+
     // Agregar páginas del rango central
     for (let i = start; i <= end; i++) {
       range.push(i);
     }
-  
+
     // Agregar elipsis final si es necesario
     if (end < totalPages - 2) {
       range.push('...');
     }
-  
+
     // Siempre mostrar la última página
     range.push(totalPages - 1);
-  
+
     return range;
   };
 
@@ -144,6 +158,18 @@ export default function DataTable<T extends { [key: string]: any }>({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
+
+  const handleSort = (field: string | number) => {
+    setSortConfig((current) => {
+      if (current?.field === field) {
+        return current.direction === "asc"
+          ? { field, direction: "desc" }
+          : null;            // tercer clic = sin orden
+      }
+      return { field, direction: "asc" };
+    });
+  };
 
   const handleChangePage = (newPage: number) => {
     if (
@@ -182,7 +208,27 @@ export default function DataTable<T extends { [key: string]: any }>({
     })
     : data;
 
-  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const sortedData = React.useMemo(() => {
+    if (!sortConfig) return filteredData;
+    const { field, direction } = sortConfig;
+    const dir = direction === "asc" ? 1 : -1;
+
+    return [...filteredData].sort((a, b) => {
+      let aVal = a[field];
+      let bVal = b[field];
+
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+
+      if (isNumeric(aVal) && isNumeric(bVal)) {
+        return (parseFloat(aVal) - parseFloat(bVal)) * dir;
+      }
+      return collator.compare(String(aVal), String(bVal)) * dir;
+    });
+  }, [filteredData, sortConfig]);
+
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
+
 
   return (
     <Card>
@@ -209,12 +255,22 @@ export default function DataTable<T extends { [key: string]: any }>({
                     {columns.map((column) => (
                       <th
                         key={column.id.toString()}
-                        style={{ color: "var(--primary-color)" }}
+                        style={{
+                          color: "var(--primary-color)",
+                          cursor: column.sortable === false ? "default" : "pointer",
+                        }}
                         className="text-start"
+                        onClick={() => column.sortable !== false && handleSort(column.id)}
                       >
                         {column.label}
+                        {sortConfig?.field === column.id && (
+                          <span className="ms-1">
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
                       </th>
                     ))}
+
                   </tr>
                 </thead>
                 <tbody>
@@ -236,7 +292,7 @@ export default function DataTable<T extends { [key: string]: any }>({
                       </td>
                     </tr>
                   ) : (
-                    filteredData
+                    sortedData
                       .slice(
                         page * rowsPerPage,
                         page * rowsPerPage + rowsPerPage

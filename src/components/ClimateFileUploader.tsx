@@ -206,11 +206,7 @@ Longitud: ${selectedLocation.Position[0]}`
         <h4>Archivos Subidos</h4>
         <SearchParameters onSearch={handleSearch} />
 
-        <div
-          className="table-responsive"
-          style={{ maxHeight: "400px", overflowY: "auto" }}
-        >
-          {/* 🔽 SOLO ESTA LÍNEA CAMBIA: se usa TablesParameters */}
+        <div className="table-responsive">
           <TablesParameters data={filteredFiles} columns={columns} />
         </div>
       </div>

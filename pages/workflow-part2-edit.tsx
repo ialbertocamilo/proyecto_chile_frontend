@@ -30,6 +30,7 @@ import { createDetail } from "@/service/details";
 import DeleteDetailButton from "@/components/common/DeleteDetailButton";
 import { IDetail } from "@/shared/interfaces/detail.interface";
 import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
+import SortHandler from "@/utils/sortHandler";
 
 // Funciones auxiliares para formatear valores
 const formatValue = (value: number | null | undefined): string => {
@@ -1106,12 +1107,32 @@ const WorkFlowpar2editPage: React.FC = () => {
   };
 
   // ===================== RENDER MUROS ======================
+  const { handleSort: onMurosSort } = SortHandler({
+    data: murosTabList,
+    onSort: (sortedData) => setMurosTabList(sortedData),
+  });
   const renderMurosParameters = () => {
     const columnsMuros = [
-      { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
-      { headerName: "Valor U (W/m²K)", field: "valorU" },
-      { headerName: "Color Exterior", field: "colorExterior" },
-      { headerName: "Color Interior", field: "colorInterior" },
+      {
+        headerName: "Nombre Abreviado",
+        field: "nombreAbreviado",
+        headerClick: () => onMurosSort("name_detail"),
+      },
+      {
+        headerName: "Valor U (W/m²K)",
+        field: "valorU",
+        headerClick: () => onMurosSort("value_u"),
+      },
+      {
+        headerName: "Color Exterior",
+        field: "colorExterior",
+        headerClick: () => onMurosSort("info.surface_color.exterior.name"),
+      },
+      {
+        headerName: "Color Interior",
+        field: "colorInterior",
+        headerClick: () => onMurosSort("info.surface_color.interior.name"),
+      },
       { headerName: "Acciones", field: "acciones" },
     ];
     const murosData = murosTabList

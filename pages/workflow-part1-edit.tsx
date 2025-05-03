@@ -884,7 +884,25 @@ const ProjectWorkflowPart1: React.FC = () => {
                         formData={formData}
                         handleFormInputChange={handleFormInputChange}
                       />
-
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          margin: "0",
+                          letterSpacing: "0",
+                        }}
+                      >
+                        *Para cambiar ubicación mover el marcador en el mapa
+                      </p>
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          margin: "0",
+                          letterSpacing: "0",
+                        }}
+                      >
+                        *Asegurarse que la Zona esté correctamente seleccionada
+                        para que se procese correctamente lo datos del proyecto
+                      </p>
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <div className="d-flex">
                           <CustomButton

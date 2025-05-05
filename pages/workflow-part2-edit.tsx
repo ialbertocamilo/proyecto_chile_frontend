@@ -119,7 +119,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
 // Interfaces adicionales
 // -----------------------
 interface TabItem {
-  code_icf?: string;
+  code_ifc?: string;
   id_detail?: number;
   id?: number;
   name_detail: string;
@@ -1115,8 +1115,8 @@ const WorkFlowpar2editPage: React.FC = () => {
   const renderMurosParameters = () => {
     const columnsMuros = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       {
         headerName: "Nombre Abreviado",
@@ -1152,7 +1152,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         const isEditing = editingRowId === item.id;
         return {
           __detail: item,
-          code_icf: item.code_icf || "-",
+          code_ifc: item.code_ifc || "-",
           nombreAbreviado: isEditing ? (
             "created_status" in item &&
             (item.created_status === "default" ||
@@ -1326,8 +1326,8 @@ const WorkFlowpar2editPage: React.FC = () => {
   const renderTechumbreParameters = () => {
     const columnsTech = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
@@ -1346,7 +1346,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         const isEditing = editingTechRowId === item.id;
         return {
           __detail: item,
-          code_icf: item.code_icf || "-",
+          code_ifc: item.code_ifc || "-",
           nombreAbreviado: isEditing ? (
             "created_status" in item &&
             (item.created_status === "default" ||
@@ -1519,8 +1519,8 @@ const WorkFlowpar2editPage: React.FC = () => {
   const renderPisosParameters = () => {
     const columnsPisos = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
@@ -1578,7 +1578,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         return {
           __detail: item,
           id: item.id,
-          code_icf: item.code_icf || "-",
+          code_ifc: item.code_ifc || "-",
 
           nombre: isEditing ? (
             "created_status" in item &&

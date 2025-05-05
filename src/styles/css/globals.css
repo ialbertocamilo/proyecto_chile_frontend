@@ -425,3 +425,9 @@ h6 {
   border-bottom: 3px solid #359ea7;
   border-radius: 0 !important;
 }
+
+.tables-results{
+  th{
+    min-width: 100px;
+  }
+}

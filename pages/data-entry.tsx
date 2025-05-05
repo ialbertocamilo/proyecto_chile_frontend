@@ -26,6 +26,7 @@ interface MaterialAtributs {
 }
 
 export interface Material {
+  code_ifc: string,
   id: number;
   atributs: MaterialAtributs;
   create_status?: string;
@@ -33,6 +34,7 @@ export interface Material {
 }
 
 export interface ElementBase {
+  code_ifc: string,
   id: number;
   type: "window" | "door";
   name_element: string;
@@ -770,6 +772,7 @@ const DataEntryPage: React.FC = () => {
   // === RENDER DE STEP 3: Lista de Materiales ===
   const renderStep3Materials = () => {
     const columnsMaterials = [
+      { headerName: "Código IFC", field: "code_ifc"},
       { headerName: "Nombre Material", field: "materialName" },
       { headerName: "Conductividad (W/m2K)", field: "conductivity" },
       { headerName: "Calor específico (J/kgK)", field: "specific_heat" },
@@ -785,6 +788,7 @@ const DataEntryPage: React.FC = () => {
         const isDefault = mat.create_status === "default" || mat.create_status === "global";
         const formattedConductivity = mat.atributs.conductivity.toFixed(3);
         return {
+          code_ifc: mat.code_ifc || '-',
           materialName: (
             <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : undefined}>
               {mat.atributs.name}
@@ -865,6 +869,7 @@ const DataEntryPage: React.FC = () => {
   const renderStep5Elements = () => {
     if (modalElementType === "ventanas") {
       const columnsVentanas = [
+        { headerName: "Cófigo IFC", field: "code_ifc"},
         { headerName: "Nombre Elemento", field: "name_element" },
         { headerName: "U Vidrio [W/m2K]", field: "u_vidrio", },
         { headerName: "FS Vidrio", field: "fs_vidrio" },
@@ -874,7 +879,7 @@ const DataEntryPage: React.FC = () => {
         { headerName: "FM [%]", field: "fm" },
         { headerName: "Acciones", field: "acciones" },
       ];
-
+      
       const ventanasData = elementsList
         .filter(
           (el) =>
@@ -884,6 +889,7 @@ const DataEntryPage: React.FC = () => {
         .map((el) => {
           const isDefault = (el as any).created_status === "created";
           return {
+            code_ifc: el.code_ifc || '-',
             name_element: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.name_element}
@@ -998,6 +1004,7 @@ const DataEntryPage: React.FC = () => {
       );
     } else {
       const columnsPuertas = [
+        { headerName: "Cófigo IFC", field: "code_ifc"},
         { headerName: "Nombre Elemento", field: "name_element" },
         { headerName: "U Puerta opaca [W/m2K]", field: "u_puerta_opaca" },
         { headerName: "Nombre Ventana", field: "name_ventana" },
@@ -1006,7 +1013,6 @@ const DataEntryPage: React.FC = () => {
         { headerName: "FM [%]", field: "fm" },
         { headerName: "Acciones", field: "acciones" },
       ];
-
       const puertasData = elementsList
         .filter(
           (el) =>
@@ -1016,6 +1022,7 @@ const DataEntryPage: React.FC = () => {
         .map((el) => {
           const isDefault = (el as any).created_status === "created";
           return {
+            code_ifc: el.code_ifc || '-',
             name_element: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.name_element}

@@ -44,7 +44,7 @@ export interface ElementAttributesWindow {
 export type ElementAttributes = ElementAttributesDoor | ElementAttributesWindow;
 
 export interface Element {
-  code_icf: string;
+  code_ifc: string;
   id: number;
   type: "door" | "window";
   name_element: string;

@@ -239,6 +239,16 @@ const WorkFlowpar2createPage: React.FC = () => {
     name_detail: "",
     colorExterior: "Intermedio",
     colorInterior: "Intermedio",
+    ref_aisl_vertical: {
+      lambda: "",
+      e_aisl: "",
+      d: "",
+    },
+    ref_aisl_horizontal: {
+      lambda: "",
+      e_aisl: "",
+      d: "",
+    },
   });
 
   // ----------------------------------------------------
@@ -571,8 +581,8 @@ const WorkFlowpar2createPage: React.FC = () => {
   const handleSaveDetalle = async () => {
     if (
       !newDetalle.name_detail ||
-      !newDetalle.colorInterior ||
-      !newDetalle.colorExterior
+      (tabStep4 !== "pisos" &&
+        (!newDetalle.colorInterior || !newDetalle.colorExterior))
     ) {
       notify("Por favor, complete todos los campos del Detalle Constructivo.");
       return;
@@ -591,14 +601,14 @@ const WorkFlowpar2createPage: React.FC = () => {
         name_detail: newDetalle.name_detail,
         info: {
           ref_aisl_vertical: {
-            d: 0,
-            e_aisl: 0,
-            lambda: 0,
+            d: Number(newDetalle.ref_aisl_vertical.d),
+            e_aisl: Number(newDetalle.ref_aisl_vertical.e_aisl),
+            lambda: Number(newDetalle.ref_aisl_vertical.lambda),
           },
           ref_aisl_horizontal: {
-            d: 0,
-            e_aisl: 0,
-            lambda: 0,
+            d: Number(newDetalle.ref_aisl_horizontal.d),
+            e_aisl: Number(newDetalle.ref_aisl_horizontal.e_aisl),
+            lambda: Number(newDetalle.ref_aisl_horizontal.lambda),
           },
         },
       };
@@ -635,6 +645,16 @@ const WorkFlowpar2createPage: React.FC = () => {
         name_detail: "",
         colorExterior: "Intermedio",
         colorInterior: "Intermedio",
+        ref_aisl_vertical: {
+          lambda: "",
+          e_aisl: "",
+          d: "",
+        },
+        ref_aisl_horizontal: {
+          lambda: "",
+          e_aisl: "",
+          d: "",
+        },
       });
       fetchFetchedDetails();
     } catch (error) {
@@ -2753,6 +2773,16 @@ const WorkFlowpar2createPage: React.FC = () => {
               name_detail: "",
               colorExterior: "Intermedio",
               colorInterior: "Intermedio",
+              ref_aisl_vertical: {
+                lambda: "",
+                e_aisl: "",
+                d: "",
+              },
+              ref_aisl_horizontal: {
+                lambda: "",
+                e_aisl: "",
+                d: "",
+              },
             });
           }}
           onSave={handleSaveDetalle}
@@ -2775,9 +2805,156 @@ const WorkFlowpar2createPage: React.FC = () => {
             </div>
 
             {/* 
-                Para pisos no pedimos color exterior/interior 
+                Para pisos pedimos aislamiento vertical/horizontal 
             */}
-            {tabStep4 !== "pisos" && (
+            {tabStep4 === "pisos" ? (
+              <>
+                <div className="form-group mt-4">
+                  <h6>Aislamiento Vertical</h6>
+                  <div className="row">
+                    <div className="col-md-4">
+                      <label>I [W/mK]</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className="form-control"
+                        value={newDetalle.ref_aisl_vertical.lambda}
+                        onKeyDown={(e) => {
+                          if (e.key === "-") e.preventDefault();
+                        }}
+                        onChange={(e) =>
+                          setNewDetalle((prev) => ({
+                            ...prev,
+                            ref_aisl_vertical: {
+                              ...prev.ref_aisl_vertical,
+                              lambda: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label>e Aisl [cm]</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className="form-control"
+                        value={newDetalle.ref_aisl_vertical.e_aisl}
+                        onKeyDown={(e) => {
+                          if (e.key === "-") e.preventDefault();
+                        }}
+                        onChange={(e) =>
+                          setNewDetalle((prev) => ({
+                            ...prev,
+                            ref_aisl_vertical: {
+                              ...prev.ref_aisl_vertical,
+                              e_aisl: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label>D [cm]</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className="form-control"
+                        value={newDetalle.ref_aisl_vertical.d}
+                        onKeyDown={(e) => {
+                          if (e.key === "-") e.preventDefault();
+                        }}
+                        onChange={(e) =>
+                          setNewDetalle((prev) => ({
+                            ...prev,
+                            ref_aisl_vertical: {
+                              ...prev.ref_aisl_vertical,
+                              d: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-group mt-4">
+                  <h6>Aislamiento Horizontal</h6>
+                  <div className="row">
+                    <div className="col-md-4">
+                      <label>λ [W/mK]</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className="form-control"
+                        value={newDetalle.ref_aisl_horizontal.lambda}
+                        onKeyDown={(e) => {
+                          if (e.key === "-") e.preventDefault();
+                        }}
+                        onChange={(e) =>
+                          setNewDetalle((prev) => ({
+                            ...prev,
+                            ref_aisl_horizontal: {
+                              ...prev.ref_aisl_horizontal,
+                              lambda: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label>e Aisl [cm]</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className="form-control"
+                        value={newDetalle.ref_aisl_horizontal.e_aisl}
+                        onKeyDown={(e) => {
+                          if (e.key === "-") e.preventDefault();
+                        }}
+                        onChange={(e) =>
+                          setNewDetalle((prev) => ({
+                            ...prev,
+                            ref_aisl_horizontal: {
+                              ...prev.ref_aisl_horizontal,
+                              e_aisl: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label>D [cm]</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className="form-control"
+                        value={newDetalle.ref_aisl_horizontal.d}
+                        onKeyDown={(e) => {
+                          if (e.key === "-") e.preventDefault();
+                        }}
+                        onChange={(e) =>
+                          setNewDetalle((prev) => ({
+                            ...prev,
+                            ref_aisl_horizontal: {
+                              ...prev.ref_aisl_horizontal,
+                              d: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              // Para muros/techumbre pedimos color exterior/interior
               <>
                 <div className="form-group">
                   <label>Color Exterior</label>

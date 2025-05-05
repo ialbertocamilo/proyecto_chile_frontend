@@ -32,6 +32,12 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({
     name_detail: "",
     colorExterior: "Intermedio",
     colorInterior: "Intermedio",
+    vertical_lambda: "",
+    vertical_e_aisl: "",
+    vertical_d: "",
+    horizontal_lambda: "",
+    horizontal_e_aisl: "",
+    horizontal_d: "",
   });
 
   // Función de obtención del token desde localStorage.
@@ -62,8 +68,16 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({
       payload = {
         name_detail: newDetalle.name_detail,
         info: {
-          ref_aisl_vertical: { d: 0, e_aisl: 0, lambda: 0 },
-          ref_aisl_horizontal: { d: 0, e_aisl: 0, lambda: 0 },
+          ref_aisl_vertical: {
+            lambda: parseFloat(newDetalle.vertical_lambda),
+            e_aisl: parseFloat(newDetalle.vertical_e_aisl),
+            d: parseFloat(newDetalle.vertical_d),
+          },
+          ref_aisl_horizontal: {
+            lambda: parseFloat(newDetalle.horizontal_lambda),
+            e_aisl: parseFloat(newDetalle.horizontal_e_aisl),
+            d: parseFloat(newDetalle.horizontal_d),
+          },
         },
       };
     } else {
@@ -92,11 +106,24 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({
         name_detail: "",
         colorExterior: "Intermedio",
         colorInterior: "Intermedio",
+        vertical_lambda: "",
+        vertical_e_aisl: "",
+        vertical_d: "",
+        horizontal_lambda: "",
+        horizontal_e_aisl: "",
+        horizontal_d: "",
       });
       if (onNewCreated) onNewCreated();
     } catch (error) {
       console.error("Error al crear el detalle constructivo:", error);
       notify("Ya existe un detalle con el nombre asignado.");
+    }
+  };
+
+  // Función para prevenir el ingreso de signos negativos en los inputs numéricos.
+  const preventMinus = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === '-') {
+      e.preventDefault();
     }
   };
 
@@ -115,6 +142,12 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({
               name_detail: "",
               colorExterior: "Intermedio",
               colorInterior: "Intermedio",
+              vertical_lambda: "",
+              vertical_e_aisl: "",
+              vertical_d: "",
+              horizontal_lambda: "",
+              horizontal_e_aisl: "",
+              horizontal_d: "",
             });
           }}
           onSave={handleSaveDetalle}
@@ -132,46 +165,166 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({
                 }
               />
             </div>
-            {/* Solo se muestran los campos de color para Muro y Techo */}
-            {tab !== "pisos" && (
+            {tab === "pisos" ? (
               <>
-                <div className="form-group">
-                  <label>Color Exterior</label>
-                  <select
-                    className="form-control"
-                    value={newDetalle.colorExterior}
-                    onChange={(e) =>
-                      setNewDetalle({
-                        ...newDetalle,
-                        colorExterior: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="Claro">Claro</option>
-                    <option value="Oscuro">Oscuro</option>
-                    <option value="Intermedio">Intermedio</option>
-                  </select>
+                <h5 className="mt-4">Aislamiento Vertical</h5>
+                <div className="row">
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>I [W/mK]</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="form-control"
+                        value={newDetalle.vertical_lambda}
+                        onKeyDown={preventMinus}
+                        onChange={(e) =>
+                          setNewDetalle({
+                            ...newDetalle,
+                            vertical_lambda: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                  <div className="form-group">
+                    <label>e Aisl [cm]</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="form-control"
+                      value={newDetalle.vertical_e_aisl}
+                      onKeyDown={preventMinus}
+                      onChange={(e) =>
+                        setNewDetalle({
+                          ...newDetalle,
+                          vertical_e_aisl: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  </div>
+                  <div className="col-md-4">
+                  <div className="form-group">
+                    <label>D [cm]</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="form-control"
+                      value={newDetalle.vertical_d}
+                      onKeyDown={preventMinus}
+                      onChange={(e) =>
+                        setNewDetalle({
+                          ...newDetalle,
+                          vertical_d: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>Color Interior</label>
-                  <select
-                    className="form-control"
-                    value={newDetalle.colorInterior}
-                    onChange={(e) =>
-                      setNewDetalle({
-                        ...newDetalle,
-                        colorInterior: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="Claro">Claro</option>
-                    <option value="Oscuro">Oscuro</option>
-                    <option value="Intermedio">Intermedio</option>
-                  </select>
+
+                  <h5 className="mt-3">Aislamiento Horizontal</h5>
+                  <div className="row">
+                  <div className="col-md-4">
+                  <div className="form-group">
+                    <label>I [W/mK]</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      className="form-control"
+                      value={newDetalle.horizontal_lambda}
+                      onKeyDown={preventMinus}
+                      onChange={(e) =>
+                        setNewDetalle({
+                          ...newDetalle,
+                          horizontal_lambda: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  </div>
+                  <div className="col-md-4">
+                  <div className="form-group">
+                    <label>e Aisl [cm]</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      className="form-control"
+                      value={newDetalle.horizontal_e_aisl}
+                      onKeyDown={preventMinus}
+                      onChange={(e) =>
+                        setNewDetalle({
+                          ...newDetalle,
+                          horizontal_e_aisl: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  </div>
+                  <div className="col-md-4">
+                  <div className="form-group">
+                    <label>D [cm]</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      className="form-control"
+                      value={newDetalle.horizontal_d}
+                      onKeyDown={preventMinus}
+                      onChange={(e) =>
+                        setNewDetalle({
+                          ...newDetalle,
+                          horizontal_d: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  </div>
                 </div>
-              </>
+                </>
+                ) : (
+                <>
+                  <div className="form-group">
+                    <label>Color Exterior</label>
+                    <select
+                      className="form-control"
+                      value={newDetalle.colorExterior}
+                      onChange={(e) =>
+                        setNewDetalle({
+                          ...newDetalle,
+                          colorExterior: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="Claro">Claro</option>
+                      <option value="Oscuro">Oscuro</option>
+                      <option value="Intermedio">Intermedio</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Color Interior</label>
+                    <select
+                      className="form-control"
+                      value={newDetalle.colorInterior}
+                      onChange={(e) =>
+                        setNewDetalle({
+                          ...newDetalle,
+                          colorInterior: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="Claro">Claro</option>
+                      <option value="Oscuro">Oscuro</option>
+                      <option value="Intermedio">Intermedio</option>
+                    </select>
+                  </div>
+                </>
             )}
-          </form>
+              </form>
         </ModalCreate>
       )}
     </>

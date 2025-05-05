@@ -31,10 +31,28 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
   onDetailCreated,
 }) => {
   const [showModal, setShowModal] = useState(false);
-  const [newDetail, setNewDetail] = useState({
+  interface NewDetail {
+    name_detail: string;
+    colorInterior: string;
+    colorExterior: string;
+    vertical_lambda: number | undefined;
+    vertical_e_aisl: number | undefined;
+    vertical_d: number | undefined;
+    horizontal_lambda: number | undefined;
+    horizontal_e_aisl: number | undefined;
+    horizontal_d: number | undefined;
+  }
+  
+  const [newDetail, setNewDetail] = useState<NewDetail>({
     name_detail: "",
     colorInterior: "Intermedio",
     colorExterior: "Intermedio",
+    vertical_lambda: undefined,
+    vertical_e_aisl: undefined,
+    vertical_d: undefined,
+    horizontal_lambda: undefined,
+    horizontal_e_aisl: undefined,
+    horizontal_d: undefined,
   });
 
   const getToken = (): string | null => {
@@ -64,12 +82,19 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
 
     let payload;
     if (detailType === "Piso") {
-      // Para pisos se envía un payload con datos de aislamiento en 0
       payload = {
         name_detail: newDetail.name_detail,
         info: {
-          ref_aisl_vertical: { d: 0, e_aisl: 0, lambda: 0 },
-          ref_aisl_horizontal: { d: 0, e_aisl: 0, lambda: 0 },
+          ref_aisl_vertical: {
+            d: newDetail.vertical_d,
+            e_aisl: newDetail.vertical_e_aisl,
+            lambda: newDetail.vertical_lambda,
+          },
+          ref_aisl_horizontal: {
+            d: newDetail.horizontal_d,
+            e_aisl: newDetail.horizontal_e_aisl,
+            lambda: newDetail.horizontal_lambda,
+          },
         },
       };
     } else {
@@ -101,6 +126,12 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
         name_detail: "",
         colorExterior: "Intermedio",
         colorInterior: "Intermedio",
+        vertical_lambda: undefined,
+        vertical_e_aisl: undefined,
+        vertical_d: undefined,
+        horizontal_lambda: undefined,
+        horizontal_e_aisl: undefined,
+        horizontal_d: undefined,
       });
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -144,6 +175,12 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
               name_detail: "",
               colorExterior: "Intermedio",
               colorInterior: "Intermedio",
+              vertical_lambda: undefined,
+              vertical_e_aisl: undefined,
+              vertical_d: undefined,
+              horizontal_lambda: undefined,
+              horizontal_e_aisl: undefined,
+              horizontal_d: undefined,
             });
           }}
           onSave={handleSaveDetail}
@@ -164,8 +201,156 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
                 }
               />
             </div>
-            {/* Se muestran los campos de color solo si el tipo no es Piso */}
-            {detailType !== "Piso" && (
+            {detailType === "Piso" ? (
+              <>
+                <div className="mt-4"><h5>Aislamiento Vertical</h5>
+                  <div className="row">
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>I [W/mK]</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          className="form-control"
+                          value={newDetail.vertical_lambda || ''}
+                          onChange={(e) =>
+                            setNewDetail((prev) => ({
+                              ...prev,
+                              vertical_lambda: parseFloat(e.target.value) || undefined,
+                            }))
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === '-' || e.key === 'e') {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>e Aisl [cm]</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          className="form-control"
+                          value={newDetail.vertical_e_aisl || ''}
+                          onChange={(e) =>
+                            setNewDetail((prev) => ({
+                              ...prev,
+                              vertical_e_aisl: parseFloat(e.target.value) || undefined,
+                            }))
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === '-' || e.key === 'e') {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>D [cm]</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          className="form-control"
+                          value={newDetail.vertical_d || ''}
+                          onChange={(e) =>
+                            setNewDetail((prev) => ({
+                              ...prev,
+                              vertical_d: parseFloat(e.target.value) || undefined,
+                            }))
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === '-' || e.key === 'e') {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <h5 className="mt-4">Aislamiento Horizontal</h5>
+                  <div className="row">
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>I [W/mK]</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          className="form-control"
+                          value={newDetail.horizontal_lambda || ''}
+                          onChange={(e) =>
+                            setNewDetail((prev) => ({
+                              ...prev,
+                              horizontal_lambda: parseFloat(e.target.value) || undefined,
+                            }))
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === '-' || e.key === 'e') {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>e Aisl [cm]</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          className="form-control"
+                          value={newDetail.horizontal_e_aisl || ''}
+                          onChange={(e) =>
+                            setNewDetail((prev) => ({
+                              ...prev,
+                              horizontal_e_aisl: parseFloat(e.target.value) || undefined,
+                            }))
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === '-' || e.key === 'e') {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>D [cm]</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          className="form-control"
+                          value={newDetail.horizontal_d || ''}
+                          onChange={(e) =>
+                            setNewDetail((prev) => ({
+                              ...prev,
+                              horizontal_d: parseFloat(e.target.value) || undefined,
+                            }))
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === '-' || e.key === 'e') {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
               <>
                 <div className="form-group">
                   <label>Color Exterior</label>

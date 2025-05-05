@@ -162,6 +162,10 @@ const AdministrationPage: React.FC = () => {
 
   // Columnas y datos para la tabla de materiales
   const materialsColumns = [
+    {
+      headerName: "Código ICF",
+      field: "code_icf",
+    },
     { headerName: "Nombre Material", field: "name" },
     { headerName: "Conductividad (W/m2K)", field: "conductivity" },
     { headerName: "Calor específico (J/kgK)", field: "specific_heat" },
@@ -176,6 +180,7 @@ const AdministrationPage: React.FC = () => {
     .map((mat: any) => {
       const isDefault = mat.create_status === "default";
       return {
+        code_icf: mat.code_icf || "-",
         name: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {mat.atributs.name}
@@ -231,6 +236,10 @@ const AdministrationPage: React.FC = () => {
 
   // Columnas y datos para la tabla de ventanas
   const windowsColumns = [
+    {
+      headerName: "Código ICF",
+      field: "code_icf",
+    },
     { headerName: "Nombre Elemento", field: "name_element" },
     { headerName: "U Vidrio [W/m2K]", field: "u_vidrio" },
     { headerName: "FS Vidrio", field: "fs_vidrio" },
@@ -250,6 +259,7 @@ const AdministrationPage: React.FC = () => {
       const isDefault =
         (el as { created_status?: string }).created_status === "default";
       return {
+        code_icf: el.code_icf || "-",
         name_element: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {el.name_element}
@@ -333,6 +343,10 @@ const AdministrationPage: React.FC = () => {
 
   // Columnas y datos para la tabla de puertas
   const doorsColumns = [
+    {
+      headerName: "Código ICF",
+      field: "code_icf",
+    },
     { headerName: "Nombre Elemento", field: "name_element" },
     { headerName: "U Puerta opaca [W/m2K]", field: "u_puerta_opaca" },
     { headerName: "Nombre Ventana", field: "name_ventana" },
@@ -351,6 +365,7 @@ const AdministrationPage: React.FC = () => {
       const isDefault =
         (el as { created_status?: string }).created_status === "default";
       return {
+        code_icf: el.code_icf || "-",
         name_element: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {el.name_element}

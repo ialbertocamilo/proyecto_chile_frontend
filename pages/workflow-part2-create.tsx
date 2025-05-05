@@ -40,6 +40,7 @@ interface Detail {
 }
 
 interface TabItem {
+  code_icf?: string;
   id_detail?: number;
   id?: number;
   name_detail: string;
@@ -1380,6 +1381,10 @@ const WorkFlowpar2createPage: React.FC = () => {
   // ------------------------------------------
   const renderMurosTable = () => {
     const columnsMuros = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
@@ -1394,6 +1399,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       .map((item) => {
         const isEditing = editingRowId === item.id;
         return {
+          code_icf: item.code_icf || "-",
           nombreAbreviado: isEditing ? (
             item.created_status === "default" ||
             item.created_status === "global" ? (
@@ -1462,9 +1468,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             <div>
               <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
               <CustomButton
-              disabled={
-                item.created_status === "default" ||
-                item.created_status === "global"
+                disabled={
+                  item.created_status === "default" ||
+                  item.created_status === "global"
                 }
                 className="btn-table"
                 variant="editIcon"
@@ -1512,6 +1518,10 @@ const WorkFlowpar2createPage: React.FC = () => {
   // ------------------------------------------
   const renderTechumbreTable = () => {
     const columnsTech = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
@@ -1526,6 +1536,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       .map((item) => {
         const isEditing = editingTechRowId === item.id;
         return {
+          code_icf: item.code_icf || "-",
           nombreAbreviado: isEditing ? (
             item.created_status === "default" ||
             item.created_status === "global" ? (
@@ -1592,9 +1603,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             <div>
               <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
               <CustomButton
-              disabled={
-                item.created_status === "default" ||
-                item.created_status === "global"
+                disabled={
+                  item.created_status === "default" ||
+                  item.created_status === "global"
                 }
                 variant="editIcon"
                 className="btn-table"
@@ -1643,6 +1654,7 @@ const WorkFlowpar2createPage: React.FC = () => {
   const multiHeaderPisos = {
     rows: [
       [
+        { label: "Código ICF", rowSpan: 2 },
         { label: "Nombre", rowSpan: 2 },
         { label: "U [W/m²K]", rowSpan: 2 },
         { label: "Aislamiento bajo piso", colSpan: 2 },
@@ -1675,6 +1687,10 @@ const WorkFlowpar2createPage: React.FC = () => {
 
   const renderPisosTable = () => {
     const columnsPisos = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
       { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
@@ -1699,6 +1715,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         const isEditing = editingPisoRowId === item.id;
 
         return {
+          code_icf: item.code_icf || "-",
           nombre: isEditing ? (
             item.created_status === "default" ||
             item.created_status === "global" ? (
@@ -1878,9 +1895,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             <div style={{ width: "160px" }}>
               <AddDetailOnLayer item={item} OnDetailOpened={OnDetailOpened} />
               <CustomButton
-              disabled={
-                item.created_status === "default" ||
-                item.created_status === "global"
+                disabled={
+                  item.created_status === "default" ||
+                  item.created_status === "global"
                 }
                 className="btn-table"
                 variant="editIcon"

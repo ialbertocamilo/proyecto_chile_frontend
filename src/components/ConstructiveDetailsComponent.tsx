@@ -24,6 +24,7 @@ interface Detail {
 }
 
 export interface TabItem {
+  code_icf?: string;
   id_detail?: number;
   id?: number;
   name_detail: string;
@@ -724,7 +725,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
       {/* Contenido de la tab seleccionada */}
       <div>
         {tabStep4 === "muros" && (
-          <div onClick={() => setShowDetailsModal(true)}>{renderMurosTable()}</div>
+          <div onClick={() => setShowDetailsModal(true)}>
+            {renderMurosTable()}
+          </div>
         )}
         {tabStep4 === "techumbre" && (
           <div onClick={() => setShowDetailsModal(true)}>
@@ -732,7 +735,9 @@ const ConstructiveDetailsComponent: React.FC = () => {
           </div>
         )}
         {tabStep4 === "pisos" && (
-          <div onClick={() => setShowDetailsModal(true)}>{renderPisosTable()}</div>
+          <div onClick={() => setShowDetailsModal(true)}>
+            {renderPisosTable()}
+          </div>
         )}
       </div>
     </div>
@@ -740,6 +745,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
   const renderMurosTable = () => {
     const columnsMuros = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
@@ -750,6 +759,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     const data = searchFilter(murosTabList).map((item) => {
       const isEditing = editingRowId === (item.id_detail ?? item.id);
       return {
+        code_icf: item.code_icf || "-",
         nombreAbreviado: isEditing ? (
           <input
             type="text"
@@ -874,6 +884,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
   const renderTechumbreTable = () => {
     const columnsTech = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
@@ -884,6 +898,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
     const data = searchFilter(techumbreTabList).map((item) => {
       const isEditing = editingRowId === (item.id_detail ?? item.id);
       return {
+        code_icf: item.code_icf || "-",
+
         nombreAbreviado: isEditing ? (
           <input
             type="text"
@@ -1005,6 +1021,10 @@ const ConstructiveDetailsComponent: React.FC = () => {
 
   const renderPisosTable = () => {
     const columnsPisos = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
       { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
@@ -1024,6 +1044,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
       const vert = item.info?.ref_aisl_vertical || {};
       const horiz = item.info?.ref_aisl_horizontal || {};
       return {
+        code_icf: item.code_icf || "-",
+
         nombre: isEditing ? (
           <input
             type="text"

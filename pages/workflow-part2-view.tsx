@@ -30,6 +30,7 @@ interface Detail {
 }
 
 interface TabItem {
+  code_icf?: string;
   id_detail?: number;
   id?: number;
   name_detail: string;
@@ -57,6 +58,7 @@ interface TabItem {
 }
 
 interface Ventana {
+  code_icf?: string;
   id?: number;
   name_element: string;
   atributs?: {
@@ -70,6 +72,7 @@ interface Ventana {
 }
 
 interface Puerta {
+  code_icf?: string;
   id?: number;
   name_element: string;
   atributs?: {
@@ -375,6 +378,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   const renderMurosTable = () => {
     const columnsMuros = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre Abreviado", field: "name_detail" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
@@ -392,6 +399,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
     ];
 
     const murosData = murosTabList.map((item) => ({
+      code_icf: item.code_icf || "-",
+
       id_detail: item.id_detail ?? item.id, // necesario para obtener el id
       name_detail: item.name_detail,
       valorU: item.value_u?.toFixed(2) ?? "-",
@@ -408,6 +417,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   const renderTechumbreTable = () => {
     const columnsTechumbre = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre Abreviado", field: "name_detail" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
@@ -425,6 +438,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
     ];
 
     const techData = techumbreTabList.map((item) => ({
+      code_icf: item.code_icf || "-",
+
       id_detail: item.id_detail ?? item.id,
       name_detail: item.name_detail,
       valorU: item.value_u?.toFixed(2) ?? "-",
@@ -452,6 +467,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
     };
 
     const columnsPisos = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
       { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
@@ -477,6 +496,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     const multiHeaderPisos = {
       rows: [
         [
+          { label: "Código ICF", rowSpan: 2 },
           { label: "Nombre", rowSpan: 2 },
           { label: "U [W/m²K]", rowSpan: 2 },
           { label: "Aislamiento bajo piso", colSpan: 2 },
@@ -501,6 +521,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       const vert = item.info?.ref_aisl_vertical || {};
       const horiz = item.info?.ref_aisl_horizontal || {};
       return {
+        code_icf: item.code_icf || "-",
         id_detail: item.id_detail ?? item.id,
         nombre: item.name_detail,
         uValue: formatValue(item.value_u, 2),
@@ -533,6 +554,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
   /* Ventanas y puertas no usan modal, así que sin botón */
   const renderVentanasTable = () => {
     const columnsVentanas = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre Elemento", field: "name_element" },
       { headerName: "U Vidrio [W/m²K]", field: "u_vidrio" },
       { headerName: "FS Vidrio []", field: "fs_vidrio" },
@@ -545,6 +570,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     const ventanasData = ventanasTabList.map((item) => {
       if ((item as any).created_status === "created") {
         return {
+          code_icf: item.code_icf || "-",
           name_element: (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
               {item.name_element}
@@ -595,6 +621,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         };
       } else {
         return {
+          code_icf: item.code_icf || "-",
           name_element: item.name_element,
           u_vidrio: item.atributs?.u_vidrio
             ? item.atributs.u_vidrio.toFixed(2)
@@ -619,6 +646,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   const renderPuertasTable = () => {
     const columnsPuertas = [
+      {
+        headerName: "Código ICF",
+        field: "code_icf",
+      },
       { headerName: "Nombre Elemento", field: "name_element" },
       { headerName: "U puerta opaca [W/m²K]", field: "u_puerta" },
       { headerName: "Vidrio []", field: "name_ventana" },
@@ -630,6 +661,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
     const puertasData = puertasTabList.map((item) => {
       if ((item as any).created_status === "created") {
         return {
+          code_icf: item.code_icf || "-",
+
           name_element: (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
               {item.name_element}
@@ -673,6 +706,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         };
       } else {
         return {
+          code_icf: item.code_icf || "-",
           name_element: item.name_element,
           u_puerta: item.atributs?.u_puerta_opaca
             ? item.atributs.u_puerta_opaca.toFixed(2)

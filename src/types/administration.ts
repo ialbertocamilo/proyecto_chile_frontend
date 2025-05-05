@@ -18,7 +18,7 @@ export interface Material {
 export interface Detail {
   id?: number;
 
-  id_detail?:number;
+  id_detail?: number;
   scantilon_location: string;
   name_detail: string;
   material_id: number;
@@ -44,6 +44,7 @@ export interface ElementAttributesWindow {
 export type ElementAttributes = ElementAttributesDoor | ElementAttributesWindow;
 
 export interface Element {
+  code_icf: string;
   id: number;
   type: "door" | "window";
   name_element: string;

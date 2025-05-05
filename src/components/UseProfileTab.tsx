@@ -427,8 +427,6 @@ const UseProfileTab: React.FC<{
           infiltraciones: (condition.infiltraciones ?? 0).toFixed(2),
           recuperadorCalor: condition.recuperador_calor ?? 0,
         };
-    console.log("enclosure");
-    console.log(enclosure);
     return {
       code_ifc: enclosure.code_ifc || "-",
       codigoRecinto: !isDefault ? (
@@ -1110,7 +1108,7 @@ const UseProfileTab: React.FC<{
             <TablesParameters
               columns={[
                 {
-                  headerName: "Código ICF",
+                  headerName: "Código IFC",
                   field: "code_ifc",
                 },
                 { headerName: "Codigo de Recinto", field: "codigoRecinto" },
@@ -1146,7 +1144,7 @@ const UseProfileTab: React.FC<{
             <TablesParameters
               columns={[
                 {
-                  headerName: "Código ICF",
+                  headerName: "Código IFC",
                   field: "code_ifc",
                 },
                 { headerName: "Codigo de Recinto", field: "codigoRecinto" },
@@ -1176,7 +1174,7 @@ const UseProfileTab: React.FC<{
             <TablesParameters
               columns={[
                 {
-                  headerName: "Código ICF",
+                  headerName: "Código IFC",
                   field: "code_ifc",
                 },
                 { headerName: "Codigo de Recinto", field: "codigoRecinto" },
@@ -1207,7 +1205,7 @@ const UseProfileTab: React.FC<{
             <TablesParameters
               columns={[
                 {
-                  headerName: "Código ICF",
+                  headerName: "Código IFC",
                   field: "code_ifc",
                 },
                 { headerName: "Codigo de Recinto", field: "codigoRecinto" },

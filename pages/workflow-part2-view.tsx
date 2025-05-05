@@ -30,7 +30,7 @@ interface Detail {
 }
 
 interface TabItem {
-  code_icf?: string;
+  code_ifc?: string;
   id_detail?: number;
   id?: number;
   name_detail: string;
@@ -58,7 +58,7 @@ interface TabItem {
 }
 
 interface Ventana {
-  code_icf?: string;
+  code_ifc?: string;
   id?: number;
   name_element: string;
   atributs?: {
@@ -72,7 +72,7 @@ interface Ventana {
 }
 
 interface Puerta {
-  code_icf?: string;
+  code_ifc?: string;
   id?: number;
   name_element: string;
   atributs?: {
@@ -379,8 +379,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
   const renderMurosTable = () => {
     const columnsMuros = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       { headerName: "Nombre Abreviado", field: "name_detail" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
@@ -399,7 +399,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     ];
 
     const murosData = murosTabList.map((item) => ({
-      code_icf: item.code_icf || "-",
+      code_ifc: item.code_ifc || "-",
 
       id_detail: item.id_detail ?? item.id, // necesario para obtener el id
       name_detail: item.name_detail,
@@ -418,8 +418,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
   const renderTechumbreTable = () => {
     const columnsTechumbre = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       { headerName: "Nombre Abreviado", field: "name_detail" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
@@ -438,7 +438,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     ];
 
     const techData = techumbreTabList.map((item) => ({
-      code_icf: item.code_icf || "-",
+      code_ifc: item.code_ifc || "-",
 
       id_detail: item.id_detail ?? item.id,
       name_detail: item.name_detail,
@@ -468,8 +468,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
     const columnsPisos = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
@@ -521,7 +521,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       const vert = item.info?.ref_aisl_vertical || {};
       const horiz = item.info?.ref_aisl_horizontal || {};
       return {
-        code_icf: item.code_icf || "-",
+        code_ifc: item.code_ifc || "-",
         id_detail: item.id_detail ?? item.id,
         nombre: item.name_detail,
         uValue: formatValue(item.value_u, 2),
@@ -555,8 +555,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
   const renderVentanasTable = () => {
     const columnsVentanas = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       { headerName: "Nombre Elemento", field: "name_element" },
       { headerName: "U Vidrio [W/m²K]", field: "u_vidrio" },
@@ -570,7 +570,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     const ventanasData = ventanasTabList.map((item) => {
       if ((item as any).created_status === "created") {
         return {
-          code_icf: item.code_icf || "-",
+          code_ifc: item.code_ifc || "-",
           name_element: (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
               {item.name_element}
@@ -621,7 +621,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         };
       } else {
         return {
-          code_icf: item.code_icf || "-",
+          code_ifc: item.code_ifc || "-",
           name_element: item.name_element,
           u_vidrio: item.atributs?.u_vidrio
             ? item.atributs.u_vidrio.toFixed(2)
@@ -647,8 +647,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
   const renderPuertasTable = () => {
     const columnsPuertas = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       { headerName: "Nombre Elemento", field: "name_element" },
       { headerName: "U puerta opaca [W/m²K]", field: "u_puerta" },
@@ -661,7 +661,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     const puertasData = puertasTabList.map((item) => {
       if ((item as any).created_status === "created") {
         return {
-          code_icf: item.code_icf || "-",
+          code_ifc: item.code_ifc || "-",
 
           name_element: (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
@@ -706,7 +706,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         };
       } else {
         return {
-          code_icf: item.code_icf || "-",
+          code_ifc: item.code_ifc || "-",
           name_element: item.name_element,
           u_puerta: item.atributs?.u_puerta_opaca
             ? item.atributs.u_puerta_opaca.toFixed(2)

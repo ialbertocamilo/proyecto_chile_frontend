@@ -163,8 +163,8 @@ const AdministrationPage: React.FC = () => {
   // Columnas y datos para la tabla de materiales
   const materialsColumns = [
     {
-      headerName: "Código ICF",
-      field: "code_icf",
+      headerName: "Código IFC",
+      field: "code_ifc",
     },
     { headerName: "Nombre Material", field: "name" },
     { headerName: "Conductividad (W/m2K)", field: "conductivity" },
@@ -180,7 +180,7 @@ const AdministrationPage: React.FC = () => {
     .map((mat: any) => {
       const isDefault = mat.create_status === "default";
       return {
-        code_icf: mat.code_icf || "-",
+        code_ifc: mat.code_ifc || "-",
         name: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {mat.atributs.name}
@@ -237,8 +237,8 @@ const AdministrationPage: React.FC = () => {
   // Columnas y datos para la tabla de ventanas
   const windowsColumns = [
     {
-      headerName: "Código ICF",
-      field: "code_icf",
+      headerName: "Código IFC",
+      field: "code_ifc",
     },
     { headerName: "Nombre Elemento", field: "name_element" },
     { headerName: "U Vidrio [W/m2K]", field: "u_vidrio" },
@@ -259,7 +259,7 @@ const AdministrationPage: React.FC = () => {
       const isDefault =
         (el as { created_status?: string }).created_status === "default";
       return {
-        code_icf: el.code_icf || "-",
+        code_ifc: el.code_ifc || "-",
         name_element: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {el.name_element}
@@ -345,7 +345,7 @@ const AdministrationPage: React.FC = () => {
   const doorsColumns = [
     {
       headerName: "Código ICF",
-      field: "code_icf",
+      field: "code_ifc",
     },
     { headerName: "Nombre Elemento", field: "name_element" },
     { headerName: "U Puerta opaca [W/m2K]", field: "u_puerta_opaca" },
@@ -365,7 +365,7 @@ const AdministrationPage: React.FC = () => {
       const isDefault =
         (el as { created_status?: string }).created_status === "default";
       return {
-        code_icf: el.code_icf || "-",
+        code_ifc: el.code_ifc || "-",
         name_element: !isDefault ? (
           <span style={{ color: primaryColor, fontWeight: "bold" }}>
             {el.name_element}

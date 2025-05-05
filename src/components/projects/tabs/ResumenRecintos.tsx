@@ -142,7 +142,7 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
 
   return (
     <div className="container-fluid mt-4">
-      <div className="table-responsive">
+      <div className="">
         <Tab.Container id="left-tabs-example" defaultActiveKey="first">
           <Row className="mb-5">
             <Col sm={12}>
@@ -162,18 +162,22 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                     CO2_eq
                   </Nav.Link>
                 </Nav.Item>
-                {/* <Nav.Item>
-                  <Nav.Link eventKey="fourth">Hrs Disconfort</Nav.Link>
+                <Nav.Item>
+                  <Nav.Link eventKey="fourth" className="nav-pill-info">
+                    Hrs Disconfort
+                  </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="fifth">Caso Base</Nav.Link>
-                </Nav.Item> */}
+                  <Nav.Link eventKey="fifth" className="nav-pill-info">
+                    Caso Base
+                  </Nav.Link>
+                </Nav.Item>
               </Nav>
             </Col>
           </Row>
           <Row className="gx-5 justify-content-between">
             <Col sm={4}>
-              <Table>
+              <Table className="tables-recints">
                 <thead style={{ height: "100px" }}>
                   <tr>
                     <th className="text-center" colSpan={1} rowSpan={3}>
@@ -203,9 +207,9 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
               </Table>
             </Col>
             <Col sm={8}>
-              <Tab.Content className="overflow-x-scroll">
-                <Tab.Pane eventKey="first">
-                  <Table>
+              <Tab.Content>
+                <Tab.Pane eventKey="first" className="overflow-x-scroll">
+                  <Table className="tables-results">
                     <thead style={{ height: "100px" }}>
                       <tr>
                         <th className="text-center" colSpan={4}>
@@ -244,8 +248,8 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                     </tbody>
                   </Table>
                 </Tab.Pane>
-                <Tab.Pane style={{ width: "210%" }} eventKey="second">
-                  <Table>
+                <Tab.Pane className="overflow-x-scroll" eventKey="second">
+                  <Table className="tables-results">
                     <thead style={{ height: "100px" }}>
                       <tr>
                         <th className="text-center" colSpan={15}>
@@ -351,8 +355,8 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                     </tbody>
                   </Table>
                 </Tab.Pane>
-                <Tab.Pane eventKey="third">
-                  <Table>
+                <Tab.Pane className="overflow-x-scroll" eventKey="third">
+                  <Table className="tables-results">
                     <thead style={{ height: "100px" }}>
                       <tr>
                         <th className="text-center" colSpan={4}>
@@ -396,24 +400,23 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                     </tbody>
                   </Table>
                 </Tab.Pane>
-                {/* <Tab.Pane eventKey="fourth">
-                  <Table>
+                <Tab.Pane className="overflow-x-scroll" eventKey="fourth">
+                  <Table className="tables-results">
                     <thead>
                       <tr>
                         <th className="text-center" colSpan={4}>
-                          Demanda{" "}
+                          Hrs Disconfort
                         </th>
                       </tr>
                       <tr>
                         <th className="text-center" colSpan={4}>
-                          [kWh/m2]
+                          T° Libre
                         </th>
                       </tr>
                       <tr>
                         <th>Calef</th>
                         <th>Ref</th>
-                        <th>Ilum</th>
-                        <th className="font-bold">Total</th>
+                        <th>Total</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -428,24 +431,37 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                     </tbody>
                   </Table>
                 </Tab.Pane>
-                <Tab.Pane eventKey="fifth">
-                  <Table>
+                <Tab.Pane className="overflow-x-scroll" eventKey="fifth">
+                  <Table className="tables-results">
                     <thead>
                       <tr>
                         <th className="text-center" colSpan={4}>
-                          Demanda{" "}
+                          Caso Base
                         </th>
                       </tr>
                       <tr>
-                        <th className="text-center" colSpan={4}>
-                          [kWh/m2]
+                        <th className="text-center" colSpan={3}>
+                          Demanda
+                        </th>
+                        <th className="text-center" colSpan={2}>
+                          Consumo
+                        </th>
+                        <th className="text-center" colSpan={1}>
+                          CO2_eq
+                        </th>
+                        <th className="text-center" colSpan={2}>
+                          Hrs Disconfort
                         </th>
                       </tr>
                       <tr>
                         <th>Calef</th>
                         <th>Ref</th>
                         <th>Ilum</th>
-                        <th className="font-bold">Total</th>
+                        <th>Calef</th>
+                        <th>Ref</th>
+                        <th>Total</th>
+                        <th>Calef</th>
+                        <th>Ref</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -470,7 +486,7 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                       ))}
                     </tbody>
                   </Table>
-                </Tab.Pane> */}
+                </Tab.Pane>
               </Tab.Content>
             </Col>
           </Row>

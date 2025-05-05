@@ -24,7 +24,7 @@ interface Detail {
 }
 
 export interface TabItem {
-  code_icf?: string;
+  code_ifc?: string;
   id_detail?: number;
   id?: number;
   name_detail: string;
@@ -746,8 +746,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const renderMurosTable = () => {
     const columnsMuros = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
@@ -759,7 +759,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     const data = searchFilter(murosTabList).map((item) => {
       const isEditing = editingRowId === (item.id_detail ?? item.id);
       return {
-        code_icf: item.code_icf || "-",
+        code_ifc: item.code_ifc || "-",
         nombreAbreviado: isEditing ? (
           <input
             type="text"
@@ -885,8 +885,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const renderTechumbreTable = () => {
     const columnsTech = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
@@ -898,7 +898,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
     const data = searchFilter(techumbreTabList).map((item) => {
       const isEditing = editingRowId === (item.id_detail ?? item.id);
       return {
-        code_icf: item.code_icf || "-",
+        code_ifc: item.code_ifc || "-",
 
         nombreAbreviado: isEditing ? (
           <input
@@ -1022,8 +1022,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
   const renderPisosTable = () => {
     const columnsPisos = [
       {
-        headerName: "Código ICF",
-        field: "code_icf",
+        headerName: "Código IFC",
+        field: "code_ifc",
       },
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
@@ -1044,7 +1044,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       const vert = item.info?.ref_aisl_vertical || {};
       const horiz = item.info?.ref_aisl_horizontal || {};
       return {
-        code_icf: item.code_icf || "-",
+        code_ifc: item.code_ifc || "-",
 
         nombre: isEditing ? (
           <input

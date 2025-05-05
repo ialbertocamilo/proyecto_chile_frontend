@@ -11,9 +11,9 @@ import ResumenRecintos from "./tabs/ResumenRecintos";
 const Results = () => {
   const router = useRouter();
   const { get } = useApi();
-  const [loading, setLoading] = useState(true); // Loader state
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true); // Button state
-  const [isDownloading, setIsDownloading] = useState(false); // Estado de descarga
+  const [loading, setLoading] = useState(true); 
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false); 
   const processData = async () => {
     try {
       const projectId = router.query.id;

@@ -1129,9 +1129,10 @@ const UseProfileTab: React.FC<{
                   field: "recuperadorCalor",
                 },
                 {
-                  headerName: "Accion",
+                  headerName: "Acciones",
                   field: "accion",
                   headerStyle: { width: "100px" },
+                  sortable: false,
                 },
               ]}
               data={filteredVentilacion}
@@ -1159,9 +1160,10 @@ const UseProfileTab: React.FC<{
                   field: "potenciaPropuesta",
                 },
                 {
-                  headerName: "Accion",
+                  headerName: "Acciones",
                   field: "accion",
                   headerStyle: { width: "100px" },
+                  sortable: false,
                 },
               ]}
               data={filteredIluminacion}
@@ -1193,7 +1195,7 @@ const UseProfileTab: React.FC<{
                   headerName: "Funcionamiento Semanal",
                   field: "funcionamientoSemanal",
                 },
-                { headerName: "Accion", field: "accion" },
+                { headerName: "Acciones", field: "accion", sortable: false },
               ]}
               data={filteredCargas}
             />
@@ -1218,7 +1220,7 @@ const UseProfileTab: React.FC<{
                   headerName: "Hrs Desfase Clima (Inv)",
                   field: "hrsDesfaseClimaInv",
                 },
-                { headerName: "Accion", field: "accion" },
+                { headerName: "Acciones", field: "accion", sortable: false },
               ]}
               data={filteredHorario}
             />

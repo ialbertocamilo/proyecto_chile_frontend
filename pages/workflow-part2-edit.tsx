@@ -1138,7 +1138,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         field: "colorInterior",
         // headerClick: () => onMurosSort("info.surface_color.interior.name"),
       },
-      { headerName: "Acciones", field: "acciones" },
+      { headerName: "Acciones", field: "acciones", sortable: false },
     ];
 
     const murosData = murosTabList
@@ -1333,7 +1333,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
-      { headerName: "Acciones", field: "acciones" },
+      { headerName: "Acciones", field: "acciones", sortable: false },
     ];
     const techData = techumbreTabList
       .filter(

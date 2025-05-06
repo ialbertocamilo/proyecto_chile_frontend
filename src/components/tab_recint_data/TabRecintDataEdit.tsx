@@ -177,6 +177,7 @@ const TabRecintDataEdit: React.FC = () => {
     {
       headerName: "Acciones",
       field: "acciones",
+      sortable: false,
       renderCell: (row: EnclosureGeneralData) => {
         return (
           <ActionButtons

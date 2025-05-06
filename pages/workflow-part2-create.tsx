@@ -1408,7 +1408,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
-      { headerName: "Acciones", field: "acciones" },
+      { headerName: "Acciones", field: "acciones", sortable: false },
     ];
 
     const murosData = murosTabList
@@ -1555,7 +1555,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
-      { headerName: "Acciones", field: "acciones" },
+      { headerName: "Acciones", field: "acciones", sortable: false },
     ];
 
     const techData = techumbreTabList
@@ -1694,7 +1694,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     rows: [
       [
         { label: "Código ICF", rowSpan: 2 },
-        { label: "Nombre", rowSpan: 2 },
+        { label: "Nombre", rowSpan: 2, field: "titulo", sortable: true },
         { label: "U [W/m²K]", rowSpan: 2 },
         { label: "Aislamiento bajo piso", colSpan: 2 },
         { label: "Ref Aisl Vert.", colSpan: 3 },

@@ -777,7 +777,7 @@ const DataEntryPage: React.FC = () => {
       { headerName: "Conductividad (W/m2K)", field: "conductivity" },
       { headerName: "Calor específico (J/kgK)", field: "specific_heat" },
       { headerName: "Densidad (kg/m3)", field: "density" },
-      { headerName: "Acción", field: "action" },
+      { headerName: "Acciones", field: "action", sortable: false },
     ];
 
     const filteredMaterialData = materialsList
@@ -877,7 +877,7 @@ const DataEntryPage: React.FC = () => {
         { headerName: "Tipo Marco", field: "frame_type" },
         { headerName: "U Marco [W/m2K]", field: "u_marco" },
         { headerName: "FM [%]", field: "fm" },
-        { headerName: "Acciones", field: "acciones" },
+        { headerName: "Acciones", field: "acciones", sortable: false },
       ];
       
       const ventanasData = elementsList
@@ -1011,7 +1011,7 @@ const DataEntryPage: React.FC = () => {
         { headerName: "% Vidrio", field: "porcentaje_vidrio" },
         { headerName: "U Marco [W/m2K]", field: "u_marco" },
         { headerName: "FM [%]", field: "fm" },
-        { headerName: "Acciones", field: "acciones" },
+        { headerName: "Acciones", field: "acciones", sortable: false },
       ];
       const puertasData = elementsList
         .filter(

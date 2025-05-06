@@ -170,7 +170,7 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Conductividad (W/m2K)", field: "conductivity" },
     { headerName: "Calor específico (J/kgK)", field: "specific_heat" },
     { headerName: "Densidad (kg/m3)", field: "density" },
-    { headerName: "Acción", field: "action" },
+    { headerName: "Acciones", field: "action", sortable: false },
   ];
 
   const materialsData = materialsList
@@ -247,7 +247,7 @@ const AdministrationPage: React.FC = () => {
     { headerName: "Tipo Marco", field: "frame_type" },
     { headerName: "U Marco [W/m2K]", field: "u_marco" },
     { headerName: "FM [%]", field: "fm" },
-    { headerName: "Acción", field: "action" },
+    { headerName: "Acciones", field: "action", sortable: false },
   ];
 
   const windowsData = elementsList
@@ -353,7 +353,7 @@ const AdministrationPage: React.FC = () => {
     { headerName: "% Vidrio", field: "porcentaje_vidrio" },
     { headerName: "U Marco [W/m2K]", field: "u_marco" },
     { headerName: "FM [%]", field: "fm" },
-    { headerName: "Acción", field: "action" },
+    { headerName: "Acciones", field: "action", sortable: false },
   ];
 
   const doorsData = elementsList

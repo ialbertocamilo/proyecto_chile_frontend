@@ -244,6 +244,7 @@ const TabRecintDataCreate: React.FC = () => {
     {
       headerName: "Acciones",
       field: "acciones",
+      sortable: false,
       renderCell: (row: EnclosureGeneralData) => (
         <ActionButtons
           onEdit={() => handleEditWithRedirect(row)}

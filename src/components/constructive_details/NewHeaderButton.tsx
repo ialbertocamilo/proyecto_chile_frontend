@@ -155,7 +155,7 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({
         >
           <form>
             <div className="form-group">
-              <label>Nombre</label>
+              <label>Nombre <span style={{ color: "red" }}>*</span></label>
               <input
                 type="text"
                 className="form-control"
@@ -171,7 +171,7 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({
                 <div className="row">
                   <div className="col-md-4">
                     <div className="form-group">
-                      <label>I [W/mK]</label>
+                      <label>λ [W/mK]</label>
                       <input
                         type="number"
                         step="0.01"
@@ -188,143 +188,149 @@ const NewHeaderButton: React.FC<NewHeaderButtonProps> = ({
                     </div>
                   </div>
                   <div className="col-md-4">
-                  <div className="form-group">
-                    <label>e Aisl [cm]</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      className="form-control"
-                      value={newDetalle.vertical_e_aisl}
-                      onKeyDown={preventMinus}
-                      onChange={(e) =>
-                        setNewDetalle({
-                          ...newDetalle,
-                          vertical_e_aisl: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+                    <div className="form-group">
+                      <label>e Aisl [cm]</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        className="form-control"
+                        value={newDetalle.vertical_e_aisl}
+                        onKeyDown={preventMinus}
+                        onChange={(e) =>
+                          setNewDetalle({
+                            ...newDetalle,
+                            vertical_e_aisl: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
                   </div>
                   <div className="col-md-4">
-                  <div className="form-group">
-                    <label>D [cm]</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      className="form-control"
-                      value={newDetalle.vertical_d}
-                      onKeyDown={preventMinus}
-                      onChange={(e) =>
-                        setNewDetalle({
-                          ...newDetalle,
-                          vertical_d: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+                    <div className="form-group">
+                      <label>D [cm]</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        className="form-control"
+                        value={newDetalle.vertical_d}
+                        onKeyDown={preventMinus}
+                        onChange={(e) =>
+                          setNewDetalle({
+                            ...newDetalle,
+                            vertical_d: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
 
-                  <h5 className="mt-3">Aislamiento Horizontal</h5>
-                  <div className="row">
+                <h5 className="mt-3">Aislamiento Horizontal</h5>
+                <div className="row">
                   <div className="col-md-4">
-                  <div className="form-group">
-                    <label>I [W/mK]</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      className="form-control"
-                      value={newDetalle.horizontal_lambda}
-                      onKeyDown={preventMinus}
-                      onChange={(e) =>
-                        setNewDetalle({
-                          ...newDetalle,
-                          horizontal_lambda: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  </div>
-                  <div className="col-md-4">
-                  <div className="form-group">
-                    <label>e Aisl [cm]</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      className="form-control"
-                      value={newDetalle.horizontal_e_aisl}
-                      onKeyDown={preventMinus}
-                      onChange={(e) =>
-                        setNewDetalle({
-                          ...newDetalle,
-                          horizontal_e_aisl: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+                    <div className="form-group">
+                      <label>λ [W/mK]</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className="form-control"
+                        value={newDetalle.horizontal_lambda}
+                        onKeyDown={preventMinus}
+                        onChange={(e) =>
+                          setNewDetalle({
+                            ...newDetalle,
+                            horizontal_lambda: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
                   </div>
                   <div className="col-md-4">
-                  <div className="form-group">
-                    <label>D [cm]</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      className="form-control"
-                      value={newDetalle.horizontal_d}
-                      onKeyDown={preventMinus}
-                      onChange={(e) =>
-                        setNewDetalle({
-                          ...newDetalle,
-                          horizontal_d: e.target.value,
-                        })
-                      }
-                    />
+                    <div className="form-group">
+                      <label>e Aisl [cm]</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className="form-control"
+                        value={newDetalle.horizontal_e_aisl}
+                        onKeyDown={preventMinus}
+                        onChange={(e) =>
+                          setNewDetalle({
+                            ...newDetalle,
+                            horizontal_e_aisl: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
                   </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>D [cm]</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className="form-control"
+                        value={newDetalle.horizontal_d}
+                        onKeyDown={preventMinus}
+                        onChange={(e) =>
+                          setNewDetalle({
+                            ...newDetalle,
+                            horizontal_d: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
-                </>
-                ) : (
-                <>
-                  <div className="form-group">
-                    <label>Color Exterior</label>
-                    <select
-                      className="form-control"
-                      value={newDetalle.colorExterior}
-                      onChange={(e) =>
-                        setNewDetalle({
-                          ...newDetalle,
-                          colorExterior: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="Claro">Claro</option>
-                      <option value="Oscuro">Oscuro</option>
-                      <option value="Intermedio">Intermedio</option>
-                    </select>
+                {/* Texto de datos obligatorios */}
+                <div className="row">
+                  <div className="col-12" style={{ textAlign: "left" }}>
+                    <p style={{ color: "red", margin: 0 }}>(*) Datos obligatorios</p>
                   </div>
-                  <div className="form-group">
-                    <label>Color Interior</label>
-                    <select
-                      className="form-control"
-                      value={newDetalle.colorInterior}
-                      onChange={(e) =>
-                        setNewDetalle({
-                          ...newDetalle,
-                          colorInterior: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="Claro">Claro</option>
-                      <option value="Oscuro">Oscuro</option>
-                      <option value="Intermedio">Intermedio</option>
-                    </select>
-                  </div>
-                </>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="form-group">
+                  <label>Color Exterior</label>
+                  <select
+                    className="form-control"
+                    value={newDetalle.colorExterior}
+                    onChange={(e) =>
+                      setNewDetalle({
+                        ...newDetalle,
+                        colorExterior: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="Claro">Claro</option>
+                    <option value="Oscuro">Oscuro</option>
+                    <option value="Intermedio">Intermedio</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Color Interior</label>
+                  <select
+                    className="form-control"
+                    value={newDetalle.colorInterior}
+                    onChange={(e) =>
+                      setNewDetalle({
+                        ...newDetalle,
+                        colorInterior: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="Claro">Claro</option>
+                    <option value="Oscuro">Oscuro</option>
+                    <option value="Intermedio">Intermedio</option>
+                  </select>
+                </div>
+              </>
             )}
-              </form>
+          </form>
         </ModalCreate>
       )}
     </>

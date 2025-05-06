@@ -188,7 +188,7 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
         >
           <form>
             <div className="form-group">
-              <label>Nombre</label>
+              <label>Nombre <span style={{ color: "red" }}>*</span></label>
               <input
                 type="text"
                 className="form-control"
@@ -207,7 +207,7 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
                   <div className="row">
                     <div className="col-md-4">
                       <div className="form-group">
-                        <label>I [W/mK]</label>
+                        <label>λ [W/mK]</label>
                         <input
                           type="number"
                           min="0"
@@ -280,7 +280,7 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
                   <div className="row">
                     <div className="col-md-4">
                       <div className="form-group">
-                        <label>I [W/mK]</label>
+                        <label>λ [W/mK]</label>
                         <input
                           type="number"
                           min="0"
@@ -347,6 +347,12 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
                         />
                       </div>
                     </div>
+                  </div>
+                </div>
+                {/* Texto de datos obligatorios */}
+                <div className="row">
+                  <div className="col-12" style={{ textAlign: "left" }}>
+                    <p style={{ color: "red", margin: 0 }}>(*) Datos obligatorios</p>
                   </div>
                 </div>
               </>

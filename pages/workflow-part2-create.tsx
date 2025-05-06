@@ -409,8 +409,8 @@ const WorkFlowpar2createPage: React.FC = () => {
       setPuertaPorcentajeInput(
         editingPuertaForm.atributs.porcentaje_vidrio !== undefined
           ? String(
-              Math.round(editingPuertaForm.atributs.porcentaje_vidrio * 100)
-            )
+            Math.round(editingPuertaForm.atributs.porcentaje_vidrio * 100)
+          )
           : ""
       );
     }
@@ -748,9 +748,8 @@ const WorkFlowpar2createPage: React.FC = () => {
     if (!token || !projectId) return;
 
     try {
-      const url = `${constantUrlApiEndpoint}/user/detail-update/${
-        editingDetail.id_detail || editingDetail?.id
-      }`;
+      const url = `${constantUrlApiEndpoint}/user/detail-update/${editingDetail.id_detail || editingDetail?.id
+        }`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -1196,8 +1195,8 @@ const WorkFlowpar2createPage: React.FC = () => {
         ) : (
           <span style={textStyle}>
             {det.material &&
-            det.material !== "0" &&
-            det.material.toUpperCase() !== "N/A"
+              det.material !== "0" &&
+              det.material.toUpperCase() !== "N/A"
               ? det.material
               : "-"}
           </span>
@@ -1289,10 +1288,10 @@ const WorkFlowpar2createPage: React.FC = () => {
                 tabStep4 === "muros"
                   ? "Muro"
                   : tabStep4 === "techumbre"
-                  ? "Techo"
-                  : tabStep4 === "pisos"
-                  ? "Piso"
-                  : "";
+                    ? "Techo"
+                    : tabStep4 === "pisos"
+                      ? "Piso"
+                      : "";
 
               setNewDetailData((prev) => ({
                 ...prev,
@@ -1359,8 +1358,8 @@ const WorkFlowpar2createPage: React.FC = () => {
                   material: (
                     <span style={textStyle}>
                       {det.material &&
-                      det.material !== "0" &&
-                      det.material.toUpperCase() !== "N/A"
+                        det.material !== "0" &&
+                        det.material.toUpperCase() !== "N/A"
                         ? det.material
                         : "-"}
                     </span>
@@ -1422,7 +1421,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           code_ifc: item.code_ifc || "-",
           nombreAbreviado: isEditing ? (
             item.created_status === "default" ||
-            item.created_status === "global" ? (
+              item.created_status === "global" ? (
               <input
                 type="text"
                 className="form-control"
@@ -1559,7 +1558,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           code_ifc: item.code_ifc || "-",
           nombreAbreviado: isEditing ? (
             item.created_status === "default" ||
-            item.created_status === "global" ? (
+              item.created_status === "global" ? (
               <input
                 type="text"
                 className="form-control"
@@ -1683,12 +1682,12 @@ const WorkFlowpar2createPage: React.FC = () => {
         { label: "Acciones", rowSpan: 2, colSpan: 3 },
       ],
       [
-        { label: "I [W/mK]" },
+        { label: "λ [W/mK]" },
         { label: "e Aisl [cm]" },
-        { label: "I [W/mK]" },
+        { label: "λ [W/mK]" },
         { label: "e Aisl [cm]" },
         { label: "D [cm]" },
-        { label: "I [W/mK]" },
+        { label: "λ [W/mK]" },
         { label: "e Aisl [cm]" },
         { label: "D [cm]" },
       ],
@@ -1738,7 +1737,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           code_ifc: item.code_ifc || "-",
           nombre: isEditing ? (
             item.created_status === "default" ||
-            item.created_status === "global" ? (
+              item.created_status === "global" ? (
               <input
                 type="text"
                 className="form-control"
@@ -2013,7 +2012,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         ),
         acciones:
           item.created_status === "default" ||
-          item.created_status === "global" ? (
+            item.created_status === "global" ? (
             <span>-</span>
           ) : (
             <div style={textStyle}>
@@ -2104,7 +2103,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         ),
         acciones:
           item.created_status === "default" ||
-          item.created_status === "global" ? (
+            item.created_status === "global" ? (
             <span>-</span>
           ) : (
             <div style={textStyle}>
@@ -2435,12 +2434,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_vidrio: Number(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_vidrio: Number(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2460,12 +2459,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            fs_vidrio: Number(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          fs_vidrio: Number(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2481,12 +2480,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            frame_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          frame_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2502,12 +2501,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingVentanaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            clousure_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          clousure_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2600,12 +2599,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_puerta_opaca: Number(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_puerta_opaca: Number(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2621,12 +2620,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            name_ventana: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          name_ventana: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2656,12 +2655,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                   setEditingPuertaForm((prev) =>
                     prev && prev.atributs
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: Math.round(val) / 100,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          porcentaje_vidrio: Math.round(val) / 100,
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -2724,7 +2723,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       */}
       {showDetallesModal && (
         <ModalCreate
-          onSave={() => {}}
+          onSave={() => { }}
           isOpen={true}
           title={`Detalles ${selectedItem?.name_detail || ""}`}
           onClose={() => setShowDetallesModal(false)}
@@ -2790,7 +2789,7 @@ const WorkFlowpar2createPage: React.FC = () => {
         >
           <form>
             <div className="form-group">
-              <label>Nombre </label>
+              <label>Nombre <span style={{ color: "red" }}>*</span></label>
               <input
                 type="text"
                 className="form-control"
@@ -2813,7 +2812,7 @@ const WorkFlowpar2createPage: React.FC = () => {
                   <h6>Aislamiento Vertical</h6>
                   <div className="row">
                     <div className="col-md-4">
-                      <label>I [W/mK]</label>
+                      <label>λ [W/mK]</label>
                       <input
                         type="number"
                         min="0"
@@ -2950,6 +2949,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                         }
                       />
                     </div>
+                  </div>
+                </div>
+                {/* Texto de datos obligatorios */}
+                <div className="row">
+                  <div className="col-12" style={{ textAlign: "left" }}>
+                    <p style={{ color: "red", margin: 0 }}>(*) Datos obligatorios</p>
                   </div>
                 </div>
               </>

@@ -2308,7 +2308,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           <div>
             <Title text="Edición de Proyecto" />
             <div className="d-flex align-items-center" style={{ gap: "10px" }}>
-              <ProjectInfoHeader projectName={projectName} region={region} />
+              <ProjectInfoHeader projectName={projectName} region={region} project_id={projectId ?? ""}/>
               <Breadcrumb
                 items={[{ title: "Editar", href: "/", active: true }]}
               />

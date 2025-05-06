@@ -1417,8 +1417,12 @@ const WorkFlowpar2createPage: React.FC = () => {
       )
       .map((item) => {
         const isEditing = editingRowId === item.id;
+        const textStyle =
+          item.created_status === "created"
+            ? { color: "var(--primary-color)", fontWeight: "bold" }
+            : {};
         return {
-          code_ifc: item.code_ifc || "-",
+          code_ifc: <span style={textStyle}>{item.code_ifc || "-"}</span>,
           nombreAbreviado: isEditing ? (
             item.created_status === "default" ||
               item.created_status === "global" ? (
@@ -1439,9 +1443,11 @@ const WorkFlowpar2createPage: React.FC = () => {
               />
             )
           ) : (
-            item.name_detail
+            <span style={textStyle}>{item.name_detail}</span>
           ),
-          valorU: item.value_u?.toFixed(2) ?? "--",
+          valorU: (
+            <span style={textStyle}>{item.value_u?.toFixed(2) ?? "--"}</span>
+          ),
           colorExterior: isEditing ? (
             <select
               value={editingColors.exterior}
@@ -1457,7 +1463,9 @@ const WorkFlowpar2createPage: React.FC = () => {
               <option value="Intermedio">Intermedio</option>
             </select>
           ) : (
-            item.info?.surface_color?.exterior?.name || "Desconocido"
+            <span style={textStyle}>
+              {item.info?.surface_color?.exterior?.name || "Desconocido"}
+            </span>
           ),
           colorInterior: isEditing ? (
             <select
@@ -1474,7 +1482,9 @@ const WorkFlowpar2createPage: React.FC = () => {
               <option value="Intermedio">Intermedio</option>
             </select>
           ) : (
-            item.info?.surface_color?.interior?.name || "Desconocido"
+            <span style={textStyle}>
+              {item.info?.surface_color?.interior?.name || "Desconocido"}
+            </span>
           ),
           acciones: isEditing ? (
             <div onClick={(e) => e.stopPropagation()}>
@@ -1554,8 +1564,12 @@ const WorkFlowpar2createPage: React.FC = () => {
       )
       .map((item) => {
         const isEditing = editingTechRowId === item.id;
+        const textStyle =
+          item.created_status === "created"
+            ? { color: "var(--primary-color)", fontWeight: "bold" }
+            : {};
         return {
-          code_ifc: item.code_ifc || "-",
+          code_ifc: <span style={textStyle}>{item.code_ifc || "-"}</span>,
           nombreAbreviado: isEditing ? (
             item.created_status === "default" ||
               item.created_status === "global" ? (
@@ -1574,9 +1588,11 @@ const WorkFlowpar2createPage: React.FC = () => {
               />
             )
           ) : (
-            item.name_detail
+            <span style={textStyle}>{item.name_detail}</span>
           ),
-          valorU: item.value_u?.toFixed(2) ?? "--",
+          valorU: (
+            <span style={textStyle}>{item.value_u?.toFixed(2) ?? "--"}</span>
+          ),
           colorExterior: isEditing ? (
             <select
               value={editingTechColors.exterior}
@@ -1592,7 +1608,9 @@ const WorkFlowpar2createPage: React.FC = () => {
               <option value="Intermedio">Intermedio</option>
             </select>
           ) : (
-            item.info?.surface_color?.exterior?.name || "Desconocido"
+            <span style={textStyle}>
+              {item.info?.surface_color?.exterior?.name || "Desconocido"}
+            </span>
           ),
           colorInterior: isEditing ? (
             <select
@@ -1609,7 +1627,9 @@ const WorkFlowpar2createPage: React.FC = () => {
               <option value="Intermedio">Intermedio</option>
             </select>
           ) : (
-            item.info?.surface_color?.interior?.name || "Desconocido"
+            <span style={textStyle}>
+              {item.info?.surface_color?.interior?.name || "Desconocido"}
+            </span>
           ),
           acciones: isEditing ? (
             <div onClick={(e) => e.stopPropagation()}>
@@ -1732,9 +1752,13 @@ const WorkFlowpar2createPage: React.FC = () => {
         const vert = item.info?.ref_aisl_vertical || {};
         const horiz = item.info?.ref_aisl_horizontal || {};
         const isEditing = editingPisoRowId === item.id;
+        const textStyle =
+          item.created_status === "created"
+            ? { color: "var(--primary-color)", fontWeight: "bold" }
+            : {};
 
         return {
-          code_ifc: item.code_ifc || "-",
+          code_ifc: <span style={textStyle}>{item.code_ifc || "-"}</span>,
           nombre: isEditing ? (
             item.created_status === "default" ||
               item.created_status === "global" ? (
@@ -1753,14 +1777,19 @@ const WorkFlowpar2createPage: React.FC = () => {
               />
             )
           ) : (
-            item.name_detail
+            <span style={textStyle}>{item.name_detail}</span>
           ),
-          uValue: formatNumber(item.value_u),
-          bajoPisoLambda: formatNumber(bajoPiso.lambda),
-          bajoPisoEAisl:
-            bajoPiso.e_aisl != null && bajoPiso.e_aisl !== 0
-              ? bajoPiso.e_aisl
-              : "-",
+          uValue: <span style={textStyle}>{formatNumber(item.value_u)}</span>,
+          bajoPisoLambda: (
+            <span style={textStyle}>{formatNumber(bajoPiso.lambda)}</span>
+          ),
+          bajoPisoEAisl: (
+            <span style={textStyle}>
+              {bajoPiso.e_aisl != null && bajoPiso.e_aisl !== 0
+                ? bajoPiso.e_aisl
+                : "-"}
+            </span>
+          ),
 
           vertLambda: isEditing ? (
             <input
@@ -1779,10 +1808,10 @@ const WorkFlowpar2createPage: React.FC = () => {
                 }))
               }
             />
-          ) : vert.lambda && vert.lambda > 0 ? (
-            formatNumber(vert.lambda)
           ) : (
-            "-"
+            <span style={textStyle}>
+              {vert.lambda && vert.lambda > 0 ? formatNumber(vert.lambda) : "-"}
+            </span>
           ),
 
           vertEAisl: isEditing ? (
@@ -1802,10 +1831,10 @@ const WorkFlowpar2createPage: React.FC = () => {
                 }))
               }
             />
-          ) : vert.e_aisl && vert.e_aisl > 0 ? (
-            vert.e_aisl
           ) : (
-            "-"
+            <span style={textStyle}>
+              {vert.e_aisl && vert.e_aisl > 0 ? vert.e_aisl : "-"}
+            </span>
           ),
 
           vertD: isEditing ? (
@@ -1825,10 +1854,10 @@ const WorkFlowpar2createPage: React.FC = () => {
                 }))
               }
             />
-          ) : vert.d && vert.d > 0 ? (
-            vert.d
           ) : (
-            "-"
+            <span style={textStyle}>
+              {vert.d && vert.d > 0 ? vert.d : "-"}
+            </span>
           ),
 
           horizLambda: isEditing ? (
@@ -1848,10 +1877,12 @@ const WorkFlowpar2createPage: React.FC = () => {
                 }))
               }
             />
-          ) : horiz.lambda && horiz.lambda > 0 ? (
-            formatNumber(horiz.lambda)
           ) : (
-            "-"
+            <span style={textStyle}>
+              {horiz.lambda && horiz.lambda > 0
+                ? formatNumber(horiz.lambda)
+                : "-"}
+            </span>
           ),
 
           horizEAisl: isEditing ? (
@@ -1871,10 +1902,10 @@ const WorkFlowpar2createPage: React.FC = () => {
                 }))
               }
             />
-          ) : horiz.e_aisl && horiz.e_aisl > 0 ? (
-            horiz.e_aisl
           ) : (
-            "-"
+            <span style={textStyle}>
+              {horiz.e_aisl && horiz.e_aisl > 0 ? horiz.e_aisl : "-"}
+            </span>
           ),
 
           horizD: isEditing ? (
@@ -1894,10 +1925,10 @@ const WorkFlowpar2createPage: React.FC = () => {
                 }))
               }
             />
-          ) : horiz.d && horiz.d > 0 ? (
-            horiz.d
           ) : (
-            "-"
+            <span style={textStyle}>
+              {horiz.d && horiz.d > 0 ? horiz.d : "-"}
+            </span>
           ),
 
           acciones: isEditing ? (
@@ -2277,6 +2308,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           <ProjectInfoHeader
             projectName={projectName}
             region={projectDepartment}
+            project_id={projectId ?? ""}
           />
           <div className="ms-auto" style={{ display: "flex" }}>
             <Breadcrumb

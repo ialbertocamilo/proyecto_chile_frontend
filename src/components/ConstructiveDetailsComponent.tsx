@@ -753,7 +753,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
-      { headerName: "Acciones", field: "acciones" },
+      { headerName: "Acciones", field: "acciones", sortable: false },
     ];
 
     const data = searchFilter(murosTabList).map((item) => {
@@ -892,7 +892,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
-      { headerName: "Acciones", field: "acciones" },
+      { headerName: "Acciones", field: "acciones", sortable: false },
     ];
 
     const data = searchFilter(techumbreTabList).map((item) => {
@@ -1027,14 +1027,14 @@ const ConstructiveDetailsComponent: React.FC = () => {
       },
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
-      { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
-      { headerName: "e Aisl [cm] (bajo piso)", field: "bajoPisoEAisl" },
-      { headerName: "I [W/mK] (vert)", field: "vertLambda" },
-      { headerName: "e Aisl [cm] (vert)", field: "vertEAisl" },
-      { headerName: "D [cm] (vert)", field: "vertD" },
-      { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
-      { headerName: "e Aisl [cm] (horiz)", field: "horizEAisl" },
-      { headerName: "D [cm] (horiz)", field: "horizD" },
+      { headerName: "λ [W/mK]", field: "bajoPisoLambda" },
+      { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
+      { headerName: "λ [W/mK]", field: "vertLambda" },
+      { headerName: "e Aisl [cm]", field: "vertEAisl" },
+      { headerName: "D [cm]", field: "vertD" },
+      { headerName: "λ [W/mK]", field: "horizLambda" },
+      { headerName: "e Aisl [cm]", field: "horizEAisl" },
+      { headerName: "D [cm]", field: "horizD" },
       { headerName: "Acciones", field: "acciones" },
     ];
 
@@ -1305,11 +1305,13 @@ const ConstructiveDetailsComponent: React.FC = () => {
             multiHeader={{
               rows: [
                 [
+                  { label: "Código IFC", rowSpan: 2 },
                   { label: "Nombre", rowSpan: 2 },
                   { label: "U [W/m²K]", rowSpan: 2 },
                   { label: "Aislamiento bajo piso", colSpan: 2 },
                   { label: "Ref Aisl Vert.", colSpan: 3 },
                   { label: "Ref Aisl Horiz.", colSpan: 3 },
+                  { label: "Acciones", rowSpan: 2 }
                 ],
                 [
                   { label: "λ [W/mK]" },

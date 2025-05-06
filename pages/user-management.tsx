@@ -38,7 +38,10 @@ const UserManagement = () => {
       params.append("limit", "500");
       const url = `/users/?${params.toString()}`;
       const response = await get(url);
-      const usersArray = response?.users || [];
+      const usersArray = (response?.users || []).map((user: User) => ({
+        ...user,
+        fullname: `${user.name} ${user.lastname}`,
+      }));
       setUsers(usersArray);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
@@ -91,6 +94,7 @@ const UserManagement = () => {
     {
       id: "activity",
       label: "Actividad",
+      sortable: true,
       minWidth: "2em",
       cell: ({ row }: { row: User }) => {
 
@@ -153,6 +157,7 @@ const UserManagement = () => {
       id: "fullname",
       label: "Nombre de usuario",
       minWidth: "2em",
+      sortable: true,
       cell: ({ row }: { row: User }) => `${row.name} ${row.lastname}`
     },
     { id: "email", label: "Correo Electrónico", minWidth: "2em" },

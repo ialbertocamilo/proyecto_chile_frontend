@@ -67,6 +67,56 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
   }, []);
 
   useEffect(() => {
+    const fetchExistingData = async () => {
+      try {
+        const projectId = localStorage.getItem('project_id');
+        if (!projectId) {
+          notify('No se encontró el ID del proyecto');
+          return;
+        }
+
+        const response = await axios.get(
+          `https://ceela-backend-qa.svgdev.tech/agua-caliente-obtener/${projectId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (response.data && response.data.length > 0) {
+          const data = response.data[0];
+          setTAcs(data.t_acs);
+          setDemandaACS(data.demanda_acs);
+          setCombustible(data.combustible);
+          setRendimiento(data.rendimiento);
+          setSistDistribucion(data.sist_distribucion);
+          setSistControl(data.sis_control);
+          setConsumoACS(data.consumo_acs);
+          setConsumoEnergiaPrimariaACS(data.consumo_energia_primaria);
+          setCo2eqEnergiaPrimaria(data.energia_primaria);
+
+          // Transform and set table data
+          const transformedData = data.data.map((item: any) => ({
+            tipo: item.tipo_ocupacion,
+            cantidad: item.cantidad_personas,
+            consumo: item.pers_dia
+          }));
+          setTableData(transformedData);
+        } else {
+          notify('No hay valores creados');
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        notify('Error al obtener los datos');
+      }
+    };
+
+    fetchExistingData();
+  }, []); // Run once when component mounts
+
+  useEffect(() => {
     const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
     // Calculate total daily consumption from table data

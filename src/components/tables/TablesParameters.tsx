@@ -2,8 +2,8 @@ import React, { useState, useMemo } from "react";
 
 const collator = new Intl.Collator("es", { sensitivity: "base" }); // ①
 const isNumeric = (v: any) =>                                      // ②
-typeof v === "number" ||
-(!!v && !Array.isArray(v) && !isNaN(parseFloat(v as any)));
+  typeof v === "number" ||
+  (!!v && !Array.isArray(v) && !isNaN(parseFloat(v as any)));
 
 interface Column {
   headerName: string | React.ReactNode;
@@ -45,43 +45,63 @@ export default function TablesParameters({
 }: TablesParametersProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
 
- 
 
   const handleSort = (field: string) => {
     setSortConfig((current) => {
       if (current?.field === field) {
-        return current.direction === 'asc' 
-          ? { field, direction: 'desc' } 
+        return current.direction === 'asc'
+          ? { field, direction: 'desc' }
           : null;
       }
       return { field, direction: 'asc' };
     });
   };
 
+
+  const unwrap = (v: any): string | number | null => {
+    // 1) Si es un elemento React
+    if (React.isValidElement(v)) {
+      const children = (v as React.ReactElement<any>).props.children;
+      // 1a) Si los hijos son un string o number, simplemente lo devolvemos
+      if (typeof children === "string" || typeof children === "number") {
+        return children;
+      }
+      // 1b) Si es un array (p. ej. [ 'foo', <b>bar</b> ]), concatenamos todo
+      if (Array.isArray(children)) {
+        return children.map((c) => (typeof c === "string" ? c : "")).join("");
+      }
+    }
+    // 2) Si no es un ReactNode, devolvemos el valor crudo (string, number, null…)
+    return v;
+  };
+
   const sortedData = useMemo(() => {
     if (!sortConfig) return data;
-  
+
     const { field, direction } = sortConfig;
     const dir = direction === "asc" ? 1 : -1;   // ③
-  
+
     return [...data].sort((a, b) => {
-      const aVal = a[field];
-      const bVal = b[field];
-  
+      // Extraemos siempre valor primitivo
+      const rawA = a[field];
+      const rawB = b[field];
+      const aVal = unwrap(rawA);
+      const bVal = unwrap(rawB);
+
       // Null / undefined al final, independientemente de asc/desc
       if (aVal == null) return 1;
       if (bVal == null) return -1;
-  
+
       // ④ Orden numérico robusto
       if (isNumeric(aVal) && isNumeric(bVal)) {
-        return (parseFloat(aVal) - parseFloat(bVal)) * dir;
+        return (parseFloat(String(aVal)) - parseFloat(String(bVal))) * dir;
       }
-  
+
       // ⑤ Orden alfabético «humano» para español
       return collator.compare(String(aVal), String(bVal)) * dir;
     });
   }, [data, sortConfig]);
-  
+
 
   return (
     <div className="container-fluid p-0">
@@ -126,7 +146,7 @@ export default function TablesParameters({
                           ) < columns.length && (
                             <th
                               colSpan={
-                                columns.length - 
+                                columns.length -
                                 row.reduce(
                                   (acc, cell) => acc + (cell.colSpan ?? 1),
                                   0

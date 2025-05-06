@@ -474,6 +474,7 @@ const ProjectWorkflowPart1: React.FC = () => {
               <ProjectInfoHeader
                 projectName={projectNameFromStorage}
                 region={regionFromStorage}
+                project_id={typeof router.query.id === "string" ? router.query.id : ""}
               />
               <Breadcrumb
                 items={[

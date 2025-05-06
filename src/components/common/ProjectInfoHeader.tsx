@@ -5,7 +5,7 @@ import CustomButton from "@/components/common/CustomButton";
 interface ProjectInfoHeaderProps {
   projectName: string;
   region: string;
-  project_id: string | number;
+  project_id? : string | number;
 }
 
 const ProjectInfoHeader: React.FC<ProjectInfoHeaderProps> = ({ projectName, region, project_id }) => {

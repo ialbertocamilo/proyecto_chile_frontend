@@ -217,6 +217,7 @@ const RecintoCreate: React.FC = () => {
             <ProjectInfoHeader
               projectName={projectName}
               region={projectDepartment}
+              project_id={projectId ?? ""}
             />
             <div className="ms-auto">
               <Breadcrumb

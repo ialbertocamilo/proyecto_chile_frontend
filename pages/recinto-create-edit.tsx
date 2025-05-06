@@ -219,6 +219,7 @@ const RecintoCreateEdit: React.FC = () => {
             <ProjectInfoHeader
               projectName={projectName}
               region={projectDepartment}
+              project_id={projectId ?? ""}
             />
             <Breadcrumb
               items={[

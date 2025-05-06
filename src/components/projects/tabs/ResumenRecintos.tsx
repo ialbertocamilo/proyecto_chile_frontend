@@ -48,10 +48,44 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
   const [selectedEnergySystems, setSelectedEnergySystems] = useState<{
     [key: number]: string;
   }>({});
+  const [selectedEnergySystemsRef, setSelectedEnergySystemsRef] = useState<{
+    [key: number]: string;
+  }>({});
+  const [selectedRendimientoCalef, setSelectedRendimientoCalef] = useState<{
+    [key: number]: string;
+  }>({});
+  const [selectedDistribucionHvac, setSelectedDistribucionHvac] = useState<{
+    [key: number]: string;
+  }>({});
+  const [selectedControlHvac, setSelectedControlHvac] = useState<{
+    [key: number]: string;
+  }>({});
+  const [selectedRendimientoRef, setSelectedRendimientoRef] = useState<{
+    [key: number]: string;
+  }>({});
   const [energySystems, setEnergySystems] = useState<any[]>([]);
+  const [rendimientoCalef, setRendimientoCalef] = useState<any[]>([]);
+  const [distribucionHvac, setDistribucionHvac] = useState<any[]>([]);
+  const [controlHvac, setControlHvac] = useState<any[]>([]);
+  const [rendimientoRef, setRendimientoRef] = useState<any[]>([]);
 
   const handleEnergySystemChange = (recintoId: number, value: string) => {
     setSelectedEnergySystems((prev) => ({ ...prev, [recintoId]: value }));
+  };
+  const handleEnergySystemChangeRef = (recintoId: number, value: string) => {
+    setSelectedEnergySystemsRef((prev) => ({ ...prev, [recintoId]: value }));
+  };
+  const handleRendimientoCalefChange = (recintoId: number, value: string) => {
+    setSelectedRendimientoCalef((prev) => ({ ...prev, [recintoId]: value }));
+  };
+  const handleDistribucionHvacChange = (recintoId: number, value: string) => {
+    setSelectedDistribucionHvac((prev) => ({ ...prev, [recintoId]: value }));
+  };
+  const handleControlHvacChange = (recintoId: number, value: string) => {
+    setSelectedControlHvac((prev) => ({ ...prev, [recintoId]: value }));
+  };
+  const handleRendimientoRef = (recintoId: number, value: string) => {
+    setSelectedRendimientoRef((prev) => ({ ...prev, [recintoId]: value }));
   };
 
   useEffect(() => {
@@ -81,6 +115,14 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
       const systems =
         result.constant.atributs?.consumos_por_fuente_de_energia || [];
       setEnergySystems(systems);
+      const rendCalef = result.constant.atributs?.rendimiento_calef || [];
+      setRendimientoCalef(rendCalef);
+      const distCalef = result.constant.atributs?.distribucion_hvac || [];
+      setDistribucionHvac(distCalef);
+      const controlCalef = result.constant.atributs?.control_hvac || [];
+      setControlHvac(controlCalef);
+      const rendRef = result.constant.atributs?.rendimiento_ref || [];
+      setRendimientoRef(rendRef);
       console.log("Energy Systems:", systems);
     }
   }, [result.constant]);
@@ -176,7 +218,7 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
             </Col>
           </Row>
           <Row className="gx-5 justify-content-between">
-            <Col sm={4}>
+            <Col sm={4} className="overflow-x-scroll">
               <Table className="tables-recints">
                 <thead style={{ height: "100px" }}>
                   <tr>
@@ -307,13 +349,58 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                             </select>
                           </td>
                           <td className="text-center">
-                            {recinto.consumo_calef?.toFixed(2) || "0.00"}
+                            <select
+                              value={selectedRendimientoCalef[recinto.id] || ""}
+                              onChange={(e) =>
+                                handleRendimientoCalefChange(
+                                  recinto.id,
+                                  e.target.value
+                                )
+                              }
+                            >
+                              <option value="">Seleccione</option>
+                              {rendimientoCalef.map((system: any) => (
+                                <option key={system.code} value={system.code}>
+                                  {system.name}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                           <td className="text-center">
-                            {recinto.consumo_ref?.toFixed(2) || "0.00"}
+                            <select
+                              value={selectedDistribucionHvac[recinto.id] || ""}
+                              onChange={(e) =>
+                                handleDistribucionHvacChange(
+                                  recinto.id,
+                                  e.target.value
+                                )
+                              }
+                            >
+                              <option value="">Seleccione</option>
+                              {distribucionHvac.map((system: any) => (
+                                <option key={system.code} value={system.code}>
+                                  {system.name}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                           <td className="text-center">
-                            {recinto.consumo_total?.toFixed(2) || "0.00"}
+                            <select
+                              value={selectedControlHvac[recinto.id] || ""}
+                              onChange={(e) =>
+                                handleControlHvacChange(
+                                  recinto.id,
+                                  e.target.value
+                                )
+                              }
+                            >
+                              <option value="">Seleccione</option>
+                              {controlHvac.map((system: any) => (
+                                <option key={system.code} value={system.code}>
+                                  {system.name}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                           <td className="text-center">
                             {recinto.rendimiento_calef?.toFixed(2) || "0.00"}
@@ -322,10 +409,37 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                             {recinto.distribucion_calef?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.control_calef?.toFixed(2) || "0.00"}
+                          <select
+                              value={selectedEnergySystemsRef[recinto.id] || ""}
+                              onChange={(e) =>
+                                handleEnergySystemChangeRef(
+                                  recinto.id,
+                                  e.target.value
+                                )
+                              }
+                            >
+                              <option value="">Seleccione</option>
+                              {energySystems.map((system: any) => (
+                                <option key={system.code} value={system.code}>
+                                  {system.name}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                           <td className="text-center">
-                            {recinto.scop_calef?.toFixed(2) || "0.00"}
+                            <select
+                              value={selectedRendimientoRef[recinto.id] || ""}
+                              onChange={(e) =>
+                                handleRendimientoRef(recinto.id, e.target.value)
+                              }
+                            >
+                              <option value="">Seleccione</option>
+                              {rendimientoRef.map((system: any) => (
+                                <option key={system.code} value={system.code}>
+                                  {system.name}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                           <td className="text-center">
                             {recinto.scop_mc_calef?.toFixed(2) || "0.00"}

@@ -31,6 +31,7 @@ const CalculationResultPage = () => {
             <ProjectInfoHeader
               projectName={projectNameFromStorage}
               region={regionFromStorage}
+              project_id={router.query.projectId ? String(router.query.projectId) : ""}
             />
             <Breadcrumb
               items={[

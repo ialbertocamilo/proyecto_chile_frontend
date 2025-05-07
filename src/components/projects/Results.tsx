@@ -265,7 +265,7 @@ const Results = () => {
     <Container fluid className="py-4">
       <h2 className="mb-4 mt-2">Resultados finales</h2>
       <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-        
+
 
         <CustomButton
           onClick={handleForceRecalculation}
@@ -327,7 +327,7 @@ const Results = () => {
         )}
 
         <CustomButton
-        color="red"
+          color="red"
           onClick={generatePDF}
           className="mb-3"
           disabled={generatingPdf || !indicadoresData}

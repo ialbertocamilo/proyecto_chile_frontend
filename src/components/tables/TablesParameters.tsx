@@ -25,6 +25,8 @@ interface HeaderCell {
   colSpan?: number;
   rowSpan?: number;
   style?: React.CSSProperties;
+  field?: string;
+  sortable?: boolean;
 }
 
 type HeaderRow = HeaderCell[];
@@ -114,73 +116,83 @@ export default function TablesParameters({
             }}
           >
             <table className="table table-hover table-sm mb-0">
-              <thead
-                className="border-bottom"
-                style={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                  backgroundColor: "#fff", // Fondo transparente
-                  color: "var(--primary-color)", // Color del texto: color primario
-                }}
-              >
-                {multiHeader ? (
-                  <>
-                    {multiHeader.rows.map((row, rowIndex) => (
-                      <tr key={rowIndex}>
-                        {row.map((cell, cellIndex) => (
-                          <th
-                            key={cellIndex}
-                            colSpan={cell.colSpan}
-                            rowSpan={cell.rowSpan}
-                            style={cell.style}
-                            className="text-center align-middle" // Clases de Bootstrap para centrar el texto
-                          >
-                            {cell.label}
-                          </th>
-                        ))}
-                        {rowIndex === 0 &&
-                          row.reduce(
-                            (acc, cell) => acc + (cell.colSpan ?? 1),
-                            0
-                          ) < columns.length && (
-                            <th
-                              colSpan={
-                                columns.length -
-                                row.reduce(
-                                  (acc, cell) => acc + (cell.colSpan ?? 1),
-                                  0
-                                )
-                              }
-                              className="text-center align-middle"
-                            />
-                          )}
-                      </tr>
-                    ))}
-                  </>
-                ) : (
-                  <tr>
-                    {columns.map((col, index) => (
-                      <th
-                        className="text-center align-middle"
-                        key={col.field}
-                        onClick={() => col.sortable !== false && handleSort(col.field)}
-                        style={{
-                          cursor: col.sortable !== false ? "pointer" : "default",
-                          ...col.headerStyle,
-                        }}
-                      >
-                        {col.headerName}
-                        {sortConfig?.field === col.field && (
-                          <span className="ms-1">
-                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                )}
-              </thead>
+            <thead>
+  {multiHeader && multiHeader.rows.length > 0 ? (
+    <>
+      {multiHeader.rows.map((row, rowIndex) => {
+        // ¿Estamos en la última fila de multiHeader?
+        const isSortRow = rowIndex === multiHeader.rows.length - 1;
+
+        return (
+          <tr key={rowIndex}>
+            {row.map((cell, cellIndex) => {
+              // Solo sortable si estamos en la última fila y la celda tiene `field`
+              const canSort = !!cell.field && (cell.sortable ?? true);
+              const isActive = sortConfig?.field === cell.field;
+
+              return (
+                <th
+                  key={cellIndex}
+                  colSpan={cell.colSpan}
+                  rowSpan={cell.rowSpan}
+                  style={{
+                    cursor: canSort ? 'pointer' : undefined,
+                    ...cell.style,
+                  }}
+                  className="text-center align-middle"
+                  onClick={canSort ? () => handleSort(cell.field!) : undefined}
+                >
+                  {cell.label}
+                  {isActive && sortConfig && (
+                    <span className="ms-1">
+                      {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                    </span>
+                  )}
+                </th>
+              );
+            })}
+
+            {/* opcional: si la suma de colSpan de la fila 0 es menor que columns.length, rellena vacíos */}
+            {rowIndex === 0 &&
+              row.reduce((sum, c) => sum + (c.colSpan ?? 1), 0) < columns.length && (
+                <th
+                  colSpan={
+                    columns.length -
+                    row.reduce((sum, c) => sum + (c.colSpan ?? 1), 0)
+                  }
+                  className="text-center align-middle"
+                />
+              )}
+          </tr>
+        );
+      })}
+    </>
+  ) : (
+    // Si no hay multiHeader, cae en la fila típica de columns
+    <tr>
+      {columns.map((col) => {
+        const isActive = sortConfig?.field === col.field;
+        return (
+          <th
+            key={col.field}
+            className="text-center align-middle"
+            onClick={() => col.sortable !== false && handleSort(col.field)}
+            style={{
+              cursor: col.sortable !== false ? 'pointer' : 'default',
+              ...col.headerStyle,
+            }}
+          >
+            {col.headerName}
+            {isActive && <span className="ms-1">{sortConfig!.direction === 'asc' ? '↑' : '↓'}</span>}
+          </th>
+        );
+      })}
+    </tr>
+  )}
+</thead>
+
+
+
 
               <tbody>
                 {sortedData?.map((row, rowIndex) => (

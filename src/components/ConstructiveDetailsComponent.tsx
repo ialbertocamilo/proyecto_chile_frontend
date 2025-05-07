@@ -753,7 +753,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
-      { headerName: "Acciones", field: "acciones", sortable: false },
+      { headerName: "Acciones", field: "acciones" },
     ];
 
     const data = searchFilter(murosTabList).map((item) => {
@@ -892,7 +892,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
-      { headerName: "Acciones", field: "acciones", sortable: false },
+      { headerName: "Acciones", field: "acciones" },
     ];
 
     const data = searchFilter(techumbreTabList).map((item) => {
@@ -1027,14 +1027,14 @@ const ConstructiveDetailsComponent: React.FC = () => {
       },
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
-      { headerName: "λ [W/mK]", field: "bajoPisoLambda" },
-      { headerName: "e Aisl [cm]", field: "bajoPisoEAisl" },
-      { headerName: "λ [W/mK]", field: "vertLambda" },
-      { headerName: "e Aisl [cm]", field: "vertEAisl" },
-      { headerName: "D [cm]", field: "vertD" },
-      { headerName: "λ [W/mK]", field: "horizLambda" },
-      { headerName: "e Aisl [cm]", field: "horizEAisl" },
-      { headerName: "D [cm]", field: "horizD" },
+      { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
+      { headerName: "e Aisl [cm] (bajo piso)", field: "bajoPisoEAisl" },
+      { headerName: "I [W/mK] (vert)", field: "vertLambda" },
+      { headerName: "e Aisl [cm] (vert)", field: "vertEAisl" },
+      { headerName: "D [cm] (vert)", field: "vertD" },
+      { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
+      { headerName: "e Aisl [cm] (horiz)", field: "horizEAisl" },
+      { headerName: "D [cm] (horiz)", field: "horizD" },
       { headerName: "Acciones", field: "acciones" },
     ];
 
@@ -1300,32 +1300,36 @@ const ConstructiveDetailsComponent: React.FC = () => {
       <div>
         {pisosTabList.length > 0 ? (
           <TablesParameters
-            columns={columnsPisos}
-            data={data}
-            multiHeader={{
-              rows: [
-                [
-                  { label: "Código IFC", rowSpan: 2 },
-                  { label: "Nombre", rowSpan: 2 },
-                  { label: "U [W/m²K]", rowSpan: 2 },
-                  { label: "Aislamiento bajo piso", colSpan: 2 },
-                  { label: "Ref Aisl Vert.", colSpan: 3 },
-                  { label: "Ref Aisl Horiz.", colSpan: 3 },
-                  { label: "Acciones", rowSpan: 2 }
-                ],
-                [
-                  { label: "λ [W/mK]" },
-                  { label: "e Aisl [cm]" },
-                  { label: "λ [W/mK]" },
-                  { label: "e Aisl [cm]" },
-                  { label: "D [cm]" },
-                  { label: "λ [W/mK]" },
-                  { label: "e Aisl [cm]" },
-                  { label: "D [cm]" },
-                ],
+          columns={columnsPisos}
+          data={data}
+          multiHeader={{
+            rows: [
+              // Fila 1: IFC, Nombre, U, grupos, Acciones
+              [
+                { label: "Código IFC",   field: "code_ifc",    rowSpan: 2, sortable: true },
+                { label: "Nombre",       field: "nombre",      rowSpan: 2, sortable: true },
+                { label: "U [W/m²K]",    field: "uValue",      rowSpan: 2, sortable: true },
+                { label: "Aislamiento bajo piso", colSpan: 2 },
+                { label: "Ref Aisl Vert.",        colSpan: 3 },
+                { label: "Ref Aisl Horiz.",       colSpan: 3 },
+                { label: "Acciones",     field: "acciones",    rowSpan: 2, sortable: false },
               ],
-            }}
-          />
+              // Fila 2: las sub-columnas dentro de cada grupo
+              [
+                { label: "λ [W/mK]",     field: "bajoPisoLambda", sortable: true },
+                { label: "e Aisl [cm]",  field: "bajoPisoEAisl",   sortable: true },
+                { label: "λ [W/mK]",     field: "vertLambda",      sortable: true },
+                { label: "e Aisl [cm]",  field: "vertEAisl",       sortable: true },
+                { label: "D [cm]",       field: "vertD",           sortable: true },
+                { label: "λ [W/mK]",     field: "horizLambda",     sortable: true },
+                { label: "e Aisl [cm]",  field: "horizEAisl",      sortable: true },
+                { label: "D [cm]",       field: "horizD",          sortable: true },
+              ],
+            ],
+          }}
+        />
+        
+        
         ) : (
           <p>No hay datos</p>
         )}

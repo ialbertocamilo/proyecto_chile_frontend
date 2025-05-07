@@ -27,6 +27,17 @@ import ProjectStatus from "@/components/projects/ProjectStatus";
 import AddDetailOnLayer from "@/components/projects/AddDetailOnLayer";
 import { useApi } from "@/hooks/useApi";
 import { createDetail } from "@/service/details";
+
+interface MultiHeader {
+  rows: {
+    label: string;
+    field?: string;
+    rowSpan?: number;
+    colSpan?: number;
+    sortable?: boolean;
+  }[][];
+}
+
 import DeleteDetailButton from "@/components/common/DeleteDetailButton";
 import { IDetail } from "@/shared/interfaces/detail.interface";
 import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
@@ -1536,29 +1547,32 @@ const WorkFlowpar2editPage: React.FC = () => {
     ];
     console.log("pisos");
     console.log(pisosTabList);
-    const multiHeaderPisos = {
+    const multiHeaderPisos: MultiHeader = {
       rows: [
+        // Fila 1
         [
-          { label: "Código ICF", rowSpan: 2 },
-          { label: "Nombre", rowSpan: 2 },
-          { label: "U [W/m²K]", rowSpan: 2 },
-          { label: "Aislamiento bajo piso", colSpan: 2 },
-          { label: "Ref Aisl Vert.", colSpan: 3 },
-          { label: "Ref Aisl Horiz.", colSpan: 3 },
-          { label: "Acciones", rowSpan: 2, colSpan: 3 },
+          { label: "Código IFC",    field: "code_ifc",    rowSpan: 2, sortable: true },
+          { label: "Nombre",        field: "nombre",      rowSpan: 2, sortable: true },
+          { label: "U [W/m²K]",     field: "uValue",      rowSpan: 2, sortable: true },
+          { label: "Aislamiento bajo piso",                colSpan: 2 },
+          { label: "Ref Aisl Vert.",                       colSpan: 3 },
+          { label: "Ref Aisl Horiz.",                      colSpan: 3 },
+          { label: "Acciones",      field: "acciones",    rowSpan: 2, sortable: false },
         ],
+        // Fila 2 (subcolumnas)
         [
-          { label: "λ [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "λ [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "D [cm]" },
-          { label: "λ [W/mK]" },
-          { label: "e Aisl [cm]" },
-          { label: "D [cm]" },
+          { label: "λ [W/mK]",      field: "bajoPisoLambda", sortable: true },
+          { label: "e Aisl [cm]",   field: "bajoPisoEAisl",   sortable: true },
+          { label: "λ [W/mK]",      field: "vertLambda",      sortable: true },
+          { label: "e Aisl [cm]",   field: "vertEAisl",       sortable: true },
+          { label: "D [cm]",        field: "vertD",           sortable: true },
+          { label: "λ [W/mK]",      field: "horizLambda",     sortable: true },
+          { label: "e Aisl [cm]",   field: "horizEAisl",      sortable: true },
+          { label: "D [cm]",        field: "horizD",          sortable: true },
         ],
       ],
     };
+    
     const pisosData = pisosTabList
       .filter(
         (item) =>

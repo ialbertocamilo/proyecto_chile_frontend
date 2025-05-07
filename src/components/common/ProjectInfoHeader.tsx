@@ -13,10 +13,14 @@ const ProjectInfoHeader: React.FC<ProjectInfoHeaderProps> = ({ projectName, regi
 
   const handleProjectClick = () => {
     router.push(`/workflow-part1-edit?id=${project_id}&step=1`);
+    localStorage.setItem("project_name_edit", projectName);
+    localStorage.setItem("project_department_edit", region);
   };
 
   const handleRegionClick = () => {
     router.push(`/workflow-part1-edit?id=${project_id}&step=2`);
+    localStorage.setItem("project_department_edit", region);
+    localStorage.setItem("project_name_edit", projectName);
   };
 
   return (

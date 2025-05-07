@@ -2,7 +2,7 @@ import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, RefreshCw } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Container, Spinner, Tab, Tabs } from "react-bootstrap";
@@ -57,6 +57,23 @@ interface RecintoItem {
   [key: string]: any;
 }
 
+// Add this interface to match the expected type
+interface Recinto {
+  id: number;
+  name_enclosure: string;
+  height: number;
+  usage_profile_name: string;
+  demanda_calef: number;
+  demanda_ref: number;
+  demanda_ilum: number;
+  demanda_total: number;
+  consumo_calef: number;
+  consumo_ref: number;
+  consumo_total: number;
+  co2_eq: number;
+  [key: string]: any;
+}
+
 const Results = () => {
   const router = useRouter();
   const { get } = useApi();
@@ -64,6 +81,7 @@ const Results = () => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [isRecalculating, setIsRecalculating] = useState(false);
   const [recintosData, setRecintosData] = useState<RecintoItem[]>([]);
   const [indicadoresData, setIndicadoresData] = useState<IndicadoresData | null>(null);
 
@@ -86,9 +104,9 @@ const Results = () => {
     if (router.query.id) processData();
   }, [router.query.id]);
 
-  const handleRecintosCalculated = (recintos: RecintoItem[]) => {
+  const handleRecintosCalculated = (recintos: Recinto[]) => {
     console.log("Recintos calculated:", recintos);
-    setRecintosData(recintos);
+    setRecintosData(recintos as unknown as RecintoItem[]);
   };
 
   const handleDataUpdate = (data: IndicadoresData) => {
@@ -224,11 +242,45 @@ const Results = () => {
     }
   };
 
+  const handleForceRecalculation = async () => {
+    try {
+      setIsRecalculating(true);
+      const projectId = router.query.id;
+      if (projectId) {
+        await get(`/calculator/${projectId}?force_calculation=true`);
+        notify("Recálculo completado exitosamente");
+        // Refresh data after recalculation
+        await processData();
+      }
+    } catch (error) {
+      console.error("Error al forzar recálculo:", error);
+      notify("Error al forzar recálculo", "error");
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
   const api = useApi();
   return (
     <Container fluid className="py-4">
       <h2 className="mb-4 mt-2">Resultados finales</h2>
       <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+        
+
+        <CustomButton
+          onClick={handleForceRecalculation}
+          className="mb-3"
+          disabled={isRecalculating}
+        >
+          <RefreshCw size={18} style={{ marginRight: 8 }} />
+          Forzar recálculo
+        </CustomButton>
+        {isRecalculating && (
+          <span style={{ minWidth: 120, display: "flex", alignItems: "center", gap: 8 }}>
+            <Spinner animation="border" size="sm" role="status" />
+            <span>Recalculando...</span>
+          </span>
+        )}
         <CustomButton
           color="orange"
           onClick={async () => {
@@ -275,7 +327,7 @@ const Results = () => {
         )}
 
         <CustomButton
-          color="blue"
+        color="red"
           onClick={generatePDF}
           className="mb-3"
           disabled={generatingPdf || !indicadoresData}

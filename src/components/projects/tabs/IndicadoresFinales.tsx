@@ -84,7 +84,7 @@ export default function IndicadoresFinales({ onDataUpdate }: IndicadoresFinalesP
     comparacion: "0%", // [%]
   };
 
-  // Send data to parent component when mounted
+  // Send data to parent component only on mount
   useEffect(() => {
     if (onDataUpdate) {
       onDataUpdate({
@@ -94,7 +94,7 @@ export default function IndicadoresFinales({ onDataUpdate }: IndicadoresFinalesP
         co2eqData
       });
     }
-  }, [onDataUpdate, demandaData, consumoPrimario, hrsDisconfort, co2eqData]);
+  }, []); 
 
   return (
     <div className="container my-4">

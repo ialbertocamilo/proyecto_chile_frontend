@@ -46,7 +46,13 @@ export default async function handler(
   }
 
   try {
-    const url = `${constantUrlApiEndpoint}/user/projects/`;
+    const baseUrl = constantUrlApiEndpoint?.includes('://localhost')
+      ? constantUrlApiEndpoint.replace('://localhost', '://127.0.0.1')
+      : constantUrlApiEndpoint;
+
+    const url = `${baseUrl}/user/projects/`;
+    console.log('[API] Attempting to connect to:', url);
+
     const response = await axios.get<ProjectsResponse>(
       url,
       {
@@ -57,13 +63,24 @@ export default async function handler(
       }
     );
 
-    console.log('[API] Projects url:', url);
+    console.log('[API] Projects fetched successfully');
     return res.status(200).json(response.data);
   } catch (error) {
     console.error('[API] Error fetching projects:', error);
     if (axios.isAxiosError(error)) {
+      const errorDetails = {
+        message: error.message,
+        code: error.code,
+        status: error.response?.status,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method,
+      };
+      console.error('[API] Detailed Axios error:', JSON.stringify(errorDetails, null, 2));
+
       return res.status(error.response?.status || 500).json({
         error: error.response?.data?.detail || 'Error fetching projects',
+        details: errorDetails
       });
     }
     return res.status(500).json({ error: 'Internal server error' });

@@ -1,8 +1,19 @@
 // pages/resumen-energia.js
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Cloud, Droplet, Flame, Snowflake } from "lucide-react";
+import { useEffect } from "react";
 
-export default function IndicadoresFinales() {
+// Define interface for props
+interface IndicadoresFinalesProps {
+  onDataUpdate?: (data: {
+    demandaData: any[];
+    consumoPrimario: any[];
+    hrsDisconfort: any[];
+    co2eqData: any;
+  }) => void;
+}
+
+export default function IndicadoresFinales({ onDataUpdate }: IndicadoresFinalesProps = {}) {
   // Datos simulados para cada sección
   const demandaData = [
     {
@@ -72,6 +83,18 @@ export default function IndicadoresFinales() {
     unidad: "[kg CO2eq]",
     comparacion: "0%", // [%]
   };
+
+  // Send data to parent component when mounted
+  useEffect(() => {
+    if (onDataUpdate) {
+      onDataUpdate({
+        demandaData,
+        consumoPrimario,
+        hrsDisconfort,
+        co2eqData
+      });
+    }
+  }, [onDataUpdate, demandaData, consumoPrimario, hrsDisconfort, co2eqData]);
 
   return (
     <div className="container my-4">

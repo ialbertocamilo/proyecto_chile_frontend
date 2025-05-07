@@ -1782,14 +1782,18 @@ const WorkFlowpar2createPage: React.FC = () => {
           ) : (
             <span style={textStyle}>{item.name_detail}</span>
           ),
-          uValue: <span style={textStyle}>{formatNumber(item.value_u)}</span>,
+          uValue: <span style={textStyle}>{formatNumber(item.value_u, 2)}</span>,
           bajoPisoLambda: (
-            <span style={textStyle}>{formatNumber(bajoPiso.lambda)}</span>
+            <span style={textStyle}>
+              {bajoPiso.lambda != null && bajoPiso.lambda !== 0
+                ? Number(bajoPiso.lambda).toFixed(2)
+                : "-"}
+            </span>
           ),
           bajoPisoEAisl: (
             <span style={textStyle}>
               {bajoPiso.e_aisl != null && bajoPiso.e_aisl !== 0
-                ? bajoPiso.e_aisl
+                ? Number(bajoPiso.e_aisl).toFixed(2)
                 : "-"}
             </span>
           ),
@@ -1813,7 +1817,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             />
           ) : (
             <span style={textStyle}>
-              {vert.lambda && vert.lambda > 0 ? formatNumber(vert.lambda) : "-"}
+              {vert.lambda && vert.lambda > 0 
+                ? Number(vert.lambda).toFixed(2) 
+                : "-"}
             </span>
           ),
 
@@ -1836,7 +1842,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             />
           ) : (
             <span style={textStyle}>
-              {vert.e_aisl && vert.e_aisl > 0 ? vert.e_aisl : "-"}
+              {vert.e_aisl && vert.e_aisl > 0 
+                ? Number(vert.e_aisl).toFixed(2) 
+                : "-"}
             </span>
           ),
 
@@ -1859,7 +1867,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             />
           ) : (
             <span style={textStyle}>
-              {vert.d && vert.d > 0 ? vert.d : "-"}
+              {vert.d && vert.d > 0 
+                ? Number(vert.d).toFixed(2) 
+                : "-"}
             </span>
           ),
 
@@ -1883,7 +1893,7 @@ const WorkFlowpar2createPage: React.FC = () => {
           ) : (
             <span style={textStyle}>
               {horiz.lambda && horiz.lambda > 0
-                ? formatNumber(horiz.lambda)
+                ? Number(horiz.lambda).toFixed(2)
                 : "-"}
             </span>
           ),
@@ -1907,7 +1917,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             />
           ) : (
             <span style={textStyle}>
-              {horiz.e_aisl && horiz.e_aisl > 0 ? horiz.e_aisl : "-"}
+              {horiz.e_aisl && horiz.e_aisl > 0 
+                ? Number(horiz.e_aisl).toFixed(2) 
+                : "-"}
             </span>
           ),
 
@@ -1930,7 +1942,9 @@ const WorkFlowpar2createPage: React.FC = () => {
             />
           ) : (
             <span style={textStyle}>
-              {horiz.d && horiz.d > 0 ? horiz.d : "-"}
+              {horiz.d && horiz.d > 0 
+                ? Number(horiz.d).toFixed(2) 
+                : "-"}
             </span>
           ),
 
@@ -3123,3 +3137,4 @@ const WorkFlowpar2createPage: React.FC = () => {
 };
 
 export default WorkFlowpar2createPage;
+

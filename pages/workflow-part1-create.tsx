@@ -35,6 +35,7 @@ interface FormData {
   longitude: number;
   address: string;
   zone?: string;
+  residential_type?: string;
 }
 
 interface Project {
@@ -58,6 +59,7 @@ const initialFormData: FormData = {
   longitude: -70.6703553846175,
   address: "",
   zone: "",
+  residential_type: "",
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -132,6 +134,15 @@ const ProjectWorkflowPart1: React.FC = () => {
   const handleFormInputChange = useCallback(
     (field: keyof FormData, value: string | number) => {
       if (
+        field === "building_type" &&
+        !value.toString().toLowerCase().startsWith("residencial")
+      ) {
+        // Reset residential_type when building_type is not "Residencial %"
+        setFormData((prev) => ({ ...prev, residential_type: "" }));
+        setFormData((prev) => ({ ...prev, number_homes_per_level: 0 }));
+      }
+
+      if (
         (field === "number_levels" ||
           field === "number_homes_per_level" ||
           field === "built_surface") &&
@@ -180,19 +191,27 @@ const ProjectWorkflowPart1: React.FC = () => {
       newErrors.owner_name = "El nombre del propietario es obligatorio.";
     if (!formData.owner_lastname.trim())
       newErrors.owner_lastname = "El apellido del propietario es obligatorio.";
-    if (!formData.country.trim())
-      newErrors.country = "Debe seleccionar un país.";
-    if (!formData.department.trim())
-      newErrors.department = "Debe seleccionar un departamento.";
-    if (!formData.province.trim())
-      newErrors.province = "Debe seleccionar una provincia.";
+    // if (!formData.country.trim())
+    // newErrors.country = "Debe seleccionar un país.";
+    // if (!formData.department.trim())
+    // newErrors.department = "Debe seleccionar un departamento.";
+    // if (!formData.province.trim())
+    // newErrors.province = "Debe seleccionar una provincia.";
     if (!formData.district.trim())
       newErrors.district = "El distrito es obligatorio.";
     if (!formData.building_type.trim())
       newErrors.building_type = "Debe seleccionar un tipo de edificación.";
+    if (
+      !formData.residential_type?.trim() &&
+      formData.building_type.toLowerCase().startsWith("residencial")
+    )
+      newErrors.residential_type = "Debe seleccionar un tipo de edificación.";
     if (formData.number_levels <= 0)
       newErrors.number_levels = "El número de niveles debe ser mayor a 0.";
-    if (formData.number_homes_per_level <= 0)
+    if (
+      formData.number_homes_per_level <= 0 &&
+      formData.building_type.toLowerCase().startsWith("residencial")
+    )
       newErrors.number_homes_per_level =
         "El número de viviendas/oficinas por nivel debe ser mayor a 0.";
     if (formData.built_surface <= 0)
@@ -296,6 +315,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         project_metadata: {
           zone: formData.zone,
         },
+        residential_type: formData.residential_type,
       };
       const data = await post(`/projects/create`, requestBody);
       const { project_id } = data;
@@ -487,7 +507,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </small>
                     )}
                   </div>
-                  <div className="col-12 col-md-6">
+                  {/*<div className="col-12 col-md-6">
                     <label className="form-label">
                       País{" "}
                       {isFieldEmpty("country") && (
@@ -511,9 +531,28 @@ const ProjectWorkflowPart1: React.FC = () => {
                     {submitted && errors.country && (
                       <small className="text-danger">{errors.country}</small>
                     )}
+                  </div>*/}
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Distrito/Municipio
+                      {isFieldEmpty("district") && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.district}
+                      onChange={(e) =>
+                        handleFormInputChange("district", e.target.value)
+                      }
+                    />
+                    {submitted && errors.district && (
+                      <small className="text-danger">{errors.district}</small>
+                    )}
                   </div>
                 </div>
-                <div className="row mb-3">
+                {/*<div className="row mb-3">
                   <div className="col-12 col-md-6">
                     <label className="form-label">
                       Región{" "}
@@ -573,27 +612,8 @@ const ProjectWorkflowPart1: React.FC = () => {
                       <small className="text-danger">{errors.province}</small>
                     )}
                   </div>
-                </div>
+                </div>*/}
                 <div className="row mb-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">
-                      Distrito{" "}
-                      {isFieldEmpty("district") && (
-                        <span style={{ color: "red" }}>*</span>
-                      )}
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.district}
-                      onChange={(e) =>
-                        handleFormInputChange("district", e.target.value)
-                      }
-                    />
-                    {submitted && errors.district && (
-                      <small className="text-danger">{errors.district}</small>
-                    )}
-                  </div>
                   <div className="col-12 col-md-6">
                     <label className="form-label">
                       Tipo de edificación{" "}
@@ -611,17 +631,55 @@ const ProjectWorkflowPart1: React.FC = () => {
                       <option value="">
                         Seleccione un tipo de edificación
                       </option>
-                      <option value="Unifamiliar">Unifamiliar</option>
-                      <option value="Duplex">Duplex</option>
-                      <option value="Vertical / Departamentos">
-                        Vertical / Departamentos
+                      <option value="Residencial en altura">
+                        Residencial en altura
                       </option>
-                      <option value="Oficinas">Oficinas</option>
-                      <option value="Otros">Otros</option>
+                      <option value="Residencial en extensión">
+                        Residencial en extensión
+                      </option>
+                      <option value="Educación">Educación</option>
+                      <option value="Salud">Salud</option>
+                      <option value="Comercio">Comercio</option>
+                      <option value="Servicios (oficinas)">
+                        Servicios (oficinas)
+                      </option>
                     </select>
                     {submitted && errors.building_type && (
                       <small className="text-danger">
                         {errors.building_type}
+                      </small>
+                    )}
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">Tipo de residencial</label>
+                    <select
+                      disabled={
+                        !formData.building_type
+                          .toLowerCase()
+                          .startsWith("residencial")
+                      }
+                      className="form-control"
+                      value={formData.residential_type}
+                      onChange={(e) =>
+                        handleFormInputChange(
+                          "residential_type",
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option value="">
+                        Seleccione un tipo de residencial
+                      </option>
+                      <option value="De interés social">
+                        De interés social
+                      </option>
+                      <option value="De interés privada">
+                        De interés privada
+                      </option>
+                    </select>
+                    {submitted && errors.residential_type && (
+                      <small className="text-danger">
+                        {errors.residential_type}
                       </small>
                     )}
                   </div>
@@ -685,12 +743,17 @@ const ProjectWorkflowPart1: React.FC = () => {
                 <div className="row mb-3">
                   <div className="col-12 col-md-6">
                     <label className="form-label">
-                      Número de viviendas / oficinas x nivel{" "}
+                      Número de viviendas
                       {isFieldEmpty("number_homes_per_level") && (
                         <span style={{ color: "red" }}>*</span>
                       )}
                     </label>
                     <input
+                      disabled={
+                        !formData.building_type
+                          .toLowerCase()
+                          .startsWith("residencial")
+                      }
                       type="number"
                       min="0"
                       className="form-control"

@@ -18,6 +18,7 @@ import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import ProjectStatus from "@/components/projects/ProjectStatus";
+import { Alert } from "react-bootstrap";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -132,6 +133,8 @@ const ProjectWorkflowPart1: React.FC = () => {
           `${constantUrlApiEndpoint}/projects/${projectIdStr}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        console.log("projectData");
+        console.log(projectData);
         setFormData({
           name_project: projectData.name_project || "",
           owner_name: projectData.owner_name || "",
@@ -319,11 +322,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     setLoading(true);
     setGlobalError("");
     try {
-      const fieldErrors = validateStep1Fields();
-      if (Object.keys(fieldErrors).length > 0) {
-        setErrors(fieldErrors);
-        return;
-      }
       const token = localStorage.getItem("token");
       if (!token) {
         setGlobalError("Por favor inicie sesión.");
@@ -497,7 +495,9 @@ const ProjectWorkflowPart1: React.FC = () => {
               <ProjectInfoHeader
                 projectName={projectNameFromStorage}
                 region={regionFromStorage}
-                project_id={typeof router.query.id === "string" ? router.query.id : ""}
+                project_id={
+                  typeof router.query.id === "string" ? router.query.id : ""
+                }
               />
               <Breadcrumb
                 items={[
@@ -633,7 +633,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>*/}
                       <div className="col-12 col-md-6">
                         <label className="form-label">
-                          Distrito{" "}
+                          Distrito/Municipio
                           {!router.query.id && (
                             <span style={{ color: "red" }}>*</span>
                           )}
@@ -653,8 +653,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    <div className="row mb-3">
-                      {/**<div className="col-12 col-md-6">
+                    {/**<div className="col-12 col-md-6">
                         <label className="form-label">
                           Región{" "}
                           {!router.query.id && (
@@ -719,7 +718,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                           </small>
                         )}
                       </div>*/}
-                    </div>
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">
@@ -954,25 +952,27 @@ const ProjectWorkflowPart1: React.FC = () => {
                         formData={formData}
                         handleFormInputChange={handleFormInputChange}
                       />
-                      <p
-                        style={{
-                          fontSize: "12px",
-                          margin: "0",
-                          letterSpacing: "0",
-                        }}
-                      >
+                      <Alert key="info" variant="info">
                         *Para cambiar ubicación mover el marcador en el mapa
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "12px",
-                          margin: "0",
-                          letterSpacing: "0",
-                        }}
-                      >
+                      </Alert>
+                      <Alert key="info" variant="info">
                         *Asegurarse que la Zona esté correctamente seleccionada
                         para que se procese correctamente lo datos del proyecto
-                      </p>
+                      </Alert>
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          margin: "0",
+                          letterSpacing: "0",
+                        }}
+                      ></p>
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          margin: "0",
+                          letterSpacing: "0",
+                        }}
+                      ></p>
 
                       <div className="d-flex justify-content-between align-items-center mt-4">
                         <div className="d-flex">

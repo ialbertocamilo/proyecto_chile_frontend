@@ -46,6 +46,7 @@ interface FormData {
   latitude: number;
   longitude: number;
   address: string;
+  residential_type: string;
 }
 
 const initialFormData: FormData = {
@@ -64,6 +65,7 @@ const initialFormData: FormData = {
   latitude: -33.4589314398474,
   longitude: -70.6703553846175,
   address: "",
+  residential_type: "",
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -179,6 +181,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           latitude: projectData.latitude || -33.4589314398474,
           longitude: projectData.longitude || -70.6703553846175,
           address: projectData.divisions?.address || "",
+          residential_type: projectData.residential_type || "",
         });
         // Extraer la zona desde project_metadata, asumiendo que la propiedad se llama "zone"
         setProjectMetadata(projectData.project_metadata?.zone || "");
@@ -271,12 +274,12 @@ const ProjectWorkflowPart1: React.FC = () => {
         <div className="d-flex flex-column w-100">
           <Title text="Vista de Proyecto" />
           <div className="d-flex justify-content-between align-items-center w-100">
-          <div style={{ pointerEvents: 'none' }}>
-            <ProjectInfoHeader
-              projectName={projectHeaderData.projectName}
-              region={projectHeaderData.region}
-            />
-          </div>
+            <div style={{ pointerEvents: "none" }}>
+              <ProjectInfoHeader
+                projectName={projectHeaderData.projectName}
+                region={projectHeaderData.region}
+              />
+            </div>
             <Breadcrumb
               items={[
                 {
@@ -346,7 +349,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         disabled
                       />
                     </div>
-                    <div className="col-12 col-md-6">
+                    {/* <div className="col-12 col-md-6">
                       <label className="form-label">País</label>
                       <select
                         className="form-control"
@@ -360,10 +363,19 @@ const ProjectWorkflowPart1: React.FC = () => {
                           </option>
                         ))}
                       </select>
+                    </div> */}
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Distrito/Municipio</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.district}
+                        disabled
+                      />
                     </div>
                   </div>
                   <div className="row mb-3">
-                    <div className="col-12 col-md-6">
+                    {/* <div className="col-12 col-md-6">
                       <label className="form-label">Región</label>
                       <select
                         className="form-control"
@@ -380,8 +392,8 @@ const ProjectWorkflowPart1: React.FC = () => {
                             </option>
                           ))}
                       </select>
-                    </div>
-                    <div className="col-12 col-md-6">
+                    </div> */}
+                    {/* <div className="col-12 col-md-6">
                       <label className="form-label">Ciudad</label>
                       <select
                         className="form-control"
@@ -401,34 +413,24 @@ const ProjectWorkflowPart1: React.FC = () => {
                             </option>
                           ))}
                       </select>
-                    </div>
-                  </div>
-                  <div className="row mb-3">
+                    </div> */}
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Distrito</label>
+                      <label className="form-label">Tipo de edificación</label>
                       <input
                         type="text"
                         className="form-control"
-                        value={formData.district}
+                        value={formData.building_type}
                         disabled
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Tipo de edificación</label>
-                      <select
+                      <label className="form-label">Tipo de residencial</label>
+                      <input
+                        type="text"
                         className="form-control"
-                        value={formData.building_type}
+                        value={formData.residential_type}
                         disabled
-                      >
-                        <option value="">
-                          Seleccione un tipo de edificación
-                        </option>
-                        <option value="Unifamiliar">Unifamiliar</option>
-                        <option value="Duplex">Duplex</option>
-                        <option value="Vertical / Departamentos">
-                          Vertical / Departamentos
-                        </option>
-                      </select>
+                      />
                     </div>
                   </div>
                   {/* Se elimina la sección de "Tipo de uso principal" y se reestructura la información */}
@@ -458,9 +460,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                   </div>
                   <div className="row mb-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">
-                        Número de viviendas / oficinas x nivel
-                      </label>
+                      <label className="form-label">Número de viviendas</label>
                       <input
                         type="number"
                         min="0"

@@ -41,6 +41,7 @@ interface FormData {
   address: string;
   zone?: string;
   residential_type?: string;
+  region?: string;
 }
 
 interface Project {
@@ -66,6 +67,7 @@ const initialFormData: FormData = {
   address: "",
   zone: "",
   residential_type: "",
+  region: "",
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -154,6 +156,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           zone: projectData.project_metadata?.zone || "",
           status: projectData?.status || "En proceso",
           residential_type: projectData?.residential_type || "",
+          region: projectData.divisions?.region || "",
         });
       } catch (error: unknown) {
         console.error("Error fetching project data", error);
@@ -329,17 +332,18 @@ const ProjectWorkflowPart1: React.FC = () => {
         return;
       }
       const requestBody = {
-        country: formData.country || "Perú",
+        country: formData.country || "Chile",
         divisions: {
           department: formData.department,
           province: formData.province,
           district: formData.district,
           address: formData.address,
+          region: formData.region,
         },
         name_project: formData.name_project,
         owner_name: formData.owner_name,
         owner_lastname: formData.owner_lastname,
-        project_metadata: { zone: formData.zone }, // Se guarda la zona seleccionada dentro de project_metadata
+        project_metadata: { zone: formData.zone },
         building_type: formData.building_type,
         main_use_type: formData.main_use_type,
         number_levels: formData.number_levels,
@@ -350,14 +354,12 @@ const ProjectWorkflowPart1: React.FC = () => {
         residential_type: formData.residential_type,
       };
 
-      console.log("RequestBody:", requestBody);
-
       if (router.query.id) {
         const projectIdParam = Array.isArray(router.query.id)
           ? router.query.id[0]
           : router.query.id || localStorage.getItem("project_id");
 
-        await axios.put(
+        const { data } = await axios.put(
           `${constantUrlApiEndpoint}/my-projects/${projectIdParam}/update`,
           requestBody,
           {
@@ -367,8 +369,11 @@ const ProjectWorkflowPart1: React.FC = () => {
             },
           }
         );
-        localStorage.setItem("project_department_edit", formData.department);
-        notify("Proyecto actualizado con éxito.");
+
+        // Update local storage with new region
+        localStorage.setItem("project_department_edit", formData.region || "");
+        setRegionFromStorage(formData.region || "");
+        notify(data.message || "Proyecto actualizado con éxito.");
       } else {
         const { data } = await axios.post(
           `${constantUrlApiEndpoint}/projects/create`,

@@ -18,6 +18,7 @@ interface Divisions {
   department?: string;
   province?: string;
   district?: string;
+  region?: string; // Add region to divisions
 }
 
 export interface Project {
@@ -149,7 +150,7 @@ const ProjectListPage = () => {
     return {};
   };
 
-  // Definición de columnas pafdra el DataTable
+  // Definición de columnas para el DataTable
   const tableColumns = [
     { id: "id", label: "ID", minWidth: 50 },
     {
@@ -192,7 +193,7 @@ const ProjectListPage = () => {
       label: "Región",
       minWidth: 100,
       cell: ({ row }: { row: Project }) =>
-        row.divisions?.department || "No disponible",
+        row.divisions?.region || "No disponible", // Change department to region
     },
     {
       id: "actions",

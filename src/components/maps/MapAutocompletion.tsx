@@ -10,6 +10,7 @@ interface MapAutocompletionProps {
     longitude: number;
     address: string;
     zone?: string;
+    region?: string; // Add region to the interface
   };
   handleFormInputChange: (field: any, value: any) => void;
 }
@@ -76,10 +77,11 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
           const { display_name, address } = response.data;
           // Extraer la región del objeto address
           const region = address?.state || address?.region || "No disponible";
-          // Guardar la región en localStorage
-          localStorage.setItem("selected_region", region);
-          window.dispatchEvent(new Event("selectedRegionChanged"));
+          console.log("Region detected:", region);
 
+          // Actualizar el estado del formulario con la región
+          handleFormInputChange("region", region);
+          handleFormInputChange("department", region); // Also update department for compatibility
           
           if (display_name && display_name !== formData.address) {
             handleFormInputChange("address", display_name);
@@ -167,7 +169,7 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
             className="form-control"
             rows={6}
             readOnly
-            value={formData.address}
+            value={`Dirección: ${formData.address}\nRegión: ${formData.region || 'No disponible'}`}
             style={{
               width: "100%",
               resize: "none",

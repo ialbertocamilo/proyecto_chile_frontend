@@ -36,6 +36,7 @@ interface FormData {
   address: string;
   zone?: string;
   residential_type?: string;
+  region?: string; // Add this line
 }
 
 interface Project {
@@ -60,6 +61,7 @@ const initialFormData: FormData = {
   address: "",
   zone: "",
   residential_type: "",
+  region: "", // Add this line
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -301,6 +303,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           province: formData.province,
           district: formData.district,
           address: formData.address,
+          region: formData.region, // Add the region to divisions
         },
         name_project: formData.name_project,
         owner_name: formData.owner_name,

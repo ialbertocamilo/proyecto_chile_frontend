@@ -189,7 +189,7 @@ const ProjectListPage = () => {
     },
     {
       id: "divisions",
-      label: "Departamento",
+      label: "Región",
       minWidth: 100,
       cell: ({ row }: { row: Project }) =>
         row.divisions?.department || "No disponible",

@@ -103,9 +103,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
             cantidad: item.cantidad_personas,
             consumo: item.pers_dia
           }));
-          setTableData(transformedData);
-        } else {
-          notify('No hay valores creados');
+          setTableData(transformedData);  
         }
       } catch (error) {
         console.error('Error fetching data:', error);

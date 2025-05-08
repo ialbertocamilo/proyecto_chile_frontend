@@ -73,16 +73,21 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
           },
         })
         .then((response) => {
-          const { display_name } = response.data;
-          // Si la dirección obtenida es distinta de la almacenada, se actualiza.
+          const { display_name, address } = response.data;
+          // Extraer la región del objeto address
+          const region = address?.state || address?.region || "No disponible";
+          // Guardar la región en localStorage
+          localStorage.setItem("selected_region", region);
+          window.dispatchEvent(new Event("selectedRegionChanged"));
+
+          
           if (display_name && display_name !== formData.address) {
             handleFormInputChange("address", display_name);
-            // Opcional: también puedes actualizar manualmente el textarea si es necesario
             const detailsTextArea = document.getElementById(
               "locationDetails"
             ) as HTMLTextAreaElement;
             if (detailsTextArea) {
-              detailsTextArea.value = `Dirección: ${display_name}`;
+              detailsTextArea.value = `Dirección: ${display_name}\nRegión: ${region}`;
             }
           }
         })

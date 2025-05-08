@@ -6,6 +6,7 @@ interface Props {
   projectName: string;
   region: string;
   project_id?: string | number;
+  disableclick?: boolean;
 }
 
 const ProjectInfoHeader: React.FC<Props> = ({

@@ -165,7 +165,6 @@ const ProjectWorkflowPart1: React.FC = () => {
         field === "building_type" &&
         !value.toString().toLowerCase().startsWith("residencial")
       ) {
-        // Reset residential_type when building_type is not "Residencial %"
         setFormData((prev) => ({ ...prev, residential_type: "" }));
         setFormData((prev) => ({ ...prev, number_homes_per_level: 0 }));
       }
@@ -179,6 +178,13 @@ const ProjectWorkflowPart1: React.FC = () => {
       ) {
         value = 0;
       }
+
+      // Update local storage when project name changes
+      if (field === "name_project") {
+        localStorage.setItem("project_name_edit", value.toString());
+        setProjectNameFromStorage(value.toString());
+      }
+
       setFormData((prev) => ({ ...prev, [field]: value }));
       if (submitted && value !== "" && value !== 0) {
         setErrors((prev) => ({ ...prev, [field]: "" }));

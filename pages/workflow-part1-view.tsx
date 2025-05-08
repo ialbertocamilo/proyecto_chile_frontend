@@ -271,10 +271,12 @@ const ProjectWorkflowPart1: React.FC = () => {
         <div className="d-flex flex-column w-100">
           <Title text="Vista de Proyecto" />
           <div className="d-flex justify-content-between align-items-center w-100">
+          <div style={{ pointerEvents: 'none' }}>
             <ProjectInfoHeader
               projectName={projectHeaderData.projectName}
               region={projectHeaderData.region}
             />
+          </div>
             <Breadcrumb
               items={[
                 {

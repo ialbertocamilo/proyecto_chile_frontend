@@ -963,10 +963,12 @@ const WorkFlowpar2viewPage: React.FC = () => {
               justifyContent: "space-between",
             }}
           >
+            <div style={{ pointerEvents: 'none' }}>
             <ProjectInfoHeader
               projectName={projectName}
               region={projectDepartment}
             />
+            </div>
             <Breadcrumb
               items={[
                 {

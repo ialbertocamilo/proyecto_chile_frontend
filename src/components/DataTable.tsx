@@ -262,12 +262,19 @@ export default function DataTable<T extends { [key: string]: any }>({
                         className="text-start"
                         onClick={() => column.sortable !== false && handleSort(column.id)}
                       >
-                        {column.label}
-                        {sortConfig?.field === column.id && (
-                          <span className="ms-1">
-                            {sortConfig.direction === "asc" ? "↑" : "↓"}
-                          </span>
-                        )}
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '4px',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {column.label}
+                          {sortConfig?.field === column.id && (
+                            <span style={{ display: 'inline-flex' }}>
+                              {sortConfig.direction === "asc" ? "↑" : "↓"}
+                            </span>
+                          )}
+                        </div>
                       </th>
                     ))}
 

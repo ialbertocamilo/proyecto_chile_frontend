@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import Breadcrumb from "../src/components/common/Breadcrumb";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
-import DataTable from "../src/components/DataTable"; // Ajusta la ruta según corresponda
+import DataTable from "../src/components/DataTable"; //
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 
@@ -70,6 +70,13 @@ const getStatusTag = (status?: string): React.ReactElement => {
 
 const toUpperCase = (value?: string): string => (value ? value.toUpperCase() : "");
 
+const formatValue = (value: unknown): string => {
+  if (value === 0 || value === undefined || value === null || value === '') {
+    return '-';
+  }
+  return String(value);
+};
+
 const ProjectListStatusEditPage = () => {
   useAuth();
   const router = useRouter();
@@ -124,11 +131,17 @@ const ProjectListStatusEditPage = () => {
 
   // Definición de columnas para el DataTable, con la columna "Estado" en segunda posición
   const columns = [
-    { id: "id", label: "ID", minWidth: 50 },
+    { 
+      id: "id", 
+      label: "ID", 
+      minWidth: 50,
+      headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }
+    },
     {
       id: "status",
       label: "Estado",
       minWidth: 100,
+      headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' },
       cell: ({ row }: { row: Project }) => (
         <div className="text-center">{getStatusTag(row.status)}</div>
       )
@@ -137,34 +150,57 @@ const ProjectListStatusEditPage = () => {
       id: "name_project",
       label: "Nombre del proyecto",
       minWidth: 150,
+      headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' },
       cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.name_project)}</span>
     },
     {
       id: "owner_name",
       label: "Propietario",
       minWidth: 100,
-      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.owner_name)}</span>
+      headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' },
+      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.owner_name) || '-'}</span>
     },
     {
       id: "building_type",
       label: "Tipo de edificación",
       minWidth: 100,
-      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.building_type)}</span>
+      headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' },
+      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.building_type) || '-'}</span>
     },
     {
       id: "main_use_type",
-      label: "Tipo de uso principal",
+      label: "Tipo de residencial",
       minWidth: 100,
-      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.main_use_type)}</span>
+      headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' },
+      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.main_use_type) || '-'}</span>
     },
-    { id: "number_levels", label: "Número de niveles", minWidth: 100 },
-    { id: "number_homes_per_level", label: "N° viviendas/oficinas x nivel", minWidth: 100 },
-    { id: "built_surface", label: "Superficie construida (M²)", minWidth: 100 },
+    { 
+      id: "number_levels", 
+      label: "Número de niveles", 
+      minWidth: 100,
+      headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' },
+      cell: ({ row }: { row: Project }) => <span>{formatValue(row.number_levels)}</span>
+    },
+    { 
+      id: "number_homes_per_level", 
+      label: "Número de viviendas", 
+      minWidth: 100,
+      headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' },
+      cell: ({ row }: { row: Project }) => <span>{formatValue(row.number_homes_per_level)}</span>
+    },
+    { 
+      id: "built_surface", 
+      label: "Superficie construida (M²)", 
+      minWidth: 100,
+      headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' },
+      cell: ({ row }: { row: Project }) => <span>{formatValue(row.built_surface)}</span>
+    },
     {
       id: "actions",
       label: "Acciones",
       minWidth: 100,
       sortable: false,
+      headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' },
       cell: ({ row }: { row: Project }) => (
         <div className="text-center">
           <CustomButton

@@ -190,7 +190,16 @@ const TabRecintDataEdit: React.FC = () => {
   ];
   const renderTable = (rows: EnclosureGeneralData[]) => (
     <>
+    <div style={{ 
+        width: '100%',
+        overflowX: 'auto',
+        position: 'relative',
+        WebkitOverflowScrolling: 'touch',
+        minHeight: '200px'
+      }}>
       <TablesParameters columns={columns} data={rows} />
+    </div>
+      {/* Mensaje de "No hay datos para mostrar" */}
       {rows.length === 0 && (
         <div style={{ textAlign: "center", padding: "1rem" }}>
           No hay datos para mostrar

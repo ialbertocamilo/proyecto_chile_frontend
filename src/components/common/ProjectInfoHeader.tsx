@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import CustomButton from "@/components/common/CustomButton";
+import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 
 interface Props {
   projectName: string;
@@ -16,6 +17,33 @@ const ProjectInfoHeader: React.FC<Props> = ({
 }) => {
   const router = useRouter();
   const [currentRegion, setCurrentRegion] = useState(region);
+
+  const fetchProjectDetails = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!project_id) return;
+
+      const response = await fetch(`${constantUrlApiEndpoint}/projects/${project_id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.divisions && data.divisions.region) {
+          setCurrentRegion(data.divisions.region);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching project details:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjectDetails();
+  }, [project_id]);
 
   useEffect(() => {
     const actualizarRegion = () => {

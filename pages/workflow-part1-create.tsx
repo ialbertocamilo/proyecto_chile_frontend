@@ -15,6 +15,7 @@ import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import { Alert } from "react-bootstrap";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -803,25 +804,13 @@ const ProjectWorkflowPart1: React.FC = () => {
                     formData={formData}
                     handleFormInputChange={handleFormInputChange}
                   />
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      margin: "0",
-                      letterSpacing: "0",
-                    }}
-                  >
+                  <Alert key="info" variant="info">
                     *Para cambiar ubicación mover el marcador en el mapa
-                  </p>
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      margin: "0",
-                      letterSpacing: "0",
-                    }}
-                  >
+                  </Alert>
+                  <Alert key="info" variant="info">
                     *Asegurarse que la Zona esté correctamente seleccionada para
                     que se procese correctamente lo datos del proyecto
-                  </p>
+                  </Alert>
                   <div className="d-flex justify-content-between align-items-center ">
                     <div className="d-flex">
                       <CustomButton variant="save" onClick={handleGeolocation}>

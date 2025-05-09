@@ -158,6 +158,8 @@ const ProjectWorkflowPart1: React.FC = () => {
           residential_type: projectData?.residential_type || "",
           region: projectData.divisions?.region || "",
         });
+        console.log("FormData");
+        console.log(formData);
       } catch (error: unknown) {
         console.error("Error fetching project data", error);
       }

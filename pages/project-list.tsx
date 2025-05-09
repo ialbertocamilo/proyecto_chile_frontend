@@ -69,22 +69,20 @@ const ProjectListPage = () => {
   const fetchProjects = async (): Promise<void> => {
     setLoading(true);
     try {
-      console.log("[fetchProjects] 📡 Obteniendo proyectos...");
       const response = await get("api/projects_user");
-      console.log("[fetchProjects] Proyectos recibidos:", response);
-      setProjects(response.projects);
-    } catch (err: unknown) {
-      console.error("[fetchProjects] Error al obtener los proyectos:", err);
-      if (axios.isAxiosError(err) && err.response) {
-        const errorResponse = err.response.data as ErrorResponse;
-        setError(errorResponse.detail || "Error al obtener los proyectos.");
-      } else {
-        setError("Error de conexión con el servidor.");
-      }
+      // Aplanamos divisions.region en una propiedad region
+      const projectsConRegion = response.projects.map((p: Project) => ({
+        ...p,
+        region: p.divisions?.region || "No disponible",
+      }));
+      setProjects(projectsConRegion);
+    } catch (err) {
+      // …
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleGoToWorkflow = (project_edit: Project): void => {
     console.log(
@@ -189,7 +187,7 @@ const ProjectListPage = () => {
       minWidth: 100,
     },
     {
-      id: "divisions",
+      id: "region",
       label: "Región",
       minWidth: 100,
       cell: ({ row }: { row: Project }) =>

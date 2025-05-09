@@ -236,7 +236,7 @@ const TabRecintDataCreate: React.FC = () => {
         row.nombre_region || row.region_id,
     },
     {
-      headerName: "Localidad",
+      headerName: "Distrito/Municipio",
       field: "comuna_id",
       renderCell: (row: EnclosureGeneralData) =>
         row.nombre_comuna || row.comuna_id,

@@ -2190,12 +2190,50 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== RENDER RECINTO ======================
   const renderRecinto = () => {
     return (
-      <>
-        <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="recinto-container">
+        <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
           <div></div>
         </div>
-        <TabRecintDataCreate />
-      </>
+        <div className="table-responsive-wrapper">
+          <TabRecintDataCreate />
+        </div>
+
+        <style jsx>{`
+          .recinto-container {
+            width: 100%;
+            overflow-x: auto;
+          }
+          
+          .table-responsive-wrapper {
+            min-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 1rem;
+            box-shadow: inset -5px 0 5px -5px rgba(0,0,0,0.1);
+          }
+
+          .table-responsive-wrapper::-webkit-scrollbar {
+            height: 8px;
+          }
+
+          .table-responsive-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+          }
+
+          .table-responsive-wrapper::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+          }
+
+          @media (max-width: 768px) {
+            .recinto-container {
+              margin: 0 -15px;
+              padding: 0 15px;
+            }
+          }
+        `}</style>
+      </div>
     );
   };
 

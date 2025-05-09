@@ -103,7 +103,7 @@ const TabRecintDataView: React.FC = () => {
       renderCell: (row: EnclosureGeneralData) => row.nombre_region,
     },
     {
-      headerName: "Localidad",
+      headerName: "Distrito/Municipio",
       field: "nombre_comuna",
       renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
     },

@@ -170,7 +170,7 @@ const TabRecintDataEdit: React.FC = () => {
       renderCell: (row: EnclosureGeneralData) => row.nombre_region,
     },
     {
-      headerName: "Localidad",
+      headerName: "Distrito/Municipio",
       field: "comuna_id",
       renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
     },

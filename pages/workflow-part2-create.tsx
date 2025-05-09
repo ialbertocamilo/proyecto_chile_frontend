@@ -2290,7 +2290,11 @@ const WorkFlowpar2createPage: React.FC = () => {
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div></div>
         </div>
-        <TabRecintDataCreate />
+        <div className="table-responsive">
+          <div style={{ minWidth: '800px' }}>
+            <TabRecintDataCreate />
+          </div>
+        </div>
       </>
     );
   };

@@ -20,7 +20,7 @@ interface EnclosureGeneralData {
   zona_termica: string;
   name_enclosure: string;
   comuna_id: number;
-  nombre_comuna: string;
+  district: string; // Add this field
   nombre_region: string;
   usage_profile_name: string;
   level_id: string; // Add this line
@@ -171,8 +171,8 @@ const TabRecintDataEdit: React.FC = () => {
     },
     {
       headerName: "Distrito/Municipio",
-      field: "comuna_id",
-      renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
+      field: "district",
+      renderCell: (row: EnclosureGeneralData) => row.district,
     },
     {
       headerName: "Acciones",

@@ -93,7 +93,7 @@ const ProjectInfoHeader: React.FC<Props> = ({
         style={{ padding: "0.8rem 3rem", cursor: "pointer" }}
         onClick={handleRegionClick}
       >
-        {`Región: ${currentRegion}`}
+        {`Región: ${region}`}
       </CustomButton>
     </div>
   );

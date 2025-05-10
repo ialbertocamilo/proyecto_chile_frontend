@@ -17,6 +17,7 @@ interface EnclosureGeneralData {
   comuna_id: number;
   nombre_comuna: string;
   nombre_region: string;
+  district: string; // Add this field
   usage_profile_name: string;
   level_id: number;
 }
@@ -104,8 +105,8 @@ const TabRecintDataView: React.FC = () => {
     },
     {
       headerName: "Distrito/Municipio",
-      field: "nombre_comuna",
-      renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
+      field: "district",
+      renderCell: (row: EnclosureGeneralData) => row.district,
     },
     {
       headerName: "Acciones",

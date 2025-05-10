@@ -22,6 +22,7 @@ interface EnclosureGeneralData {
   name_enclosure: string;
   comuna_id: number;
   nombre_comuna: string;
+  district: string; // Add this field
   nombre_region: string;
   usage_profile_name: string;
   level_id: string;
@@ -239,7 +240,7 @@ const TabRecintDataCreate: React.FC = () => {
       headerName: "Distrito/Municipio",
       field: "comuna_id",
       renderCell: (row: EnclosureGeneralData) =>
-        row.nombre_comuna || row.comuna_id,
+        row.district || row.nombre_comuna || row.comuna_id,
     },
     {
       headerName: "Acciones",

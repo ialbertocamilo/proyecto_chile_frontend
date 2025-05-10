@@ -49,6 +49,14 @@ interface EditingValues {
   area: number;
 }
 
+interface EditingDivisionValues {
+  division: string;
+  division_id: number | null;
+  a: number;
+  b: number;
+  d: number;
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Hook reutilizable para cargar obstrucciones                               */
 /* -------------------------------------------------------------------------- */
@@ -164,8 +172,9 @@ const ObstructionTable: React.FC = () => {
 
   // División inline
   const [editingDivisionRowId, setEditingDivisionRowId] = useState<number | null>(null);
-  const [editingDivisionValues, setEditingDivisionValues] = useState({
+  const [editingDivisionValues, setEditingDivisionValues] = useState<EditingDivisionValues>({
     division: "",
+    division_id: null,
     a: 0,
     b: 0,
     d: 0,
@@ -467,7 +476,7 @@ const ObstructionTable: React.FC = () => {
       headerName: "División",
       field: "división",
       renderCell: (row: ObstructionsData) => {
-        if (editingDivisionRowId === row.id) {
+        if (editingDivisionRowId === row.id && row.division_id === editingDivisionValues.division_id) {
           return (
             <select
               className="form-control"
@@ -493,7 +502,7 @@ const ObstructionTable: React.FC = () => {
       headerName: "A [m]",
       field: "a",
       renderCell: (row: ObstructionsData) => {
-        if (editingDivisionRowId === row.id) {
+        if (editingDivisionRowId === row.id && row.division_id === editingDivisionValues.division_id) {
           return (
             <input
               type="number"
@@ -514,7 +523,7 @@ const ObstructionTable: React.FC = () => {
       headerName: "B [m]",
       field: "b",
       renderCell: (row: ObstructionsData) => {
-        if (editingDivisionRowId === row.id) {
+        if (editingDivisionRowId === row.id && row.division_id === editingDivisionValues.division_id) {
           return (
             <input
               type="number"
@@ -535,7 +544,7 @@ const ObstructionTable: React.FC = () => {
       headerName: "D [m]",
       field: "d",
       renderCell: (row: ObstructionsData) => {
-        if (editingDivisionRowId === row.id) {
+        if (editingDivisionRowId === row.id && row.division_id === editingDivisionValues.division_id) {
           return (
             <input
               type="number"
@@ -574,6 +583,7 @@ const ObstructionTable: React.FC = () => {
                     setEditingDivisionRowId(row.id);
                     setEditingDivisionValues({
                       division: row.división,
+                      division_id: row.division_id,
                       a: row.a,
                       b: row.b,
                       d: row.d,

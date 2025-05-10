@@ -78,7 +78,7 @@ const TabRecintDataCreate: React.FC = () => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedProjectId = localStorage.getItem("project_id") || "44";
+      const storedProjectId = localStorage.getItem("last_created_project") || "44";
       setProjectId(storedProjectId);
     }
   }, []);

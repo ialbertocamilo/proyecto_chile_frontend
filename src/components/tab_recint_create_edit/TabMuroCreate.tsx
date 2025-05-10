@@ -238,7 +238,6 @@ const TabMuroCreate: React.FC = () => {
       );
       if (!responseMuros.ok) throw new Error("Error al obtener muros");
       const muros = await responseMuros.json();
-      setMurosData(muros);
 
       // Obtener puentes térmicos
       const responsePuentes = await fetch(
@@ -253,9 +252,12 @@ const TabMuroCreate: React.FC = () => {
       if (!responsePuentes.ok)
         throw new Error("Error al obtener puentes térmicos");
       const puentes = await responsePuentes.json();
+
+      // Mantener el orden original usando el ID como referencia
+      setMurosData(muros);
       setPuentesData(puentes);
 
-      // Fusionar datos: para cada muro se busca su puente térmico (si existe) y se asigna bridgeId
+      // Fusionar datos manteniendo el orden original de muros
       const merged = muros.map((muro: Wall) => {
         const puente = puentes.find(
           (p: ThermalBridge & { wall_id?: number }) => p.wall_id === muro.id
@@ -267,7 +269,20 @@ const TabMuroCreate: React.FC = () => {
           bridgeId: puente ? puente.id : null,
         };
       });
-      setMergedData(merged);
+
+      // Si hay datos existentes, mantener el orden anterior
+      if (mergedData.length > 0) {
+        const orderedMerged = merged.sort((a: MergedWall, b: MergedWall) => {
+          const aIndex = mergedData.findIndex((item) => item.id === a.id);
+          const bIndex = mergedData.findIndex((item) => item.id === b.id);
+          if (aIndex === -1) return 1;
+          if (bIndex === -1) return -1;
+          return aIndex - bIndex;
+        });
+        setMergedData(orderedMerged);
+      } else {
+        setMergedData(merged);
+      }
     } catch (error) {
       notify("Error al cargar los datos");
       console.error(error);

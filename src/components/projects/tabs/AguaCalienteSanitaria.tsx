@@ -69,7 +69,11 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
   useEffect(() => {
     const fetchExistingData = async () => {
       try {
-        const projectId = localStorage.getItem('project_id');
+        const pathname = window.location.pathname;
+        const projectId = pathname.includes('workflow-part2-create') 
+          ? localStorage.getItem('last_created_project')
+          : localStorage.getItem('project_id');
+
         if (!projectId) {
           notify('No se encontró el ID del proyecto');
           return;
@@ -360,7 +364,11 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
 
   const saveData = async () => {
     try {
-      const projectId = localStorage.getItem('project_id');
+      const pathname = window.location.pathname;
+      const projectId = pathname.includes('workflow-part2-create') 
+        ? localStorage.getItem('last_created_project')
+        : localStorage.getItem('project_id');
+
       if (!projectId) {
         notify('No se encontró el ID del proyecto');
         return;

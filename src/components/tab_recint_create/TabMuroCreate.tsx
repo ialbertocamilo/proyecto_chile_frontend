@@ -242,19 +242,21 @@ const TabMuroCreate: React.FC = () => {
       const puentes = await responsePuentes.json();
       setPuentesData(puentes);
 
-      // Fusionar datos: cada muro tendrá asociados sus datos de puente (si existen)
-      // Conservamos la id del muro y agregamos la propiedad bridgeId con el id del puente
-      const merged = muros.map((muro: Wall) => {
-        const puente = puentes.find(
-          (p: ThermalBridge) => p.wall_id === muro.id
-        );
-        return {
-          ...muro,
-          ...puente,
-          id: muro.id,
-          bridgeId: puente ? puente.id : null,
-        };
-      });
+      // Fusionar datos manteniendo el orden original de muros
+      const merged = muros
+        .map((muro: Wall) => {
+          const puente = puentes.find(
+            (p: ThermalBridge) => p.wall_id === muro.id
+          );
+          return {
+            ...muro,
+            ...puente,
+            id: muro.id,
+            bridgeId: puente ? puente.id : null,
+          };
+        })
+        .sort((a: MergedWall, b: MergedWall) => (a.id && b.id ? a.id - b.id : 0)); // Mantener orden por ID
+
       setMergedData(merged);
     } catch (error) {
       notify("Error al cargar los datos");

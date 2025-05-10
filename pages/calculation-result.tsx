@@ -10,12 +10,15 @@ import CustomButton from "@/components/common/CustomButton";
 const CalculationResultPage = () => {
   const [projectNameFromStorage, setProjectNameFromStorage] = useState("");
   const [regionFromStorage, setRegionFromStorage] = useState("");
+  const [projectIdFromStorage, setProjectIdFromStorage] = useState("");
 
   useEffect(() => {
     const storedProjectName = localStorage.getItem("project_name_edit") || "";
     const storedRegion = localStorage.getItem("project_department_edit") || "";
+    const storedProjectId = localStorage.getItem("project_id") || "";
     setProjectNameFromStorage(storedProjectName);
     setRegionFromStorage(storedRegion);
+    setProjectIdFromStorage(storedProjectId);
   }, []);
 
   const handleBack = () => {
@@ -31,7 +34,7 @@ const CalculationResultPage = () => {
             <ProjectInfoHeader
               projectName={projectNameFromStorage}
               region={regionFromStorage}
-              project_id={router.query.projectId ? String(router.query.projectId) : ""}
+              project_id={projectIdFromStorage}
             />
             <Breadcrumb
               items={[

@@ -50,7 +50,7 @@ const RecintoCreate: React.FC = () => {
   useEffect(() => {
     const name = localStorage.getItem("project_name") || "Nombre del Proyecto";
     const department = localStorage.getItem("project_department") || "Región";
-    const pid = localStorage.getItem("project_id") || "";
+    const pid = localStorage.getItem("last_created_project") || "";
     setProjectName(name);
     setProjectDepartment(department);
     setProjectId(pid);

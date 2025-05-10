@@ -295,7 +295,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
       if (!projectId) return;
-
+console.log("projectId", projectId);
       const { data: projectData } = await axios.get(
         `${constantUrlApiEndpoint}/projects/${projectId}`,
         { headers: { Authorization: `Bearer ${token}` } }

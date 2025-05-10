@@ -27,7 +27,7 @@ export interface Project {
   divisions?: Divisions;
   owner_lastname?: string;
   building_type?: string;
-  main_use_type?: string;
+  residential_type?: string;
   number_levels?: number;
   number_homes_per_level?: number;
   built_surface?: number;
@@ -168,11 +168,11 @@ const ProjectListStatusEditPage = () => {
       cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.building_type) || '-'}</span>
     },
     {
-      id: "main_use_type",
+      id: "residential_type",
       label: "Tipo de residencial",
       minWidth: 100,
       headerStyle: { whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' },
-      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.main_use_type) || '-'}</span>
+      cell: ({ row }: { row: Project }) => <span>{toUpperCase(row.residential_type) || '-'}</span>
     },
     { 
       id: "number_levels", 

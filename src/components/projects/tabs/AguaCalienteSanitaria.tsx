@@ -70,12 +70,12 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
     const fetchExistingData = async () => {
       try {
         const pathname = window.location.pathname;
-        const projectId = pathname.includes('workflow-part2-create') 
-          ? localStorage.getItem('last_created_project')
-          : localStorage.getItem('project_id');
+        const projectId = pathname.includes("workflow-part2-create")
+          ? localStorage.getItem("last_created_project")
+          : localStorage.getItem("project_id");
 
         if (!projectId) {
-          notify('No se encontró el ID del proyecto');
+          notify("No se encontró el ID del proyecto");
           return;
         }
 
@@ -83,9 +83,9 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
           `https://ceela-backend-qa.svgdev.tech/agua-caliente-obtener/${projectId}`,
           {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
-              'Content-Type': 'application/json'
-            }
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
           }
         );
 
@@ -105,13 +105,13 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
           const transformedData = data.data.map((item: any) => ({
             tipo: item.tipo_ocupacion,
             cantidad: item.cantidad_personas,
-            consumo: item.pers_dia
+            consumo: item.pers_dia,
           }));
-          setTableData(transformedData);  
+          setTableData(transformedData);
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        notify('Error al obtener los datos');
+        console.error("Error fetching data:", error);
+        notify("Error al obtener los datos");
       }
     };
 
@@ -365,12 +365,12 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
   const saveData = async () => {
     try {
       const pathname = window.location.pathname;
-      const projectId = pathname.includes('workflow-part2-create') 
-        ? localStorage.getItem('last_created_project')
-        : localStorage.getItem('project_id');
+      const projectId = pathname.includes("workflow-part2-create")
+        ? localStorage.getItem("last_created_project")
+        : localStorage.getItem("project_id");
 
       if (!projectId) {
-        notify('No se encontró el ID del proyecto');
+        notify("No se encontró el ID del proyecto");
         return;
       }
 
@@ -384,11 +384,11 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
         consumo_acs: consumoACS,
         consumo_energia_primaria: consumoEnergiaPrimariaACS,
         energia_primaria: co2eqEnergiaPrimaria,
-        data: tableData.map(row => ({
+        data: tableData.map((row) => ({
           tipo_ocupacion: row.tipo,
           cantidad_personas: row.cantidad,
-          pers_dia: row.consumo
-        }))
+          pers_dia: row.consumo,
+        })),
       };
 
       const response = await axios.post(
@@ -396,16 +396,16 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
         requestData,
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      notify('Datos guardados exitosamente');
+      notify("Datos guardados exitosamente");
     } catch (error) {
-      console.error('Error saving data:', error);
-      notify('Error al guardar los datos');
+      console.error("Error saving data:", error);
+      notify("Error al guardar los datos");
     }
   };
 
@@ -417,80 +417,84 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
         {/* <Card.Title className="text-center text-dark"> */}
         {/* Agua Caliente Sanitaria */}
         {/* </Card.Title> */}
-        {!onlyView && (
-          <div
-            style={{
-              marginBottom: "15px",
-            }}
-          >
-            <CustomButton
-              style={{ display: "block", marginLeft: "auto" }}
-              className="mt-3"
-              onClick={addRow}
-            >
-              <Plus className="me-1" size={16} /> Nueva Fila
-            </CustomButton>
-          </div>
-        )}
-        <Table responsive className="table-sm mb-0">
-          <thead className="">
-            <tr>
-              <th style={{ textAlign: "center" }}>
-                Tipo de ocupación para sistema ACS
-              </th>
-              <th style={{ textAlign: "center" }}>Cantidad personas</th>
-              <th style={{ textAlign: "center" }}>
-                <span className="fw-bold">[l/pers-día]</span>
-              </th>
-              <th style={{ textAlign: "center" }}>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tableData.map((row, index) => (
-              <tr key={index}>
-                <td>
-                  <Form.Select
-                    disabled={onlyView}
-                    value={row.tipo}
-                    onChange={(e) =>
-                      handleInputChange(index, "tipo", e.target.value)
-                    }
-                  >
-                    {acsDataList.map((option, i) => (
-                      <option key={i} value={option.tipo}>
-                        {option.tipo}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </td>
-                <td>
-                  <Form.Control
-                    disabled={onlyView}
-                    type="number"
-                    min="0"
-                    value={row.cantidad}
-                    onChange={(e) =>
-                      handleInputChange(index, "cantidad", e.target.value)
-                    }
-                  />
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  {(row.cantidad * row.consumo).toFixed(2)}
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  {!onlyView && (
-                    <CustomButton
-                      variant="deleteIcon"
-                      onClick={() => deleteRow(index)}
-                    >
-                      <Trash2 className="me-1" size={16} />
-                    </CustomButton>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <Card className="shadow col-10 mx-auto">
+          <Card.Body>
+            {!onlyView && (
+              <div
+                style={{
+                  marginBottom: "15px",
+                }}
+              >
+                <CustomButton
+                  style={{ display: "block", marginLeft: "auto" }}
+                  className="mt-3"
+                  onClick={addRow}
+                >
+                  <Plus className="me-1" size={16} /> Nueva Fila
+                </CustomButton>
+              </div>
+            )}
+            <Table responsive className="table-sm mb-0">
+              <thead className="">
+                <tr>
+                  <th style={{ textAlign: "center" }}>
+                    Tipo de ocupación para sistema ACS
+                  </th>
+                  <th style={{ textAlign: "center" }}>Cantidad personas</th>
+                  <th style={{ textAlign: "center" }}>
+                    <span className="fw-bold">[l/pers-día]</span>
+                  </th>
+                  <th style={{ textAlign: "center" }}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tableData.map((row, index) => (
+                  <tr key={index}>
+                    <td>
+                      <Form.Select
+                        disabled={onlyView}
+                        value={row.tipo}
+                        onChange={(e) =>
+                          handleInputChange(index, "tipo", e.target.value)
+                        }
+                      >
+                        {acsDataList.map((option, i) => (
+                          <option key={i} value={option.tipo}>
+                            {option.tipo}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </td>
+                    <td>
+                      <Form.Control
+                        disabled={onlyView}
+                        type="number"
+                        min="0"
+                        value={row.cantidad}
+                        onChange={(e) =>
+                          handleInputChange(index, "cantidad", e.target.value)
+                        }
+                      />
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {(row.cantidad * row.consumo).toFixed(2)}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {!onlyView && (
+                        <CustomButton
+                          variant="deleteIcon"
+                          onClick={() => deleteRow(index)}
+                        >
+                          <Trash2 className="me-1" size={16} />
+                        </CustomButton>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card.Body>
+        </Card>
         <Card className="shadow col-10 mx-auto">
           <Card.Body>
             <div className="mt-3">

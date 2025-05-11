@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 import { Col, Nav, Row, Tab, Table } from "react-bootstrap";
 
 interface Recinto {
+  hrs_disconfort_calef: any;
+  hrs_disconfort_ref: any;
+  hrs_disconfort_total: any;
   id: number;
   name_enclosure: string;
   usage_profile_name: string;
@@ -27,11 +30,15 @@ interface Recinto {
   rendimiento_ref?: number;
   distribucion_ref?: number;
   control_ref?: number;
-  scop_ref?: number;
-  scop_mc_ref?: number;
+  seer_ref?: number;
+  seer_mc_ref?: number;
   consumo_energia_primaria_calef?: number;
   consumo_energia_primaria_ref?: number;
   consumo_energia_primaria_total?: number;
+  co2_eq_calef?: number;
+  co2_eq_ref?: number;
+  co2_eq_ilum?: number;
+  co2_eq_total?: number;
 }
 
 interface ResumenRecintosProps {
@@ -75,33 +82,196 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
   const [distribucionHvac, setDistribucionHvac] = useState<any[]>([]);
   const [controlHvac, setControlHvac] = useState<any[]>([]);
   const [rendimientoRef, setRendimientoRef] = useState<any[]>([]);
+  const [triggeredRecintoId, setTriggeredRecintoId] = useState<number | null>(
+    null
+  );
+  function getEnergyValue(
+    list: any[],
+    selectedItem: { [key: number]: string },
+    recintId: number
+  ) {
+    // Get the rendimiento_calef value for the recinto
+    console.log(list, selectedItem, recintId);
+    const selectedCode = selectedItem[recintId];
+    const selectedListItem = selectedCode
+      ? list.find((item: any) => item.code === selectedCode).co2_eq
+      : 0;
 
+    return selectedListItem;
+  }
+  function getCO2Value(
+    list: any[],
+    selectedItem: { [key: number]: string },
+    recintId: number
+  ) {
+    // Get the rendimiento_calef value for the recinto
+    console.log(list, selectedItem, recintId);
+    const selectedCode = selectedItem[recintId];
+    const selectedListItem = selectedCode
+      ? list.find((item: any) => item.code === selectedCode).value
+      : 0;
+
+    return selectedListItem;
+  }
+  function calculateSCOP(recintoId: number) {
+    debugger;
+    const co2RendCalef = getCO2Value(
+      rendimientoCalef,
+      selectedRendimientoCalef,
+      recintoId
+    );
+    const co2DistCalef = getCO2Value(
+      distribucionHvac,
+      selectedDistribucionHvac,
+      recintoId
+    );
+    const co2ControlCalef = getCO2Value(
+      controlHvac,
+      selectedControlHvac,
+      recintoId
+    );
+    let scopCalefValue = 0.0;
+
+    if (co2RendCalef && co2DistCalef && co2ControlCalef) {
+      scopCalefValue = co2RendCalef * co2DistCalef * co2ControlCalef;
+
+      console.log(
+        `Updated recinto ${recintoId} with scop_calef: ${scopCalefValue}`
+      );
+    } else {
+      scopCalefValue = 0;
+      console.warn(
+        `Missing data for recinto ${recintoId}: selectedSystem or rendimientoCalef not found.`
+      );
+    }
+
+    setCalculatedRecintos((prev) =>
+      prev.map((recinto) =>
+        recinto.id === recintoId
+          ? {
+              ...recinto,
+              scop_calef: scopCalefValue, // Update scop_calef
+            }
+          : recinto
+      )
+    );
+  }
+  function calculateSEER(recintoId: number) {
+    const co2RendRef = getCO2Value(
+      rendimientoRef,
+      selectedRendimientoRef,
+      recintoId
+    );
+    const co2DistRef = getCO2Value(
+      distribucionHvac,
+      selectedDistribucionHvacRef,
+      recintoId
+    );
+    const co2ControlRef = getCO2Value(
+      controlHvac,
+      selectedControlHvacRef,
+      recintoId
+    );
+    let seerValue = 0.0;
+
+    if (co2RendRef && co2DistRef && co2ControlRef) {
+      seerValue = co2RendRef * co2DistRef * co2ControlRef;
+
+      console.log(`Updated recinto ${recintoId} with scop_calef: ${seerValue}`);
+    } else {
+      seerValue = 0;
+      console.warn(
+        `Missing data for recinto ${recintoId}: selectedSystem or rendimientoCalef not found.`
+      );
+    }
+
+    setCalculatedRecintos((prev) =>
+      prev.map((recinto) =>
+        recinto.id === recintoId
+          ? {
+              ...recinto,
+              seer_ref: seerValue, // Update scop_calef
+            }
+          : recinto
+      )
+    );
+  }
+  function calculatePrimaryEnergyCalef(recintoId: number) {
+    debugger;
+    const co2System = getEnergyValue(
+      energySystems,
+      selectedEnergySystems,
+      recintoId
+    );
+    console.log(recintos);
+    const recinto = recintos.find((item: any) => item.id === recintoId);
+
+    setCalculatedRecintos((prev) =>
+      prev.map((recinto) =>
+        recinto.id === recintoId
+          ? {
+              ...recinto,
+              consumo_energia_primaria_calef:
+                co2System * (recinto.scop_calef || 0), // Update scop_calef
+            }
+          : recinto
+      )
+    );
+  }
+  function calculatePrimaryEnergyRef(recintoId: number) {
+    const co2System = getEnergyValue(
+      energySystems,
+      selectedEnergySystemsRef,
+      recintoId
+    );
+    console.log(recintos);
+    const recinto = recintos.find((item: any) => item.id === recintoId);
+    setCalculatedRecintos((prev) =>
+      prev.map((recinto) =>
+        recinto.id === recintoId
+          ? {
+              ...recinto,
+              consumo_energia_primaria_ref:
+                co2System * (recinto?.seer_ref ?? 0), // Update scop_calef
+            }
+          : recinto
+      )
+    );
+  }
   const handleEnergySystemChange = (recintoId: number, value: string) => {
     setSelectedEnergySystems((prev) => ({ ...prev, [recintoId]: value }));
+    setTriggeredRecintoId(recintoId);
   };
   const handleEnergySystemChangeRef = (recintoId: number, value: string) => {
     setSelectedEnergySystemsRef((prev) => ({ ...prev, [recintoId]: value }));
+    setTriggeredRecintoId(recintoId);
   };
   const handleRendimientoCalefChange = (recintoId: number, value: string) => {
     setSelectedRendimientoCalef((prev) => ({ ...prev, [recintoId]: value }));
+    setTriggeredRecintoId(recintoId);
   };
   const handleDistribucionHvacChange = (recintoId: number, value: string) => {
     setSelectedDistribucionHvac((prev) => ({ ...prev, [recintoId]: value }));
+    setTriggeredRecintoId(recintoId);
   };
   const handleControlHvacChange = (recintoId: number, value: string) => {
     setSelectedControlHvac((prev) => ({ ...prev, [recintoId]: value }));
+    setTriggeredRecintoId(recintoId);
   };
   const handleRendimientoRef = (recintoId: number, value: string) => {
     setSelectedRendimientoRef((prev) => ({ ...prev, [recintoId]: value }));
+    setTriggeredRecintoId(recintoId);
   };
   const handleDistribucionHvacRefChange = (
     recintoId: number,
     value: string
   ) => {
     setSelectedDistribucionHvacRef((prev) => ({ ...prev, [recintoId]: value }));
+    setTriggeredRecintoId(recintoId);
   };
   const handleControlHvacRefChange = (recintoId: number, value: string) => {
     setSelectedControlHvacRef((prev) => ({ ...prev, [recintoId]: value }));
+    setTriggeredRecintoId(recintoId);
   };
 
   useEffect(() => {
@@ -166,7 +336,24 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
         const consumo_ref = demanda_ref * 0.3;
         const consumo_total = consumo_calef + consumo_ref;
 
+        const scop_calef = 0.0;
+        const seer_ref = 0.0;
+
         const co2_eq = consumo_total * 0.2;
+
+        const co2_eq_calef = 1.0;
+        const co2_eq_ref = 2.0;
+        const co2_eq_ilum = 3.0;
+        const co2_eq_total = 6.0;
+
+        const hrs_disconfort_calef = 1.65;
+        const hrs_disconfort_ref = 2.47;
+        const hrs_disconfort_total = 4.12;
+
+        const consumo_energia_primaria_calef = 0;
+        const consumo_energia_primaria_ref = 0;
+        const consumo_energia_primaria_total =
+          consumo_energia_primaria_calef + consumo_energia_primaria_ref;
 
         console.log(recinto.height);
         console.log("Resultados calculados:", {
@@ -178,6 +365,18 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
           consumo_ref,
           consumo_total,
           co2_eq,
+          scop_calef,
+          co2_eq_calef,
+          co2_eq_ref,
+          co2_eq_ilum,
+          co2_eq_total,
+          hrs_disconfort_calef,
+          hrs_disconfort_ref,
+          hrs_disconfort_total,
+          seer_ref,
+          consumo_energia_primaria_calef,
+          consumo_energia_primaria_ref,
+          consumo_energia_primaria_total,
         });
 
         return {
@@ -190,6 +389,18 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
           consumo_ref,
           consumo_total,
           co2_eq,
+          scop_calef,
+          co2_eq_calef,
+          co2_eq_ref,
+          co2_eq_ilum,
+          co2_eq_total,
+          hrs_disconfort_calef,
+          hrs_disconfort_ref,
+          hrs_disconfort_total,
+          seer_ref,
+          consumo_energia_primaria_calef,
+          consumo_energia_primaria_ref,
+          consumo_energia_primaria_total,
         };
       });
 
@@ -197,7 +408,17 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
       onRecintosCalculated(updatedRecintos); // Notificar al componente padre
     }
   }, [recintos, result.constant]);
-
+  useEffect(() => {
+    if (triggeredRecintoId !== null) {
+      // Execute calculateSCOP for the triggered recintoId
+      calculateSCOP(triggeredRecintoId);
+      calculateSEER(triggeredRecintoId);
+      calculatePrimaryEnergyCalef(triggeredRecintoId);
+      calculatePrimaryEnergyRef(triggeredRecintoId);
+      // Reset the triggeredRecintoId to avoid repeated execution
+      setTriggeredRecintoId(null);
+    }
+  }, [triggeredRecintoId]);
   return (
     <div className="container-fluid mt-4">
       <div className="">
@@ -419,7 +640,7 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                             </select>
                           </td>
                           <td className="text-center">
-                            {recinto.rendimiento_calef?.toFixed(2) || "0.00"}
+                            {recinto.scop_calef?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
                             {recinto.distribucion_calef?.toFixed(2) || "0.00"}
@@ -496,19 +717,22 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                             </select>
                           </td>
                           <td className="text-center">
-                            {recinto.distribucion_ref?.toFixed(2) || "0.00"}
+                            {recinto.seer_ref?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.control_ref?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.scop_ref?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.scop_mc_ref?.toFixed(2) || "0.00"}
+                            {recinto.seer_mc_ref?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
                             {recinto.consumo_energia_primaria_calef?.toFixed(
+                              2
+                            ) || "0.00"}
+                          </td>
+                          <td className="text-center">
+                            {recinto.consumo_energia_primaria_ref?.toFixed(2) ||
+                              "0.00"}
+                          </td>
+                          <td className="text-center">
+                            {recinto.consumo_energia_primaria_total?.toFixed(
                               2
                             ) || "0.00"}
                           </td>
@@ -541,21 +765,16 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                       {calculatedRecintos.map((recinto, index) => (
                         <tr key={index}>
                           <td className="text-center">
-                            {recinto.consumo_energia_primaria_calef?.toFixed(
-                              2
-                            ) || "0.00"}
+                            {recinto.co2_eq_calef?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.consumo_energia_primaria_ref?.toFixed(2) ||
-                              "0.00"}
+                            {recinto.co2_eq_ref?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.consumo_energia_primaria_total?.toFixed(
-                              2
-                            ) || "0.00"}
+                            {recinto.co2_eq_ilum?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.co2_eq?.toFixed(2) || "0.00"}
+                            {recinto.co2_eq_total?.toFixed(2) || "0.00"}
                           </td>
                         </tr>
                       ))}
@@ -585,13 +804,13 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                       {calculatedRecintos.map((recinto, index) => (
                         <tr key={index}>
                           <td className="text-center">
-                            {recinto.demanda_calef?.toFixed(2) || "0.00"}
+                            {recinto.hrs_disconfort_calef?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.demanda_ref?.toFixed(2) || "0.00"}
+                            {recinto.hrs_disconfort_ref?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.demanda_ilum?.toFixed(2) || "0.00"}
+                            {recinto.hrs_disconfort_total?.toFixed(2) || "0.00"}
                           </td>
                         </tr>
                       ))}
@@ -635,33 +854,28 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                       {calculatedRecintos.map((recinto, index) => (
                         <tr key={index}>
                           <td className="text-center">
-                            {recinto.consumo_energia_primaria_calef?.toFixed(
-                              2
-                            ) || "0.00"}
+                            {recinto.demanda_calef?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.consumo_energia_primaria_ref?.toFixed(2) ||
-                              "0.00"}
+                            {recinto.demanda_ref?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.consumo_energia_primaria_total?.toFixed(
-                              2
-                            ) || "0.00"}
+                            {recinto.demanda_ilum?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.co2_eq?.toFixed(2) || "0.00"}
+                            {recinto.consumo_calef?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.co2_eq?.toFixed(2) || "0.00"}
+                            {recinto.consumo_ref?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.co2_eq?.toFixed(2) || "0.00"}
+                            {recinto.co2_eq_total?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.co2_eq?.toFixed(2) || "0.00"}
+                            {recinto.hrs_disconfort_calef?.toFixed(2) || "0.00"}
                           </td>
                           <td className="text-center">
-                            {recinto.co2_eq?.toFixed(2) || "0.00"}
+                            {recinto.hrs_disconfort_ref?.toFixed(2) || "0.00"}
                           </td>
                         </tr>
                       ))}

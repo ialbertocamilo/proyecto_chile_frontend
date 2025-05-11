@@ -156,21 +156,24 @@ const TabFloorCreate: React.FC = () => {
 
       const data: FloorEnclosure[] = await response.json();
 
-      // Transformar los datos preservando el orden original
-      const formattedData: FloorData[] = data.map((item) => ({
-        id: item.id,
-        index: tableData.find(row => row.id === item.id)?.index || tableData.length,
-        pisos: item.name,
-        floor_id: item.floor_id,
-        caracteristicas: item.characteristic,
-        area: item.area,
-        uValue: item.value_u,
-        perimetroSuelo: item.parameter,
-        pisoVentilado: item.is_ventilated,
-        ptP06L: item.po6_l,
-      }));
+      // Mantener el orden original usando el índice actual si existe
+      const formattedData: FloorData[] = data.map((item) => {
+        const existingRow = tableData.find(row => row.id === item.id);
+        return {
+          id: item.id,
+          index: existingRow?.index ?? tableData.length,
+          pisos: item.name,
+          floor_id: item.floor_id,
+          caracteristicas: item.characteristic,
+          area: item.area,
+          uValue: item.value_u,
+          perimetroSuelo: item.parameter,
+          pisoVentilado: item.is_ventilated,
+          ptP06L: item.po6_l,
+        };
+      });
 
-      // Ordenar por el índice original
+      // Ordenar por el índice original antes de actualizar el estado
       formattedData.sort((a, b) => a.index - b.index);
       setTableData(formattedData);
     } catch (error) {

@@ -143,38 +143,41 @@ const Login: NextPageWithLayout = () => {
                   </div>
 
                   <div className="form-group mb-0">
-                    <div className="checkbox p-0">
+                    {/* Comentado temporalmente
+                    <div className="form-check mb-2">
                       <input
                         id="remember"
+                        className="form-check-input"
                         type="checkbox"
                         checked={remember}
                         onChange={(e) => setRemember(e.target.checked)}
                       />
-                      <label className="text-muted" htmlFor="remember">
+                      <label className="form-check-label text-muted" htmlFor="remember">
                         Recuerdame
                       </label>
                     </div>
+                    */}
+
                     <Link
-                      style={{ color: "var(--primary-color)" }}
-                      className="link"
                       href="/forgot-password"
+                      className="d-block text-center mb-3"
+                      style={{ color: "var(--primary-color)" }}
                     >
                       ¿Olvidaste tu contraseña?
                     </Link>
-                    <div className="text-end mt-3">
-                      <button
-                        className="btn btn-block w-100"
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                          backgroundColor: "var(--primary-color)",
-                          borderColor: "var(--primary-color)",
-                          color: "#fff",
-                        }}
-                      >
-                        {loading ? "Ingresando..." : "Iniciar sesión"}
-                      </button>
-                    </div>
+
+                    <button
+                      className="btn w-100"
+                      type="submit"
+                      disabled={loading}
+                      style={{
+                        backgroundColor: "var(--primary-color)",
+                        borderColor: "var(--primary-color)",
+                        color: "#fff",
+                      }}
+                    >
+                      {loading ? "Ingresando..." : "Iniciar sesión"}
+                    </button>
                   </div>
 
                   <p className="mt-4 mb-0 text-center">

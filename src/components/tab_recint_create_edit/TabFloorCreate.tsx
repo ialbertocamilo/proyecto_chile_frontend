@@ -156,10 +156,10 @@ const TabFloorCreate: React.FC = () => {
 
       const data: FloorEnclosure[] = await response.json();
 
-      // Transformar los datos de la API al formato de la tabla
-      const formattedData: FloorData[] = data.map((item, index) => ({
+      // Transformar los datos preservando el orden original
+      const formattedData: FloorData[] = data.map((item) => ({
         id: item.id,
-        index: index,
+        index: tableData.find(row => row.id === item.id)?.index || tableData.length,
         pisos: item.name,
         floor_id: item.floor_id,
         caracteristicas: item.characteristic,
@@ -170,6 +170,8 @@ const TabFloorCreate: React.FC = () => {
         ptP06L: item.po6_l,
       }));
 
+      // Ordenar por el índice original
+      formattedData.sort((a, b) => a.index - b.index);
       setTableData(formattedData);
     } catch (error) {
       console.error("Error:", error);

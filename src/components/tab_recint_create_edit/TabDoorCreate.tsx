@@ -219,7 +219,11 @@ const TabDoorCreate: React.FC = () => {
         throw new Error("Error al obtener los datos de puertas");
       }
       const doorEnclosuresData = await doorEnclosuresResponse.json();
-      const tableData: DoorData[] = doorEnclosuresData.map((item: any) => ({
+
+      // Mantener el orden original usando el orden actual de data
+      const currentOrder = data.map(item => item.id);
+      
+      let tableData: DoorData[] = doorEnclosuresData.map((item: any) => ({
         id: item.id,
         door_id: item.door_id,
         tipoPuente: `ID: ${item.door_id}`,
@@ -255,7 +259,7 @@ const TabDoorCreate: React.FC = () => {
       }
       const favsData = await favResponse.json();
 
-      const mergedData = tableData.map((row) => {
+      let mergedData = tableData.map((row) => {
         const fav = favsData.find((f: any) => f.item_id === row.id);
         if (fav) {
           return {
@@ -276,8 +280,8 @@ const TabDoorCreate: React.FC = () => {
         return row;
       });
 
-      // Actualizar el nombre de la puerta usando doorOptions ya cargado
-      const updatedData = mergedData.map((row) => {
+      // Actualizar el nombre de la puerta usando doorOptions
+      mergedData = mergedData.map((row) => {
         const doorInfo = doorOptions.find(
           (door: any) => door.id === row.door_id
         );
@@ -287,7 +291,16 @@ const TabDoorCreate: React.FC = () => {
         return row;
       });
 
-      setData(updatedData);
+      // Ordenar los datos según el orden original
+      const orderedData = [...mergedData].sort((a, b) => {
+        const indexA = currentOrder.indexOf(a.id);
+        const indexB = currentOrder.indexOf(b.id);
+        if (indexA === -1) return 1;  // Nuevos elementos al final
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+      });
+
+      setData(orderedData);
     } catch (error) {
       console.error("Error fetching door data:", error);
       notify("Error al cargar los datos de puertas", "error");
@@ -667,279 +680,6 @@ const TabDoorCreate: React.FC = () => {
         );
       },
     },
-    // Columnas FAV
-    /* {
-      headerName: "D [m]",
-      field: "fav1D",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav1D}
-            onChange={(e) =>
-              handleFavEditChange("fav1D", Number(e.target.value))
-            }
-            onKeyDown={preventHyphen}
-          />
-        ) : (
-          displayValue(row.fav1D)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "240px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "L [m]",
-      field: "fav1L",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav1L}
-            onChange={(e) =>
-              handleFavEditChange("fav1L", Number(e.target.value))
-            }
-            onKeyDown={preventHyphen}
-          />
-        ) : (
-          displayValue(row.fav1L)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "160px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "P [m]",
-      field: "fav2izqP",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2izqP}
-            onChange={(e) =>
-              handleFavEditChange("fav2izqP", Number(e.target.value))
-            }
-            onKeyDown={preventHyphen}
-          />
-        ) : (
-          displayValue(row.fav2izqP)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "80px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "S [m]",
-      field: "fav2izqS",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2izqS}
-            onChange={(e) =>
-              handleFavEditChange("fav2izqS", Number(e.target.value))
-            }
-            onKeyDown={preventHyphen}
-          />
-        ) : (
-          displayValue(row.fav2izqS)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "0px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "P [m]",
-      field: "fav2DerP",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2DerP}
-            onChange={(e) =>
-              handleFavEditChange("fav2DerP", Number(e.target.value))
-            }
-            onKeyDown={preventHyphen}
-          />
-        ) : (
-          displayValue(row.fav2DerP)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "-80px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "S [m]",
-      field: "fav2DerS",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2DerS}
-            onChange={(e) =>
-              handleFavEditChange("fav2DerS", Number(e.target.value))
-            }
-            onKeyDown={preventHyphen}
-          />
-        ) : (
-          displayValue(row.fav2DerS)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "-160px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "E [m]",
-      field: "fav3E",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3E}
-            onChange={(e) =>
-              handleFavEditChange("fav3E", Number(e.target.value))
-            }
-            onKeyDown={preventHyphen}
-          />
-        ) : (
-          displayValue(row.fav3E)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "-240px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "T [m]",
-      field: "fav3T",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3T}
-            onChange={(e) =>
-              handleFavEditChange("fav3T", Number(e.target.value))
-            }
-            onKeyDown={preventHyphen}
-          />
-        ) : (
-          displayValue(row.fav3T)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "-320px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "β [°]",
-      field: "fav3Beta",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3Beta}
-            onChange={(e) =>
-              handleFavEditChange("fav3Beta", Number(e.target.value))
-            }
-            onKeyDown={preventHyphen}
-          />
-        ) : (
-          displayValue(row.fav3Beta)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "-400px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "α [°]",
-      field: "fav3Alpha",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3Alpha}
-            onChange={(e) =>
-              handleFavEditChange("fav3Alpha", Number(e.target.value))
-            }
-            onKeyDown={preventHyphen}
-          />
-        ) : (
-          displayValue(row.fav3Alpha)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "-480px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    }, 
-    // La columna de acciones FAV se mueve al final
-    {
-      headerName: "Acciones FAV",
-      field: "acciones_fav",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <ActionButtonsConfirm
-            onAccept={handleConfirmEditFav}
-            onCancel={() => {
-              setEditingFavRow(null);
-              setFavEditData(null);
-            }}
-          />
-        ) : (
-          <CustomButton
-            variant="editIcon"
-            onClick={() => handleFavEditClick(row)}
-          >
-            Editar FAV
-          </CustomButton>
-        ),
-    },*/
   ];
 
   const multiHeader = {
@@ -952,24 +692,7 @@ const TabDoorCreate: React.FC = () => {
         { label: "Alto [m]", rowSpan: 2 },
         { label: "Ancho [m]", rowSpan: 2 },
         { label: "Acciones", rowSpan: 2 },
-        /*         { label: "FAV 1", colSpan: 2 },
-        { label: "FAV 2 izq", colSpan: 2 },
-        { label: "FAV 2 Der", colSpan: 2 },
-        { label: "FAV 3", colSpan: 4 },
-        { label: "Acciones FAV", rowSpan: 2 }, */
       ],
-      /* [
-        { label: "D [m]" },
-        { label: "L [m]" },
-        { label: "P [m]" },
-        { label: "S [m]" },
-        { label: "P [m]" },
-        { label: "S [m]" },
-        { label: "E [m]" },
-        { label: "T [m]" },
-        { label: "β [°]" },
-        { label: "α [m]" },
-      ], */
     ],
   };
 

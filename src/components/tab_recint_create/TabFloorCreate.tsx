@@ -116,7 +116,7 @@ const TabFloorCreate: React.FC = () => {
     }
   };
 
-  // Función para obtener los datos de la tabla
+  // Modifica la función fetchTableData
   const fetchTableData = async () => {
     setTableLoading(true);
     try {
@@ -137,19 +137,21 @@ const TabFloorCreate: React.FC = () => {
 
       const data: FloorEnclosure[] = await response.json();
 
-      // Transformar los datos de la API al formato de la tabla
-      const formattedData: FloorData[] = data.map((item, index) => ({
-        id: item.id,
-        index: index,
-        pisos: item.name,
-        floor_id: item.floor_id,
-        caracteristicas: item.characteristic,
-        area: item.area,
-        uValue: item.value_u,
-        perimetroSuelo: item.parameter,
-        pisoVentilado: item.is_ventilated,
-        ptP06L: item.po6_l,
-      }));
+      // Mantener el orden usando el id como referencia
+      const formattedData: FloorData[] = data
+        .sort((a, b) => a.id - b.id)
+        .map((item, index) => ({
+          id: item.id,
+          index: index,
+          pisos: item.name,
+          floor_id: item.floor_id,
+          caracteristicas: item.characteristic,
+          area: item.area,
+          uValue: item.value_u,
+          perimetroSuelo: item.parameter,
+          pisoVentilado: item.is_ventilated,
+          ptP06L: item.po6_l,
+        }));
 
       setTableData(formattedData);
     } catch (error) {

@@ -529,20 +529,16 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                         </Link>
                       </li>
 
-                      {/* Crear Proyecto con submenú */}
+                      {/* Crear Proyecto */}
                       <li className="nav-item">
-                        <div
+                        <Link
+                          href="/workflow-part1-create"
                           className="nav-link text-white"
                           style={{
                             ...navLinkStyle,
                             flexDirection: isNavOpen ? "row" : "column",
                             justifyContent: isNavOpen ? "flex-start" : "center",
-                            padding: isNavOpen ? "10px 20px" : "10px 5px",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => {
-                            setIsSubmenuOpen((prev) => !prev);
-                            router.push("/workflow-part1-create");
+                            padding: isNavOpen ? "10px 20px" : "10px 5px"
                           }}
                         >
                           <span
@@ -559,63 +555,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           >
                             Crear Proyecto
                           </span>
-                          {isNavOpen && (
-                            <span
-                              className="material-icons"
-                              style={{
-                                marginLeft: "auto",
-                                transform: isSubmenuOpen ? "rotate(180deg)" : "rotate(0deg)",
-                                transition: "transform 0.3s ease",
-                              }}
-                            >
-                              expand_more
-                            </span>
-                          )}
-                        </div>
-                        {/* Submenú (Desarrollo de proyecto) solo visible si la navbar está expandida */}
-                        {isNavOpen && (
-                          <div
-                            style={{
-                              maxHeight: isSubmenuOpen ? "200px" : "0px",
-                              opacity: isSubmenuOpen ? 1 : 0,
-                              overflow: "hidden",
-                              transition: "all 0.3s ease",
-                            }}
-                          >
-                            <ul
-                              className="nav flex-column"
-                              style={{ paddingLeft: "20px" }}
-                            >
-                              <li className="nav-item">
-                                <Link
-                                  href="/workflow-part2-create"
-                                  className="nav-link text-white"
-                                  style={{
-                                    ...navLinkStyle,
-                                    flexDirection: "row",
-                                    justifyContent: "flex-start",
-                                    padding: "10px 20px"
-                                  }}
-                                >
-                                  <span
-                                    style={developmentIconStyle}
-                                    className="material-icons"
-                                  >
-                                    ballot
-                                  </span>
-                                  <span
-                                    style={{
-                                      marginLeft: "10px",
-                                      display: "block"
-                                    }}
-                                  >
-                                    Desarrollo de proyecto
-                                  </span>
-                                </Link>
-                              </li>
-                            </ul>
-                          </div>
-                        )}
+                        </Link>
                       </li>
                     </div>
                   </div>

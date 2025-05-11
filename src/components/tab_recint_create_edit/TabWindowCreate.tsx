@@ -132,14 +132,11 @@ const TabWindowCreate: React.FC = () => {
     useState<boolean>(false);
 
   function handleThermicBridgesWindow(row: any) {
-    // console.log("Puentes térmicos para el bridgeId:", bridgeId);
     console.log("row", row);
     handleFavEditClick(row);
 
     console.log("editData", editData);
     console.log("favEditData", favEditData);
-    // console.log("editingBridgeData", editingBridgeData);
-    // console.log("detailOptions", detailOptions);
     setShowModalThermicBridges(true);
   }
   //ThermalBridgesModal FIN
@@ -164,6 +161,9 @@ const TabWindowCreate: React.FC = () => {
       if (!response.ok) throw new Error("Error al obtener las ventanas");
       const windowsData = await response.json();
 
+      // Mantener el orden original usando el ID como referencia
+      const orderedData = [...tableData];
+      
       let mappedData = windowsData.map((item: any) => {
         // Buscar el nombre del elemento de ventana correspondiente
         const windowElement = windowOptions.find(
@@ -243,7 +243,18 @@ const TabWindowCreate: React.FC = () => {
         return row;
       });
 
-      setTableData(mappedData);
+      // Actualizar solo los datos modificados manteniendo el orden original
+      const finalData = orderedData.map(originalRow => {
+        const updatedRow = mappedData.find((newRow: any) => newRow.id === originalRow.id);
+        return updatedRow || originalRow;
+      });
+
+      // Agregar nuevas filas al final
+      const newRows = mappedData.filter((newRow: any) => 
+        !orderedData.some((originalRow: any) => originalRow.id === newRow.id)
+      );
+
+      setTableData([...finalData, ...newRows]);
     } catch (error) {
       console.error(error);
     }
@@ -732,327 +743,6 @@ const TabWindowCreate: React.FC = () => {
           />
         ),
     },
-    // ========================================
-    // FAV (con inputs sin permitir negativos y formateo de valores)
-    /* {
-      headerName: "D [m]",
-      field: "fav1_D",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            // Remove duplicate style attribute
-            value={favEditData.fav1_D}
-            onChange={(e) =>
-              handleFavEditChange("fav1_D", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav1_D)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "840px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "L [m]",
-      field: "fav1_L",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            // Remove duplicate style attribute and keep favInputStyle
-            value={favEditData.fav1_L}
-            onChange={(e) =>
-              handleFavEditChange("fav1_L", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav1_L)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "760px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "P [m]",
-      field: "fav2izq_P",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav2izq_P}
-            onChange={(e) =>
-              handleFavEditChange("fav2izq_P", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav2izq_P)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "680px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "S [m]",
-      field: "fav2izq_S",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav2izq_S}
-            onChange={(e) =>
-              handleFavEditChange("fav2izq_S", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav2izq_S)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "600px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "P [m]",
-      field: "fav2der_P",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav2der_P}
-            onChange={(e) =>
-              handleFavEditChange("fav2der_P", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav2der_P)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "520px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "S [m]",
-      field: "fav2der_S",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav2der_S}
-            onChange={(e) =>
-              handleFavEditChange("fav2der_S", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav2der_S)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "440px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "E [m]",
-      field: "fav3_E",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav3_E}
-            onChange={(e) =>
-              handleFavEditChange("fav3_E", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav3_E)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "360px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "T [m]",
-      field: "fav3_T",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav3_T}
-            onChange={(e) =>
-              handleFavEditChange("fav3_T", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav3_T)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "280px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "β [°]",
-      field: "fav3_beta",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav3_beta}
-            onChange={(e) =>
-              handleFavEditChange("fav3_beta", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav3_beta)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "200px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "α [°]",
-      field: "fav3_alpha",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav3_alpha}
-            onChange={(e) =>
-              handleFavEditChange("fav3_alpha", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav3_alpha)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "120px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "Acciones FAV",
-      field: "acciones_fav",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <ActionButtonsConfirm
-            onAccept={handleConfirmEditFav}
-            onCancel={() => {
-              setEditingFavRow(null);
-              setFavEditData(null);
-            }}
-          />
-        ) : (
-          <CustomButton
-            variant="editIcon"
-            onClick={() => handleFavEditClick(row)}
-          >
-            Editar FAV
-          </CustomButton>
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "0px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    }, */
   ];
 
   const multiHeader = {
@@ -1070,24 +760,7 @@ const TabWindowCreate: React.FC = () => {
         { label: "Ancho (W) [m]", rowSpan: 2 },
         { label: "Marco", rowSpan: 2 },
         { label: "Acciones Ventana", rowSpan: 2 },
-        /* { label: "FAV 1", colSpan: 2 },
-        { label: "FAV 2 izq", colSpan: 2 },
-        { label: "FAV 2 Der", colSpan: 2 },
-        { label: "FAV 3", colSpan: 4 },
-        { label: "Acciones FAV", rowSpan: 2 }, */
       ],
-      /* [
-        { label: "D [m]" },
-        { label: "L [m]" },
-        { label: "P [m]" },
-        { label: "S [m]" },
-        { label: "P [m]" },
-        { label: "S [m]" },
-        { label: "E [m]" },
-        { label: "T [m]" },
-        { label: "β [°]" },
-        { label: "α [°]" },
-      ], */
     ],
   };
 

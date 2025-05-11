@@ -15,6 +15,7 @@ interface CeilingData {
   area: number;
   u: number;
   roof_id?: number; // Añadido para edición
+  order?: number; // Añadido para mantener el orden
 }
 
 interface Techo {
@@ -116,20 +117,20 @@ const TabCeilingCreate: React.FC = () => {
 
       const enclosureData: EnclosureData[] = await response.json();
 
-      // Convertimos los datos a formato que necesita la tabla
-      const formattedData = enclosureData.map((item) => ({
+      // Convertimos los datos a formato que necesita la tabla y mantenemos el orden
+      const formattedData = enclosureData.map((item, index) => ({
         id: item.id,
         techos: item.name,
         caracteristicas: item.characteristic,
         area: item.area,
         u: item.u,
-        roof_id: item.roof_id, // Guardamos el roof_id para edición
+        roof_id: item.roof_id,
+        order: index, // Añadimos un campo para mantener el orden
       }));
 
       setData(formattedData);
     } catch (error) {
       console.error("Error:", error);
-      // Opcional: notificar error
     }
   };
 
@@ -234,9 +235,28 @@ const TabCeilingCreate: React.FC = () => {
         throw new Error("Error al actualizar");
       }
 
+      // En lugar de hacer fetchEnclosureData, actualizamos el estado directamente
+      setData((prevData) =>
+        prevData.map((item) => {
+          if (item.id === row.id) {
+            // Buscar el techo seleccionado para obtener su nombre
+            const selectedRoof = techosOptions.find(
+              (t) => t.id === editingValues.roof_id
+            );
+            return {
+              ...item,
+              techos: selectedRoof?.name_detail || item.techos,
+              caracteristicas: editingValues.characteristic,
+              area: editingValues.area,
+              roof_id: editingValues.roof_id,
+            };
+          }
+          return item;
+        })
+      );
+
       notify("Cambios guardados correctamente");
       setEditingRowId(null);
-      fetchEnclosureData(); // Refrescar la tabla
     } catch (error) {
       console.error("Error:", error);
       notify("Error al guardar los cambios");

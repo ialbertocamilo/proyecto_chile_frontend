@@ -226,9 +226,24 @@ const TabCeilingCreate: React.FC = () => {
         throw new Error("Error al actualizar");
       }
 
+      // En lugar de recargar todos los datos, actualizamos solo la fila editada
+      const selectedRoof = techosOptions.find(t => t.id === editingValues.roof_id);
+      const updatedData = data.map(item => {
+        if (item.id === row.id) {
+          return {
+            ...item,
+            techos: selectedRoof?.name_detail || '',
+            caracteristicas: editingValues.characteristic,
+            area: editingValues.area,
+            roof_id: editingValues.roof_id
+          };
+        }
+        return item;
+      });
+
+      setData(updatedData);
       notify("Cambios guardados correctamente");
       setEditingRowId(null);
-      fetchEnclosureData(); // Refrescar la tabla
     } catch (error) {
       console.error("Error:", error);
       notify("Error al guardar los cambios");

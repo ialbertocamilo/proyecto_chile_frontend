@@ -223,7 +223,7 @@ const TabDoorCreate: React.FC = () => {
       // Mantener el orden original usando el orden actual de data
       const currentOrder = data.map(item => item.id);
       
-      let tableData: DoorData[] = doorEnclosuresData.map((item: any) => ({
+      const tableData: DoorData[] = doorEnclosuresData.map((item: any) => ({
         id: item.id,
         door_id: item.door_id,
         tipoPuente: `ID: ${item.door_id}`,

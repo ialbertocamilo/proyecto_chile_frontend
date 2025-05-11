@@ -119,7 +119,18 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
   }, [typeSelect, perfilId]);
 
   const hours = Array.from({ length: 24 }, (_, i) => (i + 1).toString());
-  const values = data ? hours.map((_, i) => data[`hour_${i + 1}`] ?? 0) : [];
+  const values = data ? hours.map((hour, i) => {
+    const currentHour = i + 1;
+    const startHour = parseInt(hoursRange.start.split(':')[0]);
+    const endHour = parseInt(hoursRange.end.split(':')[0]);
+    
+    // Set value to 0 if outside working hours
+    if (currentHour < startHour || currentHour > endHour) {
+      return 0;
+    }
+    return data[`hour_${currentHour}`] ?? 0;
+  }) : [];
+
   const option = {
     tooltip: { trigger: 'axis' },
     xAxis: { type: 'category', data: hours, name: 'Horas' },
@@ -129,93 +140,101 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
       type: 'bar',
       data: values,
       barMinHeight: 10,
-      itemStyle: { color: '#2ab0c5', borderRadius: [10, 10, 0, 0] }
+      itemStyle: { 
+        color: (params: any) => {
+          const hour = params.dataIndex + 1;
+          const startHour = parseInt(hoursRange.start.split(':')[0]);
+          const endHour = parseInt(hoursRange.end.split(':')[0]);
+          return (hour >= startHour && hour <= endHour) ? '#2ab0c5' : '#cccccc';
+        },
+        borderRadius: [10, 10, 0, 0] 
+      }
     }]
   };
 
-  /**
- * Envía a la API el nuevo rango horario y refresca la UI.
- * – Envía el valor completo “HH:mm” que la API espera
- * – No muta el objeto original que recibimos desde el backend
- * – Añade comprobaciones de errores para que sea más fácil depurar
- */
-const handleHoursUpdate = async () => {
-  if (!perfilId) return;                       // ⛑️ 1. protección temprana
+  const handleHoursUpdate = async () => {
+    if (!perfilId) return;
 
-  const token = localStorage.getItem("token");
-  if (!token) {
-    console.error("❌ No hay token en localStorage");
-    return;
-  }
-
-  try {
-    /* ───────────────────────────── 2. Obtener datos actuales ───────────────────────────── */
-    const res = await fetch(
-      `${constantUrlApiEndpoint}/user/enclosure-typing/${perfilId}`,
-      { headers: { Accept: "application/json", Authorization: `Bearer ${token}` } }
-    );
-
-    if (!res.ok) {
-      console.error("❌ GET enclosure-typing falló:", res.status, await res.text());
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("❌ No hay token en localStorage");
       return;
     }
 
-    const { id: enclosureId, building_conditions = [] } = await res.json();
-    if (!enclosureId) {
-      console.error("❌ La respuesta no contiene enclosure_id");
-      return;
-    }
+    try {
+      const res = await fetch(
+        `${constantUrlApiEndpoint}/user/enclosure-typing/${perfilId}`,
+        { headers: { Accept: "application/json", Authorization: `Bearer ${token}` } }
+      );
 
-    const internalLoad = building_conditions.find(
-      (bc: any) => bc.type === "internal_loads"
-    );
-    if (!internalLoad) {
-      console.error("❌ No se encontró el bloque internal_loads");
-      return;
-    }
-
-    /* ───────────────────────────── 3. Construir el payload ───────────────────────────── */
-    const newHorario = {
-      ...(internalLoad.details?.horario ?? {}),
-      funcionamiento_semanal: "5x2",
-      laboral: {
-        inicio: tempHours.start,   // ⬅️  Enviar “HH:mm” completo
-        fin:    tempHours.end
+      if (!res.ok) {
+        console.error("❌ GET enclosure-typing falló:", res.status, await res.text());
+        return;
       }
-    };
 
-    const payload = {
-      type: "internal_loads",
-      attributes: {
-        ...internalLoad.details,
-        horario: newHorario
+      const { id: enclosureId, building_conditions = [] } = await res.json();
+      if (!enclosureId) {
+        console.error("❌ La respuesta no contiene enclosure_id");
+        return;
       }
-    };
-    const headers = {
-      Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        };
-    const url = `/building_condition/${enclosureId}/update?section=user`;
-    const patchRes = await api.patch(url, payload, { headers });
-    notify(`Horario actualizado con éxito`); // 🔔 3.1. Notificación de éxito
-    /* ───────────────────────────── 4. PATCH de actualización ───────────────────────────── */
-    console.log("PATCH payload:", payload);
-    
-    /* ───────────────────────────── 5. Refrescar UI ───────────────────────────── */
-    await fetchWorkingHours();      // 🔄 vuelve a pedir los datos para mostrarlos actualizados
-    
-    console.log("✅ Horario actualizado:", patchRes);
-    setIsEditingHours(false);
-    
-    
-  } catch (err) {
-    console.error("❌ Error inesperado en handleHoursUpdate:", err);
-  }
-};
 
-  
-  
+      const internalLoad = building_conditions.find(
+        (bc: any) => bc.type === "internal_loads"
+      );
+      if (!internalLoad) {
+        console.error("❌ No se encontró el bloque internal_loads");
+        return;
+      }
+
+      const newHorario = {
+        ...(internalLoad.details?.horario ?? {}),
+        funcionamiento_semanal: "5x2",
+        laboral: {
+          inicio: tempHours.start,
+          fin: tempHours.end
+        }
+      };
+
+      const payload = {
+        type: "internal_loads",
+        attributes: {
+          ...internalLoad.details,
+          horario: newHorario
+        }
+      };
+      const headers = {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      };
+      const url = `/building_condition/${enclosureId}/update?section=user`;
+      const patchRes = await api.patch(url, payload, { headers });
+      notify(`Horario actualizado con éxito`);
+      
+      // Actualizar el gráfico inmediatamente
+      setHoursRange(tempHours);
+      chartRef.current?.getEchartsInstance().setOption({
+        series: [{
+          data: hours.map((hour, i) => {
+            const currentHour = i + 1;
+            const startHour = parseInt(tempHours.start.split(':')[0]);
+            const endHour = parseInt(tempHours.end.split(':')[0]);
+            
+            if (currentHour < startHour || currentHour > endHour) {
+              return 0;
+            }
+            return data?.[`hour_${currentHour}`] ?? 0;
+          })
+        }]
+      });
+
+      await fetchWorkingHours();
+      setIsEditingHours(false);
+      
+    } catch (err) {
+      console.error("❌ Error inesperado en handleHoursUpdate:", err);
+    }
+  };
 
   const updateSchedule = async (newData: ScheduleData) => {
     if (perfilId === null) return;

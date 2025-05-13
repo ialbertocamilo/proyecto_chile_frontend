@@ -204,8 +204,8 @@ const ProjectListPage = () => {
           {row.status === "registrado" && (
             <CustomButton
               className="btn-table-list"
-              onClick={() => router.push("/ifc")}
-              title="Ir a IFC"
+              onClick={() => router.push("/ifc?id=" + row.id)}
+              title="Adjuntar archivo .ifc"
             >
               <span className="material-icons" style={{ fontSize: "24px" }}>
                 apartment

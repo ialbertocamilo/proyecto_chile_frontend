@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import CustomButton from "@/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
+import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
 
 interface Props {
   projectName: string;
@@ -76,6 +76,10 @@ const ProjectInfoHeader: React.FC<Props> = ({
     localStorage.setItem("project_name_edit", projectName);
   };
 
+  const handleIfcUploadClick = () => {
+    router.push(`/upload-ifc?id=${project_id}`);
+  };
+
   return (
     <div className="d-flex flex-column flex-md-row align-items-center gap-4">
       <span style={{ fontWeight: "normal", fontFamily: "var(--font-family-base)" }}>
@@ -94,6 +98,14 @@ const ProjectInfoHeader: React.FC<Props> = ({
         onClick={handleRegionClick}
       >
         {`Región: ${region}`}
+      </CustomButton>
+      <CustomButton
+        onClick={() => router.push("/ifc?id=" + project_id)}
+        title="Adjuntar archivo .ifc"
+      >
+        <span className="material-icons" style={{ fontSize: "24px" }}>
+          apartment
+        </span>
       </CustomButton>
     </div>
   );

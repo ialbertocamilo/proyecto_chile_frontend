@@ -27,7 +27,7 @@ interface CreateNodeMasterResponse {
 
 
 export const useWallBuilder = (projectId: string) => {
-    const { post } = useApi();
+    const { post, get } = useApi();
 
 
 
@@ -89,8 +89,14 @@ export const useWallBuilder = (projectId: string) => {
         }
     };
 
+    const getMaterialByCode = async (code: string) => {
+        const response = await get(`/constants-code_ifc?code_ifc=${code}`)
+
+        return response
+    }
     const createFromEnclosure = async (enclosureId: number, obj: any, globalObjects: any, keys = ['M_1', 'M_2', 'M_3', 'M_4']) => {
 
+        const errors = []
         const wallTypes = keys.map(key => {
             const wallValue = getPropValue(obj, key);
             return {
@@ -99,7 +105,8 @@ export const useWallBuilder = (projectId: string) => {
             };
         }).filter(wall => wall.value !== '');
 
-        console.log('Wall Types:', wallTypes);
+
+        console.log("Creating layers of walls:", wallTypes);
         for (const wall of wallTypes) {
             try {
                 const masterNode = await createNodeMaster(
@@ -111,21 +118,25 @@ export const useWallBuilder = (projectId: string) => {
                 const result = findObjectsByTypeAndProperty(globalObjects, "IfcWallStandardCase", "CÓDIGO MULTICAPA", wall.value);
 
                 console.log('Creando nodo hijos:', result);
+                // Creacion de muros
                 for (const child of result) {
-                    console.log('Processing child:', child); // Debugging log to inspect each child
-                    const layerThickness = getPropValue(child.props, 'ESPESOR')
+                    const layerThickness = getPropValue(child.props, 'ESPESOR') as unknown as number;
                     console.log('Layer Thickness:', layerThickness);
                     try {
+                        const material = await getMaterialByCode(child.props['MATERIAL'])
                         await createNodeChild(
                             masterNode,
                             'Muro',
                             wall.value,
-                            1, // TODO buscar el material correcto Default material ID 
-                            1
+                            material?.id,
+                            layerThickness
                         );
                         console.log('Child node created successfully for:', child);
                     } catch (error) {
-                        console.error('Error creating child node for:', child, error);
+                        errors.push({
+                            wall: wall.value,
+                            error: error
+                        });
                     }
                 }
             } catch (error) {
@@ -137,7 +148,8 @@ export const useWallBuilder = (projectId: string) => {
     return {
         createNodeMaster,
         createNodeChild,
-        createFromEnclosure
+        createFromEnclosure,
+        getMaterialByCode  // Expose this function for use in useProjectIfcBuilder
     };
 };
 

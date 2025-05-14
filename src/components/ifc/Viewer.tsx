@@ -1,24 +1,31 @@
 "use client";
-import { useWallBuilder } from '@/hooks/ifc/useWallBuilder';
-import { useApi } from '@/hooks/useApi';
+import { useProjectIfcBuilder } from '@/hooks/ifc/useProjectIfcBuilder';
 import { getPropValue } from '@/lib/utils';
 import { notify } from '@/utils/notify';
-import axios from 'axios';
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Check, Loader2 } from "lucide-react"; // Import Lucide check icon
+import { Check, Loader2 } from "lucide-react";
 import { useRouter } from 'next/router';
 import { useEffect, useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import Card from "../common/Card";
 import CustomButton from "../common/CustomButton";
 import IFCUploader from "./IfcUploader";
+import { ErrorDetailsAccordion } from './components/ErrorDetailsAccordion';
+import { ProjectStatusPanel } from './components/ProjectStatusPanel';
 
+/**
+ * Dynamically loads the IFC viewer component
+ */
 const loadIFCViewer = async () => {
   const { default: IFCViewer } = await import("@bytestone/ifc-component");
   return IFCViewer;
 };
 
+/**
+ * Main IFC viewer component
+ */
 export default function IFCViewerComponent() {
+  // Component state
   const [viewerInstance, setViewerInstance] = useState<any>(null);
   const [objectsData, setObjectsData] = useState<Array<{
     id: string;
@@ -29,15 +36,20 @@ export default function IFCViewerComponent() {
     type: string;
   }>>([]);
   const [status, setStatus] = useState<string>("");
-  const [isProcessing, setIsProcessing] = useState<boolean>(false); // New state for button disable
-  const [fileSelected, setFileSelected] = useState<boolean>(false); // New state for file selection
-  const api = useApi();
-  const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [fileSelected, setFileSelected] = useState<boolean>(false);
+  const [structuredOutput, setStructuredOutput] = useState<string>("");
 
+  // Hooks
+  const router = useRouter();
+  const [projectId, setProjectId] = useState<string>('');
+  const projectBuilder = useProjectIfcBuilder(projectId);
+
+  // Event handlers and utility functions
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event;
     if (file) {
-      setFileSelected(true); // Enable the "Procesar Objetos" button
+      setFileSelected(true);
       loadIFCViewer().then((IFCViewer) => {
         viewerInstance?.unloadModel();
         setViewerInstance(
@@ -45,35 +57,255 @@ export default function IFCViewerComponent() {
         );
       });
     }
-  }; // Add this closing brace
+  };
+  // Generate the structured output from objects
+  const generateStructuredOutput = (objects: Array<any>) => {
+    // Find all IfcSpace objects (rooms)
+    const rooms = objects.filter(obj => obj.type.includes('IfcSpace'));
 
-  const handleProcessFile = () => {
-    if (viewerInstance) {
-      viewerInstance.unloadAllModels?.();
-      setViewerInstance(null);
-      const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
-      if (canvas) {
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-      }
+    const structuredData = {
+      buildingStructure: rooms.map(room => {
+        const roomCode = getPropValue(room, 'CÓDIGO DE RECINTO') || 'Unknown';
 
-      setTimeout(() => {
-        loadIFCViewer().then((IFCViewer) => {
-          const newViewer = new IFCViewer({
-            canvasId: "myCanvas",
-            modelPath: "./output.ifc.xkt",
-          });
-          setViewerInstance(newViewer);
+        // Find all walls associated with this room
+        const wallCodes: string[] = [];
+        room.props.forEach((prop: any) => {
+          if (prop.name && prop.name.startsWith('M_') && prop.value) {
+            wallCodes.push(prop.value);
+          }
         });
-      }, 100);
-    }
+
+        // Get all walls associated with this room
+        const roomWalls = objects.filter(obj =>
+          obj.type.includes('IfcWall') &&
+          (obj.props.some((p: any) => p.name === 'RECINTO ASIGNADO' && p.value === roomCode) ||
+            wallCodes.some(code => obj.props.some((p: any) => p.name === 'CÓDIGO MULTICAPA' && p.value === code)))
+        );
+
+        // Calculate average height from walls (using y dimension)
+        let averageWallHeight = 0;
+        if (roomWalls.length > 0) {
+          const totalHeight = roomWalls.reduce((sum, wall) => {
+            // Use wall.dimensions.y as the height if available
+            return sum + (wall.dimensions?.y || 0);
+          }, 0);
+          averageWallHeight = totalHeight / roomWalls.length;
+        }
+
+        // Find floor codes associated with this room
+        const floorCodes: string[] = [];
+        room.props.forEach((prop: any) => {
+          if (prop.name === 'PISO RECINTO' && prop.value) {
+            floorCodes.push(prop.value);
+          }
+        });
+
+        // Find ceiling codes associated with this room
+        const ceilingCodes: string[] = [];
+        room.props.forEach((prop: any) => {
+          if (prop.name === 'TECHO RECINTO' && prop.value) {
+            ceilingCodes.push(prop.value);
+          }
+        });
+
+        // Find doors associated with this room
+        const doors = objects.filter(obj =>
+          obj.type.includes('IfcDoor') &&
+          obj.props.some((p: any) => p.name === 'RECINTO ASIGNADO' && p.value === roomCode)
+        );
+
+        // Find windows associated with this room
+        const windows = objects.filter(obj =>
+          obj.type.includes('IfcWindow') &&
+          obj.props.some((p: any) => p.name === 'RECINTO ASIGNADO' && p.value === roomCode)
+        );
+
+        return {
+          id: room.id,
+          name: room.name,
+          properties: {
+            roomCode: roomCode,
+            roomType: getPropValue(room, 'TIPOLOGÍA DE RESINTO') || 'Unknown',
+            occupationProfile: {
+              code: roomCode, // CÓDIGO DE RECINTO
+              type: getPropValue(room, 'TIPOLOGÍA DE RESINTO') || 'Unknown', // TIPOLOGÍA DE RESINTO
+              occupation: getPropValue(room, 'Ocupación') || 'Unknown'
+            },
+            level: getPropValue(room, 'Nivel') || 'Unknown',
+            volume: room.volume || getPropValue(room, 'Volumen') || 0,
+            surfaceArea: room.surfaceArea || 0,
+            averageHeight: averageWallHeight > 0 ? averageWallHeight :
+              (room.dimensions?.z ||
+                (room.volume && room.surfaceArea ? room.volume / room.surfaceArea :
+                  getPropValue(room, 'Altura') ||
+                  (getPropValue(room, 'Volumen') && getPropValue(room, 'Área') ?
+                    (getPropValue(room, 'Volumen') / getPropValue(room, 'Área')) :
+                    'Unknown'))),
+            wallsAverageHeight: averageWallHeight > 0 ? averageWallHeight : 0,
+            dimensions: room.dimensions || {
+              x: 0,
+              y: 0,
+              z: 0
+            },
+            position: room.position || {
+              x: 0,
+              y: 0,
+              z: 0
+            }
+          },
+          constructionDetails: {
+            walls: wallCodes.map(code => {
+              const walls = objects.filter(obj =>
+                obj.type.includes('IfcWall') &&
+                obj.props.some((p: any) => p.name === 'CÓDIGO MULTICAPA' && p.value === code)
+              );
+
+              return {
+                code: code,
+                elements: walls.map(wall => ({
+                  id: wall.id,
+                  name: wall.name,
+                  area: wall.surfaceArea || getPropValue(wall, 'Área') || 0,
+                  material: getPropValue(wall, 'MATERIAL') || 'Unknown',
+                  thickness: wall.dimensions?.z || getPropValue(wall, 'ESPESOR') || 0,
+                  orientation: getPropValue(wall, 'ORIENTACIÓN') || 0,
+                  location: getPropValue(wall, 'UBICA_ELEMENTO') || 'Unknown',
+                  volume: wall.volume || 0,
+                  dimensions: wall.dimensions || { x: 0, y: 0, z: 0 },
+                  position: wall.position || { x: 0, y: 0, z: 0 },
+                  vectors: wall.vectors || null
+                }))
+              };
+            }),
+            floors: floorCodes.map(code => {
+              const floors = objects.filter(obj =>
+                obj.type.includes('IfcSlab') &&
+                obj.props.some((p: any) => p.name === 'CÓDIGO MULTICAPA' && p.value === code)
+              );
+
+              return {
+                code: code,
+                elements: floors.map(floor => ({
+                  id: floor.id,
+                  name: floor.name,
+                  material: getPropValue(floor, 'MATERIAL') || 'Unknown',
+                  color: getPropValue(floor, 'COLOR') || 'Unknown',
+                  thickness: floor.dimensions?.z || getPropValue(floor, 'ESPESOR') || 0,
+                  keyNote: getPropValue(floor, 'Nota clave') || 'Unknown',
+                  area: floor.surfaceArea || 0,
+                  volume: floor.volume || 0,
+                  dimensions: floor.dimensions || { x: 0, y: 0, z: 0 },
+                  position: floor.position || { x: 0, y: 0, z: 0 },
+                  vectors: floor.vectors || null
+                }))
+              };
+            }),
+            ceilings: ceilingCodes.map(code => {
+              const ceilings = objects.filter(obj =>
+                obj.type.includes('IfcSlab') &&
+                obj.props.some((p: any) => p.name === 'CÓDIGO MULTICAPA' && p.value === code)
+              );
+
+              return {
+                code: code,
+                elements: ceilings.map(ceiling => ({
+                  id: ceiling.id,
+                  name: ceiling.name,
+                  material: getPropValue(ceiling, 'MATERIAL') || 'Unknown',
+                  color: getPropValue(ceiling, 'COLOR') || 'Unknown',
+                  thickness: ceiling.dimensions?.z || getPropValue(ceiling, 'ESPESOR') || 0,
+                  keyNote: getPropValue(ceiling, 'Nota clave') || 'Unknown',
+                  area: ceiling.surfaceArea || 0,
+                  volume: ceiling.volume || 0,
+                  dimensions: ceiling.dimensions || { x: 0, y: 0, z: 0 },
+                  position: ceiling.position || { x: 0, y: 0, z: 0 },
+                  vectors: ceiling.vectors || null
+                }))
+              };
+            }),
+            doors: doors.map(door => ({
+              id: door.id,
+              name: door.name,
+              type: getPropValue(door, 'TIPO') || 'Unknown',
+              width: door.dimensions?.x || getPropValue(door, 'ANCHO') || 0,
+              height: door.dimensions?.y || getPropValue(door, 'ALTURA') || 0,
+              assignedWall: getPropValue(door, 'MURO ASIGNADO') || 'Unknown',
+              uValue: getPropValue(door, 'U') || 0,
+              dimensions: door.dimensions || { x: 0, y: 0, z: 0 },
+              position: door.position || { x: 0, y: 0, z: 0 },
+              vectors: door.vectors || null
+            })),
+            windows: windows.map(window => ({
+              id: window.id,
+              name: window.name,
+              type: getPropValue(window, 'TIPO') || 'Unknown',
+              width: window.dimensions?.x || getPropValue(window, 'ANCHO') || 0,
+              height: window.dimensions?.y || getPropValue(window, 'ALTURA') || 0,
+              assignedWall: getPropValue(window, 'MURO ASIGNADO') || 'Unknown',
+              uValue: getPropValue(window, 'U') || 0,
+              dimensions: window.dimensions || { x: 0, y: 0, z: 0 },
+              position: window.position || { x: 0, y: 0, z: 0 },
+              vectors: window.vectors || null
+            }))
+          }
+        };
+      })
+    };
+
+    // Return a prettified JSON string
+    return JSON.stringify(structuredData, null, 2);
   };
 
-  const [projectId, setProjectId] = useState<string>('');
+  // Process all objects
+  async function processObjectsSequentially(objects: Array<any>) {
+    setIsProcessing(true);
+    setStatus("Procesando objetos...");
 
+    try {
+      // Generate structured output
+      const structuredText = generateStructuredOutput(objects);
+      setStructuredOutput(structuredText);
 
+      // Parse the structured text into a JSON object
+      const buildingStructure = JSON.parse(structuredText);
+
+      // Use the projectBuilder hook to create the project from the structured data
+      setStatus("Creando proyecto...");
+      const result = await projectBuilder.createProject(buildingStructure);
+
+      // Update the UI based on result
+      if (result.success) {
+        setStatus(`Proceso completado: ${result.completedRooms} recintos creados`);
+        notify("Proyecto creado exitosamente");
+
+        // Update project status to "en proceso"
+        try {
+          setStatus("Actualizando estado del proyecto...");
+          await projectBuilder.updateProjectStatus("en proceso");
+          setStatus(`Proceso completado: ${result.completedRooms} recintos creados. Proyecto en proceso.`);
+          notify("Estado del proyecto actualizado a 'en proceso'");
+        } catch (statusError) {
+          console.error("Error al actualizar estado del proyecto:", statusError);
+          notify("Proyecto creado pero no se pudo actualizar su estado", "warning");
+        }
+      } else {
+        const errorCount = result.errors.length;
+        setStatus(`Proceso completado con errores: ${errorCount} ${errorCount === 1 ? 'error encontrado' : 'errores encontrados'}`);
+        console.error("Errors during project creation:", result.errors);
+        notify(`Proyecto creado con ${errorCount} errores. Revise los detalles abajo.`, "error");
+      }
+    } catch (error) {
+      // For unexpected errors (not from the project builder), still show in status
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido durante el procesamiento';
+      console.error("Error processing objects:", error);
+      setStatus(`Error: ${errorMessage}`);
+      notify(`Error: ${errorMessage}`, "error");
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  // Effects
   useEffect(() => {
     if (router.query.id) {
       console.log("Project ID from router:", router.query.id);
@@ -95,6 +327,25 @@ export default function IFCViewerComponent() {
       .catch((error) => {
         console.error("Error loading IFCViewer module:", error);
       });
+
+    // Cleanup function to release memory when component unmounts
+    return () => {
+      if (viewerInstance) {
+        console.log("Cleaning up IFC viewer resources...");
+        // Unload any models
+        viewerInstance.unloadModel?.();
+        // Dispose of the viewer if it has a dispose method
+        viewerInstance.dispose?.();
+        // Clear the canvas
+        const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+        if (canvas) {
+          const ctx = canvas.getContext("2d");
+          ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        // Force garbage collection by nullifying the reference
+        setViewerInstance(null);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -103,149 +354,9 @@ export default function IFCViewerComponent() {
         setObjectsData(await viewerInstance?.objects);
       })
     }
-  }, [viewerInstance])
+  }, [viewerInstance]);
 
-  const wallBuilder = useWallBuilder(projectId);
-  function parseNivel(nivel: string): number {
-    const match = nivel?.match(/\d+$/); // Busca el número al final del string
-    return match ? parseInt(match[0], 10) : 0; // Devuelve el número o 0 si no se encuentra
-  }
-
-  async function handleObjectCreation(obj: { name: any; enclosure_id?: any; project_id?: any; props: any; type: string }, globalObjects: any) {
-    let endpoint;
-    console.log("Object type:", obj.type, obj.type.includes("IfcSpace"));
-    if (obj.type.includes('IfcWallStandardCase') || obj.type.includes('IfcDoor')) {
-      if (!obj.project_id) {
-        console.error('Project must be created before creating enclosures or related entities.');
-        return;
-      }
-      if (!obj.enclosure_id) {
-        console.error('Enclosure must be created before creating related entities.');
-        return;
-      }
-      endpoint = obj.type.includes('IfcWallStandardCase')
-        ? `/wall-enclosures-create/${obj.enclosure_id}`
-        : `/door-enclosures-create/${obj.enclosure_id}`;
-      setStatus(obj.type.includes('IfcWallStandardCase') ? "Creando muros..." : "Creando puertas...");
-    } else if (obj.type.includes('IfcSpace')) {
-      setStatus("Creando recintos...");
-      endpoint = `/enclosure-generals-create/${projectId}`;
-      try {
-        // Get and validate level information
-        const nivel = getPropValue(obj, 'Nivel');
-        const piso = parseNivel(nivel);
-        console.log("Processing floor level:", piso);
-
-        // Get and validate enclosure code
-        const codigoRecinto = obj.props.find((p: any) => p.name === 'CÓDIGO DE RECINTO')?.value;
-        if (!codigoRecinto) {
-          setStatus(`No se encontró el código de recinto para ${obj.name}`);
-          return;
-        }
-
-        // Fetch occupation data
-        const occupation = await fetchEnclosureByCode(codigoRecinto);
-        if (!occupation) {
-          setStatus(`No se encontró información para el código ${codigoRecinto}`);
-          return;
-        }
-
-        // Get volume information
-        const volume = obj.props.find((p: any) => p.name === 'Volumen')?.value || 0;
-
-        // Create enclosure
-        const response = await api.post(endpoint, {
-          name_enclosure: occupation?.name || 'Default Enclosure',
-          occupation_profile_id: occupation?.id,
-          height: volume,
-          co2_sensor: 'Default Sensor',
-          level_id: piso
-        });
-        await wallBuilder.createFromEnclosure(response.id, obj, globalObjects)
-
-        obj.enclosure_id = response.id;
-        setStatus("Recinto creado exitosamente");
-
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Error desconocido creando recinto';
-        console.error('Error en la creación del recinto:', errorMessage);
-        const errorDetail = axios.isAxiosError(error) ? error.response?.data?.detail : errorMessage;
-        setStatus(`Error ${errorDetail}`);
-      }
-    } else {
-      console.error('Unknown object type');
-      return;
-    }
-
-    try {
-      switch (endpoint) {
-        case `/wall-enclosures-create/${obj.enclosure_id}`:
-          await axios.post(endpoint, {
-            wall_id: obj.props.find((p: any) => p.name === 'CÓDIGO MULTICAPA')?.value || 0,
-            characteristics: obj.props.find((p: any) => p.name === 'Tipo')?.value || 'Default Characteristics',
-            angulo_azimut: obj.props.find((p: any) => p.name === 'ORIENTACIÓN')?.value || '0',
-            area: obj.props.find((p: any) => p.name === 'Área')?.value || 0
-          });
-          break;
-        case `/door-enclosures-create/${obj.enclosure_id}`:
-          await axios.post(endpoint, {
-            door_id: obj.props.find((p: any) => p.name === 'MURO ASIGNADO')?.value || 0,
-            characteristics: obj.props.find((p: any) => p.name === 'TIPO')?.value || 'Default Characteristics',
-            angulo_azimut: obj.props.find((p: any) => p.name === 'ORIENTACIÓN')?.value || '0',
-            area: obj.props.find((p: any) => p.name === 'Área')?.value || 0
-          });
-          break;
-      }
-      console.log(`Successfully processed: ${obj.name}`);
-    } catch (error) {
-      const errorMessage = `Error creando ${obj.name === 'IfcWallStandardCase' ? 'muro' : obj.name === 'IfcDoor' ? 'puerta' : obj.name === 'IfcSpace' ? 'recinto' : 'entidad'}`;
-      console.error(errorMessage, error);
-      setStatus(errorMessage);
-    } finally {
-      setStatus("Proceso completado"); // Clear status after completion
-    }
-  }
-
-  function processObjectsSequentially(objects: Array<any>) {
-    setIsProcessing(true); // Disable the button
-    setStatus("Procesando objetos...");
-
-    Promise.all(
-      objects.map((obj) =>
-        handleObjectCreation(obj, objects).catch((error) => {
-          console.error(`Error processing ${obj.name}:`, error);
-          setStatus("Error durante el procesamiento");
-        })
-      )
-    )
-      .then(() => {
-        setStatus("Proceso completado");
-        notify("Información extraída correctamente"); // Show notification once
-        setTimeout(() => {
-          router.push(`/workflow-part1-edit?id=${projectId}`); // Redirect after 1 second
-        }, 1000);
-      })
-      .finally(() => {
-        setIsProcessing(false);
-      });
-  }
-
-  /**
-   * Fetches enclosure details by code.
-   * @param code - The code of the enclosure.
-   * @returns A promise resolving to the enclosure details.
-   */
-  async function fetchEnclosureByCode(code: string) {
-    try {
-      const response = await api.get(`/enclosure-typing/by-code/${code}`);
-      console.log("Enclosure details:", response.data);
-      return response;
-    } catch (error) {
-      console.error("Error fetching enclosure by code:", error);
-      throw error;
-    }
-  }
-
+  // Render component
   return (
     <Card>
       <IFCUploader onFileUpload={handleFileUpload} />
@@ -254,13 +365,14 @@ export default function IFCViewerComponent() {
           {fileSelected && (
             <CustomButton
               onClick={() => processObjectsSequentially(objectsData)}
-              disabled={isProcessing} // Disable button while processing
+              disabled={isProcessing}
             >
               {isProcessing ? "Procesando..." : "Procesar Objetos"}
             </CustomButton>
           )}
         </Col>
       </Row>
+
       <Container fluid className="p-0">
         <Row className="g-0">
           <Col xs={12} md={6} style={{ height: "50vh", border: '1px solid #ccc', overflowY: 'auto' }}>
@@ -273,53 +385,54 @@ export default function IFCViewerComponent() {
           </Col>
         </Row>
       </Container>
+
       {/* Status Indicator */}
       <Container fluid className="mt-4">
         <Row>
           <Col>
-            <h5 style={{ color: status === "Proceso completado" ? "green" : "black" }}>
-              {isProcessing && <Loader2 size={20} className="me-2" />} {/* Show loader during processing */}
-              {status === "Proceso completado" && <Check size={20} />} {status || "Esperando acción..."}
+            <h5 style={{
+              color: status.includes("Error") || status.includes("errores") ? "red" :
+                status === "Proceso completado" ? "green" :
+                  "black"
+            }}>
+              {isProcessing && <Loader2 size={20} className="me-2" />}
+              {status === "Proceso completado" && <Check size={20} />}
+              {status || "Esperando acción..."}
             </h5>
           </Col>
         </Row>
+
+        {/* Detailed status section */}
+        {isProcessing && (
+          <ProjectStatusPanel creationStatus={projectBuilder.creationStatus} />
+        )}
+
+        {/* Error Details Section */}
+        {projectBuilder.creationStatus.errors.length > 0 && (
+          <ErrorDetailsAccordion errors={projectBuilder.creationStatus.errors} />
+        )}
       </Container>
-      {/* Tabla para mostrar objectsData */}
+
+      {/* Structured Output Text Area */}
       <Container fluid className="mt-4">
         <Row>
           <Col>
-            <h5>Objetos IFC</h5>
-            <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-              <table className="table table-bordered table-sm">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Tipo</th>
-                    <th>Propiedades</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {objectsData.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="text-center">Sin datos</td>
-                    </tr>
-                  ) : (
-                    objectsData.map((obj) => (
-                      <tr key={obj.id}>
-                        <td>{obj.id}</td>
-                        <td>{obj.name}</td>
-                        <td>{obj.type}</td>
-                        <td>{JSON.stringify(obj?.props)}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <h5>Building Structure (JSON)</h5>
+            <textarea
+              className="form-control"
+              style={{
+                height: "400px",
+                fontFamily: "monospace",
+                fontSize: "0.9rem",
+                whiteSpace: "pre-wrap"
+              }}
+              value={structuredOutput}
+              readOnly
+            />
           </Col>
         </Row>
       </Container>
+
     </Card>
   );
 }

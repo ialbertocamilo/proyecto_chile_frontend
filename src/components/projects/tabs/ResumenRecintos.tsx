@@ -114,7 +114,6 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
     return selectedListItem;
   }
   function calculateSCOP(recintoId: number) {
-    debugger;
     const co2RendCalef = getCO2Value(
       rendimientoCalef,
       selectedRendimientoCalef,
@@ -197,7 +196,6 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
     );
   }
   function calculatePrimaryEnergyCalef(recintoId: number) {
-    debugger;
     const co2System = getEnergyValue(
       energySystems,
       selectedEnergySystems,

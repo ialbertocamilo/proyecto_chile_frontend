@@ -499,9 +499,9 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                         </th>
                       </tr>
                       <tr>
-                        <th className="text-center">Calef</th>
-                        <th className="text-center">Ref</th>
-                        <th className="text-center">Ilum</th>
+                        <th className="text-center">Calefacción</th>
+                        <th className="text-center">Refrigeración</th>
+                        <th className="text-center">Iluminación</th>
                         <th className="text-center">Total</th>
                       </tr>
                     </thead>
@@ -545,20 +545,20 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                         </th>
                       </tr>
                       <tr>
-                        <th className="text-center">Comb</th>
+                        <th className="text-center">Combustible</th>
                         <th className="text-center">Rendimiento</th>
                         <th className="text-center">Distribución</th>
                         <th className="text-center">Control</th>
                         <th className="text-center">SCOP</th>
                         <th className="text-center">SCOP de MC</th>
-                        <th className="text-center">Comb</th>
+                        <th className="text-center">Combustible</th>
                         <th className="text-center">Rendimiento</th>
                         <th className="text-center">Distribución</th>
                         <th className="text-center">Control</th>
                         <th className="text-center">SEER</th>
                         <th className="text-center">SEER de MC</th>
-                        <th className="text-center">Calef</th>
-                        <th className="text-center">Ref</th>
+                        <th className="text-center">Calefacción</th>
+                        <th className="text-center">Refrigeración</th>
                         <th className="text-center">Total</th>
                       </tr>
                     </thead>
@@ -753,9 +753,9 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                         </th>
                       </tr>
                       <tr>
-                        <th className="text-center">Calef</th>
-                        <th className="text-center">Ref</th>
-                        <th className="text-center">Ilum</th>
+                        <th className="text-center">Calefacción</th>
+                        <th className="text-center">Refrigeración</th>
+                        <th className="text-center">Iluminación</th>
                         <th className="text-center">Total</th>
                       </tr>
                     </thead>
@@ -793,8 +793,8 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                         </th>
                       </tr>
                       <tr>
-                        <th className="text-center">Calef</th>
-                        <th className="text-center">Ref</th>
+                        <th className="text-center">Calefacción</th>
+                        <th className="text-center">Refrigeración</th>
                         <th className="text-center">Total</th>
                       </tr>
                     </thead>
@@ -838,14 +838,14 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                         </th>
                       </tr>
                       <tr>
-                        <th className="text-center">Calef</th>
-                        <th className="text-center">Ref</th>
-                        <th className="text-center">Ilum</th>
-                        <th className="text-center">Calef</th>
-                        <th className="text-center">Ref</th>
+                        <th className="text-center">Calefacción</th>
+                        <th className="text-center">Refrigeración</th>
+                        <th className="text-center">Iluminación</th>
+                        <th className="text-center">Calefacción</th>
+                        <th className="text-center">Refrigeración</th>
                         <th className="text-center">Total</th>
-                        <th className="text-center">Calef</th>
-                        <th className="text-center">Ref</th>
+                        <th className="text-center">Calefacción</th>
+                        <th className="text-center">Refrigeración</th>
                       </tr>
                     </thead>
                     <tbody>

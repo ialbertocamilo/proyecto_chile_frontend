@@ -592,7 +592,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             doors: prev.progress.doors + 1
                         }
                     }));
-                } catch (error) {
+                } catch (error:any) {
                     errors.push({
                         message: `Error creating door: ${error.message || 'Unknown error'}`,
                         context: `Door: ${door.name}`

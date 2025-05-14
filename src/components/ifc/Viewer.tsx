@@ -139,7 +139,7 @@ export default function IFCViewerComponent() {
                 (room.volume && room.surfaceArea ? room.volume / room.surfaceArea :
                   getPropValue(room, 'Altura') ||
                   (getPropValue(room, 'Volumen') && getPropValue(room, 'Área') ?
-                    (getPropValue(room, 'Volumen') / getPropValue(room, 'Área')) :
+                    (Number(getPropValue(room, 'Volumen')) / Number(getPropValue(room, 'Área'))) :
                     'Unknown'))),
             wallsAverageHeight: averageWallHeight > 0 ? averageWallHeight : 0,
             dimensions: room.dimensions || {

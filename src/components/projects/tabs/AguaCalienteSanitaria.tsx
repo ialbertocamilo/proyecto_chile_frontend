@@ -65,6 +65,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
       );
     }
   }, []);
+  const api = useApi()
 
   useEffect(() => {
     const fetchExistingData = async () => {
@@ -79,8 +80,8 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
           return;
         }
 
-        const response = await axios.get(
-          `https://ceela-backend-qa.svgdev.tech/agua-caliente-obtener/${projectId}`,
+        const response = await api.get(
+          `/agua-caliente-obtener/${projectId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -391,8 +392,8 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
         })),
       };
 
-      const response = await axios.post(
-        `https://ceela-backend-qa.svgdev.tech/agua-caliente/${projectId}`,
+      const response = await api.post(
+        `/agua-caliente/${projectId}`,
         requestData,
         {
           headers: {

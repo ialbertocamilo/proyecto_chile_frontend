@@ -30,6 +30,12 @@ interface IndicadoresFinalesProps {
   };
 }
 
+interface HrsDisconfortItem {
+  concepto: string;
+  hrs_ano: string;
+  nota?: string;
+}
+
 export default function IndicadoresFinales({ onDataUpdate, calculatedComp, calculationResult }: IndicadoresFinalesProps = {}) {
   // Función para calcular la comparación entre caso actual y base  
   const calcularVsCasoBase = (concepto: string): string => {    // Asegurarnos de tener datos mínimos para calcular
@@ -236,6 +242,26 @@ export default function IndicadoresFinales({ onDataUpdate, calculatedComp, calcu
       vsCasoBase: calcularVsCasoBase("Total"),
     },
   ];
+  // Función para calcular el consumo total basado en el concepto
+  const calcularConsumoTotal = (data: any[], concepto: keyof typeof defaultValues): number => {
+    return data.reduce((total, row) => {
+      switch (concepto) {
+        case "Calefacción":
+          return total + (row.consumo_calef || 0);
+        case "Refrigeración":
+          return total + (row.consumo_refrig || 0);
+        case "Iluminación":
+          return total + (row.demanda_ilum || 0);
+        case "ACS":
+          return total + (row.demanda_acs || 0);
+        case "Total":
+          return total + ((row.consumo_calef || 0) + (row.consumo_refrig || 0) + (row.demanda_ilum || 0) + (row.demanda_acs || 0));
+        default:
+          return total;
+      }
+    }, 0);
+  };
+
   // Función para calcular valores de consumo de energía primaria
   const calcularConsumoEnergia = (concepto: keyof typeof defaultValues): { kwh_m2_ano: number; kwh_ano: number; vsCasoBase: string } => {
     if (!calculationResult?.df_results) {

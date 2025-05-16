@@ -88,33 +88,77 @@ const Results = () => {
 
   // Variable para guardar el resultado de cálculo y recálculo
   const [calculationResult, setCalculationResult] = useState<any>(null);
-  // Array con resultados de demanda positiva y negativa por recinto
+  // Array con resultados de demanda positiva y negativa por recinto para df_base
   const [demandaPorRecinto, setDemandaPorRecinto] = useState<
     { recinto_id: number; demanda_total_positiva: number; demanda_total_negativa: number }[]
   >([]);
+  // Array con resultados de demanda positiva y negativa por recinto para df_results
+  const [demandaPorRecintoResultado, setDemandaPorRecintoResultado] = useState<
+    { recinto_id: number; demanda_total_positiva: number; demanda_total_negativa: number }[]
+  >([]);
+
   // Calcular demanda positiva y negativa por recinto cada vez que calculationResult cambia
   useEffect(() => {
-    if (calculationResult && calculationResult.df_base) {
-      const df_base = calculationResult.df_base;
-      // Obtener todos los ids únicos de recinto
-      const recintoIds = Array.from(new Set(df_base.map((d: any) => d.ID_Recinto))) as number[];
-      const resultados = recintoIds.map((recinto_id: number) => ({
-        recinto_id,
-        demanda_total_positiva: ResultadosRecintoBase.sumaDemandaPositivaPorRecinto(df_base, recinto_id),
-        demanda_total_negativa: ResultadosRecintoBase.sumaDemandaNegativaPorRecinto(df_base, recinto_id),
-      }));
-      console.log("Resultados de demanda por recinto:", resultados);
-      setDemandaPorRecinto(resultados);
+    if (calculationResult) {
+      // Procesar df_base (caso base)
+      if (calculationResult.df_base) {
+        const df_base = calculationResult.df_base;
+        // Obtener todos los ids únicos de recinto
+        const recintoIds = Array.from(new Set(df_base.map((d: any) => d.ID_Recinto))) as number[];
+        const resultados = recintoIds.map((recinto_id: number) => ({
+          recinto_id,
+          demanda_total_positiva: ResultadosRecintoBase.sumaDemandaPositivaPorRecinto(df_base, recinto_id),
+          demanda_total_negativa: ResultadosRecintoBase.sumaDemandaNegativaPorRecinto(df_base, recinto_id),
+        }));
+        console.log("Resultados de demanda por recinto (caso base):", resultados);
+        setDemandaPorRecinto(resultados);
+
+        // Log del total para caso base (DEBUG)
+        const totalPositivoBase = resultados.reduce((acc, item) => acc + item.demanda_total_positiva, 0);
+        console.log("Total demanda positiva (caso base):", totalPositivoBase);
+      } else {
+        setDemandaPorRecinto([]);
+      }
+
+      // Procesar df_results (caso actual)
+      if (calculationResult.df_results) {
+        const df_results = calculationResult.df_results;
+        // Obtener todos los ids únicos de recinto
+        const recintoIds = Array.from(new Set(df_results.map((d: any) => d.ID_Recinto))) as number[];
+        const resultados = recintoIds.map((recinto_id: number) => ({
+          recinto_id,
+          demanda_total_positiva: ResultadosRecintoBase.sumaDemandaPositivaPorRecinto(df_results, recinto_id),
+          demanda_total_negativa: ResultadosRecintoBase.sumaDemandaNegativaPorRecinto(df_results, recinto_id),
+        }));
+        console.log("Resultados de demanda por recinto (caso actual):", resultados);
+        setDemandaPorRecintoResultado(resultados);
+
+        // Log del total para caso actual (DEBUG)
+        const totalPositivoActual = resultados.reduce((acc, item) => acc + item.demanda_total_positiva, 0);
+        console.log("Total demanda positiva (caso actual):", totalPositivoActual);
+
+        // Log comparativo para verificar la diferencia (DEBUG)
+        if (demandaPorRecinto.length > 0) {
+          console.log("VERIFICACIÓN - Valores de demanda diferentes:",
+            totalPositivoActual !== demandaPorRecinto.reduce((acc, item) => acc + item.demanda_total_positiva, 0));
+        }
+      } else {
+        setDemandaPorRecintoResultado([]);
+      }
     } else {
       setDemandaPorRecinto([]);
+      setDemandaPorRecintoResultado([]);
     }
   }, [calculationResult]);
-
   const processData = async () => {
+    console.log("Starting processData");
     try {
       const projectId = router.query.id;
+      console.log("Project ID:", projectId);
       if (projectId) {
+        console.log("Fetching data for project:", projectId);
         const result = await get(`/calculator/${projectId}`);
+        console.log("Data received:", result ? Object.keys(result) : "No result");
         setCalculationResult(result);
         setIsButtonDisabled(false);
       }
@@ -122,11 +166,10 @@ const Results = () => {
       console.error("Error al procesar los datos:", error);
       notify("Se termino de procesar la información");
     } finally {
+      console.log("Setting loading to false");
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
+  }; useEffect(() => {
     if (router.query.id) processData();
   }, [router.query.id]);
 
@@ -166,9 +209,10 @@ const Results = () => {
     });
     co2eqTotalBase = Object.values(baseByRecinto).reduce((acc, v) => acc + v, 0);
   }
-
   // Fallback para evitar división por cero
-  if (!co2eqTotalBase || isNaN(co2eqTotalBase)) co2eqTotalBase = 1; const handleDataUpdate = (data: IndicadoresData) => {
+  if (!co2eqTotalBase || isNaN(co2eqTotalBase)) co2eqTotalBase = 1;
+
+  const handleDataUpdate = (data: IndicadoresData) => {
     // Almacenamos los datos tal cual los recibimos del componente IndicadoresFinales
     // (ahora el componente ya incluye la comparación calculada correctamente)
     setIndicadoresData(data);
@@ -409,45 +453,55 @@ const Results = () => {
       {loading ? (
         <div className="text-center">Procesando datos...</div>
       ) : (
-        <>
-
-          <Tabs
-            defaultActiveKey="recintos"
-            id="results-tabs"
-            className="mb-4 custom-tabs"
-            style={{
-              "--bs-nav-tabs-link-active-color": "var(--primary-color)",
-              "--bs-nav-link-font-weight": "normal",
-              fontFamily: "var(--font-family-base)",
-              border: "none",
-              "--bs-nav-link-color": "#bbc4cb",
-              "--bs-nav-link-hover-color": "rgb(42, 176, 197)",
-              "--bs-nav-tabs-link-hover-border-color": "transparent",
-              "--bs-nav-tabs-link-active-border-color":
-                "transparent transparent rgb(42, 176, 197) transparent",
-              "--bs-nav-tabs-border-width": "3px",
-              "--bs-nav-tabs-border-radius": "0px",
-              "--bs-nav-link-padding-x": "10px",
-              "--bs-nav-link-padding-y": "10px",
-            } as React.CSSProperties}
-          >
-            {/* <Tab eventKey="acs" title="Agua Caliente Sanitaria">
+        <>          <Tabs
+          defaultActiveKey="recintos"
+          id="results-tabs"
+          className="mb-4 custom-tabs"
+          style={{
+            "--bs-nav-tabs-link-active-color": "var(--primary-color)",
+            "--bs-nav-link-font-weight": "normal",
+            fontFamily: "var(--font-family-base)",
+            border: "none",
+            "--bs-nav-link-color": "#bbc4cb",
+            "--bs-nav-link-hover-color": "rgb(42, 176, 197)",
+            "--bs-nav-tabs-link-hover-border-color": "transparent",
+            "--bs-nav-tabs-link-active-border-color":
+              "transparent transparent rgb(42, 176, 197) transparent",
+            "--bs-nav-tabs-border-width": "3px",
+            "--bs-nav-tabs-border-radius": "0px",
+            "--bs-nav-link-padding-x": "10px",
+            "--bs-nav-link-padding-y": "10px",
+          } as React.CSSProperties}
+        >
+          {/* <Tab eventKey="acs" title="Agua Caliente Sanitaria">
                             <AguaCalienteSanitaria />
-                        </Tab> */}
-            <Tab eventKey="recintos" title="Resumen de Recintos">
-              <ResumenRecintos
-                onRecintosCalculated={handleRecintosCalculated}
-                demandaPorRecinto={demandaPorRecinto}
-              />            </Tab>            <Tab eventKey="indicadores" title="Indicadores Finales">
-              <IndicadoresFinales
-                onDataUpdate={handleDataUpdate}
-                calculatedComp={{
-                  co2eqTotalRecintos,
-                  co2eqTotalBase
-                }}
-              />
-            </Tab>
-          </Tabs>
+                        </Tab> */}            <Tab eventKey="recintos" title="Resumen de Recintos">
+            <ResumenRecintos
+              onRecintosCalculated={handleRecintosCalculated}
+              demandaPorRecinto={demandaPorRecintoResultado}
+            />            </Tab>            <Tab eventKey="indicadores" title="Indicadores Finales">            {(() => {
+              console.log("Rendering IndicadoresFinales with:", {
+                co2eqTotalRecintos,
+                co2eqTotalBase,
+                hasResults: !!calculationResult?.df_results,
+                hasBase: !!calculationResult?.df_base
+              });
+              return (
+                <IndicadoresFinales
+                  onDataUpdate={handleDataUpdate}
+                  calculatedComp={{
+                    co2eqTotalRecintos,
+                    co2eqTotalBase
+                  }}
+                  calculationResult={{
+                    df_results: calculationResult?.df_results,
+                    df_base: calculationResult?.df_base
+                  }}
+                />
+              );
+            })()}
+          </Tab>
+        </Tabs>
 
         </>
       )}

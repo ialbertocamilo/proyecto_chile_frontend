@@ -97,8 +97,8 @@ export default function ResumenEnergia(props: any) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {demandaData?.map((item:any) => (
-                                        <tr >
+                                    {demandaData?.map((item:any, index:number) => (
+                                        <tr key={index}>
                                             <td>{item.concepto}</td>
                                             <td>{item.kwh_m2_ano}</td>
                                             <td>{item.kwh_ano.toLocaleString()}</td>

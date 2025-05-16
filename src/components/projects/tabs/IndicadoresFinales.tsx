@@ -11,9 +11,13 @@ interface IndicadoresFinalesProps {
     hrsDisconfort: any[];
     co2eqData: any;
   }) => void;
+  calculatedComp?: {
+    co2eqTotalRecintos?: number;
+    co2eqTotalBase?: number;
+  };
 }
 
-export default function IndicadoresFinales({ onDataUpdate }: IndicadoresFinalesProps = {}) {
+export default function IndicadoresFinales({ onDataUpdate, calculatedComp }: IndicadoresFinalesProps = {}) {
   // Datos simulados para cada sección
   const demandaData = [
     {
@@ -76,15 +80,24 @@ export default function IndicadoresFinales({ onDataUpdate }: IndicadoresFinalesP
     { concepto: "Refrigeración", hrs_ano: "5,540" },
     { concepto: "Total", hrs_ano: "24,646" },
     { concepto: "Comparación caso base", hrs_ano: "3%", nota: "[%]" },
-  ];
+  ];  // Calculamos el CO2eq y la comparación con el caso base usando los valores pasados por props
+  const co2eqTotalRecintos = calculatedComp?.co2eqTotalRecintos || 20542.7;
+  const co2eqTotalBase = calculatedComp?.co2eqTotalBase || 1;
+  const energiaelectrica = 1.9; // Constante para energía eléctrica
+
+  // Calculamos la comparación: 1 - ((actual - energiaelectrica) / (base - energiaelectrica))
+  const co2eqComparacion = co2eqTotalBase !== energiaelectrica ?
+    (1 - ((co2eqTotalRecintos - energiaelectrica) / (co2eqTotalBase - energiaelectrica))) : 0;
+  const comparacionPorcentaje = co2eqComparacion * 100;
+  const signo = comparacionPorcentaje >= 0 ? '' : '-';
+  const comparacionStr = `${signo}${Math.abs(comparacionPorcentaje).toFixed(2)}%`;
 
   const co2eqData = {
-    total: 20542.7,
+    total: co2eqTotalRecintos,
     unidad: "[kg CO2eq]",
-    comparacion: "0%", // [%]
+    comparacion: comparacionStr
   };
-
-  // Send data to parent component only on mount
+  // Send data to parent component on mount and when CO2eq values change
   useEffect(() => {
     if (onDataUpdate) {
       onDataUpdate({
@@ -94,7 +107,7 @@ export default function IndicadoresFinales({ onDataUpdate }: IndicadoresFinalesP
         co2eqData
       });
     }
-  }, []); 
+  }, [calculatedComp?.co2eqTotalRecintos, calculatedComp?.co2eqTotalBase]);
 
   return (
     <div className="container my-4">
@@ -229,14 +242,12 @@ export default function IndicadoresFinales({ onDataUpdate }: IndicadoresFinalesP
                     </th>
                     <th>{co2eqData.unidad}</th>
                   </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Comparación caso base</td>
-                    <td colSpan={2} className="text-center">
-                      {co2eqData.comparacion}
-                    </td>
-                  </tr>
+                </thead>                <tbody>                  <tr>
+                  <td>Comparación caso base</td>
+                  <td colSpan={2} className="text-center">
+                    {co2eqData.comparacion}
+                  </td>
+                </tr>
                 </tbody>
               </table>
             </div>

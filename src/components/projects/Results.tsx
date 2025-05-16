@@ -1,4 +1,5 @@
 import { useApi } from "@/hooks/useApi";
+import { ResultadosRecintoBase } from "@/utils/ResultadosRecintoBase";
 import { notify } from "@/utils/notify";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -57,8 +58,8 @@ interface RecintoItem {
   [key: string]: any;
 }
 
-// Add this interface to match the expected type
-interface Recinto {
+// Export the interface to be used by other components
+export interface Recinto {
   id: number;
   name_enclosure: string;
   height: number;
@@ -85,11 +86,36 @@ const Results = () => {
   const [recintosData, setRecintosData] = useState<RecintoItem[]>([]);
   const [indicadoresData, setIndicadoresData] = useState<IndicadoresData | null>(null);
 
+  // Variable para guardar el resultado de cálculo y recálculo
+  const [calculationResult, setCalculationResult] = useState<any>(null);
+  // Array con resultados de demanda positiva y negativa por recinto
+  const [demandaPorRecinto, setDemandaPorRecinto] = useState<
+    { recinto_id: number; demanda_total_positiva: number; demanda_total_negativa: number }[]
+  >([]);
+  // Calcular demanda positiva y negativa por recinto cada vez que calculationResult cambia
+  useEffect(() => {
+    if (calculationResult && calculationResult.df_base) {
+      const df_base = calculationResult.df_base;
+      // Obtener todos los ids únicos de recinto
+      const recintoIds = Array.from(new Set(df_base.map((d: any) => d.ID_Recinto))) as number[];
+      const resultados = recintoIds.map((recinto_id: number) => ({
+        recinto_id,
+        demanda_total_positiva: ResultadosRecintoBase.sumaDemandaPositivaPorRecinto(df_base, recinto_id),
+        demanda_total_negativa: ResultadosRecintoBase.sumaDemandaNegativaPorRecinto(df_base, recinto_id),
+      }));
+      console.log("Resultados de demanda por recinto:", resultados);
+      setDemandaPorRecinto(resultados);
+    } else {
+      setDemandaPorRecinto([]);
+    }
+  }, [calculationResult]);
+
   const processData = async () => {
     try {
       const projectId = router.query.id;
       if (projectId) {
-        await get(`/calculator/${projectId}`);
+        const result = await get(`/calculator/${projectId}`);
+        setCalculationResult(result);
         setIsButtonDisabled(false);
       }
     } catch (error) {
@@ -109,8 +135,26 @@ const Results = () => {
     setRecintosData(recintos as unknown as RecintoItem[]);
   };
 
-  const handleDataUpdate = (data: IndicadoresData) => {
-    console.log("Data updated:", data);
+  // Calcula el total de CO2_eq sumando todos los recintos (escenario actual)
+  const co2eqTotalRecintos = recintosData.reduce((acc, r) => acc + (r.co2_eq_total || r.co2_eq || 0), 0);
+
+  // Calcula el total de CO2_eq para el caso base desde calculationResult.df_base
+  let co2eqTotalBase = 0;
+  if (calculationResult && calculationResult.df_base) {
+    // Si los datos base tienen un campo co2_eq_total, usarlo; si no, usar co2_eq o 0
+    const baseByRecinto: { [key: number]: number } = {};
+    calculationResult.df_base.forEach((row: { ID_Recinto: any; co2_eq_total: undefined; co2_eq: undefined; }) => {
+      // Agrupa por recinto y suma co2_eq_total o co2_eq
+      const id = row.ID_Recinto;
+      const co2 = (row.co2_eq_total !== undefined ? row.co2_eq_total : (row.co2_eq !== undefined ? row.co2_eq : 0));
+      if (!baseByRecinto[id]) baseByRecinto[id] = 0;
+      baseByRecinto[id] += co2;
+    });
+    co2eqTotalBase = Object.values(baseByRecinto).reduce((acc, v) => acc + v, 0);
+  }  // fallback para evitar división por cero
+  if (!co2eqTotalBase || isNaN(co2eqTotalBase)) co2eqTotalBase = 1; const handleDataUpdate = (data: IndicadoresData) => {
+    // Almacenamos los datos tal cual los recibimos del componente IndicadoresFinales
+    // (ahora el componente ya incluye la comparación calculada correctamente)
     setIndicadoresData(data);
   };
 
@@ -247,7 +291,10 @@ const Results = () => {
       setIsRecalculating(true);
       const projectId = router.query.id;
       if (projectId) {
-        await get(`/calculator/${projectId}?force_calculation=true`);
+        // Guardar el resultado en la misma variable de estado
+        const result = await get(`/calculator/${projectId}?force_calculation=true`);
+        setCalculationResult(result);
+
         notify("Recálculo completado exitosamente");
         // Refresh data after recalculation
         await processData();
@@ -347,27 +394,26 @@ const Results = () => {
         <div className="text-center">Procesando datos...</div>
       ) : (
         <>
+
           <Tabs
             defaultActiveKey="recintos"
             id="results-tabs"
             className="mb-4 custom-tabs"
-            style={
-              {
-                "--bs-nav-tabs-link-active-color": "var(--primary-color)",
-                "--bs-nav-link-font-weight": "normal",
-                fontFamily: "var(--font-family-base)",
-                border: "none",
-                "--bs-nav-link-color": "#bbc4cb",
-                "--bs-nav-link-hover-color": "rgb(42, 176, 197)",
-                "--bs-nav-tabs-link-hover-border-color": "transparent",
-                "--bs-nav-tabs-link-active-border-color":
-                  "transparent transparent rgb(42, 176, 197) transparent",
-                "--bs-nav-tabs-border-width": "3px",
-                "--bs-nav-tabs-border-radius": "0px",
-                "--bs-nav-link-padding-x": "10px",
-                "--bs-nav-link-padding-y": "10px",
-              } as React.CSSProperties
-            }
+            style={{
+              "--bs-nav-tabs-link-active-color": "var(--primary-color)",
+              "--bs-nav-link-font-weight": "normal",
+              fontFamily: "var(--font-family-base)",
+              border: "none",
+              "--bs-nav-link-color": "#bbc4cb",
+              "--bs-nav-link-hover-color": "rgb(42, 176, 197)",
+              "--bs-nav-tabs-link-hover-border-color": "transparent",
+              "--bs-nav-tabs-link-active-border-color":
+                "transparent transparent rgb(42, 176, 197) transparent",
+              "--bs-nav-tabs-border-width": "3px",
+              "--bs-nav-tabs-border-radius": "0px",
+              "--bs-nav-link-padding-x": "10px",
+              "--bs-nav-link-padding-y": "10px",
+            } as React.CSSProperties}
           >
             {/* <Tab eventKey="acs" title="Agua Caliente Sanitaria">
                             <AguaCalienteSanitaria />
@@ -375,10 +421,15 @@ const Results = () => {
             <Tab eventKey="recintos" title="Resumen de Recintos">
               <ResumenRecintos
                 onRecintosCalculated={handleRecintosCalculated}
+                demandaPorRecinto={demandaPorRecinto}
+              />            </Tab>            <Tab eventKey="indicadores" title="Indicadores Finales">
+              <IndicadoresFinales
+                onDataUpdate={handleDataUpdate}
+                calculatedComp={{
+                  co2eqTotalRecintos,
+                  co2eqTotalBase
+                }}
               />
-            </Tab>
-            <Tab eventKey="indicadores" title="Indicadores Finales">
-              <IndicadoresFinales onDataUpdate={handleDataUpdate} />
             </Tab>
           </Tabs>
 

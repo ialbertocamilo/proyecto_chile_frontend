@@ -11,7 +11,6 @@ interface Recinto {
   id: number;
   name_enclosure: string;
   usage_profile_name: string;
-  height: number;
   superficie: number;
   demanda_calef: number;
   demanda_ref: number;
@@ -41,11 +40,19 @@ interface Recinto {
   co2_eq_total?: number;
 }
 
-interface ResumenRecintosProps {
-  onRecintosCalculated: (recintos: Recinto[]) => void;
+
+interface DemandaPorRecintoItem {
+  recinto_id: number;
+  demanda_total_positiva: number;
+  demanda_total_negativa: number;
 }
 
-const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
+interface ResumenRecintosProps {
+  onRecintosCalculated: any;
+  demandaPorRecinto?: DemandaPorRecintoItem[];
+}
+
+const ResumenRecintos = ({ onRecintosCalculated, demandaPorRecinto = [] }: ResumenRecintosProps) => {
   const api = useApi();
   const router = useRouter();
   const result = useConstants("energy_systems", "general");
@@ -148,9 +155,9 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
       prev.map((recinto) =>
         recinto.id === recintoId
           ? {
-              ...recinto,
-              scop_calef: scopCalefValue, // Update scop_calef
-            }
+            ...recinto,
+            scop_calef: scopCalefValue, // Update scop_calef
+          }
           : recinto
       )
     );
@@ -188,9 +195,9 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
       prev.map((recinto) =>
         recinto.id === recintoId
           ? {
-              ...recinto,
-              seer_ref: seerValue, // Update scop_calef
-            }
+            ...recinto,
+            seer_ref: seerValue, // Update scop_calef
+          }
           : recinto
       )
     );
@@ -208,10 +215,10 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
       prev.map((recinto) =>
         recinto.id === recintoId
           ? {
-              ...recinto,
-              consumo_energia_primaria_calef:
-                co2System * (recinto.scop_calef || 0), // Update scop_calef
-            }
+            ...recinto,
+            consumo_energia_primaria_calef:
+              co2System * (recinto.scop_calef || 0), // Update scop_calef
+          }
           : recinto
       )
     );
@@ -228,10 +235,10 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
       prev.map((recinto) =>
         recinto.id === recintoId
           ? {
-              ...recinto,
-              consumo_energia_primaria_ref:
-                co2System * (recinto?.seer_ref ?? 0), // Update scop_calef
-            }
+            ...recinto,
+            consumo_energia_primaria_ref:
+              co2System * (recinto?.seer_ref ?? 0), // Update scop_calef
+          }
           : recinto
       )
     );
@@ -285,6 +292,7 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
           consumo_ref: recinto.consumo_ref || 0,
           consumo_total: recinto.consumo_total || 0,
           co2_eq: recinto.co2_eq || 0,
+          superficie: recinto.height || 0,
         }));
         console.log(updatedData);
         setRecintos(updatedData);
@@ -313,69 +321,35 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
 
   useEffect(() => {
     if (recintos.length > 0 && result.constant) {
-      const rendimiento_calef =
-        parseFloat(
-          energySystems.find((system: any) => system.code === "Elect")?.co2_eq
-        ) || 0.8;
-      const rendimiento_ref =
-        parseFloat(
-          energySystems.find((system: any) => system.code === "Pet")?.co2_eq
-        ) || 0.6;
-
       const updatedRecintos = recintos.map((recinto) => {
-        console.log("Procesando recinto:", recinto);
+        // Buscar demanda positiva para este recinto
+        const demandaRecinto = demandaPorRecinto.find((d) => d.recinto_id === recinto.id);
+        const demandaPositiva = (demandaRecinto?.demanda_total_positiva || 0) / 1000;
+        const demandaNegativa = Math.abs((demandaRecinto?.demanda_total_negativa || 0) / 1000000);
+        const superficie = recinto.superficie || 0;
 
-        const demanda_calef = recinto.height * rendimiento_calef;
-        const demanda_ref = recinto.height * rendimiento_ref;
-        const demanda_ilum = recinto.height * 0.1;
+        // Obtener valor del combustible elegido para este recinto
+        let combustibleValue = 1;
+        if (selectedEnergySystems[recinto.id]) {
+          const comb = energySystems.find((s) => s.code === selectedEnergySystems[recinto.id]);
+          combustibleValue = comb ? parseFloat(comb.co2_eq) : 1;
+        }
+
+        // Demanda
+        const demanda_calef = demandaPositiva / superficie / 4;
+        const demanda_ref = demandaNegativa / superficie / 4;
+        const demanda_ilum = superficie > 0 ? superficie * 0.1 : 0;
         const demanda_total = demanda_calef + demanda_ref + demanda_ilum;
 
-        const consumo_calef = demanda_calef * 0.5;
-        const consumo_ref = demanda_ref * 0.3;
-        const consumo_total = consumo_calef + consumo_ref;
-
-        const scop_calef = 0.0;
-        const seer_ref = 0.0;
-
-        const co2_eq = consumo_total * 0.2;
-
-        const co2_eq_calef = 1.0;
-        const co2_eq_ref = 2.0;
-        const co2_eq_ilum = 3.0;
-        const co2_eq_total = 6.0;
-
-        const hrs_disconfort_calef = 1.65;
-        const hrs_disconfort_ref = 2.47;
-        const hrs_disconfort_total = 4.12;
-
-        const consumo_energia_primaria_calef = 0;
-        const consumo_energia_primaria_ref = 0;
-        const consumo_energia_primaria_total =
-          consumo_energia_primaria_calef + consumo_energia_primaria_ref;
-
-        console.log(recinto.height);
-        console.log("Resultados calculados:", {
-          demanda_calef,
-          demanda_ref,
-          demanda_ilum,
-          demanda_total,
-          consumo_calef,
-          consumo_ref,
-          consumo_total,
-          co2_eq,
-          scop_calef,
-          co2_eq_calef,
-          co2_eq_ref,
-          co2_eq_ilum,
-          co2_eq_total,
-          hrs_disconfort_calef,
-          hrs_disconfort_ref,
-          hrs_disconfort_total,
-          seer_ref,
-          consumo_energia_primaria_calef,
-          consumo_energia_primaria_ref,
-          consumo_energia_primaria_total,
-        });
+        // CO2_eq formulas
+        // Calefacción: valor del combustible * superficie
+        const co2_eq_calef = combustibleValue * superficie;
+        // Refrigeración: valor del combustible * superficie * 0.5 (ejemplo)
+        const co2_eq_ref = combustibleValue * superficie * 0.5;
+        // Iluminación: valor del combustible * superficie * 0.2 (ejemplo)
+        const co2_eq_ilum = combustibleValue * superficie * 0.2;
+        // Total: suma de los anteriores
+        const co2_eq_total = co2_eq_calef + co2_eq_ref + co2_eq_ilum;
 
         return {
           ...recinto,
@@ -383,29 +357,16 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
           demanda_ref,
           demanda_ilum,
           demanda_total,
-          consumo_calef,
-          consumo_ref,
-          consumo_total,
-          co2_eq,
-          scop_calef,
           co2_eq_calef,
           co2_eq_ref,
           co2_eq_ilum,
           co2_eq_total,
-          hrs_disconfort_calef,
-          hrs_disconfort_ref,
-          hrs_disconfort_total,
-          seer_ref,
-          consumo_energia_primaria_calef,
-          consumo_energia_primaria_ref,
-          consumo_energia_primaria_total,
         };
       });
-
       setCalculatedRecintos(updatedRecintos);
       onRecintosCalculated(updatedRecintos); // Notificar al componente padre
     }
-  }, [recintos, result.constant]);
+  }, [recintos, result.constant, demandaPorRecinto]);
   useEffect(() => {
     if (triggeredRecintoId !== null) {
       // Execute calculateSCOP for the triggered recintoId
@@ -476,7 +437,7 @@ const ResumenRecintos = ({ onRecintosCalculated }: ResumenRecintosProps) => {
                         {recinto.usage_profile_name}
                       </td>
                       <td className="text-center">
-                        {recinto.height || "0.00"}
+                        {recinto.superficie || "0.00"}
                       </td>
                     </tr>
                   ))}

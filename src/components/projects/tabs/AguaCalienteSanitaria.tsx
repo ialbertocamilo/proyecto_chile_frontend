@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Card, Col, Form, Row, Table } from "react-bootstrap";
 import CustomButton from "../../common/CustomButton"; // Assuming CustomButton is located here
 import { notify } from "@/utils/notify";
+import { useApi } from "@/hooks/useApi";
 
 interface AguaCalienteSanitariaProps {
   onlyView?: boolean;

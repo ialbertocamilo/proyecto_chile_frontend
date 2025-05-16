@@ -134,14 +134,28 @@ const Results = () => {
     console.log("Recintos calculated:", recintos);
     setRecintosData(recintos as unknown as RecintoItem[]);
   };
-
-  // Calcula el total de CO2_eq sumando todos los recintos (escenario actual)
-  const co2eqTotalRecintos = recintosData.reduce((acc, r) => acc + (r.co2_eq_total || r.co2_eq || 0), 0);
-
-  // Calcula el total de CO2_eq para el caso base desde calculationResult.df_base
+  // Variables para guardar los valores de CO2_eq para los casos actual y base
+  let co2eqTotalRecintos = 0;
   let co2eqTotalBase = 0;
+
+  // Calcula el total de CO2_eq para el caso actual (df_results)
+  if (calculationResult && calculationResult.df_results) {
+    const resultsByRecinto: { [key: number]: number } = {};
+    calculationResult.df_results.forEach((row: { ID_Recinto: any; co2_eq_total: undefined; co2_eq: undefined; }) => {
+      // Agrupa por recinto y suma co2_eq_total o co2_eq
+      const id = row.ID_Recinto;
+      const co2 = (row.co2_eq_total !== undefined ? row.co2_eq_total : (row.co2_eq !== undefined ? row.co2_eq : 0));
+      if (!resultsByRecinto[id]) resultsByRecinto[id] = 0;
+      resultsByRecinto[id] += co2;
+    });
+    co2eqTotalRecintos = Object.values(resultsByRecinto).reduce((acc, v) => acc + v, 0);
+  } else {
+    // Fallback usando recintosData si no hay df_results
+    co2eqTotalRecintos = recintosData.reduce((acc, r) => acc + (r.co2_eq_total || r.co2_eq || 0), 0);
+  }
+
+  // Calcula el total de CO2_eq para el caso base (df_base)
   if (calculationResult && calculationResult.df_base) {
-    // Si los datos base tienen un campo co2_eq_total, usarlo; si no, usar co2_eq o 0
     const baseByRecinto: { [key: number]: number } = {};
     calculationResult.df_base.forEach((row: { ID_Recinto: any; co2_eq_total: undefined; co2_eq: undefined; }) => {
       // Agrupa por recinto y suma co2_eq_total o co2_eq
@@ -151,7 +165,9 @@ const Results = () => {
       baseByRecinto[id] += co2;
     });
     co2eqTotalBase = Object.values(baseByRecinto).reduce((acc, v) => acc + v, 0);
-  }  // fallback para evitar división por cero
+  }
+
+  // Fallback para evitar división por cero
   if (!co2eqTotalBase || isNaN(co2eqTotalBase)) co2eqTotalBase = 1; const handleDataUpdate = (data: IndicadoresData) => {
     // Almacenamos los datos tal cual los recibimos del componente IndicadoresFinales
     // (ahora el componente ya incluye la comparación calculada correctamente)

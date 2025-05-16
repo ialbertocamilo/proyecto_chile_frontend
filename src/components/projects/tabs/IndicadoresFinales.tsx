@@ -84,10 +84,13 @@ export default function IndicadoresFinales({ onDataUpdate, calculatedComp }: Ind
   const co2eqTotalRecintos = calculatedComp?.co2eqTotalRecintos || 20542.7;
   const co2eqTotalBase = calculatedComp?.co2eqTotalBase || 1;
   const energiaelectrica = 1.9; // Constante para energía eléctrica
-
   // Calculamos la comparación: 1 - ((actual - energiaelectrica) / (base - energiaelectrica))
-  const co2eqComparacion = co2eqTotalBase !== energiaelectrica ?
+  let co2eqComparacion = co2eqTotalBase !== energiaelectrica ?
     (1 - ((co2eqTotalRecintos - energiaelectrica) / (co2eqTotalBase - energiaelectrica))) : 0;
+
+  // Limitamos el valor para que no exceda el 100%
+  co2eqComparacion = Math.min(Math.max(co2eqComparacion, -1), 1);
+
   const comparacionPorcentaje = co2eqComparacion * 100;
   const signo = comparacionPorcentaje >= 0 ? '' : '-';
   const comparacionStr = `${signo}${Math.abs(comparacionPorcentaje).toFixed(2)}%`;
@@ -242,12 +245,14 @@ export default function IndicadoresFinales({ onDataUpdate, calculatedComp }: Ind
                     </th>
                     <th>{co2eqData.unidad}</th>
                   </tr>
-                </thead>                <tbody>                  <tr>
-                  <td>Comparación caso base</td>
-                  <td colSpan={2} className="text-center">
-                    {co2eqData.comparacion}
-                  </td>
-                </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Comparación caso base</td>
+                    <td colSpan={2} className="text-center">
+                      {co2eqData.comparacion}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>

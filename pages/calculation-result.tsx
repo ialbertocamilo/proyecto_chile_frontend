@@ -13,8 +13,8 @@ const CalculationResultPage = () => {
   const [projectIdFromStorage, setProjectIdFromStorage] = useState("");
 
   useEffect(() => {
-    const storedProjectName = localStorage.getItem("project_name_edit") || "";
-    const storedRegion = localStorage.getItem("project_department_edit") || "";
+    const storedProjectName = localStorage.getItem("project_name") || "";
+    const storedRegion = localStorage.getItem("project_department") || "";
     const storedProjectId = localStorage.getItem("project_id") || "";
     setProjectNameFromStorage(storedProjectName);
     setRegionFromStorage(storedRegion);

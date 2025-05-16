@@ -387,12 +387,12 @@ const ResumenRecintos = ({ onRecintosCalculated, demandaPorRecinto = [] }: Resum
               <Nav variant="pills" className="flex-row">
                 <Nav.Item>
                   <Nav.Link className="nav-pill-info" eventKey="first">
-                    Demanda (kWh/m2)
+                    Demanda
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
                   <Nav.Link className="nav-pill-info" eventKey="second">
-                    Consumo (kWh/m²)
+                    Consumo
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
@@ -402,7 +402,7 @@ const ResumenRecintos = ({ onRecintosCalculated, demandaPorRecinto = [] }: Resum
                 </Nav.Item>
                 <Nav.Item>
                   <Nav.Link eventKey="fourth" className="nav-pill-info">
-                    Hrs Disconfort
+                    Hrs Disconfort T° Libre
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
@@ -449,7 +449,14 @@ const ResumenRecintos = ({ onRecintosCalculated, demandaPorRecinto = [] }: Resum
                 <Tab.Pane eventKey="first" className="overflow-x-scroll">
                   <Table className="tables-results">
                     <thead style={{ height: "100px" }}>
-                      
+                      <tr>
+                        
+                      </tr>
+                      <tr>
+                        <th className="text-center" colSpan={4}>
+                          [kWh/m²]
+                        </th>
+                      </tr>
                       <tr>
                         <th className="text-center">Calefacción</th>
                         <th className="text-center">Refrigeración</th>
@@ -482,7 +489,7 @@ const ResumenRecintos = ({ onRecintosCalculated, demandaPorRecinto = [] }: Resum
                     <thead style={{ height: "100px" }}>
                       <tr>
                         <th className="text-center" colSpan={15}>
-                          Consumo [kWh/m2]
+                          [kWh/m²]
                         </th>
                       </tr>
                       <tr>
@@ -729,11 +736,11 @@ const ResumenRecintos = ({ onRecintosCalculated, demandaPorRecinto = [] }: Resum
                 </Tab.Pane>
                 <Tab.Pane className="overflow-x-scroll" eventKey="fourth">
                   <Table className="tables-results">
-                    <thead>
-                      
+                    <thead style={{ height: "100px" }}>
+                     
                       <tr>
                         <th className="text-center" colSpan={3}>
-                          T° Libre
+                          [hrs]
                         </th>
                       </tr>
                       <tr>
@@ -761,20 +768,20 @@ const ResumenRecintos = ({ onRecintosCalculated, demandaPorRecinto = [] }: Resum
                 </Tab.Pane>
                 <Tab.Pane className="overflow-x-scroll" eventKey="fifth">
                   <Table className="tables-results">
-                    <thead>
+                    <thead style={{ height: "100px" }}>
                      
                       <tr>
                         <th className="text-center" colSpan={3}>
-                          Demanda
+                          Demanda [kWh/m²]
                         </th>
                         <th className="text-center" colSpan={2}>
-                          Consumo
+                          Consumo [kWh/m²]
                         </th>
                         <th className="text-center" colSpan={1}>
-                          CO2_eq
+                          CO2_eq [kg CO2eq]
                         </th>
                         <th className="text-center" colSpan={2}>
-                          Hrs Disconfort
+                          Hrs Disconfort Tº Libre [Hrs]
                         </th>
                       </tr>
                       <tr>

@@ -1,7 +1,7 @@
 // pages/resumen-energia.js
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Cloud, Droplet, Flame, Snowflake } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 // Mover defaultValues al nivel superior
 const defaultValues: Record<string, { kwh_m2_ano: number; kwh_ano: number; vsCasoBase: string }> = {
@@ -405,27 +405,27 @@ export default function IndicadoresFinales({ onDataUpdate, calculatedComp, calcu
     comparacion: co2eqComparacionStr
   };
 
-  // Send data to parent component when any relevant data changes
-  useEffect(() => {
-    if (onDataUpdate) {
-      onDataUpdate({
-        demandaData,
-        consumoPrimario,
-        hrsDisconfort,
-        co2eqData
-      });
-    }
+  // Mover estos cálculos fuera del componente o memoizarlos
+  const memoizedData = useMemo(() => {
+    return {
+      demandaData,
+      consumoPrimario,
+      hrsDisconfort,
+      co2eqData
+    };
   }, [
     calculatedComp?.co2eqTotalRecintos,
     calculatedComp?.co2eqTotalBase,
     calculationResult?.df_results,
-    calculationResult?.df_base,
-    demandaData,
-    consumoPrimario,
-    hrsDisconfort,
-    co2eqData,
-    onDataUpdate
+    calculationResult?.df_base
   ]);
+
+  // Actualizar el useEffect para usar los datos memoizados
+  useEffect(() => {
+    if (onDataUpdate) {
+      onDataUpdate(memoizedData);
+    }
+  }, [memoizedData, onDataUpdate]);
 
   return (
     <div className="container my-4">

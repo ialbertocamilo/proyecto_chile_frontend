@@ -1,14 +1,16 @@
 // recinto-create.tsx
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
-import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import { useRecintos } from "@/context/RecintosContext";
+import { useApi } from "@/hooks/useApi";
+import { Recinto } from "@/types/recinto";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import { useApi } from "@/hooks/useApi";
 
 interface IEnclosureProfile {
   id: number;
@@ -22,12 +24,15 @@ interface IFormData {
   perfilOcupacion: number;
   alturaPromedio: string;
   sensorCo2: boolean;
-  level: string; // Add new field
+  level: string;
 }
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
 const RecintoCreate: React.FC = () => {
+  const { addRecinto } = useRecintos();
+  const { put } = useApi();
+
   // Se mantiene projectDepartment y projectId, en caso de que sean necesarios para otros componentes
   const [projectName, setProjectName] = useState<string>("Nombre del Proyecto");
   const [projectDepartment, setProjectDepartment] = useState<string>("Región");
@@ -114,7 +119,6 @@ const RecintoCreate: React.FC = () => {
     fetchProfiles();
   }, []);
 
-  const { put } = useApi();
 
   const actualizarStatus = async () => {
     try {
@@ -193,6 +197,7 @@ const RecintoCreate: React.FC = () => {
       }
 
       localStorage.setItem("recinto_id", result.id.toString());
+      addRecinto(result as Recinto);
       notify("Recinto creado correctamente");
       actualizarStatus();
       setIsRecintoCreated(true);

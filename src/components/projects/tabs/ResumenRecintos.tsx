@@ -1,412 +1,143 @@
-import { useApi } from "@/hooks/useApi";
-import { useConstants } from "@/hooks/useConstantsHook";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { Col, Nav, Row, Tab, Table } from "react-bootstrap";
+import { EnergySystemSelection } from '@/types/energySystem';
+import React, { useEffect, useRef, useState } from 'react';
+import { Col, Nav, Row, Tab } from 'react-bootstrap';
+import { useEnergySystems } from '../../../hooks/energy/useEnergySystems';
+import CasoBaseTable from '../recinto/CasoBaseTable';
+import EnergySystemSelectors, { ConfigState } from '../recinto/EnergySystemSelectors';
+import TablaConsumos from '../recinto/TablaConsumos';
+import TablaDemandas from '../recinto/TablaDemandas';
+import TablaDisconfort from '../recinto/TablaDisconfort';
+import TablaEmisiones from '../recinto/TablaEmisiones';
 
-interface Recinto {
-  hrs_disconfort_calef: any;
-  hrs_disconfort_ref: any;
-  hrs_disconfort_total: any;
-  id: number;
-  name_enclosure: string;
-  usage_profile_name: string;
-  superficie: number;
-  demanda_calef: number;
-  demanda_ref: number;
-  demanda_ilum: number;
-  demanda_total: number;
-  consumo_calef: number;
-  consumo_ref: number;
-  consumo_total: number;
-  co2_eq: number;
-  hrs_disconfort: number;
-  rendimiento_calef?: number;
-  distribucion_calef?: number;
-  control_calef?: number;
-  scop_calef?: number;
-  scop_mc_calef?: number;
-  rendimiento_ref?: number;
-  distribucion_ref?: number;
-  control_ref?: number;
-  seer_ref?: number;
-  seer_mc_ref?: number;
-  consumo_energia_primaria_calef?: number;
-  consumo_energia_primaria_ref?: number;
-  consumo_energia_primaria_total?: number;
-  co2_eq_calef?: number;
-  co2_eq_ref?: number;
-  co2_eq_ilum?: number;
-  co2_eq_total?: number;
-}
-
-
-interface DemandaPorRecintoItem {
-  recinto_id: number;
-  demanda_total_positiva: number;
-  demanda_total_negativa: number;
-}
 
 interface ResumenRecintosProps {
-  onRecintosCalculated: any;
-  demandaPorRecinto?: DemandaPorRecintoItem[];
+  globalResults: any;
+  onCalculationsUpdate?: (data: any) => void;
+  onUpdated?: (data: any) => void;
 }
 
-const ResumenRecintos = ({ onRecintosCalculated, demandaPorRecinto = [] }: ResumenRecintosProps) => {
-  const api = useApi();
-  const router = useRouter();
-  const result = useConstants("energy_systems", "general");
+const ResumenRecintos: React.FC<ResumenRecintosProps> = ({ globalResults, onCalculationsUpdate, onUpdated   }) => {
+  const [config, setConfig] = useState<ConfigState>({
+    energySystems: [],
+    rendimientoCalef: [],
+    distribucionHvac: [],
+    controlHvac: [],
+    rendimientoRef: [],
+    consumosEnergia: []
+  });
 
-  const [recintos, setRecintos] = useState<Recinto[]>([]);
-  const [calculatedRecintos, setCalculatedRecintos] = useState<Recinto[]>([]);
-  const [selectedEnergySystems, setSelectedEnergySystems] = useState<{
-    [key: number]: string;
-  }>({});
-  const [selectedEnergySystemsRef, setSelectedEnergySystemsRef] = useState<{
-    [key: number]: string;
-  }>({});
-  const [selectedRendimientoCalef, setSelectedRendimientoCalef] = useState<{
-    [key: number]: string;
-  }>({});
-  const [selectedDistribucionHvac, setSelectedDistribucionHvac] = useState<{
-    [key: number]: string;
-  }>({});
-  const [selectedControlHvac, setSelectedControlHvac] = useState<{
-    [key: number]: string;
-  }>({});
-  const [selectedDistribucionHvacRef, setSelectedDistribucionHvacRef] =
-    useState<{
-      [key: number]: string;
-    }>({});
-  const [selectedControlHvacRef, setSelectedControlHvacRef] = useState<{
-    [key: number]: string;
-  }>({});
-  const [selectedRendimientoRef, setSelectedRendimientoRef] = useState<{
-    [key: number]: string;
-  }>({});
-  const [energySystems, setEnergySystems] = useState<any[]>([]);
-  const [rendimientoCalef, setRendimientoCalef] = useState<any[]>([]);
-  const [distribucionHvac, setDistribucionHvac] = useState<any[]>([]);
-  const [controlHvac, setControlHvac] = useState<any[]>([]);
-  const [rendimientoRef, setRendimientoRef] = useState<any[]>([]);
-  const [triggeredRecintoId, setTriggeredRecintoId] = useState<number | null>(
-    null
-  );
-  function getEnergyValue(
-    list: any[],
-    selectedItem: { [key: number]: string },
-    recintId: number
-  ) {
-    // Get the rendimiento_calef value for the recinto
-    console.log(list, selectedItem, recintId);
-    const selectedCode = selectedItem[recintId];
-    const selectedListItem = selectedCode
-      ? list.find((item: any) => item.code === selectedCode).co2_eq
-      : 0;
+  const {
+    calculatedRecintos,
+    casoBaseRecintos,
+    energySystems,
+    rendimientoCalef,
+    distribucionHvac,
+    controlHvac,
+    rendimientoRef,
+    selectedEnergySystems,
+    selectedEnergySystemsRef,
+    selectedRendimientoCalef,
+    selectedDistribucionHvac,
+    selectedControlHvac,
+    selectedRendimientoRef,
+    selectedDistribucionHvacRef,
+    selectedControlHvacRef,
+    handleEnergySystemChange,
+    handleEnergySystemChangeRef,
+    handleRendimientoCalefChange,
+    handleDistribucionHvacChange,
+    handleControlHvacChange,
+    handleRendimientoRef,
+    handleDistribucionHvacRefChange,
+    handleControlHvacRefChange,
+  } = useEnergySystems({
+    globalResults,
+    onCalculationsUpdate
+  });
 
-    return selectedListItem;
-  }
-  function getCO2Value(
-    list: any[],
-    selectedItem: { [key: number]: string },
-    recintId: number
-  ) {
-    // Get the rendimiento_calef value for the recinto
-    console.log(list, selectedItem, recintId);
-    const selectedCode = selectedItem[recintId];
-    const selectedListItem = selectedCode
-      ? list.find((item: any) => item.code === selectedCode).value
-      : 0;
+  // Build configuration objects and update state
+  useEffect(() => {
+    const newConfig = {
+      energySystems: energySystems.map(system => ({
+        code: system.code,
+        description: system.description || system.code
+      })),
+      rendimientoCalef: rendimientoCalef.map(system => ({
+        code: system.code,
+        description: system.description || system.code
+      })),
+      distribucionHvac: distribucionHvac.map(system => ({
+        code: system.code,
+        description: system.description || system.code
+      })),
+      controlHvac: controlHvac.map(system => ({
+        code: system.code,
+        description: system.description || system.code
+      })),
+      rendimientoRef: rendimientoRef.map(system => ({
+        code: system.code,
+        description: system.description || system.code
+      })),
+      consumosEnergia: []
+    };
+    setConfig(newConfig);
+  }, [energySystems, rendimientoCalef, distribucionHvac, controlHvac, rendimientoRef]);
 
-    return selectedListItem;
-  }
-  function calculateSCOP(recintoId: number) {
-    const co2RendCalef = getCO2Value(
-      rendimientoCalef,
-      selectedRendimientoCalef,
-      recintoId
-    );
-    const co2DistCalef = getCO2Value(
-      distribucionHvac,
-      selectedDistribucionHvac,
-      recintoId
-    );
-    const co2ControlCalef = getCO2Value(
-      controlHvac,
-      selectedControlHvac,
-      recintoId
-    );
-    let scopCalefValue = 0.0;
+  // Ref for tracking previous signatures
 
-    if (co2RendCalef && co2DistCalef && co2ControlCalef) {
-      scopCalefValue = co2RendCalef * co2DistCalef * co2ControlCalef;
+  const [energyConfig, setEnergyConfig] = useState<EnergySystemSelection>({
+    combustibleCalef: null,
+    rendimiento: null,
+    distribucion: null,
+    control: null
+  });
 
-      console.log(
-        `Updated recinto ${recintoId} with scop_calef: ${scopCalefValue}`
-      );
-    } else {
-      scopCalefValue = 0;
-      console.warn(
-        `Missing data for recinto ${recintoId}: selectedSystem or rendimientoCalef not found.`
-      );
-    }
-
-    setCalculatedRecintos((prev) =>
-      prev.map((recinto) =>
-        recinto.id === recintoId
-          ? {
-            ...recinto,
-            scop_calef: scopCalefValue, // Update scop_calef
-          }
-          : recinto
-      )
-    );
-  }
-  function calculateSEER(recintoId: number) {
-    const co2RendRef = getCO2Value(
-      rendimientoRef,
-      selectedRendimientoRef,
-      recintoId
-    );
-    const co2DistRef = getCO2Value(
-      distribucionHvac,
-      selectedDistribucionHvacRef,
-      recintoId
-    );
-    const co2ControlRef = getCO2Value(
-      controlHvac,
-      selectedControlHvacRef,
-      recintoId
-    );
-    let seerValue = 0.0;
-
-    if (co2RendRef && co2DistRef && co2ControlRef) {
-      seerValue = co2RendRef * co2DistRef * co2ControlRef;
-
-      console.log(`Updated recinto ${recintoId} with scop_calef: ${seerValue}`);
-    } else {
-      seerValue = 0;
-      console.warn(
-        `Missing data for recinto ${recintoId}: selectedSystem or rendimientoCalef not found.`
-      );
-    }
-
-    setCalculatedRecintos((prev) =>
-      prev.map((recinto) =>
-        recinto.id === recintoId
-          ? {
-            ...recinto,
-            seer_ref: seerValue, // Update scop_calef
-          }
-          : recinto
-      )
-    );
-  }
-  function calculatePrimaryEnergyCalef(recintoId: number) {
-    const co2System = getEnergyValue(
-      energySystems,
-      selectedEnergySystems,
-      recintoId
-    );
-    console.log(recintos);
-    const recinto = recintos.find((item: any) => item.id === recintoId);
-
-    setCalculatedRecintos((prev) =>
-      prev.map((recinto) =>
-        recinto.id === recintoId
-          ? {
-            ...recinto,
-            consumo_energia_primaria_calef:
-              co2System * (recinto.scop_calef || 0), // Update scop_calef
-          }
-          : recinto
-      )
-    );
-  }
-  function calculatePrimaryEnergyRef(recintoId: number) {
-    const co2System = getEnergyValue(
-      energySystems,
-      selectedEnergySystemsRef,
-      recintoId
-    );
-    console.log(recintos);
-    const recinto = recintos.find((item: any) => item.id === recintoId);
-    setCalculatedRecintos((prev) =>
-      prev.map((recinto) =>
-        recinto.id === recintoId
-          ? {
-            ...recinto,
-            consumo_energia_primaria_ref:
-              co2System * (recinto?.seer_ref ?? 0), // Update scop_calef
-          }
-          : recinto
-      )
-    );
-  }
-  const handleEnergySystemChange = (recintoId: number, value: string) => {
-    setSelectedEnergySystems((prev) => ({ ...prev, [recintoId]: value }));
-    setTriggeredRecintoId(recintoId);
-  };
-  const handleEnergySystemChangeRef = (recintoId: number, value: string) => {
-    setSelectedEnergySystemsRef((prev) => ({ ...prev, [recintoId]: value }));
-    setTriggeredRecintoId(recintoId);
-  };
-  const handleRendimientoCalefChange = (recintoId: number, value: string) => {
-    setSelectedRendimientoCalef((prev) => ({ ...prev, [recintoId]: value }));
-    setTriggeredRecintoId(recintoId);
-  };
-  const handleDistribucionHvacChange = (recintoId: number, value: string) => {
-    setSelectedDistribucionHvac((prev) => ({ ...prev, [recintoId]: value }));
-    setTriggeredRecintoId(recintoId);
-  };
-  const handleControlHvacChange = (recintoId: number, value: string) => {
-    setSelectedControlHvac((prev) => ({ ...prev, [recintoId]: value }));
-    setTriggeredRecintoId(recintoId);
-  };
-  const handleRendimientoRef = (recintoId: number, value: string) => {
-    setSelectedRendimientoRef((prev) => ({ ...prev, [recintoId]: value }));
-    setTriggeredRecintoId(recintoId);
-  };
-  const handleDistribucionHvacRefChange = (
-    recintoId: number,
-    value: string
-  ) => {
-    setSelectedDistribucionHvacRef((prev) => ({ ...prev, [recintoId]: value }));
-    setTriggeredRecintoId(recintoId);
-  };
-  const handleControlHvacRefChange = (recintoId: number, value: string) => {
-    setSelectedControlHvacRef((prev) => ({ ...prev, [recintoId]: value }));
-    setTriggeredRecintoId(recintoId);
-  };
 
   useEffect(() => {
-    if (router.query.id) {
-      api.get(`/enclosure-generals/${router.query.id}`).then((data) => {
-        const updatedData = data.map((recinto: any) => ({
-          ...recinto,
-          demanda_calef: recinto.demanda_calef || 2,
-          demanda_ref: recinto.demanda_ref || 0,
-          demanda_ilum: recinto.demanda_ilum || 0,
-          demanda_total: recinto.demanda_total || 0,
-          consumo_calef: recinto.consumo_calef || 0,
-          consumo_ref: recinto.consumo_ref || 0,
-          consumo_total: recinto.consumo_total || 0,
-          co2_eq: recinto.co2_eq || 0,
-          superficie: recinto.height || 0,
-        }));
-        console.log(updatedData);
-        setRecintos(updatedData);
-      });
-    } else {
-      setRecintos([]);
-    }
-  }, [router.query.id]);
-
-  useEffect(() => {
-    if (result.constant) {
-      const systems =
-        result.constant.atributs?.consumos_por_fuente_de_energia || [];
-      setEnergySystems(systems);
-      const rendCalef = result.constant.atributs?.rendimiento_calef || [];
-      setRendimientoCalef(rendCalef);
-      const distCalef = result.constant.atributs?.distribucion_hvac || [];
-      setDistribucionHvac(distCalef);
-      const controlCalef = result.constant.atributs?.control_hvac || [];
-      setControlHvac(controlCalef);
-      const rendRef = result.constant.atributs?.rendimiento_ref || [];
-      setRendimientoRef(rendRef);
-      console.log("Energy Systems:", result);
-    }
-  }, [result.constant]);
-
-  useEffect(() => {
-    if (recintos.length > 0 && result.constant) {
-      const updatedRecintos = recintos.map((recinto) => {
-        // Buscar demanda positiva para este recinto
-        const demandaRecinto = demandaPorRecinto.find((d) => d.recinto_id === recinto.id);
-        const demandaPositiva = (demandaRecinto?.demanda_total_positiva || 0) / 1000;
-        const demandaNegativa = Math.abs((demandaRecinto?.demanda_total_negativa || 0) / 1000000);
-        const superficie = recinto.superficie || 0;
-
-        // Obtener valor del combustible elegido para este recinto
-        let combustibleValue = 1;
-        if (selectedEnergySystems[recinto.id]) {
-          const comb = energySystems.find((s) => s.code === selectedEnergySystems[recinto.id]);
-          combustibleValue = comb ? parseFloat(comb.co2_eq) : 1;
-        }
-
-        // Demanda
-        const demanda_calef = demandaPositiva / superficie / 4;
-        const demanda_ref = demandaNegativa / superficie / 4;
-        const demanda_ilum = superficie > 0 ? superficie * 0.1 : 0;
-        const demanda_total = demanda_calef + demanda_ref + demanda_ilum;
-
-        // CO2_eq formulas
-        // Calefacción: valor del combustible * superficie
-        const co2_eq_calef = combustibleValue * superficie;
-        // Refrigeración: valor del combustible * superficie * 0.5 (ejemplo)
-        const co2_eq_ref = combustibleValue * superficie * 0.5;
-        // Iluminación: valor del combustible * superficie * 0.2 (ejemplo)
-        const co2_eq_ilum = combustibleValue * superficie * 0.2;
-        // Total: suma de los anteriores
-        const co2_eq_total = co2_eq_calef + co2_eq_ref + co2_eq_ilum;
-
-        return {
-          ...recinto,
-          demanda_calef,
-          demanda_ref,
-          demanda_ilum,
-          demanda_total,
-          co2_eq_calef,
-          co2_eq_ref,
-          co2_eq_ilum,
-          co2_eq_total,
-        };
-      });
-      setCalculatedRecintos(updatedRecintos);
-      onRecintosCalculated(updatedRecintos); // Notificar al componente padre
-    }
-  }, [recintos, result.constant, demandaPorRecinto]);
-  useEffect(() => {
-    if (triggeredRecintoId !== null) {
-      // Execute calculateSCOP for the triggered recintoId
-      calculateSCOP(triggeredRecintoId);
-      calculateSEER(triggeredRecintoId);
-      calculatePrimaryEnergyCalef(triggeredRecintoId);
-      calculatePrimaryEnergyRef(triggeredRecintoId);
-      // Reset the triggeredRecintoId to avoid repeated execution
-      setTriggeredRecintoId(null);
-    }
-  }, [triggeredRecintoId]);
+    onUpdated?.({
+      recintos: calculatedRecintos,
+      energyConfig
+    });
+  }, [calculatedRecintos]);
   return (
-    <div className="container-fluid mt-4">
-      <div className="">
-        <Tab.Container id="left-tabs-example" defaultActiveKey="first">
+    <div className="container-fluid mt-4">      <div className="col-12 mb-4">     
+     <EnergySystemSelectors
+      onChange={(selection: EnergySystemSelection, consumosEnergia?: any[]) => {
+        setEnergyConfig(selection);
+        setConfig(prev => ({
+          ...prev,
+          consumosEnergia: consumosEnergia || []
+        }));
+      }}
+    />
+    </div>
+      <div>
+        <Tab.Container id="tabs-recintos" defaultActiveKey="demanda">
           <Row className="mb-5">
             <Col sm={12}>
               <Nav variant="pills" className="flex-row">
                 <Nav.Item>
-                  <Nav.Link className="nav-pill-info" eventKey="first">
+                  <Nav.Link className="nav-pill-info" eventKey="demanda">
                     Demanda
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link className="nav-pill-info" eventKey="second">
+                  <Nav.Link className="nav-pill-info" eventKey="consumo">
                     Consumo
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link className="nav-pill-info" eventKey="third">
+                  <Nav.Link className="nav-pill-info" eventKey="co2">
                     CO2_eq
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="fourth" className="nav-pill-info">
+                  <Nav.Link eventKey="disconfort" className="nav-pill-info">
                     Hrs Disconfort T° Libre
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="fifth" className="nav-pill-info">
+                  <Nav.Link eventKey="base" className="nav-pill-info">
                     Caso Base
                   </Nav.Link>
                 </Nav.Item>
@@ -414,526 +145,56 @@ const ResumenRecintos = ({ onRecintosCalculated, demandaPorRecinto = [] }: Resum
             </Col>
           </Row>
           <Row className="gx-5 justify-content-between">
-            <Col sm={4} className="overflow-x-scroll">
-              <Table className="tables-recints">
-                <thead style={{ height: "100px" }}>
-                  <tr>
-                    <th className="text-center" colSpan={1} rowSpan={3}>
-                      Recinto
-                    </th>
-                    <th className="text-center" colSpan={1} rowSpan={3}>
-                      Perfil de uso
-                    </th>
-                    <th className="text-center" colSpan={1} rowSpan={3}>
-                      Superficie (m²)
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {calculatedRecintos.map((recinto, index) => (
-                    <tr key={index}>
-                      <td className="text-center">{recinto.name_enclosure}</td>
-                      <td className="text-center">
-                        {recinto.usage_profile_name}
-                      </td>
-                      <td className="text-center">
-                        {recinto.superficie || "0.00"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Col>
-            <Col sm={8}>
+            <Col sm={12}>
               <Tab.Content>
-                <Tab.Pane eventKey="first" className="overflow-x-scroll">
-                  <Table className="tables-results">
-                    <thead style={{ height: "100px" }}>
-                      <tr>
-                        
-                      </tr>
-                      <tr>
-                        <th className="text-center" colSpan={4}>
-                          [kWh/m²]
-                        </th>
-                      </tr>
-                      <tr>
-                        <th className="text-center">Calefacción</th>
-                        <th className="text-center">Refrigeración</th>
-                        <th className="text-center">Iluminación</th>
-                        <th className="text-center">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {calculatedRecintos.map((recinto, index) => (
-                        <tr key={index}>
-                          <td className="text-center">
-                            {recinto.demanda_calef?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.demanda_ref?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.demanda_ilum?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.demanda_total?.toFixed(2) || "0.00"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
+                <Tab.Pane eventKey="demanda" className="overflow-x-scroll">
+                  <TablaDemandas recintos={calculatedRecintos} />
                 </Tab.Pane>
-                <Tab.Pane className="overflow-x-scroll" eventKey="second">
-                  <Table className="tables-results">
-                    <thead style={{ height: "100px" }}>
-                      <tr>
-                        <th className="text-center" colSpan={15}>
-                          [kWh/m²]
-                        </th>
-                      </tr>
-                      <tr>
-                        <th className="text-center" colSpan={6}>
-                          Calefacción
-                        </th>
-                        <th className="text-center" colSpan={6}>
-                          Refrigeración
-                        </th>
-                        <th className="text-center" colSpan={3}>
-                          Consumo Energía Primaria
-                        </th>
-                      </tr>
-                      <tr>
-                        <th className="text-center">Combustible</th>
-                        <th className="text-center">Rendimiento</th>
-                        <th className="text-center">Distribución</th>
-                        <th className="text-center">Control</th>
-                        <th className="text-center">SCOP</th>
-                        <th className="text-center">SCOP de MC</th>
-                        <th className="text-center">Combustible</th>
-                        <th className="text-center">Rendimiento</th>
-                        <th className="text-center">Distribución</th>
-                        <th className="text-center">Control</th>
-                        <th className="text-center">SEER</th>
-                        <th className="text-center">SEER de MC</th>
-                        <th className="text-center">Calefacción</th>
-                        <th className="text-center">Refrigeración</th>
-                        <th className="text-center">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {calculatedRecintos.map((recinto, index) => (
-                        <tr key={index}>
-                          <td>
-                            <select
-                              value={selectedEnergySystems[recinto.id] || ""}
-                              onChange={(e) =>
-                                handleEnergySystemChange(
-                                  recinto.id,
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option value="">Seleccione</option>
-                              {energySystems.map((system: any) => (
-                                <option key={system.code} value={system.code}>
-                                  {system.code}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            <select
-                              value={selectedRendimientoCalef[recinto.id] || ""}
-                              onChange={(e) =>
-                                handleRendimientoCalefChange(
-                                  recinto.id,
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option value="">Seleccione</option>
-                              {rendimientoCalef.map((system: any) => (
-                                <option key={system.code} value={system.code}>
-                                  {system.code}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            <select
-                              value={selectedDistribucionHvac[recinto.id] || ""}
-                              onChange={(e) =>
-                                handleDistribucionHvacChange(
-                                  recinto.id,
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option value="">Seleccione</option>
-                              {distribucionHvac.map((system: any) => (
-                                <option key={system.code} value={system.code}>
-                                  {system.code}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            <select
-                              value={selectedControlHvac[recinto.id] || ""}
-                              onChange={(e) =>
-                                handleControlHvacChange(
-                                  recinto.id,
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option value="">Seleccione</option>
-                              {controlHvac.map((system: any) => (
-                                <option key={system.code} value={system.code}>
-                                  {system.code}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            {recinto.scop_calef?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.distribucion_calef?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            <select
-                              value={selectedEnergySystemsRef[recinto.id] || ""}
-                              onChange={(e) =>
-                                handleEnergySystemChangeRef(
-                                  recinto.id,
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option value="">Seleccione</option>
-                              {energySystems.map((system: any) => (
-                                <option key={system.code} value={system.code}>
-                                  {system.code}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            <select
-                              value={selectedRendimientoRef[recinto.id] || ""}
-                              onChange={(e) =>
-                                handleRendimientoRef(recinto.id, e.target.value)
-                              }
-                            >
-                              <option value="">Seleccione</option>
-                              {rendimientoRef.map((system: any) => (
-                                <option key={system.code} value={system.code}>
-                                  {system.code}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            <select
-                              value={
-                                selectedDistribucionHvacRef[recinto.id] || ""
-                              }
-                              onChange={(e) =>
-                                handleDistribucionHvacRefChange(
-                                  recinto.id,
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option value="">Seleccione</option>
-                              {distribucionHvac.map((system: any) => (
-                                <option key={system.code} value={system.code}>
-                                  {system.code}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            <select
-                              value={selectedControlHvacRef[recinto.id] || ""}
-                              onChange={(e) =>
-                                handleControlHvacRefChange(
-                                  recinto.id,
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option value="">Seleccione</option>
-                              {controlHvac.map((system: any) => (
-                                <option key={system.code} value={system.code}>
-                                  {system.code}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            {recinto.seer_ref?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.seer_mc_ref?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.consumo_energia_primaria_calef?.toFixed(
-                              2
-                            ) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.consumo_energia_primaria_ref?.toFixed(2) ||
-                              "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.consumo_energia_primaria_total?.toFixed(
-                              2
-                            ) || "0.00"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
+                <Tab.Pane eventKey="consumo" className="overflow-x-scroll">
+                  <TablaConsumos
+                    combustibleCalef={energyConfig.combustibleCalef}
+                    config={{
+                      recintos: calculatedRecintos,
+                      ...config,
+                      selectedEnergySystems,
+                      selectedEnergySystemsRef,
+                      selectedRendimientoCalef,
+                      selectedDistribucionHvac,
+                      selectedControlHvac,
+                      selectedRendimientoRef,
+                      selectedDistribucionHvacRef,
+                      selectedControlHvacRef,
+                      onEnergySystemChange: handleEnergySystemChange,
+                      onEnergySystemRefChange: handleEnergySystemChangeRef,
+                      onRendimientoCalefChange: handleRendimientoCalefChange,
+                      onDistribucionHvacChange: handleDistribucionHvacChange,
+                      onControlHvacChange: handleControlHvacChange,
+                      onRendimientoRefChange: handleRendimientoRef,
+                      onDistribucionHvacRefChange: handleDistribucionHvacRefChange,
+                      onControlHvacRefChange: handleControlHvacRefChange
+                    }}
+                  />
+                </Tab.Pane>                <Tab.Pane eventKey="co2" className="overflow-x-scroll">
+                  <TablaEmisiones
+                    recintos={calculatedRecintos}
+                    combustibleCalef={energyConfig.combustibleCalef}
+                    consumosEnergia={config.consumosEnergia}
+                  />
                 </Tab.Pane>
-                <Tab.Pane className="overflow-x-scroll" eventKey="third">
-                  <Table className="tables-results">
-                    <thead style={{ height: "100px" }}>
-                     
-                      <tr>
-                        <th className="text-center" colSpan={4}>
-                          kg CO2 Energía Primaria
-                        </th>
-                      </tr>
-                      <tr>
-                        <th className="text-center">Calefacción</th>
-                        <th className="text-center">Refrigeración</th>
-                        <th className="text-center">Iluminación</th>
-                        <th className="text-center">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {calculatedRecintos.map((recinto, index) => (
-                        <tr key={index}>
-                          <td className="text-center">
-                            {recinto.co2_eq_calef?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.co2_eq_ref?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.co2_eq_ilum?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.co2_eq_total?.toFixed(2) || "0.00"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </Tab.Pane>
-                <Tab.Pane className="overflow-x-scroll" eventKey="fourth">
-                  <Table className="tables-results">
-                    <thead style={{ height: "100px" }}>
-                     
-                      <tr>
-                        <th className="text-center" colSpan={3}>
-                          [hrs]
-                        </th>
-                      </tr>
-                      <tr>
-                        <th className="text-center">Calefacción</th>
-                        <th className="text-center">Refrigeración</th>
-                        <th className="text-center">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {calculatedRecintos.map((recinto, index) => (
-                        <tr key={index}>
-                          <td className="text-center">
-                            {recinto.hrs_disconfort_calef?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.hrs_disconfort_ref?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.hrs_disconfort_total?.toFixed(2) || "0.00"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </Tab.Pane>
-                <Tab.Pane className="overflow-x-scroll" eventKey="fifth">
-                  <Table className="tables-results">
-                    <thead style={{ height: "100px" }}>
-                     
-                      <tr>
-                        <th className="text-center" colSpan={3}>
-                          Demanda [kWh/m²]
-                        </th>
-                        <th className="text-center" colSpan={2}>
-                          Consumo [kWh/m²]
-                        </th>
-                        <th className="text-center" colSpan={1}>
-                          CO2_eq [kg CO2eq]
-                        </th>
-                        <th className="text-center" colSpan={2}>
-                          Hrs Disconfort Tº Libre [Hrs]
-                        </th>
-                      </tr>
-                      <tr>
-                        <th className="text-center">Calefacción</th>
-                        <th className="text-center">Refrigeración</th>
-                        <th className="text-center">Iluminación</th>
-                        <th className="text-center">Calefacción</th>
-                        <th className="text-center">Refrigeración</th>
-                        <th className="text-center">Total</th>
-                        <th className="text-center">Calefacción</th>
-                        <th className="text-center">Refrigeración</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {calculatedRecintos.map((recinto, index) => (
-                        <tr key={index}>
-                          <td className="text-center">
-                            {recinto.demanda_calef?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.demanda_ref?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.demanda_ilum?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.consumo_calef?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.consumo_ref?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.co2_eq_total?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.hrs_disconfort_calef?.toFixed(2) || "0.00"}
-                          </td>
-                          <td className="text-center">
-                            {recinto.hrs_disconfort_ref?.toFixed(2) || "0.00"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
+
+                <Tab.Pane eventKey="disconfort" className="overflow-x-scroll">
+                  <TablaDisconfort recintos={calculatedRecintos} />
+                </Tab.Pane>                <Tab.Pane eventKey="base" className="overflow-x-scroll">
+                  <CasoBaseTable
+                    recintos={casoBaseRecintos}
+                    combustibleCalef={energyConfig.combustibleCalef}
+                    consumosEnergia={config.consumosEnergia}
+                  />
                 </Tab.Pane>
               </Tab.Content>
             </Col>
           </Row>
         </Tab.Container>
-        {/* <table className="table table-bordered table-hover table-sm align-middle">
-          <thead>
-            <tr>
-              <th rowSpan={3}>Recinto</th>
-              <th rowSpan={3}>Perfil de uso</th>
-              <th rowSpan={3}>Superficie (m²)</th>
-              <th colSpan={4} className="text-center">
-                Demanda (kWh/m²)
-              </th>
-              <th colSpan={15} className="text-center">
-                Consumo (kWh/m²)
-              </th>
-            </tr>
-            <tr>
-              <th>Calef</th>
-              <th>Ref</th>
-              <th>Ilum</th>
-              <th>Total</th>
-              <th colSpan={6} className="text-center">
-                Calefacción
-              </th>
-              <th colSpan={6} className="text-center">
-                Refrigeración
-              </th>
-              <th colSpan={3} className="text-center">
-                Consumo de Energía Primaria
-              </th>
-            </tr>
-            <tr>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th>Combustible</th>
-              <th>Rendimiento</th>
-              <th>Distribución</th>
-              <th>Control</th>
-              <th>SCOP</th>
-              <th>SCOP de MC</th>
-              <th>Combustible</th>
-              <th>Rendimiento</th>
-              <th>Distribución</th>
-              <th>Control</th>
-              <th>SCOP</th>
-              <th>SCOP de MC</th>
-              <th>Calef.</th>
-              <th>Ref.</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {calculatedRecintos.map((recinto, index) => (
-              <tr key={index}>
-                <td>{recinto.name_enclosure}</td>
-                <td>{recinto.usage_profile_name}</td>
-                <td>{recinto.height || "0.00"}</td>
-                <td>{recinto.demanda_calef || "0.00"}</td>
-                <td>{recinto.demanda_ref || "0.00"}</td>
-                <td>{recinto.demanda_ilum || "0.00"}</td>
-                <td>{recinto.demanda_total || "0.00"}</td>
-                <td>
-                  <select
-                    value={selectedEnergySystems[recinto.id] || ""}
-                    onChange={(e) =>
-                      handleEnergySystemChange(recinto.id, e.target.value)
-                    }
-                  >
-                    <option value="">Seleccione</option>
-                    {energySystems.map((system: any) => (
-                      <option key={system.code} value={system.code}>
-                        {system.name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>{recinto.consumo_calef || "0.00"}</td>
-                <td>{recinto.consumo_ref || "0.00"}</td>
-                <td>{recinto.consumo_total || "0.00"}</td>
-                <td>{recinto.rendimiento_calef || "0.00"}</td>
-                <td>{recinto.distribucion_calef || "0.00"}</td>
-                <td>{recinto.control_calef || "0.00"}</td>
-                <td>{recinto.scop_calef || "0.00"}</td>
-                <td>{recinto.scop_mc_calef || "0.00"}</td>
-                <td>{recinto.rendimiento_ref || "0.00"}</td>
-                <td>{recinto.distribucion_ref || "0.00"}</td>
-                <td>{recinto.control_ref || "0.00"}</td>
-                <td>{recinto.scop_ref || "0.00"}</td>
-                <td>{recinto.scop_mc_ref || "0.00"}</td>
-                <td>{recinto.consumo_energia_primaria_calef || "0.00"}</td>
-                <td>{recinto.consumo_energia_primaria_ref || "0.00"}</td>
-                <td>{recinto.consumo_energia_primaria_total || "0.00"}</td>
-                <td>{recinto.co2_eq || "0.00"}</td>
-              </tr>
-            ))}
-            {calculatedRecintos.length === 0 && (
-              <tr>
-                <td colSpan={22} className="text-center">
-                  No hay recintos para el proyecto seleccionado
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table> */}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import Navbar from "@/components/layout/Navbar";
 import TopBar from "@/components/layout/TopBar";
+import { RecintosProvider } from "@/context/RecintosContext";
 import '@/styles/css/datatable-mobile.css';
 import '@/styles/globals.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -45,12 +46,12 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1024);
     };
-    
+
     if (typeof window !== 'undefined') {
       handleResize();
       window.addEventListener('resize', handleResize);
     }
-    
+
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('resize', handleResize);
@@ -73,11 +74,12 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     return (
       <>
         <Script src="/assets/js/icons/feather-icon/feather.min.js" />
+        <RecintosProvider>
         <div className="page-wrapper" id="pageWrapper">
-          <div 
-            className="page-header" 
-            style={{ 
-              marginLeft: showNav ? (isMobile ? contentMarginLeft : (isNavbarOpen ? expandedWidth : collapsedWidth)) : "0", 
+          <div
+            className="page-header"
+            style={{
+              marginLeft: showNav ? (isMobile ? contentMarginLeft : (isNavbarOpen ? expandedWidth : collapsedWidth)) : "0",
               transition: "margin-left 0.3s ease"
             }}
           >
@@ -88,15 +90,15 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
           <div className="page-body-wrapper horizontal-menu">
             <div className="sidebar-wrapper" data-layout="fill-svg">
               {showNav && (
-                <Navbar 
-                  setActiveView={() => {}} 
+                <Navbar
+                  setActiveView={() => { }}
                   onNavbarToggle={handleNavbarToggle}
                 />
               )}
             </div>
-            <div 
-              className="page-body" 
-              style={{ 
+            <div
+              className="page-body"
+              style={{
                 marginLeft: showNav ? `calc(${contentMarginLeft} + 25px)` : "0",
                 transition: "margin-left 0.3s ease",
                 width: showNav ? `calc(100% - (${contentMarginLeft} + 25px))` : "100%"
@@ -111,7 +113,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               )}
             </div>
           </div>
-        </div>
+        </div></RecintosProvider>
         <ToastContainer
           position="top-right"
           autoClose={2000}
@@ -132,7 +134,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       const { loadJQuery } = await import('@/utils/clientSideImports');
       await loadJQuery();
     };
-    
+
     loadClientSideLibraries();
   }, []);
 

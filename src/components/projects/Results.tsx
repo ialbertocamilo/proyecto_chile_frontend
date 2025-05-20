@@ -1,79 +1,15 @@
+import { useRecintos } from "@/context/RecintosContext";
 import { useApi } from "@/hooks/useApi";
-import { ResultadosRecintoBase } from "@/utils/ResultadosRecintoBase";
 import { notify } from "@/utils/notify";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { Download, FileText, RefreshCw } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Container, Spinner, Tab, Tabs } from "react-bootstrap";
 import CustomButton from "../common/CustomButton";
 import IndicadoresFinales from "./tabs/IndicadoresFinales";
 import ResumenRecintos from "./tabs/ResumenRecintos";
 
-// Define TypeScript interfaces for the data structure
-interface DemandaItem {
-  concepto: string;
-  kwh_m2_ano: number;
-  kwh_ano: number;
-  vsCasoBase: string;
-}
-
-interface HrsDisconfortItem {
-  concepto: string;
-  hrs_ano: string;
-  nota?: string;
-}
-
-interface CO2Data {
-  total: number;
-  unidad: string;
-  comparacion: string;
-}
-
-interface IndicadoresData {
-  demandaData: DemandaItem[];
-  consumoPrimario: DemandaItem[];
-  hrsDisconfort: HrsDisconfortItem[];
-  co2eqData: CO2Data;
-}
-
-interface RecintoItem {
-  id: number;
-  project_id: number;
-  name_enclosure: string;
-  height: number;
-  zona_termica: string;
-  usage_profile_name: string;
-  nombre_region: string;
-  nombre_comuna: string;
-  demanda_calef: number;
-  demanda_ref: number;
-  demanda_ilum: number;
-  demanda_total: number;
-  consumo_calef: number;
-  consumo_ref: number;
-  consumo_total: number;
-  co2_eq: number;
-  [key: string]: any;
-}
-
-// Export the interface to be used by other components
-export interface Recinto {
-  id: number;
-  name_enclosure: string;
-  height: number;
-  usage_profile_name: string;
-  demanda_calef: number;
-  demanda_ref: number;
-  demanda_ilum: number;
-  demanda_total: number;
-  consumo_calef: number;
-  consumo_ref: number;
-  consumo_total: number;
-  co2_eq: number;
-  [key: string]: any;
-}
+const MemoizedResumenRecintos = memo(ResumenRecintos);
 
 const Results = () => {
   const router = useRouter();
@@ -81,84 +17,18 @@ const Results = () => {
   const [loading, setLoading] = useState(true);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [generatingPdf, setGeneratingPdf] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
-  const [recintosData, setRecintosData] = useState<RecintoItem[]>([]);
-  const [indicadoresData, setIndicadoresData] = useState<IndicadoresData | null>(null);
 
-  // Variable para guardar el resultado de cálculo y recálculo
+
   const [calculationResult, setCalculationResult] = useState<any>(null);
-  // Array con resultados de demanda positiva y negativa por recinto para df_base
-  const [demandaPorRecinto, setDemandaPorRecinto] = useState<
-    { recinto_id: number; demanda_total_positiva: number; demanda_total_negativa: number }[]
-  >([]);
-  // Array con resultados de demanda positiva y negativa por recinto para df_results
-  const [demandaPorRecintoResultado, setDemandaPorRecintoResultado] = useState<
-    { recinto_id: number; demanda_total_positiva: number; demanda_total_negativa: number }[]
-  >([]);
+  const { setRecintos } = useRecintos();
 
-  // Calcular demanda positiva y negativa por recinto cada vez que calculationResult cambia
-  useEffect(() => {
-    if (calculationResult) {
-      // Procesar df_base (caso base)
-      if (calculationResult.df_base) {
-        const df_base = calculationResult.df_base;
-        // Obtener todos los ids únicos de recinto
-        const recintoIds = Array.from(new Set(df_base.map((d: any) => d.ID_Recinto))) as number[];
-        const resultados = recintoIds.map((recinto_id: number) => ({
-          recinto_id,
-          demanda_total_positiva: ResultadosRecintoBase.sumaDemandaPositivaPorRecinto(df_base, recinto_id),
-          demanda_total_negativa: ResultadosRecintoBase.sumaDemandaNegativaPorRecinto(df_base, recinto_id),
-        }));
-        console.log("Resultados de demanda por recinto (caso base):", resultados);
-        setDemandaPorRecinto(resultados);
-
-        // Log del total para caso base (DEBUG)
-        const totalPositivoBase = resultados.reduce((acc, item) => acc + item.demanda_total_positiva, 0);
-        console.log("Total demanda positiva (caso base):", totalPositivoBase);
-      } else {
-        setDemandaPorRecinto([]);
-      }
-
-      // Procesar df_results (caso actual)
-      if (calculationResult.df_results) {
-        const df_results = calculationResult.df_results;
-        // Obtener todos los ids únicos de recinto
-        const recintoIds = Array.from(new Set(df_results.map((d: any) => d.ID_Recinto))) as number[];
-        const resultados = recintoIds.map((recinto_id: number) => ({
-          recinto_id,
-          demanda_total_positiva: ResultadosRecintoBase.sumaDemandaPositivaPorRecinto(df_results, recinto_id),
-          demanda_total_negativa: ResultadosRecintoBase.sumaDemandaNegativaPorRecinto(df_results, recinto_id),
-        }));
-        console.log("Resultados de demanda por recinto (caso actual):", resultados);
-        setDemandaPorRecintoResultado(resultados);
-
-        // Log del total para caso actual (DEBUG)
-        const totalPositivoActual = resultados.reduce((acc, item) => acc + item.demanda_total_positiva, 0);
-        console.log("Total demanda positiva (caso actual):", totalPositivoActual);
-
-        // Log comparativo para verificar la diferencia (DEBUG)
-        if (demandaPorRecinto.length > 0) {
-          console.log("VERIFICACIÓN - Valores de demanda diferentes:",
-            totalPositivoActual !== demandaPorRecinto.reduce((acc, item) => acc + item.demanda_total_positiva, 0));
-        }
-      } else {
-        setDemandaPorRecintoResultado([]);
-      }
-    } else {
-      setDemandaPorRecinto([]);
-      setDemandaPorRecintoResultado([]);
-    }
-  }, [calculationResult]);
-  const processData = async () => {
+  const processData = useCallback(async () => {
     console.log("Starting processData");
     try {
       const projectId = router.query.id;
-      console.log("Project ID:", projectId);
       if (projectId) {
-        console.log("Fetching data for project:", projectId);
         const result = await get(`/calculator/${projectId}`);
-        console.log("Data received:", result ? Object.keys(result) : "No result");
         setCalculationResult(result);
         setIsButtonDisabled(false);
       }
@@ -166,185 +36,21 @@ const Results = () => {
       console.error("Error al procesar los datos:", error);
       notify("Se termino de procesar la información");
     } finally {
-      console.log("Setting loading to false");
       setLoading(false);
     }
-  }; useEffect(() => {
-    if (router.query.id) processData();
   }, [router.query.id]);
 
-  const handleRecintosCalculated = (recintos: Recinto[]) => {
-    console.log("Recintos calculated:", recintos);
-    setRecintosData(recintos as unknown as RecintoItem[]);
-  };
-  // Variables para guardar los valores de CO2_eq para los casos actual y base
-  let co2eqTotalRecintos = 0;
-  let co2eqTotalBase = 0;
+  useEffect(() => {
+    if (router.query.id) processData();
+  }, [router.query.id, processData]);
 
-  // Calcula el total de CO2_eq para el caso actual (df_results)
-  if (calculationResult && calculationResult.df_results) {
-    const resultsByRecinto: { [key: number]: number } = {};
-    calculationResult.df_results.forEach((row: { ID_Recinto: any; co2_eq_total: undefined; co2_eq: undefined; }) => {
-      // Agrupa por recinto y suma co2_eq_total o co2_eq
-      const id = row.ID_Recinto;
-      const co2 = (row.co2_eq_total !== undefined ? row.co2_eq_total : (row.co2_eq !== undefined ? row.co2_eq : 0));
-      if (!resultsByRecinto[id]) resultsByRecinto[id] = 0;
-      resultsByRecinto[id] += co2;
-    });
-    co2eqTotalRecintos = Object.values(resultsByRecinto).reduce((acc, v) => acc + v, 0);
-  } else {
-    // Fallback usando recintosData si no hay df_results
-    co2eqTotalRecintos = recintosData.reduce((acc, r) => acc + (r.co2_eq_total || r.co2_eq || 0), 0);
-  }
 
-  // Calcula el total de CO2_eq para el caso base (df_base)
-  if (calculationResult && calculationResult.df_base) {
-    const baseByRecinto: { [key: number]: number } = {};
-    calculationResult.df_base.forEach((row: { ID_Recinto: any; co2_eq_total: undefined; co2_eq: undefined; }) => {
-      // Agrupa por recinto y suma co2_eq_total o co2_eq
-      const id = row.ID_Recinto;
-      const co2 = (row.co2_eq_total !== undefined ? row.co2_eq_total : (row.co2_eq !== undefined ? row.co2_eq : 0));
-      if (!baseByRecinto[id]) baseByRecinto[id] = 0;
-      baseByRecinto[id] += co2;
-    });
-    co2eqTotalBase = Object.values(baseByRecinto).reduce((acc, v) => acc + v, 0);
-  }
-  // Fallback para evitar división por cero
-  if (!co2eqTotalBase || isNaN(co2eqTotalBase)) co2eqTotalBase = 1;
 
-  const handleDataUpdate = (data: IndicadoresData) => {
-    // Almacenamos los datos tal cual los recibimos del componente IndicadoresFinales
-    // (ahora el componente ya incluye la comparación calculada correctamente)
-    setIndicadoresData(data);
-  };
 
-  const generatePDF = async () => {
-    setGeneratingPdf(true);
-    try {
-      const doc = new jsPDF();
-      const projectId = router.query.id;
-
-      // Title
-      doc.setFontSize(18);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Reporte de Proyecto: ${projectId}`, 14, 20);
-      doc.setFontSize(12);
-      doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 28);
-      doc.line(14, 32, 196, 32);
-
-      let yPos = 40;
-
-      if (indicadoresData) {
-        // Demanda Energética
-        doc.setFontSize(14);
-        doc.text("Demanda Energética", 14, yPos);
-        yPos += 8;
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [["Concepto", "kWh/m²·año", "kWh/año", "vs Caso Base"]],
-          body: indicadoresData.demandaData.map(item => [
-            item.concepto,
-            item.kwh_m2_ano.toFixed(1),
-            item.kwh_ano.toFixed(1),
-            item.vsCasoBase
-          ]),
-          theme: 'striped',
-          headStyles: { fillColor: [42, 176, 197] }
-        });
-
-        yPos = (doc as any).lastAutoTable.finalY + 10;
-
-        // Consumo de Energía Primaria
-        doc.setFontSize(14);
-        doc.text("Consumo de Energía Primaria", 14, yPos);
-        yPos += 8;
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [["Concepto", "kWh/m²·año", "kWh/año", "vs Caso Base"]],
-          body: indicadoresData.consumoPrimario.map(item => [
-            item.concepto,
-            item.kwh_m2_ano.toFixed(1),
-            item.kwh_ano.toFixed(1),
-            item.vsCasoBase
-          ]),
-          theme: 'striped',
-          headStyles: { fillColor: [42, 176, 197] }
-        });
-
-        yPos = (doc as any).lastAutoTable.finalY + 10;
-
-        // Horas de Disconfort
-        doc.setFontSize(14);
-        doc.text("Horas de Disconfort", 14, yPos);
-        yPos += 8;
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [["Concepto", "Horas/año"]],
-          body: indicadoresData.hrsDisconfort.map(item => [
-            item.concepto,
-            item.hrs_ano
-          ]),
-          theme: 'striped',
-          headStyles: { fillColor: [42, 176, 197] }
-        });
-
-        yPos = (doc as any).lastAutoTable.finalY + 10;
-
-        // CO2 Equivalente
-        doc.setFontSize(14);
-        doc.text("CO2 Equivalente", 14, yPos);
-        yPos += 8;
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [["Total", "Unidad", "Comparación con Caso Base"]],
-          body: [[
-            indicadoresData.co2eqData.total.toFixed(1),
-            indicadoresData.co2eqData.unidad,
-            indicadoresData.co2eqData.comparacion
-          ]],
-          theme: 'striped',
-          headStyles: { fillColor: [42, 176, 197] }
-        });
-
-        yPos = (doc as any).lastAutoTable.finalY + 10;
-      }
-
-      // Add a new page for recintos data
-      if (recintosData && recintosData.length > 0) {
-        doc.addPage();
-        doc.setFontSize(14);
-        doc.text("Resumen de Recintos", 14, 20);
-
-        autoTable(doc, {
-          startY: 30,
-          head: [["Recinto", "Zona Térmica", "Perfil de Uso", "Demanda Total", "Consumo Total", "CO2 eq"]],
-          body: recintosData.map(item => [
-            item.name_enclosure,
-            item.zona_termica,
-            item.usage_profile_name,
-            item.demanda_total.toFixed(2),
-            item.consumo_total.toFixed(2),
-            item.co2_eq.toFixed(2)
-          ]),
-          theme: 'striped',
-          headStyles: { fillColor: [42, 176, 197] }
-        });
-      }
-
-      // Save the PDF
-      doc.save(`Reporte_Proyecto_${projectId}.pdf`);
-      notify("Reporte PDF generado con éxito");
-    } catch (error) {
-      console.error("Error al generar PDF:", error);
-      notify("Error al generar el reporte PDF", "error");
-    } finally {
-      setGeneratingPdf(false);
-    }
-  };
+  const handleRecintosCalculated = ((data: any) => {
+    console.log("Guardando recintos:", data);
+    setRecintos(data);
+  });
 
   const handleForceRecalculation = async () => {
     try {
@@ -433,21 +139,6 @@ const Results = () => {
           </span>
         )}
 
-        <CustomButton
-          color="red"
-          onClick={generatePDF}
-          className="mb-3"
-          disabled={generatingPdf || !indicadoresData}
-        >
-          <FileText size={18} style={{ marginRight: 8 }} />
-          Generar Reporte PDF
-        </CustomButton>
-        {generatingPdf && (
-          <span style={{ minWidth: 120, display: "flex", alignItems: "center", gap: 8 }}>
-            <Spinner animation="border" size="sm" role="status" />
-            <span>Generando PDF...</span>
-          </span>
-        )}
       </div>
       <br />
       {loading ? (
@@ -472,34 +163,13 @@ const Results = () => {
             "--bs-nav-link-padding-x": "10px",
             "--bs-nav-link-padding-y": "10px",
           } as React.CSSProperties}
-        >
-          {/* <Tab eventKey="acs" title="Agua Caliente Sanitaria">
-                            <AguaCalienteSanitaria />
-                        </Tab> */}            <Tab eventKey="recintos" title="Resumen de Recintos">
-            <ResumenRecintos
-              onRecintosCalculated={handleRecintosCalculated}
-              demandaPorRecinto={demandaPorRecintoResultado}
-            />            </Tab>            <Tab eventKey="indicadores" title="Indicadores Finales">            {(() => {
-              console.log("Rendering IndicadoresFinales with:", {
-                co2eqTotalRecintos,
-                co2eqTotalBase,
-                hasResults: !!calculationResult?.df_results,
-                hasBase: !!calculationResult?.df_base
-              });
-              return (
-                <IndicadoresFinales
-                  onDataUpdate={handleDataUpdate}
-                  calculatedComp={{
-                    co2eqTotalRecintos,
-                    co2eqTotalBase
-                  }}
-                  calculationResult={{
-                    df_results: calculationResult?.df_results,
-                    df_base: calculationResult?.df_base
-                  }}
-                />
-              );
-            })()}
+        >          <Tab eventKey="recintos" title="Resumen de Recintos">
+            <MemoizedResumenRecintos
+              globalResults={calculationResult}
+              onUpdated={handleRecintosCalculated}
+            />
+          </Tab>          <Tab eventKey="indicadores" title="Indicadores Finales">
+            <IndicadoresFinales />
           </Tab>
         </Tabs>
 

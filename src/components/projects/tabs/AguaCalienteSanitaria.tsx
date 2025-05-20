@@ -1,11 +1,10 @@
+import { useApi } from "@/hooks/useApi";
 import { useConstants } from "@/hooks/useConstantsHook";
-import axios from "axios";
+import { notify } from "@/utils/notify";
 import { Plus, Trash2 } from "lucide-react"; // Importing Lucide icons
 import { useEffect, useState } from "react";
 import { Card, Col, Form, Row, Table } from "react-bootstrap";
 import CustomButton from "../../common/CustomButton"; // Assuming CustomButton is located here
-import { notify } from "@/utils/notify";
-import { useApi } from "@/hooks/useApi";
 
 interface AguaCalienteSanitariaProps {
   onlyView?: boolean;
@@ -83,16 +82,9 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
 
         const response = await api.get(
           `/agua-caliente-obtener/${projectId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
-            },
-          }
         );
-
-        if (response.data && response.data.length > 0) {
-          const data = response.data[0];
+        
+          const data = response[0];
           setTAcs(data.t_acs);
           setDemandaACS(data.demanda_acs);
           setCombustible(data.combustible);
@@ -103,6 +95,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
           setConsumoEnergiaPrimariaACS(data.consumo_energia_primaria);
           setCo2eqEnergiaPrimaria(data.energia_primaria);
 
+          console.log("Data fetched:", data.data);
           // Transform and set table data
           const transformedData = data.data.map((item: any) => ({
             tipo: item.tipo_ocupacion,
@@ -110,7 +103,6 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
             consumo: item.pers_dia,
           }));
           setTableData(transformedData);
-        }
       } catch (error) {
         console.error("Error fetching data:", error);
         notify("Error al obtener los datos");

@@ -1,4 +1,3 @@
-import { useRecintos } from '@/context/RecintosContext';
 import React, { useEffect } from 'react';
 import { Table } from 'react-bootstrap';
 import { SystemOption } from '../../../types/energySystem';
@@ -8,6 +7,7 @@ interface CasoBaseTableProps {
     recintos: Recinto[];
     combustibleCalef?: SystemOption | null;
     consumosEnergia?: SystemOption[];
+    onUpdate?: (recintos: Recinto[]) => void;
 }
 
 /**
@@ -17,6 +17,7 @@ const CasoBaseTable: React.FC<CasoBaseTableProps> = ({
     recintos,
     combustibleCalef,
     consumosEnergia,
+    onUpdate,
 }) => {
     const calculateConsumoCalef = (demandaCalef: number | undefined): number => {
         if (!demandaCalef || !combustibleCalef || typeof combustibleCalef.fep !== 'number') {
@@ -35,7 +36,8 @@ const CasoBaseTable: React.FC<CasoBaseTableProps> = ({
 
     const getConsumoEnergia = (code: string): number => {
         return consumosEnergia?.find(c => c.code === code)?.co2_eq || 0;
-    }; const calculateCO2eqTotal = (
+    };
+    const calculateCO2eqTotal = (
         recinto: Recinto,
         consumoCalef: number,
         consumoRef: number,
@@ -49,6 +51,36 @@ const CasoBaseTable: React.FC<CasoBaseTableProps> = ({
             (demandaIlum * recinto.superficie * consumoElectricidad * fep);
     };
 
+    useEffect(() => {
+        // Actualizar todos los recintos y enviarlos juntos
+        const updatedRecintos = recintos.map(recinto => {
+            const demandaCalef = recinto.demanda_calef || 0;
+            const demandaRef = recinto.demanda_ref || 0;
+            const demandaIlum = recinto.demanda_ilum || 0;
+
+            const baseConsumoCalef = calculateConsumoCalef(demandaCalef);
+            const baseConsumoRef = calculateConsumoRef(demandaRef);
+            const baseConsumoTotal = baseConsumoCalef + baseConsumoRef;
+
+            const co2eqTotal = calculateCO2eqTotal(recinto, baseConsumoCalef, baseConsumoRef, demandaIlum);
+
+            return {
+                ...recinto,
+                base_demanda_calef: demandaCalef,
+                base_demanda_ref: demandaRef,
+                base_demanda_ilum: demandaIlum,
+                base_demanda_total: demandaCalef + demandaRef,
+                base_consumo_calef: baseConsumoCalef,
+                base_consumo_ref: baseConsumoRef,
+                base_consumo_total: baseConsumoTotal,
+                base_co2eq_total: co2eqTotal,
+            };
+        });
+
+        if (onUpdate) {
+            onUpdate(updatedRecintos);
+        }
+    }, [recintos, combustibleCalef, consumosEnergia]);
 
     return (
         <Table className="tables-results">
@@ -68,33 +100,14 @@ const CasoBaseTable: React.FC<CasoBaseTableProps> = ({
                 {recintos.map((recinto, index) => {
                     const demandaCalef = recinto.demanda_calef || 0;
                     const demandaRef = recinto.demanda_ref || 0;
-                    const demandaIlum = recinto.demanda_ilum || 0;
-
-                    // Cálculos de consumo base usando las fórmulas correctas
                     const baseConsumoCalef = calculateConsumoCalef(demandaCalef);
                     const baseConsumoRef = calculateConsumoRef(demandaRef);
                     const baseConsumoTotal = baseConsumoCalef + baseConsumoRef;
+                    const co2eqTotal = calculateCO2eqTotal(recinto, baseConsumoCalef, baseConsumoRef, recinto.demanda_ilum || 0);
 
-                    // Calculate CO2eq total
-                    const co2eqTotal = calculateCO2eqTotal(recinto, baseConsumoCalef, baseConsumoRef, demandaIlum);
-                    Object.assign(recinto, {
-                        base_demanda_calef: demandaCalef,
-                        base_demanda_ref: demandaRef,
-                        base_demanda_ilum: demandaIlum,
-                        base_demanda_total: demandaCalef + demandaRef,
-                        base_consumo_calef: baseConsumoCalef,
-                        base_consumo_ref: baseConsumoRef,
-                        base_consumo_total: baseConsumoTotal,
-                        base_co2eq_total: co2eqTotal,
-                    });
-                    console.log("Recinto Base co2", recinto.base_co2eq_total);
-                    console.log("Recinto Base", recinto);
-                    // setRecintos((prevRecintos) => {
-                    //     const updatedRecintos = [...prevRecintos];
-                    //     return updatedRecintos;
-                    // });
                     return (
-                        <tr key={`casobase-${recinto.id || index}`}>                            <td>{recinto.name_enclosure || `Recinto ${index + 1}`}</td>
+                        <tr key={`casobase-${recinto.id || index}`}>
+                            <td>{recinto.name_enclosure || `Recinto ${index + 1}`}</td>
                             <td className="text-center">{demandaCalef.toFixed(2)}</td>
                             <td className="text-center">{demandaRef.toFixed(2)}</td>
                             <td className="text-center">{(demandaCalef + demandaRef).toFixed(2)}</td>

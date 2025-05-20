@@ -38,21 +38,9 @@ export function RecintosProvider({ children }: { children: ReactNode }) {
         setRecintos(prev => prev.filter(r => r.id !== id));
     };
 
-    // Create a base recinto with base values
+    // Create a base recinto
     const createBaseRecinto = (recinto: Recinto) => {
-        const baseRecinto: Recinto = {
-            ...recinto,
-            base_demanda_calef: recinto.demanda_calef || 0,
-            base_demanda_ref: recinto.demanda_ref || 0,
-            base_demanda_ilum: recinto.demanda_ilum || 0,
-            base_demanda_total: (recinto.demanda_calef || 0) + (recinto.demanda_ref || 0) + (recinto.demanda_ilum || 0),
-            base_consumo_calef: recinto.consumo_calef || 0,
-            base_consumo_ref: recinto.consumo_ref || 0,
-            base_consumo_total: (recinto.consumo_calef || 0) + (recinto.consumo_ref || 0),
-            base_co2eq_total: recinto.co2_eq_total || 0
-        };
-
-        setBaseRecintos(prev => [...prev, baseRecinto]);
+        setBaseRecintos(prev => [...prev, recinto]);
     };
 
     return (
@@ -66,7 +54,7 @@ export function RecintosProvider({ children }: { children: ReactNode }) {
             addRecinto,
             updateRecinto,
             deleteRecinto,
-            createBaseRecinto
+            createBaseRecinto,
         }}>
             {children}
         </RecintosContext.Provider>

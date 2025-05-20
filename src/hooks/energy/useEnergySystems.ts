@@ -2,9 +2,9 @@ import { useRecintos } from "@/context/RecintosContext";
 import { Recinto } from "@/types/recinto";
 
 
+import { calculateCO2EmissionsCalef, calculateCO2EmissionsIlum, calculateCO2EmissionsRef, calculatePrimaryEnergyCalef, calculatePrimaryEnergyRef, calculateSCOP, calculateSEER, calculateTotalCO2Emissions, calculateTotalPrimaryEnergy, getValueByCode, processBaseResults, processGlobalResults } from "@/utils/calculations/energyCalculations";
 import { useCallback, useEffect, useState } from "react";
 import { useConstants } from "../useConstantsHook";
-import { calculateCO2EmissionsCalef, calculateCO2EmissionsIlum, calculateCO2EmissionsRef, calculatePrimaryEnergyCalef, calculatePrimaryEnergyRef, calculateSCOP, calculateSEER, calculateTotalCO2Emissions, calculateTotalPrimaryEnergy, getValueByCode, processBaseResults, processGlobalResults } from "@/utils/calculations/energyCalculations";
 
 export interface UseEnergySystemsProps {
     globalResults: any;
@@ -17,6 +17,8 @@ export const useEnergySystems = ({ globalResults, onCalculationsUpdate }: UseEne
 
     const [calculatedRecintos, setCalculatedRecintos] = useState<Recinto[]>([]);
     const [casoBaseRecintos, setCasoBaseRecintos] = useState<Recinto[]>([]);
+    const [combustibleCalef, setCombustibleCalef] = useState<any>(null);
+    const [consumosEnergia, setConsumosEnergia] = useState<any[]>([]);
 
     const [selectedEnergySystems, setSelectedEnergySystems] = useState<{ [key: number]: string }>({});
     const [selectedEnergySystemsRef, setSelectedEnergySystemsRef] = useState<{ [key: number]: string }>({});
@@ -39,9 +41,7 @@ export const useEnergySystems = ({ globalResults, onCalculationsUpdate }: UseEne
 
     useEffect(() => {
         if (result.constant) {
-            const systems = result.constant.atributs?.combustibles || [];
-
-            const validatedSystems = systems.map((system: any) => {
+            const systems = result.constant.atributs?.combustibles || []; const validatedSystems = systems.map((system: any) => {
                 if (typeof system.value !== 'number' || isNaN(system.value)) {
                     system.value = 1;
                 }
@@ -54,6 +54,11 @@ export const useEnergySystems = ({ globalResults, onCalculationsUpdate }: UseEne
             setControlHvac(result.constant.atributs?.control_hvac || []);
             setRendimientoRef(result.constant.atributs?.rendimiento_ref || []);
 
+            // Set initial combustible and consumos values
+            const defaultCombustible = validatedSystems.find((s:any) => s.is_default);
+            setCombustibleCalef(defaultCombustible || validatedSystems[0]);
+            setConsumosEnergia(validatedSystems);
+
             console.log("Energy Systems loaded:", validatedSystems.length);
         }
     }, [result.constant]);
@@ -61,17 +66,15 @@ export const useEnergySystems = ({ globalResults, onCalculationsUpdate }: UseEne
     useEffect(() => {
         if (globalResults?.result_by_enclosure) {
             const updatedRecintos = processGlobalResults(globalResults.result_by_enclosure);
-            setCalculatedRecintos(updatedRecintos);
-            setRecintos(updatedRecintos);
-            console.log("Recintos loaded:", updatedRecintos.length);
+            setCalculatedRecintos(updatedRecintos as any);
+            setRecintos(updatedRecintos as any);
         }
     }, [globalResults, setRecintos]);
 
     useEffect(() => {
         if (globalResults?.base_by_enclosure && energySystems.length > 0) {
             const baseRecintos = processBaseResults(globalResults.base_by_enclosure, energySystems);
-            setCasoBaseRecintos(baseRecintos);
-            console.log("Base recintos loaded:", baseRecintos.length);
+            setCasoBaseRecintos(baseRecintos as any);
         }
     }, [globalResults, energySystems]);
 
@@ -474,6 +477,41 @@ export const useEnergySystems = ({ globalResults, onCalculationsUpdate }: UseEne
                             resolve();
                         }, 0);
                     }, 0);
+
+                    setTimeout(() => {
+                        const demandaCalef = recinto.demanda_calef || 0;
+                        const demandaRef = recinto.demanda_ref || 0;
+                        const demandaIlum = recinto.demanda_ilum || 0;
+
+                        // Cálculos de consumo base usando las fórmulas correctas
+                        const baseConsumoCalef = calculateConsumoCalef(demandaCalef);
+                        const baseConsumoRef = calculateConsumoRef(demandaRef);
+                        const baseConsumoTotal = baseConsumoCalef + baseConsumoRef;
+
+                        // Calculate CO2eq total
+                        const co2eqTotal = calculateCO2eqTotal(recinto, baseConsumoCalef, baseConsumoRef, demandaIlum);
+
+                        Object.assign(recinto, {
+                            base_demanda_calef: demandaCalef,
+                            base_demanda_ref: demandaRef,
+                            base_demanda_ilum: demandaIlum,
+                            base_demanda_total: demandaCalef + demandaRef,
+                            base_consumo_calef: baseConsumoCalef,
+                            base_consumo_ref: baseConsumoRef,
+                            base_consumo_total: baseConsumoTotal,
+                            base_co2eq_total: co2eqTotal
+                        });
+
+                        // Continue with energy calculations
+                        calculatePrimaryEnergyCalefForRecinto(recinto.id);
+                        calculatePrimaryEnergyRefForRecinto(recinto.id);
+
+                        setTimeout(() => {
+                            calculateTotalPrimaryEnergyForRecinto(recinto.id);
+                            calculateCO2EmissionsForRecinto(recinto.id);
+                            resolve();
+                        }, 0);
+                    }, 0);
                 }, 0);
             });
         }); Promise.all(recalculatePromises).then(() => {
@@ -540,6 +578,39 @@ export const useEnergySystems = ({ globalResults, onCalculationsUpdate }: UseEne
         onCalculationsUpdate
     ]);
 
+    const calculateConsumoCalef = (demandaCalef: number | undefined): number => {
+        if (!demandaCalef || !combustibleCalef || typeof combustibleCalef.fep !== 'number') {
+            return 0;
+        }
+        const result = (demandaCalef * combustibleCalef.fep) / 1;
+        return result;
+    };
+
+    const calculateConsumoRef = (demandaRef: number | undefined): number => {
+        if (!demandaRef || !combustibleCalef || typeof combustibleCalef.fep !== 'number') {
+            return 0;
+        }
+        const result = (demandaRef * combustibleCalef.fep) / 1;
+        return result;
+    };
+
+    const getConsumoEnergia = (code: string): number => {
+        return consumosEnergia?.find(c => c.code === code)?.co2_eq || 0;
+    };
+
+    const calculateCO2eqTotal = (
+        recinto: Recinto,
+        consumoCalef: number,
+        consumoRef: number,
+        demandaIlum: number = 31.3 // TODO: Verify if this fixed value for illumination is correct for all cases
+    ): number => {
+        const fep = combustibleCalef?.fep || 1;
+        const consumoElectricidad = getConsumoEnergia(combustibleCalef?.code || '');
+        return (consumoCalef * fep * recinto.superficie) +
+            (consumoRef * fep * recinto.superficie) +
+            (demandaIlum * recinto.superficie * consumoElectricidad * fep);
+    };
+
     return {
         calculatedRecintos,
         casoBaseRecintos,
@@ -567,6 +638,10 @@ export const useEnergySystems = ({ globalResults, onCalculationsUpdate }: UseEne
         handleControlHvacRefChange,
         getCalculationSummary,
         recalculateAllRecintos,
-        isRecalculating: recalculateAll
+        isRecalculating: recalculateAll,
+        calculateConsumoCalef,
+        calculateConsumoRef,
+        getConsumoEnergia,
+        calculateCO2eqTotal
     };
 };

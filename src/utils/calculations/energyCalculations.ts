@@ -1,5 +1,4 @@
 // Energy calculation utilities
-import { Recinto } from '../../types/recinto';
 
 /**
  * Calculate SCOP (Seasonal Coefficient of Performance) for heating
@@ -132,7 +131,7 @@ export const getValueByCode = (
  */
 export const processGlobalResults = (
     resultByEnclosure: any[]
-): Recinto[] => {
+) => {
     if (!resultByEnclosure) return [];
 
     return resultByEnclosure.map((enclosure: any) => {
@@ -186,7 +185,7 @@ export const processGlobalResults = (
 export const processBaseResults = (
     baseByEnclosure: any[],
     energySystems: any[]
-): Recinto[] => {
+) => {
     if (!baseByEnclosure) return [];
 
     return baseByEnclosure.map((enclosure: any) => {
@@ -197,9 +196,7 @@ export const processBaseResults = (
         const demandaTotal = demandaCalef + demandaRef + demandaIlum;
 
         // Get combustible data
-        const combustibleCalefCode = enclosure.combustible_calef_code || "";
-        const sistemaEnergiaEncontrado = combustibleCalefCode ?
-            energySystems.find(system => system.code === combustibleCalefCode) : null;
+        const combustibleCalefCode = enclosure.combustible_calef_code || "";;
 
         const valorCombustibleCalef = combustibleCalefCode && energySystems.length > 0
             ? energySystems.find(system => system.code === combustibleCalefCode)?.value || 1

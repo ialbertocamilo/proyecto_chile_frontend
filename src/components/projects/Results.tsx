@@ -47,8 +47,8 @@ const Results = () => {
 
 
 
-  const handleRecintosCalculated = ((data: any) => {
-    console.log("Guardando recintos:", data);
+  const handleUpdate = ((data: any) => {
+    console.log("GUARDANDO :", data);
     setRecintos(data);
   });
 
@@ -166,7 +166,7 @@ const Results = () => {
         >          <Tab eventKey="recintos" title="Resumen de Recintos">
             <MemoizedResumenRecintos
               globalResults={calculationResult}
-              onUpdated={handleRecintosCalculated}
+              onUpdated={handleUpdate}
             />
           </Tab>          <Tab eventKey="indicadores" title="Indicadores Finales">
             <IndicadoresFinales />

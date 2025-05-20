@@ -1,5 +1,5 @@
 import { EnergySystemSelection } from '@/types/energySystem';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Col, Nav, Row, Tab } from 'react-bootstrap';
 import { useEnergySystems } from '../../../hooks/energy/useEnergySystems';
 import CasoBaseTable from '../recinto/CasoBaseTable';
@@ -16,7 +16,7 @@ interface ResumenRecintosProps {
   onUpdated?: (data: any) => void;
 }
 
-const ResumenRecintos: React.FC<ResumenRecintosProps> = ({ globalResults, onCalculationsUpdate, onUpdated   }) => {
+const ResumenRecintos: React.FC<ResumenRecintosProps> = ({ globalResults, onCalculationsUpdate, onUpdated }) => {
   const [config, setConfig] = useState<ConfigState>({
     energySystems: [],
     rendimientoCalef: [],
@@ -93,23 +93,24 @@ const ResumenRecintos: React.FC<ResumenRecintosProps> = ({ globalResults, onCalc
   });
 
 
-  useEffect(() => {
-    onUpdated?.({
-      recintos: calculatedRecintos,
-      energyConfig
-    });
-  }, [calculatedRecintos]);
+  const onUpdate = (recintos: any[]) => {
+
+    onUpdated?.(recintos);
+  }
+
+
+
   return (
-    <div className="container-fluid mt-4">      <div className="col-12 mb-4">     
-     <EnergySystemSelectors
-      onChange={(selection: EnergySystemSelection, consumosEnergia?: any[]) => {
-        setEnergyConfig(selection);
-        setConfig(prev => ({
-          ...prev,
-          consumosEnergia: consumosEnergia || []
-        }));
-      }}
-    />
+    <div className="container-fluid mt-4">      <div className="col-12 mb-4">
+      <EnergySystemSelectors
+        onChange={(selection: EnergySystemSelection, consumosEnergia?: any[]) => {
+          setEnergyConfig(selection);
+          setConfig(prev => ({
+            ...prev,
+            consumosEnergia: consumosEnergia || []
+          }));
+        }}
+      />
     </div>
       <div>
         <Tab.Container id="tabs-recintos" defaultActiveKey="demanda">
@@ -179,6 +180,7 @@ const ResumenRecintos: React.FC<ResumenRecintosProps> = ({ globalResults, onCalc
                     recintos={calculatedRecintos}
                     combustibleCalef={energyConfig.combustibleCalef}
                     consumosEnergia={config.consumosEnergia}
+                    onUpdate={onUpdate}
                   />
                 </Tab.Pane>
 
@@ -189,6 +191,7 @@ const ResumenRecintos: React.FC<ResumenRecintosProps> = ({ globalResults, onCalc
                     recintos={casoBaseRecintos}
                     combustibleCalef={energyConfig.combustibleCalef}
                     consumosEnergia={config.consumosEnergia}
+                    onUpdate={onUpdate}
                   />
                 </Tab.Pane>
               </Tab.Content>

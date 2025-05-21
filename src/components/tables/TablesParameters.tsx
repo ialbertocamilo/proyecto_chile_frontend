@@ -60,10 +60,19 @@ export default function TablesParameters({
   };
 
 
-  const unwrap = (v: any): string | number | null => {
+  const unwrap = (v: any): string | number | Date | null => {
+    // Handle Date objects or date strings
+    if (v instanceof Date) return v;
+    if (typeof v === 'string' && !isNaN(Date.parse(v))) return new Date(v);
+    
     // 1) Si es un elemento React
     if (React.isValidElement(v)) {
       const children = (v as React.ReactElement<any>).props.children;
+      if (typeof children === "string") {
+        // Check if children is a date string
+        const date = new Date(children);
+        if (!isNaN(date.getTime())) return date;
+      }
       // 1a) Si los hijos son un string o number, simplemente lo devolvemos
       if (typeof children === "string" || typeof children === "number") {
         return children;
@@ -81,10 +90,9 @@ export default function TablesParameters({
     if (!sortConfig) return data;
 
     const { field, direction } = sortConfig;
-    const dir = direction === "asc" ? 1 : -1;   // ③
+    const dir = direction === "asc" ? 1 : -1;
 
     return [...data].sort((a, b) => {
-      // Extraemos siempre valor primitivo
       const rawA = a[field];
       const rawB = b[field];
       const aVal = unwrap(rawA);
@@ -94,7 +102,12 @@ export default function TablesParameters({
       if (aVal == null) return 1;
       if (bVal == null) return -1;
 
-      // ④ Orden numérico robusto
+      // Handle dates
+      if (aVal instanceof Date && bVal instanceof Date) {
+        return (aVal.getTime() - bVal.getTime()) * dir;
+      }
+
+      // ④ Orden numérico robusto
       if (isNumeric(aVal) && isNumeric(bVal)) {
         return (parseFloat(String(aVal)) - parseFloat(String(bVal))) * dir;
       }

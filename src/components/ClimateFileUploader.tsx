@@ -102,7 +102,7 @@ const ClimateFileUploader: React.FC = () => {
       },
       {
         headerName: "Año",
-        field: "created_at",
+        field: "year",
         renderCell: (row: any) => new Date(row.created_at).getFullYear(),
       },
       {

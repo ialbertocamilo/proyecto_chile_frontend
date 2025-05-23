@@ -124,6 +124,7 @@ export const useWallBuilder = (projectId: string) => {
                     console.log('Layer Thickness:', layerThickness);
                     try {
                         const material = await getMaterialByCode(child.props['MATERIAL'])
+                        if(masterNode)
                         await createNodeChild(
                             masterNode,
                             'Muro',

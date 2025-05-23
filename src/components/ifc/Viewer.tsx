@@ -294,11 +294,10 @@ export default function IFCViewerComponent() {
         }
       }
       else {
-        const missingElementsDetails = result?.missingElements?.map((el: { type: string; name: string }) => `${el.type}: ${el.name}`)
-          .join(", ");
+
         setStatus(`Proceso no logró completarse debido a errores.`);
         console.error("Errors during project creation:", result);
-        notify(`Proyecto creado con errores. Detalles: ${missingElementsDetails}`, "error");
+        notify(`Proceso no logró completarse debido a errores`, "error");
 
         // Guardar los elementos faltantes para mostrarlos en el panel
         setMissingElements(result.missingElements || []);
@@ -309,6 +308,7 @@ export default function IFCViewerComponent() {
       // For unexpected errors (not from the project builder), still show in status
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido durante el procesamiento';
       console.error("Error processing objects:", error);
+    
       setStatus(`Error: ${errorMessage}`);
       notify(`Error: ${errorMessage}`, "error");
       setIsProcessing(false);

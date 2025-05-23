@@ -93,7 +93,7 @@ export const useWallBuilder = (projectId: string) => {
         try {
             const token = localStorage.getItem("token");
 
-            const response = await fetch(`${constantUrlApiEndpoint}/api/constants-code_ifc?code_ifc=${code}`, {
+            const response = await fetch(`${constantUrlApiEndpoint}/constants-code_ifc?code_ifc=${code}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",

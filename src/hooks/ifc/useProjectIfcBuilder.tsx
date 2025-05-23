@@ -427,6 +427,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
 
                             // Create wall layers
                             const layerThickness = element.thickness; // Convert to cm
+                            if(masterNode)
                             return wallBuilder.createNodeChild(
                                 masterNode,
                                 'Muro',
@@ -460,6 +461,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                     const wallCharacteristics = "Exterior";
 
                     // Create the wall in the room using the wall-enclosures-create endpoint
+                    if (masterNode)
                     wallPromises.push(post(`/wall-enclosures-create/${roomId}`, {
                         wall_id: masterNode.id,
                         characteristics: wallCharacteristics,

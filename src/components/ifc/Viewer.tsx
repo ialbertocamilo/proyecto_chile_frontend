@@ -294,7 +294,7 @@ export default function IFCViewerComponent() {
       else {
         const missingElementsDetails = result?.missingElements?.map((el: { type: string; name: string }) => `${el.type}: ${el.name}`)
           .join(", ");
-        setStatus(`Proceso no logró completarse debido a errores: ${missingElementsDetails}`);
+        setStatus(`Proceso no logró completarse debido a errores.`);
         console.error("Errors during project creation:", result);
         notify(`Proyecto creado con errores. Detalles: ${missingElementsDetails}`, "error");
 

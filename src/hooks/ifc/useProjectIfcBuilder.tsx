@@ -179,7 +179,9 @@ export const useProjectIfcBuilder = (projectId: string) => {
 
         // Validate doors
         if (details.doors) {
-            await checkExistence('Door', details.doors);
+            for (const doorGroup of details.doors) {
+                await checkExistence('Door', doorGroup.elements);
+            }
         }
 
         // Validate windows

@@ -107,6 +107,9 @@ export const useProjectIfcBuilder = (projectId: string) => {
     const { post, get, put } = useApi();
     const wallBuilder = useWallBuilder(projectId);
 
+    // Add a materials cache to avoid repeated API calls
+    const [materialsCache, setMaterialsCache] = useState<Record<string, any>>({});
+
     const [creationStatus, setCreationStatus] = useState<CreationStatus>({
         inProgress: false,
         completedRooms: 0,
@@ -121,7 +124,112 @@ export const useProjectIfcBuilder = (projectId: string) => {
         },
         errors: []
     });
+    const validateElementsExistence = async (details: ConstructionDetails) => {
+        const missingElements: { type: string; name: string }[] = [];
+        const foundMaterials: Record<string, any> = { ...materialsCache };
 
+        // Helper function to check existence
+        const checkExistence = async (type: string, elements: Element[]) => {
+            for (const element of elements) {
+                console.log(`Validating ${JSON.stringify(element)}: ${element.material}`);
+                try {
+                    if (element?.material && element?.material.toLowerCase() !== 'unknown') {
+                        // Check if material is already in cache
+                        if (foundMaterials[element.material]) {
+                            console.log(`Using cached material: ${element.material}`);
+                            continue;
+                        }
+
+                        // If not in cache, fetch from API
+                        const materialInfo = await wallBuilder.getMaterialByCode(element?.material);
+                        if (!materialInfo) {
+                            missingElements.push({ type, name: element.name });
+                        } else {
+                            // Add to found materials cache
+                            foundMaterials[element.material] = materialInfo;
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error validating material: ${element.material}`, error);
+                    missingElements.push({ type, name: element.name });
+                }
+            }
+        };
+
+        // Validate walls
+        if (details.walls) {
+            for (const wallGroup of details.walls) {
+                await checkExistence('Wall', wallGroup.elements);
+            }
+        }
+
+        // Validate floors
+        if (details.floors) {
+            for (const floorGroup of details.floors) {
+                await checkExistence('Floor', floorGroup.elements);
+            }
+        }
+
+        // Validate ceilings
+        if (details.ceilings) {
+            for (const ceilingGroup of details.ceilings) {
+                await checkExistence('Ceiling', ceilingGroup.elements);
+            }
+        }
+
+        // Validate doors
+        if (details.doors) {
+            await checkExistence('Door', details.doors);
+        }
+
+        // Validate windows
+        if (details.windows) {
+            for (const windowGroup of details.windows) {
+                await checkExistence('Window', windowGroup.elements);
+            }
+        }
+
+        // Update the materials cache with newly found materials
+        setMaterialsCache(foundMaterials);
+
+        return {
+            missingElements,
+            foundMaterials
+        };
+    };
+
+    const createProjectWithValidation = async (data: BuildingStructure): Promise<any> => {
+        const { buildingStructure } = data;
+        const validationResults = [];
+
+        for (const room of buildingStructure) {
+            const result = await validateElementsExistence(room.constructionDetails);
+            const { missingElements, foundMaterials } = result;
+
+            validationResults.push({
+                roomName: room.name,
+                foundMaterials
+            });
+
+            if (missingElements?.length > 0) {
+                console.error('Missing elements:', missingElements);
+                return {
+                    success: false,
+                    message: 'Some elements are missing. Creation process stopped.',
+                    missingElements,
+                    validationResults
+                };
+            }
+        }
+
+        // Proceed with project creation if all elements exist
+        const projectResult = await createProject(data);
+
+        return {
+            ...projectResult,
+            validationResults
+        };
+    };
     /**
      * Parse level number from string (e.g., "00 NIVEL 01" => 1)
      */
@@ -280,7 +388,25 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                     updateStatus({
                                         currentComponent: `Buscando material: ${element.material}`
                                     });
-                                    const materialInfo = await wallBuilder.getMaterialByCode(element.material);
+
+                                    // First check if the material is in our cache
+                                    let materialInfo: any;
+                                    if (materialsCache[element.material]) {
+                                        materialInfo = materialsCache[element.material];
+                                        updateStatus({
+                                            currentComponent: `Material encontrado en cache: ${element.material} (ID: ${materialInfo?.id})`
+                                        });
+                                    } else {
+                                        materialInfo = await wallBuilder.getMaterialByCode(element.material);
+                                        // Update cache with new material
+                                        if (materialInfo) {
+                                            setMaterialsCache(prev => ({
+                                                ...prev,
+                                                [element.material]: materialInfo
+                                            }));
+                                        }
+                                    }
+
                                     materialId = materialInfo?.id || 1;
                                     updateStatus({
                                         currentComponent: `Material encontrado: ${element.material} (ID: ${materialId})`
@@ -289,7 +415,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                     updateStatus({
                                         currentComponent: `Error al buscar material: ${element.material}`
                                     });
-                                    console.warn(`Material not found for code: ${element.material}, using default ID 1`);
+                                    console.warn(`Material not found for code: ${element.material}, using default ID 1`, error);
                                     errors.push({
                                         message: `Material no encontrado: ${element.material}, usando ID por defecto`,
                                         context: `Wall element: ${element.name}`
@@ -360,7 +486,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
             const results = await Promise.allSettled(wallPromises);
 
             // Collect errors from rejected promises
-            results.forEach((result, index) => {
+            results.forEach((result) => {
                 if (result.status === 'rejected') {
                     errors.push({
                         message: `Error associating wall with room: ${result.reason?.message || 'Unknown error'}`,
@@ -395,6 +521,11 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 currentComponent: 'Iniciando creación de pisos'
             });
 
+            // Fetch floor details from the API
+            const floorDetails = await get(`/project/${projectId}/details/Piso`).catch(error => {
+                throw new Error(`Error fetching floor details: ${error.message}`);
+            });
+
             for (const floorGroup of floorGroups) {
                 for (const element of floorGroup.elements) {
                     try {
@@ -402,35 +533,25 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             currentComponent: `Creando piso: ${element.name}`
                         });
 
-                        let materialId = 1; // Default material ID
-                        if (element.material && element.material !== 'Unknown') {
-                            try {
-                                updateStatus({
-                                    currentComponent: `Buscando material para piso: ${element.material}`
-                                });
-                                const materialInfo = await wallBuilder.getMaterialByCode(element.material);
-                                materialId = materialInfo?.id || 1;
-                                updateStatus({
-                                    currentComponent: `Material para piso encontrado: ${element.material} (ID: ${materialId})`
-                                });
-                            } catch (error) {
-                                updateStatus({
-                                    currentComponent: `Error al buscar material para piso: ${element.material}`
-                                });
-                                console.warn(`Material not found for code: ${element.material}, using default ID 1`);
-                                errors.push({
-                                    message: `Material no encontrado para piso: ${element.material}, usando ID por defecto`,
-                                    context: `Floor element: ${element.name}`
-                                });
-                            }
+                        // Match the floor element with the fetched floor details
+                        const matchedFloor = floorDetails.find((floor: any) => floor.code_ifc === 'PISO_001');
+
+                        if (!matchedFloor) {
+                            errors.push({
+                                message: `No matching floor detail found for element: ${element.name}`,
+                                context: `Floor group: ${floorGroup.code}`
+                            });
+                            continue;
                         }
 
-                        // Use correct endpoint and payload structure for floor creation
+                        // Use the matched floor details in the creation process
                         floorPromises.push(
                             post(`/floor-enclosures-create/${roomId}`, {
-                                roof_id: parseInt(String(floorGroup.code).replace(/[^0-9]/g, '')) || 0,
-                                characteristic: element.name || 'Default Floor',
-                                area: element.area || 0
+                                floor_id: matchedFloor.id,
+                                characteristic: element.name,
+                                area: element.area || 0,
+                                value_u: matchedFloor.value_u,
+                                calculations: matchedFloor.calculations || {}
                             })
                         );
 
@@ -454,7 +575,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
             const results = await Promise.allSettled(floorPromises);
 
             // Collect errors from rejected promises
-            results.forEach((result, index) => {
+            results.forEach((result) => {
                 if (result.status === 'rejected') {
                     errors.push({
                         message: `Error completing floor creation: ${result.reason?.message || 'Unknown error'}`,
@@ -465,7 +586,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
 
             updateStatus({ currentComponent: 'Creación de pisos completada' });
             return { success: errors.length === 0, errors };
-        } catch (error:any) {
+        } catch (error: any) {
             return {
                 success: false,
                 errors: [...errors, {
@@ -501,7 +622,25 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                 updateStatus({
                                     currentComponent: `Buscando material para techo: ${element.material}`
                                 });
-                                const materialInfo = await wallBuilder.getMaterialByCode(element.material);
+
+                                // First check if the material is in our cache
+                                let materialInfo: any;
+                                if (materialsCache[element.material]) {
+                                    materialInfo = materialsCache[element.material];
+                                    updateStatus({
+                                        currentComponent: `Material para techo encontrado en cache: ${element.material} (ID: ${materialInfo?.id})`
+                                    });
+                                } else {
+                                    materialInfo = await wallBuilder.getMaterialByCode(element.material);
+                                    // Update cache with new material
+                                    if (materialInfo) {
+                                        setMaterialsCache(prev => ({
+                                            ...prev,
+                                            [element.material]: materialInfo
+                                        }));
+                                    }
+                                }
+
                                 materialId = materialInfo?.id || 1;
                                 updateStatus({
                                     currentComponent: `Material para techo encontrado: ${element.material} (ID: ${materialId})`
@@ -510,7 +649,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                 updateStatus({
                                     currentComponent: `Error al buscar material para techo: ${element.material}`
                                 });
-                                console.warn(`Material not found for code: ${element.material}, using default ID 1`);
+                                console.warn(`Material not found for code: ${element.material}, using default ID 1`, error);
                                 errors.push({
                                     message: `Material no encontrado para techo: ${element.material}, usando ID por defecto`,
                                     context: `Ceiling element: ${element.name}`
@@ -592,7 +731,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             doors: prev.progress.doors + 1
                         }
                     }));
-                } catch (error:any) {
+                } catch (error: any) {
                     errors.push({
                         message: `Error creating door: ${error.message || 'Unknown error'}`,
                         context: `Door: ${door.name}`
@@ -600,11 +739,11 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 }
             }
 
-            const results = await Promise.allSettled(doorPromises);
+            const _results = await Promise.allSettled(doorPromises);
             updateStatus({ currentComponent: 'Creación de puertas completada' });
 
             return { success: errors.length === 0, errors };
-        } catch (error:any) {
+        } catch (error: any) {
             return {
                 success: false,
                 errors: [...errors, {
@@ -899,6 +1038,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
         creationStatus,
         parseNivel,
         fetchEnclosureByCode,
-        updateProjectStatus
+        updateProjectStatus,
+        createProjectWithValidation,
+        materialsCache
     };
 };

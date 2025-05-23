@@ -11,6 +11,7 @@ import Card from "../common/Card";
 import CustomButton from "../common/CustomButton";
 import IFCUploader from "./IfcUploader";
 import { ErrorDetailsAccordion } from './components/ErrorDetailsAccordion';
+import { MissingElementsPanel } from './components/MissingElementsPanel';
 import { ProjectStatusPanel } from './components/ProjectStatusPanel';
 
 /**
@@ -39,6 +40,7 @@ export default function IFCViewerComponent() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [fileSelected, setFileSelected] = useState<boolean>(false);
   const [structuredOutput, setStructuredOutput] = useState<string>("");
+  const [missingElements, setMissingElements] = useState<Array<{ type: string; name: string }>>([]);
 
   // Hooks
   const router = useRouter();
@@ -271,28 +273,35 @@ export default function IFCViewerComponent() {
 
       // Use the projectBuilder hook to create the project from the structured data
       setStatus("Creando proyecto...");
-      const result = await projectBuilder.createProject(buildingStructure);
+      const result = await projectBuilder.createProjectWithValidation(buildingStructure);
 
       // Update the UI based on result
-      if (result.success) {
-        setStatus(`Proceso completado: ${result.completedRooms} recintos creados`);
+      if (result?.success) {
+        setStatus(`Proceso completado: ${result?.completedRooms} recintos creados`);
         notify("Proyecto creado exitosamente");
 
         // Update project status to "en proceso"
         try {
           setStatus("Actualizando estado del proyecto...");
           await projectBuilder.updateProjectStatus("en proceso");
-          setStatus(`Proceso completado: ${result.completedRooms} recintos creados. Proyecto en proceso.`);
+          setStatus(`Proceso completado: ${result?.completedRooms} recintos creados. Proyecto en proceso.`);
           notify("Estado del proyecto actualizado a 'en proceso'");
         } catch (statusError) {
           console.error("Error al actualizar estado del proyecto:", statusError);
           notify("Proyecto creado pero no se pudo actualizar su estado", "warning");
         }
-      } else {
-        const errorCount = result.errors.length;
-        setStatus(`Proceso completado con errores: ${errorCount} ${errorCount === 1 ? 'error encontrado' : 'errores encontrados'}`);
-        console.error("Errors during project creation:", result.errors);
-        notify(`Proyecto creado con ${errorCount} errores. Revise los detalles abajo.`, "error");
+      }
+      else {
+        const missingElementsDetails = result?.missingElements?.map((el: { type: string; name: string }) => `${el.type}: ${el.name}`)
+          .join(", ");
+        setStatus(`Proceso no logró completarse debido a errores: ${missingElementsDetails}`);
+        console.error("Errors during project creation:", result);
+        notify(`Proyecto creado con errores. Detalles: ${missingElementsDetails}`, "error");
+
+        // Guardar los elementos faltantes para mostrarlos en el panel
+        setMissingElements(result.missingElements || []);
+        // Opcionalmente, mantener el panel de progreso visible
+        setIsProcessing(false);  // Cerramos el panel de estado pero mostramos el botón para ver missing elements
       }
     } catch (error) {
       // For unexpected errors (not from the project builder), still show in status
@@ -359,6 +368,11 @@ export default function IFCViewerComponent() {
   // Render component
   return (
     <Card>
+      <Row className="mb-4">
+        <Col className="text-center">
+          <h2>Gestor IFC</h2>
+        </Col>
+      </Row>
       <IFCUploader onFileUpload={handleFileUpload} />
       <Row className="mb-3">
         <Col className="d-flex justify-content-end">
@@ -399,38 +413,39 @@ export default function IFCViewerComponent() {
               {status === "Proceso completado" && <Check size={20} />}
               {status || "Esperando acción..."}
             </h5>
+
+            {/* Mostrar botón para ver elementos faltantes si hay alguno */}
+            {missingElements.length > 0 && !isProcessing && (
+              <CustomButton
+                onClick={() => setIsProcessing(true)}
+                className="btn-warning mt-2"
+              >
+                Ver {missingElements.length} Elementos Faltantes
+              </CustomButton>
+            )}
           </Col>
         </Row>
 
         {/* Detailed status section */}
         {isProcessing && (
-          <ProjectStatusPanel creationStatus={projectBuilder.creationStatus} />
+          <ProjectStatusPanel creationStatus={{
+            ...projectBuilder.creationStatus,
+            missingElements: missingElements
+          }} />
         )}
 
         {/* Error Details Section */}
         {projectBuilder.creationStatus.errors.length > 0 && (
           <ErrorDetailsAccordion errors={projectBuilder.creationStatus.errors} />
         )}
-      </Container>
 
-      {/* Structured Output Text Area */}
-      <Container fluid className="mt-4">
-        <Row>
-          <Col>
-            <h5>Building Structure (JSON)</h5>
-            <textarea
-              className="form-control"
-              style={{
-                height: "400px",
-                fontFamily: "monospace",
-                fontSize: "0.9rem",
-                whiteSpace: "pre-wrap"
-              }}
-              value={structuredOutput}
-              readOnly
-            />
-          </Col>
-        </Row>
+        {/* Missing Elements Panel - Mostrar si hay elementos faltantes y el usuario ha hecho clic en el botón */}
+        {missingElements.length > 0 && isProcessing && (
+          <MissingElementsPanel
+            elements={missingElements}
+            onClose={() => setIsProcessing(false)}
+          />
+        )}
       </Container>
 
     </Card>

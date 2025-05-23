@@ -18,6 +18,7 @@ interface CreationStatus {
         windows: number;
     };
     errors: { message: string; context: string }[];
+    missingElements?: Array<{ type: string; name: string }>;
 }
 
 interface ProjectStatusPanelProps {
@@ -60,6 +61,20 @@ export const ProjectStatusPanel: React.FC<ProjectStatusPanelProps> = ({ creation
                         {creationStatus.currentComponent && (
                             <div className="mb-3">
                                 <strong>Actividad actual:</strong> {creationStatus.currentComponent}
+                            </div>
+                        )}
+
+                        {/* Missing Elements Section */}
+                        {creationStatus.missingElements && creationStatus.missingElements.length > 0 && (
+                            <div className="alert alert-warning mt-3">
+                                <h6 className="mb-2">Elementos Faltantes:</h6>
+                                <ul className="mb-0 ps-3">
+                                    {creationStatus.missingElements.map((element, index) => (
+                                        <li key={index}>
+                                            {element.type}: <strong>{element.name}</strong>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         )}
 

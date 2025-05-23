@@ -105,7 +105,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
           setTableData(transformedData);
       } catch (error) {
         console.error("Error fetching data:", error);
-        notify("Error al obtener los datos");
+        // notify("Error al obtener los datos");
       }
     };
 

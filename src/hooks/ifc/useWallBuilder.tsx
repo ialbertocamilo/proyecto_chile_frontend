@@ -35,7 +35,7 @@ export const useWallBuilder = (projectId: string) => {
         name: string,
         interiorColor: string,
         exteriorColor: string
-    ): Promise<CreateNodeMasterResponse> => {
+    ): Promise<CreateNodeMasterResponse | undefined> => {
         try {
             const response = await post(
                 `/user/Muro/detail-part-create?project_id=${projectId}`,
@@ -53,7 +53,7 @@ export const useWallBuilder = (projectId: string) => {
         } catch (error) {
             const errorMessage = "Error creating wall detail part";
             console.error(errorMessage, error);
-            throw error;
+            // throw error; //TODO verificar si es que es necesario retornar error
         }
     };
 

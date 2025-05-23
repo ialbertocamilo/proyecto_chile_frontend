@@ -1,5 +1,7 @@
+'use client'
 import { useApi } from '@/hooks/useApi';
 import { findObjectsByTypeAndProperty, getPropValue } from '@/lib/utils';
+import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
 interface SurfaceColor {
     name: string;
     value: number;
@@ -28,8 +30,6 @@ interface CreateNodeMasterResponse {
 
 export const useWallBuilder = (projectId: string) => {
     const { post, get } = useApi();
-
-
 
     const createNodeMaster = async (
         name: string,
@@ -90,9 +90,27 @@ export const useWallBuilder = (projectId: string) => {
     };
 
     const getMaterialByCode = async (code: string) => {
-        const response = await get(`/constants-code_ifc?code_ifc=${code}`)
+        try {
+            const token = localStorage.getItem("token");
 
-        return response
+            const response = await fetch(`${constantUrlApiEndpoint}/api/constants-code_ifc?code_ifc=${code}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error fetching material:', error);
+            return null;
+        }
+
     }
     const createFromEnclosure = async (enclosureId: number, obj: any, globalObjects: any, keys = ['M_1', 'M_2', 'M_3', 'M_4']) => {
 
@@ -124,14 +142,14 @@ export const useWallBuilder = (projectId: string) => {
                     console.log('Layer Thickness:', layerThickness);
                     try {
                         const material = await getMaterialByCode(child.props['MATERIAL'])
-                        if(masterNode)
-                        await createNodeChild(
-                            masterNode,
-                            'Muro',
-                            wall.value,
-                            material?.id,
-                            layerThickness
-                        );
+                        if (masterNode)
+                            await createNodeChild(
+                                masterNode,
+                                'Muro',
+                                wall.value,
+                                material?.id,
+                                layerThickness
+                            );
                         console.log('Child node created successfully for:', child);
                     } catch (error) {
                         errors.push({

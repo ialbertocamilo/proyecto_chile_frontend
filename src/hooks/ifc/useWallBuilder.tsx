@@ -105,7 +105,8 @@ export const useWallBuilder = (projectId: string) => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            return data.data;
+            console.log("Getting material by code",data)
+            return data;
         } catch (error) {
             console.error('Error fetching material:', error);
             return null;
@@ -171,5 +172,3 @@ export const useWallBuilder = (projectId: string) => {
         getMaterialByCode  // Expose this function for use in useProjectIfcBuilder
     };
 };
-
-

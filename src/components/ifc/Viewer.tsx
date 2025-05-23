@@ -286,6 +286,8 @@ export default function IFCViewerComponent() {
           await projectBuilder.updateProjectStatus("en proceso");
           setStatus(`Proceso completado: ${result?.completedRooms} recintos creados. Proyecto en proceso.`);
           notify("Estado del proyecto actualizado a 'en proceso'");
+            // Ya no cambiamos isProcessing a false cuando el proceso se completa exitosamente
+          // para mantener visible el panel de estado
         } catch (statusError) {
           console.error("Error al actualizar estado del proyecto:", statusError);
           notify("Proyecto creado pero no se pudo actualizar su estado", "warning");
@@ -309,7 +311,6 @@ export default function IFCViewerComponent() {
       console.error("Error processing objects:", error);
       setStatus(`Error: ${errorMessage}`);
       notify(`Error: ${errorMessage}`, "error");
-    } finally {
       setIsProcessing(false);
     }
   }
@@ -426,8 +427,8 @@ export default function IFCViewerComponent() {
           </Col>
         </Row>
 
-        {/* Detailed status section */}
-        {isProcessing && (
+        {/* Detailed status section - Ahora se muestra siempre que haya un estado de creación */}
+        {(isProcessing || projectBuilder.creationStatus.completedRooms > 0 || projectBuilder.creationStatus.errors.length > 0) && (
           <ProjectStatusPanel creationStatus={{
             ...projectBuilder.creationStatus,
             missingElements: missingElements

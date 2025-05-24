@@ -3,9 +3,10 @@ import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import { Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/router";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { Container, Spinner, Tab, Tabs } from "react-bootstrap";
 import CustomButton from "../common/CustomButton";
+import WebSocketComponent from "../common/WebSocketComponent";
 import IndicadoresFinales from "./tabs/IndicadoresFinales";
 import ResumenRecintos from "./tabs/ResumenRecintos";
 
@@ -40,9 +41,9 @@ const Results = () => {
     }
   }, [router.query.id]);
 
-  useEffect(() => {
-    if (router.query.id) processData();
-  }, [router.query.id, processData]);
+  // useEffect(() => {
+  //   if (router.query.id) processData();
+  // }, [router.query.id, processData]);
 
 
 
@@ -170,6 +171,8 @@ const Results = () => {
             />
           </Tab>          <Tab eventKey="indicadores" title="Indicadores Finales">
             <IndicadoresFinales />
+          </Tab>          <Tab eventKey="websocket" title="WebSocket">
+            <WebSocketComponent path={`/projects/${router.query.id}`} />
           </Tab>
         </Tabs>
 

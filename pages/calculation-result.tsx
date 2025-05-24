@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from "react";
-import Results from "../src/components/projects/Results";
-import Title from "@/components/Title";
-import Card from "@/components/common/Card";
-import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import Breadcrumb from "@/components/common/Breadcrumb";
-import { useRouter } from "next/router";
+import Card from "@/components/common/Card";
 import CustomButton from "@/components/common/CustomButton";
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import WebSocketComponent from "@/components/common/WebSocketComponent";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import Results from "../src/components/projects/Results";
 
 const CalculationResultPage = () => {
   const [projectNameFromStorage, setProjectNameFromStorage] = useState("");
   const [regionFromStorage, setRegionFromStorage] = useState("");
   const [projectIdFromStorage, setProjectIdFromStorage] = useState("");
 
+  const router = useRouter();
+  const { id } = router.query;
   useEffect(() => {
     const storedProjectName = localStorage.getItem("project_name") || "";
     const storedRegion = localStorage.getItem("project_department") || "";
-    const storedProjectId = localStorage.getItem("project_id") || "";
+    const storedProjectId = id as string;
     setProjectNameFromStorage(storedProjectName);
     setRegionFromStorage(storedRegion);
     setProjectIdFromStorage(storedProjectId);
@@ -25,7 +27,6 @@ const CalculationResultPage = () => {
     window.history.back();
   };
 
-  const router = useRouter();
   return (
     <div className="py-4">
       <Card>
@@ -81,6 +82,17 @@ const CalculationResultPage = () => {
             Guardar Cálculos
           </CustomButton>
         </div>
+      </Card>
+
+      {/* WebSocketComponent para recibir actualizaciones de cálculos */}
+      <Card className="mt-4">
+        <h3 className="mb-3">Estado del Cálculo</h3>
+        <p className="text-muted mb-3">
+          Recibiendo actualizaciones del proceso de cálculo en tiempo real
+        </p>
+        <WebSocketComponent
+          path={``}
+        />
       </Card>
     </div>
   );

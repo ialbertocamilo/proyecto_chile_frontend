@@ -2,10 +2,13 @@ import ActionButtons from "@/components/common/ActionButtons";
 import CustomButton from "@/components/common/CustomButton";
 import ModalCreate from "@/components/common/ModalCreate";
 import TablesParameters from "@/components/tables/TablesParameters";
+import { useApi } from "@/hooks/useApi";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import SearchFilter from "@/components/inputs/SearchFilter";
+
 
 interface EnclosureGeneralData {
   id: number;
@@ -17,9 +20,10 @@ interface EnclosureGeneralData {
   zona_termica: string;
   name_enclosure: string;
   comuna_id: number;
-  nombre_comuna: string;
+  district: string; // Add this field
   nombre_region: string;
   usage_profile_name: string;
+  level_id: string; // Add this line
 }
 
 interface IFormData {
@@ -28,12 +32,24 @@ interface IFormData {
   perfilOcupacion: number;
   alturaPromedio: string;
   sensorCo2: boolean;
+  levelId: string;
 }
+const searchKeys = [
+  "name_enclosure",
+  "id",
+  "nombre_comuna",
+  "nombre_region",
+  "occupation_profile_id",
+  "co2_sensor",
+  "height",
+  "zona_termica",
+] as const;
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
 const TabRecintDataEdit: React.FC = () => {
   const router = useRouter();
+  const api = useApi()
   const projectId = localStorage.getItem("project_id") || "44";
   const token = localStorage.getItem("token") || "";
 
@@ -48,17 +64,8 @@ const TabRecintDataEdit: React.FC = () => {
   // 1. Funciones para fetch de datos (solo para recintos)
   // ===========================================================
   const fetchEnclosureGenerals = async () => {
-    const url = `${constantUrlApiEndpoint}/enclosure-generals/${projectId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!response.ok) return;
-    const responseData: EnclosureGeneralData[] = await response.json();
-    setData(responseData);
+    const response = await api.get(`/enclosure-generals/${projectId}`)
+    setData(response);
   };
 
   // ===========================================================
@@ -66,7 +73,6 @@ const TabRecintDataEdit: React.FC = () => {
   // ===========================================================
   useEffect(() => {
     fetchEnclosureGenerals();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ===========================================================
@@ -78,6 +84,7 @@ const TabRecintDataEdit: React.FC = () => {
       perfilOcupacion: row.occupation_profile_id,
       alturaPromedio: row.height.toString(),
       sensorCo2: row.co2_sensor === "Si",
+      levelId: row.level_id,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
     localStorage.setItem("recinto_id", row.id.toString());
@@ -95,16 +102,9 @@ const TabRecintDataEdit: React.FC = () => {
 
   const confirmDelete = async () => {
     if (!itemToDelete) return;
-    const url = `${constantUrlApiEndpoint}/enclosure-generals-delete/${projectId}/${itemToDelete.id}`;
+
     try {
-      const response = await fetch(url, {
-        method: "DELETE",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al eliminar el recinto");
+      await api.del(`/enclosure-generals-delete/${projectId}/${itemToDelete.id}`);
       setData(prevData => prevData.filter(item => item.id !== itemToDelete.id));
       notify("Recinto eliminado exitosamente");
       setShowDeleteModal(false);
@@ -135,9 +135,9 @@ const TabRecintDataEdit: React.FC = () => {
   // ===========================================================
   const columns = [
     {
-      headerName: "ID",
+      headerName: "Cod",
       field: "id",
-      renderCell: (row: EnclosureGeneralData) => row.id,
+      renderCell: (row: EnclosureGeneralData) => ("REC-" + row.id),
     },
     {
       headerName: "Nombre Recinto",
@@ -160,23 +160,24 @@ const TabRecintDataEdit: React.FC = () => {
       renderCell: (row: EnclosureGeneralData) => row.co2_sensor,
     },
     {
+      headerName: "Nivel de Recinto",
+      field: "level_id",
+      renderCell: (row: EnclosureGeneralData) => row.level_id,
+    },
+    {
       headerName: "Región",
       field: "region_id",
       renderCell: (row: EnclosureGeneralData) => row.nombre_region,
     },
     {
-      headerName: "Localidad",
-      field: "comuna_id",
-      renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
-    },
-    {
-      headerName: "Zona Térmica",
-      field: "zona_termica",
-      renderCell: (row: EnclosureGeneralData) => row.zona_termica,
+      headerName: "Distrito/Municipio",
+      field: "district",
+      renderCell: (row: EnclosureGeneralData) => row.district,
     },
     {
       headerName: "Acciones",
       field: "acciones",
+      sortable: false,
       renderCell: (row: EnclosureGeneralData) => {
         return (
           <ActionButtons
@@ -187,6 +188,26 @@ const TabRecintDataEdit: React.FC = () => {
       },
     },
   ];
+  const renderTable = (rows: EnclosureGeneralData[]) => (
+    <>
+    <div style={{ 
+        width: '100%',
+        overflowX: 'auto',
+        position: 'relative',
+        WebkitOverflowScrolling: 'touch',
+        minHeight: '200px'
+      }}>
+      <TablesParameters columns={columns} data={rows} />
+    </div>
+      {/* Mensaje de "No hay datos para mostrar" */}
+      {rows.length === 0 && (
+        <div style={{ textAlign: "center", padding: "1rem" }}>
+          No hay datos para mostrar
+        </div>
+      )}
+    </>
+  );
+
 
   // ===========================================================
   // 7. Render del componente
@@ -197,25 +218,27 @@ const TabRecintDataEdit: React.FC = () => {
       <div
         style={{
           display: "flex",
-          justifyContent: "flex-end",
           alignItems: "center",
+          justifyContent: "space-between",
           marginBottom: "1rem",
+          gap: "1rem",
         }}
       >
-        <CustomButton variant="save" onClick={handleCreate}>
-          + Nuevo
-        </CustomButton>
-      </div>
-
-      {/* Siempre se renderiza la estructura de la tabla para mostrar las pestañas */}
-      <TablesParameters columns={columns} data={data} />
-
-      {/* Si no hay datos, se muestra un mensaje informativo */}
-      {data.length === 0 && (
-        <div style={{ textAlign: "center", padding: "1rem" }}>
-          No hay datos para mostrar
+        {/* 🔍 filtro */}
+        <div style={{ flex: 1 }}>
+          <SearchFilter
+            data={data as unknown as Record<string, unknown>[]}
+            searchKeys={searchKeys as unknown as string[]}
+            placeholder="Buscar recinto…"
+            showNewButton          // ← activa el botón
+            onNew={handleCreate}
+          >
+            {(filtered, query, setQuery) => renderTable(filtered as unknown as EnclosureGeneralData[])}
+          </SearchFilter>
         </div>
-      )}
+
+        {/* ➕ botón nuevo */}
+      </div>
 
       {/* Modal de confirmación para eliminar */}
       <ModalCreate

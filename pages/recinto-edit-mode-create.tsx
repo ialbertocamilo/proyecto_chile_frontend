@@ -37,6 +37,7 @@ export interface IFormData {
   perfilOcupacion: number;
   alturaPromedio: string;
   sensorCo2: boolean;
+  levelId: string; // Add new field
 }
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
@@ -69,6 +70,7 @@ const RecintoEditModeCreate: React.FC = () => {
   const [nombreRecinto, setNombreRecinto] = useState<string>("");
   const [alturaPromedio, setAlturaPromedio] = useState<string>(""); // Se enviará como número
   const [sensorCo2, setSensorCo2] = useState<boolean>(false);
+  const [levelId, setLevelId] = useState<string>("");
 
   // ---------------------------
   //  Recuperar datos del proyecto y del formulario (si existen) del localStorage
@@ -93,6 +95,7 @@ const RecintoEditModeCreate: React.FC = () => {
       setPerfilOcupacion(data.perfilOcupacion);
       setAlturaPromedio(data.alturaPromedio);
       setSensorCo2(data.sensorCo2);
+      setLevelId(data.levelId);
     }
   }, []);
 
@@ -108,9 +111,10 @@ const RecintoEditModeCreate: React.FC = () => {
       perfilOcupacion,
       alturaPromedio,
       sensorCo2,
+      levelId,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
-  }, [selectedRegion, selectedComuna, selectedZonaTermica, nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2]);
+  }, [selectedRegion, selectedComuna, selectedZonaTermica, nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2, levelId]);
 
   // ---------------------------
   //  useEffect para cargar Regiones
@@ -262,6 +266,7 @@ const RecintoEditModeCreate: React.FC = () => {
         occupation_profile_id: perfilOcupacion,
         height: altura,
         co2_sensor: sensorCo2 ? "Si" : "No",
+        level_id: parseInt(levelId) || 0,
       };
 
       console.log("Payload a enviar:", payload);
@@ -312,6 +317,7 @@ const RecintoEditModeCreate: React.FC = () => {
               <ProjectInfoHeader
                 projectName={projectName}
                 region={projectDepartment}
+                project_id={projectId ?? ""}
               />
             </div>
             <Breadcrumb
@@ -391,6 +397,25 @@ const RecintoEditModeCreate: React.FC = () => {
                   if (regex.test(value)) {
                     setAlturaPromedio(value);
                   }
+                }}
+              />
+            </div>
+
+            {/* Campo: Nivel de Recinto */}
+            <div className="col-6 mb-3">
+              <label htmlFor="levelId" className="form-label">
+                Nivel de Recinto
+              </label>
+              <input
+                id="levelId"
+                type="text"
+                className="form-control"
+                placeholder="Ej: 1"
+                value={levelId}
+                onChange={(e) => {
+                  // Solo se permiten números
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setLevelId(value);
                 }}
               />
             </div>

@@ -6,6 +6,7 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
+import { Plus } from "lucide-react";
 
 interface CeilingData {
   id: number;
@@ -14,6 +15,7 @@ interface CeilingData {
   area: number;
   u: number;
   roof_id?: number; // Añadido para edición
+  order?: number; // Añadido para mantener el orden
 }
 
 interface Techo {
@@ -58,7 +60,7 @@ const TabCeilingCreate: React.FC = () => {
   const [editingValues, setEditingValues] = useState<EditingValues>({
     roof_id: 0,
     characteristic: "",
-    area: 0
+    area: 0,
   });
 
   // Función para formatear valores
@@ -77,8 +79,8 @@ const TabCeilingCreate: React.FC = () => {
         {
           method: "GET",
           headers: {
-            "accept": "application/json",
-            "Authorization": `Bearer ${token}`,
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -103,8 +105,8 @@ const TabCeilingCreate: React.FC = () => {
         {
           method: "GET",
           headers: {
-            "accept": "application/json",
-            "Authorization": `Bearer ${token}`,
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -115,20 +117,20 @@ const TabCeilingCreate: React.FC = () => {
 
       const enclosureData: EnclosureData[] = await response.json();
 
-      // Convertimos los datos a formato que necesita la tabla
-      const formattedData = enclosureData.map((item) => ({
+      // Convertimos los datos a formato que necesita la tabla y mantenemos el orden
+      const formattedData = enclosureData.map((item, index) => ({
         id: item.id,
         techos: item.name,
         caracteristicas: item.characteristic,
         area: item.area,
         u: item.u,
-        roof_id: item.roof_id // Guardamos el roof_id para edición
+        roof_id: item.roof_id,
+        order: index, // Añadimos un campo para mantener el orden
       }));
 
       setData(formattedData);
     } catch (error) {
       console.error("Error:", error);
-      // Opcional: notificar error
     }
   };
 
@@ -145,7 +147,7 @@ const TabCeilingCreate: React.FC = () => {
     setEditingValues({
       roof_id: row.roof_id || 0,
       characteristic: row.caracteristicas,
-      area: row.area
+      area: row.area,
     });
   };
 
@@ -165,8 +167,8 @@ const TabCeilingCreate: React.FC = () => {
         {
           method: "DELETE",
           headers: {
-            "accept": "application/json",
-            "Authorization": `Bearer ${token}`,
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -213,7 +215,7 @@ const TabCeilingCreate: React.FC = () => {
     const payload = {
       roof_id: editingValues.roof_id,
       characteristic: editingValues.characteristic,
-      area: editingValues.area
+      area: editingValues.area,
     };
 
     try {
@@ -223,7 +225,7 @@ const TabCeilingCreate: React.FC = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
         }
@@ -233,9 +235,28 @@ const TabCeilingCreate: React.FC = () => {
         throw new Error("Error al actualizar");
       }
 
+      // En lugar de hacer fetchEnclosureData, actualizamos el estado directamente
+      setData((prevData) =>
+        prevData.map((item) => {
+          if (item.id === row.id) {
+            // Buscar el techo seleccionado para obtener su nombre
+            const selectedRoof = techosOptions.find(
+              (t) => t.id === editingValues.roof_id
+            );
+            return {
+              ...item,
+              techos: selectedRoof?.name_detail || item.techos,
+              caracteristicas: editingValues.characteristic,
+              area: editingValues.area,
+              roof_id: editingValues.roof_id,
+            };
+          }
+          return item;
+        })
+      );
+
       notify("Cambios guardados correctamente");
       setEditingRowId(null);
-      fetchEnclosureData(); // Refrescar la tabla
     } catch (error) {
       console.error("Error:", error);
       notify("Error al guardar los cambios");
@@ -248,7 +269,7 @@ const TabCeilingCreate: React.FC = () => {
     setEditingValues({
       roof_id: 0,
       characteristic: "",
-      area: 0
+      area: 0,
     });
   };
 
@@ -262,7 +283,12 @@ const TabCeilingCreate: React.FC = () => {
             <select
               className="form-control"
               value={editingValues.roof_id}
-              onChange={(e) => setEditingValues({ ...editingValues, roof_id: Number(e.target.value) })}
+              onChange={(e) =>
+                setEditingValues({
+                  ...editingValues,
+                  roof_id: Number(e.target.value),
+                })
+              }
             >
               {techosOptions.map((techo) => (
                 <option key={techo.id} value={techo.id}>
@@ -273,7 +299,7 @@ const TabCeilingCreate: React.FC = () => {
           );
         }
         return formatValue(row.techos);
-      }
+      },
     },
     {
       headerName: "Características espacio contiguo al elemento",
@@ -284,16 +310,23 @@ const TabCeilingCreate: React.FC = () => {
             <select
               className="form-control"
               value={editingValues.characteristic}
-              onChange={(e) => setEditingValues({ ...editingValues, characteristic: e.target.value })}
+              onChange={(e) =>
+                setEditingValues({
+                  ...editingValues,
+                  characteristic: e.target.value,
+                })
+              }
             >
               <option value="Exterior">Exterior</option>
               <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-              <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+              <option value="Inter Recintos No Clim">
+                Inter Recintos No Clim
+              </option>
             </select>
           );
         }
         return formatValue(row.caracteristicas);
-      }
+      },
     },
     {
       headerName: "Área [m²]",
@@ -310,20 +343,25 @@ const TabCeilingCreate: React.FC = () => {
                 if (e.key === "-") {
                   e.preventDefault();
                 }
-              }}            
-              onChange={(e) => setEditingValues({ ...editingValues, area: Number(e.target.value) })}
+              }}
+              onChange={(e) =>
+                setEditingValues({
+                  ...editingValues,
+                  area: Number(e.target.value),
+                })
+              }
             />
           );
         }
         return formatValue(row.area);
-      }
+      },
     },
     {
       headerName: "U [W/m²K]",
       field: "u",
       renderCell: (row: CeilingData) => {
         return row.u === 0 ? "-" : row.u.toFixed(2);
-      }
+      },
     },
     {
       headerName: "Acciones",
@@ -386,7 +424,7 @@ const TabCeilingCreate: React.FC = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
         }
@@ -407,24 +445,25 @@ const TabCeilingCreate: React.FC = () => {
 
   useEffect(() => {
     fetchEnclosureData(); // Obtenemos los datos de la tabla cuando se carga el componente
-    fetchTechos(); // Obtenemos los techos disponibles 
+    fetchTechos(); // Obtenemos los techos disponibles
   }, []);
 
   return (
     <div>
-      <TablesParameters columns={columns} data={data} />
       <div style={{ marginTop: "20px" }}>
         <div className="d-flex justify-content-end gap-2 w-100">
-          <CustomButton variant="save" onClick={handleCreate} >
-            Crear Techo
+          <CustomButton variant="save" onClick={handleCreate}>
+            <Plus className="me-1" size={16} />
+            Nuevo Techo
           </CustomButton>
         </div>
       </div>
+      <TablesParameters columns={columns} data={data} />
       <ModalCreate
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Grabar Datos"
+        saveLabel="Crear Techo"
         title="Crear Techo"
       >
         <div className="container">
@@ -462,7 +501,9 @@ const TabCeilingCreate: React.FC = () => {
                 <option value="">Seleccione una opción</option>
                 <option value="Exterior">Exterior</option>
                 <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+                <option value="Inter Recintos No Clim">
+                  Inter Recintos No Clim
+                </option>
               </select>
             </div>
           </div>
@@ -481,7 +522,7 @@ const TabCeilingCreate: React.FC = () => {
                   if (e.key === "-") {
                     e.preventDefault();
                   }
-                }}              
+                }}
                 onChange={(e) => setArea(Number(e.target.value))}
               />
             </div>
@@ -500,8 +541,10 @@ const TabCeilingCreate: React.FC = () => {
         <div className="container">
           <div className="row mb-3">
             <div className="">
-              <p>¿Está seguro que desea eliminar {" "}
-              <strong>{itemToDelete?.techos}</strong>?</p>
+              <p>
+                ¿Está seguro que desea eliminar{" "}
+                <strong>{itemToDelete?.techos}</strong>?
+              </p>
             </div>
           </div>
         </div>

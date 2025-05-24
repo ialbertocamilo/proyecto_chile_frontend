@@ -15,7 +15,10 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 import ModalCreate from "../src/components/common/ModalCreate";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataView";
+import CustomButton from "../src/components/common/CustomButton";
+import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
 
+/* ==================== TIPOS ==================== */
 interface Detail {
   id_detail: number;
   scantilon_location: string;
@@ -27,6 +30,7 @@ interface Detail {
 }
 
 interface TabItem {
+  code_ifc?: string;
   id_detail?: number;
   id?: number;
   name_detail: string;
@@ -54,6 +58,8 @@ interface TabItem {
 }
 
 interface Ventana {
+  code_ifc?: string;
+  id?: number;
   name_element: string;
   atributs?: {
     u_vidrio?: number;
@@ -66,6 +72,8 @@ interface Ventana {
 }
 
 interface Puerta {
+  code_ifc?: string;
+  id?: number;
   name_element: string;
   atributs?: {
     u_puerta_opaca?: number;
@@ -76,8 +84,16 @@ interface Puerta {
   fm?: number;
 }
 
-type TabStep4 = "detalles" | "muros" | "techumbre" | "pisos" | "ventanas" | "puertas";
+/* Los tabs que corresponden a Step4 */
+type TabStep4 =
+  | "detalles"
+  | "muros"
+  | "techumbre"
+  | "pisos"
+  | "ventanas"
+  | "puertas";
 
+/* ==================== HELPERS ==================== */
 function getCssVarValue(varName: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement)
@@ -86,38 +102,45 @@ function getCssVarValue(varName: string, fallback: string) {
   return value || fallback;
 }
 
+/* ================================================= */
+/* ==========  COMPONENTE PRINCIPAL  =============== */
+/* ================================================= */
 const WorkFlowpar2viewPage: React.FC = () => {
   useAuth();
   const router = useRouter();
 
-  // ==================== ESTADOS PRINCIPALES ====================
+  /* ==================== ESTADOS PRINCIPALES ==================== */
   const [projectId, setProjectId] = useState<number | null>(null);
   const [step, setStep] = useState<number>(4);
   const [hasLoaded, setHasLoaded] = useState(false);
 
+  /* Detalles generales del modal */
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // La vista por defecto mostrará los tabs (datos constructivos)
+  /* Vista por defecto: tabs (datos constructivos) */
   const [showTabsInStep4, setShowTabsInStep4] = useState(true);
   const [tabStep4, setTabStep4] = useState<TabStep4>("detalles");
 
+  /* Listas para cada tab */
   const [murosTabList, setMurosTabList] = useState<TabItem[]>([]);
   const [techumbreTabList, setTechumbreTabList] = useState<TabItem[]>([]);
   const [pisosTabList, setPisosTabList] = useState<TabItem[]>([]);
   const [ventanasTabList, setVentanasTabList] = useState<Ventana[]>([]);
   const [puertasTabList, setPuertasTabList] = useState<Puerta[]>([]);
 
+  /* Control de color en tabs */
   const primaryColor = getCssVarValue("--primary-color", "#3ca7b7");
 
-  // Estado para el modal de detalles generales
+  /* Estado para el modal y el id de detail-part seleccionado */
   const [showGeneralDetailsModal, setShowGeneralDetailsModal] = useState(false);
+  const [selectedDetailId, setSelectedDetailId] = useState<number | null>(null);
 
-  // ==================== ESTADOS PARA CABECERA ====================
+  /* ==================== ESTADOS PARA CABECERA ==================== */
   const [projectName, setProjectName] = useState("");
   const [projectDepartment, setProjectDepartment] = useState("");
 
-  // Ejemplo de recintos (hardcodeado)
+  /* Ejemplo de recintos (hardcodeado) */
   const recintos = [
     {
       id: 1,
@@ -130,7 +153,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     },
   ];
 
-  // ==================== OBTENCIÓN DE projectId y paso ====================
+  /* ==================== OBTENCIÓN DE projectId y paso ==================== */
   useEffect(() => {
     if (router.isReady) {
       if (router.query.id) {
@@ -151,7 +174,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     }
   }, [router.isReady, router.query.id, router.query.step]);
 
-  // ==================== OBTENER DATOS DEL LOCAL STORAGE PARA CABECERA ====================
+  /* ==================== OBTENER DATOS DEL LOCAL STORAGE PARA CABECERA ==================== */
   useEffect(() => {
     const name = localStorage.getItem("project_name_view") || "";
     const department = localStorage.getItem("project_department_view") || "";
@@ -159,6 +182,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     setProjectDepartment(department);
   }, []);
 
+  /* ==================== REDIRECCIÓN SI NO HAY projectId ==================== */
   useEffect(() => {
     if (hasLoaded && projectId === null) {
       Swal.fire(
@@ -171,33 +195,34 @@ const WorkFlowpar2viewPage: React.FC = () => {
     }
   }, [hasLoaded, projectId, router]);
 
-  // ==================== LLAMADAS A ENDPOINTS ====================
-  const fetchFetchedDetails = async () => {
+  /* =============================================================== */
+  /* ================  LLAMADAS A ENDPOINTS  ======================== */
+  /* =============================================================== */
+
+  /* ---------- Nuevo endpoint /detail-part/{detail_part_id} ---------- */
+  const fetchDetailPart = async (detailPartId: number) => {
     try {
-      if (!projectId) {
-        console.log("Project ID is not available ");
-        return;
-      }
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire("Token no encontrado", "Inicia sesión.");
         return;
       }
-      const url = `${constantUrlApiEndpoint}/admin/details/?project_id=${projectId}`;
+      const url = `${constantUrlApiEndpoint}/detail-part/${detailPartId}`;
       const headers = { Authorization: `Bearer ${token}` };
-      console.log("Fetching details with project ID:", projectId);
       const response = await axios.get(url, { headers });
+      /* La API devuelve un array según el ejemplo, así que guardamos tal cual */
       setFetchedDetails(response.data || []);
     } catch (error: unknown) {
-      console.error("Error al obtener detalles:", error);
+      console.error("Error al obtener detalle-part:", error);
       if (axios.isAxiosError(error)) {
         console.error("Status:", error.response?.status);
-        console.error("Response data:", error.response?.data);
+        console.error("Response:", error.response?.data);
       }
-      Swal.fire("Error", "Error al obtener detalles. Ver consola.");
+      Swal.fire("Error", "Error al obtener detalles del elemento.");
     }
   };
 
+  /* ---------------- Endpoints existentes para cada tab ---------------- */
   const fetchMurosDetails = useCallback(async () => {
     if (!projectId) return;
     const token = localStorage.getItem("token");
@@ -283,15 +308,23 @@ const WorkFlowpar2viewPage: React.FC = () => {
     }
   }, []);
 
-  // ==================== EFECTOS SEGÚN STEP ====================
+  /* ==================== EFECTO PARA DETAIL-PART ==================== */
+  useEffect(() => {
+    if (showGeneralDetailsModal && selectedDetailId !== null) {
+      fetchDetailPart(selectedDetailId);
+    }
+  }, [showGeneralDetailsModal, selectedDetailId]);
+
+  /* ==================== EFECTOS SEGÚN STEP ==================== */
   useEffect(() => {
     if (step === 4 && projectId !== null) {
-      // Aquí se podría llamar a alguna función si se necesita al iniciar el step 4
+      // Posible lógica al iniciar step 4
     }
   }, [step, projectId]);
 
   useEffect(() => {
     if (showTabsInStep4) {
+      /* "muros" por defecto */
       setTabStep4("muros");
     }
   }, [showTabsInStep4]);
@@ -321,29 +354,56 @@ const WorkFlowpar2viewPage: React.FC = () => {
     fetchPuertasDetails,
   ]);
 
-  // ==================== NUEVO EFECTO: FETCH PARA DETALLES GENERALES ====================
-  useEffect(() => {
-    if (showGeneralDetailsModal && projectId) {
-      fetchFetchedDetails();
-    }
-  }, [showGeneralDetailsModal, projectId]);
-
-  // ==================== RENDER CABECERA ====================
+  /* =============================================================== */
+  /* ================    RENDER CABECERA      ====================== */
+  /* =============================================================== */
   const renderMainHeader = () =>
     step >= 4 && <Title text="Vista de Desarrollo de proyecto" />;
 
-  // ==================== RENDER DE TABLAS (MUROS, TECHUMBRE, ETC.) ====================
+  /* =============================================================== */
+  /* =====      HELPERS PARA BOTÓN LAYERS (abrir modal)         ==== */
+  /* =============================================================== */
+  const handleOpenLayersModal = (detailId: number | undefined | null) => {
+    if (!detailId) {
+      Swal.fire("Error", "No se encontró el ID del detalle.");
+      return;
+    }
+    setSelectedDetailId(detailId);
+    setShowGeneralDetailsModal(true);
+  };
+
+  /* =============================================================== */
+  /* ================  RENDER DE TABLAS (MUROS, ETC.) ============== */
+  /* =============================================================== */
+
   const renderMurosTable = () => {
     const columnsMuros = [
+      {
+        headerName: "Código IFC",
+        field: "code_ifc",
+      },
       { headerName: "Nombre Abreviado", field: "name_detail" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
+      {
+        headerName: "Acciones",
+        field: "actions",
+        renderCell: (row: any) => (
+          <CustomButton
+            variant="layersIcon"
+            onClick={() => handleOpenLayersModal(row.id_detail ?? row.id)}
+          />
+        ),
+      },
     ];
 
     const murosData = murosTabList.map((item) => ({
+      code_ifc: item.code_ifc || "-",
+
+      id_detail: item.id_detail ?? item.id, // necesario para obtener el id
       name_detail: item.name_detail,
-      valorU: item.value_u?.toFixed(3) ?? "--",
+      valorU: item.value_u?.toFixed(2) ?? "-",
       colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
       colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
     }));
@@ -357,15 +417,32 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   const renderTechumbreTable = () => {
     const columnsTechumbre = [
+      {
+        headerName: "Código IFC",
+        field: "code_ifc",
+      },
       { headerName: "Nombre Abreviado", field: "name_detail" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },
       { headerName: "Color Interior", field: "colorInterior" },
+      {
+        headerName: "Acciones",
+        field: "actions",
+        renderCell: (row: any) => (
+          <CustomButton
+            variant="layersIcon"
+            onClick={() => handleOpenLayersModal(row.id_detail ?? row.id)}
+          />
+        ),
+      },
     ];
 
     const techData = techumbreTabList.map((item) => ({
+      code_ifc: item.code_ifc || "-",
+
+      id_detail: item.id_detail ?? item.id,
       name_detail: item.name_detail,
-      valorU: item.value_u?.toFixed(3) ?? "--",
+      valorU: item.value_u?.toFixed(2) ?? "-",
       colorExterior: item.info?.surface_color?.exterior?.name || "Desconocido",
       colorInterior: item.info?.surface_color?.interior?.name || "Desconocido",
     }));
@@ -378,7 +455,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
   };
 
   const renderPisosTable = () => {
-    // Función helper para formatear valores numéricos
+    /* Helper para formatear valores */
     const formatValue = (value: any, fixed?: number): string => {
       if (value === undefined || value === null || value === 0) {
         return "-";
@@ -390,6 +467,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
     };
 
     const columnsPisos = [
+      {
+        headerName: "Código IFC",
+        field: "code_ifc",
+      },
       { headerName: "Nombre", field: "nombre" },
       { headerName: "U [W/m²K]", field: "uValue" },
       { headerName: "I [W/mK] (bajo piso)", field: "bajoPisoLambda" },
@@ -400,11 +481,22 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { headerName: "I [W/mK] (horiz)", field: "horizLambda" },
       { headerName: "e Aisl [cm]", field: "horizEAisl" },
       { headerName: "D [cm]", field: "horizD" },
+      {
+        headerName: "Acciones",
+        field: "actions",
+        renderCell: (row: any) => (
+          <CustomButton
+            variant="layersIcon"
+            onClick={() => handleOpenLayersModal(row.id_detail ?? row.id)}
+          />
+        ),
+      },
     ];
 
     const multiHeaderPisos = {
       rows: [
         [
+          { label: "Código ICF", rowSpan: 2 },
           { label: "Nombre", rowSpan: 2 },
           { label: "U [W/m²K]", rowSpan: 2 },
           { label: "Aislamiento bajo piso", colSpan: 2 },
@@ -429,14 +521,16 @@ const WorkFlowpar2viewPage: React.FC = () => {
       const vert = item.info?.ref_aisl_vertical || {};
       const horiz = item.info?.ref_aisl_horizontal || {};
       return {
+        code_ifc: item.code_ifc || "-",
+        id_detail: item.id_detail ?? item.id,
         nombre: item.name_detail,
-        uValue: formatValue(item.value_u, 3),
-        bajoPisoLambda: formatValue(bajoPiso.lambda, 3),
+        uValue: formatValue(item.value_u, 2),
+        bajoPisoLambda: formatValue(bajoPiso.lambda, 2),
         bajoPisoEAisl: formatValue(bajoPiso.e_aisl),
-        vertLambda: formatValue(vert.lambda, 3),
+        vertLambda: formatValue(vert.lambda, 2),
         vertEAisl: formatValue(vert.e_aisl),
         vertD: formatValue(vert.d),
-        horizLambda: formatValue(horiz.lambda, 3),
+        horizLambda: formatValue(horiz.lambda, 2),
         horizEAisl: formatValue(horiz.e_aisl),
         horizD: formatValue(horiz.d),
       };
@@ -457,8 +551,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
+  /* Ventanas y puertas no usan modal, así que sin botón */
   const renderVentanasTable = () => {
     const columnsVentanas = [
+      {
+        headerName: "Código IFC",
+        field: "code_ifc",
+      },
       { headerName: "Nombre Elemento", field: "name_element" },
       { headerName: "U Vidrio [W/m²K]", field: "u_vidrio" },
       { headerName: "FS Vidrio []", field: "fs_vidrio" },
@@ -471,6 +570,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
     const ventanasData = ventanasTabList.map((item) => {
       if ((item as any).created_status === "created") {
         return {
+          code_ifc: item.code_ifc || "-",
           name_element: (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
               {item.name_element}
@@ -478,14 +578,14 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ),
           u_vidrio: item.atributs?.u_vidrio ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.atributs.u_vidrio.toFixed(3)}
+              {item.atributs.u_vidrio.toFixed(2)}
             </span>
           ) : (
             "--"
           ),
           fs_vidrio: item.atributs?.fs_vidrio ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.atributs.fs_vidrio}
+              {Number(item.atributs.fs_vidrio).toFixed(2)}
             </span>
           ) : (
             "--"
@@ -506,12 +606,11 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ),
           u_marco: item.u_marco ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.u_marco.toFixed(3)}
+              {item.u_marco.toFixed(2)}
             </span>
           ) : (
             "--"
           ),
-          // Multiplicamos fm por 100 y lo formateamos a dos decimales
           fm: item.fm ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
               {(item.fm * 100).toFixed(2)}
@@ -522,14 +621,17 @@ const WorkFlowpar2viewPage: React.FC = () => {
         };
       } else {
         return {
+          code_ifc: item.code_ifc || "-",
           name_element: item.name_element,
           u_vidrio: item.atributs?.u_vidrio
-            ? item.atributs.u_vidrio.toFixed(3)
+            ? item.atributs.u_vidrio.toFixed(2)
             : "--",
-          fs_vidrio: item.atributs?.fs_vidrio ?? "--",
+          fs_vidrio: item.atributs?.fs_vidrio
+            ? Number(item.atributs.fs_vidrio).toFixed(2)
+            : "--",
           frame_type: item.atributs?.frame_type ?? "--",
           clousure_type: item.atributs?.clousure_type ?? "--",
-          u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+          u_marco: item.u_marco ? item.u_marco.toFixed(2) : "--",
           fm: item.fm ? (item.fm * 100).toFixed(2) : "--",
         };
       }
@@ -544,6 +646,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   const renderPuertasTable = () => {
     const columnsPuertas = [
+      {
+        headerName: "Código IFC",
+        field: "code_ifc",
+      },
       { headerName: "Nombre Elemento", field: "name_element" },
       { headerName: "U puerta opaca [W/m²K]", field: "u_puerta" },
       { headerName: "Vidrio []", field: "name_ventana" },
@@ -555,6 +661,8 @@ const WorkFlowpar2viewPage: React.FC = () => {
     const puertasData = puertasTabList.map((item) => {
       if ((item as any).created_status === "created") {
         return {
+          code_ifc: item.code_ifc || "-",
+
           name_element: (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
               {item.name_element}
@@ -562,7 +670,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ),
           u_puerta: item.atributs?.u_puerta_opaca ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.atributs.u_puerta_opaca.toFixed(3)}
+              {item.atributs.u_puerta_opaca.toFixed(2)}
             </span>
           ) : (
             "--"
@@ -574,7 +682,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ) : (
             "--"
           ),
-          // Multiplicamos porcentaje_vidrio por 100 y lo formateamos a dos decimales
           porcentaje_vidrio: item.atributs?.porcentaje_vidrio ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
               {(item.atributs.porcentaje_vidrio * 100).toFixed(2)}
@@ -584,7 +691,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ),
           u_marco: item.u_marco ? (
             <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>
-              {item.u_marco.toFixed(3)}
+              {item.u_marco.toFixed(2)}
             </span>
           ) : (
             "--"
@@ -599,15 +706,16 @@ const WorkFlowpar2viewPage: React.FC = () => {
         };
       } else {
         return {
+          code_ifc: item.code_ifc || "-",
           name_element: item.name_element,
           u_puerta: item.atributs?.u_puerta_opaca
-            ? item.atributs.u_puerta_opaca.toFixed(3)
+            ? item.atributs.u_puerta_opaca.toFixed(2)
             : "--",
           name_ventana: item.atributs?.name_ventana ?? "--",
           porcentaje_vidrio: item.atributs?.porcentaje_vidrio
             ? (item.atributs.porcentaje_vidrio * 100).toFixed(2)
             : "--",
-          u_marco: item.u_marco ? item.u_marco.toFixed(3) : "--",
+          u_marco: item.u_marco ? item.u_marco.toFixed(2) : "--",
           fm: item.fm ? (item.fm * 100).toFixed(2) : "--",
         };
       }
@@ -620,9 +728,9 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-
-
-  // ==================== RENDER PESTAÑAS (DATOS CONSTRUCTIVOS) ====================
+  /* =============================================================== */
+  /* ================  RENDER PESTAÑAS STEP 4 ====================== */
+  /* =============================================================== */
   const renderStep4Tabs = () => {
     if (!showTabsInStep4) return null;
     const tabs = [
@@ -652,11 +760,16 @@ const WorkFlowpar2viewPage: React.FC = () => {
                   width: "100%",
                   padding: "10px",
                   backgroundColor: "#fff",
-                  color: tabStep4 === item.key ? primaryColor : "var(--secondary-color)",
+                  color:
+                    tabStep4 === item.key
+                      ? primaryColor
+                      : "var(--secondary-color)",
                   border: "none",
                   cursor: "pointer",
                   borderBottom:
-                    tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
+                    tabStep4 === item.key
+                      ? `3px solid ${primaryColor}`
+                      : "none",
                   fontFamily: "var(--font-family-base)",
                   fontWeight: "normal",
                 }}
@@ -668,21 +781,28 @@ const WorkFlowpar2viewPage: React.FC = () => {
           ))}
         </ul>
 
-        {/* Se agrega onClick solo para tabs que no sean "puertas" ni "ventanas" */}
         <div
           style={{
-            height: (tabStep4 === "ventanas" || tabStep4 === "puertas") ? "auto" : "400px",
-            overflowY: (tabStep4 === "ventanas" || tabStep4 === "puertas") ? "hidden" : "auto",
+            height:
+              tabStep4 === "ventanas" || tabStep4 === "puertas"
+                ? "auto"
+                : "400px",
+            overflowY:
+              tabStep4 === "ventanas" || tabStep4 === "puertas"
+                ? "hidden"
+                : "auto",
             position: "relative",
-            cursor: tabStep4 !== "puertas" && tabStep4 !== "ventanas" ? "pointer" : "default",
+            cursor:
+              tabStep4 !== "puertas" && tabStep4 !== "ventanas"
+                ? "pointer"
+                : "default",
           }}
           onClick={
             tabStep4 !== "puertas" && tabStep4 !== "ventanas"
-              ? () => setShowGeneralDetailsModal(true)
+              ? undefined /* se abre con el botón ahora */
               : undefined
           }
         >
-
           {tabStep4 === "muros" && (
             <div style={{ overflowX: "auto" }}>{renderMurosTable()}</div>
           )}
@@ -703,16 +823,18 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // ==================== RENDER DETALLES GENERALES (para el modal sin searchbar) ====================
+  /* =============================================================== */
+  /* =========   CONTENIDO DEL MODAL (Detalles Generales)   ========= */
+  /* =============================================================== */
   const renderGeneralDetailsContent = () => {
-    // Filtra los detalles según la pestaña activa (muros, techumbre o pisos)
+    /* Filtra según la pestaña activa y búsqueda */
     const filteredDetails = fetchedDetails.filter((det) => {
       let typeMatch = false;
       const location = det.scantilon_location.toLowerCase();
+
       if (tabStep4 === "muros") {
         typeMatch = location === "muro";
       } else if (tabStep4 === "techumbre") {
-        // Asumiendo que en la respuesta se usa "techo" o "techumbre" para techumbre
         typeMatch = location === "techo" || location === "techumbre";
       } else if (tabStep4 === "pisos") {
         typeMatch = location === "piso";
@@ -728,7 +850,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
       return typeMatch && searchMatch;
     });
 
-    // Mapeamos para transformar TODOS los campos a color primario cuando created_status es "default"
+    /* Mapeo para colorear filas creadas */
     const detailsData = filteredDetails.map((det) => {
       if (det.created_status === "created") {
         return {
@@ -776,24 +898,27 @@ const WorkFlowpar2viewPage: React.FC = () => {
     );
   };
 
-  // ==================== RENDER RECINTO ===================
-  const renderRecinto = () => {
-    return (
-      <>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div></div>
-        </div>
-        <TabRecintDataCreate />
-      </>
-    );
-  };
+  /* =============================================================== */
+  /* ==================== RENDER RECINTO =========================== */
+  /* =============================================================== */
+  const renderRecinto = () => (
+    <>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div></div>
+      </div>
+      <TabRecintDataCreate />
+    </>
+  );
 
-  // ==================== PASOS / SIDEBAR ====================
+  /* =============================================================== */
+  /* ==================== PASOS / SIDEBAR ========================== */
+  /* =============================================================== */
   const sidebarSteps = [
     {
       stepNumber: 1,
       iconName: "assignment_ind",
-      title: "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+      title:
+        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
       route: `/workflow-part1-view?id=${projectId}&step=1`,
     },
     {
@@ -801,6 +926,11 @@ const WorkFlowpar2viewPage: React.FC = () => {
       iconName: "location_on",
       title: "Ubicación del proyecto",
       route: `/workflow-part1-view?id=${projectId}&step=2`,
+    },
+    {
+      stepNumber: 8,
+      iconName: "water_drop",
+      title: "Agua Caliente Sanitaria",
     },
     {
       stepNumber: 4,
@@ -816,6 +946,9 @@ const WorkFlowpar2viewPage: React.FC = () => {
     },
   ];
 
+  /* =============================================================== */
+  /* ========================  RETURN ============================== */
+  /* =============================================================== */
   return (
     <>
       <GooIcons />
@@ -830,10 +963,12 @@ const WorkFlowpar2viewPage: React.FC = () => {
               justifyContent: "space-between",
             }}
           >
+            <div style={{ pointerEvents: 'none' }}>
             <ProjectInfoHeader
               projectName={projectName}
               region={projectDepartment}
             />
+            </div>
             <Breadcrumb
               items={[
                 {
@@ -853,24 +988,25 @@ const WorkFlowpar2viewPage: React.FC = () => {
                 activeStep={step}
                 steps={sidebarSteps}
                 onClickAction={(route: string) => router.push(route)}
-                onStepChange={() => { }}
+                onStepChange={() => {}}
               />
             </div>
 
             <div className="col-12 col-md-9 p-4">
               {step === 4 && showTabsInStep4 && renderStep4Tabs()}
               {step === 7 && renderRecinto()}
+              {step === 8 && <AguaCalienteSanitaria onlyView={true} />}
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Modal para detalles generales sin searchbar, sin botón "Cerrar" en el footer y de tamaño "xl" */}
+      {/* Modal para detalles generales */}
       <ModalCreate
         detail=""
         isOpen={showGeneralDetailsModal}
         onClose={() => setShowGeneralDetailsModal(false)}
-        onSave={() => { }}
+        onSave={() => {}}
         title="Detalles Generales"
         hideFooter={true}
         modalStyle={{

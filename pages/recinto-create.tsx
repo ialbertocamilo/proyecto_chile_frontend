@@ -1,14 +1,16 @@
 // recinto-create.tsx
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponent";
-import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import { useRecintos } from "@/context/RecintosContext";
+import { useApi } from "@/hooks/useApi";
+import { Recinto } from "@/types/recinto";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import { useApi } from "@/hooks/useApi";
 
 interface IEnclosureProfile {
   id: number;
@@ -22,11 +24,15 @@ interface IFormData {
   perfilOcupacion: number;
   alturaPromedio: string;
   sensorCo2: boolean;
+  level: string;
 }
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
 const RecintoCreate: React.FC = () => {
+  const { addRecinto } = useRecintos();
+  const { put } = useApi();
+
   // Se mantiene projectDepartment y projectId, en caso de que sean necesarios para otros componentes
   const [projectName, setProjectName] = useState<string>("Nombre del Proyecto");
   const [projectDepartment, setProjectDepartment] = useState<string>("Región");
@@ -37,6 +43,7 @@ const RecintoCreate: React.FC = () => {
   const [perfilOcupacion, setPerfilOcupacion] = useState<number>(0);
   const [alturaPromedio, setAlturaPromedio] = useState<string>("");
   const [sensorCo2, setSensorCo2] = useState<boolean>(false);
+  const [level, setLevel] = useState<string>("");
 
   // Perfiles de ocupación (desplegable)
   const [enclosureProfiles, setEnclosureProfiles] = useState<IEnclosureProfile[]>([]);
@@ -45,13 +52,13 @@ const RecintoCreate: React.FC = () => {
   const [isRecintoCreated, setIsRecintoCreated] = useState<boolean>(false);
 
   // Recuperar datos del proyecto y del formulario (si existen) del localStorage
-   useEffect(() => {
-      const name = localStorage.getItem("project_name") || "Nombre del Proyecto";
-      const department = localStorage.getItem("project_department") || "Región";
-      const pid = localStorage.getItem("project_id") || "";
-      setProjectName(name);
-      setProjectDepartment(department);
-      setProjectId(pid);
+  useEffect(() => {
+    const name = localStorage.getItem("project_name") || "Nombre del Proyecto";
+    const department = localStorage.getItem("project_department") || "Región";
+    const pid = localStorage.getItem("last_created_project") || "";
+    setProjectName(name);
+    setProjectDepartment(department);
+    setProjectId(pid);
 
     // Recuperar datos del formulario guardados
     const savedFormData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -61,6 +68,7 @@ const RecintoCreate: React.FC = () => {
       setPerfilOcupacion(data.perfilOcupacion);
       setAlturaPromedio(data.alturaPromedio);
       setSensorCo2(data.sensorCo2);
+      setLevel(data.level || "");
     }
   }, []);
 
@@ -78,9 +86,10 @@ const RecintoCreate: React.FC = () => {
       perfilOcupacion,
       alturaPromedio,
       sensorCo2,
+      level,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
-  }, [nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2]);
+  }, [nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2, level]);
 
   // useEffect para cargar Perfiles de ocupación
   useEffect(() => {
@@ -110,7 +119,6 @@ const RecintoCreate: React.FC = () => {
     fetchProfiles();
   }, []);
 
-  const { put } = useApi();
 
   const actualizarStatus = async () => {
     try {
@@ -133,7 +141,8 @@ const RecintoCreate: React.FC = () => {
     if (
       !nombreRecinto.trim() ||
       !perfilOcupacion ||
-      !alturaPromedio.trim()
+      !alturaPromedio.trim() ||
+      !level.trim()
     ) {
       notify("Por favor, complete todos los campos requeridos y asegúrese que la altura tenga un formato correcto");
       return;
@@ -160,6 +169,7 @@ const RecintoCreate: React.FC = () => {
         occupation_profile_id: perfilOcupacion,
         height: alturaNumerica,
         co2_sensor: sensorCo2 ? "Si" : "No",
+        level_id: parseInt(level),
       };
 
       console.log("Payload a enviar:", payload);
@@ -187,6 +197,7 @@ const RecintoCreate: React.FC = () => {
       }
 
       localStorage.setItem("recinto_id", result.id.toString());
+      addRecinto(result as Recinto);
       notify("Recinto creado correctamente");
       actualizarStatus();
       setIsRecintoCreated(true);
@@ -211,6 +222,7 @@ const RecintoCreate: React.FC = () => {
             <ProjectInfoHeader
               projectName={projectName}
               region={projectDepartment}
+              project_id={projectId ?? ""}
             />
             <div className="ms-auto">
               <Breadcrumb
@@ -282,6 +294,20 @@ const RecintoCreate: React.FC = () => {
                     setAlturaPromedio(value);
                   }
                 }}
+              />
+            </div>
+
+            <div className="col-6 mb-3">
+              <label htmlFor="level" className="form-label">
+                Nivel de Recinto
+              </label>
+              <input
+                id="level"
+                type="number"
+                className="form-control"
+                placeholder="Ej: 1"
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
               />
             </div>
 

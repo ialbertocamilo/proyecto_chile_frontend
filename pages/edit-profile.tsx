@@ -5,7 +5,7 @@ import Head from "next/head";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import Image from "next/image";
 import useAuth from "../src/hooks/useAuth";
-import CreateButton from "@/components/CreateButton";
+import CustomButton from "@/components/common/CustomButton";
 import Card from "../src/components/common/Card";
 import { notify } from "@/utils/notify";
 import Title from "../src/components/Title";
@@ -372,15 +372,23 @@ const EditProfile = () => {
                       <span style={{ color: "red" }}>*</span> Campos obligatorios
                     </div>
 
-                    <div className="mt-auto d-flex justify-content-end">
-                      <CreateButton
-                        useRouterBack={true}
-                        backRoute="/dashboard"
-                        saveTooltip="Guardar"
-                        backTooltip="Volver"
-                        saveText={loading ? "Guardando..." : "Guardar"}
-                        backText="Cancelar"
-                      />
+                    <div className="mt-auto d-flex justify-content-between">
+                      <CustomButton
+                        type="button"
+                        variant="back"
+                        onClick={() => router.back()}
+                        color="red"
+                      >
+                        Cancelar
+                      </CustomButton>
+
+                      <CustomButton
+                        type="submit"
+                        variant="save"
+                        className="btn btn-primary"
+                      >
+                        Guardar
+                      </CustomButton>
                     </div>
                   </form>
                 )}

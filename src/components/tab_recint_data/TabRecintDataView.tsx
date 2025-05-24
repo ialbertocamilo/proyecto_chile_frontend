@@ -17,7 +17,9 @@ interface EnclosureGeneralData {
   comuna_id: number;
   nombre_comuna: string;
   nombre_region: string;
+  district: string; // Add this field
   usage_profile_name: string;
+  level_id: number;
 }
 
 const TabRecintDataView: React.FC = () => {
@@ -67,9 +69,9 @@ const TabRecintDataView: React.FC = () => {
 
   const columns = [
     {
-      headerName: "ID",
+      headerName: "Cod",
       field: "id",
-      renderCell: (row: EnclosureGeneralData) => row.id,
+      renderCell: (row: EnclosureGeneralData) => ("REC-"+row.id),
     },
     {
       headerName: "Nombre Recinto",
@@ -92,19 +94,19 @@ const TabRecintDataView: React.FC = () => {
       renderCell: (row: EnclosureGeneralData) => row.co2_sensor,
     },
     {
+      headerName: "Nivel de Recinto",
+      field: "level_id",
+      renderCell: (row: EnclosureGeneralData) => row.level_id,
+    },
+    {
       headerName: "Región",
       field: "nombre_region",
       renderCell: (row: EnclosureGeneralData) => row.nombre_region,
     },
     {
-      headerName: "Localidad",
-      field: "nombre_comuna",
-      renderCell: (row: EnclosureGeneralData) => row.nombre_comuna,
-    },
-    {
-      headerName: "Zona Térmica",
-      field: "zona_termica",
-      renderCell: (row: EnclosureGeneralData) => row.zona_termica,
+      headerName: "Distrito/Municipio",
+      field: "district",
+      renderCell: (row: EnclosureGeneralData) => row.district,
     },
     {
       headerName: "Acciones",

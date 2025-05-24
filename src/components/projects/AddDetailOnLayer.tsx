@@ -13,7 +13,7 @@ export const AddDetailOnLayer: React.FC<CreateDetailOnLayerProps> = ({ item,  On
         <>
             <CustomButton
                 className="btn-table"
-                variant="addIcon"
+                variant="layersIcon"
                 onClick={(e) => {
                     e.stopPropagation();
                     SetSelectedItem(item)

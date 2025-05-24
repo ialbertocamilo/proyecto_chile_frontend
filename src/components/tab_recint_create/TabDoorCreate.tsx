@@ -6,6 +6,8 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
+import ThermalBridgesDoorModal from "../modals/ThermalBridgesDoorModal";
+import { Plus } from "lucide-react";
 
 interface DoorData {
   id: number;
@@ -57,6 +59,21 @@ const TabDoorCreate: React.FC = () => {
   // Estado para opciones de ángulo y de puertas
   const [angleOptions, setAngleOptions] = useState<string[]>([]);
   const [doorOptions, setDoorOptions] = useState<any[]>([]);
+
+  //ThermalBridgesModal OPEN
+  const [showModalThermicBridges, setShowModalThermicBridges] =
+    useState<boolean>(false);
+
+  function handleThermicBridgesDoor(row: any) {
+    // console.log("Puentes térmicos para el bridgeId:", bridgeId);
+    console.log("row", row);
+    handleFavEditClick(row);
+
+    console.log("favEditData", favEditData);
+    // console.log("editingBridgeData", editingBridgeData);
+    // console.log("detailOptions", detailOptions);
+    setShowModalThermicBridges(true);
+  }
 
   // Función para formatear los valores. Si es 0 o "N/A", se retorna "-"
   const formatValue = (value: any) => {
@@ -142,12 +159,15 @@ const TabDoorCreate: React.FC = () => {
         });
 
         // Obtener opciones de ángulo
-        const angleResponse = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const angleResponse = await fetch(
+          `${constantUrlApiEndpoint}/angle-azimut`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         if (!angleResponse.ok) {
           throw new Error("Error al obtener las opciones de ángulo azimut");
         }
@@ -155,12 +175,15 @@ const TabDoorCreate: React.FC = () => {
         setAngleOptions(angleOpts);
 
         // Obtener opciones de puerta
-        const doorResponse = await fetch(`${constantUrlApiEndpoint}/user/elements/?type=door`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const doorResponse = await fetch(
+          `${constantUrlApiEndpoint}/user/elements/?type=door`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         if (!doorResponse.ok) {
           throw new Error("Error al obtener las opciones de puertas");
         }
@@ -169,7 +192,9 @@ const TabDoorCreate: React.FC = () => {
 
         // Actualizar el nombre de la puerta en la tabla si se encuentra en doorOptions
         const updatedData = mergedData.map((row) => {
-          const doorInfo = doorData.find((door: any) => door.id === row.door_id);
+          const doorInfo = doorData.find(
+            (door: any) => door.id === row.door_id
+          );
           if (doorInfo) {
             return { ...row, tipoPuente: doorInfo.name_element };
           }
@@ -261,7 +286,9 @@ const TabDoorCreate: React.FC = () => {
 
       // Actualizar el nombre de la puerta usando doorOptions
       mergedData = mergedData.map((row) => {
-        const doorInfo = doorOptions.find((door: any) => door.id === row.door_id);
+        const doorInfo = doorOptions.find(
+          (door: any) => door.id === row.door_id
+        );
         if (doorInfo) {
           return { ...row, tipoPuente: doorInfo.name_element };
         }
@@ -280,7 +307,10 @@ const TabDoorCreate: React.FC = () => {
     setEditingRow({ ...row });
   };
 
-  const handleRowFieldChange = (field: keyof DoorData, value: string | number) => {
+  const handleRowFieldChange = (
+    field: keyof DoorData,
+    value: string | number
+  ) => {
     if (editingRow) {
       setEditingRow({ ...editingRow, [field]: value });
     }
@@ -289,7 +319,9 @@ const TabDoorCreate: React.FC = () => {
   const handleAccept = async () => {
     if (!editingRow) return;
     try {
-      const selectedDoor = doorOptions.find((door: any) => door.name_element === editingRow.tipoPuente);
+      const selectedDoor = doorOptions.find(
+        (door: any) => door.name_element === editingRow.tipoPuente
+      );
       const doorId = selectedDoor ? selectedDoor.id : 0;
       const payload = {
         door_id: doorId,
@@ -312,9 +344,21 @@ const TabDoorCreate: React.FC = () => {
       if (!response.ok) {
         throw new Error("Error al actualizar el registro");
       }
+
+      // Actualizar el estado local en lugar de recargar todos los datos
+      setData(data.map(item => {
+        if (item.id === editingRow.id) {
+          return {
+            ...item,
+            ...editingRow,
+            door_id: doorId
+          };
+        }
+        return item;
+      }));
+
       notify("Cambios guardados correctamente");
       setEditingRow(null);
-      fetchDoorData();
     } catch (error) {
       console.error("Error:", error);
       notify("Error al guardar los cambios", "error");
@@ -361,7 +405,12 @@ const TabDoorCreate: React.FC = () => {
             fav1: { d: favEditData.fav1D, l: favEditData.fav1L },
             fav2_izq: { p: favEditData.fav2izqP, s: favEditData.fav2izqS },
             fav2_der: { p: favEditData.fav2DerP, s: favEditData.fav2DerS },
-            fav3: { e: favEditData.fav3E, t: favEditData.fav3T, beta: favEditData.fav3Beta, alfa: favEditData.fav3Alpha },
+            fav3: {
+              e: favEditData.fav3E,
+              t: favEditData.fav3T,
+              beta: favEditData.fav3Beta,
+              alfa: favEditData.fav3Alpha,
+            },
           }),
         }
       );
@@ -468,6 +517,13 @@ const TabDoorCreate: React.FC = () => {
     }
   };
 
+  //Cerrar el modal
+  const handleCloseEditBridge = () => {
+    setShowModalThermicBridges(false);
+    setEditingFavRow(null);
+    // setData([]);
+  };
+
   // Estilo para inputs FAV
   const favInputStyle = { height: "20px", fontSize: "14px", width: "120px" };
 
@@ -482,7 +538,9 @@ const TabDoorCreate: React.FC = () => {
             <select
               className="form-control"
               value={editingRow.tipoPuente}
-              onChange={(e) => handleRowFieldChange("tipoPuente", e.target.value)}
+              onChange={(e) =>
+                handleRowFieldChange("tipoPuente", e.target.value)
+              }
             >
               {doorOptions.map((door: any) => (
                 <option key={door.id} value={door.name_element}>
@@ -504,12 +562,16 @@ const TabDoorCreate: React.FC = () => {
             <select
               className="form-control"
               value={editingRow.characteristics}
-              onChange={(e) => handleRowFieldChange("characteristics", e.target.value)}
+              onChange={(e) =>
+                handleRowFieldChange("characteristics", e.target.value)
+              }
             >
               <option value="">Seleccione una opción</option>
               <option value="Exterior">Exterior</option>
               <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-              <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+              <option value="Inter Recintos No Clim">
+                Inter Recintos No Clim
+              </option>
             </select>
           );
         }
@@ -525,7 +587,9 @@ const TabDoorCreate: React.FC = () => {
             <select
               className="form-control"
               value={editingRow.anguloAzimut}
-              onChange={(e) => handleRowFieldChange("anguloAzimut", e.target.value)}
+              onChange={(e) =>
+                handleRowFieldChange("anguloAzimut", e.target.value)
+              }
             >
               <option value="">Seleccione un ángulo</option>
               {angleOptions.map((option, index) => (
@@ -559,7 +623,9 @@ const TabDoorCreate: React.FC = () => {
                   e.preventDefault();
                 }
               }}
-              onChange={(e) => handleRowFieldChange("high", Number(e.target.value))}
+              onChange={(e) =>
+                handleRowFieldChange("high", Number(e.target.value))
+              }
             />
           );
         }
@@ -581,7 +647,9 @@ const TabDoorCreate: React.FC = () => {
                   e.preventDefault();
                 }
               }}
-              onChange={(e) => handleRowFieldChange("broad", Number(e.target.value))}
+              onChange={(e) =>
+                handleRowFieldChange("broad", Number(e.target.value))
+              }
             />
           );
         }
@@ -594,7 +662,10 @@ const TabDoorCreate: React.FC = () => {
       renderCell: (row: DoorData) => {
         if (editingRow && editingRow.id === row.id) {
           return (
-            <ActionButtonsConfirm onAccept={handleAccept} onCancel={handleCancel} />
+            <ActionButtonsConfirm
+              onAccept={handleAccept}
+              onCancel={handleCancel}
+            />
           );
         }
         return (
@@ -604,249 +675,10 @@ const TabDoorCreate: React.FC = () => {
               setDeletingRow(row);
               setShowDeleteModal(true);
             }}
+            onThermalBridge={() => handleThermicBridgesDoor(row)}
           />
         );
       },
-    },
-    // Columnas FAV
-    {
-      headerName: "D [m]",
-      field: "fav1D",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav1D}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => handleFavEditChange("fav1D", Number(e.target.value))}
-          />
-        ) : (
-          formatValue(row.fav1D)
-        ),
-      cellStyle: { position: "sticky", right: "240px", background: "#fff", zIndex: 1 },
-    },
-    {
-      headerName: "L [m]",
-      field: "fav1L",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav1L}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => handleFavEditChange("fav1L", Number(e.target.value))}
-          />
-        ) : (
-          formatValue(row.fav1L)
-        ),
-      cellStyle: { position: "sticky", right: "160px", background: "#fff", zIndex: 1 },
-    },
-    {
-      headerName: "P [m]",
-      field: "fav2izqP",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2izqP}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => handleFavEditChange("fav2izqP", Number(e.target.value))}
-          />
-        ) : (
-          formatValue(row.fav2izqP)
-        ),
-      cellStyle: { position: "sticky", right: "80px", background: "#fff", zIndex: 1 },
-    },
-    {
-      headerName: "S [m]",
-      field: "fav2izqS",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2izqS}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => handleFavEditChange("fav2izqS", Number(e.target.value))}
-          />
-        ) : (
-          formatValue(row.fav2izqS)
-        ),
-      cellStyle: { position: "sticky", right: "0px", background: "#fff", zIndex: 1 },
-    },
-    {
-      headerName: "P [m]",
-      field: "fav2DerP",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2DerP}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => handleFavEditChange("fav2DerP", Number(e.target.value))}
-          />
-        ) : (
-          formatValue(row.fav2DerP)
-        ),
-      cellStyle: { position: "sticky", right: "-80px", background: "#fff", zIndex: 1 },
-    },
-    {
-      headerName: "S [m]",
-      field: "fav2DerS",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav2DerS}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => handleFavEditChange("fav2DerS", Number(e.target.value))}
-          />
-        ) : (
-          formatValue(row.fav2DerS)
-        ),
-      cellStyle: { position: "sticky", right: "-160px", background: "#fff", zIndex: 1 },
-    },
-    {
-      headerName: "E [m]",
-      field: "fav3E",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3E}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => handleFavEditChange("fav3E", Number(e.target.value))}
-          />
-        ) : (
-          formatValue(row.fav3E)
-        ),
-      cellStyle: { position: "sticky", right: "-240px", background: "#fff", zIndex: 1 },
-    },
-    {
-      headerName: "T [m]",
-      field: "fav3T",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3T}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => handleFavEditChange("fav3T", Number(e.target.value))}
-          />
-        ) : (
-          formatValue(row.fav3T)
-        ),
-      cellStyle: { position: "sticky", right: "-320px", background: "#fff", zIndex: 1 },
-    },
-    {
-      headerName: "β [°]",
-      field: "fav3Beta",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3Beta}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => handleFavEditChange("fav3Beta", Number(e.target.value))}
-          />
-        ) : (
-          formatValue(row.fav3Beta)
-        ),
-      cellStyle: { position: "sticky", right: "-400px", background: "#fff", zIndex: 1 },
-    },
-    {
-      headerName: "α [°]",
-      field: "fav3Alpha",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            className="form-control"
-            style={favInputStyle}
-            value={favEditData.fav3Alpha}
-            onKeyDown={(e) => {
-              if (e.key === "-") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => handleFavEditChange("fav3Alpha", Number(e.target.value))}
-          />
-        ) : (
-          formatValue(row.fav3Alpha)
-        ),
-      cellStyle: { position: "sticky", right: "-480px", background: "#fff", zIndex: 1 },
-    },
-    // La columna de acciones FAV se mueve al final
-    {
-      headerName: "Acciones FAV",
-      field: "acciones_fav",
-      renderCell: (row: DoorData) =>
-        editingFavRow === row.id ? (
-          <ActionButtonsConfirm
-            onAccept={handleConfirmEditFav}
-            onCancel={() => {
-              setEditingFavRow(null);
-              setFavEditData(null);
-            }}
-          />
-        ) : (
-          <CustomButton variant="editIcon" onClick={() => handleFavEditClick(row)}>
-            Editar FAV
-          </CustomButton>
-        ),
     },
   ];
 
@@ -854,50 +686,38 @@ const TabDoorCreate: React.FC = () => {
     rows: [
       [
         { label: "Tipo de Puerta", rowSpan: 2 },
-        { label: "Características", rowSpan: 2 },
+        { label: "Características espacio contiguo al elemento", rowSpan: 2 },
         { label: "Ángulo Azimut", rowSpan: 2 },
         { label: "Orientación", rowSpan: 2 },
         { label: "Alto [m]", rowSpan: 2 },
         { label: "Ancho [m]", rowSpan: 2 },
         { label: "Acciones", rowSpan: 2 },
-        { label: "FAV 1", colSpan: 2 },
-        { label: "FAV 2 izq", colSpan: 2 },
-        { label: "FAV 2 Der", colSpan: 2 },
-        { label: "FAV 3", colSpan: 4 },
-        { label: "Acciones FAV", rowSpan: 2 },
-      ],
-      [
-        { label: "D [m]" },
-        { label: "L [m]" },
-        { label: "P [m]" },
-        { label: "S [m]" },
-        { label: "P [m]" },
-        { label: "S [m]" },
-        { label: "E [m]" },
-        { label: "T [m]" },
-        { label: "β [°]" },
-        { label: "α [°]" },
       ],
     ],
   };
 
   return (
     <div>
-      <TablesParameters columns={columns} data={data} multiHeader={multiHeader} />
       <div style={{ marginTop: "20px" }}>
         <div className="d-flex justify-content-end gap-2 w-100">
           <CustomButton variant="save" onClick={handleCreate}>
-            Crear Puerta
+            <Plus className="me-1" size={16} />
+            Nueva Puerta
           </CustomButton>
         </div>
       </div>
+      <TablesParameters
+        columns={columns}
+        data={data}
+        multiHeader={multiHeader}
+      />
 
       {/* Modal para crear nueva puerta */}
       <ModalCreate
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Grabar Datos"
+        saveLabel="Crear Puerta"
         title="Crear Puerta"
       >
         <div className="container">
@@ -935,7 +755,9 @@ const TabDoorCreate: React.FC = () => {
                 <option value="">Seleccione una opción</option>
                 <option value="Exterior">Exterior</option>
                 <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+                <option value="Inter Recintos No Clim">
+                  Inter Recintos No Clim
+                </option>
               </select>
             </div>
           </div>
@@ -1024,6 +846,14 @@ const TabDoorCreate: React.FC = () => {
           </div>
         </div>
       </ModalCreate>
+      <ThermalBridgesDoorModal
+        isOpen={showModalThermicBridges}
+        handleClose={handleCloseEditBridge}
+        bridgeId={favEditData?.fav_id}
+        bridgeData={favEditData}
+        // detailOptions={details}
+        onSaveSuccess={fetchDoorData}
+      />
     </div>
   );
 };

@@ -26,6 +26,7 @@ interface MaterialAtributs {
 }
 
 export interface Material {
+  code_ifc: string,
   id: number;
   atributs: MaterialAtributs;
   create_status?: string;
@@ -33,6 +34,7 @@ export interface Material {
 }
 
 export interface ElementBase {
+  code_ifc: string,
   id: number;
   type: "window" | "door";
   name_element: string;
@@ -770,11 +772,12 @@ const DataEntryPage: React.FC = () => {
   // === RENDER DE STEP 3: Lista de Materiales ===
   const renderStep3Materials = () => {
     const columnsMaterials = [
+      { headerName: "Código IFC", field: "code_ifc"},
       { headerName: "Nombre Material", field: "materialName" },
       { headerName: "Conductividad (W/m2K)", field: "conductivity" },
       { headerName: "Calor específico (J/kgK)", field: "specific_heat" },
       { headerName: "Densidad (kg/m3)", field: "density" },
-      { headerName: "Acción", field: "action" },
+      { headerName: "Acciones", field: "action", sortable: false },
     ];
 
     const filteredMaterialData = materialsList
@@ -783,7 +786,9 @@ const DataEntryPage: React.FC = () => {
       )
       .map((mat) => {
         const isDefault = mat.create_status === "default" || mat.create_status === "global";
+        const formattedConductivity = mat.atributs.conductivity.toFixed(3);
         return {
+          code_ifc: mat.code_ifc || '-',
           materialName: (
             <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : undefined}>
               {mat.atributs.name}
@@ -791,24 +796,24 @@ const DataEntryPage: React.FC = () => {
           ),
           conductivity: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {mat.atributs.conductivity}
+              {mat.atributs.conductivity.toFixed(3)}
             </span>
           ) : (
-            mat.atributs.conductivity
+            mat.atributs.conductivity.toFixed(3)
           ),
           specific_heat: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {mat.atributs.specific_heat}
+              {mat.atributs.specific_heat.toFixed(2)}
             </span>
           ) : (
-            mat.atributs.specific_heat
+            mat.atributs.specific_heat.toFixed(2)
           ),
           density: !isDefault ? (
             <span style={{ color: primaryColor, fontWeight: "bold" }}>
-              {mat.atributs.density}
+              {mat.atributs.density.toFixed(2)}
             </span>
           ) : (
-            mat.atributs.density
+            mat.atributs.density.toFixed(2)
           ),
           action: mat.user_id == null ? (
             <span>-</span>
@@ -864,16 +869,17 @@ const DataEntryPage: React.FC = () => {
   const renderStep5Elements = () => {
     if (modalElementType === "ventanas") {
       const columnsVentanas = [
+        { headerName: "Cófigo IFC", field: "code_ifc"},
         { headerName: "Nombre Elemento", field: "name_element" },
-        { headerName: "U Vidrio [W/m2K]", field: "u_vidrio" },
+        { headerName: "U Vidrio [W/m2K]", field: "u_vidrio", },
         { headerName: "FS Vidrio", field: "fs_vidrio" },
         { headerName: "Tipo Cierre", field: "clousure_type" },
         { headerName: "Tipo Marco", field: "frame_type" },
         { headerName: "U Marco [W/m2K]", field: "u_marco" },
         { headerName: "FM [%]", field: "fm" },
-        { headerName: "Acciones", field: "acciones" },
+        { headerName: "Acciones", field: "acciones", sortable: false },
       ];
-
+      
       const ventanasData = elementsList
         .filter(
           (el) =>
@@ -883,6 +889,7 @@ const DataEntryPage: React.FC = () => {
         .map((el) => {
           const isDefault = (el as any).created_status === "created";
           return {
+            code_ifc: el.code_ifc || '-',
             name_element: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.name_element}
@@ -894,10 +901,10 @@ const DataEntryPage: React.FC = () => {
               el.atributs.u_vidrio && el.atributs.u_vidrio > 0 ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {el.atributs.u_vidrio}
+                    {Number(el.atributs.u_vidrio).toFixed(2)}
                   </span>
                 ) : (
-                  el.atributs.u_vidrio
+                  Number(el.atributs.u_vidrio).toFixed(2)
                 )
               ) : (
                 "--"
@@ -906,10 +913,10 @@ const DataEntryPage: React.FC = () => {
               el.atributs.fs_vidrio && el.atributs.fs_vidrio > 0 ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {el.atributs.fs_vidrio}
+                    {Number(el.atributs.fs_vidrio).toFixed(2)}
                   </span>
                 ) : (
-                  el.atributs.fs_vidrio
+                  Number(el.atributs.fs_vidrio).toFixed(2)
                 )
               ) : (
                 "--"
@@ -930,17 +937,17 @@ const DataEntryPage: React.FC = () => {
             ),
             u_marco: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {el.u_marco}
+                {Number(el.u_marco).toFixed(2)}
               </span>
             ) : (
-              el.u_marco
+              Number(el.u_marco).toFixed(2)
             ),
             fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {Math.round(el.fm * 100) + "%"}
+                {el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"}
               </span>
             ) : (
-              Math.round(el.fm * 100) + "%"
+              el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"
             ),
             acciones: el.user_id == null ? (
               <span>-</span>
@@ -997,15 +1004,15 @@ const DataEntryPage: React.FC = () => {
       );
     } else {
       const columnsPuertas = [
+        { headerName: "Cófigo IFC", field: "code_ifc"},
         { headerName: "Nombre Elemento", field: "name_element" },
         { headerName: "U Puerta opaca [W/m2K]", field: "u_puerta_opaca" },
         { headerName: "Nombre Ventana", field: "name_ventana" },
         { headerName: "% Vidrio", field: "porcentaje_vidrio" },
         { headerName: "U Marco [W/m2K]", field: "u_marco" },
         { headerName: "FM [%]", field: "fm" },
-        { headerName: "Acciones", field: "acciones" },
+        { headerName: "Acciones", field: "acciones", sortable: false },
       ];
-
       const puertasData = elementsList
         .filter(
           (el) =>
@@ -1015,6 +1022,7 @@ const DataEntryPage: React.FC = () => {
         .map((el) => {
           const isDefault = (el as any).created_status === "created";
           return {
+            code_ifc: el.code_ifc || '-',
             name_element: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
                 {el.name_element}
@@ -1045,13 +1053,15 @@ const DataEntryPage: React.FC = () => {
               el.atributs.porcentaje_vidrio !== undefined ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {Math.round(el.atributs.porcentaje_vidrio * 100) + "%"}
+                    {el.atributs.porcentaje_vidrio === 0 ? "-" : 
+                     (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"}
                   </span>
                 ) : (
-                  Math.round(el.atributs.porcentaje_vidrio * 100) + "%"
+                  el.atributs.porcentaje_vidrio === 0 ? "-" : 
+                  (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"
                 )
               ) : (
-                "0%"
+                "-"
               ),
             u_marco: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
@@ -1062,10 +1072,10 @@ const DataEntryPage: React.FC = () => {
             ),
             fm: isDefault ? (
               <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                {Math.round(el.fm * 100) + "%"}
+                {el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"}
               </span>
             ) : (
-              Math.round(el.fm * 100) + "%"
+              el.fm === 0 ? "-" : (el.fm * 100).toFixed(2) + "%"
             ),
             acciones: el.user_id == null ? (
               <span>-</span>
@@ -1201,7 +1211,7 @@ const DataEntryPage: React.FC = () => {
             }
           }}
           title={editingMaterialId ? "Editar Material" : "Nuevo Material"}
-          saveLabel={editingMaterialId ? "Guardar Cambios" : "Crear Material"}
+          saveLabel={editingMaterialId ? "Editar Datos" : "Crear Material"}
         >
           <div>
             <div className="form-group mb-3">
@@ -1414,6 +1424,7 @@ const DataEntryPage: React.FC = () => {
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="FM [%]" value={windowData.fm} />
+                <div className="input-group">
                 <input
                   type="number"
                   min="0"
@@ -1435,6 +1446,8 @@ const DataEntryPage: React.FC = () => {
                   }}
                   onKeyDown={handleNumberKeyDown}
                 />
+                <span className="input-group-text">%</span>
+                </div>
               </div>
             </div>
           ) : (
@@ -1506,6 +1519,7 @@ const DataEntryPage: React.FC = () => {
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="% Vidrio" value={doorData.porcentaje_vidrio} required={false} />
+                <div className="input-group">
                 <input
                   type="number"
                   min="0"
@@ -1527,6 +1541,8 @@ const DataEntryPage: React.FC = () => {
                   }}
                   onKeyDown={handleNumberKeyDown}
                 />
+                <span className="input-group-text">%</span>
+                </div>
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="U Marco [W/m2K]" value={doorData.u_marco} />
@@ -1544,6 +1560,7 @@ const DataEntryPage: React.FC = () => {
               </div>
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="FM [%]" value={doorData.fm} />
+                <div className="input-group">
                 <input
                   type="number"
                   min="0"
@@ -1565,6 +1582,8 @@ const DataEntryPage: React.FC = () => {
                   }}
                   onKeyDown={handleNumberKeyDown}
                 />
+                 <span className="input-group-text">%</span>
+              </div>
               </div>
             </div>
           )}
@@ -1575,6 +1594,7 @@ const DataEntryPage: React.FC = () => {
       {editingWindowData && (
         <ModalCreate
           isOpen={true}
+          saveLabel="Editar Datos"
           title="Editar Ventana"
           onClose={() => setEditingWindowData(null)}
           onSave={() => {
@@ -1726,8 +1746,10 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>FM [%]</label>
+              <div className="input-group">
               <input
                 type="number"
+                placeholder="FM"
                 min="0"
                 max="100"
                 className="form-control"
@@ -1750,6 +1772,8 @@ const DataEntryPage: React.FC = () => {
                   );
                 }}
               />
+              <span className="input-group-text">%</span>
+              </div>
             </div>
           </div>
         </ModalCreate>
@@ -1759,6 +1783,7 @@ const DataEntryPage: React.FC = () => {
       {editingDoorData && (
         <ModalCreate
           isOpen={true}
+          saveLabel="Editar Datos"
           title="Editar Puerta"
           onClose={() => setEditingDoorData(null)}
           onSave={() => {
@@ -1840,7 +1865,9 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>% Vidrio</label>
+              <div className="input-group">
               <input
+              placeholder="% Vidrio"
                 type="number"
                 max="100"
                 className="form-control"
@@ -1871,6 +1898,9 @@ const DataEntryPage: React.FC = () => {
                   );
                 }}
               />
+              <span className="input-group-text">%</span>
+              </div>
+
             </div>
             <div className="form-group mb-3">
               <label>U Marco [W/m²K]</label>
@@ -1893,7 +1923,9 @@ const DataEntryPage: React.FC = () => {
             </div>
             <div className="form-group mb-3">
               <label>FM [%]</label>
+              <div className="input-group">
               <input
+              placeholder="FM"
                 type="number"
                 max="100"
                 className="form-control"
@@ -1917,6 +1949,8 @@ const DataEntryPage: React.FC = () => {
                   );
                 }}
               />
+              <span className="input-group-text">%</span>
+              </div>
             </div>
           </div>
         </ModalCreate>

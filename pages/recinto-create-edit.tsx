@@ -21,6 +21,7 @@ interface IFormData {
   perfilOcupacion: number;
   alturaPromedio: string;
   sensorCo2: boolean;
+  level_id: string; // Add this line
 }
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
@@ -40,6 +41,7 @@ const RecintoCreateEdit: React.FC = () => {
   const [perfilOcupacion, setPerfilOcupacion] = useState<number>(0);
   const [alturaPromedio, setAlturaPromedio] = useState<string>(""); // Se enviará como número
   const [sensorCo2, setSensorCo2] = useState<boolean>(false);
+  const [levelId, setLevelId] = useState<string>("");
   const [enclosureProfiles, setEnclosureProfiles] = useState<IEnclosureProfile[]>([]);
 
   // ---------------------------
@@ -61,6 +63,7 @@ const RecintoCreateEdit: React.FC = () => {
       setPerfilOcupacion(data.perfilOcupacion);
       setAlturaPromedio(data.alturaPromedio);
       setSensorCo2(data.sensorCo2);
+      setLevelId(data.level_id || ""); // Add this line
     }
 
     // Verificar si el recinto ya fue creado
@@ -79,9 +82,10 @@ const RecintoCreateEdit: React.FC = () => {
       perfilOcupacion,
       alturaPromedio,
       sensorCo2,
+      level_id: levelId, // Add this line
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
-  }, [nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2]);
+  }, [nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2, levelId]); // Add levelId to dependencies
 
   // ---------------------------
   //  useEffect para cargar Perfiles de ocupación (desplegable)
@@ -161,6 +165,7 @@ const RecintoCreateEdit: React.FC = () => {
         occupation_profile_id: perfilOcupacion,
         height: altura,
         co2_sensor: sensorCo2 ? "Si" : "No",
+        level_id: parseInt(levelId) || 0, // Add this line
       };
 
       console.log("Payload a enviar:", payload);
@@ -214,6 +219,7 @@ const RecintoCreateEdit: React.FC = () => {
             <ProjectInfoHeader
               projectName={projectName}
               region={projectDepartment}
+              project_id={projectId ?? ""}
             />
             <Breadcrumb
               items={[
@@ -286,6 +292,22 @@ const RecintoCreateEdit: React.FC = () => {
                     setAlturaPromedio(value);
                   }
                 }}
+              />
+            </div>
+
+            {/* Campo: Nivel de Recinto */}
+            <div className="col-6 mb-3">
+              <label htmlFor="levelId" className="form-label">
+                Nivel de Recinto
+              </label>
+              <input
+                id="levelId"
+                type="number"
+                className="form-control"
+                placeholder="Ej: 1"
+                value={levelId}
+                onChange={(e) => setLevelId(e.target.value)}
+                min="0"
               />
             </div>
 

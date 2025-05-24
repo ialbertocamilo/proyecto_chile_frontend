@@ -6,6 +6,7 @@ import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import SearchFilter from "@/components/inputs/SearchFilter";
 
 // ===========================================================
 // Interfaces
@@ -21,8 +22,10 @@ interface EnclosureGeneralData {
   name_enclosure: string;
   comuna_id: number;
   nombre_comuna: string;
+  district: string; // Add this field
   nombre_region: string;
   usage_profile_name: string;
+  level_id: string;
 }
 
 interface OccupationProfile {
@@ -36,8 +39,18 @@ interface IFormData {
   perfilOcupacion: number;
   alturaPromedio: string;
   sensorCo2: boolean;
+  levelId: string;
 }
-
+const searchKeys = [
+  "name_enclosure",   // nombre
+  "id",               // código REC-##
+  "nombre_comuna",
+  "nombre_region",
+  "occupation_profile_id",
+  "co2_sensor",
+  "height",
+  "zona_termica",
+] as const;
 const LOCAL_STORAGE_KEY = "recintoFormData";
 
 // ===========================================================
@@ -65,7 +78,7 @@ const TabRecintDataCreate: React.FC = () => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedProjectId = localStorage.getItem("project_id") || "44";
+      const storedProjectId = localStorage.getItem("last_created_project") || "44";
       setProjectId(storedProjectId);
     }
   }, []);
@@ -140,6 +153,7 @@ const TabRecintDataCreate: React.FC = () => {
       perfilOcupacion: row.occupation_profile_id,
       alturaPromedio: row.height.toString(),
       sensorCo2: row.co2_sensor === "Si",
+      levelId: row.level_id,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
     localStorage.setItem("recinto_id", row.id.toString());
@@ -185,9 +199,9 @@ const TabRecintDataCreate: React.FC = () => {
   // ===========================================================
   const columns = [
     {
-      headerName: "ID",
+      headerName: "Cod",
       field: "id",
-      renderCell: (row: EnclosureGeneralData) => row.id,
+      renderCell: (row: EnclosureGeneralData) => ("REC-" + row.id),
     },
     {
       headerName: "Nombre Recinto",
@@ -212,25 +226,26 @@ const TabRecintDataCreate: React.FC = () => {
       renderCell: (row: EnclosureGeneralData) => row.co2_sensor,
     },
     {
+      headerName: "Nivel de Recinto",
+      field: "level_id",
+      renderCell: (row: EnclosureGeneralData) => row.level_id,
+    },
+    {
       headerName: "Región",
       field: "region_id",
       renderCell: (row: EnclosureGeneralData) =>
         row.nombre_region || row.region_id,
     },
     {
-      headerName: "Localidad",
+      headerName: "Distrito/Municipio",
       field: "comuna_id",
       renderCell: (row: EnclosureGeneralData) =>
-        row.nombre_comuna || row.comuna_id,
-    },
-    {
-      headerName: "Zona Térmica",
-      field: "zona_termica",
-      renderCell: (row: EnclosureGeneralData) => row.zona_termica,
+        row.district || row.nombre_comuna || row.comuna_id,
     },
     {
       headerName: "Acciones",
       field: "acciones",
+      sortable: false,
       renderCell: (row: EnclosureGeneralData) => (
         <ActionButtons
           onEdit={() => handleEditWithRedirect(row)}
@@ -239,29 +254,55 @@ const TabRecintDataCreate: React.FC = () => {
       ),
     },
   ];
+  const renderTable = (rows: EnclosureGeneralData[]) => (
+    <>
+      <div style={{ 
+        width: '100%',
+        overflowX: 'auto',
+        position: 'relative',
+        WebkitOverflowScrolling: 'touch',
+        minHeight: '200px'
+      }}>
+        <TablesParameters columns={columns} data={rows} />
+      </div>
+      {rows.length === 0 && (
+        <div style={{ textAlign: "center", padding: "1rem" }}>
+          No hay datos para mostrar
+        </div>
+      )}
+    </>
+  );
   return (
     <div>
       <div
         style={{
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "1rem",
+          gap: "1rem",
         }}
       >
-        <CustomButton variant="save" onClick={handleCreate}>
-          + Nuevo
-        </CustomButton>
-      </div>
-      {/* Siempre se renderiza la estructura de la tabla para mostrar las pestañas */}
-      <TablesParameters columns={columns} data={data} />
-
-      {/* Si no hay datos, se muestra un mensaje informativo */}
-      {data.length === 0 && (
-        <div style={{ textAlign: "center", padding: "1rem" }}>
-          No hay datos para mostrar
+        {/* 🔍  NUEVO: filtro */}
+        <div style={{ flex: 1 /* que crezca */ }}>
+          <SearchFilter
+            data={data as unknown as Record<string, unknown>[]}
+            searchKeys={[...searchKeys]}
+            placeholder="Buscar recinto…"
+            showNewButton          // ← activa el botón
+            onNew={handleCreate}
+          >
+            {(
+              filteredRows,             // array filtrado
+              /* query, setQuery */     // (los recibes por si los necesitas)
+            ) => renderTable(filteredRows as unknown as EnclosureGeneralData[])}
+          </SearchFilter>
         </div>
-      )}
+
+        {/* ➕  botón “Nuevo” */}
+        
+      </div>
+
 
       <ModalCreate
         isOpen={showDeleteModal}

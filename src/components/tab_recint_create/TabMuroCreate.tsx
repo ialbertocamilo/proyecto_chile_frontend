@@ -7,6 +7,10 @@ import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
+//ThermicBridgesModal
+import ThermalBridgesWallModal from "@/components/modals/ThermalBridgesWallModal";
+import GoogleIcons from "public/GoogleIcons";
+import { Plus } from "lucide-react";
 
 // Interfaz para muros
 interface Wall {
@@ -51,11 +55,10 @@ interface WallDetail {
 }
 
 // Definición de la data fusionada (muro + puente) con propiedad bridgeId para el id del puente térmico
-interface MergedWall extends Omit<Wall, 'wall_id'>, Partial<ThermalBridge> {
+interface MergedWall extends Omit<Wall, "wall_id">, Partial<ThermalBridge> {
   wall_id: number;
   bridgeId?: number | null;
 }
-
 
 const TabMuroCreate: React.FC = () => {
   // Función helper para formatear valores
@@ -73,6 +76,12 @@ const TabMuroCreate: React.FC = () => {
   const [isWallModalOpen, setIsWallModalOpen] = useState<boolean>(false);
   // Modal de confirmación para eliminación de muro
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+
+  //ThermalBridgesModal OPEN
+  const [showModalThermicBridges, setShowModalThermicBridges] =
+    useState<boolean>(false);
+  //ThermalBridgesModal FIN
+
   const [wallToDelete, setWallToDelete] = useState<Wall | null>(null);
 
   // Estados de datos: muros, puentes y data fusionada
@@ -86,7 +95,8 @@ const TabMuroCreate: React.FC = () => {
 
   // Estados para edición de puentes térmicos (dentro de la misma tabla)
   const [editingBridgeId, setEditingBridgeId] = useState<number | null>(null);
-  const [editingBridgeData, setEditingBridgeData] = useState<ThermalBridge | null>(null);
+  const [editingBridgeData, setEditingBridgeData] =
+    useState<ThermalBridge | null>(null);
 
   // Otras opciones y datos del formulario
   const [angleOptions, setAngleOptions] = useState<string[]>([]);
@@ -183,8 +193,11 @@ const TabMuroCreate: React.FC = () => {
         const authData = getAuthData();
         const headers: HeadersInit = { "Content-Type": "application/json" };
         if (authData) headers.Authorization = `Bearer ${authData.token}`;
-        const response = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, { headers });
-        if (!response.ok) throw new Error("Error al obtener opciones de ángulo azimut");
+        const response = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
+          headers,
+        });
+        if (!response.ok)
+          throw new Error("Error al obtener opciones de ángulo azimut");
         const options = await response.json();
         setAngleOptions(options);
       } catch (error) {
@@ -203,7 +216,12 @@ const TabMuroCreate: React.FC = () => {
       // Muros
       const responseMuros = await fetch(
         `${constantUrlApiEndpoint}/wall-enclosures/${enclosure_id}`,
-        { headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (!responseMuros.ok) throw new Error("Error al obtener muros");
       const muros = await responseMuros.json();
@@ -212,18 +230,33 @@ const TabMuroCreate: React.FC = () => {
       // Puentes térmicos
       const responsePuentes = await fetch(
         `${constantUrlApiEndpoint}/thermal-bridge/${enclosure_id}`,
-        { headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      if (!responsePuentes.ok) throw new Error("Error al obtener puentes térmicos");
+      if (!responsePuentes.ok)
+        throw new Error("Error al obtener puentes térmicos");
       const puentes = await responsePuentes.json();
       setPuentesData(puentes);
 
-      // Fusionar datos: cada muro tendrá asociados sus datos de puente (si existen)
-      // Conservamos la id del muro y agregamos la propiedad bridgeId con el id del puente
-      const merged = muros.map((muro: Wall) => {
-        const puente = puentes.find((p: ThermalBridge) => p.wall_id === muro.id);
-        return { ...muro, ...puente, id: muro.id, bridgeId: puente ? puente.id : null };
-      });
+      // Fusionar datos manteniendo el orden original de muros
+      const merged = muros
+        .map((muro: Wall) => {
+          const puente = puentes.find(
+            (p: ThermalBridge) => p.wall_id === muro.id
+          );
+          return {
+            ...muro,
+            ...puente,
+            id: muro.id,
+            bridgeId: puente ? puente.id : null,
+          };
+        })
+        .sort((a: MergedWall, b: MergedWall) => (a.id && b.id ? a.id - b.id : 0)); // Mantener orden por ID
+
       setMergedData(merged);
     } catch (error) {
       notify("Error al cargar los datos");
@@ -240,10 +273,18 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  const handleEditWallChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleEditWallChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setEditingWallData((prev) =>
-      prev ? { ...prev, [name]: name === "wall_id" || name === "area" ? Number(value) : value } : null
+      prev
+        ? {
+            ...prev,
+            [name]:
+              name === "wall_id" || name === "area" ? Number(value) : value,
+          }
+        : null
     );
   };
 
@@ -352,10 +393,14 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
-  const handleEditBridgeChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleEditBridgeChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setEditingBridgeData((prev) =>
-      prev ? { ...prev, [name]: name.startsWith("po") ? Number(value) : value } : null
+      prev
+        ? { ...prev, [name]: name.startsWith("po") ? Number(value) : value }
+        : null
     );
   };
 
@@ -387,6 +432,12 @@ const TabMuroCreate: React.FC = () => {
   };
 
   const handleCancelEditBridge = () => {
+    setEditingBridgeId(null);
+    setEditingBridgeData(null);
+  };
+
+  const handleCloseEditBridge = () => {
+    setShowModalThermicBridges(false);
     setEditingBridgeId(null);
     setEditingBridgeData(null);
   };
@@ -432,7 +483,9 @@ const TabMuroCreate: React.FC = () => {
               <option value="">Seleccione...</option>
               <option value="Exterior">Exterior</option>
               <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-              <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+              <option value="Inter Recintos No Clim">
+                Inter Recintos No Clim
+              </option>
             </select>
           );
         }
@@ -484,7 +537,10 @@ const TabMuroCreate: React.FC = () => {
               onChange={handleEditWallChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingWallData({ ...editingWallData, area: Number(rounded) });
+                setEditingWallData({
+                  ...editingWallData,
+                  area: Number(rounded),
+                });
               }}
               className="form-control form-control-sm"
             />
@@ -509,9 +565,13 @@ const TabMuroCreate: React.FC = () => {
             onCancel={handleCancelEditWall}
           />
         ) : (
+          //Open ThermalBridgesModal
           <ActionButtons
             onEdit={() => handleEditWall(row.id!)}
             onDelete={() => handleOpenDeleteModal(row)}
+            onThermalBridge={() =>
+              handleThermicBridgesWall(row.bridgeId ?? null)
+            }
           />
         );
       },
@@ -538,7 +598,10 @@ const TabMuroCreate: React.FC = () => {
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingBridgeData({ ...editingBridgeData, po1_length: Number(rounded) });
+                setEditingBridgeData({
+                  ...editingBridgeData,
+                  po1_length: Number(rounded),
+                });
               }}
               className="form-control form-control-sm"
             />
@@ -590,7 +653,10 @@ const TabMuroCreate: React.FC = () => {
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingBridgeData({ ...editingBridgeData, po2_length: Number(rounded) });
+                setEditingBridgeData({
+                  ...editingBridgeData,
+                  po2_length: Number(rounded),
+                });
               }}
               className="form-control form-control-sm"
             />
@@ -642,7 +708,10 @@ const TabMuroCreate: React.FC = () => {
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingBridgeData({ ...editingBridgeData, po3_length: Number(rounded) });
+                setEditingBridgeData({
+                  ...editingBridgeData,
+                  po3_length: Number(rounded),
+                });
               }}
               className="form-control form-control-sm"
             />
@@ -694,7 +763,10 @@ const TabMuroCreate: React.FC = () => {
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingBridgeData({ ...editingBridgeData, po4_length: Number(rounded) });
+                setEditingBridgeData({
+                  ...editingBridgeData,
+                  po4_length: Number(rounded),
+                });
               }}
               className="form-control form-control-sm"
             />
@@ -721,7 +793,10 @@ const TabMuroCreate: React.FC = () => {
               onChange={handleEditBridgeChange}
               onBlur={(e) => {
                 const rounded = parseFloat(e.target.value).toFixed(2);
-                setEditingBridgeData({ ...editingBridgeData, po4_e_aislacion: Number(rounded) });
+                setEditingBridgeData({
+                  ...editingBridgeData,
+                  po4_e_aislacion: Number(rounded),
+                });
               }}
               className="form-control form-control-sm"
             />
@@ -773,112 +848,148 @@ const TabMuroCreate: React.FC = () => {
             onAccept={() => handleAcceptEditBridge(currentBridgeId)}
             onCancel={handleCancelEditBridge}
           />
-        ) : (
-          // Solo mostramos el botón si existe un puente asociado (bridgeId no es null)
-          currentBridgeId ? (
-            <CustomButton variant="editIcon" onClick={() => handleEditBridge(currentBridgeId)}>
-              Editar FAV
-            </CustomButton>
-          ) : null
-        );
+        ) : // Solo mostramos el botón si existe un puente asociado (bridgeId no es null)
+        currentBridgeId ? (
+          <CustomButton
+            variant="editIcon"
+            onClick={() => handleEditBridge(currentBridgeId)}
+          >
+            Editar FAV
+          </CustomButton>
+        ) : null;
       },
-    }
+    },
   ];
 
   // Fusionar las columnas de muros y puentes térmicos en el orden actual
-  const mergedColumns = [
-    ...murosColumns,
-    ...puentesColumns
-  ];
+  // const mergedColumns = [...murosColumns, ...puentesColumns];
+  const mergedColumns = [...murosColumns];
 
   // Crear un multiheader único
   const mergedMultiHeader = {
     rows: [
-      [
-        { label: "Muros y Puentes Térmicos", colSpan: mergedColumns.length }
-      ],
+      // [{ label: "Muros", colSpan: mergedColumns.length }],
       [
         ...[
           { label: "Muros" },
-          { label: "Caracteristicas" },
+          { label: "Características espacio contiguo al elemento" },
           { label: "Ángulo Azimut" },
           { label: "Orientación" },
           { label: "Área[m²]" },
           { label: "U [W/m²K]" },
-          { label: "Acciones" }
+          { label: "Acciones" },
         ],
-        ...[
-          { label: (
-            <>
-              <span>P01</span><br /><span>L[m]</span>
-            </>
-          )},
-          { label: (
-            <>
-              <span>P01</span><br /><span>Elemento</span>
-            </>
-          )},
-          { label: (
-            <>
-              <span>P02</span><br /><span>L[m]</span>
-            </>
-          )},
-          { label: (
-            <>
-              <span>P02</span><br /><span>Elemento</span>
-            </>
-          )},
-          { label: (
-            <>
-              <span>P03</span><br /><span>L[m]</span>
-            </>
-          )},
-          { label: (
-            <>
-              <span>P03</span><br /><span>Elemento</span>
-            </>
-          )},
-          { label: (
-            <>
-              <span>P04</span><br /><span>L[m]</span>
-            </>
-          )},
-          { label: (
-            <>
-              <span>P04</span><br /><span>e Aislación [cm]</span>
-            </>
-          )},
-          { label: (
-            <>
-              <span>P04</span><br /><span>Elemento</span>
-            </>
-          )},
-          { label: "Acciones" }
-        ]
-      ]
-    ]
+        // ...[
+        //   {
+        //     label: (
+        //       <>
+        //         <span>P01</span>
+        //         <br />
+        //         <span>L[m]</span>
+        //       </>
+        //     ),
+        //   },
+        //   {
+        //     label: (
+        //       <>
+        //         <span>P01</span>
+        //         <br />
+        //         <span>Elemento</span>
+        //       </>
+        //     ),
+        //   },
+        //   {
+        //     label: (
+        //       <>
+        //         <span>P02</span>
+        //         <br />
+        //         <span>L[m]</span>
+        //       </>
+        //     ),
+        //   },
+        //   {
+        //     label: (
+        //       <>
+        //         <span>P02</span>
+        //         <br />
+        //         <span>Elemento</span>
+        //       </>
+        //     ),
+        //   },
+        //   {
+        //     label: (
+        //       <>
+        //         <span>P03</span>
+        //         <br />
+        //         <span>L[m]</span>
+        //       </>
+        //     ),
+        //   },
+        //   {
+        //     label: (
+        //       <>
+        //         <span>P03</span>
+        //         <br />
+        //         <span>Elemento</span>
+        //       </>
+        //     ),
+        //   },
+        //   {
+        //     label: (
+        //       <>
+        //         <span>P04</span>
+        //         <br />
+        //         <span>L[m]</span>
+        //       </>
+        //     ),
+        //   },
+        //   {
+        //     label: (
+        //       <>
+        //         <span>P04</span>
+        //         <br />
+        //         <span>e Aislación [cm]</span>
+        //       </>
+        //     ),
+        //   },
+        //   {
+        //     label: (
+        //       <>
+        //         <span>P04</span>
+        //         <br />
+        //         <span>Elemento</span>
+        //       </>
+        //     ),
+        //   },
+        //   { label: "Acciones" },
+        // ],
+      ],
+    ],
   };
 
   // Renderizado único: se muestra solo la tabla fusionada y el botón de “Nuevo Muro”
   const renderContent = () => (
     <div className="col-12">
-      <div className="table-responsive">
-        <TablesParameters 
-          columns={mergedColumns} 
-          data={mergedData} 
-          multiHeader={mergedMultiHeader} 
-        />
-      </div>
       <div className="d-flex justify-content-end gap-2 mt-3 w-100">
         <CustomButton variant="save" onClick={() => setIsWallModalOpen(true)}>
+          <Plus className="me-1" size={16} />
           Nuevo Muro
         </CustomButton>
+      </div>
+      <div className="table-responsive">
+        <TablesParameters
+          columns={mergedColumns}
+          data={mergedData}
+          multiHeader={mergedMultiHeader}
+        />
       </div>
     </div>
   );
 
   // Manejo del formulario del modal para creación de muro
-  const handleWallInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleWallInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setNewWall((prev) => ({
       ...prev,
@@ -901,18 +1012,27 @@ const TabMuroCreate: React.FC = () => {
     if (!authData) return;
     const { token, enclosure_id } = authData;
     const url = `${constantUrlApiEndpoint}/wall-enclosures-create/${enclosure_id}`;
-    console.log("url",url)
+    console.log("url", url);
     try {
-      console.log("url dentro del try",url)
+      console.log("url dentro del try", url);
       const response = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(newWall),
       });
       if (!response.ok) throw new Error("Error en la creación del muro.");
       notify("Muro creado exitosamente");
       setIsWallModalOpen(false);
-      setNewWall({ wall_id: 0, name: "", characteristics: "", angulo_azimut: "", area: 0 });
+      setNewWall({
+        wall_id: 0,
+        name: "",
+        characteristics: "",
+        angulo_azimut: "",
+        area: 0,
+      });
       fetchData();
     } catch (error) {
       notify("Error al crear el muro");
@@ -920,112 +1040,145 @@ const TabMuroCreate: React.FC = () => {
     }
   };
 
+  //thermalBridges Button on Actions
+  function handleThermicBridgesWall(bridgeId: number | null) {
+    // console.log("Puentes térmicos para el bridgeId:", bridgeId);
+    // console.log("puentesData", puentesData);
+    handleEditBridge(bridgeId);
+    // console.log("editingBridgeData", editingBridgeData);
+    // console.log("detailOptions", detailOptions);
+    setShowModalThermicBridges(true);
+  }
+
   return (
-    <div className="container-fluid">
-      {renderContent()}
-      <ModalCreate
-        isOpen={isWallModalOpen}
-        onClose={() => setIsWallModalOpen(false)}
-        onSave={handleCreateWall}
-        title="Crear Nuevo Muro"
-      >
-        <form>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="wall_id" className="col-sm-3 col-form-label">
-              Muro
-            </label>
-            <div className="col-sm-9">
-              <select
-                id="wall_id"
-                name="wall_id"
-                className="form-control form-control-sm"
-                value={newWall.wall_id || ""}
-                onChange={handleWallInputChange}
+    <>
+      <GoogleIcons />
+      <div className="container-fluid">
+        {renderContent()}
+        <ModalCreate
+          isOpen={isWallModalOpen}
+          onClose={() => setIsWallModalOpen(false)}
+          onSave={handleCreateWall}
+          title="Crear Nuevo Muro"
+          saveLabel="Crear Muro"
+        >
+          <form>
+            <div className="row align-items-center mb-3">
+              <label htmlFor="wall_id" className="col-sm-3 col-form-label">
+                Muro
+              </label>
+              <div className="col-sm-9">
+                <select
+                  id="wall_id"
+                  name="wall_id"
+                  className="form-control form-control-sm"
+                  value={newWall.wall_id || ""}
+                  onChange={handleWallInputChange}
+                >
+                  <option value="">Seleccione...</option>
+                  {wallOptions.map((wall) => (
+                    <option key={wall.id} value={wall.id}>
+                      {wall.name_detail}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="row align-items-center mb-3">
+              <label
+                htmlFor="characteristics"
+                className="col-sm-3 col-form-label"
               >
-                <option value="">Seleccione...</option>
-                {wallOptions.map((wall) => (
-                  <option key={wall.id} value={wall.id}>
-                    {wall.name_detail}
+                Características
+              </label>
+              <div className="col-sm-9">
+                <select
+                  id="characteristics"
+                  name="characteristics"
+                  className="form-control form-control-sm"
+                  value={newWall.characteristics}
+                  onChange={handleWallInputChange}
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="Exterior">Exterior</option>
+                  <option value="Inter Recintos Clim">
+                    Inter Recintos Clim
                   </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="characteristics" className="col-sm-3 col-form-label">
-              Características
-            </label>
-            <div className="col-sm-9">
-              <select
-                id="characteristics"
-                name="characteristics"
-                className="form-control form-control-sm"
-                value={newWall.characteristics}
-                onChange={handleWallInputChange}
-              >
-                <option value="">Seleccione...</option>
-                <option value="Exterior">Exterior</option>
-                <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
-              </select>
-            </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="angulo_azimut" className="col-sm-3 col-form-label">
-              Ángulo Azimut
-            </label>
-            <div className="col-sm-9">
-              <select
-                id="angulo_azimut"
-                name="angulo_azimut"
-                className="form-control form-control-sm"
-                value={newWall.angulo_azimut}
-                onChange={handleWallInputChange}
-              >
-                <option value="">Seleccione...</option>
-                {angleOptions.map((option, index) => (
-                  <option key={index} value={option}>
-                    {option}
+                  <option value="Inter Recintos No Clim">
+                    Inter Recintos No Clim
                   </option>
-                ))}
-              </select>
+                </select>
+              </div>
             </div>
-          </div>
-          <div className="row align-items-center mb-3">
-            <label htmlFor="area" className="col-sm-3 col-form-label">
-              Área [m²]
-            </label>
-            <div className="col-sm-9">
-              <input
-                id="area"
-                min="0"
-                type="number"
-                name="area"
-                className="form-control form-control-sm"
-                value={newWall.area}
-                onKeyDown={(e) => {
-                  if (e.key === "-") e.preventDefault();
-                }}
-                onChange={handleWallInputChange}
-              />
+            <div className="row align-items-center mb-3">
+              <label
+                htmlFor="angulo_azimut"
+                className="col-sm-3 col-form-label"
+              >
+                Ángulo Azimut
+              </label>
+              <div className="col-sm-9">
+                <select
+                  id="angulo_azimut"
+                  name="angulo_azimut"
+                  className="form-control form-control-sm"
+                  value={newWall.angulo_azimut}
+                  onChange={handleWallInputChange}
+                >
+                  <option value="">Seleccione...</option>
+                  {angleOptions.map((option, index) => (
+                    <option key={index} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
-        </form>
-      </ModalCreate>
-      <ModalCreate
-        isOpen={isDeleteModalOpen}
-        onClose={handleCancelDelete}
-        onSave={handleConfirmDeleteWall}
-        title="Confirmar Eliminación"
-        saveLabel="Eliminar"
-      >
-        {wallToDelete && (
-          <p>
-            ¿Está seguro de eliminar el muro <strong>{wallToDelete.name}</strong>?
-          </p>
-        )}
-      </ModalCreate>
-    </div>
+            <div className="row align-items-center mb-3">
+              <label htmlFor="area" className="col-sm-3 col-form-label">
+                Área [m²]
+              </label>
+              <div className="col-sm-9">
+                <input
+                  id="area"
+                  min="0"
+                  type="number"
+                  name="area"
+                  className="form-control form-control-sm"
+                  value={newWall.area}
+                  onKeyDown={(e) => {
+                    if (e.key === "-") e.preventDefault();
+                  }}
+                  onChange={handleWallInputChange}
+                />
+              </div>
+            </div>
+          </form>
+        </ModalCreate>
+        <ModalCreate
+          isOpen={isDeleteModalOpen}
+          onClose={handleCancelDelete}
+          onSave={handleConfirmDeleteWall}
+          title="Confirmar Eliminación"
+          saveLabel="Eliminar"
+        >
+          {wallToDelete && (
+            <p>
+              ¿Está seguro de eliminar el muro{" "}
+              <strong>{wallToDelete.name}</strong>?
+            </p>
+          )}
+        </ModalCreate>
+        <ThermalBridgesWallModal
+          isOpen={showModalThermicBridges}
+          handleClose={handleCloseEditBridge}
+          bridgeId={editingBridgeId}
+          bridgeData={editingBridgeData}
+          detailOptions={detailOptions}
+          onSaveSuccess={fetchData} // Pass the fetch function as a callback
+        />
+      </div>
+    </>
   );
 };
 

@@ -20,18 +20,18 @@ const Login: NextPageWithLayout = () => {
   const router = useRouter();
 
   // Verifica si el usuario está logueado y redirige a /dashboard
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  const roleId = localStorage.getItem("role_id");
-  
-  if (token) {
-    if (roleId === "1") {
-      router.push("/dashboard");
-    } else {
-      router.push("/project-list");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const roleId = localStorage.getItem("role_id");
+
+    if (token) {
+      if (roleId === "1") {
+        router.push("/dashboard");
+      } else {
+        router.push("/project-list");
+      }
     }
-  }
-}, [router]);
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,18 +46,18 @@ useEffect(() => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
+      console.log(response)
 
       const data = await response.json();
 
-      console.log(data)
-      if (data?.detail){
+      if (data?.detail) {
         throw new Error(data?.detail)
       }
       if (!response.ok) {
         // Usa 'detail' si existe, de lo contrario 'message', 'error', etc.
         throw new Error(data.detail || data.message || data.error || "Credenciales incorrectas.");
       }
-    
+
 
       // Si la respuesta es exitosa, guardamos datos y redirigimos
       localStorage.setItem("User", data.token);
@@ -143,38 +143,41 @@ useEffect(() => {
                   </div>
 
                   <div className="form-group mb-0">
-                    <div className="checkbox p-0">
+                    {/* Comentado temporalmente
+                    <div className="form-check mb-2">
                       <input
                         id="remember"
+                        className="form-check-input"
                         type="checkbox"
                         checked={remember}
                         onChange={(e) => setRemember(e.target.checked)}
                       />
-                      <label className="text-muted" htmlFor="remember">
+                      <label className="form-check-label text-muted" htmlFor="remember">
                         Recuerdame
                       </label>
                     </div>
+                    */}
+
                     <Link
-                      style={{ color: "var(--primary-color)" }}
-                      className="link"
                       href="/forgot-password"
+                      className="d-block text-center mb-3"
+                      style={{ color: "var(--primary-color)" }}
                     >
                       ¿Olvidaste tu contraseña?
                     </Link>
-                    <div className="text-end mt-3">
-                      <button
-                        className="btn btn-block w-100"
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                          backgroundColor: "var(--primary-color)",
-                          borderColor: "var(--primary-color)",
-                          color: "#fff",
-                        }}
-                      >
-                        {loading ? "Ingresando..." : "Iniciar sesión"}
-                      </button>
-                    </div>
+
+                    <button
+                      className="btn w-100"
+                      type="submit"
+                      disabled={loading}
+                      style={{
+                        backgroundColor: "var(--primary-color)",
+                        borderColor: "var(--primary-color)",
+                        color: "#fff",
+                      }}
+                    >
+                      {loading ? "Ingresando..." : "Iniciar sesión"}
+                    </button>
                   </div>
 
                   <p className="mt-4 mb-0 text-center">

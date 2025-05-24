@@ -57,10 +57,10 @@ interface ItemToDelete {
   tab: TabKey;
 }
 
-const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: string }> = ({
-  refreshTrigger = 0,
-  primaryColorProp,
-}) => {
+const UseProfileTab: React.FC<{
+  refreshTrigger?: number;
+  primaryColorProp?: string;
+}> = ({ refreshTrigger = 0, primaryColorProp }) => {
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [activeTab, setActiveTab] = useState<TabKey>("ventilacion");
   const [rolUser, setRolUser] = useState<string>("");
@@ -92,7 +92,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   const [editingRow, setEditingRow] = useState<EditingRow | null>(null);
 
   // Nuevo estado para el modal de Profileschedules
-  const [isProfileSchedulesModalOpen, setIsProfileSchedulesModalOpen] = useState(false);
+  const [isProfileSchedulesModalOpen, setIsProfileSchedulesModalOpen] =
+    useState(false);
 
   // Función auxiliar para formatear los valores mostrados en las tablas.
   // Si el valor es "N/A" o equivale a 0, se retorna un guion ("-").
@@ -122,7 +123,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     if (!token || !rolUser) return;
 
     const url = `${constantUrlApiEndpoint}/enclosures-typing/${itemToDelete.id}/delete?section=${rolUser}`;
-    const headers = { accept: "application/json", Authorization: `Bearer ${token}` };
+    const headers = {
+      accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    };
 
     try {
       await axios.delete(url, { headers });
@@ -137,7 +141,9 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         error.response.data &&
         error.response.data.detail === "No se encontró la tipología de recinto"
       ) {
-        notify("No se puede eliminar un recinto por defecto o creado por el admin");
+        notify(
+          "No se puede eliminar un recinto por defecto o creado por el admin"
+        );
       } else {
         notify("Error al eliminar recinto. Ver consola.");
       }
@@ -195,7 +201,9 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   // Se ejecuta una sola vez para obtener el rol del usuario y el color primario
   useEffect(() => {
-    setPrimaryColor(primaryColorProp || getCssVarValue("--primary-color", "#3ca7b7"));
+    setPrimaryColor(
+      primaryColorProp || getCssVarValue("--primary-color", "#3ca7b7")
+    );
     const roleId = localStorage.getItem("role_id");
     if (roleId === "1") {
       setRolUser("admin");
@@ -296,8 +304,10 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       tab,
       values: {
         ...initialValues,
-        rPers:
-          (enclosure.building_conditions[0]?.details?.cauldal_min_salubridad?.r_pers ?? 0).toFixed(2),
+        rPers: (
+          enclosure.building_conditions[0]?.details?.cauldal_min_salubridad
+            ?.r_pers ?? 0
+        ).toFixed(2),
       },
       original: enclosure,
     });
@@ -396,7 +406,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
   // Funciones para construir cada fila de tabla según el tipo de dato
   const mapVentilacionRow = (enclosure: any) => {
     const isDefault =
-      enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "cloned";
+      enclosure.building_conditions[0]?.created_status === "default" ||
+      enclosure.building_conditions[0]?.created_status === "cloned";
     const condition = enclosure.building_conditions[0]?.details || {};
     const minSalubridad = condition.cauldal_min_salubridad || {};
     const isEditing =
@@ -407,15 +418,17 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const values = isEditing
       ? editingRow.values
       : {
-        rPers: rPersValue,
-        ida: minSalubridad.ida || "N/A",
-        ocupacion: minSalubridad.ocupacion || "N/A",
-        caudalImpuestoVentNoct: (condition.caudal_impuesto?.vent_noct ?? 0).toFixed(2),
-        infiltraciones: condition.infiltraciones ?? 0,
-        recuperadorCalor: condition.recuperador_calor ?? 0,
-      };
-
+          rPers: rPersValue,
+          ida: minSalubridad.ida || "N/A",
+          ocupacion: minSalubridad.ocupacion || "N/A",
+          caudalImpuestoVentNoct: (
+            condition.caudal_impuesto?.vent_noct ?? 0
+          ).toFixed(2),
+          infiltraciones: (condition.infiltraciones ?? 0).toFixed(2),
+          recuperadorCalor: condition.recuperador_calor ?? 0,
+        };
     return {
+      code_ifc: enclosure.code_ifc || "-",
       codigoRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.code}
@@ -481,7 +494,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           className="form-control form-control-sm"
           value={editingRow.values.caudalImpuestoVentNoct}
           onChange={(e) => {
-            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            if (e.target.value.startsWith("-") || e.target.value === "-")
+              return;
             handleEditChange("caudalImpuestoVentNoct", e.target.value);
           }}
           onKeyDown={(e) => {
@@ -496,27 +510,29 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         formatDisplayValue(values.caudalImpuestoVentNoct)
       ),
       // Nueva columna: Infiltraciones [1/h]
-      infiltraciones: isEditing && !isDefault ? (
-        <input
-          type="number"
-          min="0"
-          className="form-control form-control-sm"
-          value={editingRow.values.infiltraciones}
-          onChange={(e) => {
-            if (e.target.value.startsWith("-") || e.target.value === "-") return;
-            handleEditChange("infiltraciones", e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "-") e.preventDefault();
-          }}
-        />
-      ) : isDefault ? (
-        formatDisplayValue(values.infiltraciones)
-      ) : (
-        <span style={{ color: primaryColor, fontWeight: "bold" }}>
-          {formatDisplayValue(values.infiltraciones)}
-        </span>
-      ),
+      infiltraciones:
+        isEditing && !isDefault ? (
+          <input
+            type="number"
+            min="0"
+            className="form-control form-control-sm"
+            value={editingRow.values.infiltraciones}
+            onChange={(e) => {
+              if (e.target.value.startsWith("-") || e.target.value === "-")
+                return;
+              handleEditChange("infiltraciones", e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
+          />
+        ) : isDefault ? (
+          formatDisplayValue(values.infiltraciones)
+        ) : (
+          <span style={{ color: primaryColor, fontWeight: "bold" }}>
+            {formatDisplayValue(values.infiltraciones)}
+          </span>
+        ),
 
       // Nueva columna: Recuperador de calor [%]
       recuperadorCalor: isEditing ? (
@@ -537,7 +553,6 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             if (e.key === "-" || e.key === "e") e.preventDefault();
           }}
         />
-
       ) : !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {formatDisplayValue(values.recuperadorCalor)}
@@ -561,7 +576,9 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
               recuperadorCalor: condition.recuperador_calor || 0,
             })
           }
-          onDelete={() => handleDeleteClick("ventilacion", enclosure.id, enclosure.name)}
+          onDelete={() =>
+            handleDeleteClick("ventilacion", enclosure.id, enclosure.name)
+          }
         />
       ),
     };
@@ -569,7 +586,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   const mapIluminacionRow = (enclosure: any) => {
     const isDefault =
-      enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "cloned"
+      enclosure.building_conditions[0]?.created_status === "default" ||
+      enclosure.building_conditions[0]?.created_status === "cloned";
     const condition = enclosure.building_conditions.find(
       (cond: any) => cond.type === "lightning"
     );
@@ -581,12 +599,13 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const values = isEditing
       ? editingRow.values
       : {
-        potenciaBase: (details.potencia_base ?? 0).toFixed(2),
-        estrategia: details.estrategia || "",
-        potenciaPropuesta: (details.potencia_propuesta ?? 0).toFixed(2),
-      };
+          potenciaBase: (details.potencia_base ?? 0).toFixed(2),
+          estrategia: details.estrategia || "",
+          potenciaPropuesta: (details.potencia_propuesta ?? 0).toFixed(2),
+        };
 
     return {
+      code_ifc: enclosure.code_ifc || "-",
       codigoRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.code}
@@ -601,25 +620,31 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) : (
         enclosure.name
       ),
-      potenciaBase: (isEditing && !isDefault) ? (
-        <input
-          type="number"
-          min="0"
-          className="form-control form-control-sm"
-          value={editingRow?.values.potenciaBase}
-          onChange={(e) => {
-            if (e.target.value.startsWith("-") || e.target.value === "-") return;
-            handleEditChange("potenciaBase", e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "-") e.preventDefault();
-          }}
-        />
-      ) : (
-        <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : {}}>
-          {formatDisplayValue(values.potenciaBase)}
-        </span>
-      ),
+      potenciaBase:
+        isEditing && !isDefault ? (
+          <input
+            type="number"
+            min="0"
+            className="form-control form-control-sm"
+            value={editingRow?.values.potenciaBase}
+            onChange={(e) => {
+              if (e.target.value.startsWith("-") || e.target.value === "-")
+                return;
+              handleEditChange("potenciaBase", e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
+          />
+        ) : (
+          <span
+            style={
+              !isDefault ? { color: primaryColor, fontWeight: "bold" } : {}
+            }
+          >
+            {formatDisplayValue(values.potenciaBase)}
+          </span>
+        ),
       estrategia: isEditing ? (
         <select
           className="form-control form-control-sm"
@@ -659,7 +684,9 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
               potenciaPropuesta: details.potencia_propuesta || 0,
             })
           }
-          onDelete={() => handleDeleteClick("iluminacion", enclosure.id, enclosure.name)}
+          onDelete={() =>
+            handleDeleteClick("iluminacion", enclosure.id, enclosure.name)
+          }
         />
       ),
     };
@@ -667,7 +694,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   const mapCargasRow = (enclosure: any) => {
     const isDefault =
-      enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "cloned"
+      enclosure.building_conditions[0]?.created_status === "default" ||
+      enclosure.building_conditions[0]?.created_status === "cloned";
     const condition = enclosure.building_conditions[0]?.details || {};
     const isEditing =
       editingRow &&
@@ -676,14 +704,16 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const values = isEditing
       ? editingRow.values
       : {
-        usuarios: (condition.usuarios ?? 0).toFixed(2),
-        calorLatente: (condition.calor_latente ?? 0).toFixed(2),
-        calorSensible: (condition.calor_sensible ?? 0).toFixed(2),
-        equipos: (condition.equipos ?? 0).toFixed(2),
-        funcionamientoSemanal: condition.horario?.funcionamiento_semanal || "",
-      };
+          usuarios: (condition.usuarios ?? 0).toFixed(2),
+          calorLatente: (condition.calor_latente ?? 0).toFixed(2),
+          calorSensible: (condition.calor_sensible ?? 0).toFixed(2),
+          equipos: (condition.equipos ?? 0).toFixed(2),
+          funcionamientoSemanal:
+            condition.horario?.funcionamiento_semanal || "",
+        };
 
     return {
+      code_ifc: enclosure.code_ifc || "-",
       codigoRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.code}
@@ -699,87 +729,113 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
         enclosure.name
       ),
       // Para las siguientes columnas se muestra el input en modo edición solo si la fila no es default.
-      usuarios: (isEditing && !isDefault) ? (
-        <input
-          type="number"
-          min="0"
-          className="form-control form-control-sm"
-          value={editingRow.values.usuarios}
-          onChange={(e) => {
-            if (e.target.value.startsWith("-") || e.target.value === "-") return;
-            handleEditChange("usuarios", e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "-") e.preventDefault();
-          }}
-        />
-      ) : (
-        <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : {}}>
-          {formatDisplayValue(values.usuarios)}
-        </span>
-      ),
-      calorLatente: (isEditing && !isDefault) ? (
-        <input
-          type="number"
-          min="0"
-          className="form-control form-control-sm"
-          value={editingRow.values.calorLatente}
-          onChange={(e) => {
-            if (e.target.value.startsWith("-") || e.target.value === "-") return;
-            handleEditChange("calorLatente", e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "-") e.preventDefault();
-          }}
-        />
-      ) : (
-        <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : {}}>
-          {formatDisplayValue(values.calorLatente)}
-        </span>
-      ),
-      calorSensible: (isEditing && !isDefault) ? (
-        <input
-          type="number"
-          min="0"
-          className="form-control form-control-sm"
-          value={editingRow.values.calorSensible}
-          onChange={(e) => {
-            if (e.target.value.startsWith("-") || e.target.value === "-") return;
-            handleEditChange("calorSensible", e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "-") e.preventDefault();
-          }}
-        />
-      ) : (
-        <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : {}}>
-          {formatDisplayValue(values.calorSensible)}
-        </span>
-      ),
-      equipos: (isEditing && !isDefault) ? (
-        <input
-          type="number"
-          min="0"
-          className="form-control form-control-sm"
-          value={editingRow.values.equipos}
-          onChange={(e) => {
-            if (e.target.value.startsWith("-") || e.target.value === "-") return;
-            handleEditChange("equipos", e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "-") e.preventDefault();
-          }}
-        />
-      ) : (
-        <span style={!isDefault ? { color: primaryColor, fontWeight: "bold" } : {}}>
-          {formatDisplayValue(values.equipos)}
-        </span>
-      ),
+      usuarios:
+        isEditing && !isDefault ? (
+          <input
+            type="number"
+            min="0"
+            className="form-control form-control-sm"
+            value={editingRow.values.usuarios}
+            onChange={(e) => {
+              if (e.target.value.startsWith("-") || e.target.value === "-")
+                return;
+              handleEditChange("usuarios", e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
+          />
+        ) : (
+          <span
+            style={
+              !isDefault ? { color: primaryColor, fontWeight: "bold" } : {}
+            }
+          >
+            {formatDisplayValue(values.usuarios)}
+          </span>
+        ),
+      calorLatente:
+        isEditing && !isDefault ? (
+          <input
+            type="number"
+            min="0"
+            className="form-control form-control-sm"
+            value={editingRow.values.calorLatente}
+            onChange={(e) => {
+              if (e.target.value.startsWith("-") || e.target.value === "-")
+                return;
+              handleEditChange("calorLatente", e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
+          />
+        ) : (
+          <span
+            style={
+              !isDefault ? { color: primaryColor, fontWeight: "bold" } : {}
+            }
+          >
+            {formatDisplayValue(values.calorLatente)}
+          </span>
+        ),
+      calorSensible:
+        isEditing && !isDefault ? (
+          <input
+            type="number"
+            min="0"
+            className="form-control form-control-sm"
+            value={editingRow.values.calorSensible}
+            onChange={(e) => {
+              if (e.target.value.startsWith("-") || e.target.value === "-")
+                return;
+              handleEditChange("calorSensible", e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
+          />
+        ) : (
+          <span
+            style={
+              !isDefault ? { color: primaryColor, fontWeight: "bold" } : {}
+            }
+          >
+            {formatDisplayValue(values.calorSensible)}
+          </span>
+        ),
+      equipos:
+        isEditing && !isDefault ? (
+          <input
+            type="number"
+            min="0"
+            className="form-control form-control-sm"
+            value={editingRow.values.equipos}
+            onChange={(e) => {
+              if (e.target.value.startsWith("-") || e.target.value === "-")
+                return;
+              handleEditChange("equipos", e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
+          />
+        ) : (
+          <span
+            style={
+              !isDefault ? { color: primaryColor, fontWeight: "bold" } : {}
+            }
+          >
+            {formatDisplayValue(values.equipos)}
+          </span>
+        ),
       funcionamientoSemanal: isEditing ? (
         <select
           className="form-control form-control-sm"
           value={editingRow.values.funcionamientoSemanal}
-          onChange={(e) => handleEditChange("funcionamientoSemanal", e.target.value)}
+          onChange={(e) =>
+            handleEditChange("funcionamientoSemanal", e.target.value)
+          }
         >
           <option value="7x0">7x0</option>
           <option value="6x1">6x1</option>
@@ -797,7 +853,7 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
       ) : (
         formatDisplayValue(values.funcionamientoSemanal)
       ),
-      
+
       accion: isEditing ? (
         <ActionButtonsConfirm
           onAccept={() => handleSave("cargas", enclosure)}
@@ -812,10 +868,13 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
                 calorLatente: condition.calor_latente || 0,
                 calorSensible: condition.calor_sensible || 0,
                 equipos: condition.equipos || 0,
-                funcionamientoSemanal: condition.horario?.funcionamiento_semanal || "",
+                funcionamientoSemanal:
+                  condition.horario?.funcionamiento_semanal || "",
               })
             }
-            onDelete={() => handleDeleteClick("cargas", enclosure.id, enclosure.name)}
+            onDelete={() =>
+              handleDeleteClick("cargas", enclosure.id, enclosure.name)
+            }
           />
           {rolUser !== "admin" && (
             <CustomButton
@@ -835,7 +894,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   const mapHorarioRow = (enclosure: any) => {
     const isDefault =
-      enclosure.building_conditions[0]?.created_status === "default" || enclosure.building_conditions[0]?.created_status === "cloned"
+      enclosure.building_conditions[0]?.created_status === "default" ||
+      enclosure.building_conditions[0]?.created_status === "cloned";
     const details = enclosure.building_conditions[0]?.details || {};
     const recinto = details.recinto || { climatizado: "N/A", desfase_clima: 0 };
     const isEditing =
@@ -845,11 +905,15 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
     const values = isEditing
       ? editingRow.values
       : {
-        climatizado: recinto.climatizado,
-        hrsDesfaseClimaInv: recinto.desfase_clima ? recinto.desfase_clima.toFixed(2) : "N/A",
-      };
+          climatizado: recinto.climatizado,
+          hrsDesfaseClimaInv: recinto.desfase_clima
+            ? recinto.desfase_clima.toFixed(2)
+            : "N/A",
+        };
 
     return {
+      code_ifc: enclosure.code_ifc || "-",
+
       codigoRecinto: !isDefault ? (
         <span style={{ color: primaryColor, fontWeight: "bold" }}>
           {enclosure.code}
@@ -887,7 +951,8 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           className="form-control form-control-sm"
           value={editingRow.values.hrsDesfaseClimaInv}
           onChange={(e) => {
-            if (e.target.value.startsWith("-") || e.target.value === "-") return;
+            if (e.target.value.startsWith("-") || e.target.value === "-")
+              return;
             handleEditChange("hrsDesfaseClimaInv", e.target.value);
           }}
           onKeyDown={(e) => {
@@ -914,7 +979,9 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
               hrsDesfaseClimaInv: recinto.desfase_clima || 0,
             })
           }
-          onDelete={() => handleDeleteClick("horario", enclosure.id, enclosure.name)}
+          onDelete={() =>
+            handleDeleteClick("horario", enclosure.id, enclosure.name)
+          }
         />
       ),
     };
@@ -922,30 +989,34 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
 
   // Filtrado según búsqueda
   const filteredVentilacion = ventilacionRaw
-    .filter((item) =>
-      item.code.toLowerCase().includes(searchVentilacion.toLowerCase()) ||
-      item.name.toLowerCase().includes(searchVentilacion.toLowerCase())
+    .filter(
+      (item) =>
+        item.code.toLowerCase().includes(searchVentilacion.toLowerCase()) ||
+        item.name.toLowerCase().includes(searchVentilacion.toLowerCase())
     )
     .map(mapVentilacionRow);
 
   const filteredIluminacion = iluminacionRaw
-    .filter((item) =>
-      item.code.toLowerCase().includes(searchIluminacion.toLowerCase()) ||
-      item.name.toLowerCase().includes(searchIluminacion.toLowerCase())
+    .filter(
+      (item) =>
+        item.code.toLowerCase().includes(searchIluminacion.toLowerCase()) ||
+        item.name.toLowerCase().includes(searchIluminacion.toLowerCase())
     )
     .map(mapIluminacionRow);
 
   const filteredCargas = cargasRaw
-    .filter((item) =>
-      item.code.toLowerCase().includes(searchCargas.toLowerCase()) ||
-      item.name.toLowerCase().includes(searchCargas.toLowerCase())
+    .filter(
+      (item) =>
+        item.code.toLowerCase().includes(searchCargas.toLowerCase()) ||
+        item.name.toLowerCase().includes(searchCargas.toLowerCase())
     )
     .map(mapCargasRow);
 
   const filteredHorario = horarioRaw
-    .filter((item) =>
-      item.code.toLowerCase().includes(searchHorario.toLowerCase()) ||
-      item.name.toLowerCase().includes(searchHorario.toLowerCase())
+    .filter(
+      (item) =>
+        item.code.toLowerCase().includes(searchHorario.toLowerCase()) ||
+        item.name.toLowerCase().includes(searchHorario.toLowerCase())
     )
     .map(mapHorarioRow);
 
@@ -957,35 +1028,35 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           value: searchVentilacion,
           onChange: setSearchVentilacion,
           onNew: () => handleNuevoClick("ventilacion"),
-          placeholder: "Buscar recinto...",
+          placeholder: "Buscar perfil de uso...",
         };
       case "iluminacion":
         return {
           value: searchIluminacion,
           onChange: setSearchIluminacion,
           onNew: () => handleNuevoClick("iluminacion"),
-          placeholder: "Buscar recinto...",
+          placeholder: "Buscar perfil de uso...",
         };
       case "cargas":
         return {
           value: searchCargas,
           onChange: setSearchCargas,
           onNew: () => handleNuevoClick("cargas"),
-          placeholder: "Buscar recinto...",
+          placeholder: "Buscar perfil de uso...",
         };
       case "horario":
         return {
           value: searchHorario,
           onChange: setSearchHorario,
           onNew: () => handleNuevoClick("horario"),
-          placeholder: "Buscar recinto...",
+          placeholder: "Buscar perfil de uso...",
         };
       default:
         return {
           value: "",
-          onChange: () => { },
-          onNew: () => { },
-          placeholder: "Buscar recinto...",
+          onChange: () => {},
+          onNew: () => {},
+          placeholder: "Buscar perfil de uso...",
         };
     }
   };
@@ -1004,16 +1075,22 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
             { key: "ventilacion", label: "Ventilacion y caudales" },
             { key: "iluminacion", label: "Iluminacion" },
             { key: "cargas", label: "Cargas internas" },
-            { key: "horario", label: "Horario y Clima" },
+            { key: "horario", label: "Climatización" },
           ].map((item) => (
             <li key={item.key} className="flex-fill">
               <button
                 className="w-100 p-0"
                 style={{
                   backgroundColor: "#fff",
-                  color: activeTab === item.key ? primaryColor : "var(--secondary-color)",
+                  color:
+                    activeTab === item.key
+                      ? primaryColor
+                      : "var(--secondary-color)",
                   border: "none",
-                  borderBottom: activeTab === item.key ? `solid 2px ${primaryColor}` : "none",
+                  borderBottom:
+                    activeTab === item.key
+                      ? `solid 2px ${primaryColor}`
+                      : "none",
                 }}
                 onClick={() => setActiveTab(item.key as TabKey)}
               >
@@ -1030,15 +1107,33 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           <div className="p-2">
             <TablesParameters
               columns={[
+                {
+                  headerName: "Código IFC",
+                  field: "code_ifc",
+                },
                 { headerName: "Codigo de Recinto", field: "codigoRecinto" },
-                { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
+                {
+                  headerName: "Tipologia de Recinto",
+                  field: "tipologiaRecinto",
+                },
                 { headerName: "R-pers [L/s]", field: "rPers" },
                 { headerName: "IDA", field: "ida" },
                 { headerName: "Ocupacion", field: "ocupacion" },
-                { headerName: "Caudal Impuesto Vent Noct", field: "caudalImpuestoVentNoct" },
+                {
+                  headerName: "Caudal Impuesto Vent Noct",
+                  field: "caudalImpuestoVentNoct",
+                },
                 { headerName: "Infiltraciones [1/h]", field: "infiltraciones" },
-                { headerName: "Recuperador de calor [%]", field: "recuperadorCalor" },
-                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" } },
+                {
+                  headerName: "Recuperador de calor [%]",
+                  field: "recuperadorCalor",
+                },
+                {
+                  headerName: "Acciones",
+                  field: "accion",
+                  headerStyle: { width: "100px" },
+                  sortable: false,
+                },
               ]}
               data={filteredVentilacion}
             />
@@ -1049,12 +1144,27 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           <div className="p-2">
             <TablesParameters
               columns={[
+                {
+                  headerName: "Código IFC",
+                  field: "code_ifc",
+                },
                 { headerName: "Codigo de Recinto", field: "codigoRecinto" },
-                { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
+                {
+                  headerName: "Tipologia de Recinto",
+                  field: "tipologiaRecinto",
+                },
                 { headerName: "Potencia Base [W/m2]", field: "potenciaBase" },
                 { headerName: "Estrategia", field: "estrategia" },
-                { headerName: "Potencia Propuesta [W/m2]", field: "potenciaPropuesta" },
-                { headerName: "Accion", field: "accion", headerStyle: { width: "100px" } },
+                {
+                  headerName: "Potencia Propuesta [W/m2]",
+                  field: "potenciaPropuesta",
+                },
+                {
+                  headerName: "Acciones",
+                  field: "accion",
+                  headerStyle: { width: "100px" },
+                  sortable: false,
+                },
               ]}
               data={filteredIluminacion}
             />
@@ -1065,14 +1175,27 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           <div className="p-2">
             <TablesParameters
               columns={[
+                {
+                  headerName: "Código IFC",
+                  field: "code_ifc",
+                },
                 { headerName: "Codigo de Recinto", field: "codigoRecinto" },
-                { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
+                {
+                  headerName: "Tipologia de Recinto",
+                  field: "tipologiaRecinto",
+                },
                 { headerName: "Usuarios [m2/pers]", field: "usuarios" },
                 { headerName: "Calor Latente [W/pers]", field: "calorLatente" },
-                { headerName: "Calor Sensible [W/pers]", field: "calorSensible" },
+                {
+                  headerName: "Calor Sensible [W/pers]",
+                  field: "calorSensible",
+                },
                 { headerName: "Equipos [W/m2]", field: "equipos" },
-                { headerName: "Funcionamiento Semanal", field: "funcionamientoSemanal" },
-                { headerName: "Accion", field: "accion" },
+                {
+                  headerName: "Funcionamiento Semanal",
+                  field: "funcionamientoSemanal",
+                },
+                { headerName: "Acciones", field: "accion", sortable: false },
               ]}
               data={filteredCargas}
             />
@@ -1083,11 +1206,21 @@ const UseProfileTab: React.FC<{ refreshTrigger?: number; primaryColorProp?: stri
           <div className="p-2">
             <TablesParameters
               columns={[
+                {
+                  headerName: "Código IFC",
+                  field: "code_ifc",
+                },
                 { headerName: "Codigo de Recinto", field: "codigoRecinto" },
-                { headerName: "Tipologia de Recinto", field: "tipologiaRecinto" },
+                {
+                  headerName: "Tipologia de Recinto",
+                  field: "tipologiaRecinto",
+                },
                 { headerName: "Climatizado", field: "climatizado" },
-                { headerName: "Hrs Desfase Clima (Inv)", field: "hrsDesfaseClimaInv" },
-                { headerName: "Accion", field: "accion" },
+                {
+                  headerName: "Hrs Desfase Clima (Inv)",
+                  field: "hrsDesfaseClimaInv",
+                },
+                { headerName: "Acciones", field: "accion", sortable: false },
               ]}
               data={filteredHorario}
             />

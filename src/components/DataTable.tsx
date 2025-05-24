@@ -4,6 +4,18 @@ import Card from "./common/Card";
 import IconButton from "./common/IconButton";
 import SearchInput from "./inputs/SearchInput";
 
+// ------- helpers de ordenamiento -------
+const collator = new Intl.Collator("es", { sensitivity: "base" });
+
+const isNumeric = (v: any) =>
+  typeof v === "number" ||
+  (!!v && !Array.isArray(v) && !isNaN(parseFloat(v as any)));
+
+interface SortConfig {
+  field: string | number;
+  direction: "asc" | "desc";
+}
+
 interface DataTableProps<T> {
   data: T[];
   columns: {
@@ -12,6 +24,7 @@ interface DataTableProps<T> {
     minWidth?: number;
     format?: any;
     cell?: (props: { row: T }) => React.ReactNode;
+    sortable?: boolean;
   }[];
   loading?: boolean;
   onSearch?: (searchTerm: string) => void;
@@ -19,7 +32,6 @@ interface DataTableProps<T> {
   enableSorting?: boolean;
   enableFiltering?: boolean;
   enableColumnVisibility?: boolean;
-  // Estas props ahora son opcionales
   createText?: string;
   createUrl?: string;
   showButton?: boolean;
@@ -34,46 +46,38 @@ const TablePagination: React.FC<{
 }> = ({ page, rowsPerPage, totalPages, onPageChange, onRowsPerPageChange }) => {
   const getPageNumbers = () => {
     const range = [];
-    const maxVisiblePages = 5; // Número máximo de páginas visibles (sin contar los extremos)
+    const maxVisiblePages = 5;
 
     if (totalPages <= maxVisiblePages + 2) {
-      // Si hay pocas páginas, mostrar todas
       for (let i = 0; i < totalPages; i++) {
         range.push(i);
       }
       return range;
     }
-  
-    // Siempre mostrar la primera página
+
     range.push(0);
-  
-    // Calcular el rango central
+
     let start = Math.max(page - Math.floor(maxVisiblePages / 2), 1);
     const end = Math.min(start + maxVisiblePages - 1, totalPages - 2);
-  
-    // Ajustar el inicio si estamos cerca del final
+
     if (end === totalPages - 2) {
       start = Math.max(end - maxVisiblePages + 1, 1);
     }
-  
-    // Agregar elipsis inicial si es necesario
+
     if (start > 1) {
       range.push('...');
     }
-  
-    // Agregar páginas del rango central
+
     for (let i = start; i <= end; i++) {
       range.push(i);
     }
-  
-    // Agregar elipsis final si es necesario
+
     if (end < totalPages - 2) {
       range.push('...');
     }
-  
-    // Siempre mostrar la última página
+
     range.push(totalPages - 1);
-  
+
     return range;
   };
 
@@ -144,6 +148,18 @@ export default function DataTable<T extends { [key: string]: any }>({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
+
+  const handleSort = (field: string | number) => {
+    setSortConfig((current) => {
+      if (current?.field === field) {
+        return current.direction === "asc"
+          ? { field, direction: "desc" }
+          : null;
+      }
+      return { field, direction: "asc" };
+    });
+  };
 
   const handleChangePage = (newPage: number) => {
     if (
@@ -161,13 +177,11 @@ export default function DataTable<T extends { [key: string]: any }>({
     setPage(0);
   };
 
-  // Actualiza el searchQuery
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
-    setPage(0); // Reinicia a la primera página al buscar
+    setPage(0);
   };
 
-  // Filtrado global: se recorre cada fila y se combinan todas sus propiedades para realizar la búsqueda
   const filteredData = searchQuery.trim()
     ? data.filter((row) => {
       const combined = Object.values(row)
@@ -181,6 +195,34 @@ export default function DataTable<T extends { [key: string]: any }>({
       return combined.includes(searchQuery.toLowerCase());
     })
     : data;
+
+  const getCurrentPageData = () => {
+    const start = page * rowsPerPage;
+    const end = start + rowsPerPage;
+    return filteredData.slice(start, end);
+  };
+
+  const sortedData = React.useMemo(() => {
+    const currentPageData = getCurrentPageData();
+    
+    if (!sortConfig) return currentPageData;
+    
+    const { field, direction } = sortConfig;
+    const dir = direction === "asc" ? 1 : -1;
+
+    return [...currentPageData].sort((a, b) => {
+      const aVal = a[field];
+      const bVal = b[field];
+
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+
+      if (isNumeric(aVal) && isNumeric(bVal)) {
+        return (parseFloat(aVal) - parseFloat(bVal)) * dir;
+      }
+      return collator.compare(String(aVal), String(bVal)) * dir;
+    });
+  }, [filteredData, page, rowsPerPage, sortConfig]);
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
@@ -209,10 +251,26 @@ export default function DataTable<T extends { [key: string]: any }>({
                     {columns.map((column) => (
                       <th
                         key={column.id.toString()}
-                        style={{ color: "var(--primary-color)" }}
+                        style={{
+                          color: "var(--primary-color)",
+                          cursor: column.sortable === false ? "default" : "pointer",
+                        }}
                         className="text-start"
+                        onClick={() => column.sortable !== false && handleSort(column.id)}
                       >
-                        {column.label}
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '4px',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {column.label}
+                          {sortConfig?.field === column.id && (
+                            <span style={{ display: 'inline-flex' }}>
+                              {sortConfig.direction === "asc" ? "↑" : "↓"}
+                            </span>
+                          )}
+                        </div>
                       </th>
                     ))}
                   </tr>
@@ -236,27 +294,22 @@ export default function DataTable<T extends { [key: string]: any }>({
                       </td>
                     </tr>
                   ) : (
-                    filteredData
-                      .slice(
-                        page * rowsPerPage,
-                        page * rowsPerPage + rowsPerPage
-                      )
-                      .map((row, index) => (
-                        <tr key={index} className="align-middle">
-                          {columns.map((column) => (
-                            <td
-                              key={column.id.toString()}
-                              className="text-start p-2 p-md-3"
-                            >
-                              {column.cell
-                                ? column.cell({ row })
-                                : column.format
-                                  ? column.format(row[column.id], row)
-                                  : row[column.id]}
-                            </td>
-                          ))}
-                        </tr>
-                      ))
+                    sortedData.map((row, index) => (
+                      <tr key={index} className="align-middle">
+                        {columns.map((column) => (
+                          <td
+                            key={column.id.toString()}
+                            className="text-start p-2 p-md-3"
+                          >
+                            {column.cell
+                              ? column.cell({ row })
+                              : column.format
+                                ? column.format(row[column.id], row)
+                                : row[column.id]}
+                          </td>
+                        ))}
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>

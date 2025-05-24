@@ -13,6 +13,7 @@ export interface IFormData {
   perfilOcupacion: number;
   alturaPromedio: string;
   sensorCo2: boolean;
+  levelId: number | null;
 }
 
 const LOCAL_STORAGE_KEY = "recintoFormData";
@@ -29,6 +30,7 @@ const RecintoEdit: React.FC = () => {
   const [perfilOcupacion, setPerfilOcupacion] = useState<number>(0);
   const [alturaPromedio, setAlturaPromedio] = useState<string>(""); // Se enviará como número
   const [sensorCo2, setSensorCo2] = useState<boolean>(false);
+  const [levelId, setLevelId] = useState<number | null>(1);
   const [enclosureProfiles, setEnclosureProfiles] = useState<
     { id: number; name: string }[]
   >([]);
@@ -52,6 +54,7 @@ const RecintoEdit: React.FC = () => {
       setPerfilOcupacion(data.perfilOcupacion);
       setAlturaPromedio(data.alturaPromedio);
       setSensorCo2(data.sensorCo2);
+      setLevelId(data.levelId);
     }
   }, []);
 
@@ -64,9 +67,10 @@ const RecintoEdit: React.FC = () => {
       perfilOcupacion,
       alturaPromedio,
       sensorCo2,
+      levelId,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));
-  }, [nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2]);
+  }, [nombreRecinto, perfilOcupacion, alturaPromedio, sensorCo2, levelId]);
 
   // ---------------------------
   //  useEffect para cargar Perfiles de ocupación (desplegable)
@@ -131,6 +135,7 @@ const RecintoEdit: React.FC = () => {
         occupation_profile_id: perfilOcupacion,
         height: altura,
         co2_sensor: sensorCo2 ? "Si" : "No",
+        level_id: levelId,
       };
 
       console.log("Payload a enviar:", payload);
@@ -180,6 +185,7 @@ const RecintoEdit: React.FC = () => {
             <ProjectInfoHeader
               projectName={projectName}
               region={projectDepartment}
+              project_id={projectId ?? ""}
             />
             <Breadcrumb
               items={[
@@ -251,6 +257,25 @@ const RecintoEdit: React.FC = () => {
                   if (regex.test(value)) {
                     setAlturaPromedio(value);
                   }
+                }}
+              />
+            </div>
+
+            {/* Campo: Nivel de Recinto */}
+            <div className="col-6 mb-3">
+              <label htmlFor="levelId" className="form-label">
+                Nivel de Recinto
+              </label>
+              <input
+                id="levelId"
+                type="number"
+                className="form-control"
+                placeholder="Ej: 1"
+                min="1"
+                value={levelId || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setLevelId(value ? parseInt(value) : null);
                 }}
               />
             </div>

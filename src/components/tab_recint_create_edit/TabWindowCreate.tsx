@@ -6,6 +6,8 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
+import ThermalBridgesWindowModal from "../modals/ThermalBridgesWindowModal";
+import { Plus } from "lucide-react";
 
 const TabWindowCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id");
@@ -126,6 +128,24 @@ const TabWindowCreate: React.FC = () => {
     fetchWindowOptions();
   }, [token]);
 
+  const [showModalThermicBridges, setShowModalThermicBridges] =
+    useState<boolean>(false);
+
+  function handleThermicBridgesWindow(row: any) {
+    console.log("row", row);
+    handleFavEditClick(row);
+
+    console.log("editData", editData);
+    console.log("favEditData", favEditData);
+    setShowModalThermicBridges(true);
+  }
+  //ThermalBridgesModal FIN
+  const handleCloseEditBridge = () => {
+    setShowModalThermicBridges(false);
+    setEditingFavRow(null);
+    setEditData(null);
+  };
+
   // Obtener ventanas y FAVs
   const fetchWindowEnclosures = async () => {
     try {
@@ -141,6 +161,9 @@ const TabWindowCreate: React.FC = () => {
       if (!response.ok) throw new Error("Error al obtener las ventanas");
       const windowsData = await response.json();
 
+      // Mantener el orden original usando el ID como referencia
+      const orderedData = [...tableData];
+      
       let mappedData = windowsData.map((item: any) => {
         // Buscar el nombre del elemento de ventana correspondiente
         const windowElement = windowOptions.find(
@@ -152,7 +175,9 @@ const TabWindowCreate: React.FC = () => {
 
         // Buscar el detalle correspondiente
         const detail = details.find((d: any) => d.id === item.housed_in);
-        const detailName = detail ? detail.name_detail : `Detalle ${item.housed_in}`;
+        const detailName = detail
+          ? detail.name_detail
+          : `Detalle ${item.housed_in}`;
 
         return {
           id: item.id,
@@ -218,7 +243,18 @@ const TabWindowCreate: React.FC = () => {
         return row;
       });
 
-      setTableData(mappedData);
+      // Actualizar solo los datos modificados manteniendo el orden original
+      const finalData = orderedData.map(originalRow => {
+        const updatedRow = mappedData.find((newRow: any) => newRow.id === originalRow.id);
+        return updatedRow || originalRow;
+      });
+
+      // Agregar nuevas filas al final
+      const newRows = mappedData.filter((newRow: any) => 
+        !orderedData.some((originalRow: any) => originalRow.id === newRow.id)
+      );
+
+      setTableData([...finalData, ...newRows]);
     } catch (error) {
       console.error(error);
     }
@@ -229,7 +265,6 @@ const TabWindowCreate: React.FC = () => {
     if (windowOptions.length > 0) {
       fetchWindowEnclosures();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enclosure_id, token, windowOptions]);
 
   const validateForm = () => {
@@ -255,9 +290,7 @@ const TabWindowCreate: React.FC = () => {
     setFormData({
       ...formData,
       [name]:
-        name === "housed_in" || name === "window_id"
-          ? Number(value)
-          : value,
+        name === "housed_in" || name === "window_id" ? Number(value) : value,
     });
   };
 
@@ -401,16 +434,29 @@ const TabWindowCreate: React.FC = () => {
 
   const handleConfirmEditFav = async () => {
     const {
-      fav1_D, fav1_L, fav2izq_P, fav2izq_S, fav2der_P, fav2der_S,
-      fav3_E, fav3_T, fav3_beta, fav3_alpha
+      fav1_D,
+      fav1_L,
+      fav2izq_P,
+      fav2izq_S,
+      fav2der_P,
+      fav2der_S,
+      fav3_E,
+      fav3_T,
+      fav3_beta,
+      fav3_alpha,
     } = favEditData;
 
     if (
-      fav1_D < 0 || fav1_L < 0 ||
-      fav2izq_P < 0 || fav2izq_S < 0 ||
-      fav2der_P < 0 || fav2der_S < 0 ||
-      fav3_E < 0 || fav3_T < 0 ||
-      fav3_beta < 0 || fav3_alpha < 0
+      fav1_D < 0 ||
+      fav1_L < 0 ||
+      fav2izq_P < 0 ||
+      fav2izq_S < 0 ||
+      fav2der_P < 0 ||
+      fav2der_S < 0 ||
+      fav3_E < 0 ||
+      fav3_T < 0 ||
+      fav3_beta < 0 ||
+      fav3_alpha < 0
     ) {
       notify("No se permiten valores negativos en FAV");
       return;
@@ -487,7 +533,9 @@ const TabWindowCreate: React.FC = () => {
             className="form-control"
             style={selectStyle}
             value={editData.window_id}
-            onChange={(e) => handleEditChange("window_id", Number(e.target.value))}
+            onChange={(e) =>
+              handleEditChange("window_id", Number(e.target.value))
+            }
           >
             <option value={0}>Seleccione un elemento</option>
             {windowOptions.map((element: any) => (
@@ -501,7 +549,7 @@ const TabWindowCreate: React.FC = () => {
         ),
     },
     {
-      headerName: "Características espacio contiguo el elemento",
+      headerName: "Características espacio contiguo al elemento",
       field: "caracteristicas",
       renderCell: (row: any) =>
         editingRow === row.id ? (
@@ -509,7 +557,9 @@ const TabWindowCreate: React.FC = () => {
             className="form-control"
             style={selectStyle}
             value={editData.characteristics}
-            onChange={(e) => handleEditChange("characteristics", e.target.value)}
+            onChange={(e) =>
+              handleEditChange("characteristics", e.target.value)
+            }
           >
             <option value="">Seleccione una opción</option>
             {characteristicsOptions.map((option, index) => (
@@ -558,7 +608,9 @@ const TabWindowCreate: React.FC = () => {
             className="form-control"
             style={selectStyle}
             value={editData.housed_in}
-            onChange={(e) => handleEditChange("housed_in", Number(e.target.value))}
+            onChange={(e) =>
+              handleEditChange("housed_in", Number(e.target.value))
+            }
           >
             <option value={0}>Seleccione un detalle</option>
             {details.map((detail: any) => (
@@ -687,326 +739,9 @@ const TabWindowCreate: React.FC = () => {
           <ActionButtons
             onEdit={() => handleEditClick(row)}
             onDelete={() => handleDeleteClick(row)}
+            onThermalBridge={() => handleThermicBridgesWindow(row)}
           />
         ),
-    },
-    // ========================================
-    // FAV (con inputs sin permitir negativos y formateo de valores)
-    {
-      headerName: "D [m]",
-      field: "fav1_D",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-// Remove duplicate style attribute
-            value={favEditData.fav1_D}
-            onChange={(e) =>
-              handleFavEditChange("fav1_D", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav1_D)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "840px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "L [m]",
-      field: "fav1_L",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-// Remove duplicate style attribute and keep favInputStyle
-            value={favEditData.fav1_L}
-            onChange={(e) =>
-              handleFavEditChange("fav1_L", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav1_L)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "760px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "P [m]",
-      field: "fav2izq_P",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav2izq_P}
-            onChange={(e) =>
-              handleFavEditChange("fav2izq_P", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav2izq_P)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "680px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "S [m]",
-      field: "fav2izq_S",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav2izq_S}
-            onChange={(e) =>
-              handleFavEditChange("fav2izq_S", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav2izq_S)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "600px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "P [m]",
-      field: "fav2der_P",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav2der_P}
-            onChange={(e) =>
-              handleFavEditChange("fav2der_P", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav2der_P)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "520px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "S [m]",
-      field: "fav2der_S",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav2der_S}
-            onChange={(e) =>
-              handleFavEditChange("fav2der_S", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav2der_S)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "440px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "E [m]",
-      field: "fav3_E",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav3_E}
-            onChange={(e) =>
-              handleFavEditChange("fav3_E", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav3_E)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "360px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "T [m]",
-      field: "fav3_T",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav3_T}
-            onChange={(e) =>
-              handleFavEditChange("fav3_T", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav3_T)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "280px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "β [°]",
-      field: "fav3_beta",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav3_beta}
-            onChange={(e) =>
-              handleFavEditChange("fav3_beta", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav3_beta)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "200px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "α [°]",
-      field: "fav3_alpha",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <input
-            type="number"
-            min="0"
-            step="any"
-            className="form-control"
-            style={selectStyle}
-            value={favEditData.fav3_alpha}
-            onChange={(e) =>
-              handleFavEditChange("fav3_alpha", Number(e.target.value))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "-") e.preventDefault();
-            }}
-          />
-        ) : (
-          formatValue(row.fav3_alpha)
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "120px",
-        background: "#fff",
-        zIndex: 1,
-      },
-    },
-    {
-      headerName: "Acciones FAV",
-      field: "acciones_fav",
-      renderCell: (row: any) =>
-        editingFavRow === row.id ? (
-          <ActionButtonsConfirm
-            onAccept={handleConfirmEditFav}
-            onCancel={() => {
-              setEditingFavRow(null);
-              setFavEditData(null);
-            }}
-          />
-        ) : (
-          <CustomButton variant="editIcon" onClick={() => handleFavEditClick(row)}>
-            Editar FAV
-          </CustomButton>
-        ),
-      cellStyle: {
-        position: "sticky",
-        right: "0px",
-        background: "#fff",
-        zIndex: 1,
-      },
     },
   ];
 
@@ -1014,7 +749,7 @@ const TabWindowCreate: React.FC = () => {
     rows: [
       [
         { label: "Tipo de vano Acristalado (incluye marco)", rowSpan: 2 },
-        { label: "Características espacio contiguo el elemento", rowSpan: 2 },
+        { label: "Características espacio contiguo al elemento", rowSpan: 2 },
         { label: "Ángulo Azimut", rowSpan: 2 },
         { label: "Orientación", rowSpan: 2 },
         { label: "Alojado en", rowSpan: 2 },
@@ -1025,34 +760,12 @@ const TabWindowCreate: React.FC = () => {
         { label: "Ancho (W) [m]", rowSpan: 2 },
         { label: "Marco", rowSpan: 2 },
         { label: "Acciones Ventana", rowSpan: 2 },
-        { label: "FAV 1", colSpan: 2 },
-        { label: "FAV 2 izq", colSpan: 2 },
-        { label: "FAV 2 Der", colSpan: 2 },
-        { label: "FAV 3", colSpan: 4 },
-        { label: "Acciones FAV", rowSpan: 2 },
-      ],
-      [
-        { label: "D [m]" },
-        { label: "L [m]" },
-        { label: "P [m]" },
-        { label: "S [m]" },
-        { label: "P [m]" },
-        { label: "S [m]" },
-        { label: "E [m]" },
-        { label: "T [m]" },
-        { label: "β [°]" },
-        { label: "α [°]" },
       ],
     ],
   };
 
   return (
     <div>
-      <TablesParameters
-        columns={columns}
-        data={tableData}
-        multiHeader={multiHeader}
-      />
       <div
         style={{
           marginTop: "1rem",
@@ -1064,16 +777,22 @@ const TabWindowCreate: React.FC = () => {
       >
         <div className="d-flex justify-content-end gap-2 w-100"></div>
         <CustomButton variant="save" onClick={handleCreateWindow}>
-          Crear Ventana
+          <Plus className="me-1" size={16} />
+          Nueva Ventana
         </CustomButton>
       </div>
+      <TablesParameters
+        columns={columns}
+        data={tableData}
+        multiHeader={multiHeader}
+      />
       {/* Modal de creación */}
       <ModalCreate
         isOpen={showModal}
         onClose={handleCloseModal}
         onSave={handleSaveModal}
         title="Crear Ventana"
-        saveLabel="Grabar Datos"
+        saveLabel="Crear Ventana"
       >
         <form>
           <div className="row mb-3">
@@ -1085,7 +804,7 @@ const TabWindowCreate: React.FC = () => {
                 id="window_id"
                 name="window_id"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.window_id}
                 onChange={handleInputChange}
               >
@@ -1110,7 +829,7 @@ const TabWindowCreate: React.FC = () => {
                 id="characteristics"
                 name="characteristics"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.characteristics}
                 onChange={handleInputChange}
               >
@@ -1132,7 +851,7 @@ const TabWindowCreate: React.FC = () => {
                 id="angulo_azimut"
                 name="angulo_azimut"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.angulo_azimut}
                 onChange={handleInputChange}
               >
@@ -1155,7 +874,7 @@ const TabWindowCreate: React.FC = () => {
                 id="housed_in"
                 name="housed_in"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.housed_in}
                 onChange={handleInputChange}
               >
@@ -1177,7 +896,7 @@ const TabWindowCreate: React.FC = () => {
                 id="position"
                 name="position"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.position}
                 onChange={handleInputChange}
               >
@@ -1199,7 +918,7 @@ const TabWindowCreate: React.FC = () => {
                 id="with_no_return"
                 name="with_no_return"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.with_no_return}
                 onChange={handleInputChange}
               >
@@ -1224,7 +943,7 @@ const TabWindowCreate: React.FC = () => {
                 id="high"
                 name="high"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.high}
                 onChange={handleInputChange}
                 onKeyDown={(e) => {
@@ -1247,7 +966,7 @@ const TabWindowCreate: React.FC = () => {
                 id="broad"
                 name="broad"
                 className="form-control"
-            style={selectStyle}
+                style={selectStyle}
                 value={formData.broad}
                 onChange={handleInputChange}
                 onKeyDown={(e) => {
@@ -1279,6 +998,14 @@ const TabWindowCreate: React.FC = () => {
           )}
         </div>
       </ModalCreate>
+      <ThermalBridgesWindowModal
+        isOpen={showModalThermicBridges}
+        handleClose={handleCloseEditBridge}
+        bridgeId={favEditData?.fav_id}
+        bridgeData={favEditData}
+        detailOptions={details}
+        onSaveSuccess={fetchWindowEnclosures} // Pass the fetch function as a callback
+      />
     </div>
   );
 };

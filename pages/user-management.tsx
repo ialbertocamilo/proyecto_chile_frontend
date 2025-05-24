@@ -19,6 +19,7 @@ interface User {
   ubigeo: string;
   role_id: number;
   active: boolean;
+  last_activity?: Date;
 }
 
 const UserManagement = () => {
@@ -37,7 +38,10 @@ const UserManagement = () => {
       params.append("limit", "500");
       const url = `/users/?${params.toString()}`;
       const response = await get(url);
-      const usersArray = response?.users || [];
+      const usersArray = (response?.users || []).map((user: User) => ({
+        ...user,
+        fullname: `${user.name} ${user.lastname}`,
+      }));
       setUsers(usersArray);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
@@ -87,10 +91,73 @@ const UserManagement = () => {
 
   const columns = [
     { id: "id", label: "ID", minWidth: "2em" },
-    { 
-      id: "fullname", 
-      label: "Nombre de usuario", 
+    {
+      id: "activity",
+      label: "Actividad",
+      sortable: true,
       minWidth: "2em",
+      cell: ({ row }: { row: User }) => {
+
+        const lastActivity = row.last_activity ? new Date(row.last_activity) : null;
+        console.log(lastActivity)
+        const now = new Date();
+        const isActive = lastActivity &&
+          (now.getTime() - lastActivity.getTime()) <= 3 * 60 * 1000; 
+        
+        return (
+          <div className="d-flex align-items-center">
+            <div className="position-relative" title={isActive ? 'Usuario en línea' : 'Usuario desconectado'}>
+              <span 
+                className={`d-inline-block rounded-circle ${
+                  isActive ? 'bg-success' : 'bg-secondary'
+                }`}
+                style={{ 
+                  position: 'relative',
+                  width: '8px',
+                  height: '8px',
+                  top: 0,
+                  left: 0,
+                  ...(isActive && {
+                    animation: 'pulse 1.5s infinite',
+                    boxShadow: '0 0 0 0 rgba(25, 135, 84, 1)'
+                  })
+                }}
+              ></span>
+              {isActive && (
+                <span 
+                  className="position-absolute rounded-circle bg-success opacity-75"
+                  style={{
+                  }}
+                ></span>
+              )}
+            </div>
+            <style jsx>{`
+              @keyframes pulse {
+                0% {
+                  transform: scale(0.95);
+                  box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
+                }
+                
+                70% {
+                  transform: scale(1);
+                  box-shadow: 0 0 0 10px rgba(25, 135, 84, 0);
+                }
+                
+                100% {
+                  transform: scale(0.95);
+                  box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+                }
+              }
+            `}</style>
+          </div>
+        );
+      }
+    },
+    {
+      id: "fullname",
+      label: "Nombre de usuario",
+      minWidth: "2em",
+      sortable: true,
       cell: ({ row }: { row: User }) => `${row.name} ${row.lastname}`
     },
     { id: "email", label: "Correo Electrónico", minWidth: "2em" },

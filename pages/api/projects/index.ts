@@ -56,7 +56,7 @@ export default async function handler(
         Authorization: token,
       },
     });
-
+    console.log('[API] Projects url:', url);
     return res.status(200).json(response.data);
   } catch (error) {
     console.error('[API] Error fetching projects:', error);

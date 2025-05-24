@@ -6,6 +6,7 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
+import { Plus } from "lucide-react";
 
 // Interfaz para la respuesta de la API de pisos existentes
 interface FloorEnclosure {
@@ -95,7 +96,7 @@ const TabFloorCreate: React.FC = () => {
 
   // Manejador para prevenir la entrada del guión
   const handlePreventHyphen = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === '-') {
+    if (e.key === "-") {
       e.preventDefault();
     }
   };
@@ -155,20 +156,25 @@ const TabFloorCreate: React.FC = () => {
 
       const data: FloorEnclosure[] = await response.json();
 
-      // Transformar los datos de la API al formato de la tabla
-      const formattedData: FloorData[] = data.map((item, index) => ({
-        id: item.id,
-        index: index,
-        pisos: item.name,
-        floor_id: item.floor_id,
-        caracteristicas: item.characteristic,
-        area: item.area,
-        uValue: item.value_u,
-        perimetroSuelo: item.parameter,
-        pisoVentilado: item.is_ventilated,
-        ptP06L: item.po6_l,
-      }));
+      // Mantener el orden original usando el índice actual si existe
+      const formattedData: FloorData[] = data.map((item) => {
+        const existingRow = tableData.find(row => row.id === item.id);
+        return {
+          id: item.id,
+          index: existingRow?.index ?? tableData.length,
+          pisos: item.name,
+          floor_id: item.floor_id,
+          caracteristicas: item.characteristic,
+          area: item.area,
+          uValue: item.value_u,
+          perimetroSuelo: item.parameter,
+          pisoVentilado: item.is_ventilated,
+          ptP06L: item.po6_l,
+        };
+      });
 
+      // Ordenar por el índice original antes de actualizar el estado
+      formattedData.sort((a, b) => a.index - b.index);
       setTableData(formattedData);
     } catch (error) {
       console.error("Error:", error);
@@ -315,7 +321,9 @@ const TabFloorCreate: React.FC = () => {
           <select
             className="form-control"
             value={editValues.floor_id}
-            onChange={(e) => handleEditChange("floor_id", Number(e.target.value))}
+            onChange={(e) =>
+              handleEditChange("floor_id", Number(e.target.value))
+            }
           >
             <option value={0}>Seleccione un piso</option>
             {floorOptions.map((option) => (
@@ -335,7 +343,9 @@ const TabFloorCreate: React.FC = () => {
             <option value="">Seleccione una opción</option>
             <option value="Exterior">Exterior</option>
             <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-            <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+            <option value="Inter Recintos No Clim">
+              Inter Recintos No Clim
+            </option>
           </select>
         );
       case "area":
@@ -356,7 +366,9 @@ const TabFloorCreate: React.FC = () => {
             min={0}
             className="form-control"
             value={editValues.parameter}
-            onChange={(e) => handleEditChange("parameter", Number(e.target.value))}
+            onChange={(e) =>
+              handleEditChange("parameter", Number(e.target.value))
+            }
             onKeyDown={handlePreventHyphen}
           />
         );
@@ -410,9 +422,7 @@ const TabFloorCreate: React.FC = () => {
       headerName: "U [W/m²K]",
       field: "uValue",
       renderCell: (row: FloorData) => {
-        return row.uValue === 0
-          ? "-"
-          : formatCellValue(row.uValue, 2);
+        return row.uValue === 0 ? "-" : formatCellValue(row.uValue, 2);
       },
     },
     {
@@ -436,7 +446,7 @@ const TabFloorCreate: React.FC = () => {
     {
       headerName: "PT P06 L [m]",
       field: "ptP06L",
-      renderCell: (row: FloorData) => formatCellValue(row.ptP06L)
+      renderCell: (row: FloorData) => formatCellValue(row.ptP06L),
     },
     {
       headerName: "Acciones",
@@ -469,7 +479,12 @@ const TabFloorCreate: React.FC = () => {
 
   // Función para validar los campos del formulario
   const validateForm = () => {
-    if (floorId === 0 || !characteristic || area === undefined || area === null) {
+    if (
+      floorId === 0 ||
+      !characteristic ||
+      area === undefined ||
+      area === null
+    ) {
       notify("Debe completar todos los campos del formulario correctamente");
       return false;
     }
@@ -520,6 +535,14 @@ const TabFloorCreate: React.FC = () => {
 
   return (
     <div>
+      <div style={{ marginTop: "20px" }}>
+        <div className="d-flex justify-content-end gap-2 w-100">
+          <CustomButton variant="save" onClick={() => setShowModal(true)}>
+            <Plus className="me-1" size={16} />
+            Nuevo Piso
+          </CustomButton>
+        </div>
+      </div>
       {tableLoading ? (
         <div className="text-center p-4">
           <p>Cargando datos de pisos...</p>
@@ -527,20 +550,13 @@ const TabFloorCreate: React.FC = () => {
       ) : (
         <TablesParameters columns={columns} data={tableData} />
       )}
-      <div style={{ marginTop: "20px" }}>
-        <div className="d-flex justify-content-end gap-2 w-100">
-          <CustomButton variant="save" onClick={() => setShowModal(true)}>
-            Crear Piso
-          </CustomButton>
-        </div>
-      </div>
 
       {/* Modal de Creación */}
       <ModalCreate
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleModalSave}
-        saveLabel="Grabar Datos"
+        saveLabel="Crear Piso"
         title="Crear Piso"
       >
         <div className="container">
@@ -565,7 +581,9 @@ const TabFloorCreate: React.FC = () => {
                   </option>
                 ))}
               </select>
-              {loading && <small className="text-muted">Cargando opciones...</small>}
+              {loading && (
+                <small className="text-muted">Cargando opciones...</small>
+              )}
             </div>
           </div>
 
@@ -585,7 +603,9 @@ const TabFloorCreate: React.FC = () => {
                 <option value="">Seleccione una opción</option>
                 <option value="Exterior">Exterior</option>
                 <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">Inter Recintos No Clim</option>
+                <option value="Inter Recintos No Clim">
+                  Inter Recintos No Clim
+                </option>
               </select>
             </div>
           </div>
@@ -660,9 +680,10 @@ const TabFloorCreate: React.FC = () => {
       >
         <div className="container">
           <div className="row mb-3">
-              <p>
-                ¿Está seguro que desea eliminar el piso <strong>{rowToDelete?.pisos}</strong>?
-              </p>
+            <p>
+              ¿Está seguro que desea eliminar el piso{" "}
+              <strong>{rowToDelete?.pisos}</strong>?
+            </p>
           </div>
         </div>
       </ModalCreate>

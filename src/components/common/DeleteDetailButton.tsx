@@ -8,9 +8,10 @@ import CustomButton from './CustomButton'; // Importamos el componente CustomBut
 interface DeleteDetailButtonProps {
   detailId: number;
   onDelete?: () => void;
+  disabled?: boolean;  // Add this line
 }
 
-const DeleteDetailButton: React.FC<DeleteDetailButtonProps> = ({ detailId, onDelete }) => {
+const DeleteDetailButton: React.FC<DeleteDetailButtonProps> = ({ detailId, onDelete, disabled }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const handleDelete = async () => {
@@ -50,6 +51,7 @@ const DeleteDetailButton: React.FC<DeleteDetailButtonProps> = ({ detailId, onDel
         variant="deleteIcon"                      // Usamos el color rojo (ya definido en CustomButton)
         type="button"
         className="material-icons"                // Puedes mantener o ajustar la clase según necesites
+        disabled={disabled}  // Add this line
       >
         Eliminar
       </CustomButton>

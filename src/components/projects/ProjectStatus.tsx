@@ -59,7 +59,7 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
                 title="Confirmación"
             >
                 <p>Para realizar el cálculo, asegúrese de que todos los datos del proyecto estén correctamente llenos.</p>
-                <div className="modal-actions d-flex justify-content-end gap-2 mt-3">
+                <div className="modal-actions d-flex justify-content-between gap-2 mt-3">
                     <CancelButton onClick={handleCancel} />
                     <CustomButton onClick={handleConfirm} className="btn btn-primary">Realizar cálculo</CustomButton>
                 </div>

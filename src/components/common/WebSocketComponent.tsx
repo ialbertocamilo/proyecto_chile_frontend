@@ -1,8 +1,9 @@
-import { useRouter } from 'next/router';
+'use client'
 import React, { useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
 import CustomButton from './CustomButton';
 import { useWebSocket, WebSocketProvider } from './WebSocketProvider';
+import { useRouter } from 'next/router';
 
 interface WebSocketComponentProps {
     path?: string; // Optional path to append to the WebSocket URL
@@ -33,6 +34,14 @@ interface WebSocketContentProps {
 
 const WebSocketContent: React.FC<WebSocketContentProps> = ({ message, setMessage, messages }) => {
     const { connected, sendMessage, lastMessage, reconnect } = useWebSocket();
+    const [token, setToken] = useState<string | null>(null);
+
+    const router = useRouter();
+    const { id } = router.query;
+
+    useEffect(() => {
+        setToken(localStorage.getItem('token'));
+    }, []);
 
 
     const [token, setToken] = useState<string | null>(null);
@@ -49,10 +58,10 @@ const WebSocketContent: React.FC<WebSocketContentProps> = ({ message, setMessage
         if (message.trim()) {
             if (message.startsWith('/')) {
                 console.log('Command sent:', message);
-                sendMessage({ command: message.substring(1), type: 'command', "project_id": projectId, token });
-            } else {
-
-                sendMessage({ type: 'message', content: message });
+                sendMessage({ command: message.substring(1), type: 'command' });
+            }else{
+                
+            sendMessage({ type: 'message', content: message });
             }
             setMessage('');
         }

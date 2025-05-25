@@ -72,7 +72,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
             ws.onerror = (error) => {
                 console.error('WebSocket error:', error);
-                notify('Error de conexión WebSocket', 'error');
             };
 
             ws.onclose = (event) => {
@@ -125,7 +124,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
             socket.send(JSON.stringify(messageString));
         } else {
             console.error('Cannot send message: WebSocket is not connected');
-            notify('No se puede enviar mensaje: WebSocket no está conectado', 'error');
         }
     };
 

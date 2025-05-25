@@ -24,8 +24,9 @@ export const useConstants = (type?: string, name?: string) => {
             const params = new URLSearchParams();
             if (type) params.append('type', type);
             if (name) params.append('name', name);
+            console.log(`[Constants] Fetching constants... /constants?${params.toString()}`);
 
-            const response = await api.get(`/constants/?${params.toString()}`);
+            const response = await api.get(`/constants?${params.toString()}`);
             console.log('[Constants] Response:', response);
             setConstants(response);
         } catch (err: any) {

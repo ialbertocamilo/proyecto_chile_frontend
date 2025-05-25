@@ -7,7 +7,7 @@ interface WebSocketComponentProps {
     path?: string; // Optional path to append to the WebSocket URL
 }
 
-const WebSocketComponent: React.FC<WebSocketComponentProps> = ({ path = '' }) => {
+const WebSocketComponent: React.FC<WebSocketComponentProps> = ({ path = 'ws' }) => {
     const [message, setMessage] = useState<string>('');
     const [messages, setMessages] = useState<any[]>([]);
 
@@ -35,7 +35,13 @@ const WebSocketContent: React.FC<WebSocketContentProps> = ({ message, setMessage
 
     const handleSend = () => {
         if (message.trim()) {
+            if (message.startsWith('/')) {
+                console.log('Command sent:', message);
+                sendMessage({ command: message.substring(1), type: 'command' });
+            }else{
+                
             sendMessage({ type: 'message', content: message });
+            }
             setMessage('');
         }
     };
@@ -63,15 +69,15 @@ const WebSocketContent: React.FC<WebSocketContentProps> = ({ message, setMessage
             </div>
 
             <div
-                className="websocket-messages mb-3 p-2 border rounded bg-light"
+                className="websocket-messages mb-3 p-2 border rounded "
                 style={{ height: '200px', overflowY: 'auto' }}
             >
                 {messages.length === 0 ? (
-                    <div className="text-center text-muted py-4">No hay mensajes</div>
+                    <div className="d-flex align-items-center justify-content-center py-4">No hay mensajes</div>
                 ) : (
                     messages.map((msg, index) => (
-                        <div key={index} className="message p-2 mb-2 border-bottom">
-                            <pre className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
+                        <div key={index} className="p-2 mb-2 border-bottom">
+                            <pre className="m-0">
                                 {JSON.stringify(msg, null, 2)}
                             </pre>
                         </div>

@@ -1,12 +1,13 @@
 import { useRecintos } from "@/context/RecintosContext";
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
-import { Download, RefreshCw } from "lucide-react";
+import { Download, RefreshCw, Send } from "lucide-react";
 import { useRouter } from "next/router";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Container, Spinner, Tab, Tabs } from "react-bootstrap";
 import CustomButton from "../common/CustomButton";
 import WebSocketComponent from "../common/WebSocketComponent";
+import { useWebSocket } from "../common/WebSocketProvider";
 import IndicadoresFinales from "./tabs/IndicadoresFinales";
 import ResumenRecintos from "./tabs/ResumenRecintos";
 
@@ -172,7 +173,7 @@ const Results = () => {
           </Tab>          <Tab eventKey="indicadores" title="Indicadores Finales">
             <IndicadoresFinales />
           </Tab>          <Tab eventKey="websocket" title="WebSocket">
-            <WebSocketComponent path={`/projects/${router.query.id}`} />
+            <WebSocketComponent/>
           </Tab>
         </Tabs>
 

@@ -32,7 +32,7 @@ interface WebSocketProviderProps {
 
 export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     children,
-    path = '',
+    path = 'ws',
     onMessage,
     autoReconnect = true,
     reconnectInterval = 5000,
@@ -43,9 +43,11 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
     const connectWebSocket = () => {
         // Get the WebSocket URL from the environment variable
-        const wsUrl = `${process.env.NEXT_PUBLIC_WS_ENDPOINT}${path}`;
+        const wsUrl = `${process.env.NEXT_PUBLIC_WS_ENDPOINT}/ws`;
 
+        console.log('WebSocket URL:', wsUrl);
         try {
+            console.log('Connecting to WebSocket:', wsUrl);
             const ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
@@ -118,7 +120,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     // Function to send messages
     const sendMessage = (message: any) => {
         if (socket && connected) {
-            const messageString = typeof message === 'string' ? message :message;
+            const messageString = typeof message === 'string' ? message : message;
+            console.log('Sending message:', messageString);
             socket.send(messageString);
         } else {
             console.error('Cannot send message: WebSocket is not connected');

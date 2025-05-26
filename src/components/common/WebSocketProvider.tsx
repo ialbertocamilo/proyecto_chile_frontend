@@ -122,7 +122,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         if (socket && connected) {
             const messageString = typeof message === 'string' ? message : message;
             console.log('Sending message:', messageString);
-            socket.send(messageString);
+            socket.send(JSON.stringify(messageString));
         } else {
             console.error('Cannot send message: WebSocket is not connected');
             notify('No se puede enviar mensaje: WebSocket no está conectado', 'error');

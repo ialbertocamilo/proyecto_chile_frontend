@@ -44,9 +44,6 @@ const WebSocketContent: React.FC<WebSocketContentProps> = ({ message, setMessage
     }, []);
 
 
-    const [token, setToken] = useState<string | null>(null);
-    const router = useRouter();
-    const projectId = router.query.id;
 
     useEffect(
         () => {
@@ -58,7 +55,7 @@ const WebSocketContent: React.FC<WebSocketContentProps> = ({ message, setMessage
         if (message.trim()) {
             if (message.startsWith('/')) {
                 console.log('Command sent:', message);
-                sendMessage({ command: message.substring(1), type: 'command' });
+                sendMessage({ command: message.substring(1), type: 'command' , token: token, project_id: id });
             }else{
                 
             sendMessage({ type: 'message', content: message });

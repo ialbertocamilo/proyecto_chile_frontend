@@ -1,16 +1,14 @@
 import { useRecintos } from "@/context/RecintosContext";
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
-import { Download, RefreshCw, Send } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/router";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { Container, Spinner, Tab, Tabs } from "react-bootstrap";
 import CustomButton from "../common/CustomButton";
 import WebSocketComponent from "../common/WebSocketComponent";
-import { useWebSocket } from "../common/WebSocketProvider";
 import IndicadoresFinales from "./tabs/IndicadoresFinales";
 import ResumenRecintos from "./tabs/ResumenRecintos";
-
 const MemoizedResumenRecintos = memo(ResumenRecintos);
 
 const Results = () => {
@@ -142,6 +140,14 @@ const Results = () => {
         )}
 
       </div>
+      <WebSocketComponent
+        path={``}
+        onMessageReceived={(message) => {
+          if (message.type === "result") {
+            console.log("Resultado recibido:", JSON.parse(message.metadata?.result_by_enclosure));
+          }
+        }}
+      />
       <br />
       {loading ? (
         <div className="text-center">Procesando datos...</div>
@@ -166,6 +172,7 @@ const Results = () => {
             "--bs-nav-link-padding-y": "10px",
           } as React.CSSProperties}
         >          <Tab eventKey="recintos" title="Resumen de Recintos">
+
             <MemoizedResumenRecintos
               globalResults={calculationResult}
               onUpdated={handleUpdate}
@@ -173,7 +180,8 @@ const Results = () => {
           </Tab>          <Tab eventKey="indicadores" title="Indicadores Finales">
             <IndicadoresFinales />
           </Tab>          <Tab eventKey="websocket" title="WebSocket">
-            <WebSocketComponent/>
+
+
           </Tab>
         </Tabs>
 

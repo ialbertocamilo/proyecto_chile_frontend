@@ -1,15 +1,21 @@
 'use client'
+import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
 import CustomButton from './CustomButton';
 import { useWebSocket, WebSocketProvider } from './WebSocketProvider';
-import { useRouter } from 'next/router';
 
 interface WebSocketComponentProps {
     path?: string; // Optional path to append to the WebSocket URL
+    onMessageReceived?: (data: any) => void; // Callback to return data to parent component
+    onConnectionChange?: (status: boolean) => void; // Optional callback for connection status changes
 }
 
-const WebSocketComponent: React.FC<WebSocketComponentProps> = ({ path = 'ws' }) => {
+const WebSocketComponent: React.FC<WebSocketComponentProps> = ({
+    path = 'ws',
+    onMessageReceived,
+    onConnectionChange
+}) => {
     const [message, setMessage] = useState<string>('');
     const [messages, setMessages] = useState<any[]>([]);
 
@@ -18,10 +24,18 @@ const WebSocketComponent: React.FC<WebSocketComponentProps> = ({ path = 'ws' }) 
             path={path}
             onMessage={(data) => {
                 setMessages(prev => [...prev, data]);
+                if (onMessageReceived) {
+                    onMessageReceived(data);
+                }
             }}
             autoReconnect={true}
         >
-            <WebSocketContent message={message} setMessage={setMessage} messages={messages} />
+            <WebSocketContent
+                message={message}
+                setMessage={setMessage}
+                messages={messages}
+                onConnectionChange={onConnectionChange}
+            />
         </WebSocketProvider>
     );
 };
@@ -30,10 +44,16 @@ interface WebSocketContentProps {
     message: string;
     setMessage: (message: string) => void;
     messages: any[];
+    onConnectionChange?: (status: boolean) => void;
 }
 
-const WebSocketContent: React.FC<WebSocketContentProps> = ({ message, setMessage, messages }) => {
-    const { connected, sendMessage, lastMessage, reconnect } = useWebSocket();
+const WebSocketContent: React.FC<WebSocketContentProps> = ({
+    message,
+    setMessage,
+    messages,
+    onConnectionChange
+}) => {
+    const { connected, sendMessage, reconnect } = useWebSocket();
     const [token, setToken] = useState<string | null>(null);
 
     const router = useRouter();
@@ -43,22 +63,24 @@ const WebSocketContent: React.FC<WebSocketContentProps> = ({ message, setMessage
         setToken(localStorage.getItem('token'));
     }, []);
 
+    useEffect(() => {
+        setToken(localStorage.getItem('token'));
+    }, []);
 
+    // Notify parent component of connection status changes
+    useEffect(() => {
+        if (onConnectionChange) {
+            onConnectionChange(connected);
+        }
+    }, [connected, onConnectionChange]);
 
-    useEffect(
-        () => {
-            setToken(localStorage.getItem('token'));
-
-        }, []
-    )
     const handleSend = () => {
         if (message.trim()) {
             if (message.startsWith('/')) {
                 console.log('Command sent:', message);
-                sendMessage({ command: message.substring(1), type: 'command' , token: token, project_id: id });
-            }else{
-                
-            sendMessage({ type: 'message', content: message });
+                sendMessage({ command: message.substring(1), type: 'command', token: token, project_id: id });
+            } else {
+                sendMessage({ type: 'message', content: message });
             }
             setMessage('');
         }

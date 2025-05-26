@@ -2,7 +2,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import Card from "@/components/common/Card";
 import CustomButton from "@/components/common/CustomButton";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
-import WebSocketComponent from "@/components/common/WebSocketComponent";
+
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Results from "../src/components/projects/Results";
@@ -84,16 +84,6 @@ const CalculationResultPage = () => {
         </div>
       </Card>
 
-      {/* WebSocketComponent para recibir actualizaciones de cálculos */}
-      <Card className="mt-4">
-        <h3 className="mb-3">Estado del Cálculo</h3>
-        <p className="text-muted mb-3">
-          Recibiendo actualizaciones del proceso de cálculo en tiempo real
-        </p>
-        <WebSocketComponent
-          path={``}
-        />
-      </Card>
     </div>
   );
 };

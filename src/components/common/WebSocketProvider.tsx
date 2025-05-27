@@ -39,11 +39,11 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 }) => {
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [connected, setConnected] = useState<boolean>(false);
-    const [lastMessage, setLastMessage] = useState<any | null>(null);
-
-    const connectWebSocket = () => {
-        // Get the WebSocket URL from the environment variable
-        const wsUrl = `${process.env.NEXT_PUBLIC_WS_ENDPOINT}/ws`;
+    const [lastMessage, setLastMessage] = useState<any | null>(null); const connectWebSocket = () => {
+        // Get user ID from local storage
+        let user = localStorage.getItem('userProfile') || 'anonymous';
+        const userId = JSON.parse(user).id || 'anonymous';
+        const wsUrl = `${process.env.NEXT_PUBLIC_WS_ENDPOINT}/ws/${userId}`;
 
         console.log('WebSocket URL:', wsUrl);
         try {
@@ -59,8 +59,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
                 try {
                     const data = JSON.parse(event.data);
                     setLastMessage(data);
-
-                    // Call the optional onMessage callback if provided
                     if (onMessage) {
                         onMessage(data);
                     }

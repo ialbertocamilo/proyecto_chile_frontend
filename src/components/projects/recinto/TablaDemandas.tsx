@@ -24,17 +24,18 @@ const TablaDemandas: React.FC<TablaDemandasProps> = ({ recintos }) => {
                     <th className="text-center">Total</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody>                
                 {recintos.map((recinto, index) => (
-                    <tr key={`demanda-${recinto.id || index}`}>                        <td>{recinto.name_enclosure || `Recinto ${index + 1}`}</td>
-                        <td>{recinto.usage_profile_name || 'No definido'}</td>
-                        <td className="text-center">{recinto.superficie?.toFixed(2) || '0.00'}</td>
-                        <td className="text-center">{recinto.demanda_calef?.toFixed(2) || '0.00'}</td>
-                        <td className="text-center">{recinto.demanda_ref?.toFixed(2) || '0.00'}</td>
-                        <td className="text-center">{recinto.demanda_ilum?.toFixed(2) || '0.00'}</td>
-                        <td className="text-center">{recinto.demanda_total?.toFixed(2) || '0.00'}</td>
-                    </tr>
-                ))}
+                <tr key={`demanda-${recinto.id || index}`}>
+                    <td>{recinto.name_enclosure || `Recinto ${index + 1}`}</td>
+                    <td>{recinto.usage_profile_name || 'No definido'}</td>
+                    <td className="text-center">{recinto.superficie?.toFixed(2) || '0.00'}</td>
+                    <td className="text-center">{recinto.demanda_calef?.toFixed(2) || '0.00'}</td>
+                    <td className="text-center">{recinto.demanda_ref?.toFixed(2) || '0.00'}</td>
+                    <td className="text-center">{recinto.demanda_ilum?.toFixed(2) || '0.00'}</td>
+                    <td className="text-center">{recinto.demanda_total?.toFixed(2) || '0.00'}</td>
+                </tr>
+            ))}
             </tbody>
         </Table>
     );

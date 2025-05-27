@@ -3,7 +3,7 @@ import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import { Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/router";
-import { memo, useCallback, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Container, Spinner, Tab, Tabs } from "react-bootstrap";
 import CustomButton from "../common/CustomButton";
 import WebSocketComponent from "../common/WebSocketComponent";
@@ -23,29 +23,25 @@ const Results = () => {
   const [calculationResult, setCalculationResult] = useState<any>(null);
   const { setRecintos } = useRecintos();
 
-  const processData = useCallback(async () => {
-    console.log("Starting processData");
+  const processData = async () => {
     try {
       const projectId = router.query.id;
       if (projectId) {
-        const result = await get(`/calculator/${projectId}`);
-        setCalculationResult(result);
+        await get(`/calculator/${projectId}`);
         setIsButtonDisabled(false);
       }
     } catch (error) {
-      console.error("Error al procesar los datos:", error);
-      notify("Se termino de procesar la información");
+      console.error("Error processing data:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    if (router.query.id) {
+      processData();
+    }
   }, [router.query.id]);
-
-  // useEffect(() => {
-  //   if (router.query.id) processData();
-  // }, [router.query.id, processData]);
-
-
-
 
   const handleUpdate = ((data: any) => {
     console.log("GUARDANDO :", data);
@@ -57,13 +53,9 @@ const Results = () => {
       setIsRecalculating(true);
       const projectId = router.query.id;
       if (projectId) {
-        // Guardar el resultado en la misma variable de estado
         const result = await get(`/calculator/${projectId}?force_calculation=true`);
         setCalculationResult(result);
-
         notify("Recálculo completado exitosamente");
-        // Refresh data after recalculation
-        await processData();
       }
     } catch (error) {
       console.error("Error al forzar recálculo:", error);
@@ -140,11 +132,21 @@ const Results = () => {
         )}
 
       </div>
+
       <WebSocketComponent
         path={``}
         onMessageReceived={(message) => {
-          if (message.type === "result") {
-            console.log("Resultado recibido:", JSON.parse(message.metadata?.result_by_enclosure));
+          if (message?.notificationType == 'result') {
+            const result_by_enclosure = JSON.parse(message?.payload?.result_by_enclosure)
+            const base_by_enclosure = JSON.parse(message?.payload?.base_by_enclosure)
+            const obj = {
+              result_by_enclosure,
+              base_by_enclosure,
+            }
+            console.log("MENSAJES:", JSON.parse(message?.payload?.result_by_enclosure_v2));
+
+            console.log("Mensaje recibido:", obj);
+            setCalculationResult(obj);
           }
         }}
       />
@@ -171,17 +173,17 @@ const Results = () => {
             "--bs-nav-link-padding-x": "10px",
             "--bs-nav-link-padding-y": "10px",
           } as React.CSSProperties}
-        >          <Tab eventKey="recintos" title="Resumen de Recintos">
+        >
 
+          <Tab eventKey="recintos" title="Resumen de Recintos">
             <MemoizedResumenRecintos
               globalResults={calculationResult}
               onUpdated={handleUpdate}
             />
-          </Tab>          <Tab eventKey="indicadores" title="Indicadores Finales">
+          </Tab>
+
+          <Tab eventKey="indicadores" title="Indicadores Finales">
             <IndicadoresFinales />
-          </Tab>          <Tab eventKey="websocket" title="WebSocket">
-
-
           </Tab>
         </Tabs>
 

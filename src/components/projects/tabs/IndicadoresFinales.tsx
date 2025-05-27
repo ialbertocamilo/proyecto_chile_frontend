@@ -128,11 +128,9 @@ const calcularDemanda = (recintos: Recinto[], tipo: TipoDemanda, sumaSuperficieT
     }, 0);
   };
 
-  // Calcular totales
   const totalDemanda = calcularTotalDemanda(false);
   const totalDemandaBase = calcularTotalDemanda(true);
 
-  // Calcular métricas finales
   const demandaPorM2 = sumaSuperficieTotal > 0 ? totalDemanda / sumaSuperficieTotal : 0;
   const vsCasoBase = totalDemandaBase !== 0
     ? `${((1 - (totalDemanda / totalDemandaBase)) * 100).toFixed(1)}%`

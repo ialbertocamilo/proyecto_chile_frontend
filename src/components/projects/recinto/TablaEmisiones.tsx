@@ -15,41 +15,6 @@ interface TablaEmisionesProps {
  */
 const TablaEmisiones: React.FC<TablaEmisionesProps> = ({ recintos, combustibleCalef, consumosEnergia, onUpdate }) => {
 
-
-    const getConsumoEnergia = (code: string): number => {
-        return consumosEnergia.find(c => c.code === code)?.co2_eq || 0;
-    };
-
-    const calculateCalefEmisiones = (recinto: Recinto): number => {
-        const consumoEnergia = getConsumoEnergia(combustibleCalef?.code || '');
-        const result = recinto.consumo_calef * consumoEnergia * recinto.superficie;
-        return result;
-    };
-
-    const calculateRefEmisiones = (recinto: Recinto): number => {
-        const consumoEnergia = getConsumoEnergia(combustibleCalef?.code || '');
-        const result = recinto.consumo_ref * consumoEnergia * recinto.superficie;
-
-        return result;
-    };
-    useEffect(() => {
-        // Actualizar todos los recintos y enviarlos juntos
-        const updatedRecintos = recintos.map(recinto => {
-            const emisionesCalef = calculateCalefEmisiones(recinto);
-            const emisionesRef = calculateRefEmisiones(recinto);
-            const emisionesIlum = recinto.co2_eq_ilum || 0;
-            const emisionesTotal = emisionesCalef + emisionesRef + emisionesIlum;
-
-            return {
-                ...recinto,
-                co2_eq_total: emisionesTotal
-            };
-        });
-
-        if (onUpdate) {
-            onUpdate(updatedRecintos);
-        }
-    }, [recintos, combustibleCalef, consumosEnergia]);
     return (
         <Table className="tables-results">
             <thead>
@@ -72,8 +37,8 @@ const TablaEmisiones: React.FC<TablaEmisionesProps> = ({ recintos, combustibleCa
             <tbody>
                 {recintos.map((recinto, index) => {
                     // Actual
-                    const emisionesCalef = recinto.co2_eq_calefaccion ?? calculateCalefEmisiones(recinto) ?? 0;
-                    const emisionesRef = recinto.co2_eq_refrigeracion ?? calculateRefEmisiones(recinto) ?? 0;
+                    const emisionesCalef = recinto.co2_eq_calefaccion ?? 0;
+                    const emisionesRef = recinto.co2_eq_refrigeracion ?? 0;
                     const emisionesIlum = recinto.co2_eq_iluminacion ?? recinto.co2_eq_ilum ?? 0;
                     const emisionesTotal = recinto.co2_eq_total ?? (emisionesCalef + emisionesRef + emisionesIlum);
 

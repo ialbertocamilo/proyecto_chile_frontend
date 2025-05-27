@@ -1,13 +1,10 @@
 import React from "react";
 //Components
-import Card from "../common/Card";
-import ProjectInfoHeader from "../common/ProjectInfoHeader";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import Title from "@/components/Title";
+import Card from "../common/Card";
+import ProjectInfoHeader from "../common/ProjectInfoHeader";
 //Hooks
-import useProjectId from "@/hooks/useProjectId";
-import useRedirectIfNoProject from "@/hooks/useRedirectIfNoProject";
-import useProjectInitialization from "@/hooks/useProjectInitialization";
 
 interface HeaderProjectProps {
   projectName: string;

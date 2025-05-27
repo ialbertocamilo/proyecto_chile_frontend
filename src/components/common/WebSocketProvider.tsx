@@ -41,7 +41,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     const [connected, setConnected] = useState<boolean>(false);
     const [lastMessage, setLastMessage] = useState<any | null>(null); const connectWebSocket = () => {
         // Get user ID from local storage
-        let user = localStorage.getItem('userProfile') || 'anonymous';
+        const user = localStorage.getItem('userProfile') || 'anonymous';
         const userId = JSON.parse(user).id || 'anonymous';
         const wsUrl = `${process.env.NEXT_PUBLIC_WS_ENDPOINT}/ws/${userId}`;
 
@@ -76,7 +76,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
                 console.log('WebSocket disconnected:', event.code, event.reason);
                 setConnected(false);
 
-                // Auto reconnect if enabled
                 if (autoReconnect) {
                     console.log(`Reconnecting in ${reconnectInterval / 1000} seconds...`);
                     setTimeout(connectWebSocket, reconnectInterval);

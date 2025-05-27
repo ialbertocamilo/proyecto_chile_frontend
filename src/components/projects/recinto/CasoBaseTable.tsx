@@ -46,9 +46,11 @@ const CasoBaseTable: React.FC<CasoBaseTableProps> = ({
 
         const fep = combustibleCalef?.fep || 1;
         const consumoElectricidad = getConsumoEnergia(combustibleCalef?.code || '');
+        if(recinto.superficie)
         return (consumoCalef * fep * recinto.superficie) +
             (consumoRef * fep * recinto.superficie) +
             (demandaIlum * recinto.superficie * consumoElectricidad * fep);
+        return 0
     };
 
     useEffect(() => {

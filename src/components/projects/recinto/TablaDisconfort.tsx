@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Table } from 'react-bootstrap';
 import { Recinto } from '../../../types/recinto';
 
@@ -32,13 +32,25 @@ const TablaDisconfort: React.FC<TablaDisconfortProps> = ({ recintos }) => {
             </thead>
             <tbody>
                 {recintos.map((recinto, index) => (
-                    <tr key={`disconfort-${recinto.id || index}`}>
-                        <td>{recinto.name_enclosure || `Recinto ${index + 1}`}</td>
-                        <td>{recinto.usage_profile_name || 'N/A'}</td>
+                    <tr key={`disconfort-${recinto.enclosure_id || recinto.id || index}`}>
+                        <td>{recinto.nombre_recinto || recinto.name_enclosure || `Recinto ${index + 1}`}</td>
+                        <td>{recinto.perfil_uso || 'N/A'}</td>
                         <td className="text-end">{recinto.superficie?.toFixed(2) || '0.00'}</td>
-                        <td className="text-end">{recinto.hrs_disconfort_calef?.toFixed(2) || '0.00'}</td>
-                        <td className="text-end">{recinto.hrs_disconfort_ref?.toFixed(2) || '0.00'}</td>
-                        <td className="text-end">{recinto.hrs_disconfort_total?.toFixed(2) || '0.00'}</td>
+                        <td className="text-end">
+                            {recinto.hrs_disconfort_calefaccion?.toFixed(2) || recinto.hrs_disconfort_calef?.toFixed(2) || '0.00'}
+                            <br />
+                            <small className="text-muted">CB: {recinto.caso_base_hrs_disconfort_calefaccion !== undefined ? Number(recinto.caso_base_hrs_disconfort_calefaccion).toFixed(2) : '-'}</small>
+                        </td>
+                        <td className="text-end">
+                            {recinto.hrs_disconfort_refrigeracion?.toFixed(2) || recinto.hrs_disconfort_ref?.toFixed(2) || '0.00'}
+                            <br />
+                            <small className="text-muted">CB: {recinto.caso_base_hrs_disconfort_refrigeracion !== undefined ? Number(recinto.caso_base_hrs_disconfort_refrigeracion).toFixed(2) : '-'}</small>
+                        </td>
+                        <td className="text-end">
+                            {recinto.hrs_disconfort_total?.toFixed(2) || '0.00'}
+                            <br />
+                            <small className="text-muted">CB: {recinto.caso_base_hrs_disconfort_total !== undefined ? Number(recinto.caso_base_hrs_disconfort_total).toFixed(2) : '-'}</small>
+                        </td>
                     </tr>
                 ))}
             </tbody>

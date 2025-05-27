@@ -144,7 +144,7 @@ export const processGlobalResults = (
         return {
             id: enclosure.enclosure_id,
             name_enclosure: enclosure.enclosure_name,
-            usage_profile_name: enclosure.occupation_profile_name,
+            perfil_uso: enclosure.occupation_profile_name,
             superficie: enclosure.surface,
             demanda_calef: demandaCalef,
             demanda_ref: demandaRef,
@@ -221,7 +221,7 @@ export const processBaseResults = (
         return {
             id: enclosure.enclosure_id,
             name_enclosure: enclosure.enclosure_name,
-            usage_profile_name: enclosure.occupation_profile_name || "",
+            perfil_uso: enclosure.occupation_profile_name || "",
             superficie: enclosure.surface,
             demanda_calef: demandaCalef,
             demanda_ref: demandaRef,

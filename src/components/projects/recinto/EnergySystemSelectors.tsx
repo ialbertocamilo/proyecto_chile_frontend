@@ -54,19 +54,30 @@ const EnergySystemSelectors: React.FC<EnergySystemSelectorsProps> = ({
                 })).filter(item => Boolean(item.code && item.description)) as SystemOption[];
             };
 
+            const rendimientoCalef = processOptions(result.constant.atributs.rendimiento_calef || []);
+            const distribucionHvac = processOptions(result.constant.atributs.distribucion_hvac || []);
+            const controlHvac = processOptions(result.constant.atributs.control_hvac || []);
             const consumosEnergia = processOptions(result.constant.atributs.consumos_por_fuente_de_energia || []);
+            const rendimientoRef = processOptions(result.constant.atributs.rendimiento_ref || []);
 
             setConfig({
                 energySystems: validatedSystems,
-                rendimientoCalef: processOptions(result.constant.atributs.rendimiento_calef || []),
-                distribucionHvac: processOptions(result.constant.atributs.distribucion_hvac || []),
-                controlHvac: processOptions(result.constant.atributs.control_hvac || []),
-                consumosEnergia: consumosEnergia,
-                rendimientoRef: processOptions(result.constant.atributs.rendimiento_ref || [])
+                rendimientoCalef,
+                distribucionHvac,
+                controlHvac,
+                consumosEnergia,
+                rendimientoRef
             });
 
-            // Trigger onChange with initial consumosEnergia
-            onChange(selection, consumosEnergia);
+            // Seleccionar por defecto el primer valor después de "Seleccionar" si existe
+            const defaultSelection: EnergySystemSelection = {
+                combustibleCalef: validatedSystems.length > 0 ? validatedSystems[0] : null,
+                rendimiento: rendimientoCalef.length > 0 ? rendimientoCalef[0] : null,
+                distribucion: distribucionHvac.length > 0 ? distribucionHvac[0] : null,
+                control: controlHvac.length > 0 ? controlHvac[0] : null
+            };
+            setSelection(defaultSelection);
+            onChange(defaultSelection, consumosEnergia);
         }
     }, [result.constant]);
 

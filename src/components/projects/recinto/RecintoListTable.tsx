@@ -29,7 +29,7 @@ const RecintoListTable: React.FC<RecintoListTableProps> = ({ recintos }) => {
                 {recintos.map((recinto, index) => (
                     <tr key={`recinto-${recinto.id || index}`}>
                         <td>{recinto.name_enclosure || `Recinto ${index + 1}`}</td>
-                        <td>{recinto.usage_profile_name || 'N/A'}</td>
+                        <td>{recinto.perfil_uso || 'N/A'}</td>
                         <td className="text-end">{recinto.superficie?.toFixed(2) || '0.00'}</td>
                     </tr>
                 ))}

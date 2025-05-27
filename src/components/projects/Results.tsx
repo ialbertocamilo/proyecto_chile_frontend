@@ -1,4 +1,3 @@
-import { useRecintos } from "@/context/RecintosContext";
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import { Download, RefreshCw } from "lucide-react";
@@ -21,7 +20,8 @@ const Results = () => {
 
 
   const [calculationResult, setCalculationResult] = useState<any>(null);
-  const { setRecintos } = useRecintos();
+
+
 
   const processData = async () => {
     try {
@@ -45,7 +45,7 @@ const Results = () => {
 
   const handleUpdate = ((data: any) => {
     console.log("GUARDANDO :", data);
-    setRecintos(data);
+    // Removed setRecintos usage
   });
 
   const handleForceRecalculation = async () => {
@@ -137,16 +137,20 @@ const Results = () => {
         path={``}
         onMessageReceived={(message) => {
           if (message?.notificationType == 'result') {
-            const result_by_enclosure = JSON.parse(message?.payload?.result_by_enclosure)
-            const base_by_enclosure = JSON.parse(message?.payload?.base_by_enclosure)
-            const obj = {
-              result_by_enclosure,
-              base_by_enclosure,
-            }
-            console.log("MENSAJES:", JSON.parse(message?.payload?.result_by_enclosure_v2));
+            // Only use the new data structure
+            const enclosures = JSON.parse(message?.payload?.result_by_enclosure_v2 || '[]');
+            const baseEnclosures = JSON.parse(message?.payload?.base_by_enclosure_v2 || '[]');
+            const finalIndicators = message?.payload?.final_indicators;
 
-            console.log("Mensaje recibido:", obj);
-            setCalculationResult(obj);
+            console.log("Enclosures:", enclosures);
+            console.log("Base Enclosures:", baseEnclosures);
+            console.log("Finals:", finalIndicators);
+
+            setCalculationResult({
+              result_by_enclosure_v2: enclosures,
+              base_by_enclosure_v2: baseEnclosures,
+              final_indicators: finalIndicators
+            });
           }
         }}
       />
@@ -183,7 +187,7 @@ const Results = () => {
           </Tab>
 
           <Tab eventKey="indicadores" title="Indicadores Finales">
-            <IndicadoresFinales />
+            <IndicadoresFinales finalIndicators={calculationResult?.final_indicators} />
           </Tab>
         </Tabs>
 

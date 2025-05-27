@@ -1,13 +1,11 @@
 import ActionButtons from "@/components/common/ActionButtons";
-import CustomButton from "@/components/common/CustomButton";
 import ModalCreate from "@/components/common/ModalCreate";
+import SearchFilter from "@/components/inputs/SearchFilter";
 import TablesParameters from "@/components/tables/TablesParameters";
 import { useApi } from "@/hooks/useApi";
-import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import SearchFilter from "@/components/inputs/SearchFilter";
 
 
 interface EnclosureGeneralData {
@@ -22,7 +20,7 @@ interface EnclosureGeneralData {
   comuna_id: number;
   district: string; // Add this field
   nombre_region: string;
-  usage_profile_name: string;
+  perfil_uso: string;
   level_id: string; // Add this line
 }
 
@@ -147,7 +145,7 @@ const TabRecintDataEdit: React.FC = () => {
     {
       headerName: "Perfil Ocupación",
       field: "occupation_profile_id",
-      renderCell: (row: EnclosureGeneralData) => row.usage_profile_name,
+      renderCell: (row: EnclosureGeneralData) => row.perfil_uso,
     },
     {
       headerName: "Altura (m)",
@@ -190,15 +188,15 @@ const TabRecintDataEdit: React.FC = () => {
   ];
   const renderTable = (rows: EnclosureGeneralData[]) => (
     <>
-    <div style={{ 
+      <div style={{
         width: '100%',
         overflowX: 'auto',
         position: 'relative',
         WebkitOverflowScrolling: 'touch',
         minHeight: '200px'
       }}>
-      <TablesParameters columns={columns} data={rows} />
-    </div>
+        <TablesParameters columns={columns} data={rows} />
+      </div>
       {/* Mensaje de "No hay datos para mostrar" */}
       {rows.length === 0 && (
         <div style={{ textAlign: "center", padding: "1rem" }}>

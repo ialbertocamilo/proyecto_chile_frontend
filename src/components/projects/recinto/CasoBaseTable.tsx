@@ -98,23 +98,26 @@ const CasoBaseTable: React.FC<CasoBaseTableProps> = ({
             </thead>
             <tbody>
                 {recintos.map((recinto, index) => {
-                    const demandaCalef = recinto.demanda_calef || 0;
-                    const demandaRef = recinto.demanda_ref || 0;
-                    const baseConsumoCalef = calculateConsumoCalef(demandaCalef);
-                    const baseConsumoRef = calculateConsumoRef(demandaRef);
-                    const baseConsumoTotal = baseConsumoCalef + baseConsumoRef;
-                    const co2eqTotal = calculateCO2eqTotal(recinto, baseConsumoCalef, baseConsumoRef, recinto.demanda_ilum || 0);
+                    // Caso base: usar los campos directos si existen, si no calcular como antes
+                    const demandaCalef = recinto.caso_base_demanda_calefaccion ?? recinto.demanda_calef ?? 0;
+                    const demandaRef = recinto.caso_base_demanda_refrigeracion ?? recinto.demanda_ref ?? 0;
+                    const demandaIlum = recinto.caso_base_demanda_iluminacion ?? recinto.demanda_ilum ?? 0;
+                    const demandaTotal = recinto.caso_base_demanda_total ?? (demandaCalef + demandaRef + demandaIlum);
+                    const baseConsumoCalef = recinto.caso_base_consumo_calefaccion ?? calculateConsumoCalef(demandaCalef);
+                    const baseConsumoRef = recinto.caso_base_consumo_refrigeracion ?? calculateConsumoRef(demandaRef);
+                    const baseConsumoTotal = recinto.caso_base_consumo_total ?? (baseConsumoCalef + baseConsumoRef);
+                    const co2eqTotal = recinto.caso_base_co2_eq_total ?? calculateCO2eqTotal(recinto, baseConsumoCalef, baseConsumoRef, demandaIlum);
 
                     return (
-                        <tr key={`casobase-${recinto.id || index}`}>
-                            <td>{recinto.name_enclosure || `Recinto ${index + 1}`}</td>
-                            <td className="text-center">{demandaCalef.toFixed(2)}</td>
-                            <td className="text-center">{demandaRef.toFixed(2)}</td>
-                            <td className="text-center">{(demandaCalef + demandaRef).toFixed(2)}</td>
-                            <td className="text-center">{baseConsumoCalef.toFixed(2)}</td>
-                            <td className="text-center">{baseConsumoRef.toFixed(2)}</td>
-                            <td className="text-center">{baseConsumoTotal.toFixed(2)}</td>
-                            <td className="text-center">{co2eqTotal.toFixed(2)}</td>
+                        <tr key={`casobase-${recinto.enclosure_id || recinto.id || index}`}>
+                            <td>{recinto.nombre_recinto || recinto.name_enclosure || `Recinto ${index + 1}`}</td>
+                            <td className="text-center">{demandaCalef?.toFixed(2)}</td>
+                            <td className="text-center">{demandaRef?.toFixed(2)}</td>
+                            <td className="text-center">{demandaTotal?.toFixed(2)}</td>
+                            <td className="text-center">{baseConsumoCalef?.toFixed(2)}</td>
+                            <td className="text-center">{baseConsumoRef?.toFixed(2)}</td>
+                            <td className="text-center">{baseConsumoTotal?.toFixed(2)}</td>
+                            <td className="text-center">{co2eqTotal?.toFixed(2)}</td>
                         </tr>
                     );
                 })}

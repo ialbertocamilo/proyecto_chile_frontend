@@ -71,19 +71,43 @@ const TablaEmisiones: React.FC<TablaEmisionesProps> = ({ recintos, combustibleCa
             </thead>
             <tbody>
                 {recintos.map((recinto, index) => {
-                    const emisionesCalef = calculateCalefEmisiones(recinto);
-                    const emisionesRef = calculateRefEmisiones(recinto);
-                    const emisionesIlum = recinto.co2_eq_ilum || 0;
-                    const emisionesTotal = emisionesCalef + emisionesRef + emisionesIlum;
+                    // Actual
+                    const emisionesCalef = recinto.co2_eq_calefaccion ?? calculateCalefEmisiones(recinto) ?? 0;
+                    const emisionesRef = recinto.co2_eq_refrigeracion ?? calculateRefEmisiones(recinto) ?? 0;
+                    const emisionesIlum = recinto.co2_eq_iluminacion ?? recinto.co2_eq_ilum ?? 0;
+                    const emisionesTotal = recinto.co2_eq_total ?? (emisionesCalef + emisionesRef + emisionesIlum);
+
+                    // Caso base
+                    const cbEmisionesCalef = recinto.caso_base_co2_eq_calefaccion ?? '-';
+                    const cbEmisionesRef = recinto.caso_base_co2_eq_refrigeracion ?? '-';
+                    const cbEmisionesIlum = recinto.caso_base_co2_eq_iluminacion ?? '-';
+                    const cbEmisionesTotal = recinto.caso_base_co2_eq_total ?? '-';
 
                     return (
-                        <tr key={`emisiones-${recinto.id || index}`}>                        <td>{recinto.name_enclosure || `Recinto ${index + 1}`}</td>
-                            <td>{recinto.usage_profile_name || 'N/A'}</td>
+                        <tr key={`emisiones-${recinto.enclosure_id || recinto.id || index}`}>
+                            <td>{recinto.nombre_recinto || recinto.name_enclosure || `Recinto ${index + 1}`}</td>
+                            <td>{recinto.perfil_uso || 'N/A'}</td>
                             <td className="text-center">{recinto.superficie?.toFixed(2) || '0.00'}</td>
-                            <td className="text-center">{emisionesCalef.toFixed(2)}</td>
-                            <td className="text-center">{emisionesRef.toFixed(2)}</td>
-                            <td className="text-center">{emisionesIlum.toFixed(2)}</td>
-                            <td className="text-center">{emisionesTotal.toFixed(2)}</td>
+                            <td className="text-center">
+                                {emisionesCalef?.toFixed(2)}
+                                <br />
+                                <small className="text-muted">CB: {cbEmisionesCalef !== '-' ? Number(cbEmisionesCalef).toFixed(2) : '-'}</small>
+                            </td>
+                            <td className="text-center">
+                                {emisionesRef?.toFixed(2)}
+                                <br />
+                                <small className="text-muted">CB: {cbEmisionesRef !== '-' ? Number(cbEmisionesRef).toFixed(2) : '-'}</small>
+                            </td>
+                            <td className="text-center">
+                                {emisionesIlum?.toFixed(2)}
+                                <br />
+                                <small className="text-muted">CB: {cbEmisionesIlum !== '-' ? Number(cbEmisionesIlum).toFixed(2) : '-'}</small>
+                            </td>
+                            <td className="text-center">
+                                {emisionesTotal?.toFixed(2)}
+                                <br />
+                                <small className="text-muted">CB: {cbEmisionesTotal !== '-' ? Number(cbEmisionesTotal).toFixed(2) : '-'}</small>
+                            </td>
                         </tr>
                     );
                 })}

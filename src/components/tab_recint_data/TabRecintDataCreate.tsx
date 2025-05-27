@@ -1,12 +1,11 @@
 import ActionButtons from "@/components/common/ActionButtons";
-import CustomButton from "@/components/common/CustomButton";
 import ModalCreate from "@/components/common/ModalCreate";
+import SearchFilter from "@/components/inputs/SearchFilter";
 import TablesParameters from "@/components/tables/TablesParameters";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import SearchFilter from "@/components/inputs/SearchFilter";
 
 // ===========================================================
 // Interfaces
@@ -24,7 +23,7 @@ interface EnclosureGeneralData {
   nombre_comuna: string;
   district: string; // Add this field
   nombre_region: string;
-  usage_profile_name: string;
+  perfil_uso: string;
   level_id: string;
 }
 
@@ -256,7 +255,7 @@ const TabRecintDataCreate: React.FC = () => {
   ];
   const renderTable = (rows: EnclosureGeneralData[]) => (
     <>
-      <div style={{ 
+      <div style={{
         width: '100%',
         overflowX: 'auto',
         position: 'relative',
@@ -300,7 +299,7 @@ const TabRecintDataCreate: React.FC = () => {
         </div>
 
         {/* ➕  botón “Nuevo” */}
-        
+
       </div>
 
 

@@ -18,7 +18,7 @@ interface EnclosureGeneralData {
   nombre_comuna: string;
   nombre_region: string;
   district: string; // Add this field
-  usage_profile_name: string;
+  perfil_uso: string;
   level_id: number;
 }
 
@@ -71,7 +71,7 @@ const TabRecintDataView: React.FC = () => {
     {
       headerName: "Cod",
       field: "id",
-      renderCell: (row: EnclosureGeneralData) => ("REC-"+row.id),
+      renderCell: (row: EnclosureGeneralData) => ("REC-" + row.id),
     },
     {
       headerName: "Nombre Recinto",
@@ -80,8 +80,8 @@ const TabRecintDataView: React.FC = () => {
     },
     {
       headerName: "Perfil Ocupación",
-      field: "usage_profile_name",
-      renderCell: (row: EnclosureGeneralData) => row.usage_profile_name,
+      field: "perfil_uso",
+      renderCell: (row: EnclosureGeneralData) => row.perfil_uso,
     },
     {
       headerName: "Altura (m)",

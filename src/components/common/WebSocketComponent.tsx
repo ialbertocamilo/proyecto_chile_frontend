@@ -1,6 +1,6 @@
 'use client'
 import { notify } from '@/utils/notify';
-import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { Card, Spinner } from 'react-bootstrap';
 import CustomButton from './CustomButton';
 import { useWebSocket, WebSocketProvider } from './WebSocketProvider';
@@ -28,11 +28,11 @@ interface NotificationMessage {
  * This component connects to a WebSocket server and processes incoming notifications.
  */
 
-const WebSocketComponent = forwardRef<any, WebSocketComponentProps>(({ 
+const WebSocketComponent = forwardRef<any, WebSocketComponentProps>(function WebSocketComponent({
     path = 'ws',
     onMessageReceived,
     onConnectionChange
-}, ref) => {
+}, ref) {
     const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
     const [rawMessages, setRawMessages] = useState<any[]>([]);
 

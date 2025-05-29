@@ -2,7 +2,7 @@ import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import { Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/router";
-import { memo, useEffect, useState, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Container, Spinner, Tab, Tabs } from "react-bootstrap";
 import CustomButton from "../common/CustomButton";
 import WebSocketComponent from "../common/WebSocketComponent";

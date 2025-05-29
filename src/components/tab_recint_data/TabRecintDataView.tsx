@@ -20,6 +20,7 @@ interface EnclosureGeneralData {
   district: string; // Add this field
   perfil_uso: string;
   level_id: number;
+  usage_profile_name:string;
 }
 
 const TabRecintDataView: React.FC = () => {
@@ -80,8 +81,8 @@ const TabRecintDataView: React.FC = () => {
     },
     {
       headerName: "Perfil Ocupación",
-      field: "perfil_uso",
-      renderCell: (row: EnclosureGeneralData) => row.perfil_uso,
+      field: "usage_profile_name",
+      renderCell: (row: EnclosureGeneralData) => row.usage_profile_name,
     },
     {
       headerName: "Altura (m)",

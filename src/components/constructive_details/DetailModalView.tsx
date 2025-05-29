@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
+import CustomButton from "@/components/common/CustomButton";
+import DeleteDetailButton from "@/components/common/DeleteDetailButton";
 import ModalCreate from "@/components/common/ModalCreate";
 import TablesParameters from "@/components/tables/TablesParameters";
-import CustomButton from "@/components/common/CustomButton";
-import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
-import { notify } from "@/utils/notify";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
-import DeleteDetailButton from "@/components/common/DeleteDetailButton";
+import { notify } from "@/utils/notify";
+import axios from "axios";
+import React, { useCallback, useEffect, useState } from "react";
 
 export interface Detail {
   id_detail?: number;
@@ -305,8 +305,8 @@ const DetailModal: React.FC<DetailModalProps> = ({
       ) : (
         <span style={textStyle}>
           {det.material &&
-          det.material !== "0" &&
-          det.material.toUpperCase() !== "N/A"
+            det.material !== "0" &&
+            det.material.toUpperCase() !== "N/A"
             ? det.material
             : "-"}
         </span>
@@ -371,7 +371,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
     <ModalCreate
       isOpen={isOpen}
       title={`Detalles ${selectedItem?.name_detail || ""}`}
-      onSave={() => {}}
+      onSave={() => { }}
       onClose={onClose}
       modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
       showSaveButton={false}
@@ -394,7 +394,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
       {/* Modal interno para CREAR un nuevo Detalle */}
       <ModalCreate
         isOpen={isNewDetailModalOpen}
-        title="Crear Nueva capa"
+        title="Crear capas muro (de Interior a Exterior)"
         onSave={handleCreateDetail}
         onClose={() => setIsNewDetailModalOpen(false)}
         modalStyle={{ maxWidth: "40%", width: "40%", padding: "16px" }}

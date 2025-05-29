@@ -120,21 +120,6 @@ const RecintoCreate: React.FC = () => {
   }, []);
 
 
-  const actualizarStatus = async () => {
-    try {
-      const project_id = localStorage.getItem("project_id");
-      if (!project_id) {
-        notify("No se encontró el project_id.");
-        return;
-      }
-      console.log("ProjectId: ", project_id);
-      const url = `/project/${project_id}/status`;
-      await put(url, { status: "en proceso" });
-    } catch (error) {
-      console.error("Error al actualizar el status:", error);
-      notify("Error al actualizar el estado del proyecto.");
-    }
-  };
 
   const handleSave = async () => {
     // Validación simplificada
@@ -199,7 +184,7 @@ const RecintoCreate: React.FC = () => {
       localStorage.setItem("recinto_id", result.id.toString());
       addRecinto(result as Recinto);
       notify("Recinto creado correctamente");
-      actualizarStatus();
+      // actualizarStatus(); // El estado del proyecto ahora se actualiza al guardar Agua Caliente Sanitaria
       setIsRecintoCreated(true);
     } catch (error) {
       console.error("Error en handleSave:", error);

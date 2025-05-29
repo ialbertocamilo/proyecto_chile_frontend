@@ -1,13 +1,13 @@
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponentEdit";
-import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import { useApi } from "@/hooks/useApi";
 
 interface IEnclosureProfile {
   id: number;
@@ -118,24 +118,7 @@ const RecintoCreateEdit: React.FC = () => {
   }, []);
 
   const { put } = useApi();
-  
-  const actualizarStatus = async () => {
-    try {
-      const project_id = localStorage.getItem("project_id");
-      if (!project_id) {
-        notify("No se encontró el project_id.");
-        return;
-      }
-      console.log("ProjectId: ", project_id)
-      // Construir la URL del endpoint con el project_id
-      const url = `/project/${project_id}/status`;
-      // Enviar la solicitud PUT con el status
-      await put(url, { status: "en proceso" });
-    } catch (error) {
-      console.error("Error al actualizar el status:", error);
-      notify("Error al actualizar el estado del proyecto.");
-    }
-  };
+
 
   const handleSave = async () => {
     // Se reemplaza la coma por el punto para que parseFloat funcione correctamente
@@ -196,7 +179,7 @@ const RecintoCreateEdit: React.FC = () => {
       localStorage.setItem("recinto_id", result.id.toString());
 
       notify("Recinto creado correctamente");
-      actualizarStatus();
+      // actualizarStatus(); // El estado del proyecto ahora se actualiza al guardar Agua Caliente Sanitaria
       // En lugar de recargar la página, actualizamos el estado para mostrar la Card de características térmicas
       setIsRecintoCreated(true);
     } catch (error) {

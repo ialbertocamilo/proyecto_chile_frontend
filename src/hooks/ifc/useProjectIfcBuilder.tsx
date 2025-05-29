@@ -427,14 +427,14 @@ export const useProjectIfcBuilder = (projectId: string) => {
 
                             // Create wall layers
                             const layerThickness = element.thickness; // Convert to cm
-                            if(masterNode)
-                            return wallBuilder.createNodeChild(
-                                masterNode,
-                                'Muro',
-                                element.name,
-                                materialId,
-                                layerThickness
-                            );
+                            if (masterNode)
+                                return wallBuilder.createNodeChild(
+                                    masterNode,
+                                    'Muro',
+                                    element.name,
+                                    materialId,
+                                    layerThickness
+                                );
                         } catch (error: any) {
                             errors.push({
                                 message: ` ${error?.response?.data?.detail || 'Unknown error'}`,
@@ -457,17 +457,17 @@ export const useProjectIfcBuilder = (projectId: string) => {
                     const orientation = wallGroup.elements[0]?.orientation || '';
 
                     // Set characteristics to one of the standard types, default to "Exterior"
-                    // Possible values are "Exterior", "Inter Recintos Clim", or "Inter Recintos No Clim"
+                    // Possible values are "Exterior", "Interior climatizado", or "Interior  no climatizado"
                     const wallCharacteristics = "Exterior";
 
                     // Create the wall in the room using the wall-enclosures-create endpoint
                     if (masterNode)
-                    wallPromises.push(post(`/wall-enclosures-create/${roomId}`, {
-                        wall_id: masterNode.id,
-                        characteristics: wallCharacteristics,
-                        angulo_azimut: formatAzimuth(orientation),
-                        area: totalArea
-                    }));
+                        wallPromises.push(post(`/wall-enclosures-create/${roomId}`, {
+                            wall_id: masterNode.id,
+                            characteristics: wallCharacteristics,
+                            angulo_azimut: formatAzimuth(orientation),
+                            area: totalArea
+                        }));
 
                     // Update wall progress count
                     setCreationStatus(prev => ({

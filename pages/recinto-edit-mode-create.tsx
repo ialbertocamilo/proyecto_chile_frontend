@@ -1,11 +1,11 @@
 import RecintoCaractersComponent from "@/components/RecintoCaractersComponentEdit";
-import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import CustomButton from "@/components/common/CustomButton";
+import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
-import CustomButton from "@/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 interface IRegion {
@@ -294,7 +294,7 @@ const RecintoEditModeCreate: React.FC = () => {
       }
 
       notify("Recinto actualizado correctamente");
-      // Recargar la página por completo (manteniendo los datos del formulario en localStorage)
+      // El estado del proyecto ahora se actualiza al guardar Agua Caliente Sanitaria
       window.location.reload();
     } catch (error) {
       console.error("Error en handleSave:", error);

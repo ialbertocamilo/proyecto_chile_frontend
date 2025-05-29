@@ -1,6 +1,6 @@
 'use client'
 import { notify } from '@/utils/notify';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Card, Spinner } from 'react-bootstrap';
 import CustomButton from './CustomButton';
 import { useWebSocket, WebSocketProvider } from './WebSocketProvider';
@@ -27,13 +27,19 @@ interface NotificationMessage {
  * WebSocketComponent for handling notifications.
  * This component connects to a WebSocket server and processes incoming notifications.
  */
-const WebSocketComponent: React.FC<WebSocketComponentProps> = ({
+
+const WebSocketComponent = forwardRef<any, WebSocketComponentProps>(({ 
     path = 'ws',
     onMessageReceived,
     onConnectionChange
-}) => {
+}, ref) => {
     const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
     const [rawMessages, setRawMessages] = useState<any[]>([]);
+
+    // Permitir limpiar notificaciones desde el padre
+    useImperativeHandle(ref, () => ({
+        clearNotifications: () => setNotifications([]),
+    }));
 
     // Process incoming messages from WebSocket
     const handleMessage = (data: any) => {
@@ -63,7 +69,8 @@ const WebSocketComponent: React.FC<WebSocketComponentProps> = ({
         } catch (error) {
             console.error('Error processing WebSocket message:', error);
         }
-    }; return (
+    }
+    return (
         <WebSocketProvider
             path={path}
             onMessage={handleMessage}
@@ -76,7 +83,7 @@ const WebSocketComponent: React.FC<WebSocketComponentProps> = ({
             />
         </WebSocketProvider>
     );
-};
+});
 
 interface NotificationDisplayProps {
     notifications: NotificationMessage[];
@@ -203,4 +210,4 @@ const NotificationDisplay: React.FC<NotificationDisplayProps> = ({
     );
 };
 
-export default WebSocketComponent;
+export default React.memo(WebSocketComponent);

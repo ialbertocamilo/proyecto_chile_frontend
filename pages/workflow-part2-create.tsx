@@ -1,8 +1,11 @@
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import DeleteDetailButton from "@/components/common/DeleteDetailButton";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import SearchParameters from "@/components/inputs/SearchParameters";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataCreate";
 import TablesParameters from "@/components/tables/TablesParameters";
+import Title from "@/components/Title";
 import VerticalDivider from "@/components/ui/HorizontalDivider";
 import { notify } from "@/utils/notify";
 import axios from "axios";
@@ -14,19 +17,14 @@ import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import ModalCreate from "../src/components/common/ModalCreate";
-import SearchParameters from "@/components/inputs/SearchParameters";
-import Title from "@/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import DeleteDetailButton from "@/components/common/DeleteDetailButton";
 
 // Importamos ProjectStatus para el estado y cálculo
 import AddDetailOnLayer from "@/components/projects/AddDetailOnLayer";
 import ProjectStatus from "@/components/projects/ProjectStatus";
-import { useApi } from "@/hooks/useApi";
-import { createDetail, updateChildDetail } from "@/service/details";
-import EditDetailMuroChild from "@/components/projects/constructive_details/muros/EditDetailMuroChild";
 import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
+import { useApi } from "@/hooks/useApi";
 
 interface Detail {
   id_detail: number;
@@ -295,7 +293,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
       if (!projectId) return;
-console.log("projectId", projectId);
+      console.log("projectId", projectId);
       const { data: projectData } = await axios.get(
         `${constantUrlApiEndpoint}/projects/${projectId}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -1694,28 +1692,28 @@ console.log("projectId", projectId);
     rows: [
       // Fila 1: IFC, Nombre, U y grupos, Acciones
       [
-        { label: "Código IFC", field: "code_ifc",    rowSpan: 2, sortable: true },
-        { label: "Nombre",       field: "nombre",     rowSpan: 2, sortable: true },
-        { label: "U [W/m²K]",    field: "uValue",     rowSpan: 2, sortable: true },
-        { label: "Aislamiento bajo piso",            colSpan: 2 },
-        { label: "Ref Aisl Vert.",                   colSpan: 3 },
-        { label: "Ref Aisl Horiz.",                  colSpan: 3 },
-        { label: "Acciones",    field: "acciones",   rowSpan: 2, sortable: false },
+        { label: "Código IFC", field: "code_ifc", rowSpan: 2, sortable: true },
+        { label: "Nombre", field: "nombre", rowSpan: 2, sortable: true },
+        { label: "U [W/m²K]", field: "uValue", rowSpan: 2, sortable: true },
+        { label: "Aislamiento bajo piso", colSpan: 2 },
+        { label: "Ref Aisl Vert.", colSpan: 3 },
+        { label: "Ref Aisl Horiz.", colSpan: 3 },
+        { label: "Acciones", field: "acciones", rowSpan: 2, sortable: false },
       ],
       // Fila 2: subcolumnas ordenables
       [
-        { label: "λ [W/mK]",    field: "bajoPisoLambda", sortable: true },
-        { label: "e Aisl [cm]", field: "bajoPisoEAisl",   sortable: true },
-        { label: "λ [W/mK]",    field: "vertLambda",      sortable: true },
-        { label: "e Aisl [cm]", field: "vertEAisl",       sortable: true },
-        { label: "D [cm]",      field: "vertD",           sortable: true },
-        { label: "λ [W/mK]",    field: "horizLambda",     sortable: true },
-        { label: "e Aisl [cm]", field: "horizEAisl",      sortable: true },
-        { label: "D [cm]",      field: "horizD",          sortable: true },
+        { label: "λ [W/mK]", field: "bajoPisoLambda", sortable: true },
+        { label: "e Aisl [cm]", field: "bajoPisoEAisl", sortable: true },
+        { label: "λ [W/mK]", field: "vertLambda", sortable: true },
+        { label: "e Aisl [cm]", field: "vertEAisl", sortable: true },
+        { label: "D [cm]", field: "vertD", sortable: true },
+        { label: "λ [W/mK]", field: "horizLambda", sortable: true },
+        { label: "e Aisl [cm]", field: "horizEAisl", sortable: true },
+        { label: "D [cm]", field: "horizD", sortable: true },
       ],
     ],
   };
-  
+
 
   const formatNumber = (
     num: number | string | undefined,
@@ -1817,8 +1815,8 @@ console.log("projectId", projectId);
             />
           ) : (
             <span style={textStyle}>
-              {vert.lambda && vert.lambda > 0 
-                ? Number(vert.lambda).toFixed(2) 
+              {vert.lambda && vert.lambda > 0
+                ? Number(vert.lambda).toFixed(2)
                 : "-"}
             </span>
           ),
@@ -1842,8 +1840,8 @@ console.log("projectId", projectId);
             />
           ) : (
             <span style={textStyle}>
-              {vert.e_aisl && vert.e_aisl > 0 
-                ? Number(vert.e_aisl).toFixed(2) 
+              {vert.e_aisl && vert.e_aisl > 0
+                ? Number(vert.e_aisl).toFixed(2)
                 : "-"}
             </span>
           ),
@@ -1867,8 +1865,8 @@ console.log("projectId", projectId);
             />
           ) : (
             <span style={textStyle}>
-              {vert.d && vert.d > 0 
-                ? Number(vert.d).toFixed(2) 
+              {vert.d && vert.d > 0
+                ? Number(vert.d).toFixed(2)
                 : "-"}
             </span>
           ),
@@ -1917,8 +1915,8 @@ console.log("projectId", projectId);
             />
           ) : (
             <span style={textStyle}>
-              {horiz.e_aisl && horiz.e_aisl > 0 
-                ? Number(horiz.e_aisl).toFixed(2) 
+              {horiz.e_aisl && horiz.e_aisl > 0
+                ? Number(horiz.e_aisl).toFixed(2)
                 : "-"}
             </span>
           ),
@@ -1942,8 +1940,8 @@ console.log("projectId", projectId);
             />
           ) : (
             <span style={textStyle}>
-              {horiz.d && horiz.d > 0 
-                ? Number(horiz.d).toFixed(2) 
+              {horiz.d && horiz.d > 0
+                ? Number(horiz.d).toFixed(2)
                 : "-"}
             </span>
           ),
@@ -2303,13 +2301,9 @@ console.log("projectId", projectId);
   // Pasos del Sidebar
   // -----------------------------------
   const sidebarSteps = [
-    {
-      stepNumber: 8,
-      iconName: "water_drop",
-      title: "Agua Caliente Sanitaria",
-    },
     { stepNumber: 4, iconName: "build", title: "Detalles constructivos" },
     { stepNumber: 7, iconName: "design_services", title: "Recinto" },
+    { stepNumber: 8, iconName: "water_drop", title: "Agua Caliente Sanitaria" },
   ];
 
   // -----------------------------------
@@ -2360,7 +2354,28 @@ console.log("projectId", projectId);
                 </>
               )}
 
-              {step === 8 && <AguaCalienteSanitaria />}
+              {step === 8 && (
+                <AguaCalienteSanitaria
+                  onSaveSuccess={() => {
+                    setProjectStatus("En proceso");
+                  }}
+                  actualizarStatus={async () => {
+                    if (!projectId) return;
+                    try {
+                      const token = localStorage.getItem("token");
+                      if (!token) return;
+                      await axios.put(
+                        `${constantUrlApiEndpoint}/project/${projectId}/status`,
+                        { status: "En proceso" },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      );
+                      notify("Estado del proyecto actualizado a 'En proceso'.");
+                    } catch {
+                      notify("No se pudo actualizar el estado del proyecto");
+                    }
+                  }}
+                />
+              )}
               {step === 7 && renderRecinto()}
             </div>
           </div>
@@ -3062,7 +3077,7 @@ console.log("projectId", projectId);
       {showNewDetailModal && (
         <ModalCreate
           isOpen={true}
-          title="Crear Nueva Capa"
+          title="Crear capas muro (de Interior a Exterior)"
           saveLabel="Crear Capa"
           onClose={() => setShowNewDetailModal(false)}
           onSave={handleSaveNewDetail}
@@ -3079,7 +3094,7 @@ console.log("projectId", projectId);
             </div>
 
             <div className="form-group">
-              <label>Nombre del Detalle</label>
+              <label>Nombre de muro</label>
               <input
                 type="text"
                 className="form-control"

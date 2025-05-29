@@ -25,6 +25,7 @@ interface EnclosureGeneralData {
   nombre_region: string;
   perfil_uso: string;
   level_id: string;
+  usage_profile_name?: string; 
 }
 
 interface OccupationProfile {
@@ -209,10 +210,9 @@ const TabRecintDataCreate: React.FC = () => {
     },
     {
       headerName: "Perfil Ocupación",
-      field: "occupation_profile_id",
+      field: "usage_profile_name",
       renderCell: (row: EnclosureGeneralData) =>
-        occupationProfiles.find((p) => p.id === row.occupation_profile_id)?.name ||
-        row.occupation_profile_id,
+        row.usage_profile_name,
     },
     {
       headerName: "Altura (m)",

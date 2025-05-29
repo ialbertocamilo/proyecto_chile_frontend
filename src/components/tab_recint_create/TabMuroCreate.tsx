@@ -1,16 +1,16 @@
-import React, { ReactNode, useState, useEffect, ChangeEvent } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { notify } from "@/utils/notify";
-import TablesParameters from "@/components/tables/TablesParameters";
-import CustomButton from "../common/CustomButton";
-import ModalCreate from "../common/ModalCreate";
-import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
+import TablesParameters from "@/components/tables/TablesParameters";
+import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
+import { notify } from "@/utils/notify";
+import "bootstrap/dist/css/bootstrap.min.css";
+import React, { ChangeEvent, useEffect, useState } from "react";
+import CustomButton from "../common/CustomButton";
+import ModalCreate from "../common/ModalCreate";
 //ThermicBridgesModal
 import ThermalBridgesWallModal from "@/components/modals/ThermalBridgesWallModal";
-import GoogleIcons from "public/GoogleIcons";
 import { Plus } from "lucide-react";
+import GoogleIcons from "public/GoogleIcons";
 
 // Interfaz para muros
 interface Wall {
@@ -280,10 +280,10 @@ const TabMuroCreate: React.FC = () => {
     setEditingWallData((prev) =>
       prev
         ? {
-            ...prev,
-            [name]:
-              name === "wall_id" || name === "area" ? Number(value) : value,
-          }
+          ...prev,
+          [name]:
+            name === "wall_id" || name === "area" ? Number(value) : value,
+        }
         : null
     );
   };
@@ -482,9 +482,9 @@ const TabMuroCreate: React.FC = () => {
             >
               <option value="">Seleccione...</option>
               <option value="Exterior">Exterior</option>
-              <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-              <option value="Inter Recintos No Clim">
-                Inter Recintos No Clim
+              <option value="Interior climatizado">Interior climatizado</option>
+              <option value="Interior  no climatizado">
+                Interior  no climatizado
               </option>
             </select>
           );
@@ -849,14 +849,14 @@ const TabMuroCreate: React.FC = () => {
             onCancel={handleCancelEditBridge}
           />
         ) : // Solo mostramos el botón si existe un puente asociado (bridgeId no es null)
-        currentBridgeId ? (
-          <CustomButton
-            variant="editIcon"
-            onClick={() => handleEditBridge(currentBridgeId)}
-          >
-            Editar FAV
-          </CustomButton>
-        ) : null;
+          currentBridgeId ? (
+            <CustomButton
+              variant="editIcon"
+              onClick={() => handleEditBridge(currentBridgeId)}
+            >
+              Editar FAV
+            </CustomButton>
+          ) : null;
       },
     },
   ];
@@ -1101,11 +1101,11 @@ const TabMuroCreate: React.FC = () => {
                 >
                   <option value="">Seleccione...</option>
                   <option value="Exterior">Exterior</option>
-                  <option value="Inter Recintos Clim">
-                    Inter Recintos Clim
+                  <option value="Interior climatizado">
+                    Interior climatizado
                   </option>
-                  <option value="Inter Recintos No Clim">
-                    Inter Recintos No Clim
+                  <option value="Interior  no climatizado">
+                    Interior  no climatizado
                   </option>
                 </select>
               </div>

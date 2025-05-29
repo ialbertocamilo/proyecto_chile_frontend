@@ -6,12 +6,17 @@ import { useEffect, useState } from "react";
 import { Card, Col, Form, Row, Table } from "react-bootstrap";
 import CustomButton from "../../common/CustomButton"; // Assuming CustomButton is located here
 
+
 interface AguaCalienteSanitariaProps {
   onlyView?: boolean;
+  onSaveSuccess?: () => void;
+  actualizarStatus?: () => void;
 }
 
 const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
   onlyView = false,
+  onSaveSuccess,
+  actualizarStatus,
 }) => {
   const result = useConstants("energy_systems", "general");
   const occupancyResult = useConstants("acs", "occupancy");
@@ -83,26 +88,26 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
         const response = await api.get(
           `/agua-caliente-obtener/${projectId}`,
         );
-        
-          const data = response[0];
-          setTAcs(data.t_acs);
-          setDemandaACS(data.demanda_acs);
-          setCombustible(data.combustible);
-          setRendimiento(data.rendimiento);
-          setSistDistribucion(data.sist_distribucion);
-          setSistControl(data.sis_control);
-          setConsumoACS(data.consumo_acs);
-          setConsumoEnergiaPrimariaACS(data.consumo_energia_primaria);
-          setCo2eqEnergiaPrimaria(data.energia_primaria);
 
-          console.log("Data fetched:", data.data);
-          // Transform and set table data
-          const transformedData = data.data.map((item: any) => ({
-            tipo: item.tipo_ocupacion,
-            cantidad: item.cantidad_personas,
-            consumo: item.pers_dia,
-          }));
-          setTableData(transformedData);
+        const data = response[0];
+        setTAcs(data.t_acs);
+        setDemandaACS(data.demanda_acs);
+        setCombustible(data.combustible);
+        setRendimiento(data.rendimiento);
+        setSistDistribucion(data.sist_distribucion);
+        setSistControl(data.sis_control);
+        setConsumoACS(data.consumo_acs);
+        setConsumoEnergiaPrimariaACS(data.consumo_energia_primaria);
+        setCo2eqEnergiaPrimaria(data.energia_primaria);
+
+        console.log("Data fetched:", data.data);
+        // Transform and set table data
+        const transformedData = data.data.map((item: any) => ({
+          tipo: item.tipo_ocupacion,
+          cantidad: item.cantidad_personas,
+          consumo: item.pers_dia,
+        }));
+        setTableData(transformedData);
       } catch (error) {
         console.error("Error fetching data:", error);
         // notify("Error al obtener los datos");
@@ -397,6 +402,8 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
       );
 
       notify("Datos guardados exitosamente");
+      if (actualizarStatus) await actualizarStatus();
+      if (onSaveSuccess) onSaveSuccess();
     } catch (error) {
       console.error("Error saving data:", error);
       notify("Error al guardar los datos");

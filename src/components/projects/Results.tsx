@@ -2,7 +2,7 @@ import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import { Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/router";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState, useRef } from "react";
 import { Container, Spinner, Tab, Tabs } from "react-bootstrap";
 import CustomButton from "../common/CustomButton";
 import WebSocketComponent from "../common/WebSocketComponent";
@@ -17,6 +17,7 @@ const Results = () => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const webSocketRef = useRef<any>(null);
 
 
   const [calculationResult, setCalculationResult] = useState<any>(null);
@@ -51,6 +52,8 @@ const Results = () => {
   const handleForceRecalculation = async () => {
     try {
       setIsRecalculating(true);
+      // Limpiar notificaciones antes de recalcular
+      webSocketRef.current?.clearNotifications?.();
       const projectId = router.query.id;
       if (projectId) {
         const result = await get(`/calculator/${projectId}?force_calculation=true`);
@@ -134,6 +137,7 @@ const Results = () => {
       </div>
 
       <WebSocketComponent
+        ref={webSocketRef}
         path={``}
         onMessageReceived={(message) => {
           if (message?.notificationType == 'result') {

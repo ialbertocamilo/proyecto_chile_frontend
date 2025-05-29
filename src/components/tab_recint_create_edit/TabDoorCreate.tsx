@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import TablesParameters from "@/components/tables/TablesParameters";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
-import CustomButton from "../common/CustomButton";
-import ModalCreate from "../common/ModalCreate";
+import TablesParameters from "@/components/tables/TablesParameters";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
-import ThermalBridgesDoorModal from "../modals/ThermalBridgesDoorModal";
 import { Plus } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import CustomButton from "../common/CustomButton";
+import ModalCreate from "../common/ModalCreate";
+import ThermalBridgesDoorModal from "../modals/ThermalBridgesDoorModal";
 
 interface DoorData {
   id: number;
@@ -222,7 +222,7 @@ const TabDoorCreate: React.FC = () => {
 
       // Mantener el orden original usando el orden actual de data
       const currentOrder = data.map(item => item.id);
-      
+
       const tableData: DoorData[] = doorEnclosuresData.map((item: any) => ({
         id: item.id,
         door_id: item.door_id,
@@ -574,9 +574,9 @@ const TabDoorCreate: React.FC = () => {
             >
               <option value="">Seleccione una opción</option>
               <option value="Exterior">Exterior</option>
-              <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-              <option value="Inter Recintos No Clim">
-                Inter Recintos No Clim
+              <option value="Interior climatizado">Interior climatizado</option>
+              <option value="Interior  no climatizado">
+                Interior  no climatizado
               </option>
             </select>
           );
@@ -754,9 +754,9 @@ const TabDoorCreate: React.FC = () => {
               >
                 <option value="">Seleccione una opción</option>
                 <option value="Exterior">Exterior</option>
-                <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">
-                  Inter Recintos No Clim
+                <option value="Interior climatizado">Interior climatizado</option>
+                <option value="Interior  no climatizado">
+                  Interior  no climatizado
                 </option>
               </select>
             </div>

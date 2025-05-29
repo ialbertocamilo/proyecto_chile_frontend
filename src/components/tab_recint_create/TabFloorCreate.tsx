@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import TablesParameters from "@/components/tables/TablesParameters";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
-import CustomButton from "../common/CustomButton";
-import ModalCreate from "../common/ModalCreate";
+import TablesParameters from "@/components/tables/TablesParameters";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
 import { Plus } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import CustomButton from "../common/CustomButton";
+import ModalCreate from "../common/ModalCreate";
 
 // Interfaz para la respuesta de la API de pisos existentes
 interface FloorEnclosure {
@@ -320,9 +320,9 @@ const TabFloorCreate: React.FC = () => {
           >
             <option value="">Seleccione una opción</option>
             <option value="Exterior">Exterior</option>
-            <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-            <option value="Inter Recintos No Clim">
-              Inter Recintos No Clim
+            <option value="Interior climatizado">Interior climatizado</option>
+            <option value="Interior  no climatizado">
+              Interior  no climatizado
             </option>
           </select>
         );
@@ -591,9 +591,9 @@ const TabFloorCreate: React.FC = () => {
               >
                 <option value="">Seleccione una opción</option>
                 <option value="Exterior">Exterior</option>
-                <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">
-                  Inter Recintos No Clim
+                <option value="Interior climatizado">Interior climatizado</option>
+                <option value="Interior  no climatizado">
+                  Interior  no climatizado
                 </option>
               </select>
             </div>

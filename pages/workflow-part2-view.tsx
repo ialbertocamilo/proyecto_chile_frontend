@@ -1,22 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import Swal from "sweetalert2";
-import axios from "axios";
-import Card from "../src/components/common/Card";
-import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import useAuth from "../src/hooks/useAuth";
-import { useRouter } from "next/router";
-import GooIcons from "../public/GoogleIcons";
+import Breadcrumb from "@/components/common/Breadcrumb";
+import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
+import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataView";
 import { notify } from "@/utils/notify";
+import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useRouter } from "next/router";
+import React, { useCallback, useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import GooIcons from "../public/GoogleIcons";
 import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
-import TablesParameters from "../src/components/tables/TablesParameters";
-import Breadcrumb from "@/components/common/Breadcrumb";
-import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
-import ModalCreate from "../src/components/common/ModalCreate";
-import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataView";
+import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
-import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
+import ModalCreate from "../src/components/common/ModalCreate";
+import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
+import TablesParameters from "../src/components/tables/TablesParameters";
+import useAuth from "../src/hooks/useAuth";
+import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 
 /* ==================== TIPOS ==================== */
 interface Detail {
@@ -928,11 +928,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
       route: `/workflow-part1-view?id=${projectId}&step=2`,
     },
     {
-      stepNumber: 8,
-      iconName: "water_drop",
-      title: "Agua Caliente Sanitaria",
-    },
-    {
       stepNumber: 4,
       iconName: "build",
       title: "Detalles constructivos",
@@ -943,6 +938,11 @@ const WorkFlowpar2viewPage: React.FC = () => {
       iconName: "design_services",
       title: "Recinto",
       route: `/workflow-part2-view?id=${projectId}&step=7`,
+    },
+    {
+      stepNumber: 8,
+      iconName: "water_drop",
+      title: "Agua Caliente Sanitaria",
     },
   ];
 
@@ -964,10 +964,10 @@ const WorkFlowpar2viewPage: React.FC = () => {
             }}
           >
             <div style={{ pointerEvents: 'none' }}>
-            <ProjectInfoHeader
-              projectName={projectName}
-              region={projectDepartment}
-            />
+              <ProjectInfoHeader
+                projectName={projectName}
+                region={projectDepartment}
+              />
             </div>
             <Breadcrumb
               items={[
@@ -988,7 +988,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
                 activeStep={step}
                 steps={sidebarSteps}
                 onClickAction={(route: string) => router.push(route)}
-                onStepChange={() => {}}
+                onStepChange={() => { }}
               />
             </div>
 
@@ -1006,7 +1006,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
         detail=""
         isOpen={showGeneralDetailsModal}
         onClose={() => setShowGeneralDetailsModal(false)}
-        onSave={() => {}}
+        onSave={() => { }}
         title="Detalles Generales"
         hideFooter={true}
         modalStyle={{

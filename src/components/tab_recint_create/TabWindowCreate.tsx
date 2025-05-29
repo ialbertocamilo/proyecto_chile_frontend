@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import TablesParameters from "@/components/tables/TablesParameters";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
-import CustomButton from "../common/CustomButton";
-import ModalCreate from "../common/ModalCreate";
+import TablesParameters from "@/components/tables/TablesParameters";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { notify } from "@/utils/notify";
-import ThermalBridgesWindowModal from "../modals/ThermalBridgesWindowModal";
 import { Plus } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import CustomButton from "../common/CustomButton";
+import ModalCreate from "../common/ModalCreate";
+import ThermalBridgesWindowModal from "../modals/ThermalBridgesWindowModal";
 
 const TabWindowCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id") || "12";
@@ -48,8 +48,8 @@ const TabWindowCreate: React.FC = () => {
 
   const characteristicsOptions = [
     "Exterior",
-    "Inter Recintos Clim",
-    "Inter Recintos No Clim",
+    "Interior climatizado",
+    "Interior  no climatizado",
   ];
   const withNoReturnOptions = ["Sin", "Con"];
   const positionOptions = ["Interior", "Centrada", "Exterior"];

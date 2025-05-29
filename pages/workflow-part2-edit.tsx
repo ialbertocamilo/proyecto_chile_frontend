@@ -1,4 +1,6 @@
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
+import NewHeaderButton from "@/components/constructive_details/NewHeaderButton";
+import SearchParameters from "@/components/inputs/SearchParameters";
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -13,20 +15,17 @@ import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import NewHeaderButton from "@/components/constructive_details/NewHeaderButton";
-import SearchParameters from "@/components/inputs/SearchParameters";
 
 import Breadcrumb from "@/components/common/Breadcrumb";
-import TablesParameters from "../src/components/tables/TablesParameters";
 import ModalCreate from "@/components/common/ModalCreate";
 import TabRecintDataCreate from "../src/components/tab_recint_data/TabRecintDataEdit";
+import TablesParameters from "../src/components/tables/TablesParameters";
 
 // IMPORTANTE: Importamos el componente ActionButtonsConfirm
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
-import ProjectStatus from "@/components/projects/ProjectStatus";
 import AddDetailOnLayer from "@/components/projects/AddDetailOnLayer";
+import ProjectStatus from "@/components/projects/ProjectStatus";
 import { useApi } from "@/hooks/useApi";
-import { createDetail } from "@/service/details";
 
 interface MultiHeader {
   rows: {
@@ -39,9 +38,8 @@ interface MultiHeader {
 }
 
 import DeleteDetailButton from "@/components/common/DeleteDetailButton";
-import { IDetail } from "@/shared/interfaces/detail.interface";
 import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
-import SortHandler from "@/utils/sortHandler";
+import { IDetail } from "@/shared/interfaces/detail.interface";
 
 // Funciones auxiliares para formatear valores
 const formatValue = (value: number | null | undefined): string => {
@@ -264,8 +262,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           tabStep4 === "muros"
             ? "Muro"
             : tabStep4 === "techumbre"
-            ? "Techo"
-            : "Piso",
+              ? "Techo"
+              : "Piso",
         info: {
           surface_color: {
             interior: { name: newDetalle.colorInterior },
@@ -637,7 +635,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           if (
             axios.isAxiosError(selectError) &&
             selectError.response?.data?.detail ===
-              "Todos los detalles ya estaban en el proyecto"
+            "Todos los detalles ya estaban en el proyecto"
           ) {
             notify("Detalle creado exitosamente.");
           } else {
@@ -714,9 +712,8 @@ const WorkFlowpar2editPage: React.FC = () => {
     const token = getToken();
     if (!token || !projectId) return;
     try {
-      const url = `${constantUrlApiEndpoint}/user/detail-update/${
-        editingDetail.id_detail || editingDetail?.id
-      }`;
+      const url = `${constantUrlApiEndpoint}/user/detail-update/${editingDetail.id_detail || editingDetail?.id
+        }`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -953,8 +950,8 @@ const WorkFlowpar2editPage: React.FC = () => {
         ) : (
           <span style={textStyle}>
             {det.material &&
-            det.material !== "0" &&
-            det.material.toUpperCase() !== "N/A"
+              det.material !== "0" &&
+              det.material.toUpperCase() !== "N/A"
               ? det.material
               : "-"}
           </span>
@@ -1044,10 +1041,10 @@ const WorkFlowpar2editPage: React.FC = () => {
                     tabStep4 === "muros"
                       ? "Muro"
                       : tabStep4 === "techumbre"
-                      ? "Techo"
-                      : tabStep4 === "pisos"
-                      ? "Piso"
-                      : "";
+                        ? "Techo"
+                        : tabStep4 === "pisos"
+                          ? "Piso"
+                          : "";
 
                   setNewDetailData({
                     scantilon_location: locationValue,
@@ -1166,8 +1163,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           code_ifc: item.code_ifc || "-",
           nombreAbreviado: isEditing ? (
             "created_status" in item &&
-            (item.created_status === "default" ||
-              item.created_status === "global") ? (
+              (item.created_status === "default" ||
+                item.created_status === "global") ? (
               <input
                 type="text"
                 className="form-control"
@@ -1360,8 +1357,8 @@ const WorkFlowpar2editPage: React.FC = () => {
           code_ifc: item.code_ifc || "-",
           nombreAbreviado: isEditing ? (
             "created_status" in item &&
-            (item.created_status === "default" ||
-              item.created_status === "global") ? (
+              (item.created_status === "default" ||
+                item.created_status === "global") ? (
               <input
                 type="text"
                 className="form-control"
@@ -1551,28 +1548,28 @@ const WorkFlowpar2editPage: React.FC = () => {
       rows: [
         // Fila 1
         [
-          { label: "Código IFC",    field: "code_ifc",    rowSpan: 2, sortable: true },
-          { label: "Nombre",        field: "nombre",      rowSpan: 2, sortable: true },
-          { label: "U [W/m²K]",     field: "uValue",      rowSpan: 2, sortable: true },
-          { label: "Aislamiento bajo piso",                colSpan: 2 },
-          { label: "Ref Aisl Vert.",                       colSpan: 3 },
-          { label: "Ref Aisl Horiz.",                      colSpan: 3 },
-          { label: "Acciones",      field: "acciones",    rowSpan: 2, sortable: false },
+          { label: "Código IFC", field: "code_ifc", rowSpan: 2, sortable: true },
+          { label: "Nombre", field: "nombre", rowSpan: 2, sortable: true },
+          { label: "U [W/m²K]", field: "uValue", rowSpan: 2, sortable: true },
+          { label: "Aislamiento bajo piso", colSpan: 2 },
+          { label: "Ref Aisl Vert.", colSpan: 3 },
+          { label: "Ref Aisl Horiz.", colSpan: 3 },
+          { label: "Acciones", field: "acciones", rowSpan: 2, sortable: false },
         ],
         // Fila 2 (subcolumnas)
         [
-          { label: "λ [W/mK]",      field: "bajoPisoLambda", sortable: true },
-          { label: "e Aisl [cm]",   field: "bajoPisoEAisl",   sortable: true },
-          { label: "λ [W/mK]",      field: "vertLambda",      sortable: true },
-          { label: "e Aisl [cm]",   field: "vertEAisl",       sortable: true },
-          { label: "D [cm]",        field: "vertD",           sortable: true },
-          { label: "λ [W/mK]",      field: "horizLambda",     sortable: true },
-          { label: "e Aisl [cm]",   field: "horizEAisl",      sortable: true },
-          { label: "D [cm]",        field: "horizD",          sortable: true },
+          { label: "λ [W/mK]", field: "bajoPisoLambda", sortable: true },
+          { label: "e Aisl [cm]", field: "bajoPisoEAisl", sortable: true },
+          { label: "λ [W/mK]", field: "vertLambda", sortable: true },
+          { label: "e Aisl [cm]", field: "vertEAisl", sortable: true },
+          { label: "D [cm]", field: "vertD", sortable: true },
+          { label: "λ [W/mK]", field: "horizLambda", sortable: true },
+          { label: "e Aisl [cm]", field: "horizEAisl", sortable: true },
+          { label: "D [cm]", field: "horizD", sortable: true },
         ],
       ],
     };
-    
+
     const pisosData = pisosTabList
       .filter(
         (item) =>
@@ -1596,8 +1593,8 @@ const WorkFlowpar2editPage: React.FC = () => {
 
           nombre: isEditing ? (
             "created_status" in item &&
-            (item.created_status === "default" ||
-              item.created_status === "global") ? (
+              (item.created_status === "default" ||
+                item.created_status === "global") ? (
               <input
                 type="text"
                 className="form-control"
@@ -1968,7 +1965,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         acciones: (
           <>
             {item.created_status === "default" ||
-            item.created_status === "global" ? (
+              item.created_status === "global" ? (
               <span>-</span>
             ) : (
               <div style={textStyle}>
@@ -2047,7 +2044,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         acciones: (
           <>
             {item.created_status === "default" ||
-            item.created_status === "global" ? (
+              item.created_status === "global" ? (
               <span>-</span>
             ) : (
               <div style={textStyle}>
@@ -2110,39 +2107,39 @@ const WorkFlowpar2editPage: React.FC = () => {
         {(tabStep4 === "muros" ||
           tabStep4 === "techumbre" ||
           tabStep4 === "pisos") && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "12px",
-              marginBottom: "1rem",
-              flexWrap: "wrap",
-            }}
-          >
-            {/* Buscador */}
-            <SearchParameters
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={`Buscar ${tabStep4}`}
-              showNewButton={false} /* ← no queremos que duplique el +Nuevo */
-              style={{ flex: 1, minWidth: "180px" }}
-              onNew={() => {}} /* prop obligatoria pero sin uso aquí */
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+                marginBottom: "1rem",
+                flexWrap: "wrap",
+              }}
+            >
+              {/* Buscador */}
+              <SearchParameters
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={`Buscar ${tabStep4}`}
+                showNewButton={false} /* ← no queremos que duplique el +Nuevo */
+                style={{ flex: 1, minWidth: "180px" }}
+                onNew={() => { }} /* prop obligatoria pero sin uso aquí */
+              />
 
-            {/* Botón + Nuevo */}
-            <NewHeaderButton
-              tab={tabStep4 as "muros" | "techumbre" | "pisos"}
-              onNewCreated={
-                tabStep4 === "muros"
-                  ? fetchMurosDetails
-                  : tabStep4 === "techumbre"
-                  ? fetchTechumbreDetails
-                  : fetchPisosDetails
-              }
-            />
-          </div>
-        )}
+              {/* Botón + Nuevo */}
+              <NewHeaderButton
+                tab={tabStep4 as "muros" | "techumbre" | "pisos"}
+                onNewCreated={
+                  tabStep4 === "muros"
+                    ? fetchMurosDetails
+                    : tabStep4 === "techumbre"
+                      ? fetchTechumbreDetails
+                      : fetchPisosDetails
+                }
+              />
+            </div>
+          )}
 
         {/* Pestañas */}
         <ul className="nav">
@@ -2261,11 +2258,6 @@ const WorkFlowpar2editPage: React.FC = () => {
       title: "Ubicación del proyecto",
     },
     {
-      stepNumber: 8,
-      iconName: "water_drop",
-      title: "Agua Caliente Sanitaria",
-    },
-    {
       stepNumber: 4,
       iconName: "build",
       title: "Detalles constructivos",
@@ -2274,6 +2266,11 @@ const WorkFlowpar2editPage: React.FC = () => {
       stepNumber: 7,
       iconName: "design_services",
       title: "Recinto",
+    },
+    {
+      stepNumber: 8,
+      iconName: "water_drop",
+      title: "Agua Caliente Sanitaria",
     },
   ];
 
@@ -2360,7 +2357,7 @@ const WorkFlowpar2editPage: React.FC = () => {
           <div>
             <Title text="Edición de Proyecto" />
             <div className="d-flex align-items-center" style={{ gap: "10px" }}>
-              <ProjectInfoHeader projectName={projectName} region={region} project_id={projectId ?? ""}/>
+              <ProjectInfoHeader projectName={projectName} region={region} project_id={projectId ?? ""} />
               <Breadcrumb
                 items={[{ title: "Editar", href: "/", active: true }]}
               />
@@ -2386,7 +2383,28 @@ const WorkFlowpar2editPage: React.FC = () => {
                   </>
                 )}
                 {step === 7 && renderRecinto()}
-                {step === 8 && <AguaCalienteSanitaria />}
+                {step === 8 && (
+                <AguaCalienteSanitaria
+                  onSaveSuccess={() => {
+                    setProjectStatus("En proceso");
+                  }}
+                  actualizarStatus={async () => {
+                    if (!projectId) return;
+                    try {
+                      const token = localStorage.getItem("token");
+                      if (!token) return;
+                      await axios.put(
+                        `${constantUrlApiEndpoint}/project/${projectId}/status`,
+                        { status: "En proceso" },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      );
+                      notify("Estado del proyecto actualizado a 'En proceso'.");
+                    } catch {
+                      notify("No se pudo actualizar el estado del proyecto");
+                    }
+                  }}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -2404,7 +2422,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       <ModalCreate
         detail={null}
         isOpen={showNewDetailRow}
-        title="Crear Nueva Capa"
+        title="Crear capas muro (de Interior a Exterior)"
         onClose={() => {
           setShowNewDetailRow(false);
           setNewDetailForm({
@@ -2436,7 +2454,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             </select>
           </div>
           <div className="form-group">
-            <label>Nombre del Detalle</label>
+            <label>Nombre de muro</label>
             <input
               type="text"
               className="form-control"
@@ -2512,7 +2530,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         isOpen={showDetallesModal}
         title={`Detalles ${selectedItem?.name_detail || ""}`}
         onClose={() => setShowDetallesModal(false)}
-        onSave={() => {}}
+        onSave={() => { }}
         showSaveButton={false}
         modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
       >
@@ -2631,12 +2649,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2658,12 +2676,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            fs_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          fs_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2685,12 +2703,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            frame_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          frame_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2706,12 +2724,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingVentana((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            clousure_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          clousure_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2808,12 +2826,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_puerta_opaca: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_puerta_opaca: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2829,12 +2847,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            name_ventana: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          name_ventana: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -2856,12 +2874,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                     setEditingPuerta((prev) =>
                       prev
                         ? {
-                            ...prev,
-                            atributs: {
-                              ...prev.atributs,
-                              porcentaje_vidrio: 0,
-                            },
-                          }
+                          ...prev,
+                          atributs: {
+                            ...prev.atributs,
+                            porcentaje_vidrio: 0,
+                          },
+                        }
                         : prev
                     );
                     return;
@@ -2872,12 +2890,12 @@ const WorkFlowpar2editPage: React.FC = () => {
                   setEditingPuerta((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            porcentaje_vidrio: clampedValue / 100,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          porcentaje_vidrio: clampedValue / 100,
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -2945,8 +2963,8 @@ const WorkFlowpar2editPage: React.FC = () => {
             {deleteItem.type === "detail"
               ? "¿Estás seguro de que deseas eliminar este detalle?"
               : deleteItem.type === "window"
-              ? "¿Estás seguro de que deseas eliminar esta ventana?"
-              : "¿Estás seguro de que deseas eliminar esta puerta?"}
+                ? "¿Estás seguro de que deseas eliminar esta ventana?"
+                : "¿Estás seguro de que deseas eliminar esta puerta?"}
           </p>
         </ModalCreate>
       )}
@@ -2957,7 +2975,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         isOpen={showCreateDetailModal}
         onClose={() => setShowCreateDetailModal(false)}
         onSave={handleCreateDetail}
-        title="Crear Nueva Capa"
+        title="Crear capas muro (de Interior a Exterior)"
         saveLabel="Crear Capa"
       >
         <form>
@@ -2971,7 +2989,7 @@ const WorkFlowpar2editPage: React.FC = () => {
             />
           </div>
           <div className="form-group">
-            <label>Nombre del Detalle</label>
+            <label>Nombre de muro</label>
             <input
               type="text"
               className="form-control"

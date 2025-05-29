@@ -64,7 +64,6 @@ const NewDetailCreator: React.FC<NewDetailCreatorProps> = ({
   };
 
   const handleSaveDetail = async () => {
-    // Validaciones: se requiere el nombre del detalle y, para Muro/Techo, los colores
     if (!newDetail.name_detail.trim()) {
       notify("Por favor, complete el campo de nombre.");
       return;

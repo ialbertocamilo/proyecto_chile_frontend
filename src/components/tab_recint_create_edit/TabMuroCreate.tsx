@@ -1,14 +1,14 @@
-import React, { useState, useEffect, ChangeEvent } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { notify } from "@/utils/notify";
-import TablesParameters from "@/components/tables/TablesParameters";
-import CustomButton from "../common/CustomButton";
-import ModalCreate from "../common/ModalCreate";
-import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
-import ThermalBridgesWallModal from "../modals/ThermalBridgesWallModal";
+import TablesParameters from "@/components/tables/TablesParameters";
+import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
+import { notify } from "@/utils/notify";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { Plus } from "lucide-react";
+import React, { ChangeEvent, useEffect, useState } from "react";
+import CustomButton from "../common/CustomButton";
+import ModalCreate from "../common/ModalCreate";
+import ThermalBridgesWallModal from "../modals/ThermalBridgesWallModal";
 
 // Interfaz para muros
 interface Wall {
@@ -305,10 +305,10 @@ const TabMuroCreate: React.FC = () => {
     setEditingWallData((prev) =>
       prev
         ? {
-            ...prev,
-            [name]:
-              name === "wall_id" || name === "area" ? Number(value) : value,
-          }
+          ...prev,
+          [name]:
+            name === "wall_id" || name === "area" ? Number(value) : value,
+        }
         : null
     );
   };
@@ -535,9 +535,9 @@ const TabMuroCreate: React.FC = () => {
             >
               <option value="">Seleccione...</option>
               <option value="Exterior">Exterior</option>
-              <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-              <option value="Inter Recintos No Clim">
-                Inter Recintos No Clim
+              <option value="Interior climatizado">Interior climatizado</option>
+              <option value="Interior  no climatizado">
+                Interior  no climatizado
               </option>
             </select>
           );
@@ -1111,9 +1111,9 @@ const TabMuroCreate: React.FC = () => {
               >
                 <option value="">Seleccione...</option>
                 <option value="Exterior">Exterior</option>
-                <option value="Inter Recintos Clim">Inter Recintos Clim</option>
-                <option value="Inter Recintos No Clim">
-                  Inter Recintos No Clim
+                <option value="Interior climatizado">Interior climatizado</option>
+                <option value="Interior  no climatizado">
+                  Interior  no climatizado
                 </option>
               </select>
             </div>

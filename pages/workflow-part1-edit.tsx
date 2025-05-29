@@ -451,11 +451,6 @@ const ProjectWorkflowPart1: React.FC = () => {
       title: "Ubicación del proyecto",
     },
     {
-      stepNumber: 8,
-      iconName: "water_drop",
-      title: "Agua Caliente Sanitaria",
-    },
-    {
       stepNumber: 3,
       iconName: "build",
       title: "Detalles constructivos",
@@ -464,6 +459,11 @@ const ProjectWorkflowPart1: React.FC = () => {
       stepNumber: 4,
       iconName: "design_services",
       title: "Recinto",
+    },
+    {
+      stepNumber: 8,
+      iconName: "water_drop",
+      title: "Agua Caliente Sanitaria",
     },
   ];
 

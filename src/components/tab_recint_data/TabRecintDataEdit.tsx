@@ -22,6 +22,7 @@ interface EnclosureGeneralData {
   nombre_region: string;
   perfil_uso: string;
   level_id: string; // Add this line
+  usage_profile_name:string
 }
 
 interface IFormData {
@@ -144,8 +145,8 @@ const TabRecintDataEdit: React.FC = () => {
     },
     {
       headerName: "Perfil Ocupación",
-      field: "occupation_profile_id",
-      renderCell: (row: EnclosureGeneralData) => row.perfil_uso,
+      field: "usage_profile_name",
+      renderCell: (row: EnclosureGeneralData) => row.usage_profile_name,
     },
     {
       headerName: "Altura (m)",

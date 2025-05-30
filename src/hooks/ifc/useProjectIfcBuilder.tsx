@@ -635,7 +635,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                         currentComponent: `Material para techo encontrado en cache: ${element.material} (ID: ${materialInfo?.id})`
                                     });
                                 } else {
-                                    materialInfo = await wallBuilder.getMaterialByCode(element.material);
+                                    // materialInfo = await wallBuilder.getMaterialByCode(element.material);
+                                    materialInfo = await wallBuilder.getMaterialByCode('MATERIAL_001');
                                     // Update cache with new material
                                     if (materialInfo) {
                                         setMaterialsCache(prev => ({

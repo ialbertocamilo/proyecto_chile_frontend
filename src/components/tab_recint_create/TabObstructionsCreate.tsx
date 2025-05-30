@@ -729,15 +729,16 @@ const ObstructionTable: React.FC = () => {
           </select>
         </div>
         <div className="form-group mt-2">
-          <label htmlFor="aInput">A [m]</label>
+          <label htmlFor="aInput">A [m] Diferencia de altura media entre la fachada y el obstáculo
+          </label>
           <input id="aInput" type="number" className="form-control" min={0} value={aValue} onChange={(e) => setAValue(e.target.value)} onKeyDown={preventMinus} />
         </div>
         <div className="form-group mt-2">
-          <label htmlFor="bInput">B [m]</label>
+          <label htmlFor="bInput">B [m] Distancia con el obstáculo. </label>
           <input id="bInput" type="number" className="form-control" min={0} value={bValue} onChange={(e) => setBValue(e.target.value)} onKeyDown={preventMinus} />
         </div>
         <div className="form-group mt-2">
-          <label htmlFor="dInput">D [m]</label>
+          <label htmlFor="dInput">D [m] Ancho del obstáculo</label>
           <input id="dInput" type="number" className="form-control" min={0} value={dValue} onChange={(e) => setDValue(e.target.value)} onKeyDown={preventMinus} />
         </div>
       </ModalCreate>

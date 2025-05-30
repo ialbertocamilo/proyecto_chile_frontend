@@ -171,6 +171,18 @@ const RecintoEdit: React.FC = () => {
     }
   };
 
+  // Función para limpiar el formulario y localStorage
+  const handleCrearOtroRecinto = () => {
+    setNombreRecinto("");
+    setPerfilOcupacion(0);
+    setAlturaPromedio("");
+    setSensorCo2(false);
+    setLevelId(1);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem('recinto_id');
+    window.location.reload();
+  };
+
   const handleBack = () => {
     window.history.back();
   };
@@ -220,7 +232,7 @@ const RecintoEdit: React.FC = () => {
             {/* Campo: Perfil de Ocupación */}
             <div className="col-6 mb-3">
               <label htmlFor="perfilOcupacion" className="form-label">
-                Perfil de ocupación
+                Tipologías del recinto
               </label>
               <select
                 id="perfilOcupacion"
@@ -298,13 +310,18 @@ const RecintoEdit: React.FC = () => {
           </div>
 
           {/* Botones: Regresar a la izquierda y Actualizar Datos a la derecha */}
-          <div className="d-flex justify-content-between">
+          <div className="d-flex justify-content-between align-items-center">
             <CustomButton variant="back" onClick={handleBack}>
               Regresar
             </CustomButton>
-            <CustomButton variant="save" onClick={handleSave}>
-              Actualizar Datos
-            </CustomButton>
+            <div>
+              <CustomButton  onClick={handleCrearOtroRecinto} className="me-2" color="orange">
+                Crear otro recinto
+              </CustomButton>
+              <CustomButton variant="save" onClick={handleSave}>
+                Actualizar Datos
+              </CustomButton>
+            </div>
           </div>
         </div>
       </Card>

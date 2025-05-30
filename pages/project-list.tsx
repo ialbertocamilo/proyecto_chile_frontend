@@ -98,6 +98,11 @@ const ProjectListPage = () => {
     router.push(`/workflow-part1-edit?id=${project_edit.id}`);
   };
 
+  const handleCalculateResults = (project: Project): void => {
+    const projectId = project.id;
+    router.push(`/calculation-result?id=${projectId}`);
+  };
+
   // Función para abrir el modal de confirmación
   const handleDelete = (projectId: number, projectName: string): void => {
     setProjectToDelete({ id: projectId, name: projectName });
@@ -210,6 +215,18 @@ const ProjectListPage = () => {
               <span className="material-icons" style={{ fontSize: "24px" }}>
                 apartment
               </span>
+            </CustomButton>
+          )}
+
+          {/* Botón Calcular Resultados */}
+          {row.status?.toLowerCase() === 'en proceso' && (
+            <CustomButton
+              className="btn-table-list"
+              color="orange"
+              onClick={() => handleCalculateResults(row)}
+              title="Realizar el calculo de resultados"
+            >
+              <span className="material-icons">calculate</span>
             </CustomButton>
           )}
 

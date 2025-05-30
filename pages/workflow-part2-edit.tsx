@@ -896,7 +896,6 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== RENDER DEL MODAL PARA DETALLES GENERALES ======================
   const renderDetallesModalContent = () => {
     const columnsDetails = [
-      { headerName: "Ubicación Detalle", field: "scantilon_location" },
       { headerName: "Nombre Detalle", field: "name_detail" },
       { headerName: "Material", field: "material" },
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },
@@ -1089,7 +1088,6 @@ const WorkFlowpar2editPage: React.FC = () => {
       );
     });
     const columns = [
-      { headerName: "Ubicación Detalle", field: "scantilon_location" },
       { headerName: "Nombre Detalle", field: "name_detail" },
       { headerName: "Material", field: "material" },
       { headerName: "Espesor capa (cm)", field: "layer_thickness" },

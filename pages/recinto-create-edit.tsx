@@ -119,7 +119,6 @@ const RecintoCreateEdit: React.FC = () => {
 
   const { put } = useApi();
 
-
   const handleSave = async () => {
     // Se reemplaza la coma por el punto para que parseFloat funcione correctamente
     const normalizedAlturaPromedio = alturaPromedio.replace(/,/g, ".");
@@ -190,6 +189,18 @@ const RecintoCreateEdit: React.FC = () => {
 
   const handleBack = () => {
     window.history.back();
+  };
+
+  // Función para limpiar el formulario y localStorage y recargar la página
+  const handleCrearNuevoRecinto = () => {
+    setNombreRecinto("");
+    setPerfilOcupacion(0);
+    setAlturaPromedio("");
+    setSensorCo2(false);
+    setLevelId("");
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem('recinto_id');
+    window.location.reload();
   };
 
   return (
@@ -316,9 +327,14 @@ const RecintoCreateEdit: React.FC = () => {
             <CustomButton variant="back" onClick={handleBack}>
               Regresar
             </CustomButton>
-            <CustomButton variant="save" onClick={handleSave}>
-              Guardar
-            </CustomButton>
+            <div>
+              <CustomButton onClick={handleCrearNuevoRecinto} className="me-2" style={{backgroundColor: '#6f42c1', color: 'white', border: 'none'}}>
+                Nuevo recinto
+              </CustomButton>
+              <CustomButton variant="save" onClick={handleSave}>
+                Guardar
+              </CustomButton>
+            </div>
           </div>
         </div>
       </Card>

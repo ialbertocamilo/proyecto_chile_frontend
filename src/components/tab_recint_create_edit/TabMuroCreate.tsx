@@ -1098,7 +1098,7 @@ const TabMuroCreate: React.FC = () => {
               htmlFor="characteristics"
               className="col-sm-3 col-form-label"
             >
-              Características
+              Características del recinto continuo
             </label>
             <div className="col-sm-9">
               <select

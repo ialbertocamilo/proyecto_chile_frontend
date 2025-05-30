@@ -700,7 +700,7 @@ const ObstructionTable: React.FC = () => {
           </select>
         </div>
         <div className="form-group mt-2">
-          <label htmlFor="aInput">A [m]</label>
+          <label htmlFor="aInput">A [m] Diferencia altura media, fachada y obstáculo</label>
           <input
             id="aInput"
             type="number"
@@ -712,7 +712,8 @@ const ObstructionTable: React.FC = () => {
           />
         </div>
         <div className="form-group mt-2">
-          <label htmlFor="bInput">B [m]</label>
+          <label htmlFor="bInput">B [m] Distancia con el obstáculo
+          </label>
           <input
             id="bInput"
             type="number"
@@ -724,7 +725,7 @@ const ObstructionTable: React.FC = () => {
           />
         </div>
         <div className="form-group mt-2">
-          <label htmlFor="dInput">D [m]</label>
+          <label htmlFor="dInput">D [m] Ancho del obstáculo</label>
           <input
             id="dInput"
             type="number"

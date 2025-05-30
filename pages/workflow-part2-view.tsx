@@ -886,7 +886,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
         <div style={{ height: "400px", overflowY: "scroll" }}>
           <TablesParameters
             columns={[
-              { headerName: "Ubicación Detalle", field: "scantilon_location" },
               { headerName: "Nombre Detalle", field: "name_detail" },
               { headerName: "Material", field: "material" },
               { headerName: "Espesor capa (cm)", field: "layer_thickness" },

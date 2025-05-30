@@ -492,30 +492,7 @@ const TabMuroCreate: React.FC = () => {
         return row.characteristics;
       },
     },
-    {
-      headerName: "Ángulo Azimut",
-      field: "angulo_azimut",
-      renderCell: (row: MergedWall) => {
-        if (row.id === editingWallId && editingWallData) {
-          return (
-            <select
-              name="angulo_azimut"
-              value={editingWallData.angulo_azimut}
-              onChange={handleEditWallChange}
-              className="form-control form-control-sm"
-            >
-              <option value="">Seleccione...</option>
-              {angleOptions.map((option, index) => (
-                <option key={index} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          );
-        }
-        return row.angulo_azimut;
-      },
-    },
+
     { headerName: "Orientación", field: "orientation" },
     {
       headerName: "Área [m²]",
@@ -1089,7 +1066,7 @@ const TabMuroCreate: React.FC = () => {
                 htmlFor="characteristics"
                 className="col-sm-3 col-form-label"
               >
-                Características
+                Características del recinto continuo
               </label>
               <div className="col-sm-9">
                 <select

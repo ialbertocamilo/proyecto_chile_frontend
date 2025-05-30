@@ -234,7 +234,7 @@ const ZoneSelector: React.FC<ZoneSelectorProps> = ({
 
   return (
     <div>
-      <label className="form-label">Zona</label>
+      <label className="form-label">Zona climática</label>
       <select
         className="form-control"
         value={selectedZone}

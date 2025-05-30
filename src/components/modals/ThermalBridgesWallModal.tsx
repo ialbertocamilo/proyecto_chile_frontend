@@ -136,7 +136,7 @@ const ThermalBridgesWallModal: FC<ThermalBridgesWallModalProps> = (props) => {
           </div>
           <div className="col-4">
             <label htmlFor="po1_id_element" className="form-label">
-              Elemento
+              Elemento 1
             </label>
             <select
               name="po1_id_element"
@@ -179,7 +179,7 @@ const ThermalBridgesWallModal: FC<ThermalBridgesWallModalProps> = (props) => {
           </div>
           <div className="col-4">
             <label htmlFor="po2_id_element" className="form-label">
-              Elemento
+              Elemento 2
             </label>
             <select
               name="po2_id_element"
@@ -224,7 +224,7 @@ const ThermalBridgesWallModal: FC<ThermalBridgesWallModalProps> = (props) => {
           </div>
           <div className="col-4">
             <label htmlFor="po3_id_element" className="form-label">
-              Elemento
+              Elemento 3
             </label>
             <select
               name="po3_id_element"
@@ -269,7 +269,7 @@ const ThermalBridgesWallModal: FC<ThermalBridgesWallModalProps> = (props) => {
           </div>
           <div className="col-4">
             <label htmlFor="po4_id_element" className="form-label">
-              Elemento
+              Elemento 4
             </label>
             <select
               name="po4_id_element"

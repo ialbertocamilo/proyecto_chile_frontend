@@ -119,8 +119,6 @@ const RecintoCreate: React.FC = () => {
     fetchProfiles();
   }, []);
 
-
-
   const handleSave = async () => {
     // Validación simplificada
     if (
@@ -194,6 +192,18 @@ const RecintoCreate: React.FC = () => {
 
   const handleBack = () => {
     window.history.back();
+  };
+
+  // Función para limpiar el formulario y localStorage y recargar la página
+  const handleCrearNuevoRecinto = () => {
+    setNombreRecinto("");
+    setPerfilOcupacion(0);
+    setAlturaPromedio("");
+    setSensorCo2(false);
+    setLevel("");
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem('recinto_id');
+    window.location.reload();
   };
 
   return (
@@ -316,9 +326,14 @@ const RecintoCreate: React.FC = () => {
             <CustomButton variant="back" onClick={handleBack}>
               Regresar
             </CustomButton>
-            <CustomButton variant="save" onClick={handleSave}>
-              Guardar
-            </CustomButton>
+            <div>
+              <CustomButton onClick={handleCrearNuevoRecinto} className="me-2" style={{backgroundColor: '#6f42c1', color: 'white', border: 'none'}}>
+                Nuevo recinto
+              </CustomButton>
+              <CustomButton variant="save" onClick={handleSave}>
+                Guardar
+              </CustomButton>
+            </div>
           </div>
         </div>
       </Card>

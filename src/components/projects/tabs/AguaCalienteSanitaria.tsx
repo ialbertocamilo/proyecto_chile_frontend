@@ -90,24 +90,25 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
         );
 
         const data = response[0];
-        setTAcs(data.t_acs);
-        setDemandaACS(data.demanda_acs);
-        setCombustible(data.combustible);
-        setRendimiento(data.rendimiento);
-        setSistDistribucion(data.sist_distribucion);
-        setSistControl(data.sis_control);
-        setConsumoACS(data.consumo_acs);
-        setConsumoEnergiaPrimariaACS(data.consumo_energia_primaria);
-        setCo2eqEnergiaPrimaria(data.energia_primaria);
-
-        console.log("Data fetched:", data.data);
-        // Transform and set table data
-        const transformedData = data.data.map((item: any) => ({
-          tipo: item.tipo_ocupacion,
-          cantidad: item.cantidad_personas,
-          consumo: item.pers_dia,
-        }));
-        setTableData(transformedData);
+        if (data) {
+          setTAcs(data.t_acs);
+          setDemandaACS(data.demanda_acs);
+          setCombustible(data.combustible);
+          setRendimiento(data.rendimiento);
+          setSistDistribucion(data.sist_distribucion);
+          setSistControl(data.sis_control);
+          setConsumoACS(data.consumo_acs);
+          setConsumoEnergiaPrimariaACS(data.consumo_energia_primaria);
+          setCo2eqEnergiaPrimaria(data.energia_primaria);
+          console.log("Data fetched:", data.data);
+          // Transform and set table data
+          const transformedData = data?.data.map((item: any) => ({
+            tipo: item.tipo_ocupacion,
+            cantidad: item.cantidad_personas,
+            consumo: item.pers_dia,
+          }));
+          setTableData(transformedData);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
         // notify("Error al obtener los datos");

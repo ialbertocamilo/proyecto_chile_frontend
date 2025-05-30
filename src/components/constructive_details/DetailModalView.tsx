@@ -263,7 +263,6 @@ const DetailModal: React.FC<DetailModalProps> = ({
   // =         COLUMNAS Y DATOS PARA TABLA DETALLES       =
   // ======================================================
   const columnsDetails = [
-    { headerName: "Ubicación Detalle", field: "scantilon_location" },
     { headerName: "Nombre Detalle", field: "name_detail" },
     { headerName: "Material", field: "material" },
     { headerName: "Espesor capa (cm)", field: "layer_thickness" },
@@ -411,7 +410,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
         </div>
 
         <div style={{ marginBottom: "1rem" }}>
-          <label>Nombre del Detalle:</label>
+          <label>Nombre del muro:</label>
           <input
             type="text"
             className="form-control"

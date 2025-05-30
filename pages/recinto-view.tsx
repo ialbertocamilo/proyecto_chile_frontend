@@ -190,7 +190,6 @@ const RecintoView: React.FC = () => {
   const murosColumns = [
     { headerName: "Muros", field: "name" },
     { headerName: "Caracteristicas", field: "characteristics" },
-    { headerName: "Ángulo Azimut", field: "angulo_azimut" },
     { headerName: "Orientación", field: "orientation" },
     {
       headerName: "Área [m²]",
@@ -260,7 +259,6 @@ const RecintoView: React.FC = () => {
         ...[
           { label: "Muros" },
           { label: "Características espacio contiguo al elemento" },
-          { label: "Ángulo Azimut" },
           { label: "Orientación" },
           { label: "Área[m²]" },
           { label: "U [W/m²K]" },
@@ -284,7 +282,6 @@ const RecintoView: React.FC = () => {
   const ventanaColumns = [
     { headerName: "Tipo de vano Acristalado (incluye marco)", field: "tipoVano" },
     { headerName: "Características espacio contiguo al elemento", field: "caracteristicas" },
-    { headerName: "Ángulo Azimut", field: "anguloAzimut" },
     { headerName: "Orientación", field: "orientacion" },
     { headerName: "Alojado en", field: "alojadoEn" },
     { headerName: "Tipo de Cierre", field: "tipoCierre" },
@@ -395,7 +392,6 @@ const RecintoView: React.FC = () => {
   const doorColumnsNew = [
     { headerName: "Tipo Puerta", field: "tipoPuente" },
     { headerName: "Características", field: "characteristics" },
-    { headerName: "Ángulo Azimut", field: "anguloAzimut" },
     { headerName: "Orientación", field: "orientacion" },
     {
       headerName: "Alto [m]",
@@ -464,7 +460,6 @@ const RecintoView: React.FC = () => {
       [
         { label: "Tipo de Puerta", rowSpan: 2 },
         { label: "Características espacio contiguo al elemento", rowSpan: 2 },
-        { label: "Ángulo Azimut", rowSpan: 2 },
         { label: "Orientación", rowSpan: 2 },
         { label: "Alto [m]", rowSpan: 2 },
         { label: "Ancho [m]", rowSpan: 2 },

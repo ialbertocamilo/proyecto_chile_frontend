@@ -30,7 +30,6 @@ interface MurosTableProps {
 const DetailModalContent = ({detailsList}:{detailsList:any}) => {
 
     const columnsDetails = [
-        { headerName: "Ubicación Detalle", field: "scantilon_location" },
         { headerName: "Nombre Detalle", field: "name_detail" },
         { headerName: "Material", field: "material" },
         { headerName: "Espesor capa (cm)", field: "layer_thickness" },

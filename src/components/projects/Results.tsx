@@ -19,10 +19,7 @@ const Results = () => {
   const [isRecalculating, setIsRecalculating] = useState(false);
   const webSocketRef = useRef<any>(null);
 
-
   const [calculationResult, setCalculationResult] = useState<any>(null);
-
-
 
   const processData = async () => {
     try {
@@ -31,8 +28,12 @@ const Results = () => {
         await get(`/calculator/${projectId}`);
         setIsButtonDisabled(false);
       }
-    } catch (error) {
-      console.error("Error processing data:", error);
+    } catch (error: any) {
+      if (error?.response?.status === 400 && error?.response?.data?.detail) {
+        notify(error.response.data.detail, "error");
+      } else {
+        console.error("Error processing data:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -44,10 +45,10 @@ const Results = () => {
     }
   }, [router.query.id]);
 
-  const handleUpdate = ((data: any) => {
+  const handleUpdate = (data: any) => {
     console.log("GUARDANDO :", data);
     // Removed setRecintos usage
-  });
+  };
 
   const handleForceRecalculation = async () => {
     try {
@@ -60,9 +61,13 @@ const Results = () => {
         setCalculationResult(result);
         notify("Recálculo completado exitosamente");
       }
-    } catch (error) {
-      console.error("Error al forzar recálculo:", error);
-      notify("Error al forzar recálculo", "error");
+    } catch (error: any) {
+      if (error?.response?.status === 400 && error?.response?.data?.detail) {
+        notify(error.response.data.detail, "error");
+      } else {
+        console.error("Error al forzar recálculo:", error);
+        notify("Error al forzar recálculo", "error");
+      }
     } finally {
       setIsRecalculating(false);
     }
@@ -73,8 +78,6 @@ const Results = () => {
     <Container fluid className="py-4">
       <h2 className="mb-4 mt-2">Resultados finales</h2>
       <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-
-
         <CustomButton
           onClick={handleForceRecalculation}
           className="mb-3"
@@ -96,12 +99,9 @@ const Results = () => {
             setIsDownloading(true);
             try {
               const projectId = router.query.id;
-              const response = await api.get(
-                `/calculator/download/${projectId}`,
-                {
-                  responseType: "blob",
-                }
-              );
+              const response = await api.get(`/calculator/download/${projectId}`, {
+                responseType: "blob",
+              });
               const blob = response;
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement("a");
@@ -133,17 +133,16 @@ const Results = () => {
             <span>Descargando...</span>
           </span>
         )}
-
       </div>
 
       <WebSocketComponent
         ref={webSocketRef}
         path={``}
         onMessageReceived={(message) => {
-          if (message?.notificationType == 'result') {
+          if (message?.notificationType == "result") {
             // Only use the new data structure
-            const enclosures = JSON.parse(message?.payload?.result_by_enclosure_v2 || '[]');
-            const baseEnclosures = JSON.parse(message?.payload?.base_by_enclosure_v2 || '[]');
+            const enclosures = JSON.parse(message?.payload?.result_by_enclosure_v2 || "[]");
+            const baseEnclosures = JSON.parse(message?.payload?.base_by_enclosure_v2 || "[]");
             const finalIndicators = message?.payload?.final_indicators;
 
             console.log("Enclosures:", enclosures);
@@ -153,48 +152,49 @@ const Results = () => {
             setCalculationResult({
               result_by_enclosure_v2: enclosures,
               base_by_enclosure_v2: baseEnclosures,
-              final_indicators: finalIndicators
+              final_indicators: finalIndicators,
             });
           }
         }}
       />
       <br />
-      {loading ? (
-        <div className="text-center">Procesando datos...</div>
+      {loading || !calculationResult ? (
+        <div className="text-center" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <Spinner animation="border" role="status" style={{ marginBottom: 8 }} />
+          <span>Procesando datos, espere unos minutos</span>
+        </div>
       ) : (
-        <>          <Tabs
-          defaultActiveKey="recintos"
-          id="results-tabs"
-          className="mb-4 custom-tabs"
-          style={{
-            "--bs-nav-tabs-link-active-color": "var(--primary-color)",
-            "--bs-nav-link-font-weight": "normal",
-            fontFamily: "var(--font-family-base)",
-            border: "none",
-            "--bs-nav-link-color": "#bbc4cb",
-            "--bs-nav-link-hover-color": "rgb(42, 176, 197)",
-            "--bs-nav-tabs-link-hover-border-color": "transparent",
-            "--bs-nav-tabs-link-active-border-color":
-              "transparent transparent rgb(42, 176, 197) transparent",
-            "--bs-nav-tabs-border-width": "3px",
-            "--bs-nav-tabs-border-radius": "0px",
-            "--bs-nav-link-padding-x": "10px",
-            "--bs-nav-link-padding-y": "10px",
-          } as React.CSSProperties}
-        >
-
-          <Tab eventKey="recintos" title="Resumen de Recintos">
-            <MemoizedResumenRecintos
-              globalResults={calculationResult}
-              onUpdated={handleUpdate}
-            />
-          </Tab>
-
-          <Tab eventKey="indicadores" title="Indicadores Finales">
-            <IndicadoresFinales finalIndicators={calculationResult?.final_indicators} />
-          </Tab>
-        </Tabs>
-
+        <>
+          <Tabs
+            defaultActiveKey="recintos"
+            id="results-tabs"
+            className="mb-4 custom-tabs"
+            style={{
+              "--bs-nav-tabs-link-active-color": "var(--primary-color)",
+              "--bs-nav-link-font-weight": "normal",
+              fontFamily: "var(--font-family-base)",
+              border: "none",
+              "--bs-nav-link-color": "#bbc4cb",
+              "--bs-nav-link-hover-color": "rgb(42, 176, 197)",
+              "--bs-nav-tabs-link-hover-border-color": "transparent",
+              "--bs-nav-tabs-link-active-border-color":
+                "transparent transparent rgb(42, 176, 197) transparent",
+              "--bs-nav-tabs-border-width": "3px",
+              "--bs-nav-tabs-border-radius": "0px",
+              "--bs-nav-link-padding-x": "10px",
+              "--bs-nav-link-padding-y": "10px",
+            } as React.CSSProperties}
+          >
+            <Tab eventKey="recintos" title="Resumen de Recintos">
+              <MemoizedResumenRecintos
+                globalResults={calculationResult}
+                onUpdated={handleUpdate}
+              />
+            </Tab>
+            <Tab eventKey="indicadores" title="Indicadores Finales">
+              <IndicadoresFinales finalIndicators={calculationResult?.final_indicators} />
+            </Tab>
+          </Tabs>
         </>
       )}
     </Container>

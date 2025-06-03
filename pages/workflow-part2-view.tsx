@@ -1,4 +1,5 @@
 import Breadcrumb from "@/components/common/Breadcrumb";
+import HorizontalTabs from "@/components/common/HorizontalTabs";
 import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataView";
 import { notify } from "@/utils/notify";
@@ -739,47 +740,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
       { key: "pisos", label: "Pisos" },
       { key: "ventanas", label: "Ventanas" },
       { key: "puertas", label: "Puertas" },
-    ] as { key: TabStep4; label: string }[];
-
-    return (
+    ] as { key: TabStep4; label: string }[]; return (
       <div className="mt-4">
-        <ul
-          className="nav"
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            padding: 0,
-            listStyle: "none",
-          }}
-        >
-          {tabs.map((item) => (
-            <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
-              <button
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  backgroundColor: "#fff",
-                  color:
-                    tabStep4 === item.key
-                      ? primaryColor
-                      : "var(--secondary-color)",
-                  border: "none",
-                  cursor: "pointer",
-                  borderBottom:
-                    tabStep4 === item.key
-                      ? `3px solid ${primaryColor}`
-                      : "none",
-                  fontFamily: "var(--font-family-base)",
-                  fontWeight: "normal",
-                }}
-                onClick={() => setTabStep4(item.key)}
-              >
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <HorizontalTabs
+          tabs={tabs}
+          currentTab={tabStep4}
+          onTabChange={(tab) => setTabStep4(tab as TabStep4)}
+        />
 
         <div
           style={{
@@ -917,31 +884,31 @@ const WorkFlowpar2viewPage: React.FC = () => {
       stepNumber: 1,
       iconName: "assignment_ind",
       title:
-        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+        "1. Agregar detalles de propietario / proyecto y clasificación de edificaciones",
       route: `/workflow-part1-view?id=${projectId}&step=1`,
     },
     {
       stepNumber: 2,
       iconName: "location_on",
-      title: "Ubicación del proyecto",
+      title: "2. Ubicación del proyecto",
       route: `/workflow-part1-view?id=${projectId}&step=2`,
     },
     {
       stepNumber: 4,
       iconName: "build",
-      title: "Detalles constructivos",
+      title: "3. Detalles constructivos",
       route: `/workflow-part2-view?id=${projectId}&step=4`,
     },
     {
       stepNumber: 7,
       iconName: "design_services",
-      title: "Recinto",
+      title: "4. Recinto",
       route: `/workflow-part2-view?id=${projectId}&step=7`,
     },
     {
       stepNumber: 8,
       iconName: "water_drop",
-      title: "Agua Caliente Sanitaria",
+      title: "5. Agua Caliente Sanitaria",
     },
   ];
 

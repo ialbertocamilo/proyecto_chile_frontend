@@ -1,3 +1,4 @@
+import HorizontalTabs from "@/components/common/HorizontalTabs";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import NewHeaderButton from "@/components/constructive_details/NewHeaderButton";
 import SearchParameters from "@/components/inputs/SearchParameters";
@@ -39,6 +40,7 @@ interface MultiHeader {
 
 import DeleteDetailButton from "@/components/common/DeleteDetailButton";
 import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
+import { steps } from "@/constants/steps";
 import { IDetail } from "@/shared/interfaces/detail.interface";
 
 // Funciones auxiliares para formatear valores
@@ -2135,38 +2137,15 @@ const WorkFlowpar2editPage: React.FC = () => {
                       ? fetchTechumbreDetails
                       : fetchPisosDetails
                 }
-              />
-            </div>
+              />            </div>
           )}
 
         {/* Pestañas */}
-        <ul className="nav">
-          {tabs.map((item) => (
-            <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
-              <button
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  backgroundColor: "#fff",
-                  color:
-                    tabStep4 === item.key
-                      ? primaryColor
-                      : "var(--secondary-color)",
-                  border: "none",
-                  cursor: "pointer",
-                  borderBottom:
-                    tabStep4 === item.key
-                      ? `3px solid ${primaryColor}`
-                      : "none",
-                  fontFamily: "var(--font-family-base)",
-                }}
-                onClick={() => setTabStep4(item.key)}
-              >
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <HorizontalTabs
+          tabs={tabs}
+          currentTab={tabStep4}
+          onTabChange={(tab) => setTabStep4(tab as TabStep4)}
+        />
 
         {/* Contenido de cada tab */}
         <div
@@ -2243,34 +2222,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
   };
 
-  const sidebarSteps = [
-    {
-      stepNumber: 1,
-      iconName: "assignment_ind",
-      title:
-        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
-    },
-    {
-      stepNumber: 2,
-      iconName: "location_on",
-      title: "Ubicación del proyecto",
-    },
-    {
-      stepNumber: 4,
-      iconName: "build",
-      title: "Detalles constructivos",
-    },
-    {
-      stepNumber: 7,
-      iconName: "design_services",
-      title: "Recinto",
-    },
-    {
-      stepNumber: 8,
-      iconName: "water_drop",
-      title: "Agua Caliente Sanitaria",
-    },
-  ];
+
 
   // ===================== FUNCIONES PARA VENTANAS Y PUERTAS ======================
   const [deleteItem, setDeleteItem] = useState<{
@@ -2368,7 +2320,7 @@ const WorkFlowpar2editPage: React.FC = () => {
               <AdminSidebar
                 activeStep={step}
                 onStepChange={handleSidebarStepChange}
-                steps={sidebarSteps}
+                steps={steps}
               />
             </div>
             <div className="col-12 col-lg-9">
@@ -2382,25 +2334,25 @@ const WorkFlowpar2editPage: React.FC = () => {
                 )}
                 {step === 7 && renderRecinto()}
                 {step === 8 && (
-                <AguaCalienteSanitaria
-                  onSaveSuccess={() => {
-                    setProjectStatus("En proceso");
-                  }}
-                  actualizarStatus={async () => {
-                    if (!projectId) return;
-                    try {
-                      const token = localStorage.getItem("token");
-                      if (!token) return;
-                      await axios.put(
-                        `${constantUrlApiEndpoint}/project/${projectId}/status`,
-                        { status: "En proceso" },
-                        { headers: { Authorization: `Bearer ${token}` } }
-                      );
-                      notify("Estado del proyecto actualizado a 'En proceso'.");
-                    } catch {
-                      notify("No se pudo actualizar el estado del proyecto");
-                    }
-                  }}
+                  <AguaCalienteSanitaria
+                    onSaveSuccess={() => {
+                      setProjectStatus("En proceso");
+                    }}
+                    actualizarStatus={async () => {
+                      if (!projectId) return;
+                      try {
+                        const token = localStorage.getItem("token");
+                        if (!token) return;
+                        await axios.put(
+                          `${constantUrlApiEndpoint}/project/${projectId}/status`,
+                          { status: "En proceso" },
+                          { headers: { Authorization: `Bearer ${token}` } }
+                        );
+                        notify("Estado del proyecto actualizado a 'En proceso'.");
+                      } catch {
+                        notify("No se pudo actualizar el estado del proyecto");
+                      }
+                    }}
                   />
                 )}
               </div>

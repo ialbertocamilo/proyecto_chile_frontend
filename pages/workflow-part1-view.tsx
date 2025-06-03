@@ -6,7 +6,6 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import GooIcons from "../public/GoogleIcons";
-import locationData from "../public/locationData";
 import Title from "../src/components/Title";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Breadcrumb from "../src/components/common/Breadcrumb";
@@ -47,6 +46,7 @@ interface FormData {
   longitude: number;
   address: string;
   residential_type: string;
+  building_name?: string; // New field for building name
 }
 
 const initialFormData: FormData = {
@@ -66,6 +66,7 @@ const initialFormData: FormData = {
   longitude: -70.6703553846175,
   address: "",
   residential_type: "",
+  building_name: "", // New field for building name
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -182,6 +183,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           longitude: projectData.longitude || -70.6703553846175,
           address: projectData.divisions?.address || "",
           residential_type: projectData.residential_type || "",
+          building_name: projectData.building_name || "",
         });
         // Extraer la zona desde project_metadata, asumiendo que la propiedad se llama "zone"
         setProjectMetadata(projectData.project_metadata?.zone || "");
@@ -229,27 +231,27 @@ const ProjectWorkflowPart1: React.FC = () => {
       stepNumber: 1,
       iconName: "assignment_ind",
       title:
-        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+        "1. Agregar detalles de propietario / proyecto y clasificación de edificaciones",
     },
     {
       stepNumber: 2,
       iconName: "location_on",
-      title: "Ubicación del proyecto",
-    },
-    {
-      stepNumber: 8,
-      iconName: "water_drop",
-      title: "Agua Caliente Sanitaria",
+      title: "2. Ubicación del proyecto",
     },
     {
       stepNumber: 6,
       iconName: "build",
-      title: "Detalles constructivos",
+      title: "3. Detalles constructivos",
     },
     {
       stepNumber: 7,
       iconName: "design_services",
-      title: "Recinto",
+      title: "4. Recinto",
+    },
+    {
+      stepNumber: 8,
+      iconName: "water_drop",
+      title: "5. Agua Caliente Sanitaria",
     },
   ];
 
@@ -457,8 +459,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                         disabled
                       />
                     </div>
-                  </div>
-                  <div className="row mb-3">
+                  </div>                  <div className="row mb-3">
                     <div className="col-12 col-md-6">
                       <label className="form-label">Número de viviendas</label>
                       <input
@@ -470,7 +471,13 @@ const ProjectWorkflowPart1: React.FC = () => {
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      {/* Columna vacía para mantener la estructura de dos columnas */}
+                      <label className="form-label">Nombre o número de edificio</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.building_name}
+                        disabled
+                      />
                     </div>
                   </div>
                 </>

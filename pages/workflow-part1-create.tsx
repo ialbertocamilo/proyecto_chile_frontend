@@ -5,17 +5,15 @@ import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
-import locationData from "../public/locationData";
+import { Alert } from "react-bootstrap";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import { Alert } from "react-bootstrap";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -38,6 +36,7 @@ interface FormData {
   zone?: string;
   residential_type?: string;
   region?: string; // Add this line
+  building_name?: string; // New field for building name
 }
 
 interface Project {
@@ -63,6 +62,7 @@ const initialFormData: FormData = {
   zone: "",
   residential_type: "",
   region: "", // Add this line
+  building_name: "", // Initialize the new field
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -91,12 +91,12 @@ const ProjectWorkflowPart1: React.FC = () => {
       stepNumber: 1,
       iconName: "assignment_ind",
       title:
-        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
+        "1. Agregar detalles de propietario / proyecto y clasificación de edificaciones",
     },
     {
       stepNumber: 2,
       iconName: "location_on",
-      title: "Ubicación del proyecto",
+      title: "2. Ubicación del proyecto",
     },
   ];
 
@@ -296,8 +296,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         setGlobalError("Por favor, inicie sesión para continuar.");
         setLoading(false);
         return;
-      }
-      const requestBody = {
+      } const requestBody = {
         country: formData.country || "Perú",
         divisions: {
           department: formData.department,
@@ -320,6 +319,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           zone: formData.zone,
         },
         residential_type: formData.residential_type,
+        building_name: formData.building_name, // Added building_name field
       };
       const data = await post(`/projects/create`, requestBody);
       const { project_id } = data;
@@ -743,8 +743,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Fila para Número de viviendas / oficinas x nivel */}
-                <div className="row mb-3">
+                {/* Fila para Número de viviendas / oficinas x nivel */}                <div className="row mb-3">
                   <div className="col-12 col-md-6">
                     <label className="form-label">
                       Número de viviendas
@@ -774,6 +773,22 @@ const ProjectWorkflowPart1: React.FC = () => {
                         {errors.number_homes_per_level}
                       </small>
                     )}
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Nombre o número de edificio
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.building_name}
+                      onChange={(e) =>
+                        handleFormInputChange(
+                          "building_name",
+                          e.target.value
+                        )
+                      }
+                    />
                   </div>
                 </div>
                 <div className="d-flex align-items-center mt-4">

@@ -3,6 +3,7 @@ import ChartProjectCreated from "@/components/ChartProjectCreated";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import ModalCreate from "@/components/common/ModalCreate";
 import { useApiNext } from "@/hooks/useApiNext";
+import { validateProject } from "@/service/validate-project";
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -41,9 +42,7 @@ export interface Project {
   longitude?: number;
 }
 
-interface ErrorResponse {
-  detail?: string;
-}
+
 
 const ProjectListPage = () => {
   useAuth();
@@ -77,12 +76,13 @@ const ProjectListPage = () => {
       }));
       setProjects(projectsConRegion);
     } catch (err) {
-      // …
+      console.error("Error al cargar proyectos:", err);
+      setError("Error al cargar los proyectos. Por favor, inténtelo de nuevo.");
     } finally {
       setLoading(false);
     }
   };
-  
+
 
   const handleGoToWorkflow = (project_edit: Project): void => {
     console.log(
@@ -97,10 +97,30 @@ const ProjectListPage = () => {
     localStorage.setItem("project_name_edit", project_edit.name_project || "");
     router.push(`/workflow-part1-edit?id=${project_edit.id}`);
   };
-
-  const handleCalculateResults = (project: Project): void => {
+  const handleCalculateResults = async (project: Project): Promise<void> => {
     const projectId = project.id;
-    router.push(`/calculation-result?id=${projectId}`);
+    try {
+      const validationResult = await validateProject(projectId, true);
+
+      if (validationResult.valid) {
+        router.push(`/calculation-result?id=${projectId}`);
+      } else {
+        // Show warnings about failed enclosures
+        console.log("Project validation failed:", validationResult.failed_enclosures);
+
+        // Create error message with details about failed enclosures
+        let errorMessage = "El proyecto no cumple con todos los requisitos necesarios para el cálculo:";
+
+        if (validationResult.failed_enclosures && validationResult.failed_enclosures.length > 0) {
+          errorMessage += "\n\n- Hay recintos sin los elementos constructivos requeridos.";
+        }
+
+        notify(errorMessage, "error");
+      }
+    } catch (error) {
+      console.error("Error validating project:", error);
+      notify("Error al validar el proyecto. Inténtelo nuevamente.", "error");
+    }
   };
 
   // Función para abrir el modal de confirmación

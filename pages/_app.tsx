@@ -25,6 +25,7 @@ import type { ReactElement } from 'react';
 import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "../styles/layout.css";
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactElement;
@@ -75,45 +76,45 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       <>
         <Script src="/assets/js/icons/feather-icon/feather.min.js" />
         <RecintosProvider>
-        <div className="page-wrapper" id="pageWrapper">
-          <div
-            className="page-header"
-            style={{
-              marginLeft: showNav ? (isMobile ? contentMarginLeft : (isNavbarOpen ? expandedWidth : collapsedWidth)) : "0",
-              transition: "margin-left 0.3s ease"
-            }}
-          >
-            <div className="header-wrapper row m-0">
-              {showNav && <TopBar sidebarWidth={isNavbarOpen ? expandedWidth : collapsedWidth} />}
-            </div>
-          </div>
-          <div className="page-body-wrapper horizontal-menu">
-            <div className="sidebar-wrapper" data-layout="fill-svg">
-              {showNav && (
-                <Navbar
-                  setActiveView={() => { }}
-                  onNavbarToggle={handleNavbarToggle}
-                />
-              )}
-            </div>
+          <div className="page-wrapper" id="pageWrapper">
             <div
-              className="page-body"
+              className="page-header"
               style={{
-                marginLeft: showNav ? `calc(${contentMarginLeft} + 25px)` : "0",
-                transition: "margin-left 0.3s ease",
-                width: showNav ? `calc(100% - (${contentMarginLeft} + 25px))` : "100%"
+                marginLeft: showNav ? (isMobile ? contentMarginLeft : (isNavbarOpen ? expandedWidth : collapsedWidth)) : "0",
+                transition: "margin-left 0.3s ease"
               }}
             >
-              {!hideNavRoutes.includes(router.pathname) ? (
-                <div >
-                  {page}
-                </div>
-              ) : (
-                page
-              )}
+              <div className="header-wrapper row m-0">
+                {showNav && <TopBar sidebarWidth={isNavbarOpen ? expandedWidth : collapsedWidth} />}
+              </div>
             </div>
-          </div>
-        </div></RecintosProvider>
+            <div className="page-body-wrapper horizontal-menu">
+              <div className="sidebar-wrapper" data-layout="fill-svg">
+                {showNav && (
+                  <Navbar
+                    setActiveView={() => { }}
+                    onNavbarToggle={handleNavbarToggle}
+                  />
+                )}
+              </div>
+              <div
+                className="page-body"
+                style={{
+                  marginLeft: showNav ? `calc(${contentMarginLeft} + 25px)` : "0",
+                  transition: "margin-left 0.3s ease",
+                  width: showNav ? `calc(100% - (${contentMarginLeft} + 25px))` : "100%"
+                }}
+              >
+                {!hideNavRoutes.includes(router.pathname) ? (
+                  <div >
+                    {page}
+                  </div>
+                ) : (
+                  page
+                )}
+              </div>
+            </div>
+          </div></RecintosProvider>
         <ToastContainer
           position="top-right"
           autoClose={2000}

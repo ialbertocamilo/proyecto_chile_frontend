@@ -1,17 +1,18 @@
 // ConstructiveDetailsComponent.tsx
-import React, { useCallback, useEffect, useState } from "react";
+import DetailModal from "@/components/constructive_details/DetailModal";
+import NewDetailCreator from "@/components/constructive_details/NewDetailCreator";
+import TablesParameters from "@/components/tables/TablesParameters";
+import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/router";
-import CustomButton from "./common/CustomButton";
-import ActionButtonsConfirm from "./common/ActionButtonsConfirm";
-import { notify } from "@/utils/notify";
+import React, { useCallback, useEffect, useState } from "react";
 import { constantUrlApiEndpoint } from "../utils/constant-url-endpoint";
-import TablesParameters from "@/components/tables/TablesParameters";
-import SearchParameters from "./inputs/SearchParameters";
+import ActionButtonsConfirm from "./common/ActionButtonsConfirm";
+import CustomButton from "./common/CustomButton";
+import HorizontalTabs from "./common/HorizontalTabs";
 import ModalCreate from "./common/ModalCreate";
-import NewDetailCreator from "@/components/constructive_details/NewDetailCreator";
-import DetailModal from "@/components/constructive_details/DetailModal";
+import SearchParameters from "./inputs/SearchParameters";
 
 interface Detail {
   id_detail: number;
@@ -617,7 +618,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={searchQuery}
             onChange={setSearchQuery}
             placeholder="Buscar..."
-            onNew={() => {}}
+            onNew={() => { }}
             newButtonText="Nuevo"
             style={{ marginBottom: "1rem" }}
           />
@@ -662,7 +663,7 @@ const ConstructiveDetailsComponent: React.FC = () => {
             value={searchQuery}
             onChange={setSearchQuery}
             placeholder={`Buscar ${tabStep4}`}
-            onNew={() => {}}
+            onNew={() => { }}
             // si quieres inhabilitar el botón interno del componente:
             showNewButton={false}
           />
@@ -674,53 +675,22 @@ const ConstructiveDetailsComponent: React.FC = () => {
             tabStep4 === "muros"
               ? "Muro"
               : tabStep4 === "techumbre"
-              ? "Techo"
-              : "Piso"
+                ? "Techo"
+                : "Piso"
           }
           onDetailCreated={refreshDetails}
-        />
-      </div>
+        />      </div>
 
       {/* Tabs */}
-      <ul
-        className="nav"
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          padding: 0,
-          listStyle: "none",
-        }}
-      >
-        {[
+      <HorizontalTabs
+        tabs={[
           { key: "muros", label: "Muros" },
           { key: "techumbre", label: "Techumbre" },
           { key: "pisos", label: "Pisos" },
-        ].map((item) => (
-          <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
-            <button
-              style={{
-                width: "100%",
-                padding: "10px",
-                backgroundColor: "#fff",
-                color:
-                  tabStep4 === item.key
-                    ? primaryColor
-                    : "var(--secondary-color)",
-                border: "none",
-                cursor: "pointer",
-                borderBottom:
-                  tabStep4 === item.key ? `3px solid ${primaryColor}` : "none",
-                fontFamily: "var(--font-family-base)",
-                fontWeight: "normal",
-              }}
-              onClick={() => setTabStep4(item.key as TabStep4)}
-            >
-              {item.label}
-            </button>
-          </li>
-        ))}
-      </ul>
+        ]}
+        currentTab={tabStep4}
+        onTabChange={(tab) => setTabStep4(tab as TabStep4)}
+      />
 
       {/* Contenido de la tab seleccionada */}
       <div>
@@ -1068,12 +1038,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
             : "-",
         bajoPisoLambda:
           item.info?.aislacion_bajo_piso?.lambda &&
-          Number(item.info.aislacion_bajo_piso.lambda) !== 0
+            Number(item.info.aislacion_bajo_piso.lambda) !== 0
             ? Number(item.info.aislacion_bajo_piso.lambda).toFixed(2)
             : "-",
         bajoPisoEAisl:
           item.info?.aislacion_bajo_piso?.e_aisl &&
-          Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
+            Number(item.info.aislacion_bajo_piso.e_aisl) !== 0
             ? Number(item.info.aislacion_bajo_piso.e_aisl).toFixed(2)
             : "-",
         vertLambda: isEditing ? (
@@ -1085,8 +1055,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
               editValues.vertLambda !== undefined
                 ? editValues.vertLambda
                 : vert.lambda && Number(vert.lambda) !== 0
-                ? Number(vert.lambda).toFixed(2)
-                : ""
+                  ? Number(vert.lambda).toFixed(2)
+                  : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1114,8 +1084,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
               editValues.vertEAisl !== undefined
                 ? editValues.vertEAisl
                 : vert.e_aisl && Number(vert.e_aisl) !== 0
-                ? Number(vert.e_aisl).toFixed(2)
-                : ""
+                  ? Number(vert.e_aisl).toFixed(2)
+                  : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1143,8 +1113,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
               editValues.vertD !== undefined
                 ? editValues.vertD
                 : vert.d && Number(vert.d) !== 0
-                ? Number(vert.d).toFixed(2)
-                : ""
+                  ? Number(vert.d).toFixed(2)
+                  : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1172,8 +1142,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
               editValues.horizLambda !== undefined
                 ? editValues.horizLambda
                 : horiz.lambda && Number(horiz.lambda) !== 0
-                ? Number(horiz.lambda).toFixed(2)
-                : ""
+                  ? Number(horiz.lambda).toFixed(2)
+                  : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1201,8 +1171,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
               editValues.horizEAisl !== undefined
                 ? editValues.horizEAisl
                 : horiz.e_aisl && Number(horiz.e_aisl) !== 0
-                ? Number(horiz.e_aisl).toFixed(2)
-                : ""
+                  ? Number(horiz.e_aisl).toFixed(2)
+                  : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1230,8 +1200,8 @@ const ConstructiveDetailsComponent: React.FC = () => {
               editValues.horizD !== undefined
                 ? editValues.horizD
                 : horiz.d && Number(horiz.d) !== 0
-                ? Number(horiz.d).toFixed(2)
-                : ""
+                  ? Number(horiz.d).toFixed(2)
+                  : ""
             }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -1300,36 +1270,36 @@ const ConstructiveDetailsComponent: React.FC = () => {
       <div>
         {pisosTabList.length > 0 ? (
           <TablesParameters
-          columns={columnsPisos}
-          data={data}
-          multiHeader={{
-            rows: [
-              // Fila 1: IFC, Nombre, U, grupos, Acciones
-              [
-                { label: "Código IFC",   field: "code_ifc",    rowSpan: 2, sortable: true },
-                { label: "Nombre",       field: "nombre",      rowSpan: 2, sortable: true },
-                { label: "U [W/m²K]",    field: "uValue",      rowSpan: 2, sortable: true },
-                { label: "Aislamiento bajo piso", colSpan: 2 },
-                { label: "Ref Aisl Vert.",        colSpan: 3 },
-                { label: "Ref Aisl Horiz.",       colSpan: 3 },
-                { label: "Acciones",     field: "acciones",    rowSpan: 2, sortable: false },
+            columns={columnsPisos}
+            data={data}
+            multiHeader={{
+              rows: [
+                // Fila 1: IFC, Nombre, U, grupos, Acciones
+                [
+                  { label: "Código IFC", field: "code_ifc", rowSpan: 2, sortable: true },
+                  { label: "Nombre", field: "nombre", rowSpan: 2, sortable: true },
+                  { label: "U [W/m²K]", field: "uValue", rowSpan: 2, sortable: true },
+                  { label: "Aislamiento bajo piso", colSpan: 2 },
+                  { label: "Ref Aisl Vert.", colSpan: 3 },
+                  { label: "Ref Aisl Horiz.", colSpan: 3 },
+                  { label: "Acciones", field: "acciones", rowSpan: 2, sortable: false },
+                ],
+                // Fila 2: las sub-columnas dentro de cada grupo
+                [
+                  { label: "λ [W/mK]", field: "bajoPisoLambda", sortable: true },
+                  { label: "e Aisl [cm]", field: "bajoPisoEAisl", sortable: true },
+                  { label: "λ [W/mK]", field: "vertLambda", sortable: true },
+                  { label: "e Aisl [cm]", field: "vertEAisl", sortable: true },
+                  { label: "D [cm]", field: "vertD", sortable: true },
+                  { label: "λ [W/mK]", field: "horizLambda", sortable: true },
+                  { label: "e Aisl [cm]", field: "horizEAisl", sortable: true },
+                  { label: "D [cm]", field: "horizD", sortable: true },
+                ],
               ],
-              // Fila 2: las sub-columnas dentro de cada grupo
-              [
-                { label: "λ [W/mK]",     field: "bajoPisoLambda", sortable: true },
-                { label: "e Aisl [cm]",  field: "bajoPisoEAisl",   sortable: true },
-                { label: "λ [W/mK]",     field: "vertLambda",      sortable: true },
-                { label: "e Aisl [cm]",  field: "vertEAisl",       sortable: true },
-                { label: "D [cm]",       field: "vertD",           sortable: true },
-                { label: "λ [W/mK]",     field: "horizLambda",     sortable: true },
-                { label: "e Aisl [cm]",  field: "horizEAisl",      sortable: true },
-                { label: "D [cm]",       field: "horizD",          sortable: true },
-              ],
-            ],
-          }}
-        />
-        
-        
+            }}
+          />
+
+
         ) : (
           <p>No hay datos</p>
         )}
@@ -1391,12 +1361,12 @@ const ConstructiveDetailsComponent: React.FC = () => {
           }}
           onSave={() => {
             handleConfirmEditDetail({
-              stopPropagation: () => {},
-              preventDefault: () => {},
+              stopPropagation: () => { },
+              preventDefault: () => { },
               nativeEvent: new MouseEvent("click"),
               isDefaultPrevented: () => false,
               isPropagationStopped: () => false,
-              persist: () => {},
+              persist: () => { },
               target: document.createElement("button"),
               currentTarget: document.createElement("button"),
               bubbles: true,

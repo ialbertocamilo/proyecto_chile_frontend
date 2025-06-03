@@ -1,6 +1,7 @@
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import DeleteDetailButton from "@/components/common/DeleteDetailButton";
+import HorizontalTabs from "@/components/common/HorizontalTabs";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import SearchParameters from "@/components/inputs/SearchParameters";
 import TabRecintDataCreate from "@/components/tab_recint_data/TabRecintDataCreate";
@@ -2225,46 +2226,13 @@ const WorkFlowpar2createPage: React.FC = () => {
               justifyContent: "flex-end",
               marginBottom: "1rem",
             }}
-          ></div>
-        )}
+          ></div>)}
 
-        <ul
-          className="nav"
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            padding: 0,
-            listStyle: "none",
-          }}
-        >
-          {tabs.map((item) => (
-            <li key={item.key} style={{ flex: 1, minWidth: "100px" }}>
-              <button
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  backgroundColor: "#fff",
-                  color:
-                    tabStep4 === item.key
-                      ? primaryColor
-                      : "var(--secondary-color)",
-                  border: "none",
-                  cursor: "pointer",
-                  borderBottom:
-                    tabStep4 === item.key
-                      ? `3px solid ${primaryColor}`
-                      : "none",
-                  fontFamily: "var(--font-family-base)",
-                  fontWeight: "normal",
-                }}
-                onClick={() => setTabStep4(item.key)}
-              >
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <HorizontalTabs
+          tabs={tabs}
+          currentTab={tabStep4}
+          onTabChange={(tab) => setTabStep4(tab as TabStep4)}
+        />
 
         <div style={{ height: "400px", position: "relative" }}>
           {tabStep4 === "muros" && renderMurosTable()}
@@ -2301,9 +2269,9 @@ const WorkFlowpar2createPage: React.FC = () => {
   // Pasos del Sidebar
   // -----------------------------------
   const sidebarSteps = [
-    { stepNumber: 4, iconName: "build", title: "Detalles constructivos" },
-    { stepNumber: 7, iconName: "design_services", title: "Recinto" },
-    { stepNumber: 8, iconName: "water_drop", title: "Agua Caliente Sanitaria" },
+    { stepNumber: 4, iconName: "build", title: "3. Detalles constructivos" },
+    { stepNumber: 7, iconName: "design_services", title: "4. Recinto" },
+    { stepNumber: 8, iconName: "water_drop", title: "5. Agua Caliente Sanitaria" },
   ];
 
   // -----------------------------------

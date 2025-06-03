@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Card from "../common/Card";
-import CustomButton from "../common/CustomButton";
 import Modal from "../common/Modal";
 
 interface DetailedUser {
@@ -45,9 +44,19 @@ export const DetailedUsersReport = ({ loading, data }: DetailedUsersReportProps)
             <h5 className="mb-4 mt-4">Usuarios con más proyectos registrados</h5>
             <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 <table className="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Correo</th>
+                            <th>Fecha de registro</th>
+                            <th>Estado</th>
+                            <th>N° Proyectos</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         {data?.map((user) => (
-                            <tr key={user.id}>
+                            <tr key={user.id} onClick={() => user.project_count > 0 && handleViewProjects(user)}
+                                style={{ cursor: user.project_count > 0 ? 'pointer' : 'default' }}>
                                 <td><img src="/assets/images/user_icon.png" alt="User icon" width={18} height={18} className="me-2" />{`${user.name} ${user.last_name}`}
                                     <div style={{ fontSize: "0.8rem" }}>
                                         {user.profession || "Profesión no disponible"}
@@ -61,22 +70,6 @@ export const DetailedUsersReport = ({ loading, data }: DetailedUsersReportProps)
                                     </span>
                                 </td>
                                 <td>{user.project_count}</td>
-                                <td>
-                                    <CustomButton
-                                        variant="viewIcon"
-                                        onClick={() => !user.project_count || handleViewProjects(user)}
-                                        style={{
-                                            backgroundColor: "var(--primary-color)",
-                                            padding: "0.5rem",
-                                            width: "40px",
-                                            height: "40px",
-                                            borderRadius: "4px",
-                                            margin: '0 auto',
-                                            opacity: user.project_count ? 1 : 0.5,
-                                            cursor: user.project_count ? 'pointer' : 'not-allowed'
-                                        }}
-                                    />
-                                </td>
                             </tr>
                         ))}
                     </tbody>

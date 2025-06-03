@@ -1,14 +1,15 @@
 import MapAutocompletion from "@/components/maps/MapAutocompletion";
+import ProjectStatus from "@/components/projects/ProjectStatus";
+import { steps } from "@/constants/steps";
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
+import { Alert } from "react-bootstrap";
 import GooIcons from "../public/GoogleIcons";
-import locationData from "../public/locationData";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
 import Breadcrumb from "../src/components/common/Breadcrumb";
 import Card from "../src/components/common/Card";
@@ -17,8 +18,6 @@ import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import ProjectStatus from "@/components/projects/ProjectStatus";
-import { Alert } from "react-bootstrap";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -42,6 +41,7 @@ interface FormData {
   zone?: string;
   residential_type?: string;
   region?: string;
+  building_name?: string; // New field for building name
 }
 
 interface Project {
@@ -68,6 +68,7 @@ const initialFormData: FormData = {
   zone: "",
   residential_type: "",
   region: "",
+  building_name: "", // Initialize new field
 };
 
 const ProjectWorkflowPart1: React.FC = () => {
@@ -157,6 +158,7 @@ const ProjectWorkflowPart1: React.FC = () => {
           status: projectData?.status || "En proceso",
           residential_type: projectData?.residential_type || "",
           region: projectData.divisions?.region || "",
+          building_name: projectData.building_name || "", // Cargar nuevo campo
         });
         console.log("FormData");
         console.log(formData);
@@ -354,6 +356,7 @@ const ProjectWorkflowPart1: React.FC = () => {
         latitude: formData.latitude,
         longitude: formData.longitude,
         residential_type: formData.residential_type,
+        building_name: formData.building_name, // Enviar nuevo campo
       };
 
       if (router.query.id) {
@@ -437,35 +440,6 @@ const ProjectWorkflowPart1: React.FC = () => {
     }
   };
 
-  // Definición de los pasos para la sidebar
-  const steps = [
-    {
-      stepNumber: 1,
-      iconName: "assignment_ind",
-      title:
-        "Agregar detalles de propietario / proyecto y clasificación de edificaciones",
-    },
-    {
-      stepNumber: 2,
-      iconName: "location_on",
-      title: "Ubicación del proyecto",
-    },
-    {
-      stepNumber: 3,
-      iconName: "build",
-      title: "Detalles constructivos",
-    },
-    {
-      stepNumber: 4,
-      iconName: "design_services",
-      title: "Recinto",
-    },
-    {
-      stepNumber: 8,
-      iconName: "water_drop",
-      title: "Agua Caliente Sanitaria",
-    },
-  ];
 
   // Función para manejar el cambio de paso en la sidebar
   const handleSidebarStepChange = (newStep: number) => {
@@ -894,9 +868,21 @@ const ProjectWorkflowPart1: React.FC = () => {
                               {errors.number_homes_per_level}
                             </small>
                           )}
-                      </div>
-                      <div className="col-12 col-md-6">
-                        {/* Columna vacía para mantener la estructura de dos columnas */}
+                      </div>                      <div className="col-12 col-md-6">
+                        <label className="form-label">
+                          Nombre o número de edificio
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.building_name}
+                          onChange={(e) =>
+                            handleFormInputChange(
+                              "building_name",
+                              e.target.value
+                            )
+                          }
+                        />
                       </div>
                     </div>
                     {globalError && (

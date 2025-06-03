@@ -40,7 +40,6 @@ const CustomButton: FC<CustomButtonProps> = ({
   color,
   ...rest
 }) => {
-  if (disabled) return null;
   // Función helper que renderiza un ícono animado (opcional)
   const renderAnimatedIcon = (iconName: string) => (
     <span

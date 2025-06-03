@@ -191,17 +191,7 @@ const NotificationDisplay: React.FC<NotificationDisplayProps> = ({
                                             </div>
                                         ))}
                                     </div>
-
-                                    {notifications.length > 5 && (
-                                        <div className="d-flex justify-content-center p-2">
-                                            <button
-                                                className="btn btn-sm btn-outline-secondary"
-                                                onClick={toggleAllNotifications}
-                                            >
-                                                {showAllNotifications ? 'Mostrar menos' : 'Ver todas'}
-                                            </button>
-                                        </div>
-                                    )}                                </>
+                              </>
                             )}
                         </Card.Body>)}
                 </Card>

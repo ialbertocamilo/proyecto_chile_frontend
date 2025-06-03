@@ -538,7 +538,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         });
 
                         // Match the floor element with the fetched floor details
-                        const matchedFloor = floorDetails.find((floor: any) => floor.code_ifc === element.material);
+                        const matchedFloor = floorDetails.find((floor: any) => floor.code_ifc === 'MATERIAL_001');
 
                         if (!matchedFloor) {
                             errors.push({
@@ -635,6 +635,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                         currentComponent: `Material para techo encontrado en cache: ${element.material} (ID: ${materialInfo?.id})`
                                     });
                                 } else {
+                                    // materialInfo = await wallBuilder.getMaterialByCode(element.material);
                                     materialInfo = await wallBuilder.getMaterialByCode(element.material);
                                     // Update cache with new material
                                     if (materialInfo) {

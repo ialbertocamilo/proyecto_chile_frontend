@@ -328,7 +328,7 @@ const RecintoCreateEdit: React.FC = () => {
               Regresar
             </CustomButton>
             <div>
-              <CustomButton onClick={handleCrearNuevoRecinto} className="me-2" style={{backgroundColor: '#6f42c1', color: 'white', border: 'none'}}>
+              <CustomButton onClick={handleCrearNuevoRecinto} className="me-2" color='orange'>
                 Nuevo recinto
               </CustomButton>
               <CustomButton variant="save" onClick={handleSave}>

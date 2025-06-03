@@ -2925,19 +2925,10 @@ const WorkFlowpar2editPage: React.FC = () => {
         isOpen={showCreateDetailModal}
         onClose={() => setShowCreateDetailModal(false)}
         onSave={handleCreateDetail}
-        title="Crear capas muro (de Interior a Exterior)"
+        title="Crear capas piso (de Interior a Exterior)"
         saveLabel="Crear Capa"
       >
         <form>
-          <div className="form-group">
-            <label>Ubicación del Detalle</label>
-            <input
-              type="text"
-              className="form-control"
-              value={newDetailData.scantilon_location}
-              readOnly
-            />
-          </div>
           <div className="form-group">
             <label>Nombre de muro</label>
             <input

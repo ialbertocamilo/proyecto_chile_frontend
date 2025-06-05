@@ -447,7 +447,7 @@ const ProjectWorkflowPart1: React.FC = () => {
       setStep(newStep);
     } else if (newStep === 3) {
       // Para el paso 3 redirigimos a otra ruta de edición
-      router.push(`/workflow-part2-edit?id=${router.query.id}&step=4`);
+      router.push(`/workflow-part2-edit?id=${router.query.id}&step=3`);
     } else if (newStep === 4) {
       router.push(`/workflow-part2-edit?id=${router.query.id}&step=7`);
     } else if (newStep === 8) {
@@ -870,7 +870,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           )}
                       </div>                      <div className="col-12 col-md-6">
                         <label className="form-label">
-                          Nombre o número de edificio
+                          Número de edificio
                         </label>
                         <input
                           type="text"

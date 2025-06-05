@@ -1,14 +1,15 @@
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
+import CustomButton from "@/components/common/CustomButton";
+import HorizontalTabs from "@/components/common/HorizontalTabs";
+import Profileschedules from "@/components/common/Profileschedules";
 import SearchParameters from "@/components/inputs/SearchParameters";
 import TablesParameters from "@/components/tables/TablesParameters";
 import { notify } from "@/utils/notify";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import ModalCreate from "../components/common/ModalCreate";
-import Profileschedules from "@/components/common/Profileschedules";
 import { constantUrlApiEndpoint } from "../utils/constant-url-endpoint";
-import CustomButton from "@/components/common/CustomButton";
-import axios from "axios";
 
 // Interfaces originales de datos (como vienen de la API)
 interface Ventilacion {
@@ -60,7 +61,8 @@ interface ItemToDelete {
 const UseProfileTab: React.FC<{
   refreshTrigger?: number;
   primaryColorProp?: string;
-}> = ({ refreshTrigger = 0, primaryColorProp }) => {
+  useHorizontalTabs?: boolean;
+}> = ({ refreshTrigger = 0, primaryColorProp, useHorizontalTabs = false }) => {
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [activeTab, setActiveTab] = useState<TabKey>("ventilacion");
   const [rolUser, setRolUser] = useState<string>("");
@@ -418,15 +420,15 @@ const UseProfileTab: React.FC<{
     const values = isEditing
       ? editingRow.values
       : {
-          rPers: rPersValue,
-          ida: minSalubridad.ida || "N/A",
-          ocupacion: minSalubridad.ocupacion || "N/A",
-          caudalImpuestoVentNoct: (
-            condition.caudal_impuesto?.vent_noct ?? 0
-          ).toFixed(2),
-          infiltraciones: (condition.infiltraciones ?? 0).toFixed(2),
-          recuperadorCalor: condition.recuperador_calor ?? 0,
-        };
+        rPers: rPersValue,
+        ida: minSalubridad.ida || "N/A",
+        ocupacion: minSalubridad.ocupacion || "N/A",
+        caudalImpuestoVentNoct: (
+          condition.caudal_impuesto?.vent_noct ?? 0
+        ).toFixed(2),
+        infiltraciones: (condition.infiltraciones ?? 0).toFixed(2),
+        recuperadorCalor: condition.recuperador_calor ?? 0,
+      };
     return {
       code_ifc: enclosure.code_ifc || "-",
       codigoRecinto: !isDefault ? (
@@ -599,10 +601,10 @@ const UseProfileTab: React.FC<{
     const values = isEditing
       ? editingRow.values
       : {
-          potenciaBase: (details.potencia_base ?? 0).toFixed(2),
-          estrategia: details.estrategia || "",
-          potenciaPropuesta: (details.potencia_propuesta ?? 0).toFixed(2),
-        };
+        potenciaBase: (details.potencia_base ?? 0).toFixed(2),
+        estrategia: details.estrategia || "",
+        potenciaPropuesta: (details.potencia_propuesta ?? 0).toFixed(2),
+      };
 
     return {
       code_ifc: enclosure.code_ifc || "-",
@@ -704,13 +706,13 @@ const UseProfileTab: React.FC<{
     const values = isEditing
       ? editingRow.values
       : {
-          usuarios: (condition.usuarios ?? 0).toFixed(2),
-          calorLatente: (condition.calor_latente ?? 0).toFixed(2),
-          calorSensible: (condition.calor_sensible ?? 0).toFixed(2),
-          equipos: (condition.equipos ?? 0).toFixed(2),
-          funcionamientoSemanal:
-            condition.horario?.funcionamiento_semanal || "",
-        };
+        usuarios: (condition.usuarios ?? 0).toFixed(2),
+        calorLatente: (condition.calor_latente ?? 0).toFixed(2),
+        calorSensible: (condition.calor_sensible ?? 0).toFixed(2),
+        equipos: (condition.equipos ?? 0).toFixed(2),
+        funcionamientoSemanal:
+          condition.horario?.funcionamiento_semanal || "",
+      };
 
     return {
       code_ifc: enclosure.code_ifc || "-",
@@ -905,11 +907,11 @@ const UseProfileTab: React.FC<{
     const values = isEditing
       ? editingRow.values
       : {
-          climatizado: recinto.climatizado,
-          hrsDesfaseClimaInv: recinto.desfase_clima
-            ? recinto.desfase_clima.toFixed(2)
-            : "N/A",
-        };
+        climatizado: recinto.climatizado,
+        hrsDesfaseClimaInv: recinto.desfase_clima
+          ? recinto.desfase_clima.toFixed(2)
+          : "N/A",
+      };
 
     return {
       code_ifc: enclosure.code_ifc || "-",
@@ -1054,228 +1056,240 @@ const UseProfileTab: React.FC<{
       default:
         return {
           value: "",
-          onChange: () => {},
-          onNew: () => {},
+          onChange: () => { },
+          onNew: () => { },
           placeholder: "Buscar perfil de uso...",
         };
     }
   };
-
   return (
     <div className="p-3">
       {/* Barra de búsqueda */}
       <div className="mb-4">
         <SearchParameters {...getSearchProps()} />
       </div>
-
       {/* Navegación por pestañas */}
-      <div className="mb-2 px-2">
-        <ul className="d-flex list-unstyled m-0" style={{ gap: "10px" }}>
-          {[
-            { key: "ventilacion", label: "Ventilacion y caudales" },
-            { key: "iluminacion", label: "Iluminacion" },
-            { key: "cargas", label: "Cargas internas" },
-            { key: "horario", label: "Climatización" },
-          ].map((item) => (
-            <li key={item.key} className="flex-fill">
-              <button
-                className="w-100 p-0"
-                style={{
-                  backgroundColor: "#fff",
-                  color:
-                    activeTab === item.key
-                      ? primaryColor
-                      : "var(--secondary-color)",
-                  border: "none",
-                  borderBottom:
-                    activeTab === item.key
-                      ? `solid 2px ${primaryColor}`
-                      : "none",
-                }}
-                onClick={() => setActiveTab(item.key as TabKey)}
-              >
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+      <div className="card shadow-sm mb-4">
+        <div className="card-header bg-white p-0">
+          {useHorizontalTabs ? (
+            <HorizontalTabs
+              tabs={[
+                { key: "ventilacion", label: "Ventilación y caudales" },
+                { key: "iluminacion", label: "Iluminación" },
+                { key: "cargas", label: "Cargas internas" },
+                { key: "horario", label: "Climatización" }
+              ]}
+              currentTab={activeTab}
+              onTabChange={(tab) => setActiveTab(tab as TabKey)}
+            />
+          ) : (
+            <ul className="d-flex list-unstyled m-0" style={{ gap: "10px" }}>
+              {[
+                { key: "ventilacion", label: "Ventilación y caudales" },
+                { key: "iluminacion", label: "Iluminación" },
+                { key: "cargas", label: "Cargas internas" },
+                { key: "horario", label: "Climatización" },
+              ].map((item) => (
+                <li key={item.key} className="flex-fill">
+                  <button
+                    className="w-100 p-0"
+                    style={{
+                      backgroundColor: "#fff",
+                      color:
+                        activeTab === item.key
+                          ? primaryColor
+                          : "var(--secondary-color)",
+                      border: "none",
+                      borderBottom:
+                        activeTab === item.key
+                          ? `solid 2px ${primaryColor}`
+                          : "none",
+                    }}
+                    onClick={() => setActiveTab(item.key as TabKey)}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}        </div>
+        <div className="card-body pt-3">
+          {/* Contenedor de la tabla */}
+          <div className="overflow-auto" style={{ maxHeight: "500px" }}>
+            {activeTab === "ventilacion" && (
+              <div className="p-2">
+                <TablesParameters
+                  columns={[
+                    {
+                      headerName: "Código IFC",
+                      field: "code_ifc",
+                    },
+                    { headerName: "Codigo de Recinto", field: "codigoRecinto" },
+                    {
+                      headerName: "Tipologia de Recinto",
+                      field: "tipologiaRecinto",
+                    },
+                    { headerName: "R-pers [L/s]", field: "rPers" },
+                    { headerName: "IDA", field: "ida" },
+                    { headerName: "Ocupacion", field: "ocupacion" },
+                    {
+                      headerName: "Caudal Impuesto Vent Noct",
+                      field: "caudalImpuestoVentNoct",
+                    },
+                    { headerName: "Infiltraciones [1/h]", field: "infiltraciones" },
+                    {
+                      headerName: "Recuperador de calor [%]",
+                      field: "recuperadorCalor",
+                    },
+                    {
+                      headerName: "Acciones",
+                      field: "accion",
+                      headerStyle: { width: "100px" },
+                      sortable: false,
+                    },
+                  ]}
+                  data={filteredVentilacion}
+                />
+              </div>
+            )}
+
+            {activeTab === "iluminacion" && (
+              <div className="p-2">
+                <TablesParameters
+                  columns={[
+                    {
+                      headerName: "Código IFC",
+                      field: "code_ifc",
+                    },
+                    { headerName: "Codigo de Recinto", field: "codigoRecinto" },
+                    {
+                      headerName: "Tipologia de Recinto",
+                      field: "tipologiaRecinto",
+                    },
+                    { headerName: "Potencia Base [W/m2]", field: "potenciaBase" },
+                    { headerName: "Estrategia", field: "estrategia" },
+                    {
+                      headerName: "Potencia Propuesta [W/m2]",
+                      field: "potenciaPropuesta",
+                    },
+                    {
+                      headerName: "Acciones",
+                      field: "accion",
+                      headerStyle: { width: "100px" },
+                      sortable: false,
+                    },
+                  ]}
+                  data={filteredIluminacion}
+                />
+              </div>
+            )}
+
+            {activeTab === "cargas" && (
+              <div className="p-2">
+                <TablesParameters
+                  columns={[
+                    {
+                      headerName: "Código IFC",
+                      field: "code_ifc",
+                    },
+                    { headerName: "Codigo de Recinto", field: "codigoRecinto" },
+                    {
+                      headerName: "Tipologia de Recinto",
+                      field: "tipologiaRecinto",
+                    },
+                    { headerName: "Usuarios [m2/pers]", field: "usuarios" },
+                    { headerName: "Calor Latente [W/pers]", field: "calorLatente" },
+                    {
+                      headerName: "Calor Sensible [W/pers]",
+                      field: "calorSensible",
+                    },
+                    { headerName: "Equipos [W/m2]", field: "equipos" },
+                    {
+                      headerName: "Funcionamiento Semanal",
+                      field: "funcionamientoSemanal",
+                    },
+                    { headerName: "Acciones", field: "accion", sortable: false },
+                  ]}
+                  data={filteredCargas}
+                />
+              </div>
+            )}
+
+            {activeTab === "horario" && (
+              <div className="p-2">
+                <TablesParameters
+                  columns={[
+                    {
+                      headerName: "Código IFC",
+                      field: "code_ifc",
+                    },
+                    { headerName: "Codigo de Recinto", field: "codigoRecinto" },
+                    {
+                      headerName: "Tipologia de Recinto",
+                      field: "tipologiaRecinto",
+                    },
+                    { headerName: "Climatizado", field: "climatizado" },
+                    {
+                      headerName: "Hrs Desfase Clima (Inv)",
+                      field: "hrsDesfaseClimaInv",
+                    },
+                    { headerName: "Acciones", field: "accion", sortable: false },
+                  ]}
+                  data={filteredHorario}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Modal de creación de nuevo recinto */}
+          <ModalCreate
+            isOpen={isCreateModalOpen}
+            onClose={() => setIsCreateModalOpen(false)}
+            onSave={handleCreateSave}
+            title="Crear nuevo recinto"
+            saveLabel="Crear Perfil"
+          >
+            <div>
+              <label htmlFor="recinto-name">Nombre del Recinto</label>
+              <input
+                id="recinto-name"
+                type="text"
+                value={newRecintoName}
+                onChange={(e) => setNewRecintoName(e.target.value)}
+                placeholder="Ingrese el nombre"
+                style={{ width: "100%", padding: "8px", marginTop: "8px" }}
+              />
+            </div>
+          </ModalCreate>
+
+          {/* Modal de confirmación de eliminación */}
+          <ModalCreate
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            onSave={handleDeleteConfirm}
+            title="Confirmar eliminación"
+            saveLabel="Eliminar"
+          >
+            <div>
+              <p>
+                ¿Está seguro que desea eliminar el recinto{" "}
+                <strong>{itemToDelete?.name}</strong>?
+              </p>
+            </div>
+          </ModalCreate>
+
+          {/* Modal que muestra el componente Profileschedules */}
+          <ModalCreate
+            isOpen={isProfileSchedulesModalOpen}
+            onClose={() => setIsProfileSchedulesModalOpen(false)}
+            onSave={() => setIsProfileSchedulesModalOpen(false)}
+            title="Perfil de uso diario"
+            modalStyle={{ maxWidth: "50vw", maxHeight: "90vh", padding: "32px" }}
+            hideFooter={true}
+          >
+            <Profileschedules onUpdate={() => setRefresh((prev) => prev + 1)} />
+          </ModalCreate>      </div>
       </div>
-
-      {/* Contenedor de la tabla */}
-      <div className="overflow-auto" style={{ maxHeight: "500px" }}>
-        {activeTab === "ventilacion" && (
-          <div className="p-2">
-            <TablesParameters
-              columns={[
-                {
-                  headerName: "Código IFC",
-                  field: "code_ifc",
-                },
-                { headerName: "Codigo de Recinto", field: "codigoRecinto" },
-                {
-                  headerName: "Tipologia de Recinto",
-                  field: "tipologiaRecinto",
-                },
-                { headerName: "R-pers [L/s]", field: "rPers" },
-                { headerName: "IDA", field: "ida" },
-                { headerName: "Ocupacion", field: "ocupacion" },
-                {
-                  headerName: "Caudal Impuesto Vent Noct",
-                  field: "caudalImpuestoVentNoct",
-                },
-                { headerName: "Infiltraciones [1/h]", field: "infiltraciones" },
-                {
-                  headerName: "Recuperador de calor [%]",
-                  field: "recuperadorCalor",
-                },
-                {
-                  headerName: "Acciones",
-                  field: "accion",
-                  headerStyle: { width: "100px" },
-                  sortable: false,
-                },
-              ]}
-              data={filteredVentilacion}
-            />
-          </div>
-        )}
-
-        {activeTab === "iluminacion" && (
-          <div className="p-2">
-            <TablesParameters
-              columns={[
-                {
-                  headerName: "Código IFC",
-                  field: "code_ifc",
-                },
-                { headerName: "Codigo de Recinto", field: "codigoRecinto" },
-                {
-                  headerName: "Tipologia de Recinto",
-                  field: "tipologiaRecinto",
-                },
-                { headerName: "Potencia Base [W/m2]", field: "potenciaBase" },
-                { headerName: "Estrategia", field: "estrategia" },
-                {
-                  headerName: "Potencia Propuesta [W/m2]",
-                  field: "potenciaPropuesta",
-                },
-                {
-                  headerName: "Acciones",
-                  field: "accion",
-                  headerStyle: { width: "100px" },
-                  sortable: false,
-                },
-              ]}
-              data={filteredIluminacion}
-            />
-          </div>
-        )}
-
-        {activeTab === "cargas" && (
-          <div className="p-2">
-            <TablesParameters
-              columns={[
-                {
-                  headerName: "Código IFC",
-                  field: "code_ifc",
-                },
-                { headerName: "Codigo de Recinto", field: "codigoRecinto" },
-                {
-                  headerName: "Tipologia de Recinto",
-                  field: "tipologiaRecinto",
-                },
-                { headerName: "Usuarios [m2/pers]", field: "usuarios" },
-                { headerName: "Calor Latente [W/pers]", field: "calorLatente" },
-                {
-                  headerName: "Calor Sensible [W/pers]",
-                  field: "calorSensible",
-                },
-                { headerName: "Equipos [W/m2]", field: "equipos" },
-                {
-                  headerName: "Funcionamiento Semanal",
-                  field: "funcionamientoSemanal",
-                },
-                { headerName: "Acciones", field: "accion", sortable: false },
-              ]}
-              data={filteredCargas}
-            />
-          </div>
-        )}
-
-        {activeTab === "horario" && (
-          <div className="p-2">
-            <TablesParameters
-              columns={[
-                {
-                  headerName: "Código IFC",
-                  field: "code_ifc",
-                },
-                { headerName: "Codigo de Recinto", field: "codigoRecinto" },
-                {
-                  headerName: "Tipologia de Recinto",
-                  field: "tipologiaRecinto",
-                },
-                { headerName: "Climatizado", field: "climatizado" },
-                {
-                  headerName: "Hrs Desfase Clima (Inv)",
-                  field: "hrsDesfaseClimaInv",
-                },
-                { headerName: "Acciones", field: "accion", sortable: false },
-              ]}
-              data={filteredHorario}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Modal de creación de nuevo recinto */}
-      <ModalCreate
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={handleCreateSave}
-        title="Crear nuevo recinto"
-        saveLabel="Crear Perfil"
-      >
-        <div>
-          <label htmlFor="recinto-name">Nombre del Recinto</label>
-          <input
-            id="recinto-name"
-            type="text"
-            value={newRecintoName}
-            onChange={(e) => setNewRecintoName(e.target.value)}
-            placeholder="Ingrese el nombre"
-            style={{ width: "100%", padding: "8px", marginTop: "8px" }}
-          />
-        </div>
-      </ModalCreate>
-
-      {/* Modal de confirmación de eliminación */}
-      <ModalCreate
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onSave={handleDeleteConfirm}
-        title="Confirmar eliminación"
-        saveLabel="Eliminar"
-      >
-        <div>
-          <p>
-            ¿Está seguro que desea eliminar el recinto{" "}
-            <strong>{itemToDelete?.name}</strong>?
-          </p>
-        </div>
-      </ModalCreate>
-
-      {/* Modal que muestra el componente Profileschedules */}
-      <ModalCreate
-        isOpen={isProfileSchedulesModalOpen}
-        onClose={() => setIsProfileSchedulesModalOpen(false)}
-        onSave={() => setIsProfileSchedulesModalOpen(false)}
-        title="Perfil de uso diario"
-        modalStyle={{ maxWidth: "50vw", maxHeight: "90vh", padding: "32px" }}
-        hideFooter={true}
-      >
-        <Profileschedules onUpdate={() => setRefresh((prev) => prev + 1)} />
-      </ModalCreate>
     </div>
   );
 };

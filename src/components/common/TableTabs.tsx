@@ -1,27 +1,39 @@
-import { TabStyle } from '@/styles/TabStyle';
-import React, { useEffect, useRef } from 'react';
+import { TableTabStyle } from '@/styles/TabStyle';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface TabItem {
     key: string;
     label: string;
 }
 
-interface HorizontalTabsProps {
+interface TableTabsProps {
     tabs: TabItem[];
-    currentTab: string;
-    onTabChange: (tab: string) => void;
+    initialTab?: string;
+    onTabChange?: (tab: string) => void;
     className?: string;
 }
 
-const HorizontalTabs: React.FC<HorizontalTabsProps> = ({
+/**
+ * TableTabs - Un componente reutilizable para tabs en tablas
+ * Utiliza el mismo estilo que HorizontalTabs pero optimizado para tablas
+ */
+const TableTabs: React.FC<TableTabsProps> = ({
     tabs,
-    currentTab,
+    initialTab,
     onTabChange,
     className = ''
 }) => {
+    const [activeTab, setActiveTab] = useState(initialTab || (tabs.length > 0 ? tabs[0].key : ''));
     const tabsContainerRef = useRef<HTMLUListElement>(null);
     // Create a single ref to hold all button elements
     const buttonsRef = useRef<HTMLButtonElement[]>([]);
+
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+        if (onTabChange) {
+            onTabChange(tab);
+        }
+    };
 
     // Effect to equalize button heights
     useEffect(() => {
@@ -56,7 +68,7 @@ const HorizontalTabs: React.FC<HorizontalTabsProps> = ({
         return () => {
             window.removeEventListener('resize', equalizeButtonHeights);
         };
-    }, [tabs, currentTab]); // Re-run when tabs or current tab changes
+    }, [tabs, activeTab]); // Re-run when tabs or active tab changes
 
     // Reset the refs array when tabs change
     useEffect(() => {
@@ -71,23 +83,23 @@ const HorizontalTabs: React.FC<HorizontalTabsProps> = ({
     };
 
     return (
-        <TabStyle className={className}>
+        <TableTabStyle className={className}>
             <ul className="horizontal-tabs-list" ref={tabsContainerRef}>
                 {tabs.map((item, index) => (
                     <li key={item.key} className="tab-item">
                         <button
                             ref={(el) => setButtonRef(el, index)}
-                            className={currentTab === item.key ? "tab-button active" : "tab-button"}
-                            onClick={() => onTabChange(item.key)}
+                            className={activeTab === item.key ? "tab-button active" : "tab-button"}
+                            onClick={() => handleTabChange(item.key)}
                         >
-                            <span className="tab-number">{index + 1}</span>
+                            <span className="tab-number">{index + 1}.</span>
                             {item.label}
                         </button>
                     </li>
                 ))}
             </ul>
-        </TabStyle>
+        </TableTabStyle>
     );
 };
 
-export default HorizontalTabs;
+export default TableTabs;

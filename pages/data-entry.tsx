@@ -1,5 +1,6 @@
 import ActionButtons from "@/components/common/ActionButtons";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import HorizontalTabs from "@/components/common/HorizontalTabs";
 import "@/styles/css/breadcrumb.css";
 import { notify } from "@/utils/notify";
 import axios from "axios";
@@ -107,7 +108,6 @@ const DataEntryPage: React.FC = () => {
     if (storedDepartment) setProjectDepartment(storedDepartment);
     setHasLoaded(true);
   }, []);
-
   /** Estado para el step actual **/
   const [step, setStep] = useState<number>(3);
   useEffect(() => {
@@ -134,7 +134,6 @@ const DataEntryPage: React.FC = () => {
   const [elementsList, setElementsList] = useState<ElementBase[]>([]);
   const [showElementModal, setShowElementModal] = useState(false);
   const [elementSearch, setElementSearch] = useState("");
-  const [tabTipologiaRecinto, setTabTipologiaRecinto] = useState("ventilacion");
 
   // Estados para creación de ventana y puerta
   const [windowData, setWindowData] = useState({
@@ -663,13 +662,13 @@ const DataEntryPage: React.FC = () => {
         prev.map((el) =>
           el.id === element.id
             ? {
-                ...element,
-                fm: fmFraction,
-                atributs: {
-                  ...element.atributs,
-                  porcentaje_vidrio: porcentajeVidrioFraction,
-                },
-              }
+              ...element,
+              fm: fmFraction,
+              atributs: {
+                ...element.atributs,
+                porcentaje_vidrio: porcentajeVidrioFraction,
+              },
+            }
             : el
         )
       );
@@ -772,7 +771,7 @@ const DataEntryPage: React.FC = () => {
   // === RENDER DE STEP 3: Lista de Materiales ===
   const renderStep3Materials = () => {
     const columnsMaterials = [
-      { headerName: "Código IFC", field: "code_ifc"},
+      { headerName: "Código IFC", field: "code_ifc" },
       { headerName: "Nombre Material", field: "materialName" },
       { headerName: "Conductividad (W/m2K)", field: "conductivity" },
       { headerName: "Calor específico (J/kgK)", field: "specific_heat" },
@@ -869,7 +868,7 @@ const DataEntryPage: React.FC = () => {
   const renderStep5Elements = () => {
     if (modalElementType === "ventanas") {
       const columnsVentanas = [
-        { headerName: "Cófigo IFC", field: "code_ifc"},
+        { headerName: "Cófigo IFC", field: "code_ifc" },
         { headerName: "Nombre Elemento", field: "name_element" },
         { headerName: "U Vidrio [W/m2K]", field: "u_vidrio", },
         { headerName: "FS Vidrio", field: "fs_vidrio" },
@@ -879,7 +878,7 @@ const DataEntryPage: React.FC = () => {
         { headerName: "FM [%]", field: "fm" },
         { headerName: "Acciones", field: "acciones", sortable: false },
       ];
-      
+
       const ventanasData = elementsList
         .filter(
           (el) =>
@@ -962,7 +961,6 @@ const DataEntryPage: React.FC = () => {
             ),
           };
         });
-
       return (
         <>
           <div className="mb-4">
@@ -973,38 +971,28 @@ const DataEntryPage: React.FC = () => {
               onNew={() => setShowElementModal(true)}
             />
           </div>
-          <div className="overflow-hidden">
-            <div className="bg-white border-bottom">
-              <div className="row g-0">
-                {["Ventanas", "Puertas"].map((tab) => (
-                  <div key={tab} className="col-6">
-                    <div
-                      onClick={() => setModalElementType(tab.toLowerCase())}
-                      style={{
-                        flex: 1,
-                        textAlign: "center",
-                        padding: "10px",
-                        cursor: "pointer",
-                        color: primaryColor,
-                        borderBottom:
-                          modalElementType === tab.toLowerCase()
-                            ? `2px solid ${primaryColor}`
-                            : "2px solid transparent",
-                      }}
-                    >
-                      {tab}
-                    </div>
-                  </div>
-                ))}
+          <div className="card shadow-sm mb-4">
+            <div className="card-header bg-white p-0">
+              <HorizontalTabs
+                tabs={[
+                  { key: "ventanas", label: "Ventanas" },
+                  { key: "puertas", label: "Puertas" }
+                ]}
+                currentTab={modalElementType}
+                onTabChange={setModalElementType}
+              />
+            </div>
+            <div className="card-body pt-3">
+              <div className="overflow-hidden">
+                <TablesParameters columns={columnsVentanas} data={ventanasData} />
               </div>
             </div>
-            <TablesParameters columns={columnsVentanas} data={ventanasData} />
           </div>
         </>
       );
     } else {
       const columnsPuertas = [
-        { headerName: "Cófigo IFC", field: "code_ifc"},
+        { headerName: "Cófigo IFC", field: "code_ifc" },
         { headerName: "Nombre Elemento", field: "name_element" },
         { headerName: "U Puerta opaca [W/m2K]", field: "u_puerta_opaca" },
         { headerName: "Nombre Ventana", field: "name_ventana" },
@@ -1053,12 +1041,12 @@ const DataEntryPage: React.FC = () => {
               el.atributs.porcentaje_vidrio !== undefined ? (
                 isDefault ? (
                   <span style={{ color: primaryColor, fontWeight: "bold" }}>
-                    {el.atributs.porcentaje_vidrio === 0 ? "-" : 
-                     (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"}
+                    {el.atributs.porcentaje_vidrio === 0 ? "-" :
+                      (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"}
                   </span>
                 ) : (
-                  el.atributs.porcentaje_vidrio === 0 ? "-" : 
-                  (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"
+                  el.atributs.porcentaje_vidrio === 0 ? "-" :
+                    (el.atributs.porcentaje_vidrio * 100).toFixed(2) + "%"
                 )
               ) : (
                 "-"
@@ -1098,54 +1086,41 @@ const DataEntryPage: React.FC = () => {
               />
             ),
           };
-        });
-
-      return (
-        <>
-          <div className="mb-4">
-            <SearchParameters
-              value={elementSearch}
-              onChange={setElementSearch}
-              placeholder="Buscar elemento..."
-              onNew={() => setShowElementModal(true)}
-            />
-          </div>
-          <div className="overflow-hidden">
-            <div className="bg-white border-bottom">
-              <div className="row g-0">
-                {["Ventanas", "Puertas"].map((tab) => (
-                  <div key={tab} className="col-6">
-                    <div
-                      onClick={() => setModalElementType(tab.toLowerCase())}
-                      style={{
-                        flex: 1,
-                        textAlign: "center",
-                        padding: "10px",
-                        cursor: "pointer",
-                        color: primaryColor,
-                        borderBottom:
-                          modalElementType === tab.toLowerCase()
-                            ? `2px solid ${primaryColor}`
-                            : "2px solid transparent",
-                      }}
-                    >
-                      {tab}
-                    </div>
-                  </div>
-                ))}
+        }); return (
+          <>
+            <div className="mb-4">
+              <SearchParameters
+                value={elementSearch}
+                onChange={setElementSearch}
+                placeholder="Buscar elemento..."
+                onNew={() => setShowElementModal(true)}
+              />
+            </div>
+            <div className="card shadow-sm mb-4">
+              <div className="card-header bg-white p-0">
+                <HorizontalTabs
+                  tabs={[
+                    { key: "ventanas", label: "Ventanas" },
+                    { key: "puertas", label: "Puertas" }
+                  ]}
+                  currentTab={modalElementType}
+                  onTabChange={setModalElementType}
+                />
+              </div>
+              <div className="card-body pt-3">
+                <div className="overflow-hidden">
+                  <TablesParameters columns={columnsPuertas} data={puertasData} />
+                </div>
               </div>
             </div>
-            <TablesParameters columns={columnsPuertas} data={puertasData} />
-          </div>
-        </>
-      );
+          </>
+        );
     }
   };
-
   // === RENDER DE STEP 6: Perfil de uso (tabla manual)
   const renderStep6Profile = () => (
     <div className="px-3">
-      <UseProfileTab refreshTrigger={0} />
+      <UseProfileTab refreshTrigger={0} useHorizontalTabs={true} />
     </div>
   );
 
@@ -1425,28 +1400,28 @@ const DataEntryPage: React.FC = () => {
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="FM [%]" value={windowData.fm} />
                 <div className="input-group">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  className="form-control"
-                  placeholder="FM"
-                  value={windowData.fm}
-                  onChange={(e) => {
-                    const value = parseFloat(e.target.value);
-                    if (isNaN(value)) {
-                      setWindowData((prev) => ({ ...prev, fm: "" }));
-                    } else {
-                      const validated = validatePercentage(value);
-                      setWindowData((prev) => ({
-                        ...prev,
-                        fm: validated.toString(),
-                      }));
-                    }
-                  }}
-                  onKeyDown={handleNumberKeyDown}
-                />
-                <span className="input-group-text">%</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    className="form-control"
+                    placeholder="FM"
+                    value={windowData.fm}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      if (isNaN(value)) {
+                        setWindowData((prev) => ({ ...prev, fm: "" }));
+                      } else {
+                        const validated = validatePercentage(value);
+                        setWindowData((prev) => ({
+                          ...prev,
+                          fm: validated.toString(),
+                        }));
+                      }
+                    }}
+                    onKeyDown={handleNumberKeyDown}
+                  />
+                  <span className="input-group-text">%</span>
                 </div>
               </div>
             </div>
@@ -1520,28 +1495,28 @@ const DataEntryPage: React.FC = () => {
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="% Vidrio" value={doorData.porcentaje_vidrio} required={false} />
                 <div className="input-group">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  className="form-control"
-                  placeholder="% Vidrio"
-                  value={doorData.porcentaje_vidrio}
-                  onChange={(e) => {
-                    const value = parseFloat(e.target.value);
-                    if (isNaN(value)) {
-                      setDoorData((prev) => ({ ...prev, porcentaje_vidrio: "" }));
-                    } else {
-                      const validated = validatePercentage(value);
-                      setDoorData((prev) => ({
-                        ...prev,
-                        porcentaje_vidrio: validated.toString(),
-                      }));
-                    }
-                  }}
-                  onKeyDown={handleNumberKeyDown}
-                />
-                <span className="input-group-text">%</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    className="form-control"
+                    placeholder="% Vidrio"
+                    value={doorData.porcentaje_vidrio}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      if (isNaN(value)) {
+                        setDoorData((prev) => ({ ...prev, porcentaje_vidrio: "" }));
+                      } else {
+                        const validated = validatePercentage(value);
+                        setDoorData((prev) => ({
+                          ...prev,
+                          porcentaje_vidrio: validated.toString(),
+                        }));
+                      }
+                    }}
+                    onKeyDown={handleNumberKeyDown}
+                  />
+                  <span className="input-group-text">%</span>
                 </div>
               </div>
               <div className="form-group mb-3">
@@ -1561,29 +1536,29 @@ const DataEntryPage: React.FC = () => {
               <div className="form-group mb-3">
                 <LabelWithAsterisk label="FM [%]" value={doorData.fm} />
                 <div className="input-group">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  className="form-control"
-                  placeholder="FM"
-                  value={doorData.fm}
-                  onChange={(e) => {
-                    const value = parseFloat(e.target.value);
-                    if (isNaN(value)) {
-                      setDoorData((prev) => ({ ...prev, fm: "" }));
-                    } else {
-                      const validated = validatePercentage(value);
-                      setDoorData((prev) => ({
-                        ...prev,
-                        fm: validated.toString(),
-                      }));
-                    }
-                  }}
-                  onKeyDown={handleNumberKeyDown}
-                />
-                 <span className="input-group-text">%</span>
-              </div>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    className="form-control"
+                    placeholder="FM"
+                    value={doorData.fm}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      if (isNaN(value)) {
+                        setDoorData((prev) => ({ ...prev, fm: "" }));
+                      } else {
+                        const validated = validatePercentage(value);
+                        setDoorData((prev) => ({
+                          ...prev,
+                          fm: validated.toString(),
+                        }));
+                      }
+                    }}
+                    onKeyDown={handleNumberKeyDown}
+                  />
+                  <span className="input-group-text">%</span>
+                </div>
               </div>
             </div>
           )}
@@ -1631,12 +1606,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1658,12 +1633,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            fs_vidrio: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          fs_vidrio: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1678,12 +1653,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            clousure_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          clousure_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1705,12 +1680,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingWindowData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            frame_type: e.target.value,
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          frame_type: e.target.value,
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1747,32 +1722,32 @@ const DataEntryPage: React.FC = () => {
             <div className="form-group mb-3">
               <label>FM [%]</label>
               <div className="input-group">
-              <input
-                type="number"
-                placeholder="FM"
-                min="0"
-                max="100"
-                className="form-control"
-                value={editingWindowData.fm || ""}
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}
-                onChange={(e) => {
-                  const rawValue = parseFloat(e.target.value);
-                  if (isNaN(rawValue)) {
-                    return setEditingWindowData((prev) =>
-                      prev ? { ...prev, fm: 0 } : prev
+                <input
+                  type="number"
+                  placeholder="FM"
+                  min="0"
+                  max="100"
+                  className="form-control"
+                  value={editingWindowData.fm || ""}
+                  onKeyDown={(e) => {
+                    if (e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onChange={(e) => {
+                    const rawValue = parseFloat(e.target.value);
+                    if (isNaN(rawValue)) {
+                      return setEditingWindowData((prev) =>
+                        prev ? { ...prev, fm: 0 } : prev
+                      );
+                    }
+                    const clampedValue = validatePercentage(rawValue);
+                    setEditingWindowData((prev) =>
+                      prev ? { ...prev, fm: clampedValue } : prev
                     );
-                  }
-                  const clampedValue = validatePercentage(rawValue);
-                  setEditingWindowData((prev) =>
-                    prev ? { ...prev, fm: clampedValue } : prev
-                  );
-                }}
-              />
-              <span className="input-group-text">%</span>
+                  }}
+                />
+                <span className="input-group-text">%</span>
               </div>
             </div>
           </div>
@@ -1820,12 +1795,12 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            u_puerta_opaca: parseFloat(e.target.value),
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          u_puerta_opaca: parseFloat(e.target.value),
+                        },
+                      }
                       : prev
                   )
                 }
@@ -1844,13 +1819,13 @@ const DataEntryPage: React.FC = () => {
                   setEditingDoorData((prev) =>
                     prev
                       ? {
-                          ...prev,
-                          atributs: {
-                            ...prev.atributs,
-                            ventana_id: selectedId ? parseInt(selectedId) : 0,
-                            name_ventana: selectedWindow ? selectedWindow.name_element : "",
-                          },
-                        }
+                        ...prev,
+                        atributs: {
+                          ...prev.atributs,
+                          ventana_id: selectedId ? parseInt(selectedId) : 0,
+                          name_ventana: selectedWindow ? selectedWindow.name_element : "",
+                        },
+                      }
                       : prev
                   );
                 }}
@@ -1866,39 +1841,39 @@ const DataEntryPage: React.FC = () => {
             <div className="form-group mb-3">
               <label>% Vidrio</label>
               <div className="input-group">
-              <input
-              placeholder="% Vidrio"
-                type="number"
-                max="100"
-                className="form-control"
-                value={
-                  editingDoorData.atributs.porcentaje_vidrio !== undefined
-                    ? editingDoorData.atributs.porcentaje_vidrio.toString()
-                    : ""
-                }
-                min="0"
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
+                <input
+                  placeholder="% Vidrio"
+                  type="number"
+                  max="100"
+                  className="form-control"
+                  value={
+                    editingDoorData.atributs.porcentaje_vidrio !== undefined
+                      ? editingDoorData.atributs.porcentaje_vidrio.toString()
+                      : ""
                   }
-                }}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value);
-                  const clamped = validatePercentage(val);
-                  setEditingDoorData((prev) =>
-                    prev
-                      ? {
+                  min="0"
+                  onKeyDown={(e) => {
+                    if (e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    const clamped = validatePercentage(val);
+                    setEditingDoorData((prev) =>
+                      prev
+                        ? {
                           ...prev,
                           atributs: {
                             ...prev.atributs,
                             porcentaje_vidrio: clamped,
                           },
                         }
-                      : prev
-                  );
-                }}
-              />
-              <span className="input-group-text">%</span>
+                        : prev
+                    );
+                  }}
+                />
+                <span className="input-group-text">%</span>
               </div>
 
             </div>
@@ -1924,32 +1899,32 @@ const DataEntryPage: React.FC = () => {
             <div className="form-group mb-3">
               <label>FM [%]</label>
               <div className="input-group">
-              <input
-              placeholder="FM"
-                type="number"
-                max="100"
-                className="form-control"
-                value={editingDoorData.fm || ""}
-                min="0"
-                onKeyDown={(e) => {
-                  if (e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}
-                onChange={(e) => {
-                  const rawValue = parseFloat(e.target.value);
-                  if (isNaN(rawValue)) {
-                    return setEditingDoorData((prev) =>
-                      prev ? { ...prev, fm: 0 } : prev
+                <input
+                  placeholder="FM"
+                  type="number"
+                  max="100"
+                  className="form-control"
+                  value={editingDoorData.fm || ""}
+                  min="0"
+                  onKeyDown={(e) => {
+                    if (e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onChange={(e) => {
+                    const rawValue = parseFloat(e.target.value);
+                    if (isNaN(rawValue)) {
+                      return setEditingDoorData((prev) =>
+                        prev ? { ...prev, fm: 0 } : prev
+                      );
+                    }
+                    const clampedValue = validatePercentage(rawValue);
+                    setEditingDoorData((prev) =>
+                      prev ? { ...prev, fm: clampedValue } : prev
                     );
-                  }
-                  const clampedValue = validatePercentage(rawValue);
-                  setEditingDoorData((prev) =>
-                    prev ? { ...prev, fm: clampedValue } : prev
-                  );
-                }}
-              />
-              <span className="input-group-text">%</span>
+                  }}
+                />
+                <span className="input-group-text">%</span>
               </div>
             </div>
           </div>

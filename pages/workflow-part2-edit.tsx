@@ -224,12 +224,7 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   const [detailList, SetDetailsList] = useState<any>();
   const [selectedItem, SetSelectedItem] = useState<any>();
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newDetalle, setNewDetalle] = useState({
-    name_detail: "",
-    colorExterior: "Intermedio",
-    colorInterior: "Intermedio",
-  });
+
 
   const fetchDetailModal = (detail_id: any) => {
     api.get(`detail-part/${detail_id}`).then((data) => {
@@ -237,62 +232,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     });
   };
 
-  const handleNewDetailButtonClick = () => {
-    setShowCreateModal(true);
-    setShowDetallesModal(false);
-  };
 
-  const handleCreateNewDetailModal = async () => {
-    if (
-      !newDetalle.name_detail ||
-      !newDetalle.colorInterior ||
-      !newDetalle.colorExterior
-    ) {
-      notify("Todos los campos son obligatorios");
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    if (!token || !projectId) return;
-
-    try {
-      const headers = { Authorization: `Bearer ${token}` };
-      const payload = {
-        name_detail: newDetalle.name_detail,
-        project_id: projectId,
-        scantilon_location:
-          tabStep4 === "muros"
-            ? "Muro"
-            : tabStep4 === "techumbre"
-              ? "Techo"
-              : "Piso",
-        info: {
-          surface_color: {
-            interior: { name: newDetalle.colorInterior },
-            exterior: { name: newDetalle.colorExterior },
-          },
-        },
-      };
-
-      await axios.post(`${constantUrlApiEndpoint}/user/details/`, payload, {
-        headers,
-      });
-      notify("Detalle creado exitosamente");
-      setShowCreateModal(false);
-      setNewDetalle({
-        name_detail: "",
-        colorExterior: "Intermedio",
-        colorInterior: "Intermedio",
-      });
-
-      if (tabStep4 === "muros") fetchMurosDetails();
-      else if (tabStep4 === "techumbre") fetchTechumbreDetails();
-      else if (tabStep4 === "pisos") fetchPisosDetails();
-    } catch (error) {
-      console.error("Error al crear el detalle:", error);
-      notify("Error al crear el detalle");
-    }
-  };
   const OnDetailOpened = (e: any) => {
     setShowDetallesModal(true);
     SetSelectedItem(e);
@@ -672,21 +612,6 @@ const WorkFlowpar2editPage: React.FC = () => {
         notify("Reinicie sesion y vuelvalo a intentar.");
       }
     }
-  };
-
-  const handleNewButtonClick = () => {
-    setShowNewDetailRow(true);
-    fetchMaterials();
-  };
-
-  // ===================== GUARDAR DETALLES ======================
-  const saveDetails = () => {
-    if (!projectId) {
-      notify("No se puede continuar sin un ID de proyecto");
-      return;
-    }
-    setShowTabsInStep4(true);
-    setTabStep4("muros");
   };
 
   const handleConfirmEditDetail = async () => {
@@ -1929,163 +1854,6 @@ const WorkFlowpar2editPage: React.FC = () => {
     );
   };
 
-  // ===================== RENDER VENTANAS ======================
-  const renderVentanasParameters = () => {
-    const columnsVentanas = [
-      { headerName: "Nombre Elemento", field: "name_element" },
-      { headerName: "U Vidrio [W/m²K]", field: "u_vidrio" },
-      { headerName: "FS Vidrio []", field: "fs_vidrio" },
-      { headerName: "Tipo Marco", field: "frame_type" },
-      { headerName: "Tipo Cierre", field: "clousure_type" },
-      { headerName: "U Marco [W/m²K]", field: "u_marco" },
-      { headerName: "FV [%]", field: "fm" },
-      { headerName: "Acciones", field: "acciones" },
-    ];
-    const ventanasData = ventanasTabList.map((item) => {
-      const textStyle =
-        item.created_status === "created"
-          ? { color: "var(--primary-color)", fontWeight: "bold" }
-          : {};
-      return {
-        name_element: <span style={textStyle}>{item.name_element}</span>,
-        u_vidrio: (
-          <span style={textStyle}>{formatValue(item.atributs?.u_vidrio)}</span>
-        ),
-        fs_vidrio: (
-          <span style={textStyle}>{formatValue(item.atributs?.fs_vidrio)}</span>
-        ),
-        frame_type: (
-          <span style={textStyle}>{item.atributs?.frame_type ?? "-"}</span>
-        ),
-        clousure_type: (
-          <span style={textStyle}>{item.atributs?.clousure_type ?? "-"}</span>
-        ),
-        u_marco: <span style={textStyle}>{formatValue(item.u_marco)}</span>,
-        fm: <span style={textStyle}>{formatPercentage(item.fm)}</span>,
-        acciones: (
-          <>
-            {item.created_status === "default" ||
-              item.created_status === "global" ? (
-              <span>-</span>
-            ) : (
-              <div style={textStyle}>
-                <CustomButton
-                  className="btn-table"
-                  variant="editIcon"
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    setEditingVentana(item);
-                  }}
-                >
-                  Editar
-                </CustomButton>
-                <CustomButton
-                  className="btn-table"
-                  variant="deleteIcon"
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    // Se mantiene tu confirmDelete de ventanas
-                    setDeleteItem({ id: item.id, type: "window" });
-                    setShowDeleteModal(true);
-                  }}
-                >
-                  <span className="material-icons">delete</span>
-                </CustomButton>
-              </div>
-            )}
-          </>
-        ),
-      };
-    });
-    return (
-      <div>
-        {ventanasTabList.length > 0 ? (
-          <TablesParameters columns={columnsVentanas} data={ventanasData} />
-        ) : (
-          <p>No hay datos</p>
-        )}
-      </div>
-    );
-  };
-
-  // ===================== RENDER PUERTAS ======================
-  const renderPuertasParameters = () => {
-    const columnsPuertas = [
-      { headerName: "Nombre Elemento", field: "name_element" },
-      { headerName: "U puerta opaca [W/m²K]", field: "u_puerta" },
-      { headerName: "Vidrio []", field: "name_ventana" },
-      { headerName: "% vidrio", field: "porcentaje_vidrio" },
-      { headerName: "U Marco [W/m²K]", field: "u_marco" },
-      { headerName: "FM [%]", field: "fm" },
-      { headerName: "Acciones", field: "acciones" },
-    ];
-    const puertasData = puertasTabList.map((item) => {
-      const textStyle =
-        item.created_status === "created"
-          ? { color: "var(--primary-color)", fontWeight: "bold" }
-          : {};
-      return {
-        name_element: <span style={textStyle}>{item.name_element}</span>,
-        u_puerta: (
-          <span style={textStyle}>
-            {formatValue(item.atributs?.u_puerta_opaca)}
-          </span>
-        ),
-        name_ventana: (
-          <span style={textStyle}>{item.atributs?.name_ventana ?? "-"}</span>
-        ),
-        porcentaje_vidrio: (
-          <span style={textStyle}>
-            {formatPercentage(item.atributs?.porcentaje_vidrio)}
-          </span>
-        ),
-        u_marco: <span style={textStyle}>{formatValue(item.u_marco)}</span>,
-        fm: <span style={textStyle}>{formatPercentage(item.fm)}</span>,
-        acciones: (
-          <>
-            {item.created_status === "default" ||
-              item.created_status === "global" ? (
-              <span>-</span>
-            ) : (
-              <div style={textStyle}>
-                <CustomButton
-                  className="btn-table"
-                  variant="editIcon"
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    setEditingPuerta(item);
-                  }}
-                >
-                  Editar
-                </CustomButton>
-                <CustomButton
-                  className="btn-table"
-                  variant="deleteIcon"
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    // Se mantiene tu confirmDelete de puertas
-                    setDeleteItem({ id: item.id, type: "door" });
-                    setShowDeleteModal(true);
-                  }}
-                >
-                  <span className="material-icons">delete</span>
-                </CustomButton>
-              </div>
-            )}
-          </>
-        ),
-      };
-    });
-    return (
-      <div>
-        {puertasTabList.length > 0 ? (
-          <TablesParameters columns={columnsPuertas} data={puertasData} />
-        ) : (
-          <p>No hay datos</p>
-        )}
-      </div>
-    );
-  };
 
   // ===================== RENDER PESTAÑAS STEP4 ======================
   const renderStep4Tabs = () => {
@@ -2146,7 +1914,6 @@ const WorkFlowpar2editPage: React.FC = () => {
           currentTab={tabStep4}
           onTabChange={(tab) => setTabStep4(tab as TabStep4)}
         />
-
         {/* Contenido de cada tab */}
         <div
           style={{ height: "400px", position: "relative", marginTop: "1rem" }}
@@ -2154,8 +1921,6 @@ const WorkFlowpar2editPage: React.FC = () => {
           {tabStep4 === "muros" && renderMurosParameters()}
           {tabStep4 === "techumbre" && renderTechumbreParameters()}
           {tabStep4 === "pisos" && renderPisosParameters()}
-          {/* {tabStep4 === "ventanas" && renderVentanasParameters()}
-        {tabStep4 === "puertas"    && renderPuertasParameters()} */}
         </div>
       </div>
     );
@@ -2325,14 +2090,14 @@ const WorkFlowpar2editPage: React.FC = () => {
             </div>
             <div className="col-12 col-lg-9">
               <div className="w-100">
-                {step === 4 && (
+                {step === 3 && (
                   <>
                     {showTabsInStep4
                       ? renderStep4Tabs()
                       : renderInitialDetails()}
                   </>
                 )}
-                {step === 7 && renderRecinto()}
+                {step === 4 && renderRecinto()}
                 {step === 8 && (
                   <AguaCalienteSanitaria
                     onSaveSuccess={() => {

@@ -471,7 +471,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Nombre o número de edificio</label>
+                      <label className="form-label">Número de edificio</label>
                       <input
                         type="text"
                         className="form-control"

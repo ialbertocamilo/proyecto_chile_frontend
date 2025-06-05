@@ -1,5 +1,6 @@
 import { useApi } from '@/hooks/useApi';
 import { useState } from 'react';
+import { useFloorBuilder } from './useFloorBuilder';
 import { useWallBuilder } from './useWallBuilder';
 
 // Type definitions for building structure
@@ -106,6 +107,7 @@ interface CreationStatus {
 export const useProjectIfcBuilder = (projectId: string) => {
     const { post, get, put } = useApi();
     const wallBuilder = useWallBuilder(projectId);
+    const floorBuilder = useFloorBuilder(projectId);
 
     // Add a materials cache to avoid repeated API calls
     const [materialsCache, setMaterialsCache] = useState<Record<string, any>>({});
@@ -140,12 +142,10 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             continue;
                         }
 
-                        // If not in cache, fetch from API
                         const materialInfo = await wallBuilder.getMaterialByCode(element?.material);
                         if (!materialInfo) {
                             missingElements.push({ type, name: element.name });
                         } else {
-                            // Add to found materials cache
                             foundMaterials[element.material] = materialInfo;
                         }
                     }
@@ -400,7 +400,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                         });
                                     } else {
                                         materialInfo = await wallBuilder.getMaterialByCode(element.material);
-                                        // Update cache with new material
                                         if (materialInfo) {
                                             setMaterialsCache(prev => ({
                                                 ...prev,
@@ -446,21 +445,12 @@ export const useProjectIfcBuilder = (projectId: string) => {
 
                     // Wait for all child nodes to be processed
                     await Promise.allSettled(childPromises);
-
-                    // Calculate total area for the wall group (from the largest element)
                     const totalArea = Math.max(...wallGroup.elements.map(element => element.area || 0));
-
-                    // Create only ONE wall association for the entire wall group
                     updateStatus({ currentComponent: `Asociando muro al recinto: ${wallGroup.code}` });
 
                     // Get orientation from the first element (assuming all elements in a group have the same orientation)
                     const orientation = wallGroup.elements[0]?.orientation || '';
-
-                    // Set characteristics to one of the standard types, default to "Exterior"
-                    // Possible values are "Exterior", "Interior climatizado", or "Interior  no climatizado"
                     const wallCharacteristics = "Exterior";
-
-                    // Create the wall in the room using the wall-enclosures-create endpoint
                     if (masterNode)
                         wallPromises.push(post(`/wall-enclosures-create/${roomId}`, {
                             wall_id: masterNode.id,
@@ -468,8 +458,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             angulo_azimut: formatAzimuth(orientation),
                             area: totalArea
                         }));
-
-                    // Update wall progress count
                     setCreationStatus(prev => ({
                         ...prev,
                         progress: {
@@ -477,7 +465,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             walls: prev.progress.walls + 1
                         }
                     }));
-
                 } catch (error: any) {
                     errors.push({
                         message: `Error creating master wall node: ${error?.response?.data?.detail || 'Unknown error'}`,
@@ -510,9 +497,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 }]
             };
         }
-    };
-
-    /**
+    };    /**
      * Create floors for a room
      */
     const createFloors = async (roomId: number, floorGroups: ConstructionGroup[]) => {
@@ -537,27 +522,81 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             currentComponent: `Creando piso: ${element.name}`
                         });
 
-                        // Match the floor element with the fetched floor details
+                        // Check if a matching floor exists first
                         const matchedFloor = floorDetails.find((floor: any) => floor.code_ifc === element.material);
 
+                        // If no matching floor is found, create a new NosomasterFloor
                         if (!matchedFloor) {
-                            errors.push({
-                                message: `No matching floor detail found for element: ${element.name}`,
-                                context: `Floor group: ${floorGroup.code}`
-                            });
-                            continue;
-                        }
+                            try {                                // Create NosomasterFloor first
+                                const masterNode = await floorBuilder.createNodeMaster(
+                                    element.name
+                                );
 
-                        // Use the matched floor details in the creation process
-                        floorPromises.push(
-                            post(`/floor-enclosures-create/${roomId}`, {
-                                floor_id: matchedFloor.id,
-                                characteristic: element.name,
-                                area: element.area || 0,
-                                value_u: matchedFloor.value_u,
-                                calculations: matchedFloor.calculations || {}
-                            })
-                        );
+                                if (!masterNode) {
+                                    throw new Error(`Failed to create master floor node for: ${element.name}`);
+                                }
+
+                                // Get material ID for the floor layer
+                                let materialId = 1; // Default material ID
+                                if (element.material) {
+                                    try {
+                                        const materialInfo = await floorBuilder.getMaterialByCode(element.material);
+                                        materialId = materialInfo?.id || 1;
+                                        updateStatus({
+                                            currentComponent: `Material encontrado para piso: ${element.material} (ID: ${materialId})`
+                                        });
+                                    } catch (error) {
+                                        updateStatus({
+                                            currentComponent: `Error al buscar material de piso: ${element.material}`
+                                        });
+                                        console.warn(`Material not found for floor code: ${element.material}, using default ID 1`, error);
+                                        errors.push({
+                                            message: `Material de piso no encontrado: ${element.material}, usando ID por defecto`,
+                                            context: `Floor element: ${element.name}`
+                                        });
+                                    }
+                                }
+
+                                // Create floor layer
+                                const layerThickness = element.thickness || 20; // Default 20cm if not specified
+                                // Create the floor layer
+                                await floorBuilder.createNodeChild(
+                                    masterNode,
+                                    'Piso',
+                                    materialId,
+                                    layerThickness
+                                );
+
+                                // Use the newly created floor for room association
+                                floorPromises.push(
+                                    post(`/floor-enclosures-create/${roomId}`, {
+                                        floor_id: masterNode.id,
+                                        characteristic: element.name,
+                                        area: element.area || 0,
+                                        value_u: masterNode.value_u,
+                                        calculations: masterNode.calculations || {}
+                                    })
+                                );
+
+                            } catch (error: any) {
+                                errors.push({
+                                    message: `Error creating floor: ${error?.message || 'Unknown error'}`,
+                                    context: `Floor group: ${floorGroup.code}, Element: ${element.name}`
+                                });
+                                continue;
+                            }
+                        } else {
+                            // Use the existing matched floor details in the creation process
+                            floorPromises.push(
+                                post(`/floor-enclosures-create/${roomId}`, {
+                                    floor_id: matchedFloor.id,
+                                    characteristic: element.name,
+                                    area: element.area || 0,
+                                    value_u: matchedFloor.value_u,
+                                    calculations: matchedFloor.calculations || {}
+                                })
+                            );
+                        }
 
                         // Update floor progress count
                         setCreationStatus(prev => ({

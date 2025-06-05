@@ -99,14 +99,6 @@ const ProjectInfoHeader: React.FC<Props> = ({
       >
         {`Región: ${region}`}
       </CustomButton>
-      <CustomButton
-        onClick={() => router.push("/ifc?id=" + project_id)}
-        title="Adjuntar archivo .ifc"
-      >
-        <span className="material-icons" style={{ fontSize: "24px" }}>
-          apartment
-        </span>
-      </CustomButton>
     </div>
   );
 };

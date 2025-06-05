@@ -538,7 +538,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         });
 
                         // Match the floor element with the fetched floor details
-                        const matchedFloor = floorDetails.find((floor: any) => floor.code_ifc === 'MATERIAL_001');
+                        const matchedFloor = floorDetails.find((floor: any) => floor.code_ifc === element.material);
 
                         if (!matchedFloor) {
                             errors.push({

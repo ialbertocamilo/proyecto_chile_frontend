@@ -22,7 +22,6 @@ import ModalCreate from "@/components/common/ModalCreate";
 import TabRecintDataCreate from "../src/components/tab_recint_data/TabRecintDataEdit";
 import TablesParameters from "../src/components/tables/TablesParameters";
 
-// IMPORTANTE: Importamos el componente ActionButtonsConfirm
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import AddDetailOnLayer from "@/components/projects/AddDetailOnLayer";
 import ProjectStatus from "@/components/projects/ProjectStatus";
@@ -242,7 +241,7 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== ESTADOS GENERALES ======================
   const [projectId, setProjectId] = useState<number | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const [step, setStep] = useState<number>(8);
+  const [step, setStep] = useState<number>(3);
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [searchQuery, setSearchQuery] = useState("");
   const [projectStatus, setProjectStatus] = useState("En proceso");
@@ -377,14 +376,7 @@ const WorkFlowpar2editPage: React.FC = () => {
     }
   }, [hasLoaded, projectId, router]);
 
-  useEffect(() => {
-    if (router.query.step) {
-      const queryStep = parseInt(router.query.step as string, 10);
-      if (!isNaN(queryStep)) {
-        setStep(queryStep);
-      }
-    }
-  }, [router.query.step]);
+
 
   useEffect(() => {
     const pColor =

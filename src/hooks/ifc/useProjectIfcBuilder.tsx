@@ -525,9 +525,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         // Check if a matching floor exists first
                         const matchedFloor = floorDetails.find((floor: any) => floor.code_ifc === element.material);
 
-                        // If no matching floor is found, create a new NosomasterFloor
                         if (!matchedFloor) {
-                            try {                                // Create NosomasterFloor first
+                            try {
                                 const masterNode = await floorBuilder.createNodeMaster(
                                     element.name
                                 );
@@ -535,8 +534,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                 if (!masterNode) {
                                     throw new Error(`Failed to create master floor node for: ${element.name}`);
                                 }
-
-                                // Get material ID for the floor layer
                                 let materialId = 1; // Default material ID
                                 if (element.material) {
                                     try {

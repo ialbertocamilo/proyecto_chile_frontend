@@ -26,6 +26,37 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
         }
     }, [projectId]);
 
+    // Función para generar mensajes de error detallados
+    const getValidationMessages = (validationResult: any): string[] => {
+        const messages: string[] = [];
+        messages.push("El proyecto no cumple con todos los requisitos necesarios para el cálculo:");
+        if (validationResult.additional_validations?.climate_file?.valid === false) {
+            messages.push("- El archivo climático no es válido o falta.");
+        }
+        // Obtener nombres de recintos desde validationResult.enclosures si no viene en failed_enclosures
+        const enclosureNames = validationResult.enclosures || {};
+        if (validationResult.failed_enclosures && validationResult.failed_enclosures.length > 0) {
+            validationResult.failed_enclosures.forEach((enclosure: any) => {
+                const recintoErrores: string[] = [];
+                if (enclosure.requirements) {
+                    if (enclosure.walls < 3) recintoErrores.push(enclosure.requirements.walls);
+                    if (enclosure.windows < 1) recintoErrores.push(enclosure.requirements.windows);
+                    if (enclosure.floors < 1) recintoErrores.push(enclosure.requirements.floors);
+                }
+                // Buscar nombre del recinto por id si no viene en el objeto enclosure
+                let nombreRecinto = enclosure.name;
+                if (!nombreRecinto && enclosure.enclosure_id && enclosureNames[enclosure.enclosure_id]) {
+                    nombreRecinto = enclosureNames[enclosure.enclosure_id].name;
+                }
+                if (!nombreRecinto) nombreRecinto = 'Sin nombre';
+                if (recintoErrores.length > 0) {
+                    messages.push(`Recinto "${nombreRecinto}": ${recintoErrores.join(', ')}`);
+                }
+            });
+        }
+        return messages;
+    };
+
     const validateProjectStatus = async () => {
         try {
             setIsValidating(true);
@@ -33,14 +64,8 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
             setIsProjectValid(validationResult.valid);
 
             if (!validationResult.valid) {
-                // Create error message with details about failed enclosures
-                let errorMessage = "El proyecto no cumple con todos los requisitos necesarios para el cálculo:";
-
-                if (validationResult.failed_enclosures && validationResult.failed_enclosures.length > 0) {
-                    errorMessage += "\n\n- Hay recintos sin los elementos constructivos requeridos.";
-                }
-
-                setValidationErrorMessage(errorMessage);
+                const messages = getValidationMessages(validationResult);
+                setValidationErrorMessage(messages.join('\n'));
             }
         } catch (error) {
             console.error("Error validating project:", error);
@@ -58,14 +83,28 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
         if (lowerStatus === 'registrado') return '📝';
         return '';
     }; const handleCalculateResults = async () => {
-        if (!isProjectValid) {
-            // If project is invalid, show the error message
-            notify(validationErrorMessage, "error");
-            return;
-        }
+        setIsValidating(true);
+        try {
+            const validationResult = await validateProject(parseInt(projectId), true);
+            setIsProjectValid(validationResult.valid);
 
-        // If project is valid, show the confirmation modal
-        setShowModal(true);
+            if (!validationResult.valid) {
+                const messages = getValidationMessages(validationResult);
+                setValidationErrorMessage(messages.join('\n'));
+                messages.forEach((msg, idx) => {
+                    notify(msg, "error", 9000 + idx * 2000);
+                });
+                return;
+            }
+            // Si es válido, mostrar el modal
+            setShowModal(true);
+        } catch (error) {
+            setIsProjectValid(false);
+            setValidationErrorMessage("Error al validar el proyecto. Inténtelo nuevamente.");
+            notify("Error al validar el proyecto. Inténtelo nuevamente.", "error", 9000);
+        } finally {
+            setIsValidating(false);
+        }
     };
 
     const handleConfirm = () => {

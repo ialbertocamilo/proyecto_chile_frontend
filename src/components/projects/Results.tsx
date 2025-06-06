@@ -140,14 +140,10 @@ const Results = () => {
         path={``}
         onMessageReceived={(message) => {
           if (message?.notificationType == "result") {
-            // Only use the new data structure
-            const enclosures = JSON.parse(message?.payload?.result_by_enclosure_v2 || "[]");
+
+            const enclosures = message?.payload?.result_by_enclosure_v2 || "";
             const baseEnclosures = JSON.parse(message?.payload?.base_by_enclosure_v2 || "[]");
             const finalIndicators = message?.payload?.final_indicators;
-
-            console.log("Enclosures:", enclosures);
-            console.log("Base Enclosures:", baseEnclosures);
-            console.log("Finals:", finalIndicators);
 
             setCalculationResult({
               result_by_enclosure_v2: enclosures,

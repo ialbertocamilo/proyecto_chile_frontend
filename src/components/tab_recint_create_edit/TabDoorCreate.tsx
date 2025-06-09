@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import ThermalBridgesDoorModal from "../modals/ThermalBridgesDoorModal";
+import {azimutRangeToOrientation} from "@/utils/azimut";
 
 interface DoorData {
   id: number;
@@ -600,7 +601,7 @@ const TabDoorCreate: React.FC = () => {
               <option value="">Seleccione un ángulo</option>
               {angleOptions.map((option, index) => (
                 <option key={index} value={option}>
-                  {option}
+                  {option} [{azimutRangeToOrientation(option)}]
                 </option>
               ))}
             </select>

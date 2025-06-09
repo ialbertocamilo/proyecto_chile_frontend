@@ -1,4 +1,4 @@
-// src/lib/utils.ts
+  // src/lib/utils.ts
 
 export function cn(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -49,3 +49,4 @@ export function convertAngleToOrientation(angle:number) :string{
   if (angle >= 292.5 && angle < 337.5) return "NO";
   return "N"; // If it's between 337.5 and 360, it returns "N"
 }
+

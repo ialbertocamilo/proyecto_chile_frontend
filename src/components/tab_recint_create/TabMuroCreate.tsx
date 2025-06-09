@@ -11,6 +11,7 @@ import ModalCreate from "../common/ModalCreate";
 import ThermalBridgesWallModal from "@/components/modals/ThermalBridgesWallModal";
 import { Plus } from "lucide-react";
 import GoogleIcons from "public/GoogleIcons";
+import {azimutRangeToOrientation} from "@/utils/azimut";
 
 // Interfaz para muros
 interface Wall {
@@ -1105,7 +1106,7 @@ const TabMuroCreate: React.FC = () => {
                   <option value="">Seleccione...</option>
                   {angleOptions.map((option, index) => (
                     <option key={index} value={option}>
-                      {option}
+                      {option} [{azimutRangeToOrientation(option)}]
                     </option>
                   ))}
                 </select>

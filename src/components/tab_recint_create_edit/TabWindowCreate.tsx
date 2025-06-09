@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import ThermalBridgesWindowModal from "../modals/ThermalBridgesWindowModal";
+import {azimutRangeToOrientation} from "@/utils/azimut";
 
 const TabWindowCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id");
@@ -586,7 +587,7 @@ const TabWindowCreate: React.FC = () => {
             <option value="">Seleccione un ángulo</option>
             {angleOptions.map((option, index) => (
               <option key={index} value={option}>
-                {option}
+                {option} [{azimutRangeToOrientation(option)}]
               </option>
             ))}
           </select>

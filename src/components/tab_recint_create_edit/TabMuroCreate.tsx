@@ -9,6 +9,7 @@ import React, { ChangeEvent, useEffect, useState } from "react";
 import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import ThermalBridgesWallModal from "../modals/ThermalBridgesWallModal";
+import { azimutRangeToOrientation } from "@/utils/azimut";
 
 // Interfaz para muros
 interface Wall {
@@ -561,7 +562,7 @@ const TabMuroCreate: React.FC = () => {
               <option value="">Seleccione...</option>
               {angleOptions.map((option, index) => (
                 <option key={index} value={option}>
-                  {option}
+                  {option} [{azimutRangeToOrientation(option)}]
                 </option>
               ))}
             </select>

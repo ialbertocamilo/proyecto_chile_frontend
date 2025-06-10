@@ -315,15 +315,12 @@ const RecintoEdit: React.FC = () => {
                       ))}
                     </select>
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn-outline-info ms-2 mb-1"
+                  <i
+                    className="bi bi-info-circle ms-2 mb-1"
+                    style={{ fontSize: '1.5rem', cursor: perfilOcupacion ? 'pointer' : 'not-allowed', color: perfilOcupacion ? '#0dcaf0' : '#adb5bd' }}
                     title="Ver detalles del perfil de ocupación"
-                    disabled={!perfilOcupacion}
-                    onClick={handleShowPerfilDetail}
-                  >
-                    <i className="bi bi-info-circle"></i>
-                  </button>
+                    onClick={perfilOcupacion ? handleShowPerfilDetail : undefined}
+                  ></i>
                 </div>
 
                 {/* Campo: Altura Promedio Recinto */}

@@ -1121,7 +1121,7 @@ const TabMuroCreate: React.FC = () => {
           </div>
           <div className="row align-items-center mb-3">
             <label htmlFor="angulo_azimut" className="col-sm-3 col-form-label">
-              Ángulo Azimut
+              Orientación [°]
             </label>
             <div className="col-sm-9">
               <select
@@ -1135,7 +1135,7 @@ const TabMuroCreate: React.FC = () => {
                 <option value="">Seleccione...</option>
                 {angleOptions.map((option, index) => (
                   <option key={index} value={option}>
-                    {option}
+                    Ángulo [{option}], Orientación [{azimutRangeToOrientation(option)}]
                   </option>
                 ))}
               </select>

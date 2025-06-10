@@ -764,7 +764,7 @@ const TabDoorCreate: React.FC = () => {
           </div>
           <div className="row mb-3">
             <div className="col-md-4">
-              <label htmlFor="anguloAzimut">Ángulo Azimut</label>
+              <label htmlFor="anguloAzimut"> Orientación [°]</label>
             </div>
             <div className="col-md-8">
               <select
@@ -776,7 +776,7 @@ const TabDoorCreate: React.FC = () => {
                 <option value="">Seleccione un ángulo</option>
                 {angleOptions.map((option, index) => (
                   <option key={index} value={option}>
-                    {option} [{azimutRangeToOrientation(option)}]
+                    Ángulo [{option}], Orientación [{azimutRangeToOrientation(option)}]
                   </option>
                 ))}
               </select>

@@ -52,6 +52,11 @@ const RecintoEdit: React.FC = () => {
   const [isEdificacionExpanded, setIsEdificacionExpanded] = useState<boolean>(false); // Inicialmente colapsado
   const [isThermalExpanded, setIsThermalExpanded] = useState<boolean>(true); // Inicialmente expandido
 
+  // Estados y funciones para el modal de detalles del perfil de ocupación
+  const [showPerfilModal, setShowPerfilModal] = useState(false);
+  const [perfilDetail, setPerfilDetail] = useState<any>(null);
+  const [loadingPerfilDetail, setLoadingPerfilDetail] = useState(false);
+
   // Funciones para alternar la visibilidad de las secciones
   const toggleEdificacionSection = () => {
     setIsEdificacionExpanded(!isEdificacionExpanded);
@@ -59,6 +64,25 @@ const RecintoEdit: React.FC = () => {
   
   const toggleThermalSection = () => {
     setIsThermalExpanded(!isThermalExpanded);
+  };
+
+  const handleShowPerfilDetail = async () => {
+    if (!perfilOcupacion) return;
+    setLoadingPerfilDetail(true);
+    setShowPerfilModal(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${constantUrlApiEndpoint}/enclosure-typing-detail/${perfilOcupacion}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Error al obtener detalles del perfil");
+      const data = await res.json();
+      setPerfilDetail(data);
+    } catch (e) {
+      setPerfilDetail(null);
+    } finally {
+      setLoadingPerfilDetail(false);
+    }
   };
 
   // ---------------------------
@@ -270,25 +294,36 @@ const RecintoEdit: React.FC = () => {
                 </div>
 
                 {/* Campo: Perfil de Ocupación */}
-                <div className="col-6 mb-3">
-                  <label htmlFor="perfilOcupacion" className="form-label">
-                    Tipologías del recinto
-                  </label>
-                  <select
-                    id="perfilOcupacion"
-                    className="form-select"
-                    value={perfilOcupacion || ""}
-                    onChange={(e) =>
-                      setPerfilOcupacion(parseInt(e.target.value))
-                    }
+                <div className="col-6 mb-3 d-flex align-items-end">
+                  <div className="flex-grow-1">
+                    <label htmlFor="perfilOcupacion" className="form-label">
+                      Tipologías del recinto
+                    </label>
+                    <select
+                      id="perfilOcupacion"
+                      className="form-select"
+                      value={perfilOcupacion || ""}
+                      onChange={(e) =>
+                        setPerfilOcupacion(parseInt(e.target.value))
+                      }
+                    >
+                      <option value="">Seleccione un perfil de ocupación</option>
+                      {enclosureProfiles.map((profile) => (
+                        <option key={profile.id} value={profile.id}>
+                          {profile.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-outline-info ms-2 mb-1"
+                    title="Ver detalles del perfil de ocupación"
+                    disabled={!perfilOcupacion}
+                    onClick={handleShowPerfilDetail}
                   >
-                    <option value="">Seleccione un perfil de ocupación</option>
-                    {enclosureProfiles.map((profile) => (
-                      <option key={profile.id} value={profile.id}>
-                        {profile.name}
-                      </option>
-                    ))}
-                  </select>
+                    <i className="bi bi-info-circle"></i>
+                  </button>
                 </div>
 
                 {/* Campo: Altura Promedio Recinto */}
@@ -386,6 +421,72 @@ const RecintoEdit: React.FC = () => {
           )}
         </div>
       </Card>
+
+      {/* Modal para mostrar detalles del perfil de ocupación */}
+      {showPerfilModal && (
+        <div className="modal fade show" tabIndex={-1} style={{ display: 'block' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Detalles del Perfil de Ocupación</h5>
+                <button type="button" className="btn-close" onClick={() => setShowPerfilModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                {loadingPerfilDetail ? (
+                  <div className="text-center">
+                    <div className="spinner-border" role="status">
+                      <span className="visually-hidden">Cargando...</span>
+                    </div>
+                  </div>
+                ) : perfilDetail ? (
+                  <div>
+                    {/* Ventilación */}
+                    <h6>Ventilación</h6>
+                    <ul>
+                      <li><strong>Infiltraciones:</strong> {perfilDetail.ventilation_flows?.infiltraciones !== undefined ? Number(perfilDetail.ventilation_flows.infiltraciones).toFixed(2) : '-'} ACH</li>
+                      <li><strong>Ventilación nocturna:</strong> {perfilDetail.ventilation_flows?.caudal_impuesto?.vent_noct !== undefined ? Number(perfilDetail.ventilation_flows.caudal_impuesto.vent_noct).toFixed(2) : '-'}</li>
+                      <li><strong>Recuperador de calor:</strong> {perfilDetail.ventilation_flows?.recuperador_calor !== undefined ? Number(perfilDetail.ventilation_flows.recuperador_calor).toFixed(2) : '-'}</li>
+                      <li><strong>IDA:</strong> {perfilDetail.ventilation_flows?.cauldal_min_salubridad?.ida ?? '-'}</li>
+                      <li><strong>R. pers:</strong> {perfilDetail.ventilation_flows?.cauldal_min_salubridad?.r_pers !== undefined ? Number(perfilDetail.ventilation_flows.cauldal_min_salubridad.r_pers).toFixed(2) : '-'}</li>
+                      <li><strong>Ocupación:</strong> {perfilDetail.ventilation_flows?.cauldal_min_salubridad?.ocupacion ?? '-'}</li>
+                    </ul>
+                    {/* Iluminación */}
+                    <h6>Iluminación</h6>
+                    <ul>
+                      <li><strong>Estrategia:</strong> {perfilDetail.lightning?.estrategia ?? '-'}</li>
+                      <li><strong>Potencia base:</strong> {perfilDetail.lightning?.potencia_base !== undefined ? Number(perfilDetail.lightning.potencia_base).toFixed(2) : '-'}</li>
+                      <li><strong>Potencia propuesta:</strong> {perfilDetail.lightning?.potencia_propuesta !== undefined ? Number(perfilDetail.lightning.potencia_propuesta).toFixed(2) : '-'}</li>
+                    </ul>
+                    {/* Cargas internas */}
+                    <h6>Cargas internas</h6>
+                    <ul>
+                      <li><strong>Equipos:</strong> {perfilDetail.internal_loads?.equipos !== undefined ? Number(perfilDetail.internal_loads.equipos).toFixed(2) : '-'}</li>
+                      <li><strong>Usuarios:</strong> {perfilDetail.internal_loads?.usuarios !== undefined ? Number(perfilDetail.internal_loads.usuarios).toFixed(2) : '-'}</li>
+                      <li><strong>Calor latente:</strong> {perfilDetail.internal_loads?.calor_latente !== undefined ? Number(perfilDetail.internal_loads.calor_latente).toFixed(2) : '-'}</li>
+                      <li><strong>Calor sensible:</strong> {perfilDetail.internal_loads?.calor_sensible !== undefined ? Number(perfilDetail.internal_loads.calor_sensible).toFixed(2) : '-'}</li>
+                      <li><strong>Horario laboral:</strong> {perfilDetail.internal_loads?.horario?.laboral?.inicio !== undefined && perfilDetail.internal_loads?.horario?.laboral?.fin !== undefined ? `${perfilDetail.internal_loads.horario.laboral.inicio} - ${perfilDetail.internal_loads.horario.laboral.fin}` : '-'}</li>
+                      <li><strong>Funcionamiento semanal:</strong> {perfilDetail.internal_loads?.horario?.funcionamiento_semanal ?? '-'}</li>
+                    </ul>
+                    {/* Clima y programación */}
+                    <h6>Clima y programación</h6>
+                    <ul>
+                      <li><strong>Climatizado:</strong> {perfilDetail.schedule_weather?.recinto?.climatizado ?? '-'}</li>
+                      <li><strong>Desfase clima:</strong> {perfilDetail.schedule_weather?.recinto?.desfase_clima !== undefined ? Number(perfilDetail.schedule_weather.recinto.desfase_clima).toFixed(2) : '-'}</li>
+                    </ul>
+                  </div>
+                ) : (
+                  <p>No se encontraron detalles para este perfil de ocupación.</p>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowPerfilModal(false)}>
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

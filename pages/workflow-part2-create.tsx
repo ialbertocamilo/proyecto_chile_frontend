@@ -26,6 +26,7 @@ import AddDetailOnLayer from "@/components/projects/AddDetailOnLayer";
 import ProjectStatus from "@/components/projects/ProjectStatus";
 import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
 import { useApi } from "@/hooks/useApi";
+import ConfiguracionEnergiaTab from "@/components/projects/tabs/ConfiguracionEnergiaTab";
 
 interface Detail {
   id_detail: number;
@@ -2093,7 +2094,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     { stepNumber: 4, iconName: "build", title: "3. Detalles constructivos" },
     { stepNumber: 7, iconName: "design_services", title: "4. Recinto" },
     { stepNumber: 8, iconName: "water_drop", title: "5. Agua Caliente Sanitaria" },
-    { stepNumber: 6, iconName: "settings", title: "6. Configuración" },
+    { stepNumber: 6, iconName: "settings", title: "6. Datos de consumo" },
   ];
 
   // -----------------------------------
@@ -2168,7 +2169,7 @@ const WorkFlowpar2createPage: React.FC = () => {
               {step === 6 && (
                 <div className="mt-3">
                   <React.Suspense fallback={<div>Cargando configuración...</div>}>
-                    {React.createElement(require("../src/components/projects/tabs/ConfiguracionEnergiaTab").default)}
+                    <ConfiguracionEnergiaTab />
                   </React.Suspense>
                 </div>
               )}

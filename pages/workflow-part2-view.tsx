@@ -18,6 +18,7 @@ import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 import TablesParameters from "../src/components/tables/TablesParameters";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import ConfiguracionEnergiaTab from "@/components/projects/tabs/ConfiguracionEnergiaTab";
 
 /* ==================== TIPOS ==================== */
 interface Detail {
@@ -972,7 +973,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
               {step === 6 && (
                 <div className="mt-3">
                   <React.Suspense fallback={<div>Cargando configuración...</div>}>
-                    {React.createElement(require("../src/components/projects/tabs/ConfiguracionEnergiaTab").default)}
+                    <ConfiguracionEnergiaTab />
                   </React.Suspense>
                 </div>
               )}

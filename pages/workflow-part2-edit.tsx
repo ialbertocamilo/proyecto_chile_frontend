@@ -39,6 +39,7 @@ interface MultiHeader {
 
 import DeleteDetailButton from "@/components/common/DeleteDetailButton";
 import AguaCalienteSanitaria from "@/components/projects/tabs/AguaCalienteSanitaria";
+import ConfiguracionEnergiaTab from "@/components/projects/tabs/ConfiguracionEnergiaTab";
 import { steps } from "@/constants/steps";
 import { IDetail } from "@/shared/interfaces/detail.interface";
 
@@ -2092,9 +2093,7 @@ const WorkFlowpar2editPage: React.FC = () => {
                 {step === 4 && renderRecinto()}
                 {step === 6 && (
                   <div className="mt-3">
-                    <React.Suspense fallback={<div>Cargando configuración...</div>}>
-                      {React.createElement(require("../src/components/projects/tabs/ConfiguracionEnergiaTab").default)}
-                    </React.Suspense>
+                    <ConfiguracionEnergiaTab />
                   </div>
                 )}
                 {step === 8 && (

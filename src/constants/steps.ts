@@ -28,6 +28,6 @@ export const steps = [
   {
     stepNumber: 6,
     iconName: "settings",
-    title: "6. Configuración",
+    title: "6. Datos de consumo",
   },
 ];

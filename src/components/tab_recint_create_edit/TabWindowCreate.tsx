@@ -9,6 +9,7 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import ThermalBridgesWindowModal from "../modals/ThermalBridgesWindowModal";
 import {azimutRangeToOrientation} from "@/utils/azimut";
+import useFetchAngleOptions from "@/hooks/useFetchAngleOptions";
 
 const TabWindowCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id");
@@ -57,7 +58,7 @@ const TabWindowCreate: React.FC = () => {
 
   // Estados para almacenar datos de endpoints
   const [details, setDetails] = useState<any[]>([]);
-  const [angleOptions, setAngleOptions] = useState<string[]>([]);
+  const [angleOptions] = useFetchAngleOptions();
   const [windowOptions, setWindowOptions] = useState<any[]>([]);
   const [tableData, setTableData] = useState<any[]>([]);
 
@@ -83,27 +84,6 @@ const TabWindowCreate: React.FC = () => {
     };
     fetchDetails();
   }, [projectId, token]);
-
-  // Obtener opciones de ángulo
-  useEffect(() => {
-    const fetchAngleOptions = async () => {
-      try {
-        const response = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok)
-          throw new Error("Error al obtener las opciones de ángulo");
-        const data = await response.json();
-        setAngleOptions(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchAngleOptions();
-  }, [token]);
 
   // Obtener elementos de ventana
   useEffect(() => {
@@ -577,28 +557,28 @@ const TabWindowCreate: React.FC = () => {
       headerName: "Ángulo Azimut",
       field: "anguloAzimut",
       renderCell: (row: any) =>
-        editingRow === row.id ? (
-          <select
-            className="form-control"
-            style={selectStyle}
-            value={editData.angulo_azimut}
-            onChange={(e) => handleEditChange("angulo_azimut", e.target.value)}
-          >
-            <option value="">Seleccione un ángulo</option>
-            {angleOptions.map((option, index) => (
-              <option key={index} value={option}>
-                {option} [{azimutRangeToOrientation(option)}]
-              </option>
-            ))}
-          </select>
-        ) : (
+        (
           row.anguloAzimut
         ),
     },
     {
       headerName: "Orientación",
       field: "orientacion",
-      renderCell: (row: any) => row.orientacion,
+      renderCell: (row: any) =>  editingRow === row.id ? (
+        <select
+          className="form-control"
+          style={selectStyle}
+          value={editData.angulo_azimut}
+          onChange={(e) => handleEditChange("angulo_azimut", e.target.value)}
+        >
+          <option value="">Seleccione un ángulo</option>
+          {angleOptions.map((option, index) => (
+                  <option key={index} value={option.azimut}>
+                     {option.orientation}
+                  </option>
+                ))}
+        </select>
+      ) : row.orientacion,
     },
     {
       headerName: "Alojado en",
@@ -858,9 +838,9 @@ const TabWindowCreate: React.FC = () => {
               >
                 <option value="">Seleccione un ángulo</option>
                 {angleOptions.map((option, index) => (
-                  <option key={index} value={option}>
-                    Ángulo [{option}], Orientación [{azimutRangeToOrientation(option)}]
-                  </option>
+                 <option key={index} value={option.azimut}>
+                 {option.orientation}
+              </option>
                 ))}
               </select>
             </div>

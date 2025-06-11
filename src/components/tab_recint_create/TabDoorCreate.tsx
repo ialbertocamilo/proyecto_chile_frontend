@@ -9,6 +9,7 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import ThermalBridgesDoorModal from "../modals/ThermalBridgesDoorModal";
 import {azimutRangeToOrientation} from "@/utils/azimut";
+import useFetchAngleOptions from "@/hooks/useFetchAngleOptions";
 
 interface DoorData {
   id: number;
@@ -58,7 +59,8 @@ const TabDoorCreate: React.FC = () => {
   const [deletingRow, setDeletingRow] = useState<DoorData | null>(null);
 
   // Estado para opciones de ángulo y de puertas
-  const [angleOptions, setAngleOptions] = useState<string[]>([]);
+
+  const [angleOptions] = useFetchAngleOptions();
   const [doorOptions, setDoorOptions] = useState<any[]>([]);
 
   //ThermalBridgesModal OPEN
@@ -159,21 +161,6 @@ const TabDoorCreate: React.FC = () => {
           return row;
         });
 
-        // Obtener opciones de ángulo
-        const angleResponse = await fetch(
-          `${constantUrlApiEndpoint}/angle-azimut`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!angleResponse.ok) {
-          throw new Error("Error al obtener las opciones de ángulo azimut");
-        }
-        const angleOpts: string[] = await angleResponse.json();
-        setAngleOptions(angleOpts);
 
         // Obtener opciones de puerta
         const doorResponse = await fetch(
@@ -583,6 +570,15 @@ const TabDoorCreate: React.FC = () => {
       headerName: "Ángulo Azimut",
       field: "anguloAzimut",
       renderCell: (row: DoorData) => {
+        return row.anguloAzimut;
+      },
+    },
+    {
+      headerName: "Orientación",
+      field: "orientacion",
+      renderCell: (row: DoorData) => {
+        
+        
         if (editingRow && editingRow.id === row.id) {
           return (
             <select
@@ -594,20 +590,15 @@ const TabDoorCreate: React.FC = () => {
             >
               <option value="">Seleccione un ángulo</option>
               {angleOptions.map((option, index) => (
-                <option key={index} value={option}>
-                  {option} [{azimutRangeToOrientation(option)}]
+                <option key={index} value={option.azimut}>
+                  {option.orientation}
                 </option>
               ))}
             </select>
           );
         }
-        return row.anguloAzimut;
-      },
-    },
-    {
-      headerName: "Orientación",
-      field: "orientacion",
-      renderCell: (row: DoorData) => row.orientacion,
+        
+        return row.orientacion},
     },
     {
       headerName: "Alto [m]",
@@ -775,8 +766,8 @@ const TabDoorCreate: React.FC = () => {
               >
                 <option value="">Seleccione un ángulo</option>
                 {angleOptions.map((option, index) => (
-                  <option key={index} value={option}>
-                    Ángulo [{option}], Orientación [{azimutRangeToOrientation(option)}]
+                  <option key={index} value={option.azimut}>
+                    {option.orientation}
                   </option>
                 ))}
               </select>

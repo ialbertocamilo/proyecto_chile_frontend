@@ -446,12 +446,13 @@ const ProjectWorkflowPart1: React.FC = () => {
     if (newStep === 1 || newStep === 2) {
       setStep(newStep);
     } else if (newStep === 3) {
-      // Para el paso 3 redirigimos a otra ruta de edición
       router.push(`/workflow-part2-edit?id=${router.query.id}&step=3`);
     } else if (newStep === 4) {
       router.push(`/workflow-part2-edit?id=${router.query.id}&step=7`);
     } else if (newStep === 8) {
       router.push(`/workflow-part2-edit?id=${router.query.id}&step=8`);
+    } else if (newStep === 6) {
+      setStep(6);
     }
   };
 
@@ -1022,6 +1023,14 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                     </div>
                   </>
+                )}
+                {step === 6 && (
+                  <div className="mt-3">
+                    {/* Paso 6: Configuración */}
+                    <React.Suspense fallback={<div>Cargando configuración...</div>}>
+                      {React.createElement(require("../src/components/projects/tabs/ConfiguracionEnergiaTab").default)}
+                    </React.Suspense>
+                  </div>
                 )}
               </div>
             </div>

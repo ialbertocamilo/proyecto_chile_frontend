@@ -909,6 +909,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
       stepNumber: 8,
       iconName: "water_drop",
       title: "5. Agua Caliente Sanitaria",
+      route: `/workflow-part2-view?id=${projectId}&step=8`,
+    },
+    {
+      stepNumber: 6,
+      iconName: "settings",
+      title: "6. Configuración",
+      route: `/workflow-part2-view?id=${projectId}&step=6`,
     },
   ];
 
@@ -962,6 +969,13 @@ const WorkFlowpar2viewPage: React.FC = () => {
               {step === 4 && showTabsInStep4 && renderStep4Tabs()}
               {step === 7 && renderRecinto()}
               {step === 8 && <AguaCalienteSanitaria onlyView={true} />}
+              {step === 6 && (
+                <div className="mt-3">
+                  <React.Suspense fallback={<div>Cargando configuración...</div>}>
+                    {React.createElement(require("../src/components/projects/tabs/ConfiguracionEnergiaTab").default)}
+                  </React.Suspense>
+                </div>
+              )}
             </div>
           </div>
         </Card>

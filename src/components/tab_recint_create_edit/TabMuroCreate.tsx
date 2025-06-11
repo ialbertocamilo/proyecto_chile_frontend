@@ -11,6 +11,7 @@ import ModalCreate from "../common/ModalCreate";
 import ThermalBridgesWallModal from "../modals/ThermalBridgesWallModal";
 import { azimutRangeToOrientation } from "@/utils/azimut";
 
+import useFetchAngleOptions from "@/hooks/useFetchAngleOptions";
 // Interfaz para muros
 interface Wall {
   id?: number;
@@ -95,7 +96,7 @@ const TabMuroCreate: React.FC = () => {
     useState<ThermalBridge | null>(null);
 
   // Otras opciones y datos de formularios
-  const [angleOptions, setAngleOptions] = useState<string[]>([]);
+  const [angleOptions] = useFetchAngleOptions();
   const [wallOptions, setWallOptions] = useState<WallDetail[]>([]);
   const [detailOptions, setDetailOptions] = useState<WallDetail[]>([]);
   const [projectId, setProjectId] = useState<string | null>(null);
@@ -200,26 +201,6 @@ const TabMuroCreate: React.FC = () => {
     fetchDetailOptions();
   }, [projectId]);
 
-  // Obtener opciones de ángulo azimut
-  useEffect(() => {
-    const fetchAngleOptions = async () => {
-      try {
-        const authData = getAuthData();
-        const headers: HeadersInit = { "Content-Type": "application/json" };
-        if (authData) headers.Authorization = `Bearer ${authData.token}`;
-        const response = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
-          headers,
-        });
-        if (!response.ok)
-          throw new Error("Error al obtener opciones de ángulo azimut");
-        const options = await response.json();
-        setAngleOptions(options);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchAngleOptions();
-  }, []);
 
   // Función para obtener datos de la API (muros y puentes térmicos)
   const fetchData = async () => {
@@ -550,6 +531,14 @@ const TabMuroCreate: React.FC = () => {
       headerName: "Ángulo Azimut",
       field: "angulo_azimut",
       renderCell: (row: MergedWall) => {
+        return row.angulo_azimut;
+      },
+    },
+    {
+      headerName: "Orientación",
+      field: "orientation",
+      renderCell: (row: MergedWall) => {
+        const value = row.orientation;
         if (row.id === editingWallId && editingWallData) {
           return (
             <select
@@ -561,21 +550,13 @@ const TabMuroCreate: React.FC = () => {
             >
               <option value="">Seleccione...</option>
               {angleOptions.map((option, index) => (
-                <option key={index} value={option}>
-                  {option} [{azimutRangeToOrientation(option)}]
+                <option key={index} value={option.azimut}>
+                  {option.orientation}
                 </option>
               ))}
             </select>
           );
         }
-        return row.angulo_azimut;
-      },
-    },
-    {
-      headerName: "Orientación",
-      field: "orientation",
-      renderCell: (row: MergedWall) => {
-        const value = row.orientation;
         return value === "N/A" ||
           value === "0" ||
           value?.toString() === "0" ||
@@ -1134,8 +1115,8 @@ const TabMuroCreate: React.FC = () => {
               >
                 <option value="">Seleccione...</option>
                 {angleOptions.map((option, index) => (
-                  <option key={index} value={option}>
-                    Ángulo [{option}], Orientación [{azimutRangeToOrientation(option)}]
+                  <option key={index} value={option.azimut}>
+                    {option.orientation}
                   </option>
                 ))}
               </select>

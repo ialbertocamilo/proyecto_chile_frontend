@@ -45,17 +45,6 @@ const ResumenRecintos: React.FC<ResumenRecintosProps> = ({ globalResults, onUpda
 
   return (
     <div className="container-fluid mt-4">
-      <div className="col-12 mb-4">
-        <EnergySystemSelectors
-          onChange={(selection: EnergySystemSelection, consumosEnergia?: any[]) => {
-            setEnergyConfig(selection);
-            setConfig(prev => ({
-              ...prev,
-              consumosEnergia: consumosEnergia || []
-            }));
-          }}
-        />
-      </div>
       <div>
         <Tab.Container id="tabs-recintos" defaultActiveKey="demanda">
           <Row className="mb-5">

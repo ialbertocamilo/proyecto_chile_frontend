@@ -73,17 +73,19 @@ function getOrientationFromRange(min: number, max: number): Orientation {
 }
 
 // Función principal que recibe el rango literal
-export function azimutRangeToOrientation(rangeString: string): Orientation {
+export function azimutRangeToOrientation(rangeString: string): Orientation | undefined {
     try {
-        const range = parseAzimutRange(rangeString);
-        return getOrientationFromRange(range.min, range.max);
+        if (rangeString) {
+            const range = parseAzimutRange(rangeString);
+            return getOrientationFromRange(range.min, range.max);
+        }
     } catch (error) {
-        throw new Error(`Error al procesar el rango "${rangeString}": ${error}`);
+        console.error(`Error processing range "${rangeString}":`, error);
+        // throw new Error(`Error processing range "${rangeString}": ${error}`);
     }
 }
 
-// Función que devuelve el nombre completo de la orientación
-function azimutRangeToFullOrientation(rangeString: string): string {
+function azimutRangeToFullOrientation(rangeString: string): string | undefined{
     const orientationMap: Record<Orientation, string> = {
         'N': 'Norte',
         'NE': 'Noreste',
@@ -96,17 +98,10 @@ function azimutRangeToFullOrientation(rangeString: string): string {
     };
 
     const orientation = azimutRangeToOrientation(rangeString);
-    return orientationMap[orientation];
+    if (orientation)
+        return orientationMap[orientation];
 }
 
-// Función para procesar múltiples rangos
-function processMultipleRanges(ranges: string[]): Array<{range: string, orientation: Orientation, fullName: string}> {
-    return ranges.map(range => ({
-        range,
-        orientation: azimutRangeToOrientation(range),
-        fullName: azimutRangeToFullOrientation(range)
-    }));
-}
 
 const yourRanges = [
     '0° ≤ Az < 22,5°',
@@ -129,29 +124,40 @@ const yourRanges = [
 ];
 
 
-yourRanges.forEach((range, index) => {
-    try {
-        const orientation = azimutRangeToOrientation(range);
-        const fullName = azimutRangeToFullOrientation(range);
-    } catch (error) {
-        console.log(`${range} → ERROR: ${error}`);
-    }
-});
 
-// Función de conveniencia para convertir un array completo
-function convertAzimutRangesToOrientations(ranges: string[]): Orientation[] {
-    return ranges.map(range => azimutRangeToOrientation(range));
+function calculateAzimut(rangeString: string): number {
+    const range = parseAzimutRange(rangeString);
+    // Calculate the midpoint of the range
+    return (range.min + range.max) / 2;
 }
 
 // Función de conveniencia para obtener un objeto con todas las conversiones
-function getOrientationMapping(ranges: string[]): Record<string, {orientation: Orientation, fullName: string}> {
-    const mapping: Record<string, {orientation: Orientation, fullName: string}> = {};
-
-    ranges.forEach(range => {
+export const getOrientationMapping = (azimuthRanges: []): Record<string, { orientation: Orientation, fullName: string, azimut: number }> => {
+    const mapping: Record<string, { orientation: Orientation, fullName: string, azimut: number }> = {};
+    azimuthRanges.forEach((range) => {
         const orientation = azimutRangeToOrientation(range);
         const fullName = azimutRangeToFullOrientation(range);
-        mapping[range] = { orientation, fullName };
+        const azimut = calculateAzimut(range);
+        if (orientation && fullName)
+            mapping[range] = { orientation, fullName, azimut };
+    });
+    return mapping;
+};
+
+// Función de conveniencia para obtener un array de orientaciones únicas con su azimut
+export const getOrientationMapping2 = (azimuthRanges: []): Array<{ orientation: Orientation, fullName: string, azimut: number }> => {
+    const uniqueOrientations = new Map<Orientation, { orientation: Orientation, fullName: string, azimut: number }>();
+
+    azimuthRanges.forEach((range) => {
+        const orientation = azimutRangeToOrientation(range);
+        const fullName = azimutRangeToFullOrientation(range);
+        const azimut = range;
+
+        if (orientation && fullName)
+            if (!uniqueOrientations.has(orientation)) {
+                uniqueOrientations.set(orientation, { orientation, fullName, azimut });
+            }
     });
 
-    return mapping;
-}
+    return Array.from(uniqueOrientations.values());
+};

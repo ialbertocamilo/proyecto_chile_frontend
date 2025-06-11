@@ -270,12 +270,12 @@ export default function IFCViewerComponent() {
 
       // Parse the structured text into a JSON object
       const buildingStructure = JSON.parse(structuredText);
-
+      
+      console.log("Building structure:", buildingStructure);
       // Use the projectBuilder hook to create the project from the structured data
       setStatus("Creando proyecto...");
       const result = await projectBuilder.createProjectWithValidation(buildingStructure);
 
-      // Update the UI based on result
       if (result?.success) {
         setStatus(`Proceso completado: ${result?.completedRooms} recintos creados`);
         notify("Proyecto creado exitosamente");

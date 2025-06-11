@@ -9,9 +9,9 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 //ThermicBridgesModal
 import ThermalBridgesWallModal from "@/components/modals/ThermalBridgesWallModal";
+import useFetchAngleOptions from "@/hooks/useFetchAngleOptions";
 import { Plus } from "lucide-react";
 import GoogleIcons from "public/GoogleIcons";
-import {azimutRangeToOrientation} from "@/utils/azimut";
 
 // Interfaz para muros
 interface Wall {
@@ -100,7 +100,7 @@ const TabMuroCreate: React.FC = () => {
     useState<ThermalBridge | null>(null);
 
   // Otras opciones y datos del formulario
-  const [angleOptions, setAngleOptions] = useState<string[]>([]);
+  const [angleOptions, setAngleOptions] = useFetchAngleOptions();
   const [wallOptions, setWallOptions] = useState<WallDetail[]>([]);
   const [detailOptions, setDetailOptions] = useState<WallDetail[]>([]);
   const [projectId, setProjectId] = useState<string | null>(null);
@@ -187,26 +187,6 @@ const TabMuroCreate: React.FC = () => {
     fetchDetailOptions();
   }, [projectId]);
 
-  // Obtener opciones de ángulo azimut
-  useEffect(() => {
-    const fetchAngleOptions = async () => {
-      try {
-        const authData = getAuthData();
-        const headers: HeadersInit = { "Content-Type": "application/json" };
-        if (authData) headers.Authorization = `Bearer ${authData.token}`;
-        const response = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
-          headers,
-        });
-        if (!response.ok)
-          throw new Error("Error al obtener opciones de ángulo azimut");
-        const options = await response.json();
-        setAngleOptions(options);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchAngleOptions();
-  }, []);
 
   // Función para obtener datos de la API (muros y puentes térmicos)
   const fetchData = async () => {
@@ -1105,8 +1085,8 @@ const TabMuroCreate: React.FC = () => {
                 >
                   <option value="">Seleccione...</option>
                   {angleOptions.map((option, index) => (
-                    <option key={index} value={option}>
-                      Ángulo [{option}], Orientación [{azimutRangeToOrientation(option)}]
+                    <option key={index} value={option.azimut}>
+                       {option.orientation}
                     </option>
                   ))}
                 </select>

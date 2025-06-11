@@ -1,6 +1,5 @@
 import TitleBread from "@/components/ui/TitleBread";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
 
 const IFCViewerComponent = dynamic(() => import("@/components/ifc/Viewer"), { ssr: false });
 

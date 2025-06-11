@@ -2090,6 +2090,13 @@ const WorkFlowpar2editPage: React.FC = () => {
                   </>
                 )}
                 {step === 4 && renderRecinto()}
+                {step === 6 && (
+                  <div className="mt-3">
+                    <React.Suspense fallback={<div>Cargando configuración...</div>}>
+                      {React.createElement(require("../src/components/projects/tabs/ConfiguracionEnergiaTab").default)}
+                    </React.Suspense>
+                  </div>
+                )}
                 {step === 8 && (
                   <AguaCalienteSanitaria
                     onSaveSuccess={() => {

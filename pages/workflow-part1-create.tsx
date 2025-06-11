@@ -852,6 +852,17 @@ const ProjectWorkflowPart1: React.FC = () => {
                 </div>
               </>
             )}
+            {step === 6 && (
+              <div className="mt-3">
+                {/* Paso 6: Configuración */}
+                <React.Suspense fallback={<div>Cargando configuración...</div>}>
+                  {React.createElement(
+                    require("../src/components/projects/tabs/ConfiguracionEnergiaTab")
+                      .default
+                  )}
+                </React.Suspense>
+              </div>
+            )}
           </div>
         </div>
       </Card>

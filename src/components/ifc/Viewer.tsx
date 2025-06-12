@@ -122,12 +122,13 @@ export default function IFCViewerComponent() {
           obj.props.some((p: any) => p.name === 'RECINTO ASIGNADO' && p.value === roomCode)
         );
 
+        const roomType=getPropValue(room, 'TIPOLOGÍA DE RESINTO') || getPropValue(room, 'TIPOLOGÍA DE RECINTO') || getPropValue(room, 'TIPOLOGIA DE RECINTO')
         return {
           id: room.id,
           name: room.name,
           properties: {
             roomCode: roomCode,
-            roomType: getPropValue(room, 'TIPOLOGÍA DE RESINTO') || 'Unknown',
+            roomType,
             occupationProfile: {
               code: roomCode, // CÓDIGO DE RECINTO
               type: getPropValue(room, 'TIPOLOGÍA DE RESINTO') || 'Unknown', // TIPOLOGÍA DE RESINTO
@@ -286,8 +287,6 @@ export default function IFCViewerComponent() {
           await projectBuilder.updateProjectStatus("en proceso");
           setStatus(`Proceso completado: ${result?.completedRooms} recintos creados. Proyecto en proceso.`);
           notify("Estado del proyecto actualizado a 'en proceso'");
-            // Ya no cambiamos isProcessing a false cuando el proceso se completa exitosamente
-          // para mantener visible el panel de estado
         } catch (statusError) {
           console.error("Error al actualizar estado del proyecto:", statusError);
           notify("Proyecto creado pero no se pudo actualizar su estado", "warning");
@@ -298,17 +297,12 @@ export default function IFCViewerComponent() {
         setStatus(`Proceso no logró completarse debido a errores.`);
         console.error("Errors during project creation:", result);
         notify(`Proceso no logró completarse debido a errores`, "error");
-
-        // Guardar los elementos faltantes para mostrarlos en el panel
         setMissingElements(result.missingElements || []);
-        // Opcionalmente, mantener el panel de progreso visible
         setIsProcessing(false);  // Cerramos el panel de estado pero mostramos el botón para ver missing elements
       }
     } catch (error) {
-      // For unexpected errors (not from the project builder), still show in status
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido durante el procesamiento';
       console.error("Error processing objects:", error);
-    
       setStatus(`Error: ${errorMessage}`);
       notify(`Error: ${errorMessage}`, "error");
       setIsProcessing(false);

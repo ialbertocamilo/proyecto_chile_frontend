@@ -425,7 +425,7 @@ const RecintoEdit: React.FC = () => {
           <div className="modal-dialog modal-lg">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Detalles del Perfil de Ocupación</h5>
+                <h5 className="modal-title">Detalles del Perfil de Ocupación (horas/día)</h5>
                 <button type="button" className="btn-close" onClick={() => setShowPerfilModal(false)}></button>
               </div>
               <div className="modal-body">
@@ -440,28 +440,28 @@ const RecintoEdit: React.FC = () => {
                     {/* Ventilación */}
                     <h6>Ventilación</h6>
                     <ul>
-                      <li><strong>Infiltraciones:</strong> {perfilDetail.ventilation_flows?.infiltraciones !== undefined ? Number(perfilDetail.ventilation_flows.infiltraciones).toFixed(2) : '-'} ACH</li>
-                      <li><strong>Ventilación nocturna:</strong> {perfilDetail.ventilation_flows?.caudal_impuesto?.vent_noct !== undefined ? Number(perfilDetail.ventilation_flows.caudal_impuesto.vent_noct).toFixed(2) : '-'}</li>
-                      <li><strong>Recuperador de calor:</strong> {perfilDetail.ventilation_flows?.recuperador_calor !== undefined ? Number(perfilDetail.ventilation_flows.recuperador_calor).toFixed(2) : '-'}</li>
-                      <li><strong>IDA:</strong> {perfilDetail.ventilation_flows?.cauldal_min_salubridad?.ida ?? '-'}</li>
-                      <li><strong>R. pers:</strong> {perfilDetail.ventilation_flows?.cauldal_min_salubridad?.r_pers !== undefined ? Number(perfilDetail.ventilation_flows.cauldal_min_salubridad.r_pers).toFixed(2) : '-'}</li>
-                      <li><strong>Ocupación:</strong> {perfilDetail.ventilation_flows?.cauldal_min_salubridad?.ocupacion ?? '-'}</li>
+                      <li><strong>Infiltraciones:</strong> {perfilDetail.ventilation_flows?.infiltraciones !== undefined ? Number(perfilDetail.ventilation_flows.infiltraciones).toFixed(2) : '-'} 1/h</li>
+                    <li><strong>Ventilación nocturna:</strong> {perfilDetail.ventilation_flows?.caudal_impuesto?.vent_noct !== undefined ? Number(perfilDetail.ventilation_flows.caudal_impuesto.vent_noct).toFixed(2) : '-'} m³/h</li>
+                    <li><strong>Recuperador de calor:</strong> {perfilDetail.ventilation_flows?.recuperador_calor !== undefined ? Number(perfilDetail.ventilation_flows.recuperador_calor).toFixed(2) : '-'} %</li>
+                    <li><strong>IDA:</strong> {perfilDetail.ventilation_flows?.cauldal_min_salubridad?.ida ?? '-'} l/s·persona</li>
+                    <li><strong>R. pers:</strong> {perfilDetail.ventilation_flows?.cauldal_min_salubridad?.r_pers !== undefined ? Number(perfilDetail.ventilation_flows.cauldal_min_salubridad.r_pers).toFixed(2) : '-'} m²/persona</li>
+                    <li><strong>Ocupación:</strong> {perfilDetail.ventilation_flows?.cauldal_min_salubridad?.ocupacion ?? '-'} </li>
                     </ul>
                     {/* Iluminación */}
                     <h6>Iluminación</h6>
                     <ul>
                       <li><strong>Estrategia:</strong> {perfilDetail.lightning?.estrategia ?? '-'}</li>
-                      <li><strong>Potencia base:</strong> {perfilDetail.lightning?.potencia_base !== undefined ? Number(perfilDetail.lightning.potencia_base).toFixed(2) : '-'}</li>
-                      <li><strong>Potencia propuesta:</strong> {perfilDetail.lightning?.potencia_propuesta !== undefined ? Number(perfilDetail.lightning.potencia_propuesta).toFixed(2) : '-'}</li>
+                      <li><strong>Potencia base:</strong> {perfilDetail.lightning?.potencia_base !== undefined ? Number(perfilDetail.lightning.potencia_base).toFixed(2) : '-'} W/m²</li>
+                    <li><strong>Potencia propuesta:</strong> {perfilDetail.lightning?.potencia_propuesta !== undefined ? Number(perfilDetail.lightning.potencia_propuesta).toFixed(2) : '-'} W/m²</li>
                     </ul>
                     {/* Cargas internas */}
                     <h6>Cargas internas</h6>
                     <ul>
-                      <li><strong>Equipos:</strong> {perfilDetail.internal_loads?.equipos !== undefined ? Number(perfilDetail.internal_loads.equipos).toFixed(2) : '-'}</li>
-                      <li><strong>Usuarios:</strong> {perfilDetail.internal_loads?.usuarios !== undefined ? Number(perfilDetail.internal_loads.usuarios).toFixed(2) : '-'}</li>
-                      <li><strong>Calor latente:</strong> {perfilDetail.internal_loads?.calor_latente !== undefined ? Number(perfilDetail.internal_loads.calor_latente).toFixed(2) : '-'}</li>
-                      <li><strong>Calor sensible:</strong> {perfilDetail.internal_loads?.calor_sensible !== undefined ? Number(perfilDetail.internal_loads.calor_sensible).toFixed(2) : '-'}</li>
-                      <li><strong>Horario laboral:</strong> {perfilDetail.internal_loads?.horario?.laboral?.inicio !== undefined && perfilDetail.internal_loads?.horario?.laboral?.fin !== undefined ? `${perfilDetail.internal_loads.horario.laboral.inicio} - ${perfilDetail.internal_loads.horario.laboral.fin}` : '-'}</li>
+                      <li><strong>Equipos:</strong> {perfilDetail.internal_loads?.equipos !== undefined ? Number(perfilDetail.internal_loads.equipos).toFixed(2) : '-'} W/m²</li>
+                      <li><strong>Usuarios:</strong> {perfilDetail.internal_loads?.usuarios !== undefined ? Number(perfilDetail.internal_loads.usuarios).toFixed(2) : '-'} W/persona</li>
+                    <li><strong>Calor latente:</strong> {perfilDetail.internal_loads?.calor_latente !== undefined ? Number(perfilDetail.internal_loads.calor_latente).toFixed(2) : '-'} W/persona</li>
+                      <li><strong>Calor sensible:</strong> {perfilDetail.internal_loads?.calor_sensible !== undefined ? Number(perfilDetail.internal_loads.calor_sensible).toFixed(2) : '-'} W/persona</li>
+                    <li><strong>Horario laboral:</strong> {perfilDetail.internal_loads?.horario?.laboral?.inicio !== undefined && perfilDetail.internal_loads?.horario?.laboral?.fin !== undefined ? `${perfilDetail.internal_loads.horario.laboral.inicio} - ${perfilDetail.internal_loads.horario.laboral.fin}` : '-'} horas</li>
                       <li><strong>Funcionamiento semanal:</strong> {perfilDetail.internal_loads?.horario?.funcionamiento_semanal ?? '-'}</li>
                     </ul>
                     {/* Clima y programación */}

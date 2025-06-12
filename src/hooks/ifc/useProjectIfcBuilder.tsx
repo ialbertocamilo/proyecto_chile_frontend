@@ -641,6 +641,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
      * Create ceilings for a room
      */
     const createCeilings = async (roomId: number, ceilingGroups: ConstructionGroup[]) => {
+        const ceilingPromises: Promise<any>[] = [];
         const errors = [];
 
         try {
@@ -655,58 +656,64 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         updateStatus({
                             currentComponent: `Creando techo: ${element.name}`
                         });
-
-                        let materialId = 1; // Default material ID
-                        if (element.material && element.material !== 'Unknown') {
-                            try {
-                                updateStatus({
-                                    currentComponent: `Buscando material para techo: ${element.material}`
-                                });
-
-                                // First check if the material is in our cache
-                                let materialInfo: any;
-                                if (materialsCache[element.material]) {
-                                    materialInfo = materialsCache[element.material];
-                                    updateStatus({
-                                        currentComponent: `Material para techo encontrado en cache: ${element.material} (ID: ${materialInfo?.id})`
-                                    });
-                                } else {
-                                    // materialInfo = await wallBuilder.getMaterialByCode(element.material);
-                                    materialInfo = await wallBuilder.getMaterialByCode(element.material);
-                                    // Update cache with new material
-                                    if (materialInfo) {
-                                        setMaterialsCache(prev => ({
-                                            ...prev,
-                                            [element.material]: materialInfo
-                                        }));
+                        console.log('Ceiling element:', element);
+                        // Handle missing material - try to fetch if not in cache
+                        let materialId = 0; // Default material ID
+                        if (element.material) {
+                            if (!materialsCache[element.material]?.id) {
+                                try {
+                                    const materialInfo = await get(`/materials?code=${element.material}`);
+                                    if (materialInfo?.id) {
+                                        materialsCache[element.material] = materialInfo;
+                                        materialId = materialInfo.id;
+                                        updateStatus({
+                                            currentComponent: `Material encontrado para techo: ${element.material} (ID: ${materialId})`
+                                        });
+                                    } else {
+                                        throw new Error('Material not found');
                                     }
+                                } catch (error) {
+                                    updateStatus({
+                                        currentComponent: `Error al buscar material de techo: ${element.material}`
+                                    });
+                                    console.warn(`Material not found for ceiling code: ${element.material}, using default ID 113`, error);
+                                    errors.push({
+                                        message: `Material de techo no encontrado: ${element.material}, usando ID por defecto`,
+                                        context: `Ceiling element: ${element.name}`
+                                    });
                                 }
-
-                                materialId = materialInfo?.id || 1;
-                                updateStatus({
-                                    currentComponent: `Material para techo encontrado: ${element.material} (ID: ${materialId})`
-                                });
-                            } catch (error) {
-                                updateStatus({
-                                    currentComponent: `Error al buscar material para techo: ${element.material}`
-                                });
-                                console.warn(`Material not found for code: ${element.material}, using default ID 1`, error);
-                                errors.push({
-                                    message: `Material no encontrado para techo: ${element.material}, usando ID por defecto`,
-                                    context: `Ceiling element: ${element.name}`
-                                });
+                            } else {
+                                materialId = materialsCache[element.material].id;
                             }
                         }
+                        
+                        // First create the ceiling master node
+                        const ceilingResponse = await post(
+                            `/user/Techo/detail-part-create?project_id=${projectId}`,
+                            {
+                                name_detail: element.name,
+                                scantilon_location: 'Techo'
+                            }
+                        );
 
-                        // No ceiling endpoint available yet - log instead of posting
-                        console.info('Ceiling would be created with data:', {
-                            ceiling_id: parseInt(String(ceilingGroup.code).replace(/[^0-9]/g, '')) || 0,
-                            material_id: materialId,
-                            area: element.area || 0,
-                            thickness: element.thickness * 100 // Convert to cm
-                        });
+                        // Then create the layer for this ceiling
+                        await post(
+                            `/user/detail-create/${ceilingResponse.id}`,
+                            {
+                                layer_thickness: element.thickness || 35, // Default 35cm if not specified
+                                material_id: materialId,
+                                name_detail: element.name,
+                                scantilon_location: 'Techo'
+                            }
+                        );
 
-                        // Update ceiling progress count
+                        // Associate ceiling with room
+                        ceilingPromises.push(post(`/roof-enclosures-create/${roomId}`, {
+                            roof_id: ceilingResponse.id,
+                            characteristic: 'Exterior', // Default value
+                            area: element.area || 0
+                        }));
+
                         setCreationStatus(prev => ({
                             ...prev,
                             progress: {
@@ -716,23 +723,18 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         }));
                     } catch (error: any) {
                         errors.push({
-                            message: `Error creating ceiling element: ${error?.message || 'Unknown error'}`,
-                            context: `Ceiling group: ${ceilingGroup.code}, Element: ${element.name}`
+                            message: `Error creating ceiling: ${error?.response?.data?.detail || 'Unknown error'}`,
+                            context: `Ceiling: ${element.name}`
                         });
                     }
                 }
             }
 
+            await Promise.allSettled(ceilingPromises);
             updateStatus({ currentComponent: 'Creación de techos completada' });
             return { success: errors.length === 0, errors };
         } catch (error: any) {
-            return {
-                success: false,
-                errors: [...errors, {
-                    message: error?.message || 'Unknown error when creating ceilings',
-                    context: 'Creating ceilings'
-                }]
-            };
+            return { success: false, errors: [{ message: error?.message || 'Unknown error' }] };
         }
     };
 
@@ -858,6 +860,10 @@ export const useProjectIfcBuilder = (projectId: string) => {
     const createRoomDetails = async (roomId: number, details: ConstructionDetails, roomName: string) => {
         const errors = [];
 
+
+        console.log("createRoomDetails: ", roomName)
+        console.log("roomId: ", roomId)
+        console.log("details: ", details)
         updateStatus({
             currentRoom: roomName,
             currentPhase: 'creating-room',
@@ -945,7 +951,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
         });
 
         try {
-            // Process each room sequentially to provide clearer status updates
             for (let i = 0; i < buildingStructure.length; i++) {
                 const room = buildingStructure[i];
 
@@ -981,7 +986,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         detailsResult.errors.forEach(error =>
                             allErrors.push({
                                 ...error,
-                                context: `Room ${room.name}: ${error.context}`
+                                context: `Room ${room.name}: ${error?.message || 'Unknown error'}`
                             })
                         );
                     }
@@ -1083,4 +1088,4 @@ export const useProjectIfcBuilder = (projectId: string) => {
         createProjectWithValidation,
         materialsCache
     };
-};
+}

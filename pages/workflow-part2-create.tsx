@@ -2094,7 +2094,7 @@ const WorkFlowpar2createPage: React.FC = () => {
     { stepNumber: 4, iconName: "build", title: "3. Detalles constructivos" },
     { stepNumber: 7, iconName: "design_services", title: "4. Recinto" },
     { stepNumber: 8, iconName: "water_drop", title: "5. Agua Caliente Sanitaria" },
-    { stepNumber: 6, iconName: "settings", title: "6. Datos de consumo" },
+    { stepNumber: 6, iconName: "settings", title: "6. Sistemas Activos (equipos)" },
   ];
 
   // -----------------------------------

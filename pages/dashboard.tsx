@@ -155,7 +155,20 @@ function getCssVarValue(varName: string, fallback: string) {
 
 const DashboardPage: React.FC = () => {
     // --- EnergyChart State and Effect ---
-    const [energyChartData, setEnergyChartData] = useState({ labels: [], datasets: [] });
+    interface EnergyChartDataset {
+        label: string;
+        data: number[];
+    }
+    
+    interface EnergyChartData {
+        labels: string[];
+        datasets: EnergyChartDataset[];
+    }
+    
+    const [energyChartData, setEnergyChartData] = useState<EnergyChartData>({
+        labels: [],
+        datasets: [],
+    });
     const [loadingEnergyChart, setLoadingEnergyChart] = useState(false);
 
     useAuth()
@@ -188,7 +201,7 @@ const DashboardPage: React.FC = () => {
         const fetchEnergyReport = async () => {
             setLoadingEnergyChart(true);
             try {
-                let params: string[] = [];
+                const params: string[] = [];
                 if (selectedYear) params.push(`year=${encodeURIComponent(selectedYear)}`);
                 if (selectedCountry) params.push(`country=${encodeURIComponent(selectedCountry)}`);
                 const queryString = params.length ? `?${params.join('&')}` : '';

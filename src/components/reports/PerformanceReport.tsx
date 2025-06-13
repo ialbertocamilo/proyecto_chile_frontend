@@ -33,7 +33,7 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
                         <div className="col-md-6">
                             <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
                                 <div className="card-body">
-                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.co2_equivalent?.total || 999999}</div>
+                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.co2_equivalent?.total || 0}</div>
                                     <div className="text-muted">Total</div>
                                 </div>
                             </div>
@@ -41,7 +41,7 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
                         <div className="col-md-6">
                             <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
                                 <div className="card-body">
-                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.co2_equivalent?.baseline || 100}%</div>
+                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.co2_equivalent?.baseline || 51}%</div>
                                     <div className="text-muted">Línea base</div>
                                 </div>
                             </div>
@@ -56,7 +56,7 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
                         <div className="col-md-4">
                             <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
                                 <div className="card-body">
-                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.heating || 99}</div>
+                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.heating || 13}</div>
                                     <div className="text-muted">Calefacción</div>
                                 </div>
                             </div>
@@ -64,7 +64,7 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
                         <div className="col-md-4">
                             <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
                                 <div className="card-body">
-                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.cooling || 99}</div>
+                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.cooling || 11}</div>
                                     <div className="text-muted">Refrigeración</div>
                                 </div>
                             </div>
@@ -72,7 +72,7 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
                         <div className="col-md-4">
                             <div className="card text-center" style={{ borderColor: '#2ab0c5' }}>
                                 <div className="card-body">
-                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.baseline || 100}%</div>
+                                    <div className="h3" style={{ color: '#2ab0c5' }}>{data?.comfort_hours?.baseline || 4}%</div>
                                     <div className="text-muted">Línea base</div>
                                 </div>
                             </div>

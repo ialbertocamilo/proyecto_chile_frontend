@@ -12,6 +12,8 @@ interface ProjectsByMonthReportProps {
     primaryColor: string;
 }
 
+import { exportToExcel } from "@/components/shared/exportToExcel";
+
 export const ProjectsByMonthReport = ({ loading, data, primaryColor }: ProjectsByMonthReportProps) => {
     const chartData = data ? {
         labels: Array.isArray(data?.month)
@@ -65,8 +67,28 @@ export const ProjectsByMonthReport = ({ loading, data, primaryColor }: ProjectsB
         return <ChartLoader title="Proyectos Registrados" />;
     }
 
+    const handleDownloadExcel = () => {
+        if (data && data.month && data.total_projects) {
+            const headers = ['Mes', 'Total de Proyectos'];
+            const rows = data.month.map((month: string, idx: number) => [month, data.total_projects[idx]]);
+            exportToExcel({
+                data: rows,
+                fileName: 'proyectos_registrados.xlsx',
+                sheetName: 'Proyectos Registrados',
+                headers
+            });
+        }
+    };
+
     return (
-        <div>
+        <div style={{ position: 'relative' }}>
+            <button
+                className="btn btn-sm btn-outline-primary"
+                style={{ position: 'absolute', top: 0, right: 0, zIndex: 2 }}
+                onClick={handleDownloadExcel}
+            >
+                Descargar Excel
+            </button>
             <ChartComponent
                 title="Proyectos Registrados"
                 chartData={chartData}

@@ -110,6 +110,8 @@ export default function IFCViewerComponent() {
           }
         });
 
+        console.log("Room door:", objects.filter(obj => obj.type.includes('IfcDoor')))
+        console.log("Room door roomCode:",roomCode)
         // Find doors associated with this room
         const doors = objects.filter(obj =>
           obj.type.includes('IfcDoor') &&

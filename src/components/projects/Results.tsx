@@ -116,7 +116,7 @@ const Results = () => {
     const region = localStorage.getItem("project_department") || "Región";
     doc.setFont("helvetica", "bold");
     doc.setTextColor(80, 80, 80);
-    doc.text(`Proyecto: ${projectName}`, 14, 55);    doc.setFont("helvetica", "normal");
+    doc.text(`Proyecto: ${projectName}`, 14, 55); doc.setFont("helvetica", "normal");
     doc.text(`Región: ${region}`, 14, 62);
 
     // Línea divisoria
@@ -240,7 +240,7 @@ const Results = () => {
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.text("Comparación caso base", 20, startY + 26);      doc.setFont("helvetica", "bold");
+      doc.text("Comparación caso base", 20, startY + 26); doc.setFont("helvetica", "bold");
       doc.text(`${(indicators.disconfort_vs * 100).toFixed(1)}%`, boxWidth - 10, startY + 26, { align: "right" });
 
       // Caja de CO2 eq

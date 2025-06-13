@@ -2,6 +2,7 @@ import { useApi } from '@/hooks/useApi';
 import { useState } from 'react';
 import { useFloorBuilder } from './useFloorBuilder';
 import { useWallBuilder } from './useWallBuilder';
+import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
 
 // Type definitions for building structure
 interface Vector {
@@ -133,6 +134,17 @@ export const useProjectIfcBuilder = (projectId: string) => {
         // Helper function to check existence
         const checkExistence = async (type: string, elements: Element[]) => {
             for (const element of elements) {
+                if (type.toLowerCase() === 'door') {
+                    // Validar existencia de puerta por code_ifc
+                    const section = 'door';
+                    const code_ifc = element.id;
+                    const door = await wallBuilder.getElementByCodeIfc(section, code_ifc);
+                    if (!door || !door.id) {
+                        missingElements.push({ type: 'door', name: element.name });
+                    }
+                    continue;
+                }
+                // ...validación original de materiales...
                 console.log(`Validating ${JSON.stringify(element)}: ${element.material}`);
                 try {
                     if (element?.material && element?.material.toLowerCase() !== 'unknown') {
@@ -187,7 +199,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
         // Validate windows
         if (details.windows) {
             for (const windowGroup of details.windows) {
-                await checkExistence('Window', windowGroup.elements);
+                await checkExistence('window', windowGroup.elements);
             }
         }
 
@@ -385,7 +397,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
 
                             // Get material ID from material code if available
                             let materialId = 1; // Default material ID
-                            if (element.material) {
+                            if (element.material && element.material.toLowerCase() !== 'unknown') {
                                 try {
                                     updateStatus({
                                         currentComponent: `Buscando material: ${element.material}`
@@ -535,7 +547,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                     throw new Error(`Failed to create master floor node for: ${element.name}`);
                                 }
                                 let materialId = 1; // Default material ID
-                                if (element.material) {
+                                if (element.material && element.material.toLowerCase() !== 'unknown') {
                                     try {
                                         const materialInfo = await floorBuilder.getMaterialByCode(element.material);
                                         materialId = materialInfo?.id || 1;
@@ -543,14 +555,14 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                             currentComponent: `Material encontrado para piso: ${element.material} (ID: ${materialId})`
                                         });
                                     } catch (error) {
-                                        updateStatus({
-                                            currentComponent: `Error al buscar material de piso: ${element.material}`
-                                        });
+                                        // updateStatus({
+                                        //     currentComponent: `Error al buscar material de piso: ${element.material}`
+                                        // });
                                         console.warn(`Material not found for floor code: ${element.material}, using default ID 1`, error);
-                                        errors.push({
-                                            message: `Material de piso no encontrado: ${element.material}, usando ID por defecto`,
-                                            context: `Floor element: ${element.name}`
-                                        });
+                                        // errors.push({
+                                        //     message: `Material de piso no encontrado: ${element.material}, usando ID por defecto`,
+                                        //     context: `Floor element: ${element.name}`
+                                        // });
                                     }
                                 }
 
@@ -659,26 +671,37 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         console.log('Ceiling element:', element);
                         // Handle missing material - try to fetch if not in cache
                         let materialId = 0; // Default material ID
-                        if (element.material) {
+                        if (element.material && element.material.toLowerCase() !== 'unknown') {
                             if (!materialsCache[element.material]?.id) {
                                 try {
-                                    const materialInfo = await get(`/materials?code=${element.material}`);
+                                    // Use fetch as requested
+                                    const token = localStorage.getItem('token');
+                                    const code = element.material;
+                                    const response = await fetch(
+                                        `${constantUrlApiEndpoint}/constants-code_ifc?code_ifc=${code}`,
+                                        {
+                                            method: "GET",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                Authorization: `Bearer ${token}`,
+                                            },
+                                        }
+                                    );
+                                    const materialInfo = await response.json();
                                     if (materialInfo?.id) {
                                         materialsCache[element.material] = materialInfo;
                                         materialId = materialInfo.id;
                                         updateStatus({
                                             currentComponent: `Material encontrado para techo: ${element.material} (ID: ${materialId})`
                                         });
-                                    } else {
-                                        throw new Error('Material not found');
-                                    }
+                                    } 
                                 } catch (error) {
                                     updateStatus({
                                         currentComponent: `Error al buscar material de techo: ${element.material}`
                                     });
                                     console.warn(`Material not found for ceiling code: ${element.material}, using default ID 113`, error);
                                     errors.push({
-                                        message: `Material de techo no encontrado: ${element.material}, usando ID por defecto`,
+                                        message: `Material de techo no encontrado: ${element.material}`,
                                         context: `Ceiling element: ${element.name}`
                                     });
                                 }
@@ -686,7 +709,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                 materialId = materialsCache[element.material].id;
                             }
                         }
-                        
+
                         // First create the ceiling master node
                         const ceilingResponse = await post(
                             `/user/Techo/detail-part-create?project_id=${projectId}`,
@@ -741,6 +764,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
     /**
      * Create doors for a room
      */
+    // Crear puertas validando existencia por code_ifc
     const createDoors = async (roomId: number, doors: any[]) => {
         const doorPromises: Promise<any>[] = [];
         const errors = [];
@@ -752,21 +776,41 @@ export const useProjectIfcBuilder = (projectId: string) => {
             });
 
             for (const door of doors) {
+                // Validar existencia por code_ifc
+                const code_ifc = door.id;
+                const section = 'door';
+                let element;
                 try {
-                    updateStatus({
-                        currentComponent: `Creando puerta: ${door.name}`
+                    element = await wallBuilder.getElementByCodeIfc(section, code_ifc);
+                } catch (e) {
+                    errors.push({
+                        message: `Error consultando existencia de puerta codigo ifc=${code_ifc}`,
+                        context: `Puerta ${door.name}`
                     });
-
+                    continue;
+                }
+                if (!element || !element.id) {
+                    errors.push({
+                        message: `No existe puerta con codigo ifc=${code_ifc}`,
+                        context: `Puerta ${door.name}`
+                    });
+                    continue;
+                }
+                try {
+                    const payload = {
+                        angulo_azimut: formatAzimuth(door.orientation),
+                        orientacion: 'Exterior',
+                        door_id: element.id,
+                        broad: door.dimensions?.x || 0,
+                        high: door.dimensions?.y || 0,
+                        characteristics: door.name || ''
+                    };
                     doorPromises.push(
                         post(`/door-enclosures-create/${roomId}`, {
-                            door_id: door.assignedWall || 0,
-                            characteristics: door.type || 'Default Characteristics',
-                            angulo_azimut: formatAzimuth(door.orientation),
-                            area: (door.width * door.height) || 0
+                            ...payload,
+                            enclosure_id: roomId
                         })
                     );
-
-                    // Update door progress count
                     setCreationStatus(prev => ({
                         ...prev,
                         progress: {
@@ -774,10 +818,10 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             doors: prev.progress.doors + 1
                         }
                     }));
-                } catch (error: any) {
+                } catch (err: any) {
                     errors.push({
-                        message: `Error creating door: ${error.message || 'Unknown error'}`,
-                        context: `Door: ${door.name}`
+                        message: `Error creando puerta : ${err && err.message ? err.message : String(err)}`,
+                        context: `Puerta ${door.name}`
                     });
                 }
             }
@@ -800,9 +844,9 @@ export const useProjectIfcBuilder = (projectId: string) => {
     /**
      * Create windows for a room
      */
+    // Crear ventanas validando existencia por code_ifc
     const createWindows = async (roomId: number, windowGroups: ConstructionGroup[]) => {
         const errors = [];
-
         try {
             updateStatus({
                 currentPhase: 'windows',
@@ -810,21 +854,42 @@ export const useProjectIfcBuilder = (projectId: string) => {
             });
 
             for (const windowGroup of windowGroups) {
-                for (const element of windowGroup.elements) {
+                for (const window of windowGroup.elements) {
+                    // Validar existencia por code_ifc
+                    const code_ifc = window.id;
+                    // Sección puede ser 'window' o similar, ajustar según backend
+                    const section = 'window';
+                    let element;
                     try {
-                        updateStatus({
-                            currentComponent: `Creando ventana: ${element.name}`
+                        element = await wallBuilder.getElementByCodeIfc(section, code_ifc);
+                    } catch (e) {
+                        errors.push({
+                            message: `Error consultando existencia de ventana codigo ifc=${code_ifc}`,
+                            context: `Ventana ${window.name}`
                         });
-
-                        // No window endpoint available yet - log instead of posting
-                        console.info('Window would be created with data:', {
-                            window_id: parseInt(String(windowGroup.code).replace(/[^0-9]/g, '')) || 0,
-                            characteristics: element.name || 'Default Window',
-                            angulo_azimut: formatAzimuth(element.orientation),
-                            area: element.area || 0
+                        continue;
+                    }
+                    if (!element || !element.id) {
+                        errors.push({
+                            message: `No existe ventana con codigo ifc=${code_ifc}`,
+                            context: `Ventana ${window.name}`
                         });
-
-                        // Update window progress count
+                        continue;
+                    }
+                    // Crear la ventana usando el endpoint adecuado
+                    try {
+                        const payload = {
+                            angulo_azimut: formatAzimuth(window.orientation),
+                            orientacion: 'Exterior',
+                            window_id: element.id,
+                            broad: window.dimensions?.x || 0,
+                            high: window.dimensions?.y || 0,
+                            characteristics: window.name || ''
+                        };
+                        await post(`/window-enclosures-create/${projectId}`, {
+                            ...payload,
+                            enclosure_id: roomId
+                        });
                         setCreationStatus(prev => ({
                             ...prev,
                             progress: {
@@ -832,15 +897,14 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                 windows: prev.progress.windows + 1
                             }
                         }));
-                    } catch (error: any) {
+                    } catch (err: any) {
                         errors.push({
-                            message: `Error creating window element: ${error?.message || 'Unknown error'}`,
-                            context: `Window group: ${windowGroup.code}, Element: ${element.name}`
+                            message: `Error creando ventana en backend: ${err && err.message ? err.message : String(err)}`,
+                            context: `Ventana ${window.name}`
                         });
                     }
                 }
             }
-
             updateStatus({ currentComponent: 'Creación de ventanas completada' });
             return { success: errors.length === 0, errors };
         } catch (error: any) {

@@ -164,10 +164,33 @@ export const useWallBuilder = (projectId: string) => {
         }
     }
 
+    // Utilidad para obtener elemento por code_ifc y sección
+    const getElementByCodeIfc = async (section: string, code_ifc: string) => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${constantUrlApiEndpoint}/${section}/elements/by_code_ifc/${code_ifc}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                return null;
+            }
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching element by code_ifc:', error);
+            return null;
+        }
+    };
+
     return {
         createNodeMaster,
         createNodeChild,
         createFromEnclosure,
-        getMaterialByCode  // Expose this function for use in useProjectIfcBuilder
+        getMaterialByCode,  // Expose this function for use in useProjectIfcBuilder
+        getElementByCodeIfc // Expose for use in project builder
     };
 };

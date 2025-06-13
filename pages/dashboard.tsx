@@ -1,13 +1,10 @@
 'use client'
 import { BuildingLevelsReport } from "@/components/reports/BuildingLevelsReport";
-import { BuildingTypesReport } from "@/components/reports/BuildingTypesReport";
 import { DetailedUsersReport } from "@/components/reports/DetailedUsersReport";
 import EnergyChart from "@/components/reports/EnergyReport";
 import { PerformanceReport } from "@/components/reports/PerformanceReport";
 import { ProjectsByMonthReport } from "@/components/reports/ProjectsByMonthReport";
 import { ProjectsStatusReport } from "@/components/reports/ProjectsStatusReport";
-import { TotalSurfaceReport } from "@/components/reports/TotalSurfaceReport";
-import { UserReport } from "@/components/reports/UserReport";
 import {
     ArcElement,
     BarElement,
@@ -41,16 +38,7 @@ ChartJS.register(
     Legend
 )
 
-// Interfaces for report data
-interface UsersReport {
-    active: string[];
-    total: number[];
-}
 
-interface ProjectsByCountryReport {
-    country: string[];
-    total: number[];
-}
 
 interface ProjectsStatusReport {
     status: string[];
@@ -60,11 +48,6 @@ interface ProjectsStatusReport {
 interface BuildingLevelsReport {
     number_levels: number[];
     total: number[];
-}
-
-interface TotalSurfaceByCountryReport {
-    country: string[];
-    total_surface: number[];
 }
 
 interface BuildingTypeReport {
@@ -171,6 +154,10 @@ function getCssVarValue(varName: string, fallback: string) {
 }
 
 const DashboardPage: React.FC = () => {
+    // --- EnergyChart State and Effect ---
+    const [energyChartData, setEnergyChartData] = useState({ labels: [], datasets: [] });
+    const [loadingEnergyChart, setLoadingEnergyChart] = useState(false);
+
     useAuth()
     const [primaryColor, setPrimaryColor] = useState("#3ca7b7")
     const api = useApi();
@@ -183,18 +170,78 @@ const DashboardPage: React.FC = () => {
 
     const [detailedUsers, setDetailedUsers] = useState<DetailedUser[] | null>(null);
 
+    // --- Filtros globales (dummy) ---
+    const [selectedYear, setSelectedYear] = useState('2025');
+    const [selectedCountry, setSelectedCountry] = useState('Chile');
+    const [selectedZone, setSelectedZone] = useState('A');
+    const [selectedTypology, setSelectedTypology] = useState('Unifamiliar');
+
+    // Datos dummy para selects
+    const years = ['2022', '2023', '2024', '2025'];
+    const countries = ['Chile', 'Argentina', 'Perú'];
+    const zones = ['A', 'B', 'C', 'D'];
+    const typologies = ['Unifamiliar', 'Duplex', 'Otros', 'Oficinas'];
+
+    // Elimina duplicados de EnergyChart State and Effect
+
+    useEffect(() => {
+        const fetchEnergyReport = async () => {
+            setLoadingEnergyChart(true);
+            try {
+                let params: string[] = [];
+                if (selectedYear) params.push(`year=${encodeURIComponent(selectedYear)}`);
+                if (selectedCountry) params.push(`country=${encodeURIComponent(selectedCountry)}`);
+                const queryString = params.length ? `?${params.join('&')}` : '';
+                const response = await api.get(`reports/energy${queryString}`);
+                if (response?.status === "success" && Array.isArray(response.data)) {
+                    setEnergyChartData({
+                        labels: response.data.map((item: any) => `${item.year} - ${item.country}`),
+                        datasets: [
+                            {
+                                label: "Total Energía",
+                                data: response.data.map((item: any) => item.total_energy)
+                            },
+                            {
+                                label: "Renovable",
+                                data: response.data.map((item: any) => item.renewable)
+                            },
+                            {
+                                label: "No Renovable",
+                                data: response.data.map((item: any) => item.non_renewable)
+                            }
+                        ]
+                    });
+                } else {
+                    setEnergyChartData({ labels: [], datasets: [] });
+                }
+            } catch (e) {
+                setEnergyChartData({ labels: [], datasets: [] });
+            } finally {
+                setLoadingEnergyChart(false);
+            }
+        };
+        fetchEnergyReport();
+    }, [selectedYear, selectedCountry]);
+
     useEffect(() => {
         const pColor = getCssVarValue("--primary-color", "#3ca7b7")
         setPrimaryColor(pColor)
     }, [])
 
-    // Fetch all report data concurrently
+    // Fetch all report data concurrentemente
     useEffect(() => {
         const fetchReportData = async () => {
             try {
+                // Construir query string para los filtros activos
+                const params = [];
+                if (selectedYear) params.push(`year=${encodeURIComponent(selectedYear)}`);
+                if (selectedCountry) params.push(`country=${encodeURIComponent(selectedCountry)}`);
+                if (selectedZone) params.push(`climate_zone=${encodeURIComponent(selectedZone)}`);
+                if (selectedTypology) params.push(`building_type=${encodeURIComponent(selectedTypology)}`);
+                const queryString = params.length ? `?${params.join('&')}` : '';
                 // Prepare all API requests to run concurrently
                 const requests = [
-                    api.get('reports/projects_registered_by_month').then(response => {
+                    api.get(`reports/projects_registered_by_month${queryString}`).then(response => {
                         if (response?.status === 'success') {
                             const data = convertObjectToArrays(response?.data);
                             if (data) {
@@ -236,7 +283,7 @@ const DashboardPage: React.FC = () => {
         };
 
         fetchReportData();
-    }, []);
+    }, [selectedYear, selectedCountry, selectedZone, selectedTypology]);
 
 
     return (
@@ -247,6 +294,37 @@ const DashboardPage: React.FC = () => {
                     <Breadcrumb items={[
                         { title: 'Dashboard', href: '/dashboard', active: true },
                     ]} />
+                </div>
+            </Card>
+
+            {/* Filtros globales */}
+            {/* Filtros SOLO para los reportes Proyectos Registrados y Energy Report */}
+            <Card className="mb-3 p-3">
+                <div className="row g-2 align-items-end">
+                    <div className="col-6 col-md-3">
+                        <label>Año</label>
+                        <select className="form-select" value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
+                            {years.map(year => <option key={year} value={year}>{year}</option>)}
+                        </select>
+                    </div>
+                    <div className="col-6 col-md-3">
+                        <label>País</label>
+                        <select className="form-select" value={selectedCountry} onChange={e => setSelectedCountry(e.target.value)}>
+                            {countries.map(country => <option key={country} value={country}>{country}</option>)}
+                        </select>
+                    </div>
+                    <div className="col-6 col-md-3">
+                        <label>Zona climática</label>
+                        <select className="form-select" value={selectedZone} onChange={e => setSelectedZone(e.target.value)}>
+                            {zones.map(zone => <option key={zone} value={zone}>{zone}</option>)}
+                        </select>
+                    </div>
+                    <div className="col-6 col-md-3">
+                        <label>Tipología de edificación</label>
+                        <select className="form-select" value={selectedTypology} onChange={e => setSelectedTypology(e.target.value)}>
+                            {typologies.map(typology => <option key={typology} value={typology}>{typology}</option>)}
+                        </select>
+                    </div>
                 </div>
             </Card>
 
@@ -262,8 +340,13 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="col-md-6 col-lg-6">
-                        <EnergyChart />
+                        <EnergyChart
+                            chartData={energyChartData}
+                            loading={loadingEnergyChart}
+                        />
                     </div>
+
+
 
                     <div className="col-md-6 col-lg-6">
                         <DetailedUsersReport
@@ -273,7 +356,6 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="col-md-6 col-lg-6">
-
                         <PerformanceReport
                             loading={loadingPerformance}
                             data={performanceData}

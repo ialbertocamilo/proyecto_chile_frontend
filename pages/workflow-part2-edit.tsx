@@ -242,7 +242,23 @@ const WorkFlowpar2editPage: React.FC = () => {
   // ===================== ESTADOS GENERALES ======================
   const [projectId, setProjectId] = useState<number | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const [step, setStep] = useState<number>(3);
+  const [step, setStep] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const stepParam = params.get('step');
+      return stepParam ? parseInt(stepParam, 10) : 3;
+    }
+    return 3;
+  });
+  // Sincroniza el estado step con el query param de la URL
+  useEffect(() => {
+    if (router.query.step) {
+      const stepParam = parseInt(router.query.step as string, 10);
+      if (!isNaN(stepParam) && step !== stepParam) {
+        setStep(stepParam);
+      }
+    }
+  }, [router.query.step]);
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [searchQuery, setSearchQuery] = useState("");
   const [projectStatus, setProjectStatus] = useState("En proceso");

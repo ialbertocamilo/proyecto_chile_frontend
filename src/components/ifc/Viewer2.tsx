@@ -1,6 +1,8 @@
 "use client";
 import { useProjectIfcBuilder } from '@/hooks/ifc/useProjectIfcBuilder';
 import { getPropValue } from '@/lib/utils';
+import { useStructuredRoomService } from '@/service/structuredRoom';
+import { angleToAzimutRangeString } from '@/utils/azimut';
 import { notify } from '@/utils/notify';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Check, Loader2 } from "lucide-react";
@@ -11,7 +13,6 @@ import Card from "../common/Card";
 import CustomButton from "../common/CustomButton";
 import IFCUploader from "./IfcUploader";
 import { ErrorDetailsAccordion } from './components/ErrorDetailsAccordion';
-import { MissingElementsPanel } from './components/MissingElementsPanel';
 import { ProjectStatusPanel } from './components/ProjectStatusPanel';
 
 /**
@@ -39,8 +40,9 @@ export default function IFCViewerComponent() {
   const [status, setStatus] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [fileSelected, setFileSelected] = useState<boolean>(false);
-  const [structuredOutput, setStructuredOutput] = useState<string>("");
-  const [missingElements, setMissingElements] = useState<Array<{ type: string; name: string }>>([]);
+
+  // Servicio para enviar el buildingStructure
+  const { postStructuredRoom } = useStructuredRoomService();
 
   // Hooks
   const router = useRouter();
@@ -123,6 +125,9 @@ export default function IFCViewerComponent() {
           obj.type.includes('IfcWindow') &&
           obj.props.some((p: any) => p.name === 'RECINTO ASIGNADO' && p.value === roomEnclosureType)
         );
+        console.log("roomCode", roomCode);
+        console.log("roomEnclosureType", roomEnclosureType);
+        console.log("Selected windows", windows);
 
         const roomType = getPropValue(room, 'TIPOLOGÍA DE RESINTO') || getPropValue(room, 'TIPOLOGÍA DE RECINTO') || getPropValue(room, 'TIPOLOGIA DE RECINTO')
         return {
@@ -167,19 +172,26 @@ export default function IFCViewerComponent() {
 
               return {
                 code: code,
-                elements: walls.map(wall => ({
-                  id: wall.id,
-                  name: wall.name,
-                  area: wall.surfaceArea || getPropValue(wall, 'Área') || 0,
-                  material: getPropValue(wall, 'MATERIAL') || 'Unknown',
-                  thickness: wall.dimensions?.z || getPropValue(wall, 'ESPESOR') || 0,
-                  orientation: getPropValue(wall, 'ORIENTACIÓN') || 0,
-                  location: getPropValue(wall, 'UBICA_ELEMENTO') || 'Unknown',
-                  volume: wall.volume || 0,
-                  dimensions: wall.dimensions || { x: 0, y: 0, z: 0 },
-                  position: wall.position || { x: 0, y: 0, z: 0 },
-                  vectors: wall.vectors || null
-                }))
+                elements: walls.map(wall => {
+                  const largo = wall.dimensions?.x || Number(getPropValue(wall, 'longitud')) || 0;
+                  const alto = wall.dimensions?.y || Number(getPropValue(wall, 'altura')) || 0;
+                  const espesor = wall.dimensions?.z || Number(getPropValue(wall, 'espesor')) || 0;
+                  const volumen = largo * alto * espesor;
+
+                  return {
+                    id: wall.id,
+                    name: wall.name,
+                    area: wall.surfaceArea || getPropValue(wall, 'Área') || 0,
+                    material: getPropValue(wall, 'MATERIAL') || 'Unknown',
+                    thickness: espesor,
+                    orientation: getPropValue(wall, 'ORIENTACIÓN') || 0,
+                    location: getPropValue(wall, 'UBICA_ELEMENTO') || 'Unknown',
+                    volume: volumen,
+                    dimensions: wall.dimensions || { x: 0, y: 0, z: 0 },
+                    position: wall.position || { x: 0, y: 0, z: 0 },
+                    vectors: wall.vectors || null
+                  }
+                })
               };
             }),
             floors: floorCodes.map(code => {
@@ -195,7 +207,7 @@ export default function IFCViewerComponent() {
                   name: floor.name,
                   material: getPropValue(floor, 'MATERIAL') || 'Unknown',
                   color: getPropValue(floor, 'COLOR') || 'Unknown',
-                  thickness: floor.dimensions?.z || getPropValue(floor, 'ESPESOR') || 0,
+                  thickness: getPropValue(floor, 'ESPESOR') || 0,
                   keyNote: getPropValue(floor, 'Nota clave') || 'Unknown',
                   area: floor.surfaceArea || 0,
                   volume: floor.volume || 0,
@@ -229,31 +241,43 @@ export default function IFCViewerComponent() {
               };
             }),
             doors: doors.map(door => {
+              // const filterDoors =  objects.filter(obj =>
+              //   obj.type.includes('IfcWindow') &&
+              //   obj.props.some((p: any) => p.name === 'MURO ASIGNADO' && p.value === code)
+              // );
+              console.log("TheDoor", door.props.find((p: any) => p.name === 'MURO ASIGNADO'));
+              console.log("TheDoor Muro asignado", getPropValue(door.props, 'MURO ASIGNADO'));
+              console.log("TheDoor TIPO MURO", getPropValue(door.props, 'TIPO'));
               return {
                 id: door.id,
                 name: door.name,
-                type: door.type || getPropValue(door, 'TIPO') || 'Unknown',
-                width: door.dimensions?.x || getPropValue(door.props, 'ANCHO') || 0,
-                height: door.dimensions?.y || getPropValue(door.props, 'ALTURA') || 0,
-                assignedWall: getPropValue(door.props, 'MURO ASIGNADO') || 'Unknown',
-                uValue: getPropValue(door.props, 'U') || 0,
+                type: door.type,
+                width: Number(getPropValue(door, 'ANCHO')) || 0,
+                height: Number(getPropValue(door, 'ALTURA')) || 0,
+                assignedWall: getPropValue(door, 'MURO ASIGNADO') || 'Unknown',
+                uValue: Number(getPropValue(door, 'U')) || 0,
                 dimensions: door.dimensions || { x: 0, y: 0, z: 0 },
                 position: door.position || { x: 0, y: 0, z: 0 },
-                vectors: door.vectors || null
+                vectors: door.vectors || null,
+                azimut: angleToAzimutRangeString(getPropValue(door, 'AZIMUT'))
               }
             }),
-            windows: windows.map(window => ({
-              id: window.id,
-              name: window.name,
-              type: getPropValue(window, 'TIPO') || 'Unknown',
-              width: window.dimensions?.x || getPropValue(window, 'ANCHO') || 0,
-              height: window.dimensions?.y || getPropValue(window, 'ALTURA') || 0,
-              assignedWall: getPropValue(window, 'MURO ASIGNADO') || 'Unknown',
-              uValue: getPropValue(window, 'U') || 0,
-              dimensions: window.dimensions || { x: 0, y: 0, z: 0 },
-              position: window.position || { x: 0, y: 0, z: 0 },
-              vectors: window.vectors || null
-            }))
+            windows: windows.map(window => {
+
+
+              return {
+                id: window.id,
+                name: window.name,
+                type: getPropValue(window, 'TIPO') || 'Unknown',
+                width: window.dimensions?.x || getPropValue(window, 'ANCHO') || 0,
+                height: window.dimensions?.y || getPropValue(window, 'ALTURA') || 0,
+                assignedWall: getPropValue(window, 'MURO ASIGNADO') || 'Unknown',
+                uValue: getPropValue(window, 'U') || 0,
+                dimensions: window.dimensions || { x: 0, y: 0, z: 0 },
+                position: window.position || { x: 0, y: 0, z: 0 },
+                vectors: window.vectors || null
+              }
+            })
           }
         };
       })
@@ -271,39 +295,21 @@ export default function IFCViewerComponent() {
     try {
       // Generate structured output
       const structuredText = generateStructuredOutput(objects);
-      setStructuredOutput(structuredText);
 
-      // Parse the structured text into a JSON object
       const buildingStructure = JSON.parse(structuredText);
 
       console.log("Building structure:", buildingStructure);
-      // Use the projectBuilder hook to create the project from the structured data
-      setStatus("Creando proyecto...");
-      const result = await projectBuilder.createProjectWithValidation(buildingStructure);
+      setStatus("Creando recintos en backend...");
 
-      if (result?.success) {
-        setStatus(`Proceso completado: ${result?.completedRooms} recintos creados`);
+      const response = await postStructuredRoom(buildingStructure,projectId);
+      if (response && response.created) {
+        setStatus(`Proceso completado: ${response.created.length} recintos creados`);
         notify("Proyecto creado exitosamente");
-
-        // Update project status to "en proceso"
-        try {
-          setStatus("Actualizando estado del proyecto...");
-          await projectBuilder.updateProjectStatus("en proceso");
-          setStatus(`Proceso completado: ${result?.completedRooms} recintos creados. Proyecto en proceso.`);
-          notify("Estado del proyecto actualizado a 'en proceso'");
-        } catch (statusError) {
-          console.error("Error al actualizar estado del proyecto:", statusError);
-          notify("Proyecto creado pero no se pudo actualizar su estado", "warning");
-        }
+      } else {
+        setStatus("No se recibieron datos de creación de recintos");
+        notify("No se recibieron datos de creación de recintos", "warning");
       }
-      else {
-
-        setStatus(`Proceso no logró completarse debido a errores.`);
-        console.error("Errors during project creation:", result);
-        notify(`Proceso no logró completarse debido a errores`, "error");
-        setMissingElements(result.missingElements || []);
-        setIsProcessing(false);  // Cerramos el panel de estado pero mostramos el botón para ver missing elements
-      }
+      setIsProcessing(false);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido durante el procesamiento';
       console.error("Error processing objects:", error);
@@ -414,22 +420,14 @@ export default function IFCViewerComponent() {
             </h5>
 
             {/* Mostrar botón para ver elementos faltantes si hay alguno */}
-            {missingElements.length > 0 && !isProcessing && (
-              <CustomButton
-                onClick={() => setIsProcessing(true)}
-                className="btn-warning mt-2"
-              >
-                Ver {missingElements.length} Elementos Faltantes
-              </CustomButton>
-            )}
+            {/* Botón de elementos faltantes deshabilitado por refactor */}
           </Col>
         </Row>
 
         {/* Detailed status section - Ahora se muestra siempre que haya un estado de creación */}
         {(isProcessing || projectBuilder.creationStatus.completedRooms > 0 || projectBuilder.creationStatus.errors.length > 0) && (
           <ProjectStatusPanel creationStatus={{
-            ...projectBuilder.creationStatus,
-            missingElements: missingElements
+            ...projectBuilder.creationStatus
           }} />
         )}
 
@@ -439,12 +437,7 @@ export default function IFCViewerComponent() {
         )}
 
         {/* Missing Elements Panel - Mostrar si hay elementos faltantes y el usuario ha hecho clic en el botón */}
-        {missingElements.length > 0 && isProcessing && (
-          <MissingElementsPanel
-            elements={missingElements}
-            onClose={() => setIsProcessing(false)}
-          />
-        )}
+        {/* Panel de elementos faltantes deshabilitado por refactor */}
       </Container>
 
     </Card>

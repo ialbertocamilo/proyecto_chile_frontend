@@ -1,8 +1,8 @@
 import { useApi } from '@/hooks/useApi';
+import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
 import { useState } from 'react';
 import { useFloorBuilder } from './useFloorBuilder';
 import { useWallBuilder } from './useWallBuilder';
-import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
 
 // Type definitions for building structure
 interface Vector {
@@ -133,6 +133,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
 
         // Helper function to check existence
         const checkExistence = async (type: string, elements: Element[]) => {
+            if (!elements || elements.length === 0) return
             for (const element of elements) {
                 if (type.toLowerCase() === 'door') {
                     // Validar existencia de puerta por code_ifc
@@ -178,28 +179,28 @@ export const useProjectIfcBuilder = (projectId: string) => {
         // Validate floors
         if (details.floors) {
             for (const floorGroup of details.floors) {
-                await checkExistence('Floor', floorGroup.elements);
+                await checkExistence('Floor', floorGroup?.elements);
             }
         }
 
         // Validate ceilings
         if (details.ceilings) {
             for (const ceilingGroup of details.ceilings) {
-                await checkExistence('Ceiling', ceilingGroup.elements);
+                await checkExistence('Ceiling', ceilingGroup?.elements);
             }
         }
 
         // Validate doors
         if (details.doors) {
             for (const doorGroup of details.doors) {
-                await checkExistence('Door', doorGroup.elements);
+                await checkExistence('Door', doorGroup?.elements);
             }
         }
 
         // Validate windows
         if (details.windows) {
             for (const windowGroup of details.windows) {
-                await checkExistence('window', windowGroup.elements);
+                await checkExistence('window', windowGroup?.elements);
             }
         }
 
@@ -694,7 +695,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                         updateStatus({
                                             currentComponent: `Material encontrado para techo: ${element.material} (ID: ${materialId})`
                                         });
-                                    } 
+                                    }
                                 } catch (error) {
                                     updateStatus({
                                         currentComponent: `Error al buscar material de techo: ${element.material}`
@@ -776,8 +777,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
             });
 
             for (const door of doors) {
-                // Validar existencia por code_ifc
-                const code_ifc = door.id;
+                const code_ifc = door.type;
                 const section = 'door';
                 let element;
                 try {
@@ -852,8 +852,10 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 currentPhase: 'windows',
                 currentComponent: 'Iniciando creación de ventanas'
             });
-
+            
+            if (!windowGroups || windowGroups?.length === 0) return ;
             for (const windowGroup of windowGroups) {
+                if (!windowGroup.elements || windowGroup.elements.length === 0) return;
                 for (const window of windowGroup.elements) {
                     // Validar existencia por code_ifc
                     const code_ifc = window.id;
@@ -937,7 +939,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
         // Create walls
         if (details.walls && details.walls.length > 0) {
             const wallResult = await createWalls(roomId, details.walls);
-            if (!wallResult.success || wallResult.errors.length > 0) {
+            if (!wallResult?.success || wallResult?.errors.length > 0) {
                 errors.push(...wallResult.errors);
             }
         }
@@ -961,7 +963,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
         // Create doors (if any)
         if (details.doors && details.doors.length > 0) {
             const doorResult = await createDoors(roomId, details.doors);
-            if (!doorResult.success || doorResult.errors.length > 0) {
+            if (!doorResult?.success || doorResult?.errors.length > 0) {
                 errors.push(...doorResult.errors);
             }
         }

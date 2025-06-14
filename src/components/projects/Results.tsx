@@ -345,21 +345,14 @@ const Results = () => {
             <Spinner animation="border" size="sm" role="status" />
             <span>Descargando...</span>
           </span>
-        )}        <CustomButton
+        )}       
+         <CustomButton
           onClick={handleDownloadIndicatorsPDF}
           className="mb-3"
           style={{ marginLeft: 8, background: '#2a80c5' }}
         >
           <Download size={18} style={{ marginRight: 8 }} />
           Descargar PDF Indicadores Finales
-        </CustomButton>
-        <CustomButton
-          onClick={handleDownloadIndicatorsPDF} // Using the same function for now
-          className="mb-3"
-          style={{ marginLeft: 8, background: '#2ca58d' }}
-        >
-          <Download size={18} style={{ marginRight: 8 }} />
-          Reporte Completo PDF
         </CustomButton>
       </div>
 

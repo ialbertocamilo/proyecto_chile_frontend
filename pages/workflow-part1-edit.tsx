@@ -1,5 +1,6 @@
 import MapAutocompletion from "@/components/maps/MapAutocompletion";
 import ProjectStatus from "@/components/projects/ProjectStatus";
+import ConfiguracionEnergiaTab from "@/components/projects/tabs/ConfiguracionEnergiaTab";
 import { steps } from "@/constants/steps";
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
@@ -18,7 +19,6 @@ import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import ConfiguracionEnergiaTab from "@/components/projects/tabs/ConfiguracionEnergiaTab";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -444,16 +444,29 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   // Función para manejar el cambio de paso en la sidebar
   const handleSidebarStepChange = (newStep: number) => {
-    if (newStep === 1 || newStep === 2) {
+    const selectedStep = steps.find((s) => s.stepNumber === newStep);
+    if (selectedStep && selectedStep.route) {
+      // Si la ruta requiere el id del proyecto, lo agregamos
+      if (selectedStep.route.includes("id=") || selectedStep.route.includes(":id")) {
+        const id = router.query.id;
+        if (id) {
+          router.push(`${selectedStep.route}${selectedStep.route.includes('?') ? '&' : '?'}id=${id}`);
+        } else {
+          router.push(selectedStep.route);
+        }
+      } else if (selectedStep.route.includes("recinto")) {
+        // Si es la ruta de Recinto y requiere id
+        const id = router.query.id;
+        if (id) {
+          router.push(`${selectedStep.route}?id=${id}`);
+        } else {
+          router.push(selectedStep.route);
+        }
+      } else {
+        router.push(selectedStep.route);
+      }
+    } else {
       setStep(newStep);
-    } else if (newStep === 3) {
-      router.push(`/workflow-part2-edit?id=${router.query.id}&step=3`);
-    } else if (newStep === 4) {
-      router.push(`/workflow-part2-edit?id=${router.query.id}&step=7`);
-    } else if (newStep === 8) {
-      router.push(`/workflow-part2-edit?id=${router.query.id}&step=8`);
-    } else if (newStep === 6) {
-      setStep(6);
     }
   };
 

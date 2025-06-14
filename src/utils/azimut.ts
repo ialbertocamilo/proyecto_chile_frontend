@@ -1,3 +1,37 @@
+// Devuelve el rango de azimut en formato "-90° ≤ Az < -67.5°" dado un ángulo string como "270"
+export function angleToAzimutRangeString(angleString: string): string {
+    const angle = parseFloat(angleString.replace(/,/g, '.'));
+    if (isNaN(angle)) throw new Error('Ángulo inválido');
+    // Definir los rangos de 8 orientaciones principales
+    const ranges = [
+        { min: -22.5, max: 22.5 },    // N
+        { min: 22.5, max: 67.5 },     // NE
+        { min: 67.5, max: 112.5 },    // E
+        { min: 112.5, max: 157.5 },   // SE
+        { min: 157.5, max: 202.5 },   // S
+        { min: 202.5, max: 247.5 },   // SO
+        { min: 247.5, max: 292.5 },   // O
+        { min: 292.5, max: 337.5 },   // NO
+    ];
+    // Normalizar ángulo a [0, 360)
+    let norm = angle % 360;
+    if (norm < 0) norm += 360;
+    // Buscar el rango correspondiente
+    for (const r of ranges) {
+        let min = r.min, max = r.max;
+        // Ajustar para el rango Norte que cruza 0°
+        if (min < 0) {
+            if (norm >= (360 + min) || norm < max) {
+                min = 360 + min;
+                return `${min}° ≤ Az < ${max}°`;
+            }
+        } else if (norm >= min && norm < max) {
+            return `${min}° ≤ Az < ${max}°`;
+        }
+    }
+    // Si no coincide, devolver el ángulo como rango puntual
+    return `${norm}° ≤ Az < ${norm}°`;
+}
 // Tipos de orientación principales (8 direcciones)
 type Orientation = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SO' | 'O' | 'NO';
 
@@ -85,7 +119,7 @@ export function azimutRangeToOrientation(rangeString: string): Orientation | und
     }
 }
 
-function azimutRangeToFullOrientation(rangeString: string): string | undefined{
+function azimutRangeToFullOrientation(rangeString: string): string | undefined {
     const orientationMap: Record<Orientation, string> = {
         'N': 'Norte',
         'NE': 'Noreste',
@@ -101,27 +135,6 @@ function azimutRangeToFullOrientation(rangeString: string): string | undefined{
     if (orientation)
         return orientationMap[orientation];
 }
-
-
-const yourRanges = [
-    '0° ≤ Az < 22,5°',
-    '22,5° ≤ Az < 45°',
-    '45° ≤ Az < 67,5°',
-    '67,5° ≤ Az < 90°',
-    '90° ≤ Az < 112,5°',
-    '112,5° ≤ Az < 135°',
-    '135° ≤ Az < 157,5°',
-    '157,5° ≤ Az < 180°',
-    '-180° ≤ Az < -157,5°',
-    '-157,5° ≤ Az < -135°',
-    '-135° ≤ Az < -112,5°',
-    '-112,5° ≤ Az < -90°',
-    '-90° ≤ Az < -67,5°',
-    '-67,5° ≤ Az < -45°',
-    '-45° ≤ Az < -22,5°',
-    '-22,5° ≤ Az < 0°',
-    '0° ≤ Az < 22,5°'
-];
 
 
 

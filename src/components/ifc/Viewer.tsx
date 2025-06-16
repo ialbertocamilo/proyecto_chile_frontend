@@ -164,22 +164,39 @@ export default function IFCViewerComponent() {
                 obj.type.includes('IfcWall') &&
                 obj.props.some((p: any) => p.name === 'CÓDIGO MULTICAPA' && p.value === code)
               );
-
+              const windows = objects.filter(obj =>
+                obj.type.includes('IfcWindow') &&
+                obj.props.some((p: any) => p.name === 'MURO ASIGNADO' && p.value === code)
+              );
               return {
                 code: code,
-                elements: walls.map(wall => ({
-                  id: wall.id,
-                  name: wall.name,
-                  area: wall.surfaceArea || getPropValue(wall, 'Área') || 0,
-                  material: getPropValue(wall, 'MATERIAL') || 'Unknown',
-                  thickness: wall.dimensions?.z || getPropValue(wall, 'ESPESOR') || 0,
-                  orientation: getPropValue(wall, 'ORIENTACIÓN') || 0,
-                  location: getPropValue(wall, 'UBICA_ELEMENTO') || 'Unknown',
-                  volume: wall.volume || 0,
-                  dimensions: wall.dimensions || { x: 0, y: 0, z: 0 },
-                  position: wall.position || { x: 0, y: 0, z: 0 },
-                  vectors: wall.vectors || null
-                }))
+                windows: windows.map(window => ({
+                  id: window.id,
+                  name: window.name,
+                  type: window.type,
+                  width: window.dimensions?.x || getPropValue(window, 'ANCHO') || 0,
+                  height: window.dimensions?.y || getPropValue(window, 'ALTURA') || 0,
+                  assignedWall: getPropValue(window, 'MURO ASIGNADO') || 'Unknown',
+                  uValue: getPropValue(window, 'U') || 0,
+                  dimensions: window.dimensions || { x: 0, y: 0, z: 0 },
+                  position: window.position || { x: 0, y: 0, z: 0 },
+                  vectors: window.vectors || null
+                })),
+                elements: walls.map(wall => {
+                  return {
+                    id: wall.id,
+                    name: wall.name,
+                    area: wall.surfaceArea || getPropValue(wall, 'Área') || 0,
+                    material: getPropValue(wall, 'MATERIAL') || 'Unknown',
+                    thickness: wall.dimensions?.z || getPropValue(wall, 'ESPESOR') || 0,
+                    orientation: getPropValue(wall, 'ORIENTACIÓN') || 0,
+                    location: getPropValue(wall, 'UBICA_ELEMENTO') || 'Unknown',
+                    volume: wall.volume || 0,
+                    dimensions: wall.dimensions || { x: 0, y: 0, z: 0 },
+                    position: wall.position || { x: 0, y: 0, z: 0 },
+                    vectors: wall.vectors || null,
+                  };
+                })
               };
             }),
             floors: floorCodes.map(code => {
@@ -291,13 +308,15 @@ export default function IFCViewerComponent() {
           await projectBuilder.updateProjectStatus("en proceso");
           setStatus(`Proceso completado: ${result?.completedRooms} recintos creados. Proyecto en proceso.`);
           notify("Estado del proyecto actualizado a 'en proceso'");
+
+          // Redirect to workflow-part1-edit with the project ID
+          router.push(`/workflow-part1-edit?id=${projectId}`);
         } catch (statusError) {
           console.error("Error al actualizar estado del proyecto:", statusError);
           notify("Proyecto creado pero no se pudo actualizar su estado", "warning");
         }
       }
       else {
-
         setStatus(`Proceso no logró completarse debido a errores.`);
         console.error("Errors during project creation:", result);
         notify(`Proceso no logró completarse debido a errores`, "error");
@@ -372,15 +391,13 @@ export default function IFCViewerComponent() {
           <h2>Gestor IFC</h2>
         </Col>
       </Row>
-      <IFCUploader onFileUpload={handleFileUpload} />
-      <Row className="mb-3">
+      <IFCUploader onFileUpload={handleFileUpload} />      <Row className="mb-3">
         <Col className="d-flex justify-content-end">
-          {fileSelected && (
+          {fileSelected && !isProcessing && (
             <CustomButton
               onClick={() => processObjectsSequentially(objectsData)}
-              disabled={isProcessing}
             >
-              {isProcessing ? "Procesando..." : "Procesar Objetos"}
+              Procesar Objetos
             </CustomButton>
           )}
         </Col>

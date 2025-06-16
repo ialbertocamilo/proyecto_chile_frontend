@@ -1,5 +1,6 @@
 import Breadcrumb from "@/components/common/Breadcrumb";
 import MapAutocompletion from "@/components/maps/MapAutocompletion";
+import ConfiguracionEnergiaTab from "@/components/projects/tabs/ConfiguracionEnergiaTab";
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import axios from "axios";
@@ -14,7 +15,6 @@ import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
-import ConfiguracionEnergiaTab from "@/components/projects/tabs/ConfiguracionEnergiaTab";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -857,7 +857,7 @@ const ProjectWorkflowPart1: React.FC = () => {
               <div className="mt-3">
                 {/* Paso 6: Configuración */}
                 <React.Suspense fallback={<div>Cargando configuración...</div>}>
-                <ConfiguracionEnergiaTab />
+                  <ConfiguracionEnergiaTab />
                 </React.Suspense>
               </div>
             )}

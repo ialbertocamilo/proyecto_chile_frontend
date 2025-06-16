@@ -2,6 +2,7 @@
 import { useApi } from '@/hooks/useApi';
 import { findObjectsByTypeAndProperty, getPropValue } from '@/lib/utils';
 import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
+
 interface SurfaceColor {
     name: string;
     value: number;
@@ -12,6 +13,23 @@ interface WallInfo {
         interior: SurfaceColor;
         exterior: SurfaceColor;
     };
+}
+
+interface Element {
+    id: string;
+    name: string;
+    material: string;
+    dimensions?: {
+        x: number;
+        y: number;
+        z: number;
+    };
+    orientation?: string;
+}
+
+interface ConstructionGroup {
+    code: string;
+    elements: Element[];
 }
 
 interface CreateNodeMasterResponse {
@@ -26,15 +44,94 @@ interface CreateNodeMasterResponse {
     value_u: number;
 }
 
+interface WindowError {
+    message: string;
+    context: string;
+}
 
+interface Window {
+    id: string;
+    name: string;
+    type: string;
+    width: number;
+    height: number;
+    assignedWall: string;
+    uValue: number;
+    dimensions: {
+        x: number;
+        y: number;
+        z: number;
+    };
+    position: {
+        x: number;
+        y: number;
+        z: number;
+    };
+    vectors: any;
+}
+
+interface WallGroup {
+    code: string;
+    elements: Element[];
+    windows: Window[];
+}
 
 export const useWallBuilder = (projectId: string) => {
-    const { post, get } = useApi();
+    const { post } = useApi();
+    const createWindowsForWall = async (
+        wallId: number,
+        wallGroup: WallGroup,
+        roomId: number
+    ): Promise<WindowError[]> => {
+        const errors: WindowError[] = [];
+        if (!wallGroup?.windows?.length) return errors;
 
+        for (const window of wallGroup.windows) {
+            try {
+                // Validar existencia por code_ifc
+                const code_ifc = window.id;
+                const section = 'window';
+
+                const element = await getElementByCodeIfc(section, code_ifc);
+                if (!element || !element.id) {
+                    errors.push({
+                        message: `No existe ventana con codigo ifc=${code_ifc}`,
+                        context: `Ventana ${window.name}`
+                    });
+                    continue;
+                }
+
+                const payload = {
+                    alojado_en: "",
+                    angulo_azimut: "0", // Por defecto
+                    broad: window.width,
+                    characteristics: "Interior climatizado",
+                    high: window.height,
+                    housed_in: wallId,
+                    position: "Interior",
+                    with_no_return: "Sin",
+                    window_id: element.id
+                };
+
+                await post(`/window-enclosures-create/${roomId}`, {
+                    ...payload,
+                    enclosure_id: roomId
+                });
+            } catch (error) {
+                errors.push({
+                    message: `Error creating window: ${error}`,
+                    context: `Window ${window.name}`
+                });
+            }
+        }
+        return errors;
+    }; 
     const createNodeMaster = async (
         name: string,
         interiorColor: string,
-        exteriorColor: string
+        exteriorColor: string,
+        roomId?: number,
+        wallGroup?: WallGroup
     ): Promise<CreateNodeMasterResponse | undefined> => {
         try {
             const response = await post(
@@ -49,11 +146,26 @@ export const useWallBuilder = (projectId: string) => {
                     }
                 }
             );
-            return response as CreateNodeMasterResponse; // Return the typed response
+
+            const wallResponse = response as CreateNodeMasterResponse;
+
+            // Si tenemos roomId y wallGroup con ventanas, las creamos
+            if (roomId && wallGroup && wallResponse?.id && wallGroup.windows?.length > 0) {
+                const windowErrors = await createWindowsForWall(
+                    wallResponse.id,
+                    wallGroup,
+                    roomId
+                );
+
+                if (windowErrors.length > 0) {
+                    console.error("Errors creating windows:", windowErrors);
+                }
+            }
+
+            return wallResponse;
         } catch (error) {
-            const errorMessage = "Error creating wall detail part";
-            console.error(errorMessage, error);
-            // throw error; //TODO verificar si es que es necesario retornar error
+            console.error("Error creating wall detail part:", error);
+            return undefined;
         }
     };
 
@@ -62,9 +174,8 @@ export const useWallBuilder = (projectId: string) => {
         scantilonLocation: string = "Muro",
         name: string,
         materialId: number,
-        layerThickness: number // cm
+        layerThickness: number
     ) => {
-
         console.log('Creating child node with:', {
             scantilonLocation,
             name,
@@ -72,7 +183,7 @@ export const useWallBuilder = (projectId: string) => {
             layerThickness
         });
         try {
-            const response = await post(
+            return await post(
                 `/user/detail-create/${nodeMaster.id}`,
                 {
                     scantilon_location: scantilonLocation,
@@ -81,10 +192,8 @@ export const useWallBuilder = (projectId: string) => {
                     layer_thickness: layerThickness
                 }
             );
-            return response;
         } catch (error) {
-            const errorMessage = "Error creating node child";
-            console.error(errorMessage, error);
+            console.error("Error creating node child:", error);
             throw error;
         }
     };
@@ -92,7 +201,6 @@ export const useWallBuilder = (projectId: string) => {
     const getMaterialByCode = async (code: string) => {
         try {
             const token = localStorage.getItem("token");
-
             const response = await fetch(`${constantUrlApiEndpoint}/constants-code_ifc?code_ifc=${code}`, {
                 method: "GET",
                 headers: {
@@ -104,57 +212,84 @@ export const useWallBuilder = (projectId: string) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const data = await response.json();
-            return data;
+            return await response.json();
         } catch (error) {
             console.error('Error fetching material:', error);
             return null;
         }
-
-    }
-    const createFromEnclosure = async (enclosureId: number, obj: any, globalObjects: any, keys = ['M_1', 'M_2', 'M_3', 'M_4']) => {
-
-        const errors = []
-        const wallTypes = keys.map(key => {
-            const wallValue = getPropValue(obj, key);
-            return {
+    }; const createFromEnclosure = async (
+        enclosureId: number,
+        obj: any,
+        globalObjects: any,
+        keys = ['M_1', 'M_2', 'M_3', 'M_4']
+    ) => {
+        const errors: any[] = [];
+        const wallTypes = keys
+            .map(key => ({
                 key,
-                value: wallValue
-            };
-        }).filter(wall => wall.value !== '');
-
+                value: getPropValue(obj, key)
+            }))
+            .filter(wall => wall.value !== '');
 
         console.log("Creating layers of walls:", wallTypes);
         for (const wall of wallTypes) {
-            try {
+            try {                // Buscar las ventanas asociadas a este muro en los objetos globales
+                const wallWindows = globalObjects
+                    .filter((obj: any) =>
+                        obj.type.includes('IfcWindow') &&
+                        obj.props.some((p: any) => p.name === 'MURO ASIGNADO' && p.value === wall.value)
+                    )
+                    .map((window: any) => ({
+                        id: window.id,
+                        name: window.name,
+                        type: window.type,
+                        width: window.dimensions?.x || getPropValue(window, 'ANCHO') || 0,
+                        height: window.dimensions?.y || getPropValue(window, 'ALTURA') || 0,
+                        assignedWall: getPropValue(window, 'MURO ASIGNADO') || 'Unknown',
+                        uValue: getPropValue(window, 'U') || 0,
+                        dimensions: window.dimensions || { x: 0, y: 0, z: 0 },
+                        position: window.position || { x: 0, y: 0, z: 0 },
+                        vectors: window.vectors || null
+                    }));
+
+                const wallGroup: WallGroup = {
+                    code: wall.value,
+                    elements: [], // Se llenará después con los elementos del muro
+                    windows: wallWindows
+                };
+
                 const masterNode = await createNodeMaster(
                     wall.value,
-                    'Claro', // default interior color TODO buscar el color correcto
-                    'Claro'   // default exterior color TODO buscar el color correcto
+                    'Claro',
+                    'Claro',
+                    enclosureId,
+                    wallGroup
                 );
-                console.log('Master Node:', masterNode);
-                const result = findObjectsByTypeAndProperty(globalObjects, "IfcWallStandardCase", "CÓDIGO MULTICAPA", wall.value);
 
-                console.log('Creando nodo hijos:', result);
-                // Creacion de muros
+                if (!masterNode) continue;
+
+                const result = findObjectsByTypeAndProperty(
+                    globalObjects,
+                    "IfcWallStandardCase",
+                    "CÓDIGO MULTICAPA",
+                    wall.value
+                );
+
                 for (const child of result) {
                     const layerThickness = getPropValue(child.props, 'ESPESOR') as unknown as number;
-                    console.log('Layer Thickness:', layerThickness);
                     try {
-                        const material = await getMaterialByCode(child.props['MATERIAL'])
-                        if (masterNode)
-                            await createNodeChild(
-                                masterNode,
-                                'Muro',
-                                wall.value,
-                                material?.id,
-                                layerThickness
-                            );
-                        console.log('Child node created successfully for:', child);
+                        const material = await getMaterialByCode(child.props['MATERIAL']);
+                        await createNodeChild(
+                            masterNode,
+                            'Muro',
+                            wall.value,
+                            material?.id || 1,
+                            layerThickness
+                        );
                     } catch (error) {
                         errors.push({
                             wall: wall.value,
-                            error: error
+                            error
                         });
                     }
                 }
@@ -162,40 +297,26 @@ export const useWallBuilder = (projectId: string) => {
                 console.error(`Error creating wall for ${wall.key}:`, error);
             }
         }
-    }
+        return errors;
+    };
 
-    // Utilidad para obtener elemento por code_ifc y sección
     const getElementByCodeIfc = async (section: string, code_ifc: string) => {
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch(`${constantUrlApiEndpoint}/${section}/elements/by_code_ifc/${code_ifc}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            if (!response.ok) {
-                return null;
-            }
-            const data = await response.json();
-            return data;
+            const response = await fetch(
+                `${constantUrlApiEndpoint}/${section}/elements/by_code_ifc/${code_ifc}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (!response.ok) return null;
+            return await response.json();
         } catch (error) {
             console.error('Error fetching element by code_ifc:', error);
-            return null;
-        }
-    };
-
-    const getAssociatedWall = async (windowId: number) => {
-        try {
-            // Hacer la petición al endpoint que nos dará la información del muro que contiene la ventana
-            const response = await get(`/window/${windowId}/wall`);
-            if (!response || !response.data) {
-                return null;
-            }
-            return response.data;
-        } catch (error) {
-            console.error('Error getting associated wall:', error);
             return null;
         }
     };
@@ -204,8 +325,7 @@ export const useWallBuilder = (projectId: string) => {
         createNodeMaster,
         createNodeChild,
         createFromEnclosure,
-        getMaterialByCode,  // Expose this function for use in useProjectIfcBuilder
-        getElementByCodeIfc, // Expose for use in project builder
-        getAssociatedWall,
+        getMaterialByCode,
+        getElementByCodeIfc,
     };
 };

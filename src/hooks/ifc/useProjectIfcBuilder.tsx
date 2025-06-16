@@ -840,98 +840,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 }]
             };
         }
-    };
-
-    /**
-     * Create windows for a room
-     */
-    // Crear ventanas validando existencia por code_ifc
-    const createWindows = async (roomId: number, windowGroups: ConstructionGroup[]) => {
-        const errors = [];
-        try {
-            updateStatus({
-                currentPhase: 'windows',
-                currentComponent: 'Iniciando creación de ventanas'
-            });
-
-            if (!windowGroups || windowGroups?.length === 0) return;
-            for (const windowGroup of windowGroups) {
-                if (!windowGroup.elements || windowGroup.elements.length === 0) return;
-                for (const window of windowGroup.elements) {
-                    // Validar existencia por code_ifc
-                    const code_ifc = 'VENTANA_001';
-                    // Sección puede ser 'window' o similar, ajustar según backend
-                    const section = 'window';
-                    let element;
-                    try {
-                        element = await wallBuilder.getElementByCodeIfc(section, code_ifc);
-                    } catch (e) {
-                        errors.push({
-                            message: `Error consultando existencia de ventana codigo ifc=${code_ifc}`,
-                            context: `Ventana ${window.name}`
-                        });
-                        continue;
-                    }
-                    if (!element || !element.id) {
-                        errors.push({
-                            message: `No existe ventana con codigo ifc=${code_ifc}`,
-                            context: `Ventana ${window.name}`
-                        });
-                        continue;
-                    }                    // Crear la ventana usando el endpoint adecuado
-                    try {
-                        // Obtener el ID del muro donde está la ventana
-                        const wallElement = await wallBuilder.getAssociatedWall(element.id);
-                        if (!wallElement || !wallElement.id) {
-                            errors.push({
-                                message: `No se pudo encontrar el muro asociado a la ventana`,
-                                context: `Ventana ${window.name}`
-                            });
-                            continue;
-                        }
-
-                        const payload = {
-                            alojado_en: "",
-                            angulo_azimut: formatAzimuth(window.orientation),
-                            broad: window.dimensions?.x || 0,
-                            characteristics: "Interior climatizado",
-                            high: window.dimensions?.y || 0,
-                            housed_in: wallElement.id, // ID del muro donde está alojada la ventana
-                            position: "Interior",
-                            window_id: element.id,
-                            with_no_return: "Sin"
-                        };
-                        await post(`/window-enclosures-create/${projectId}`, {
-                            ...payload,
-                            enclosure_id: roomId
-                        });
-                        setCreationStatus(prev => ({
-                            ...prev,
-                            progress: {
-                                ...prev.progress,
-                                windows: prev.progress.windows + 1
-                            }
-                        }));
-                    } catch (err: any) {
-                        errors.push({
-                            message: `Error creando ventana en backend: ${err && err.message ? err.message : String(err)}`,
-                            context: `Ventana ${window.name}`
-                        });
-                    }
-                }
-            }
-            updateStatus({ currentComponent: 'Creación de ventanas completada' });
-            return { success: errors?.length === 0, errors };
-        } catch (error: any) {
-            return {
-                success: false,
-                errors: [...errors, {
-                    message: error?.message || 'Unknown error when creating windows',
-                    context: 'Creating windows'
-                }]
-            };
-        }
-    };
+    };    // Eliminada la función createWindows ya que las ventanas se crean automáticamente
+    // durante la creación de muros en useWallBuilder.tsx -> createNodeMaster
 
     /**
      * Create room details (walls, floors, ceilings, doors, windows)
@@ -979,24 +889,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
             if (!doorResult?.success || doorResult?.errors.length > 0) {
                 errors.push(...doorResult.errors);
             }
-        }
-
-        if (details.windows && details.windows.length > 0) {
-            updateStatus({
-                currentPhase: 'windows',
-                currentComponent: 'Iniciando creación de ventanas'
-            });
-
-            const windowResult = await createWindows(roomId, details.windows);
-            if (
-                (windowResult && windowResult.success === false) ||
-                (windowResult && Array.isArray(windowResult.errors) && windowResult.errors.length > 0)
-            ) {
-                errors.push(...(windowResult?.errors ?? []));
-            }
-
-            updateStatus({ currentComponent: 'Creación de ventanas completada' });
-        }
+        }        // Las ventanas ahora se crean automáticamente junto con los muros
 
         updateStatus({
             currentComponent: `Detalles para recinto ${roomName} completados`,

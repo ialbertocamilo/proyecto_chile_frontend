@@ -2,21 +2,25 @@ import CustomButton from "@/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface Props {
   projectName: string;
   region: string;
   project_id?: string | number;
   disableclick?: boolean;
+  projectStatus?: string;
 }
 
 const ProjectInfoHeader: React.FC<Props> = ({
   projectName,
   region,
   project_id,
+  projectStatus: initialProjectStatus,
 }) => {
   const router = useRouter();
-  const [currentRegion, setCurrentRegion] = useState(region);
+  const [_currentRegion, setCurrentRegion] = useState(region);
+  const [projectStatus, setProjectStatus] = useState(initialProjectStatus);
 
   const fetchProjectDetails = async () => {
     try {
@@ -34,6 +38,9 @@ const ProjectInfoHeader: React.FC<Props> = ({
         const data = await response.json();
         if (data.divisions && data.divisions.region) {
           setCurrentRegion(data.divisions.region);
+        }
+        if (data.status) {
+          setProjectStatus(data.status);
         }
       }
     } catch (error) {
@@ -69,15 +76,14 @@ const ProjectInfoHeader: React.FC<Props> = ({
     localStorage.setItem("project_name_edit", projectName);
     localStorage.setItem("project_department_edit", region);
   };
-
   const handleRegionClick = () => {
     router.push(`/workflow-part1-edit?id=${project_id}&step=2`);
     localStorage.setItem("project_department_edit", region);
     localStorage.setItem("project_name_edit", projectName);
   };
 
-  const handleIfcUploadClick = () => {
-    router.push(`/upload-ifc?id=${project_id}`);
+  const handleIfcClick = () => {
+    router.push(`/ifc?id=${project_id}`);
   };
 
   return (
@@ -99,6 +105,21 @@ const ProjectInfoHeader: React.FC<Props> = ({
       >
         {`Región: ${region}`}
       </CustomButton>
+      {projectStatus === "registrado" && (
+        <CustomButton
+          color="orange"
+          style={{ padding: "0.8rem 3rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem" }}
+          onClick={handleIfcClick}
+        >
+          <Image
+            src="/file.svg"
+            alt="IFC icon"
+            width={20}
+            height={20}
+          />
+          Adjuntar IFC
+        </CustomButton>
+      )}
     </div>
   );
 };

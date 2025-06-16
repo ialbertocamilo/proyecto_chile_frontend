@@ -13,6 +13,7 @@ import IFCUploader from "./IfcUploader";
 import { ErrorDetailsAccordion } from './components/ErrorDetailsAccordion';
 import { MissingElementsPanel } from './components/MissingElementsPanel';
 import { ProjectStatusPanel } from './components/ProjectStatusPanel';
+import { angleToAzimutRangeString } from '@/utils/azimut';
 
 /**
  * Dynamically loads the IFC viewer component
@@ -177,7 +178,7 @@ export default function IFCViewerComponent() {
                   width: window.dimensions?.x || getPropValue(window, 'ANCHO') || 0,
                   height: window.dimensions?.y || getPropValue(window, 'ALTURA') || 0,
                   assignedWall: getPropValue(window, 'MURO ASIGNADO') || 'Unknown',
-                  uValue: getPropValue(window, 'U') || 0,
+                  azimut: angleToAzimutRangeString(getPropValue(window, 'AZIMUT')),
                   dimensions: window.dimensions || { x: 0, y: 0, z: 0 },
                   position: window.position || { x: 0, y: 0, z: 0 },
                   vectors: window.vectors || null
@@ -259,18 +260,7 @@ export default function IFCViewerComponent() {
                 vectors: door.vectors || null
               }
             }),
-            windows: windows.map(window => ({
-              id: window.id,
-              name: window.name,
-              type: getPropValue(window, 'TIPO') || 'Unknown',
-              width: window.dimensions?.x || getPropValue(window, 'ANCHO') || 0,
-              height: window.dimensions?.y || getPropValue(window, 'ALTURA') || 0,
-              assignedWall: getPropValue(window, 'MURO ASIGNADO') || 'Unknown',
-              uValue: getPropValue(window, 'U') || 0,
-              dimensions: window.dimensions || { x: 0, y: 0, z: 0 },
-              position: window.position || { x: 0, y: 0, z: 0 },
-              vectors: window.vectors || null
-            }))
+
           }
         };
       })

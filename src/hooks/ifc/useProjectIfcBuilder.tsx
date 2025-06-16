@@ -385,8 +385,13 @@ export const useProjectIfcBuilder = (projectId: string) => {
                     const masterNodeName = wallGroup.code;
                     const masterNode = await wallBuilder.createNodeMaster(
                         masterNodeName,
-                        'Claro', // Default interior color
-                        'Claro'  // Default exterior color
+                        'Claro', 
+                        'Claro' ,
+                        {
+                            ...wallGroup,
+                            windows: (wallGroup as any).windows ?? []
+                        },
+                        roomId
                     );
 
                     // Create child nodes for each wall element in the group concurrently
@@ -465,7 +470,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
                     const orientation = wallGroup.elements[0]?.orientation || '';
                     const wallCharacteristics = "Exterior";
                     if (masterNode)
-                        wallPromises.push(post(`/wall-enclosures-create/${roomId}`, {
+                        wallPromises.push(
+                    post(`/wall-enclosures-create/${roomId}`, {
                             wall_id: masterNode.id,
                             characteristics: wallCharacteristics,
                             angulo_azimut: formatAzimuth(orientation),
@@ -840,7 +846,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 }]
             };
         }
-    };    // Eliminada la función createWindows ya que las ventanas se crean automáticamente
+    };  
     // durante la creación de muros en useWallBuilder.tsx -> createNodeMaster
 
     /**
@@ -889,7 +895,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
             if (!doorResult?.success || doorResult?.errors.length > 0) {
                 errors.push(...doorResult.errors);
             }
-        }        // Las ventanas ahora se crean automáticamente junto con los muros
+        }        
 
         updateStatus({
             currentComponent: `Detalles para recinto ${roomName} completados`,

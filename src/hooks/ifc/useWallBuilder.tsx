@@ -1,6 +1,7 @@
 'use client'
 import { useApi } from '@/hooks/useApi';
 import { findObjectsByTypeAndProperty, getPropValue } from '@/lib/utils';
+import { angleToAzimutRangeString } from '@/utils/azimut';
 import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
 
 interface SurfaceColor {
@@ -55,8 +56,8 @@ interface Window {
     type: string;
     width: number;
     height: number;
+    azimut: string;
     assignedWall: string;
-    uValue: number;
     dimensions: {
         x: number;
         y: number;
@@ -89,7 +90,7 @@ export const useWallBuilder = (projectId: string) => {
         for (const window of wallGroup.windows) {
             try {
                 // Validar existencia por code_ifc
-                const code_ifc = window.id;
+                const code_ifc ='VENTANA_001'; // Aquí deberías obtener el code_ifc real de la ventana
                 const section = 'window';
 
                 const element = await getElementByCodeIfc(section, code_ifc);
@@ -103,7 +104,7 @@ export const useWallBuilder = (projectId: string) => {
 
                 const payload = {
                     alojado_en: "",
-                    angulo_azimut: "0", // Por defecto
+                    angulo_azimut: "0° ≤ Az < 22,5°", 
                     broad: window.width,
                     characteristics: "Interior climatizado",
                     high: window.height,
@@ -130,8 +131,8 @@ export const useWallBuilder = (projectId: string) => {
         name: string,
         interiorColor: string,
         exteriorColor: string,
-        roomId?: number,
-        wallGroup?: WallGroup
+        wallGroup?: WallGroup,
+        enclosureId?: number
     ): Promise<CreateNodeMasterResponse | undefined> => {
         try {
             const response = await post(
@@ -150,11 +151,11 @@ export const useWallBuilder = (projectId: string) => {
             const wallResponse = response as CreateNodeMasterResponse;
 
             // Si tenemos roomId y wallGroup con ventanas, las creamos
-            if (roomId && wallGroup && wallResponse?.id && wallGroup.windows?.length > 0) {
+            if (wallGroup && enclosureId&&wallResponse?.id && wallGroup.windows?.length > 0) {
                 const windowErrors = await createWindowsForWall(
                     wallResponse.id,
                     wallGroup,
-                    roomId
+                    enclosureId
                 );
 
                 if (windowErrors.length > 0) {

@@ -776,8 +776,9 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 currentComponent: 'Iniciando creación de puertas'
             });
 
+            console.log("Creating doors :", doors);
             for (const door of doors) {
-                const code_ifc = door.type;
+                const code_ifc = 'PUERTA_001';
                 const section = 'door';
                 let element;
                 try {
@@ -801,8 +802,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         angulo_azimut: formatAzimuth(door.orientation),
                         orientacion: 'Exterior',
                         door_id: element.id,
-                        broad: door.dimensions?.x || 0,
-                        high: door.dimensions?.y || 0,
+                        broad: door.width || 0,
+                        high: door.height || 0,
                         characteristics: door.name || ''
                     };
                     doorPromises.push(
@@ -829,7 +830,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
             const _results = await Promise.allSettled(doorPromises);
             updateStatus({ currentComponent: 'Creación de puertas completada' });
 
-            return { success: errors.length === 0, errors };
+            return { success: errors?.length === 0, errors };
         } catch (error: any) {
             return {
                 success: false,
@@ -852,13 +853,13 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 currentPhase: 'windows',
                 currentComponent: 'Iniciando creación de ventanas'
             });
-            
-            if (!windowGroups || windowGroups?.length === 0) return ;
+
+            if (!windowGroups || windowGroups?.length === 0) return;
             for (const windowGroup of windowGroups) {
                 if (!windowGroup.elements || windowGroup.elements.length === 0) return;
                 for (const window of windowGroup.elements) {
                     // Validar existencia por code_ifc
-                    const code_ifc = window.id;
+                    const code_ifc = 'VENTANA_001';
                     // Sección puede ser 'window' o similar, ajustar según backend
                     const section = 'window';
                     let element;
@@ -877,16 +878,28 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             context: `Ventana ${window.name}`
                         });
                         continue;
-                    }
-                    // Crear la ventana usando el endpoint adecuado
+                    }                    // Crear la ventana usando el endpoint adecuado
                     try {
+                        // Obtener el ID del muro donde está la ventana
+                        const wallElement = await wallBuilder.getAssociatedWall(element.id);
+                        if (!wallElement || !wallElement.id) {
+                            errors.push({
+                                message: `No se pudo encontrar el muro asociado a la ventana`,
+                                context: `Ventana ${window.name}`
+                            });
+                            continue;
+                        }
+
                         const payload = {
+                            alojado_en: "",
                             angulo_azimut: formatAzimuth(window.orientation),
-                            orientacion: 'Exterior',
-                            window_id: element.id,
                             broad: window.dimensions?.x || 0,
+                            characteristics: "Interior climatizado",
                             high: window.dimensions?.y || 0,
-                            characteristics: window.name || ''
+                            housed_in: wallElement.id, // ID del muro donde está alojada la ventana
+                            position: "Interior",
+                            window_id: element.id,
+                            with_no_return: "Sin"
                         };
                         await post(`/window-enclosures-create/${projectId}`, {
                             ...payload,
@@ -908,7 +921,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 }
             }
             updateStatus({ currentComponent: 'Creación de ventanas completada' });
-            return { success: errors.length === 0, errors };
+            return { success: errors?.length === 0, errors };
         } catch (error: any) {
             return {
                 success: false,
@@ -968,7 +981,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
             }
         }
 
-        // Create windows (if any)
         if (details.windows && details.windows.length > 0) {
             updateStatus({
                 currentPhase: 'windows',
@@ -976,8 +988,11 @@ export const useProjectIfcBuilder = (projectId: string) => {
             });
 
             const windowResult = await createWindows(roomId, details.windows);
-            if (!windowResult.success || windowResult.errors.length > 0) {
-                errors.push(...windowResult.errors);
+            if (
+                (windowResult && windowResult.success === false) ||
+                (windowResult && Array.isArray(windowResult.errors) && windowResult.errors.length > 0)
+            ) {
+                errors.push(...(windowResult?.errors ?? []));
             }
 
             updateStatus({ currentComponent: 'Creación de ventanas completada' });

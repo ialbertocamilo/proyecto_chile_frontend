@@ -186,11 +186,26 @@ export const useWallBuilder = (projectId: string) => {
         }
     };
 
+    const getAssociatedWall = async (windowId: number) => {
+        try {
+            // Hacer la petición al endpoint que nos dará la información del muro que contiene la ventana
+            const response = await get(`/window/${windowId}/wall`);
+            if (!response || !response.data) {
+                return null;
+            }
+            return response.data;
+        } catch (error) {
+            console.error('Error getting associated wall:', error);
+            return null;
+        }
+    };
+
     return {
         createNodeMaster,
         createNodeChild,
         createFromEnclosure,
         getMaterialByCode,  // Expose this function for use in useProjectIfcBuilder
-        getElementByCodeIfc // Expose for use in project builder
+        getElementByCodeIfc, // Expose for use in project builder
+        getAssociatedWall,
     };
 };

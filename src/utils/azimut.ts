@@ -18,7 +18,8 @@ export function angleToAzimutRangeString(angleString: string): string {
     if (norm < 0) norm += 360;
     // Buscar el rango correspondiente
     for (const r of ranges) {
-        let min = r.min, max = r.max;
+        let min = r.min;
+        const max = r.max;
         // Ajustar para el rango Norte que cruza 0°
         if (min < 0) {
             if (norm >= (360 + min) || norm < max) {

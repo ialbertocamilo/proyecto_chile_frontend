@@ -263,8 +263,8 @@ export const useWallBuilder = (projectId: string) => {
                     wall.value,
                     'Claro',
                     'Claro',
+                    wallGroup,
                     enclosureId,
-                    wallGroup
                 );
 
                 if (!masterNode) continue;

@@ -2,6 +2,7 @@ import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import TablesParameters from "@/components/tables/TablesParameters";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
+import { displayValue } from "@/utils/formatters";
 import { notify } from "@/utils/notify";
 import { Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -353,7 +354,7 @@ const TabCeilingCreate: React.FC = () => {
             />
           );
         }
-        return formatValue(row.area);
+        return displayValue(row.area);
       },
     },
     {

@@ -12,6 +12,7 @@ import ThermalBridgesWallModal from "../modals/ThermalBridgesWallModal";
 import { azimutRangeToOrientation } from "@/utils/azimut";
 
 import useFetchAngleOptions from "@/hooks/useFetchAngleOptions";
+import { displayValue } from "@/utils/formatters";
 // Interfaz para muros
 interface Wall {
   id?: number;
@@ -591,7 +592,7 @@ const TabMuroCreate: React.FC = () => {
           );
         }
         const area = Number(row.area);
-        return area === 0 ? "-" : area.toFixed(2);
+        return area === 0 ? "-" : displayValue(area, true);
       },
     },
     {

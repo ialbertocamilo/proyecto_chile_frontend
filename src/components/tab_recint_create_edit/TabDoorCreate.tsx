@@ -1,15 +1,15 @@
 import ActionButtons from "@/components/common/ActionButtons";
 import ActionButtonsConfirm from "@/components/common/ActionButtonsConfirm";
 import TablesParameters from "@/components/tables/TablesParameters";
+import useFetchAngleOptions from "@/hooks/useFetchAngleOptions";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
+import { displayValue } from "@/utils/formatters";
 import { notify } from "@/utils/notify";
 import { Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import ThermalBridgesDoorModal from "../modals/ThermalBridgesDoorModal";
-import {azimutRangeToOrientation} from "@/utils/azimut";
-import useFetchAngleOptions from "@/hooks/useFetchAngleOptions";
 
 interface DoorData {
   id: number;
@@ -62,12 +62,6 @@ const TabDoorCreate: React.FC = () => {
 
   const [angleOptions] = useFetchAngleOptions();
   const [doorOptions, setDoorOptions] = useState<any[]>([]);
-
-  // Función para formatear el valor a mostrar en las celdas
-  const displayValue = (value: any) => {
-    return value === 0 || value === "N/A" ? "-" : value;
-  };
-
   // Handler para evitar ingreso de guiones
   const preventHyphen = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "-") {
@@ -583,7 +577,7 @@ const TabDoorCreate: React.FC = () => {
       headerName: "Orientación",
       field: "orientacion",
       renderCell: (row: DoorData) => {
-        
+
         if (editingRow && editingRow.id === row.id) {
           return (
             <select
@@ -596,13 +590,14 @@ const TabDoorCreate: React.FC = () => {
               <option value="">Seleccione un ángulo</option>
               {angleOptions.map((option, index) => (
                 <option key={index} value={option.azimut}>
-                  {option.orientation} 
+                  {option.orientation}
                 </option>
               ))}
             </select>
           );
         }
-        return displayValue(row.orientacion)},
+        return displayValue(row.orientacion)
+      },
     },
     {
       headerName: "Alto [m]",
@@ -622,7 +617,7 @@ const TabDoorCreate: React.FC = () => {
             />
           );
         }
-        return displayValue(row.high);
+        return displayValue(row.high, true);
       },
     },
     {
@@ -643,7 +638,7 @@ const TabDoorCreate: React.FC = () => {
             />
           );
         }
-        return displayValue(row.broad);
+        return displayValue(row.broad, true);
       },
     },
     {
@@ -765,7 +760,7 @@ const TabDoorCreate: React.FC = () => {
                 <option value="">Seleccione un ángulo</option>
                 {angleOptions.map((option, index) => (
                   <option key={index} value={option.azimut}>
-                   {option.orientation}
+                    {option.orientation}
                   </option>
                 ))}
               </select>

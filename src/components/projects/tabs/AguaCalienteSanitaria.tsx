@@ -444,7 +444,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                   </th>
                   <th style={{ textAlign: "center" }}>Cantidad personas</th>
                   <th style={{ textAlign: "center" }}>
-                    <span className="fw-bold">[l/pers-día]</span>
+                    <span className="fw-bold">[l/pers]</span>
                   </th>
                   <th style={{ textAlign: "center" }}>Acciones</th>
                 </tr>

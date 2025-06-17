@@ -5,9 +5,9 @@
  * @returns Formatted value as string
  */
 export const displayValue = (value: any, isNumericField: boolean = false): string => {
-  if (value === 0 || value === "N/A") return "-";
-  if (isNumericField && typeof value === 'number') {
-    return value.toFixed(2);
-  }
-  return String(value);
+    if (value === 0 || value === "N/A") return "-";
+    if (isNumericField && typeof value === 'number') {
+        return value.toFixed(2);
+    }
+    return String(value);
 };

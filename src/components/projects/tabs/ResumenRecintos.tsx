@@ -27,9 +27,13 @@ const ResumenRecintos: React.FC<ResumenRecintosProps> = ({ globalResults, onUpda
   const [enclosures, setEnclosures] = useState<any[]>([]);
   const [energyConfig, setEnergyConfig] = useState<EnergySystemSelection>({
     combustibleCalef: null,
-    rendimiento: null,
-    distribucion: null,
-    control: null
+    rendimientoCalef: null,
+    distribucionCalef: null,
+    distribucionRef: null,
+    controlCalef: null,
+    combustibleRef: null,
+    rendimientoRef: null,
+    controlRef: null
   });
 
   // Only update enclosures from globalResults

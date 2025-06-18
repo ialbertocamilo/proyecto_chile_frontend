@@ -587,7 +587,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                 floorPromises.push(
                                     post(`/floor-enclosures-create/${roomId}`, {
                                         floor_id: masterNode.id,
-                                        characteristic: element.name,
+                                        characteristic: 'Exterior', // TODO debe llegar el dato en ifc
                                         area: element.area || 0,
                                         value_u: masterNode.value_u,
                                         calculations: masterNode.calculations || {}

@@ -300,7 +300,7 @@ export default function IFCViewerComponent() {
           notify("Estado del proyecto actualizado a 'en proceso'");
 
           // Redirect to workflow-part1-edit with the project ID
-          router.push(`/workflow-part1-edit?id=${projectId}`);
+          // router.push(`/workflow-part1-edit?id=${projectId}`);
         } catch (statusError) {
           console.error("Error al actualizar estado del proyecto:", statusError);
           notify("Proyecto creado pero no se pudo actualizar su estado", "warning");

@@ -117,7 +117,7 @@ const ConfiguracionEnergiaTab: React.FC = () => {
                 disabled={loading}
                 style={{ minWidth: 180 }}
             >
-                {loading ? 'Guardando...' : 'Guardar configuración'}
+                {loading ? 'Guardando...' : 'Guardar'}
             </CustomButton>
         </div>
     );

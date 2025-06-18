@@ -318,7 +318,7 @@ const SettingsPage = () => {
                 ← Regresar
               </CustomButton>
               <CustomButton variant="save" type="submit" form="settingsForm" disabled={loading}>
-                {loading ? "Guardando..." : "Guardar Configuración"}
+                {loading ? "Guardando..." : "Guardar"}
               </CustomButton>
             </div>
           </div>

@@ -286,33 +286,33 @@ export default function IFCViewerComponent() {
       console.log("Building structure:", buildingStructure);
       // Use the projectBuilder hook to create the project from the structured data
       setStatus("Creando proyecto...");
-      const result = await projectBuilder.createProjectWithValidation(buildingStructure);
+      // const result = await projectBuilder.createProjectWithValidation(buildingStructure);
 
-      if (result?.success) {
-        setStatus(`Proceso completado: ${result?.completedRooms} recintos creados`);
-        notify("Proyecto creado exitosamente");
+      // if (result?.success) {
+      //   setStatus(`Proceso completado: ${result?.completedRooms} recintos creados`);
+      //   notify("Proyecto creado exitosamente");
 
-        // Update project status to "en proceso"
-        try {
-          setStatus("Actualizando estado del proyecto...");
-          await projectBuilder.updateProjectStatus("en proceso");
-          setStatus(`Proceso completado: ${result?.completedRooms} recintos creados. Proyecto en proceso.`);
-          notify("Estado del proyecto actualizado a 'en proceso'");
+      //   // Update project status to "en proceso"
+      //   try {
+      //     setStatus("Actualizando estado del proyecto...");
+      //     await projectBuilder.updateProjectStatus("en proceso");
+      //     setStatus(`Proceso completado: ${result?.completedRooms} recintos creados. Proyecto en proceso.`);
+      //     notify("Estado del proyecto actualizado a 'en proceso'");
 
-          // Redirect to workflow-part1-edit with the project ID
-          // router.push(`/workflow-part1-edit?id=${projectId}`);
-        } catch (statusError) {
-          console.error("Error al actualizar estado del proyecto:", statusError);
-          notify("Proyecto creado pero no se pudo actualizar su estado", "warning");
-        }
-      }
-      else {
-        setStatus(`Proceso no logró completarse debido a errores.`);
-        console.error("Errors during project creation:", result);
-        notify(`Proceso no logró completarse debido a errores`, "error");
-        setMissingElements(result.missingElements || []);
-        setIsProcessing(false);  // Cerramos el panel de estado pero mostramos el botón para ver missing elements
-      }
+      //     // Redirect to workflow-part1-edit with the project ID
+      //     // router.push(`/workflow-part1-edit?id=${projectId}`);
+      //   } catch (statusError) {
+      //     console.error("Error al actualizar estado del proyecto:", statusError);
+      //     notify("Proyecto creado pero no se pudo actualizar su estado", "warning");
+      //   }
+      // }
+      // else {
+      //   setStatus(`Proceso no logró completarse debido a errores.`);
+      //   console.error("Errors during project creation:", result);
+      //   notify(`Proceso no logró completarse debido a errores`, "error");
+      //   setMissingElements(result.missingElements || []);
+      //   setIsProcessing(false);  // Cerramos el panel de estado pero mostramos el botón para ver missing elements
+      // }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido durante el procesamiento';
       console.error("Error processing objects:", error);

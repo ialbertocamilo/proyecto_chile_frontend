@@ -111,14 +111,16 @@ const ConfiguracionEnergiaTab: React.FC = () => {
                     }));
                 }}
             />
-            <CustomButton
-                variant="save"
-                onClick={handleSave}
-                disabled={loading}
-                style={{ minWidth: 180 }}
-            >
-                {loading ? 'Guardando...' : 'Guardar'}
-            </CustomButton>
+            <div className="d-flex justify-content-end">
+                <CustomButton
+                    variant="save"
+                    onClick={handleSave}
+                    disabled={loading}
+                    style={{ minWidth: 180 }}
+                >
+                    {loading ? 'Guardando...' : 'Guardar'}
+                </CustomButton>
+            </div>
         </div>
     );
 };

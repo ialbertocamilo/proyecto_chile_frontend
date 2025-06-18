@@ -20,9 +20,13 @@ export interface EnergySystemConfig {
 
 export interface EnergySystemSelection {
     combustibleCalef: SystemOption | null;
-    rendimiento: SystemOption | null;
-    distribucion: SystemOption | null;
-    control: SystemOption | null;
+    rendimientoCalef: SystemOption | null;
+    distribucionCalef: SystemOption | null;
+    controlCalef: SystemOption | null;
+    combustibleRef: SystemOption | null;
+    rendimientoRef: SystemOption | null;
+    distribucionRef: SystemOption | null;
+    controlRef: SystemOption | null;
 }
 
 export interface EnergySystemSelectorsProps {

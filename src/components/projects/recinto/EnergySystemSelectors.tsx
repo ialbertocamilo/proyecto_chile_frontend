@@ -28,9 +28,13 @@ const EnergySystemSelectors: React.FC<EnergySystemSelectorsProps> = ({
 
     const [selection, setSelection] = useState<EnergySystemSelection>({
         combustibleCalef: null,
-        rendimiento: null,
-        distribucion: null,
-        control: null
+        rendimientoCalef: null,
+        distribucionCalef: null,
+        controlCalef: null,
+        combustibleRef: null,
+        rendimientoRef: null,
+        distribucionRef: null,
+        controlRef: null
     });
 
     useEffect(() => {
@@ -72,9 +76,13 @@ const EnergySystemSelectors: React.FC<EnergySystemSelectorsProps> = ({
             // Seleccionar por defecto el primer valor después de "Seleccionar" si existe
             const defaultSelection: EnergySystemSelection = {
                 combustibleCalef: validatedSystems.length > 0 ? validatedSystems[0] : null,
-                rendimiento: rendimientoCalef.length > 0 ? rendimientoCalef[0] : null,
-                distribucion: distribucionHvac.length > 0 ? distribucionHvac[0] : null,
-                control: controlHvac.length > 0 ? controlHvac[0] : null
+                rendimientoCalef: rendimientoCalef.length > 0 ? rendimientoCalef[0] : null,
+                distribucionCalef: distribucionHvac.length > 0 ? distribucionHvac[0] : null,
+                controlCalef: controlHvac.length > 0 ? controlHvac[0] : null,
+                combustibleRef: validatedSystems.length > 0 ? validatedSystems[0] : null,
+                rendimientoRef: rendimientoRef.length > 0 ? rendimientoRef[0] : null,
+                distribucionRef: distribucionHvac.length > 0 ? distribucionHvac[0] : null,
+                controlRef: controlHvac.length > 0 ? controlHvac[0] : null
             };
             setSelection(defaultSelection);
             onChange(defaultSelection, consumosEnergia);
@@ -94,12 +102,13 @@ const EnergySystemSelectors: React.FC<EnergySystemSelectorsProps> = ({
     const renderSystemSelect = (
         label: string,
         field: keyof EnergySystemSelection,
-        options: SystemOption[]
+        options: SystemOption[],
+        currentSelection: SystemOption | null
     ): JSX.Element => (
         <Form.Group className="mb-3" key={field}>
             <Form.Label>{label}</Form.Label>
             <Form.Select
-                value={selection[field]?.code || ''}
+                value={currentSelection?.code || ''}
                 onChange={(e) => handleInputChange(e.target.value, field, options)}
             >
                 <option value="">Seleccionar</option>
@@ -118,16 +127,32 @@ const EnergySystemSelectors: React.FC<EnergySystemSelectorsProps> = ({
 
     return (
         <div className="mb-4">
-            <Row className="mb-3">
-                <Col md={6}>
-                    {renderSystemSelect('Combustible', 'combustibleCalef', config.energySystems)}
-                    {renderSystemSelect('Rendimiento', 'rendimiento', config.rendimientoCalef)}
-                </Col>
-                <Col md={6}>
-                    {renderSystemSelect('Distribución', 'distribucion', config.distribucionHvac)}
-                    {renderSystemSelect('Control', 'control', config.controlHvac)}
-                </Col>
-            </Row>
+            <div>
+                <h4 className="mb-3">Calefacción</h4>
+                <Row className="mb-3">
+                    <Col md={6}>
+                        {renderSystemSelect('Combustible', 'combustibleCalef', config.energySystems, selection.combustibleCalef)}
+                        {renderSystemSelect('Rendimiento', 'rendimientoCalef', config.rendimientoCalef, selection.rendimientoCalef)}
+                    </Col>
+                    <Col md={6}>
+                        {renderSystemSelect('Distribución', 'distribucionCalef', config.distribucionHvac, selection.distribucionCalef)}
+                        {renderSystemSelect('Control', 'controlCalef', config.controlHvac, selection.controlCalef)}
+                    </Col>
+                </Row>
+            </div>
+            <div>
+                <h4 className="mb-3">Refrigeración</h4>
+                <Row className="mb-3">
+                    <Col md={6}>
+                        {renderSystemSelect('Combustible', 'combustibleRef', config.energySystems, selection.combustibleRef)}
+                        {renderSystemSelect('Rendimiento', 'rendimientoRef', config.rendimientoRef, selection.rendimientoRef)}
+                    </Col>
+                    <Col md={6}>
+                        {renderSystemSelect('Distribución', 'distribucionRef', config.distribucionHvac, selection.distribucionRef)}
+                        {renderSystemSelect('Control', 'controlRef', config.controlHvac, selection.controlRef)}
+                    </Col>
+                </Row>
+            </div>
             <div className="alert alert-info">
                 <strong>Nota:</strong> Los cambios en estos sistemas se aplicarán a todos los recintos.
             </div>

@@ -15,9 +15,13 @@ const ConfiguracionEnergiaTab: React.FC = () => {
     });
     const [energyConfig, setEnergyConfig] = useState<EnergySystemSelection>({
         combustibleCalef: null,
-        rendimiento: null,
-        distribucion: null,
-        control: null
+        rendimientoCalef: null,
+        distribucionCalef: null,
+        controlCalef: null,
+        combustibleRef: null,
+        rendimientoRef: null,
+        distribucionRef: null,
+        controlRef: null
     });
     const [success, setSuccess] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -82,14 +86,14 @@ const ConfiguracionEnergiaTab: React.FC = () => {
                 project_id: Number(projectId),
                 combustible_codigo: energyConfig.combustibleCalef.code,
                 combustible_valor: energyConfig.combustibleCalef.value ?? 0,
-                rendimiento_codigo: energyConfig.rendimiento?.code || '',
-                rendimiento_valor: energyConfig.rendimiento?.value ?? 0,
+                rendimiento_codigo: energyConfig.rendimientoCalef?.code || '',
+                rendimiento_valor: energyConfig.rendimientoCalef?.value ?? 0,
                 caldera_codigo: '', // No hay selector, se deja vacío o puedes agregar uno
                 caldera_valor: 0,   // No hay selector, se deja 0 o puedes agregar uno
-                distribucion_codigo: energyConfig.distribucion?.code || '',
-                distribucion_valor: energyConfig.distribucion?.value ?? 0,
-                control_codigo: energyConfig.control?.code || '',
-                control_valor: energyConfig.control?.value ?? 0,
+                distribucion_codigo: energyConfig.distribucionCalef?.code || '',
+                distribucion_valor: energyConfig.distribucionCalef?.value ?? 0,
+                control_codigo: energyConfig.controlCalef?.code || '',
+                control_valor: energyConfig.controlCalef?.value ?? 0,
             };
             await post(`/heating-config/by-project/${projectId}`, payload);
             setSuccess('Configuración guardada correctamente.');

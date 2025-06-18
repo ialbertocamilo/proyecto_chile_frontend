@@ -57,14 +57,14 @@ export const useFloorBuilder = (projectId: string) => {
                 name_detail: name,
                 info: {
                     ref_aisl_vertical: {
-                        lambda: null,
-                        e_aisl: null,
-                        d: null
+                        lambda: 2,
+                        e_aisl: 3,
+                        d: 1
                     },
                     ref_aisl_horizontal: {
-                        lambda: null,
-                        e_aisl: null,
-                        d: null
+                        lambda: 2,
+                        e_aisl: 3,
+                        d: 1
                     }
                 }
             };

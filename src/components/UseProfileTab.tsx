@@ -146,8 +146,6 @@ const UseProfileTab: React.FC<{
         notify(
           "No se puede eliminar un recinto por defecto o creado por el admin"
         );
-      } else {
-        notify("Error al eliminar recinto. Ver consola.");
       }
     }
   };

@@ -305,6 +305,8 @@ export default function IFCViewerComponent() {
       if (response && response.created) {
         setStatus(`Proceso completado: ${response.created.length} recintos creados`);
         notify("Proyecto creado exitosamente");
+        // Redirigir a workflow-part1-edit con el ID del proyecto
+        router.push(`/workflow-part1-edit?id=${projectId}`);
       } else {
         setStatus("No se recibieron datos de creación de recintos");
         notify("No se recibieron datos de creación de recintos", "warning");

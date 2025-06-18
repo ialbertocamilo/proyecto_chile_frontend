@@ -145,7 +145,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
                     }
                     continue;
                 }
-                // ...validación original de materiales...
                 console.log(`Validating ${JSON.stringify(element)}: ${element.material}`);
                 try {
                     if (element?.material && element?.material.toLowerCase() !== 'unknown') {
@@ -194,13 +193,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
         if (details.doors) {
             for (const doorGroup of details.doors) {
                 await checkExistence('Door', doorGroup?.elements);
-            }
-        }
-
-        // Validate windows
-        if (details.windows) {
-            for (const windowGroup of details.windows) {
-                await checkExistence('window', windowGroup?.elements);
             }
         }
 
@@ -385,8 +377,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
                     const masterNodeName = wallGroup.code;
                     const masterNode = await wallBuilder.createNodeMaster(
                         masterNodeName,
-                        'Claro', 
-                        'Claro' ,
+                        'Claro',
+                        'Claro',
                         {
                             ...wallGroup,
                             windows: (wallGroup as any).windows ?? []
@@ -471,12 +463,12 @@ export const useProjectIfcBuilder = (projectId: string) => {
                     const wallCharacteristics = "Exterior";
                     if (masterNode)
                         wallPromises.push(
-                    post(`/wall-enclosures-create/${roomId}`, {
-                            wall_id: masterNode.id,
-                            characteristics: wallCharacteristics,
-                            angulo_azimut: formatAzimuth(orientation),
-                            area: totalArea
-                        }));
+                            post(`/wall-enclosures-create/${roomId}`, {
+                                wall_id: masterNode.id,
+                                characteristics: wallCharacteristics,
+                                angulo_azimut: formatAzimuth(orientation),
+                                area: totalArea
+                            }));
                     setCreationStatus(prev => ({
                         ...prev,
                         progress: {
@@ -519,7 +511,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
     };    /**
      * Create floors for a room
      */
-    const createFloors = async (roomId: number, floorGroups: ConstructionGroup[]) => {
+    const createFloors = async (roomId: number, floorDetailsMaster: ConstructionGroup[]) => {
         const floorPromises: Promise<any>[] = [];
         const errors = [];
 
@@ -534,30 +526,28 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 throw new Error(`Error fetching floor details: ${error.message}`);
             });
 
-            for (const floorGroup of floorGroups) {
+            for (const floorGroup of floorDetailsMaster) {
+                // Check if a matching floor exists first
+                const masterNode = await floorBuilder.createNodeMaster(
+                    floorGroup.code,
+                );
+                if (!masterNode) {
+                    throw new Error(`Failed to create master floor node for: ${floorGroup.code}`);
+                }
                 for (const element of floorGroup.elements) {
                     try {
                         updateStatus({
                             currentComponent: `Creando piso: ${element.name}`
                         });
 
-                        // Check if a matching floor exists first
                         const matchedFloor = floorDetails.find((floor: any) => floor.code_ifc === element.material);
-
                         if (!matchedFloor) {
                             try {
-                                const masterNode = await floorBuilder.createNodeMaster(
-                                    element.name
-                                );
-
-                                if (!masterNode) {
-                                    throw new Error(`Failed to create master floor node for: ${element.name}`);
-                                }
                                 let materialId = 1; // Default material ID
                                 if (element.material && element.material.toLowerCase() !== 'unknown') {
                                     try {
                                         const materialInfo = await floorBuilder.getMaterialByCode(element.material);
-                                        materialId = materialInfo?.id || 1;
+                                        materialId = materialInfo?.id || 1; // Default to 1 if id is undefined
                                         updateStatus({
                                             currentComponent: `Material encontrado para piso: ${element.material} (ID: ${materialId})`
                                         });
@@ -583,17 +573,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                     layerThickness
                                 );
 
-                                // Use the newly created floor for room association
-                                floorPromises.push(
-                                    post(`/floor-enclosures-create/${roomId}`, {
-                                        floor_id: masterNode.id,
-                                        characteristic: 'Exterior', // TODO debe llegar el dato en ifc
-                                        area: element.area || 0,
-                                        value_u: masterNode.value_u,
-                                        calculations: masterNode.calculations || {}
-                                    })
-                                );
-
                             } catch (error: any) {
                                 errors.push({
                                     message: `Error creating floor: ${error?.message || 'Unknown error'}`,
@@ -601,20 +580,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                 });
                                 continue;
                             }
-                        } else {
-                            // Use the existing matched floor details in the creation process
-                            floorPromises.push(
-                                post(`/floor-enclosures-create/${roomId}`, {
-                                    floor_id: matchedFloor.id,
-                                    characteristic: element.name,
-                                    area: element.area || 0,
-                                    value_u: matchedFloor.value_u,
-                                    calculations: matchedFloor.calculations || {}
-                                })
-                            );
                         }
-
-                        // Update floor progress count
                         setCreationStatus(prev => ({
                             ...prev,
                             progress: {
@@ -629,6 +595,16 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         });
                     }
                 }
+                // Use the newly created floor for room association
+                floorPromises.push(
+                    post(`/floor-enclosures-create/${roomId}`, {
+                        floor_id: masterNode.id,
+                        characteristic: 'Exterior', // TODO debe llegar el dato en ifc
+                        area: floorGroup.elements[0]?.area || 0,
+                        value_u: masterNode.value_u,
+                        calculations: masterNode.calculations || {}
+                    })
+                );
             }
 
             const results = await Promise.allSettled(floorPromises);
@@ -670,6 +646,14 @@ export const useProjectIfcBuilder = (projectId: string) => {
             });
 
             for (const ceilingGroup of ceilingGroups) {
+
+                const ceilingResponse = await post(
+                    `/user/Techo/detail-part-create?project_id=${projectId}`,
+                    {
+                        name_detail: `TECHO ${ceilingGroup.code}`,
+                        scantilon_location: 'Techo'
+                    }
+                );
                 for (const element of ceilingGroup.elements) {
                     try {
                         updateStatus({
@@ -717,32 +701,18 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             }
                         }
 
-                        // First create the ceiling master node
-                        const ceilingResponse = await post(
-                            `/user/Techo/detail-part-create?project_id=${projectId}`,
-                            {
-                                name_detail: element.name,
-                                scantilon_location: 'Techo'
-                            }
-                        );
-
                         // Then create the layer for this ceiling
-                        await post(
-                            `/user/detail-create/${ceilingResponse.id}`,
-                            {
-                                layer_thickness: element.thickness || 35, // Default 35cm if not specified
-                                material_id: materialId,
-                                name_detail: element.name,
-                                scantilon_location: 'Techo'
-                            }
-                        );
+                        if (ceilingResponse)
+                            await post(
+                                `/user/detail-create/${ceilingResponse.id}`,
+                                {
+                                    layer_thickness: element.thickness || 35, // Default 35cm if not specified
+                                    material_id: materialId,
+                                    name_detail: element.name,
+                                    scantilon_location: 'Techo'
+                                }
+                            );
 
-                        // Associate ceiling with room
-                        ceilingPromises.push(post(`/roof-enclosures-create/${roomId}`, {
-                            roof_id: ceilingResponse.id,
-                            characteristic: 'Exterior', // Default value
-                            area: element.area || 0
-                        }));
 
                         setCreationStatus(prev => ({
                             ...prev,
@@ -758,6 +728,12 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         });
                     }
                 }
+                
+                        ceilingPromises.push(post(`/roof-enclosures-create/${roomId}`, {
+                            roof_id: ceilingResponse.id,
+                            characteristic: 'Exterior', // Default value
+                            area: ceilingGroup.elements[0].area || 0
+                        }));
             }
 
             await Promise.allSettled(ceilingPromises);
@@ -846,7 +822,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 }]
             };
         }
-    };  
+    };
     // durante la creación de muros en useWallBuilder.tsx -> createNodeMaster
 
     /**
@@ -854,9 +830,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
      */
     const createRoomDetails = async (roomId: number, details: ConstructionDetails, roomName: string) => {
         const errors = [];
-
-
-        console.log("createRoomDetails: ", roomName)
         console.log("roomId: ", roomId)
         console.log("details: ", details)
         updateStatus({
@@ -895,7 +868,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
             if (!doorResult?.success || doorResult?.errors.length > 0) {
                 errors.push(...doorResult.errors);
             }
-        }        
+        }
 
         updateStatus({
             currentComponent: `Detalles para recinto ${roomName} completados`,

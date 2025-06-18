@@ -381,6 +381,8 @@ const RecintoEdit: React.FC = () => {
                 </div>
               </div>
 
+            </>
+          )}
               {/* Botones: Regresar a la izquierda y Actualizar Datos a la derecha */}
               <div className="d-flex justify-content-between align-items-center">
                 <CustomButton variant="back" onClick={handleBack}>
@@ -395,8 +397,6 @@ const RecintoEdit: React.FC = () => {
                   </CustomButton>
                 </div>
               </div>
-            </>
-          )}
         </div>
       </Card>
 

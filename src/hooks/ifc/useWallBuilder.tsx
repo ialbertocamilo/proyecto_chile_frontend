@@ -78,7 +78,7 @@ interface WallGroup {
 }
 
 export const useWallBuilder = (projectId: string) => {
-    const { post } = useApi();
+    const { post, get } = useApi();
     const createWindowsForWall = async (
         wallId: number,
         wallGroup: WallGroup,
@@ -90,7 +90,7 @@ export const useWallBuilder = (projectId: string) => {
         for (const window of wallGroup.windows) {
             try {
                 // Validar existencia por code_ifc
-                const code_ifc ='VENTANA_001'; // Aquí deberías obtener el code_ifc real de la ventana
+                const code_ifc = 'VENTANA_001'; // Aquí deberías obtener el code_ifc real de la ventana
                 const section = 'window';
 
                 const element = await getElementByCodeIfc(section, code_ifc);
@@ -104,7 +104,7 @@ export const useWallBuilder = (projectId: string) => {
 
                 const payload = {
                     alojado_en: "",
-                    angulo_azimut: "0° ≤ Az < 22,5°", 
+                    angulo_azimut: "0° ≤ Az < 22,5°",
                     broad: window.width,
                     characteristics: "Interior climatizado",
                     high: window.height,
@@ -126,7 +126,20 @@ export const useWallBuilder = (projectId: string) => {
             }
         }
         return errors;
-    }; 
+    };
+
+
+    const getNodeMaster = async (nameDetail: string, projectId: string) => {
+        try {
+            const response = await get(
+                `/user/detail-part-by-name/${nameDetail}?project_id=${projectId}`
+            );
+            return response;
+        } catch (error) {
+            console.error("Error getting node master:", error);
+            return null;
+        }
+    }
     const createNodeMaster = async (
         name: string,
         interiorColor: string,
@@ -135,7 +148,12 @@ export const useWallBuilder = (projectId: string) => {
         enclosureId?: number
     ): Promise<CreateNodeMasterResponse | undefined> => {
         try {
-            const response = await post(
+            let response
+            const nodeMaster = await getNodeMaster(name, projectId);
+            if (nodeMaster) {
+               response =nodeMaster
+            }else
+             response = await post(
                 `/user/Muro/detail-part-create?project_id=${projectId}`,
                 {
                     name_detail: name,
@@ -151,7 +169,7 @@ export const useWallBuilder = (projectId: string) => {
             const wallResponse = response as CreateNodeMasterResponse;
 
             // Si tenemos roomId y wallGroup con ventanas, las creamos
-            if (wallGroup && enclosureId&&wallResponse?.id && wallGroup.windows?.length > 0) {
+            if (wallGroup && enclosureId && wallResponse?.id && wallGroup.windows?.length > 0) {
                 const windowErrors = await createWindowsForWall(
                     wallResponse.id,
                     wallGroup,

@@ -149,7 +149,7 @@ const RecintoEditModeCreate: React.FC = () => {
     setPerfilOcupacion(0);
     setAlturaPromedio("");
     setSensorCo2(false);
-    setLevelId(1);
+    setLevelId("1");
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     localStorage.removeItem('recinto_id');
     window.location.reload();

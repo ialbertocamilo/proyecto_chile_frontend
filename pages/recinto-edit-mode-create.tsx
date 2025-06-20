@@ -7,6 +7,8 @@ import React, { useEffect, useState } from "react";
 import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import { ArrowLeft, Plus, Save } from "lucide-react";
+import { useRouter } from "next/router";
 
 interface IRegion {
   id: number;
@@ -142,7 +144,16 @@ const RecintoEditModeCreate: React.FC = () => {
 
     fetchRegions();
   }, []);
-
+  const handleCrearOtroRecinto = () => {
+    setNombreRecinto("");
+    setPerfilOcupacion(0);
+    setAlturaPromedio("");
+    setSensorCo2(false);
+    setLevelId(1);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem('recinto_id');
+    window.location.reload();
+  };
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token || !selectedRegion) {
@@ -302,8 +313,9 @@ const RecintoEditModeCreate: React.FC = () => {
     }
   };
 
+  const route = useRouter()
   const handleBack = () => {
-    window.history.back();
+    route.push("workflow-part2-edit?step=4")
   };
 
   return (
@@ -440,11 +452,19 @@ const RecintoEditModeCreate: React.FC = () => {
           {/* Botones: Regresar a la izquierda y Actualizar Datos a la derecha */}
           <div className="d-flex justify-content-between">
             <CustomButton variant="back" onClick={handleBack}>
+            <ArrowLeft className="me-2" size={18} />
               Regresar
             </CustomButton>
-            <CustomButton variant="save" onClick={handleSave}>
-              Actualizar Datos
-            </CustomButton>
+            <div>
+                  <CustomButton onClick={handleCrearOtroRecinto} className="me-2" color="orange">
+                    <Plus className="me-2" size={18} />
+                    Crear otro recinto
+                  </CustomButton>
+                  <CustomButton variant="save" onClick={handleSave}>
+                    <Save className="me-2" size={18} />
+                    Actualizar Datos
+                  </CustomButton>
+                </div>
           </div>
         </div>
       </Card>

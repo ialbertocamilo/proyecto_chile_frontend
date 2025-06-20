@@ -120,7 +120,7 @@ export function azimutRangeToOrientation(rangeString: string): Orientation | und
     }
 }
 
-function azimutRangeToFullOrientation(rangeString: string): string | undefined {
+export function azimutRangeToFullOrientation(rangeString: string): string | undefined {
     const orientationMap: Record<Orientation, string> = {
         'N': 'Norte',
         'NE': 'Noreste',

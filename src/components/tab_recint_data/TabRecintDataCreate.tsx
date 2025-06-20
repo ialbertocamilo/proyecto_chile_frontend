@@ -217,7 +217,7 @@ const TabRecintDataCreate: React.FC = () => {
     {
       headerName: "Altura (m)",
       field: "height",
-      renderCell: (row: EnclosureGeneralData) => row.height,
+      renderCell: (row: EnclosureGeneralData) => row.height?.toFixed(2),
     },
     {
       headerName: "Sensor CO2",

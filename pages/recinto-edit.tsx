@@ -8,6 +8,8 @@ import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Import Bootstrap icons
+import { ArrowLeft, Save, Plus } from 'lucide-react';
+import { useRouter } from "next/router";
 
 // Styles for the collapsible section
 const styles = {
@@ -47,7 +49,7 @@ const RecintoEdit: React.FC = () => {
   const [enclosureProfiles, setEnclosureProfiles] = useState<
     { id: number; name: string }[]
   >([]);
-  
+
   // Estado para controlar las secciones colapsables
   const [isEdificacionExpanded, setIsEdificacionExpanded] = useState<boolean>(false); // Inicialmente colapsado
   const [isThermalExpanded, setIsThermalExpanded] = useState<boolean>(true); // Inicialmente expandido
@@ -61,7 +63,7 @@ const RecintoEdit: React.FC = () => {
   const toggleEdificacionSection = () => {
     setIsEdificacionExpanded(!isEdificacionExpanded);
   };
-  
+
   const toggleThermalSection = () => {
     setIsThermalExpanded(!isThermalExpanded);
   };
@@ -213,10 +215,10 @@ const RecintoEdit: React.FC = () => {
       }
 
       notify("Recinto actualizado correctamente");
-      
+
       // Colapsar la sección de edificación después de actualizar
       setIsEdificacionExpanded(false);
-      
+
       // Mostrar la sección de características térmicas expandida
       setIsThermalExpanded(true);
     } catch (error) {
@@ -237,8 +239,9 @@ const RecintoEdit: React.FC = () => {
     window.location.reload();
   };
 
+  const route = useRouter()
   const handleBack = () => {
-    window.history.back();
+    route.push("workflow-part2-edit?step=4")
   };
 
   return (
@@ -274,7 +277,7 @@ const RecintoEdit: React.FC = () => {
               <i className={`bi ${isEdificacionExpanded ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>
             </button>
           </div>
-          
+
           {isEdificacionExpanded && (
             <>
               <div className="row mt-4" style={styles.smallerForm}>
@@ -386,13 +389,16 @@ const RecintoEdit: React.FC = () => {
               {/* Botones: Regresar a la izquierda y Actualizar Datos a la derecha */}
               <div className="d-flex justify-content-between align-items-center">
                 <CustomButton variant="back" onClick={handleBack}>
+                  <ArrowLeft className="me-2" size={18} />
                   Regresar
                 </CustomButton>
                 <div>
                   <CustomButton onClick={handleCrearOtroRecinto} className="me-2" color="orange">
+                    <Plus className="me-2" size={18} />
                     Crear otro recinto
                   </CustomButton>
                   <CustomButton variant="save" onClick={handleSave}>
+                    <Save className="me-2" size={18} />
                     Actualizar Datos
                   </CustomButton>
                 </div>

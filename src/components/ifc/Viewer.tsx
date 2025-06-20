@@ -1,7 +1,7 @@
 "use client";
 import { useProjectIfcBuilder } from '@/hooks/ifc/useProjectIfcBuilder';
 import { getPropValue } from '@/lib/utils';
-import { angleToAzimutRangeString } from '@/utils/azimut';
+import { angleToAzimutRangeString, azimutRangeToFullOrientation } from '@/utils/azimut';
 import { notify } from '@/utils/notify';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Check, Loader2 } from "lucide-react";
@@ -176,18 +176,22 @@ export default function IFCViewerComponent() {
               );
               return {
                 code: code,
-                windows: windows.map(window => ({
+                windows: windows?.map(window => {
+                  
+                  console.log("Window azimut ", getPropValue(window, 'AZIMUT'));
+                  
+                  return {
                   id: window.id,
                   name: window.name,
                   type: window.type,
                   width: window.dimensions?.x || getPropValue(window, 'ANCHO') || 0,
                   height: window.dimensions?.y || getPropValue(window, 'ALTURA') || 0,
                   assignedWall: getPropValue(window, 'MURO ASIGNADO') || 'Unknown',
-                  azimut: angleToAzimutRangeString(getPropValue(window, 'AZIMUT')),
+                  azimut: azimutRangeToFullOrientation(getPropValue(window, 'AZIMUT')),
                   dimensions: window.dimensions || { x: 0, y: 0, z: 0 },
                   position: window.position || { x: 0, y: 0, z: 0 },
                   vectors: window.vectors || null
-                })),
+                }}),
                 elements: walls.map(wall => {
                   return {
                     id: wall.id,

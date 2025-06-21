@@ -50,17 +50,43 @@ export interface Element {
     vectors: Vectors;
 }
 
+export interface Window {
+    id: string;
+    name: string;
+    type: string;
+    width: number;
+    height: number;
+    assignedWall: string;
+    azimut: string;
+    dimensions: Vector;
+    position: Vector;
+    vectors: Vectors;
+}
+
 export interface ConstructionGroup {
     code: string;
     elements: Element[];
-    windows: ConstructionGroup[];
+    windows?: Window[];
+}
+
+export interface Door {
+    id: string;
+    name: string;
+    type: string;
+    width: number;
+    height: number;
+    assignedWall: string;
+    uValue: string | number;
+    dimensions: Vector;
+    position: Vector;
+    vectors: Vectors;
 }
 
 export interface ConstructionDetails {
     walls: ConstructionGroup[];
     floors: ConstructionGroup[];
     ceilings: ConstructionGroup[];
-    doors: ConstructionGroup[];
+    doors: Door[];
 }
 
 export interface Room {

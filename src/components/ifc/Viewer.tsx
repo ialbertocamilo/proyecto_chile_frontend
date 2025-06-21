@@ -15,7 +15,7 @@ import { ErrorDetailsAccordion } from './components/ErrorDetailsAccordion';
 import { MissingElementsPanel } from './components/MissingElementsPanel';
 import { ProjectStatusPanel } from './components/ProjectStatusPanel';
 import { orientationToAzimutRange } from '@/utils/azimut';
-import { Room, Room } from '@/shared/interfaces/ifc.interface';
+import { Room } from '@/shared/interfaces/ifc.interface';
 
 /**
  * Dynamically loads the IFC viewer component
@@ -68,8 +68,7 @@ export default function IFCViewerComponent() {
   const generateStructuredOutput = (objects: Array<any>):Room[] => {
     // Find all IfcSpace objects (rooms)
     const rooms = objects.filter(obj => obj.type.includes(IFC_TYPES.IFCSpace));
-
-    return  rooms.map(room => {
+    return rooms?.map(room => {
         const roomCode = getPropValue(room, IFC_PROP.ROOM_CODE);
         if (!roomCode)
           throw new Error(IFC_PROP.ROOM_CODE_ERROR);
@@ -205,7 +204,7 @@ export default function IFCViewerComponent() {
                     name: wall.name,
                     area: Number(getPropValue(wall, IFC_PROP.AREA)) || 0,
                     material: getPropValue(wall, IFC_PROP.MATERIAL) || IFC_PROP.UNKNOWN,
-                    thickness: getPropValue(wall, IFC_PROP.ESPESOR) || 0,
+                    thickness: Number(getPropValue(wall, IFC_PROP.ESPESOR)) || 0,
                     orientation: getPropValue(wall, IFC_PROP.ORIENTACION) || getPropValue(wall, IFC_PROP.ORIENTACION2),
                     location: getPropValue(wall, IFC_PROP.CARAC_ESP_CONT) || IFC_PROP.UNKNOWN,
                     volume: wall.volume || 0,
@@ -230,7 +229,7 @@ export default function IFCViewerComponent() {
                   name: floor.name,
                   material: getPropValue(floor, 'MATERIAL') || IFC_PROP.UNKNOWN,
                   color: getPropValue(floor, 'COLOR') || IFC_PROP.UNKNOWN,
-                  thickness: floor.dimensions?.z || getPropValue(floor, 'ESPESOR') || 0,
+                  thickness: Number(getPropValue(floor, 'ESPESOR')) || 0,
                   keyNote: getPropValue(floor, 'Nota clave') || IFC_PROP.UNKNOWN,
                   area: floor.surfaceArea || 0,
                   volume: floor.volume || 0,
@@ -253,7 +252,7 @@ export default function IFCViewerComponent() {
                   name: ceiling.name,
                   material: getPropValue(ceiling, 'MATERIAL') || IFC_PROP.UNKNOWN,
                   color: getPropValue(ceiling, 'COLOR') || IFC_PROP.UNKNOWN,
-                  thickness: ceiling.dimensions?.z || getPropValue(ceiling, 'ESPESOR') || 0,
+                  thickness: Number(getPropValue(ceiling, 'ESPESOR')) || 0,
                   keyNote: getPropValue(ceiling, 'Nota clave') || IFC_PROP.UNKNOWN,
                   area: ceiling.surfaceArea || 0,
                   volume: ceiling.volume || 0,

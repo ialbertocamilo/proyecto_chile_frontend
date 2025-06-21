@@ -103,11 +103,11 @@ export const useProjectIfcBuilder = (projectId: string) => {
         }
 
         // Validate doors
-        if (details.doors) {
-            for (const doorGroup of details.doors) {
-                await checkExistence('Door', doorGroup?.elements);
-            }
-        }
+        // if (details.doors) {
+        //     for (const doorGroup of details.doors) {
+        //         await checkExistence('Door', doorGroup);
+        //     }
+        // }
 
         // Update the materials cache with newly found materials
         setMaterialsCache(foundMaterials);

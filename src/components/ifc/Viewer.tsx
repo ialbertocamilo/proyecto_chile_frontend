@@ -408,30 +408,32 @@ export default function IFCViewerComponent() {
       <Container fluid className="mt-4">
         <Row>
           <Col>
-            <CustomButton
-              color="orange"
-              className="mb-3"
-              onClick={() => {
-                if (projectId) {
-                  router.push(`/workflow-part1-edit?id=${projectId}`);
-                } else {
-                  notify("No hay proyecto seleccionado");
-                }
-              }}
-            >
-              Ir a editar datos del proyecto (Workflow Parte 1)
-            </CustomButton>
+            {status.includes("Proceso completado") && (
+              <CustomButton
+                color="orange"
+                className="mb-3"
+                onClick={() => {
+                  if (projectId) {
+                    router.push(`/workflow-part1-edit?id=${projectId}`);
+                  } else {
+                    notify("No hay proyecto seleccionado");
+                  }
+                }}
+              >
+                Ir a editar datos del proyecto
+              </CustomButton>
+            )}
           </Col>
         </Row>
         <Row>
           <Col>
             <h5 style={{
               color: status.includes("Error") || status.includes("errores") ? "red" :
-                status === "Proceso completado" ? "green" :
+                status.includes("Proceso completado") ? "green" :
                   "black"
             }}>
               {isProcessing && <Loader2 size={20} className="me-2" />}
-              {status === "Proceso completado" && <Check size={20} />}
+              { status.includes("Proceso completado") && <Check size={20} />}
               {status || "Esperando acción..."}
             </h5>
 

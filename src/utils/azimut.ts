@@ -1,17 +1,30 @@
+
+const ORIENTATION_RANGES: Record<Orientation, { min: number; max: number }> = {
+    N:    { min: -22.5, max: 22.5 },
+    NE:   { min: 22.5, max: 67.5 },
+    E:    { min: 67.5, max: 112.5 },
+    SE:   { min: 112.5, max: 157.5 },
+    S:    { min: 157.5, max: 202.5 },
+    SO:   { min: 202.5, max: 247.5 },
+    O:    { min: 247.5, max: 292.5 },
+    NO:   { min: 292.5, max: 337.5 },
+};
+
 // Devuelve el rango de azimut en formato "-90° ≤ Az < -67.5°" dado un ángulo string como "270"
 export function angleToAzimutRangeString(angleString: string): string {
     const angle = parseFloat(angleString.replace(/,/g, '.'));
     if (isNaN(angle)) throw new Error('Ángulo inválido');
     // Definir los rangos de 8 orientaciones principales
+
     const ranges = [
-        { min: -22.5, max: 22.5 },    // N
-        { min: 22.5, max: 67.5 },     // NE
-        { min: 67.5, max: 112.5 },    // E
-        { min: 112.5, max: 157.5 },   // SE
-        { min: 157.5, max: 202.5 },   // S
-        { min: 202.5, max: 247.5 },   // SO
-        { min: 247.5, max: 292.5 },   // O
-        { min: 292.5, max: 337.5 },   // NO
+        ORIENTATION_RANGES.N,
+        ORIENTATION_RANGES.NE,
+        ORIENTATION_RANGES.E,
+        ORIENTATION_RANGES.SE,
+        ORIENTATION_RANGES.S,
+        ORIENTATION_RANGES.SO,
+        ORIENTATION_RANGES.O,
+        ORIENTATION_RANGES.NO,
     ];
     // Normalizar ángulo a [0, 360)
     let norm = angle % 360;
@@ -35,6 +48,22 @@ export function angleToAzimutRangeString(angleString: string): string {
 }
 // Tipos de orientación principales (8 direcciones)
 type Orientation = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SO' | 'O' | 'NO';
+
+/**
+ * Devuelve el rango de azimut en formato string dado una orientación.
+ * @param orientation Abreviatura de orientación ('N', 'S', etc.)
+ * @returns Rango en string, por ejemplo: '157.5° ≤ Az < 202.5°'
+ */
+export function orientationToAzimutRange(orientation: string): string {
+    const upper = orientation.toUpperCase() as Orientation;
+    const range = ORIENTATION_RANGES[upper];
+    if (!range) throw new Error(`Orientación desconocida: ${orientation}`);
+    // Ajustar para el caso de Norte (cruza 0°)
+    if (upper === 'N') {
+        return `${360 + range.min}° ≤ Az < ${range.max}°`;
+    }
+    return `${range.min}° ≤ Az < ${range.max}°`;
+}
 
 // Interfaz para representar un rango de azimut
 interface AzimutRange {

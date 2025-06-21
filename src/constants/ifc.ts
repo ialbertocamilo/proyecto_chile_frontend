@@ -1,0 +1,41 @@
+// IFC property and error string constants extracted from Viewer.tsx
+
+export const IFC_PROP = {
+  ROOM_CODE: 'codigo_recinto',
+  ROOM_CODE_ERROR: 'CODIGO_RECINTO es incorrecto o no existe',
+  ROOM_TYPE: 'ocupacion',
+  ROOM_TYPE_ERROR: 'OCUPACION es incorrecto o no existe',
+  WALL_CODE: 'CODIGO_MULTICAPA',
+  ASSIGNED_ROOM: 'RECINTO_ASIGNADO',
+  ASSIGNED_WALL: 'MURO_ASIGNADO',
+  FLOOR_ROOM: 'PISO_RECINTO',
+  CEILING_ROOM: 'TECHO_RECINTO',
+  ROOM_TYPE_1: 'ocupacion',
+  ROOM_TYPE_2: 'ocupacion',
+  ROOM_TYPE_3: 'ocupacion',
+  ROOM_NAME: 'NOMBRE_RECINTO',
+  ROOM_NAME_ERROR: 'No se encontro el nombre del recinto',
+  OCCUPATION: 'Ocupación',
+  LEVEL: 'Nivel',
+  VOLUME: 'Volumen',
+  SURFACE_AREA: 'Área',
+  HEIGHT: 'Altura',
+  WIDTH: 'ANCHO',
+  WINDOW_HEIGHT: 'ALTURA',
+  CARAC_ESP_CONT: 'CARAC_ESP_CONT',
+  ESPESOR: 'ESPESOR',
+  UNKNOWN: 'Unknown',
+  MATERIAL: 'MATERIAL',
+  ORIENTACION: 'ORIENTACION',
+  ORIENTACION2: 'ORIENTACIÓN',
+  AREA: 'ÁREA',
+  COLOR: 'COLOR',
+};
+
+export const IFC_TYPES = {
+  IFCSpace: 'IfcSpace',
+  IFCWall: 'IfcWall',
+  IFCDoor: 'IfcDoor',
+  IFCWindow: 'IfcWindow',
+  IFCSLab: 'IfcSlab',
+};

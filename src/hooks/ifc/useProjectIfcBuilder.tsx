@@ -4,106 +4,19 @@ import { useState } from 'react';
 import { useFloorBuilder } from './useFloorBuilder';
 import { useWallBuilder } from './useWallBuilder';
 
-// Type definitions for building structure
-interface Vector {
-    x: number;
-    y: number;
-    z: number;
-}
-
-interface Vectors {
-    length: number;
-    width: number;
-    height: number;
-    minPoint: number[];
-    maxPoint: number[];
-    center: number[];
-}
-
-interface OccupationProfile {
-    code: string;
-    type: string;
-    occupation: string;
-}
-
-interface RoomProperties {
-    roomCode: string;
-    roomType: string;
-    occupationProfile: OccupationProfile;
-    level: string;
-    volume: number;
-    surfaceArea: number;
-    averageHeight: number;
-    wallsAverageHeight: number;
-    dimensions: Vector;
-    position: Vector;
-}
-
-interface Element {
-    id: string;
-    name: string;
-    material: string;
-    thickness: number;
-    area?: number;
-    volume?: number;
-    color?: string;
-    keyNote?: string;
-    orientation?: string;
-    location?: string;
-    dimensions: Vector;
-    position: Vector;
-    vectors: Vectors;
-}
-
-interface ConstructionGroup {
-    code: string;
-    elements: Element[];
-}
-
-interface ConstructionDetails {
-    walls: ConstructionGroup[];
-    floors: ConstructionGroup[];
-    ceilings: ConstructionGroup[];
-    doors: ConstructionGroup[];
-    windows: ConstructionGroup[];
-}
-
-interface Room {
-    id: string;
-    name: string;
-    properties: RoomProperties;
-    constructionDetails: ConstructionDetails;
-}
-
-interface BuildingStructure {
-    buildingStructure: Room[];
-}
-
-interface RoomResponse {
-    id: number;
-    name: string;
-    properties: Record<string, unknown>;
-    project_id: number;
-}
-
-// Enhanced status tracking interface
-interface CreationStatus {
-    inProgress: boolean;
-    completedRooms: number;
-    totalRooms: number;
-    currentRoom?: string;
-    currentPhase?: 'walls' | 'floors' | 'ceilings' | 'doors' | 'windows' | 'creating-room';
-    currentComponent?: string;
-    progress: {
-        rooms: number;
-        walls: number;
-        floors: number;
-        ceilings: number;
-        doors: number;
-        windows: number;
-    };
-    errors: { message: string; context: string }[];
-}
+import {
+  Vector,
+  Vectors,
+  OccupationProfile,
+  RoomProperties,
+  Element,
+  ConstructionGroup,
+  ConstructionDetails,
+  Room,
+  BuildingStructure,
+  RoomResponse,
+  CreationStatus
+} from '@/shared/interfaces/ifc.interface';
 
 export const useProjectIfcBuilder = (projectId: string) => {
     const { post, get, put } = useApi();
@@ -205,11 +118,11 @@ export const useProjectIfcBuilder = (projectId: string) => {
         };
     };
 
-    const createProjectWithValidation = async (data: BuildingStructure): Promise<any> => {
-        const { buildingStructure } = data;
+    const createProjectWithValidation = async (data: Room[]): Promise<any> => {
         const validationResults = [];
 
-        for (const room of buildingStructure) {
+        console.log('buildingStructure data', data);
+        for (const room of data) {
             const result = await validateElementsExistence(room.constructionDetails);
             const { missingElements, foundMaterials } = result;
 
@@ -264,9 +177,12 @@ export const useProjectIfcBuilder = (projectId: string) => {
     const createRoom = async (room: Room): Promise<RoomResponse> => {
         try {
             // Get occupation data by room code
-            const roomCode = room.properties.roomCode;
-            const occupation = await fetchEnclosureByCode(roomCode);
-
+            const roomName = room.name;
+            const occupation = await fetchEnclosureByCode(room.type);
+            
+            if (!occupation) {
+                throw new Error(`No existe tipo de ocupación ${room.type} para ${roomName}`);
+            }
             // Parse level
             const nivel = room.properties.level;
             const piso = parseNivel(nivel);
@@ -275,8 +191,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
             const response = await post(
                 `/enclosure-generals-create/${projectId}`,
                 {
-                    name_enclosure: room.properties.roomType || occupation?.name || 'Default Enclosure',
-                    occupation_profile_id: occupation?.id || 1, // Default to ID 1 if not found
+                    name_enclosure: roomName || 'Default Enclosure',
+                    occupation_profile_id: occupation?.id, // Default to ID 1 if not found
                     height: room.properties.averageHeight,
                     co2_sensor: 'No', // Default value
                     level_id: piso
@@ -294,7 +210,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
             };
         } catch (error: any) {
             const errorMessage = `${room.name}: ${error?.response?.data?.detail || 'Unknown error'}`;
-            console.error(errorMessage, error);
             throw new Error(errorMessage);
         }
     };
@@ -881,14 +796,13 @@ export const useProjectIfcBuilder = (projectId: string) => {
     /**
      * Create a complete project from the building structure
      */
-    const createProject = async (data: BuildingStructure) => {
-        const { buildingStructure } = data;
+    const createProject = async (data: Room[]) => {
         const allErrors: { context: string; message: any; }[] = [];
 
         setCreationStatus({
             inProgress: true,
             completedRooms: 0,
-            totalRooms: buildingStructure.length,
+            totalRooms: data.length,
             currentPhase: undefined,
             currentRoom: undefined,
             currentComponent: 'Iniciando creación del proyecto',
@@ -904,14 +818,14 @@ export const useProjectIfcBuilder = (projectId: string) => {
         });
 
         try {
-            for (let i = 0; i < buildingStructure.length; i++) {
-                const room = buildingStructure[i];
+            for (let i = 0; i < data.length; i++) {
+                const room = data[i];
 
                 try {
                     updateStatus({
                         currentRoom: room.name,
                         currentPhase: 'creating-room',
-                        currentComponent: `Creando recinto: ${room.name} (${i + 1}/${buildingStructure.length})`
+                        currentComponent: `Creando recinto: ${room.name} (${i + 1}/${data.length})`
                     });
 
                     // Create the room
@@ -977,8 +891,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
 
             return {
                 success: allErrors.length === 0,
-                completedRooms: buildingStructure.length,
-                totalRooms: buildingStructure.length,
+                completedRooms: data.length,
+                totalRooms: data.length,
                 errors: allErrors
             };
 
@@ -1003,7 +917,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
             return {
                 success: false,
                 completedRooms: creationStatus.completedRooms,
-                totalRooms: buildingStructure.length,
+                totalRooms: data.length,
                 errors: finalErrors
             };
         } finally {

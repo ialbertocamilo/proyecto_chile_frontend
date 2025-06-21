@@ -102,9 +102,6 @@ export const ProjectStatusPanel: React.FC<ProjectStatusPanelProps> = ({ creation
                                 <div className="col-md-6">
                                     <small>Puertas: {creationStatus.progress.doors}</small>
                                 </div>
-                                <div className="col-md-6">
-                                    <small>Ventanas: {creationStatus.progress.windows}</small>
-                                </div>
                             </div>
                         </div>
                     </div>

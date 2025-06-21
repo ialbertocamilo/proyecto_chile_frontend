@@ -48,6 +48,8 @@ export interface Element {
     dimensions: Vector;
     position: Vector;
     vectors: Vectors;
+    ventilated?: boolean;
+    perimeter?: number;
 }
 
 export interface Window {

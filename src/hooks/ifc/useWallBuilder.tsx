@@ -3,6 +3,7 @@ import { useApi } from '@/hooks/useApi';
 import { findObjectsByTypeAndProperty, getPropValue } from '@/lib/utils';
 import { angleToAzimutRangeString } from '@/utils/azimut';
 import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
+import { getMaterialByCode } from './materialUtils';
 
 interface SurfaceColor {
     name: string;
@@ -217,26 +218,8 @@ export const useWallBuilder = (projectId: string) => {
         }
     };
 
-    const getMaterialByCode = async (code: string) => {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${constantUrlApiEndpoint}/constants-code_ifc?code_ifc=${code}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching material:', error);
-            return null;
-        }
-    }; const createFromEnclosure = async (
+const createFromEnclosure = async (
         enclosureId: number,
         obj: any,
         globalObjects: any,

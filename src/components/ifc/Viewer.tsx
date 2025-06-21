@@ -227,15 +227,18 @@ export default function IFCViewerComponent() {
                 elements: floors.map(floor => ({
                   id: floor.id,
                   name: floor.name,
-                  material: getPropValue(floor, 'MATERIAL') || IFC_PROP.UNKNOWN,
-                  color: getPropValue(floor, 'COLOR') || IFC_PROP.UNKNOWN,
-                  thickness: Number(getPropValue(floor, 'ESPESOR')) || 0,
-                  keyNote: getPropValue(floor, 'Nota clave') || IFC_PROP.UNKNOWN,
-                  area: floor.surfaceArea || 0,
-                  volume: floor.volume || 0,
+                  material: getPropValue(floor, IFC_PROP.MATERIAL) || IFC_PROP.UNKNOWN,
+                  color: getPropValue(floor, IFC_PROP.COLOR) || IFC_PROP.UNKNOWN,
+                  thickness: Number(getPropValue(floor, IFC_PROP.GROSOR)) || 0,
+                  keyNote: getPropValue(floor, IFC_PROP.NOTACLAVE) || IFC_PROP.UNKNOWN,
+                  area: Number(getPropValue(floor, IFC_PROP.AREA)) || 0,
+                  volume: Number(getPropValue(floor, IFC_PROP.AREA)) * Number(getPropValue(floor, IFC_PROP.GROSOR)) || 0,
                   dimensions: floor.dimensions || { x: 0, y: 0, z: 0 },
                   position: floor.position || { x: 0, y: 0, z: 0 },
-                  vectors: floor.vectors || null
+                  vectors: floor.vectors || null,
+                  ventilated : getPropValue(floor, IFC_PROP.VENTILADO)?.toLowerCase().includes('no') ? false : true,
+                  perimeter: Number(getPropValue(floor, IFC_PROP.PERIMETRO)) || 0,
+                  location: getPropValue(floor, IFC_PROP.CARAC_ESP_CONT) || IFC_PROP.UNKNOWN,
                 }))
               };
             }),
@@ -254,8 +257,8 @@ export default function IFCViewerComponent() {
                   color: getPropValue(ceiling, 'COLOR') || IFC_PROP.UNKNOWN,
                   thickness: Number(getPropValue(ceiling, 'ESPESOR')) || 0,
                   keyNote: getPropValue(ceiling, 'Nota clave') || IFC_PROP.UNKNOWN,
-                  area: ceiling.surfaceArea || 0,
-                  volume: ceiling.volume || 0,
+                  area: Number(getPropValue(ceiling, IFC_PROP.AREA)) || 0,
+                  volume: Number(getPropValue(ceiling, IFC_PROP.AREA)) * Number(getPropValue(ceiling, IFC_PROP.GROSOR)) || 0,
                   dimensions: ceiling.dimensions || { x: 0, y: 0, z: 0 },
                   position: ceiling.position || { x: 0, y: 0, z: 0 },
                   vectors: ceiling.vectors || null

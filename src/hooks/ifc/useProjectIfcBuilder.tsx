@@ -3,19 +3,20 @@ import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
 import { useState } from 'react';
 import { useFloorBuilder } from './useFloorBuilder';
 import { useWallBuilder } from './useWallBuilder';
+import { getMaterialByCode } from './materialUtils';
 
 import {
-  Vector,
-  Vectors,
-  OccupationProfile,
-  RoomProperties,
-  Element,
-  ConstructionGroup,
-  ConstructionDetails,
-  Room,
-  BuildingStructure,
-  RoomResponse,
-  CreationStatus
+    Vector,
+    Vectors,
+    OccupationProfile,
+    RoomProperties,
+    Element,
+    ConstructionGroup,
+    ConstructionDetails,
+    Room,
+    BuildingStructure,
+    RoomResponse,
+    CreationStatus
 } from '@/shared/interfaces/ifc.interface';
 
 export const useProjectIfcBuilder = (projectId: string) => {
@@ -67,7 +68,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             continue;
                         }
 
-                        const materialInfo = await wallBuilder.getMaterialByCode(element?.material);
+                        const materialInfo = await getMaterialByCode(element?.material);
                         if (!materialInfo) {
                             missingElements.push({ type, name: element.name });
                         } else {
@@ -141,10 +142,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 };
             }
         }
-
-        // Proceed with project creation if all elements exist
         const projectResult = await createProject(data);
-
         return {
             ...projectResult,
             validationResults
@@ -179,7 +177,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
             // Get occupation data by room code
             const roomName = room.name;
             const occupation = await fetchEnclosureByCode(room.type);
-            
+
             if (!occupation) {
                 throw new Error(`No existe tipo de ocupación ${room.type} para ${roomName}`);
             }
@@ -324,7 +322,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                             currentComponent: `Material encontrado en cache: ${element.material} (ID: ${materialInfo?.id})`
                                         });
                                     } else {
-                                        materialInfo = await wallBuilder.getMaterialByCode(element.material);
+                                        materialInfo = await getMaterialByCode(element.material);
                                         if (materialInfo) {
                                             setMaterialsCache(prev => ({
                                                 ...prev,
@@ -454,33 +452,22 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         updateStatus({
                             currentComponent: `Creando piso: ${element.name}`
                         });
-
+                        console.log("Element material", element.material)
+                        console.log("Floor details", floorDetails)
                         const matchedFloor = floorDetails.find((floor: any) => floor.code_ifc === element.material);
+                        console.log("Matched floor", matchedFloor)
                         if (!matchedFloor) {
                             try {
-                                let materialId = 1; // Default material ID
-                                if (element.material && element.material.toLowerCase() !== 'unknown') {
-                                    try {
-                                        const materialInfo = await floorBuilder.getMaterialByCode(element.material);
-                                        materialId = materialInfo?.id || 1; // Default to 1 if id is undefined
-                                        updateStatus({
-                                            currentComponent: `Material encontrado para piso: ${element.material} (ID: ${materialId})`
-                                        });
-                                    } catch (error) {
-                                        // updateStatus({
-                                        //     currentComponent: `Error al buscar material de piso: ${element.material}`
-                                        // });
-                                        console.warn(`Material not found for floor code: ${element.material}, using default ID 1`, error);
-                                        // errors.push({
-                                        //     message: `Material de piso no encontrado: ${element.material}, usando ID por defecto`,
-                                        //     context: `Floor element: ${element.name}`
-                                        // });
-                                    }
+                                let materialId = 0;
+                                if (element.material) {
+                                    const materialInfo = await getMaterialByCode(element.material);
+                                    console.log("Piso material info", materialInfo)
+                                    materialId = materialInfo?.id
+                                    updateStatus({
+                                        currentComponent: `Material encontrado para piso: ${element.material} (ID: ${materialId})`
+                                    });
                                 }
-
-                                // Create floor layer
                                 const layerThickness = element.thickness || 20; // Default 20cm if not specified
-                                // Create the floor layer
                                 await floorBuilder.createNodeChild(
                                     masterNode,
                                     'Piso',
@@ -514,17 +501,18 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 floorPromises.push(
                     post(`/floor-enclosures-create/${roomId}`, {
                         floor_id: masterNode.id,
-                        characteristic: 'Exterior', // TODO debe llegar el dato en ifc
+                        characteristic: floorGroup.elements[0]?.location || 'Exterior',
                         area: floorGroup.elements[0]?.area || 0,
                         value_u: masterNode.value_u,
-                        calculations: masterNode.calculations || {}
+                        is_ventilated: floorGroup.elements[0]?.ventilated ? 'Ventilado' : 'No ventilado',
+                        calculations: masterNode.calculations || {},
+                        parameter: floorGroup.elements[0]?.perimeter || 0,
                     })
                 );
             }
 
             const results = await Promise.allSettled(floorPromises);
 
-            // Collect errors from rejected promises
             results.forEach((result) => {
                 if (result.status === 'rejected') {
                     errors.push({
@@ -643,12 +631,12 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         });
                     }
                 }
-                
-                        ceilingPromises.push(post(`/roof-enclosures-create/${roomId}`, {
-                            roof_id: ceilingResponse.id,
-                            characteristic: 'Exterior', // Default value
-                            area: ceilingGroup.elements[0].area || 0
-                        }));
+
+                ceilingPromises.push(post(`/roof-enclosures-create/${roomId}`, {
+                    roof_id: ceilingResponse.id,
+                    characteristic: 'Exterior', // Default value
+                    area: ceilingGroup.elements[0].area || 0
+                }));
             }
 
             await Promise.allSettled(ceilingPromises);

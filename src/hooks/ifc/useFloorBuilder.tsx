@@ -1,5 +1,6 @@
 import { useApi } from "@/hooks/useApi";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
+import { getMaterialByCode as sharedGetMaterialByCode } from './materialUtils';
 
 interface FloorInfo {
     ref_aisl_vertical: {
@@ -29,7 +30,7 @@ interface CreateNodeMasterFloorResponse {
 export const useFloorBuilder = (projectId: string) => {
     const { post } = useApi();
 
-    // Cache para almacenar resultados de getMaterialByCode
+
     const materialsCache: Record<string, any> = {};/**
      * Creates a master floor node
      * @param name The name of the floor
@@ -138,47 +139,14 @@ export const useFloorBuilder = (projectId: string) => {
             throw error;
         }
     };    /**
-     * Gets material information by code, using cache to avoid redundant API calls
+     * Gets material information by code
      * @param code The material code to look up
      * @returns Material information or null if not found
      */
-    const getMaterialByCode = async (code: string) => {
-        // Check if we already have this material in cache
-        if (materialsCache[code]) {
-            console.log(`Using cached material for code: ${code}`);
-            return materialsCache[code];
-        }
 
-        try {
-            const token = localStorage.getItem("token");
+    // Expose the shared getMaterialByCode
+    const getMaterialByCode = sharedGetMaterialByCode;
 
-            console.log(`Fetching material for code: ${code}`);
-            const response = await fetch(`${constantUrlApiEndpoint}/constants-code_ifc?code_ifc=${code}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const materialInfo = data.length > 0 ? data[0] : null;
-
-            // Store in cache if material was found
-            if (materialInfo) {
-                materialsCache[code] = materialInfo;
-            }
-
-            return materialInfo;
-        } catch (error) {
-            console.error("Error fetching material by code:", error);
-            return null;
-        }
-    };
 
     return {
         createNodeMaster,

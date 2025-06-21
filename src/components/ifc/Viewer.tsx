@@ -65,224 +65,225 @@ export default function IFCViewerComponent() {
     }
   };
   // Generate the structured output from objects
-  const generateStructuredOutput = (objects: Array<any>):Room[] => {
+  const generateStructuredOutput = (objects: Array<any>): Room[] => {
     // Find all IfcSpace objects (rooms)
     const rooms = objects.filter(obj => obj.type.includes(IFC_TYPES.IFCSpace));
     return rooms?.map(room => {
-        const roomCode = getPropValue(room, IFC_PROP.ROOM_CODE);
-        if (!roomCode)
-          throw new Error(IFC_PROP.ROOM_CODE_ERROR);
-        const roomEnclosureType = getPropValue(room, IFC_PROP.ROOM_TYPE);
-        if (!roomEnclosureType)
-          throw new Error(IFC_PROP.ROOM_TYPE_ERROR);
+      const roomCode = getPropValue(room, IFC_PROP.ROOM_CODE, getPropValue(room, IFC_PROP.ROOM_NAME));
+      if (!roomCode)
+        throw new Error(IFC_PROP.ROOM_CODE_ERROR);
+      const roomEnclosureType = getPropValue(room, IFC_PROP.ROOM_TYPE, getPropValue(room, IFC_PROP.ROOM_NAME));
+      if (!roomEnclosureType)
+        throw new Error(IFC_PROP.ROOM_TYPE_ERROR);
 
-        // Find all walls associated with this room
-        const wallCodes: string[] = [];
-        room.props.forEach((prop: any) => {
-          if (prop.name && prop.name.startsWith('M_') && prop.value) {
-            wallCodes.push(prop.value);
-          }
-        });
-        // Get all walls associated with this room
-        const roomWalls = objects.filter(obj =>
-          obj.type.includes(IFC_TYPES.IFCWall) &&
-          (obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_ROOM && p.value === roomCode) ||
-            wallCodes.some(code => obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)))
-        );
-
-        // Calculate average height from walls (using y dimension)
-        let averageWallHeight = 0;
-        if (roomWalls.length > 0) {
-          const totalHeight = roomWalls.reduce((sum, wall) => {
-            // Use wall.dimensions.y as the height if available
-            return sum + (wall.dimensions?.y || 0);
-          }, 0);
-          averageWallHeight = totalHeight / roomWalls.length;
+      // Find all walls associated with this room
+      const wallCodes: string[] = [];
+      room.props.forEach((prop: any) => {
+        if (prop.name && prop.name.startsWith('M_') && prop.value) {
+          wallCodes.push(prop.value);
         }
+      });
+      // Get all walls associated with this room
+      const roomWalls = objects.filter(obj =>
+        obj.type.includes(IFC_TYPES.IFCWall) &&
+        (obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_ROOM && p.value === roomCode) ||
+          wallCodes.some(code => obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)))
+      );
 
-        // Find floor codes associated with this room
-        const floorCodes: string[] = [];
-        room.props.forEach((prop: any) => {
-          if ((prop.name === IFC_PROP.FLOOR_ROOM && prop.value)) {
-            floorCodes.push(prop.value);
-          }
-        });
+      // Calculate average height from walls (using y dimension)
+      let averageWallHeight = 0;
+      if (roomWalls.length > 0) {
+        const totalHeight = roomWalls.reduce((sum, wall) => {
+          // Use wall.dimensions.y as the height if available
+          return sum + (wall.dimensions?.y || 0);
+        }, 0);
+        averageWallHeight = totalHeight / roomWalls.length;
+      }
 
-        const roomFloors =  objects.filter(obj =>
-          obj.type.includes(IFC_TYPES.IFCSLab) &&
-          (obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_ROOM && p.value === roomCode) ||
-            floorCodes.some(code => obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)))
-        );
+      // Find floor codes associated with this room
+      const floorCodes: string[] = [];
+      room.props.forEach((prop: any) => {
+        if ((prop.name === IFC_PROP.FLOOR_ROOM && prop.value)) {
+          floorCodes.push(prop.value);
+        }
+      });
 
-        console.log("Selected floors ", roomFloors,' and code ', floorCodes);
+      const roomFloors = objects.filter(obj =>
+        obj.type.includes(IFC_TYPES.IFCSLab) &&
+        (obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_ROOM && p.value === roomCode) ||
+          floorCodes.some(code => obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)))
+      );
+      const ceilingCodes: string[] = [];
+      room.props.forEach((prop: any) => {
+        if (prop.name === IFC_PROP.CEILING_ROOM && prop.value) {
+          ceilingCodes.push(prop.value);
+        }
+      });
 
-        // Find ceiling codes associated with this room
-        const ceilingCodes: string[] = [];
-        room.props.forEach((prop: any) => {
-          if (prop.name === IFC_PROP.CEILING_ROOM && prop.value) {
-            ceilingCodes.push(prop.value);
-          }
-        });
+      // Find doors associated with this room
+      const doors = objects.filter(obj =>
+        obj.type.includes(IFC_TYPES.IFCDoor) &&
+        obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_ROOM && p.value === roomEnclosureType)
+      );
 
-        // Find doors associated with this room
-        const doors = objects.filter(obj =>
-          obj.type.includes(IFC_TYPES.IFCDoor) &&
-          obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_ROOM && p.value === roomEnclosureType)
-        );
-        // Find windows associated with this room
-        // const windows = objects.filter(obj =>
-        //   obj.type.includes(IFC_TYPES.IFCWindow) &&
-        //   obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_ROOM && p.value === roomEnclosureType)
-        // );
+      const name = getPropValue(room, IFC_PROP.ROOM_NAME);
+      const roomType = getPropValue(room, IFC_PROP.OCCUPATION, name)
 
-        const roomType = getPropValue(room, IFC_PROP.ROOM_TYPE_1) || getPropValue(room, IFC_PROP.ROOM_TYPE_2) || getPropValue(room, IFC_PROP.ROOM_TYPE_3)
-        const name = getPropValue(room, IFC_PROP.ROOM_NAME) ;
-        if (!name)
-          throw new Error(IFC_PROP.ROOM_NAME_ERROR);
-        return {
-          id: room.id,
-          name,
-          type:roomEnclosureType,
-          properties: {
-            roomCode: roomCode,
-            roomType,
-            occupationProfile: {
-              code: roomCode, // CÓDIGO DE RECINTO
-              type: getPropValue(room, IFC_PROP.ROOM_TYPE_1) || IFC_PROP.UNKNOWN, // TIPOLOGÍA DE RESINTO
-              occupation: getPropValue(room, IFC_PROP.OCCUPATION) || IFC_PROP.UNKNOWN
-            },
-            level: getPropValue(room, IFC_PROP.LEVEL) || IFC_PROP.UNKNOWN,
-            volume: room.volume || getPropValue(room, IFC_PROP.VOLUME) || 0,
-            surfaceArea: room.surfaceArea || 0,
-            averageHeight: averageWallHeight > 0 ? averageWallHeight :
-              (room.dimensions?.z ||
-                (room.volume && room.surfaceArea ? room.volume / room.surfaceArea :
-                  getPropValue(room, IFC_PROP.HEIGHT) ||
-                  (getPropValue(room, IFC_PROP.VOLUME) && getPropValue(room, IFC_PROP.SURFACE_AREA) ?
-                    (Number(getPropValue(room, IFC_PROP.VOLUME)) / Number(getPropValue(room, IFC_PROP.SURFACE_AREA))) :
-                    IFC_PROP.UNKNOWN))),
-            wallsAverageHeight: averageWallHeight > 0 ? averageWallHeight : 0,
-            dimensions: room.dimensions || {
-              x: 0,
-              y: 0,
-              z: 0
-            },
-            position: room.position || {
-              x: 0,
-              y: 0,
-              z: 0
-            }
+      if (!name)
+        throw new Error(IFC_PROP.ROOM_NAME_ERROR);
+      return {
+        id: room.id,
+        name,
+        type: roomEnclosureType,
+        properties: {
+          roomCode: roomCode,
+          roomType,
+          occupationProfile: {
+            code: roomCode, // CÓDIGO DE RECINTO
+            type: roomType || IFC_PROP.UNKNOWN, // TIPOLOGÍA DE RESINTO
+            occupation: getPropValue(room, IFC_PROP.OCCUPATION, name) || IFC_PROP.UNKNOWN
           },
-          constructionDetails: {
-            walls: wallCodes.map(code => {
-              const walls = objects.filter(obj =>
-                obj.type.includes(IFC_TYPES.IFCWall) &&
-                obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)
-              );
-              const windows = objects.filter(obj =>
-                obj.type.includes(IFC_TYPES.IFCWindow) &&
-                obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_WALL && p.value === code)
-              );
-              return {
-                code: code,
-                windows: windows?.map(window => {
-                  return {
+          level: getPropValue(room, IFC_PROP.LEVEL, name) || IFC_PROP.UNKNOWN,
+          volume: room.volume || getPropValue(room, IFC_PROP.VOLUME, name) || 0,
+          surfaceArea: room.surfaceArea || 0,
+          averageHeight: averageWallHeight > 0 ? averageWallHeight.toFixed(2) :
+            (room.dimensions?.z ||
+              (room.volume && room.surfaceArea ? room.volume / room.surfaceArea.toFixed(2) :
+                getPropValue(room, IFC_PROP.HEIGHT, name) ||
+                (getPropValue(room, IFC_PROP.VOLUME, name) && getPropValue(room, IFC_PROP.SURFACE_AREA, name) ?
+                  (Number(getPropValue(room, IFC_PROP.VOLUME, name)) / Number(getPropValue(room, IFC_PROP.SURFACE_AREA, name))) :
+                  IFC_PROP.UNKNOWN))),
+          wallsAverageHeight: averageWallHeight > 0 ? averageWallHeight : 0,
+          dimensions: room.dimensions || {
+            x: 0,
+            y: 0,
+            z: 0
+          },
+          position: room.position || {
+            x: 0,
+            y: 0,
+            z: 0
+          }
+        },
+        constructionDetails: {
+          walls: wallCodes.map(code => {
+            const walls = objects.filter(obj =>
+              obj.type.includes(IFC_TYPES.IFCWall) &&
+              obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)
+            );
+            const windows = objects.filter(obj =>
+              obj.type.includes(IFC_TYPES.IFCWindow) &&
+              obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_WALL && p.value === code)
+            );
+            return {
+              code: code,
+              windows: windows?.map(window => {
+                return {
                   id: window.id,
                   name: window.name,
                   type: window.type,
                   width: window.dimensions?.x || getPropValue(window, IFC_PROP.WIDTH) || 0,
                   height: window.dimensions?.y || getPropValue(window, IFC_PROP.WINDOW_HEIGHT) || 0,
                   assignedWall: getPropValue(window, IFC_PROP.ASSIGNED_WALL) || IFC_PROP.UNKNOWN,
-                  azimut: orientationToAzimutRange(getPropValue(window, 'AZIMUT')),
                   dimensions: window.dimensions || { x: 0, y: 0, z: 0 },
-                  position: window.position || { x: 0, y: 0, z: 0 },
-                  vectors: window.vectors || null
-                }}),
-                elements: walls.map(wall => {
-                  return {
-                    id: wall.id,
-                    name: wall.name,
-                    area: Number(getPropValue(wall, IFC_PROP.AREA)) || 0,
-                    material: getPropValue(wall, IFC_PROP.MATERIAL) || IFC_PROP.UNKNOWN,
-                    thickness: Number(getPropValue(wall, IFC_PROP.ESPESOR)) || 0,
-                    orientation: getPropValue(wall, IFC_PROP.ORIENTACION) || getPropValue(wall, IFC_PROP.ORIENTACION2),
-                    location: getPropValue(wall, IFC_PROP.CARAC_ESP_CONT) || IFC_PROP.UNKNOWN,
-                    volume: wall.volume || 0,
-                    dimensions: wall.dimensions || { x: 0, y: 0, z: 0 },
-                    position: wall.position || { x: 0, y: 0, z: 0 },
-                    vectors: wall.vectors || null,
-                    color: getPropValue(wall, IFC_PROP.COLOR) || 'INTERMEDIO',
-                  };
-                })
-              };
-            }),
-            floors: floorCodes.map(code => {
-              const floors = objects.filter(obj =>
-                obj.type.includes(IFC_TYPES.IFCSLab) &&
-                obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)
-              );
+                  stringPosition: getPropValue(window, IFC_PROP.POSICION),
+                  position: window.position,
+                  characteristics: getPropValue(window, IFC_PROP.ESPACIO_CONTIGUO) || IFC_PROP.UNKNOWN,
+                  vectors: window.vectors || null,
+                  aislation: getPropValue(window, IFC_PROP.AISLACION) == 'CON' ? true : false,
+                }
+              }),
+              elements: walls.map(wall => {
+                return {
+                  id: wall.id,
+                  name: wall.name,
+                  area: Number(getPropValue(wall, IFC_PROP.AREA)) || 0,
+                  material: getPropValue(wall, IFC_PROP.MATERIAL) || IFC_PROP.UNKNOWN,
+                  thickness: Number(getPropValue(wall, IFC_PROP.ESPESOR)) || 0,
+                  orientation: getPropValue(wall, IFC_PROP.ORIENTACION) || getPropValue(wall, IFC_PROP.ORIENTACION2),
+                  location: getPropValue(wall, IFC_PROP.ESPACIO_CONTIGUO) || IFC_PROP.UNKNOWN,
+                  volume: wall.volume || 0,
+                  dimensions: wall.dimensions || { x: 0, y: 0, z: 0 },
+                  position: wall.position || { x: 0, y: 0, z: 0 },
+                  vectors: wall.vectors || null,
+                  color: getPropValue(wall, IFC_PROP.COLOR) || 'INTERMEDIO',
+                };
+              })
+            };
+          }),
+          floors: floorCodes.map(code => {
+            const floors = objects.filter(obj =>
+              obj.type.includes(IFC_TYPES.IFCSLab) &&
+              obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)
+            );
 
-              return {
-                code: code,
-                elements: floors.map(floor => ({
-                  id: floor.id,
-                  name: floor.name,
-                  material: getPropValue(floor, IFC_PROP.MATERIAL) || IFC_PROP.UNKNOWN,
-                  color: getPropValue(floor, IFC_PROP.COLOR) || IFC_PROP.UNKNOWN,
-                  thickness: Number(getPropValue(floor, IFC_PROP.GROSOR)) || 0,
-                  keyNote: getPropValue(floor, IFC_PROP.NOTACLAVE) || IFC_PROP.UNKNOWN,
-                  area: Number(getPropValue(floor, IFC_PROP.AREA)) || 0,
-                  volume: Number(getPropValue(floor, IFC_PROP.AREA)) * Number(getPropValue(floor, IFC_PROP.GROSOR)) || 0,
-                  dimensions: floor.dimensions || { x: 0, y: 0, z: 0 },
-                  position: floor.position || { x: 0, y: 0, z: 0 },
-                  vectors: floor.vectors || null,
-                  ventilated : getPropValue(floor, IFC_PROP.VENTILADO)?.toLowerCase().includes('no') ? false : true,
-                  perimeter: Number(getPropValue(floor, IFC_PROP.PERIMETRO)) || 0,
-                  location: getPropValue(floor, IFC_PROP.CARAC_ESP_CONT) || IFC_PROP.UNKNOWN,
-                }))
-              };
-            }),
-            ceilings: ceilingCodes.map(code => {
-              const ceilings = objects.filter(obj =>
-                obj.type.includes(IFC_TYPES.IFCSLab) &&
-                obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)
-              );
+            return {
+              code: code,
+              elements: floors.map(floor => ({
+                id: floor.id,
+                name: floor.name,
+                material: getPropValue(floor, IFC_PROP.MATERIAL) || IFC_PROP.UNKNOWN,
+                color: getPropValue(floor, IFC_PROP.COLOR) || IFC_PROP.UNKNOWN,
+                thickness: Number(getPropValue(floor, IFC_PROP.GROSOR)) || 0,
+                keyNote: getPropValue(floor, IFC_PROP.NOTACLAVE) || IFC_PROP.UNKNOWN,
+                area: Number(getPropValue(floor, IFC_PROP.AREA)) || 0,
+                volume: Number(getPropValue(floor, IFC_PROP.AREA)) * Number(getPropValue(floor, IFC_PROP.GROSOR)) || 0,
+                dimensions: floor.dimensions || { x: 0, y: 0, z: 0 },
+                position: floor.position || { x: 0, y: 0, z: 0 },
+                vectors: floor.vectors || null,
+                ventilated: getPropValue(floor, IFC_PROP.VENTILADO)?.toLowerCase().includes('no') ? false : true,
+                perimeter: Number(getPropValue(floor, IFC_PROP.PERIMETRO)) || 0,
+                location: getPropValue(floor, IFC_PROP.ESPACIO_CONTIGUO) || IFC_PROP.UNKNOWN,
+                aislVertLambda: Number(getPropValue(floor, IFC_PROP.AISL_VERT_LAMBDA)) || 2,
+                aislHorizD: Number(getPropValue(floor, IFC_PROP.AISL_HORIZ_D)) || 3,
+                aislVertD: Number(getPropValue(floor, IFC_PROP.AISL_VERT_D)) || 1,
+                aislHorizLambda: Number(getPropValue(floor, IFC_PROP.AISL_HORIZ_LAMBDA)) || 2,
+                aislVertE: Number(getPropValue(floor, IFC_PROP.AISL_VERT_E)) || 2,
+                aislHorizE: Number(getPropValue(floor, IFC_PROP.AISL_HORIZ_E)) || 3,
+              }))
+            };
+          }),
+          ceilings: ceilingCodes.map(code => {
+            const ceilings = objects.filter(obj =>
+              obj.type.includes(IFC_TYPES.IFCSLab) &&
+              obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)
+            );
 
-              return {
-                code: code,
-                elements: ceilings.map(ceiling => ({
-                  id: ceiling.id,
-                  name: ceiling.name,
-                  material: getPropValue(ceiling, 'MATERIAL') || IFC_PROP.UNKNOWN,
-                  color: getPropValue(ceiling, 'COLOR') || IFC_PROP.UNKNOWN,
-                  thickness: Number(getPropValue(ceiling, 'ESPESOR')) || 0,
-                  keyNote: getPropValue(ceiling, 'Nota clave') || IFC_PROP.UNKNOWN,
-                  area: Number(getPropValue(ceiling, IFC_PROP.AREA)) || 0,
-                  volume: Number(getPropValue(ceiling, IFC_PROP.AREA)) * Number(getPropValue(ceiling, IFC_PROP.GROSOR)) || 0,
-                  dimensions: ceiling.dimensions || { x: 0, y: 0, z: 0 },
-                  position: ceiling.position || { x: 0, y: 0, z: 0 },
-                  vectors: ceiling.vectors || null
-                }))
-              };
-            }),
-            doors: doors.map(door => {
-              return {
-                id: door.id,
-                name: door.name,
-                type: door.type || getPropValue(door, 'TIPO') || IFC_PROP.UNKNOWN,
-                width: door.dimensions?.x || getPropValue(door.props, IFC_PROP.WIDTH) || 0,
-                height: door.dimensions?.y || getPropValue(door.props, IFC_PROP.WINDOW_HEIGHT) || 0,
-                assignedWall: getPropValue(door.props, IFC_PROP.ASSIGNED_WALL) || IFC_PROP.UNKNOWN,
-                uValue: getPropValue(door.props, 'U') || 0,
-                dimensions: door.dimensions || { x: 0, y: 0, z: 0 },
-                position: door.position || { x: 0, y: 0, z: 0 },
-                vectors: door.vectors || null
-              }
-            }),
+            return {
+              code: code,
+              elements: ceilings.map(ceiling => ({
+                id: ceiling.id,
+                name: ceiling.name,
+                material: getPropValue(ceiling, IFC_PROP.MATERIAL) || IFC_PROP.UNKNOWN,
+                color: getPropValue(ceiling, IFC_PROP.COLOR) || IFC_PROP.UNKNOWN,
+                thickness: Number(getPropValue(ceiling, IFC_PROP.GROSOR)) || 0,
+                keyNote: getPropValue(ceiling, IFC_PROP.NOTACLAVE) || IFC_PROP.UNKNOWN,
+                area: Number(getPropValue(ceiling, IFC_PROP.AREA)) || 0,
+                volume: Number(getPropValue(ceiling, IFC_PROP.AREA)) * Number(getPropValue(ceiling, IFC_PROP.GROSOR)) || 0,
+                dimensions: ceiling.dimensions || { x: 0, y: 0, z: 0 },
+                position: ceiling.position || { x: 0, y: 0, z: 0 },
+                vectors: ceiling.vectors || null
+              }))
+            };
+          }),
+          doors: doors.map(door => {
+            return {
+              id: door.id,
+              name: door.name,
+              type: door.type || getPropValue(door, 'TIPO') || IFC_PROP.UNKNOWN,
+              width: door.dimensions?.x || getPropValue(door.props, IFC_PROP.WIDTH) || 0,
+              height: door.dimensions?.y || getPropValue(door.props, IFC_PROP.WINDOW_HEIGHT) || 0,
+              assignedWall: getPropValue(door.props, IFC_PROP.ASSIGNED_WALL) || IFC_PROP.UNKNOWN,
+              uValue: getPropValue(door.props, 'U') || 0,
+              dimensions: door.dimensions || { x: 0, y: 0, z: 0 },
+              position: door.position || { x: 0, y: 0, z: 0 },
+              vectors: door.vectors || null
+            }
+          }),
 
-          }
-        };
-      })
+        }
+      };
+    })
   };
 
   // Process all objects
@@ -435,7 +436,7 @@ export default function IFCViewerComponent() {
                   "black"
             }}>
               {isProcessing && <Loader2 size={20} className="me-2" />}
-              { status.includes("Proceso completado") && <Check size={20} />}
+              {status.includes("Proceso completado") && <Check size={20} />}
               {status || "Esperando acción..."}
             </h5>
 

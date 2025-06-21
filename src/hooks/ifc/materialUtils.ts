@@ -1,6 +1,6 @@
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 
-const materialsCache: Record<string, any> = {};
+export const materialsCache: Record<string, any> = {};
 
 /**
  * Gets material information by code, using cache to avoid redundant API calls

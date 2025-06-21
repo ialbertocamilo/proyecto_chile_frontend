@@ -3,7 +3,7 @@ import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
 import { useState } from 'react';
 import { useFloorBuilder } from './useFloorBuilder';
 import { useWallBuilder } from './useWallBuilder';
-import { getMaterialByCode } from './materialUtils';
+import { getMaterialByCode, materialsCache } from './materialUtils';
 
 import {
     Vector,
@@ -16,8 +16,10 @@ import {
     Room,
     BuildingStructure,
     RoomResponse,
-    CreationStatus
+    CreationStatus,
+    FloorGroup
 } from '@/shared/interfaces/ifc.interface';
+import { orientationToAzimutRange } from '@/utils/azimut';
 
 export const useProjectIfcBuilder = (projectId: string) => {
     const { post, get, put } = useApi();
@@ -25,7 +27,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
     const floorBuilder = useFloorBuilder(projectId);
 
     // Add a materials cache to avoid repeated API calls
-    const [materialsCache, setMaterialsCache] = useState<Record<string, any>>({});
 
     const [creationStatus, setCreationStatus] = useState<CreationStatus>({
         inProgress: false,
@@ -43,7 +44,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
     });
     const validateElementsExistence = async (details: ConstructionDetails) => {
         const missingElements: { type: string; name: string }[] = [];
-        const foundMaterials: Record<string, any> = { ...materialsCache };
 
         // Helper function to check existence
         const checkExistence = async (type: string, elements: Element[]) => {
@@ -62,18 +62,10 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 console.log(`Validating ${JSON.stringify(element)}: ${element.material}`);
                 try {
                     if (element?.material && element?.material.toLowerCase() !== 'unknown') {
-                        // Check if material is already in cache
-                        if (foundMaterials[element.material]) {
-                            console.log(`Using cached material: ${element.material}`);
-                            continue;
-                        }
-
                         const materialInfo = await getMaterialByCode(element?.material);
                         if (!materialInfo) {
                             missingElements.push({ type, name: element.name });
-                        } else {
-                            foundMaterials[element.material] = materialInfo;
-                        }
+                        } 
                     }
                 } catch (error) {
                     console.error(`Error validating material: ${element.material}`, error);
@@ -103,19 +95,9 @@ export const useProjectIfcBuilder = (projectId: string) => {
             }
         }
 
-        // Validate doors
-        // if (details.doors) {
-        //     for (const doorGroup of details.doors) {
-        //         await checkExistence('Door', doorGroup);
-        //     }
-        // }
-
-        // Update the materials cache with newly found materials
-        setMaterialsCache(foundMaterials);
-
         return {
             missingElements,
-            foundMaterials
+            foundMaterials: Object.keys(materialsCache)
         };
     };
 
@@ -223,53 +205,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
     };
 
     /**
-     * Converts a numeric angle to the required azimuth range format
-     * @param angle Orientation angle in degrees
-     * @returns Formatted azimuth range string (e.g. "0° ≤ Az < 22,5°")
-     */
-    const formatAzimuth = (angle: number | string | undefined): string => {
-        if (angle === undefined) return "0° ≤ Az < 22,5°";
-
-        // Convert to number if string
-        let numericAngle = typeof angle === 'string' ? parseFloat(angle) : angle;
-
-        // Normalize angle to [-180, 180) range
-        numericAngle = numericAngle % 360;
-        if (numericAngle >= 180) numericAngle -= 360;
-        if (numericAngle < -180) numericAngle += 360;
-
-        // Define the ranges (16 segments, each 22.5 degrees)
-        const ranges: [number, number, string][] = [
-            [-180, -157.5, "-180° ≤ Az < -157,5°"],
-            [-157.5, -135, "-157,5° ≤ Az < -135°"],
-            [-135, -112.5, "-135° ≤ Az < -112,5°"],
-            [-112.5, -90, "-112,5° ≤ Az < -90°"],
-            [-90, -67.5, "-90° ≤ Az < -67,5°"],
-            [-67.5, -45, "-67,5° ≤ Az < -45°"],
-            [-45, -22.5, "-45° ≤ Az < -22,5°"],
-            [-22.5, 0, "-22,5° ≤ Az < 0°"],
-            [0, 22.5, "0° ≤ Az < 22,5°"],
-            [22.5, 45, "22,5° ≤ Az < 45°"],
-            [45, 67.5, "45° ≤ Az < 67,5°"],
-            [67.5, 90, "67,5° ≤ Az < 90°"],
-            [90, 112.5, "90° ≤ Az < 112,5°"],
-            [112.5, 135, "112,5° ≤ Az < 135°"],
-            [135, 157.5, "135° ≤ Az < 157,5°"],
-            [157.5, 180, "157,5° ≤ Az < 180°"]
-        ];
-
-        // Find matching range
-        for (const [min, max, format] of ranges) {
-            if (numericAngle >= min && numericAngle < max) {
-                return format;
-            }
-        }
-
-        // Default fallback
-        return "0° ≤ Az < 22,5°";
-    };
-
-    /**
      * Create walls for a room using wall-enclosures-create endpoint
      */
     const createWalls = async (roomId: number, wallGroups: ConstructionGroup[]) => {
@@ -309,45 +244,15 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             // Get material ID from material code if available
                             let materialId = 1; // Default material ID
                             if (element.material && element.material.toLowerCase() !== 'unknown') {
-                                try {
                                     updateStatus({
                                         currentComponent: `Buscando material: ${element.material}`
                                     });
-
-                                    // First check if the material is in our cache
-                                    let materialInfo: any;
-                                    if (materialsCache[element.material]) {
-                                        materialInfo = materialsCache[element.material];
-                                        updateStatus({
-                                            currentComponent: `Material encontrado en cache: ${element.material} (ID: ${materialInfo?.id})`
-                                        });
-                                    } else {
-                                        materialInfo = await getMaterialByCode(element.material);
-                                        if (materialInfo) {
-                                            setMaterialsCache(prev => ({
-                                                ...prev,
-                                                [element.material]: materialInfo
-                                            }));
-                                        }
-                                    }
-
+                                    const materialInfo = await getMaterialByCode(element.material);
                                     materialId = materialInfo?.id || 1;
                                     updateStatus({
                                         currentComponent: `Material encontrado: ${element.material} (ID: ${materialId})`
                                     });
-                                } catch (error) {
-                                    updateStatus({
-                                        currentComponent: `Error al buscar material: ${element.material}`
-                                    });
-                                    console.warn(`Material not found for code: ${element.material}, using default ID 1`, error);
-                                    errors.push({
-                                        message: `Material no encontrado: ${element.material}, usando ID por defecto`,
-                                        context: `Wall element: ${element.name}`
-                                    });
-                                }
                             }
-
-                            // Create wall layers
                             const layerThickness = element.thickness; // Convert to cm
                             if (masterNode)
                                 return wallBuilder.createNodeChild(
@@ -365,13 +270,10 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             return null;
                         }
                     });
-
-                    // Wait for all child nodes to be processed
                     await Promise.allSettled(childPromises);
                     const totalArea = Math.max(...wallGroup.elements.map(element => element.area || 0));
                     updateStatus({ currentComponent: `Asociando muro al recinto: ${wallGroup.code}` });
 
-                    // Get orientation from the first element (assuming all elements in a group have the same orientation)
                     const orientation = wallGroup.elements[0]?.orientation || '';
                     const wallCharacteristics = "Exterior";
                     if (masterNode)
@@ -379,8 +281,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             post(`/wall-enclosures-create/${roomId}`, {
                                 wall_id: masterNode.id,
                                 characteristics: wallCharacteristics,
-                                angulo_azimut: formatAzimuth(orientation),
-                                area: totalArea
+                                angulo_azimut: orientationToAzimutRange(orientation),
+                                area: totalArea?.toFixed(2) || 0
                             }));
                     setCreationStatus(prev => ({
                         ...prev,
@@ -397,10 +299,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 }
             }
 
-            // Wait for all wall associations to be created
             const results = await Promise.allSettled(wallPromises);
 
-            // Collect errors from rejected promises
             results.forEach((result) => {
                 if (result.status === 'rejected') {
                     errors.push({
@@ -424,7 +324,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
     };    /**
      * Create floors for a room
      */
-    const createFloors = async (roomId: number, floorDetailsMaster: ConstructionGroup[]) => {
+    const createFloors = async (roomId: number, floorDetailsMaster: FloorGroup[]) => {
         const floorPromises: Promise<any>[] = [];
         const errors = [];
 
@@ -440,9 +340,20 @@ export const useProjectIfcBuilder = (projectId: string) => {
             });
 
             for (const floorGroup of floorDetailsMaster) {
-                // Check if a matching floor exists first
                 const masterNode = await floorBuilder.createNodeMaster(
                     floorGroup.code,
+                    {
+                        vertical: {
+                            lambda: floorGroup.elements[0].aislVertLambda,
+                            e_aisl: floorGroup.elements[0].aislVertE,
+                            d: floorGroup.elements[0].aislVertD
+                        },
+                        horizontal: {
+                            lambda: floorGroup.elements[0].aislHorizLambda,
+                            e_aisl: floorGroup.elements[0].aislHorizE,
+                            d: floorGroup.elements[0].aislHorizD
+                        }
+                    }
                 );
                 if (!masterNode) {
                     throw new Error(`Failed to create master floor node for: ${floorGroup.code}`);
@@ -522,6 +433,13 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 }
             });
 
+            setCreationStatus(prev => ({
+                ...prev,
+                progress: {
+                    ...prev.progress,
+                    floors: prev.progress.floors + 1
+                }
+            }));
             updateStatus({ currentComponent: 'Creación de pisos completada' });
             return { success: errors.length === 0, errors };
         } catch (error: any) {
@@ -609,7 +527,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                             await post(
                                 `/user/detail-create/${ceilingResponse.id}`,
                                 {
-                                    layer_thickness: element.thickness || 35, // Default 35cm if not specified
+                                    layer_thickness: element.thickness ,
                                     material_id: materialId,
                                     name_detail: element.name,
                                     scantilon_location: 'Techo'
@@ -684,7 +602,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 }
                 try {
                     const payload = {
-                        angulo_azimut: formatAzimuth(door.orientation),
+                        angulo_azimut: orientationToAzimutRange(door.orientation),
                         orientacion: 'Exterior',
                         door_id: element.id,
                         broad: door.width || 0,

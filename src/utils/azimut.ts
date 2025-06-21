@@ -1,13 +1,13 @@
 
 const ORIENTATION_RANGES: Record<Orientation, { min: number; max: number }> = {
-    N:    { min: -22.5, max: 22.5 },
-    NE:   { min: 22.5, max: 67.5 },
-    E:    { min: 67.5, max: 112.5 },
-    SE:   { min: 112.5, max: 157.5 },
-    S:    { min: 157.5, max: 202.5 },
-    SO:   { min: 202.5, max: 247.5 },
-    O:    { min: 247.5, max: 292.5 },
-    NO:   { min: 292.5, max: 337.5 },
+    N:    { min: 0, max: 22.5 },
+    NE:   { min: 22.5, max: 45 },
+    E:    { min: 67.5, max: 90 },
+    SE:   { min: 112.5, max: 135 },
+    S:    { min: 157.5, max: 180 },
+    SO:   { min: -157.5, max: -135 },
+    O:    { min: -112.5, max: -90 },
+    NO:   { min: -67.5, max: -45 },
 };
 
 // Devuelve el rango de azimut en formato "-90° ≤ Az < -67.5°" dado un ángulo string como "270"
@@ -59,10 +59,9 @@ export function orientationToAzimutRange(orientation: string): string {
     const range = ORIENTATION_RANGES[upper];
     if (!range) throw new Error(`Orientación desconocida: ${orientation}`);
     // Ajustar para el caso de Norte (cruza 0°)
-    if (upper === 'N') {
-        return `${360 + range.min}° ≤ Az < ${range.max}°`;
-    }
-    return `${range.min}° ≤ Az < ${range.max}°`;
+    // Helper para formatear con coma como decimal
+    const format = (num: number) => num.toString().replace('.', ',');
+    return `${format(range.min)}° ≤ Az < ${format(range.max)}°`;
 }
 
 // Interfaz para representar un rango de azimut

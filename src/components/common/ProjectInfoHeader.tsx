@@ -1,6 +1,7 @@
 import CustomButton from "@/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "@/utils/constant-url-endpoint";
 import Image from "next/image";
+import { BarChart3 } from "lucide-react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
@@ -111,12 +112,7 @@ const ProjectInfoHeader: React.FC<Props> = ({
           style={{ padding: "0.8rem 3rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem" }}
           onClick={handleIfcClick}
         >
-          <Image
-            src="/file.svg"
-            alt="IFC icon"
-            width={20}
-            height={20}
-          />
+          <BarChart3 size={20} />
           Adjuntar IFC
         </CustomButton>
       )}

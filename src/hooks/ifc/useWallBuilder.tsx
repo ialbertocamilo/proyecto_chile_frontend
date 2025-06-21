@@ -1,9 +1,10 @@
 'use client'
 import { useApi } from '@/hooks/useApi';
 import { findObjectsByTypeAndProperty, getPropValue } from '@/lib/utils';
-import { angleToAzimutRangeString } from '@/utils/azimut';
+import { angleToAzimutRangeString, orientationToAzimutRange } from '@/utils/azimut';
 import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
 import { getMaterialByCode } from './materialUtils';
+import { Element, Window } from '@/shared/interfaces/ifc.interface';
 
 interface SurfaceColor {
     name: string;
@@ -15,23 +16,6 @@ interface WallInfo {
         interior: SurfaceColor;
         exterior: SurfaceColor;
     };
-}
-
-interface Element {
-    id: string;
-    name: string;
-    material: string;
-    dimensions?: {
-        x: number;
-        y: number;
-        z: number;
-    };
-    orientation?: string;
-}
-
-interface ConstructionGroup {
-    code: string;
-    elements: Element[];
 }
 
 interface CreateNodeMasterResponse {
@@ -51,26 +35,6 @@ interface WindowError {
     context: string;
 }
 
-interface Window {
-    id: string;
-    name: string;
-    type: string;
-    width: number;
-    height: number;
-    azimut: string;
-    assignedWall: string;
-    dimensions: {
-        x: number;
-        y: number;
-        z: number;
-    };
-    position: {
-        x: number;
-        y: number;
-        z: number;
-    };
-    vectors: any;
-}
 
 interface WallGroup {
     code: string;
@@ -88,7 +52,7 @@ export const useWallBuilder = (projectId: string) => {
         const errors: WindowError[] = [];
         if (!wallGroup?.windows?.length) return errors;
 
-        for (const window of wallGroup.windows) {
+        for (const windowElement of wallGroup.windows) {
             try {
                 // Validar existencia por code_ifc
                 const code_ifc = 'VENTANA_001'; // Aquí deberías obtener el code_ifc real de la ventana
@@ -98,20 +62,20 @@ export const useWallBuilder = (projectId: string) => {
                 if (!element || !element.id) {
                     errors.push({
                         message: `No existe ventana con codigo ifc=${code_ifc}`,
-                        context: `Ventana ${window.name}`
+                        context: `Ventana ${windowElement.name}`
                     });
                     continue;
                 }
 
                 const payload = {
                     alojado_en: "",
-                    angulo_azimut: "0° ≤ Az < 22,5°",
-                    broad: window.width,
-                    characteristics: "Interior climatizado",
-                    high: window.height,
+                    angulo_azimut: orientationToAzimutRange(wallGroup.elements[0].orientation as string),
+                    broad: windowElement.width,
+                    characteristics: windowElement.characteristics,
+                    high: windowElement.height,
                     housed_in: wallId,
-                    position: "Interior",
-                    with_no_return: "Sin",
+                    position: windowElement.stringPosition,
+                    with_no_return: windowElement.aislation ? "Con": "Sin",
                     window_id: element.id
                 };
 
@@ -122,7 +86,7 @@ export const useWallBuilder = (projectId: string) => {
             } catch (error) {
                 errors.push({
                     message: `Error creating window: ${error}`,
-                    context: `Window ${window.name}`
+                    context: `Window ${windowElement.name}`
                 });
             }
         }
@@ -229,7 +193,7 @@ const createFromEnclosure = async (
         const wallTypes = keys
             .map(key => ({
                 key,
-                value: getPropValue(obj, key)
+                value: getPropValue(obj, key, getPropValue(obj, 'NOMBRE_RECINTO'))
             }))
             .filter(wall => wall.value !== '');
 

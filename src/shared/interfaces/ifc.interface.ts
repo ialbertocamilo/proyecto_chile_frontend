@@ -55,6 +55,7 @@ export interface Element {
 export interface Window {
     id: string;
     name: string;
+    code: string;
     type: string;
     width: number;
     height: number;

@@ -142,13 +142,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
      * Fetch enclosure details by code
      */
     const fetchEnclosureByCode = async (code: string) => {
-        try {
             const response = await get(`/enclosure-typing/by-code/${code}`);
             return response;
-        } catch (error) {
-            console.error(`Error fetching enclosure details for code ${code}:`, error);
-            return null;
-        }
     };
 
     /**
@@ -189,7 +184,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 project_id: parseInt(projectId)
             };
         } catch (error: any) {
-            const errorMessage = `${room.name}: ${error?.response?.data?.detail || 'Unknown error'}`;
+            const errorMessage = `${room.name}: ${error?.response?.data?.detail || error?.response?.data}`;
             throw new Error(errorMessage);
         }
     };
@@ -581,21 +576,20 @@ export const useProjectIfcBuilder = (projectId: string) => {
 
             console.log("Creating doors :", doors);
             for (const door of doors) {
-                const code_ifc = 'PUERTA_001';
                 const section = 'door';
                 let element;
                 try {
-                    element = await wallBuilder.getElementByCodeIfc(section, code_ifc);
+                    element = await wallBuilder.getElementByCodeIfc(section, door.code);
                 } catch (e) {
                     errors.push({
-                        message: `Error consultando existencia de puerta codigo ifc=${code_ifc}`,
+                        message: `Error consultando existencia de puerta codigo ifc=${door.code}`,
                         context: `Puerta ${door.name}`
                     });
                     continue;
                 }
                 if (!element || !element.id) {
                     errors.push({
-                        message: `No existe puerta con codigo ifc=${code_ifc}`,
+                        message: `No existe puerta con codigo ifc=${door.code}`,
                         context: `Puerta ${door.name}`
                     });
                     continue;

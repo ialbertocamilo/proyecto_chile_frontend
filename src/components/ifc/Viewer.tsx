@@ -42,7 +42,6 @@ export default function IFCViewerComponent() {
   const [status, setStatus] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [fileSelected, setFileSelected] = useState<boolean>(false);
-  const [structuredOutput, setStructuredOutput] = useState<string>("");
   const [missingElements, setMissingElements] = useState<Array<{ type: string; name: string }>>([]);
   const [isUploadComplete, setIsUploadComplete] = useState<boolean>(false);
 
@@ -119,7 +118,6 @@ export default function IFCViewerComponent() {
           ceilingCodes.push(prop.value);
         }
       });
-
       // Find doors associated with this room
       const doors = objects.filter(obj =>
         obj.type.includes(IFC_TYPES.IFCDoor) &&
@@ -180,6 +178,7 @@ export default function IFCViewerComponent() {
               windows: windows?.map(window => {
                 return {
                   id: window.id,
+                  code: getPropValue(window, IFC_PROP.WINDOW_CODE,name,true),
                   name: window.name,
                   type: window.type,
                   width: window.dimensions?.x || getPropValue(window, IFC_PROP.WIDTH) || 0,
@@ -248,18 +247,17 @@ export default function IFCViewerComponent() {
               obj.type.includes(IFC_TYPES.IFCSLab) &&
               obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)
             );
-
             return {
               code: code,
               elements: ceilings.map(ceiling => ({
                 id: ceiling.id,
                 name: ceiling.name,
-                material: getPropValue(ceiling, IFC_PROP.MATERIAL) || IFC_PROP.UNKNOWN,
-                color: getPropValue(ceiling, IFC_PROP.COLOR) || IFC_PROP.UNKNOWN,
-                thickness: Number(getPropValue(ceiling, IFC_PROP.GROSOR)) || 0,
-                keyNote: getPropValue(ceiling, IFC_PROP.NOTACLAVE) || IFC_PROP.UNKNOWN,
-                area: Number(getPropValue(ceiling, IFC_PROP.AREA)) || 0,
-                volume: Number(getPropValue(ceiling, IFC_PROP.AREA)) * Number(getPropValue(ceiling, IFC_PROP.GROSOR)) || 0,
+                material: getPropValue(ceiling, IFC_PROP.MATERIAL,name,true)  ,
+                color: getPropValue(ceiling, IFC_PROP.COLOR,name,true)  ,
+                thickness: Number(getPropValue(ceiling, IFC_PROP.GROSOR,name,true)),
+                keyNote: getPropValue(ceiling, IFC_PROP.NOTACLAVE,name,true) ,
+                area: Number(getPropValue(ceiling, IFC_PROP.AREA,name,true)),
+                volume: Number(getPropValue(ceiling, IFC_PROP.AREA,name,true)) * Number(getPropValue(ceiling, IFC_PROP.GROSOR,name,true)),
                 dimensions: ceiling.dimensions || { x: 0, y: 0, z: 0 },
                 position: ceiling.position || { x: 0, y: 0, z: 0 },
                 vectors: ceiling.vectors || null

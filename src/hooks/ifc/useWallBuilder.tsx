@@ -5,6 +5,7 @@ import { angleToAzimutRangeString, orientationToAzimutRange } from '@/utils/azim
 import { constantUrlApiEndpoint } from '@/utils/constant-url-endpoint';
 import { getMaterialByCode } from './materialUtils';
 import { Element, Window } from '@/shared/interfaces/ifc.interface';
+import { IFC_PROP } from '@/constants/ifc';
 
 interface SurfaceColor {
     name: string;
@@ -237,7 +238,7 @@ const createFromEnclosure = async (
                 const result = findObjectsByTypeAndProperty(
                     globalObjects,
                     "IfcWallStandardCase",
-                    "CÓDIGO MULTICAPA",
+                    IFC_PROP.WALL_CODE,
                     wall.value
                 );
 

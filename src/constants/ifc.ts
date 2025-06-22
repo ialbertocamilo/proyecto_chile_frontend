@@ -40,6 +40,7 @@ export const IFC_PROP = {
   AISL_VERT_D: 'AISL_VERT_D',
   AISL_VERT_E: 'AISL_VERT_E',
   AISL_VERT_LAMBDA: 'AISL_VERT_LAMBDA',
+  WINDOW_CODE: 'CÓDIGO DE VENTANA',
 };
 
 export const IFC_TYPES = {

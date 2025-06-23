@@ -2151,7 +2151,7 @@ const WorkFlowpar2editPage: React.FC = () => {
       <ModalCreate
         detail={null}
         isOpen={showNewDetailRow}
-        title="Crear capas muro (de Interior a Exterior)"
+        title="Crear capas (de Interior a Exterior)"
         onClose={() => {
           setShowNewDetailRow(false);
           setNewDetailForm({
@@ -2698,18 +2698,18 @@ const WorkFlowpar2editPage: React.FC = () => {
         </ModalCreate>
       )}
 
-      {/* NUEVO MODAL para /user/detail-create/{detail_part_id} 
+      {/* PISO NUEVO MODAL para /user/detail-create/{detail_part_id} 
           (Se abre al hacer clic en "+ Nuevo" dentro de renderDetallesModalContent) */}
       <ModalCreate
         isOpen={showCreateDetailModal}
         onClose={() => setShowCreateDetailModal(false)}
         onSave={handleCreateDetail}
-        title="Crear capas piso (de Interior a Exterior)"
+        title="Crear capas (de Interior a Exterior)"
         saveLabel="Crear Capa"
       >
         <form>
           <div className="form-group">
-            <label>Nombre de muro</label>
+            <label>Nombre </label>
             <input
               type="text"
               className="form-control"

@@ -393,7 +393,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
       {/* Modal interno para CREAR un nuevo Detalle */}
       <ModalCreate
         isOpen={isNewDetailModalOpen}
-        title="Crear capas muro (de Interior a Exterior)"
+        title="Crear capas (de Interior a Exterior)"
         onSave={handleCreateDetail}
         onClose={() => setIsNewDetailModalOpen(false)}
         modalStyle={{ maxWidth: "40%", width: "40%", padding: "16px" }}

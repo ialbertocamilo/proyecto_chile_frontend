@@ -2875,7 +2875,7 @@ const WorkFlowpar2createPage: React.FC = () => {
       {showNewDetailModal && (
         <ModalCreate
           isOpen={true}
-          title="Crear capas muro (de Interior a Exterior)"
+          title="Crear capas  (de Interior a Exterior)"
           saveLabel="Crear Capa"
           onClose={() => setShowNewDetailModal(false)}
           onSave={handleSaveNewDetail}

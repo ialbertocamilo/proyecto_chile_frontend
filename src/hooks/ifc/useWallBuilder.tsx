@@ -74,7 +74,7 @@ export const useWallBuilder = (projectId: string) => {
                     characteristics: windowElement?.characteristics ? windowElement.characteristics.charAt(0).toUpperCase() + windowElement.characteristics.slice(1).toLowerCase() : "",
                     high: windowElement.height,
                     housed_in: wallId,
-                    position: windowElement.stringPosition,
+                    position: windowElement.stringPosition ? windowElement.stringPosition.charAt(0).toUpperCase() + windowElement.stringPosition.slice(1).toLowerCase() : "",
                     with_no_return: windowElement.aislation ? "Con": "Sin",
                     window_id: element.id
                 };

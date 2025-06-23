@@ -71,7 +71,7 @@ export const useWallBuilder = (projectId: string) => {
                     alojado_en: "",
                     angulo_azimut: orientationToAzimutRange(wallGroup.elements[0].orientation as string),
                     broad: windowElement.width,
-                    characteristics: windowElement.characteristics,
+                    characteristics: windowElement?.characteristics ? windowElement.characteristics.charAt(0).toUpperCase() + windowElement.characteristics.slice(1).toLowerCase() : "",
                     high: windowElement.height,
                     housed_in: wallId,
                     position: windowElement.stringPosition,

@@ -56,13 +56,12 @@ export const useWallBuilder = (projectId: string) => {
         for (const windowElement of wallGroup.windows) {
             try {
                 // Validar existencia por code_ifc
-                const code_ifc = 'VENTANA_001'; // Aquí deberías obtener el code_ifc real de la ventana
                 const section = 'window';
 
-                const element = await getElementByCodeIfc(section, code_ifc);
+                const element = await getElementByCodeIfc(section, windowElement.code);
                 if (!element || !element.id) {
                     errors.push({
-                        message: `No existe ventana con codigo ifc=${code_ifc}`,
+                        message: `No existe ventana con codigo ifc=${windowElement.code}`,
                         context: `Ventana ${windowElement.name}`
                     });
                     continue;

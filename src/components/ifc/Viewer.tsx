@@ -264,10 +264,11 @@ export default function IFCViewerComponent() {
               }))
             };
           }),
-          doors: doors.map(door => {
+          doors: doors?.map(door => {
             return {
               id: door.id,
               name: door.name,
+              code: getPropValue(door, IFC_PROP.DOOR_CODE,name,true),
               type: door.type || getPropValue(door, 'TIPO') || IFC_PROP.UNKNOWN,
               width: door.dimensions?.x || getPropValue(door.props, IFC_PROP.WIDTH) || 0,
               height: door.dimensions?.y || getPropValue(door.props, IFC_PROP.WINDOW_HEIGHT) || 0,
@@ -344,6 +345,7 @@ export default function IFCViewerComponent() {
       });
 
     // Cleanup function to release memory when component unmounts
+
     return () => {
       if (viewerInstance) {
         console.log("Cleaning up IFC viewer resources...");

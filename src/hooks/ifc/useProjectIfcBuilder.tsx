@@ -17,7 +17,8 @@ import {
     BuildingStructure,
     RoomResponse,
     CreationStatus,
-    FloorGroup
+    FloorGroup,
+    Window
 } from '@/shared/interfaces/ifc.interface';
 import { orientationToAzimutRange } from '@/utils/azimut';
 
@@ -50,12 +51,10 @@ export const useProjectIfcBuilder = (projectId: string) => {
             if (!elements || elements.length === 0) return
             for (const element of elements) {
                 if (type.toLowerCase() === 'door') {
-                    // Validar existencia de puerta por code_ifc
                     const section = 'door';
-                    const code_ifc = element.id;
-                    const door = await wallBuilder.getElementByCodeIfc(section, code_ifc);
+                    const door = await wallBuilder.getElementByCodeIfc(section, element?.code as string);
                     if (!door || !door.id) {
-                        missingElements.push({ type: 'door', name: element.name });
+                        missingElements.push({ type: 'door', name: element.name+ ', IFC Code: ' + element.code });
                     }
                     continue;
                 }
@@ -64,12 +63,12 @@ export const useProjectIfcBuilder = (projectId: string) => {
                     if (element?.material && element?.material.toLowerCase() !== 'unknown') {
                         const materialInfo = await getMaterialByCode(element?.material);
                         if (!materialInfo) {
-                            missingElements.push({ type, name: element.name });
+                            missingElements.push({ type, name: element.name+ ', IFC Code: ' + element?.material });
                         } 
                     }
                 } catch (error) {
                     console.error(`Error validating material: ${element.material}`, error);
-                    missingElements.push({ type, name: element.name });
+                    missingElements.push({ type, name: element.name+ ', IFC Code: ' + element?.material });
                 }
             }
         };
@@ -78,6 +77,16 @@ export const useProjectIfcBuilder = (projectId: string) => {
         if (details.walls) {
             for (const wallGroup of details.walls) {
                 await checkExistence('Wall', wallGroup.elements);
+                console.log("Creando windows", wallGroup?.windows)
+                if (wallGroup?.windows) {
+                    for (const windowElement of wallGroup.windows) {
+                        const materialInfo = await wallBuilder.getElementByCodeIfc('window', windowElement?.code);
+                        console.log("materialInfo windows", materialInfo)
+                        if (!materialInfo) {
+                            missingElements.push({ type: 'window', name: windowElement.name+ ', IFC Code: ' + windowElement.code });
+                        }
+                    }
+                }
             }
         }
 
@@ -93,6 +102,10 @@ export const useProjectIfcBuilder = (projectId: string) => {
             for (const ceilingGroup of details.ceilings) {
                 await checkExistence('Ceiling', ceilingGroup?.elements);
             }
+        }
+
+        if(details.doors) {
+            await checkExistence('Door', details.doors as unknown as Element[]);
         }
 
         return {
@@ -403,11 +416,13 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         });
                     }
                 }
-                // Use the newly created floor for room association
+                const location = floorGroup.elements[0]?.location
+    ? floorGroup.elements[0].location[0].toUpperCase() + floorGroup.elements[0].location.slice(1).toLowerCase()
+    : 'Exterior';
                 floorPromises.push(
                     post(`/floor-enclosures-create/${roomId}`, {
                         floor_id: masterNode.id,
-                        characteristic: floorGroup.elements[0]?.location || 'Exterior',
+                        characteristic: location,
                         area: floorGroup.elements[0]?.area || 0,
                         value_u: masterNode.value_u,
                         is_ventilated: floorGroup.elements[0]?.ventilated ? 'Ventilado' : 'No ventilado',

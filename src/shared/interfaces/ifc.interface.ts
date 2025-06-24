@@ -37,7 +37,8 @@ export interface RoomProperties {
 export interface Element {
     id: string;
     name: string;
-    material: string;
+    code?: string;
+    material?: string;
     thickness: number;
     area?: number;
     volume?: number;
@@ -124,6 +125,7 @@ export interface FloorGroup {
 
 export interface Door {
     id: string;
+    code: string;
     name: string;
     type: string;
     width: number;

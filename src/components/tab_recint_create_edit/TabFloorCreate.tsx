@@ -86,13 +86,14 @@ const TabFloorCreate: React.FC = () => {
 
   // Función para formatear valores en las celdas: si es 0 o "N/A" muestra guion ("-")
   const formatCellValue = (value: any, decimalPlaces?: number): string => {
-    if (value === 0 || value === "0" || value === "N/A") {
+    if (value === 0 || value === "0" || value === "N/A" || !value ) {
       return "-";
     }
+
     if (decimalPlaces !== undefined && typeof value === "number") {
       return value.toFixed(decimalPlaces);
     }
-    return value.toString();
+    return value?.toString();
   };
 
   // Manejador para prevenir la entrada del guión

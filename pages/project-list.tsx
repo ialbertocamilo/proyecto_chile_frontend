@@ -103,7 +103,7 @@ const ProjectListPage = () => {
       const validationResult = await validateProject(projectId, true);
 
       if (validationResult.valid) {
-        router.push(`/calculation-result?id=${projectId}`);
+        router.push(`/calculation-result2?id=${projectId}`);
       } else {
         // Show warnings about failed enclosures
         console.log("Project validation failed:", validationResult.failed_enclosures);

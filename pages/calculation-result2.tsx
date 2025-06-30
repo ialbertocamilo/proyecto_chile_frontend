@@ -1,9 +1,12 @@
 // pages/resumen-energia.js
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Cloud, Droplet, Flame, Snowflake } from 'lucide-react';
+import { Cloud, Droplet, Flame, Snowflake, PlayCircle } from 'lucide-react';
+import { notify } from '../src/utils/notify';
 
 import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+
+import FileDropzone from '../src/components/FileDropzone';
 
 export default function ResumenEnergia(props: any) {
     // Si se pasan props, usar los datos reales, si no, usar simulados
@@ -12,72 +15,85 @@ export default function ResumenEnergia(props: any) {
     const [demandaData, setDemandaData] = useState<any>([]);
     const [co2eqData, setCo2eqData] = useState<any>({ total: 0, unidad: '[kg CO2eq]', comparacion: '0%' });
     const [recintoData, setRecintoData] = useState<any[]>([]); // <-- NUEVO ESTADO
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     const router = useRouter();
     const { id: projectId } = router.query;
 
-    useEffect(() => {
-        if (!projectId) return;
-        const fetchData = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                // Ejecutar v2 primero
-                await fetch(`/api/calculate_v2/${projectId}`);
-                // Luego v3
-                const res = await fetch(`/api/calculate_v3/${projectId}`);
-                if (!res.ok) throw new Error('Error al obtener resultados de cálculo');
-                const data = await res.json();
-                // Mapear resultados al estado
-                // Demanda
-                setDemandaData([
-                    { concepto: 'Calefacción', kwh_m2_ano: data.final_indicators.demanda_calefaccion_final, kwh_ano: data.final_indicators.demanda_calefaccion_final2, vsCasoBase: (data.final_indicators.demanda_calef_vs * 100).toFixed(0) + '%' },
-                    { concepto: 'Refrigeración', kwh_m2_ano: data.final_indicators.demanda_ref_final, kwh_ano: data.final_indicators.demanda_ref_final2, vsCasoBase: (data.final_indicators.demanda_ref_vs * 100).toFixed(0) + '%' },
-                    { concepto: 'Iluminación', kwh_m2_ano: data.final_indicators.demanda_iluminacion_final, kwh_ano: data.final_indicators.demanda_iluminacion_final2, vsCasoBase: (data.final_indicators.demanda_iluminacion_vs * 100).toFixed(0) + '%' },
-                    { concepto: 'Total', kwh_m2_ano: data.final_indicators.demanda_calefaccion_final + data.final_indicators.demanda_ref_final + data.final_indicators.demanda_iluminacion_final, kwh_ano: data.final_indicators.demanda_calefaccion_final2 + data.final_indicators.demanda_ref_final2 + data.final_indicators.demanda_iluminacion_final2, vsCasoBase: '-' },
-                ]);
-                // Consumo
-                setConsumoPrimario([
-                    { concepto: 'Calefacción', kwh_m2_ano: data.final_indicators.consumo_calefaccion_final, kwh_ano: data.final_indicators.consumo_calefaccion_final2, vsCasoBase: (data.final_indicators.consumo_calef_vs * 100).toFixed(0) + '%' },
-                    { concepto: 'Refrigeración', kwh_m2_ano: data.final_indicators.consumo_refrigeracion_final, kwh_ano: data.final_indicators.consumo_refrigeracion_final2, vsCasoBase: (data.final_indicators.consumo_ref_vs * 100).toFixed(0) + '%' },
-                    { concepto: 'Iluminación', kwh_m2_ano: data.final_indicators.consumo_iluminacion_final, kwh_ano: data.final_indicators.consumo_iluminacion_final2, vsCasoBase: (data.final_indicators.consumo_iluminacion_vs * 100).toFixed(0) + '%' },
-                    { concepto: 'Total', kwh_m2_ano: data.final_indicators.consumo_calefaccion_final + data.final_indicators.consumo_refrigeracion_final + data.final_indicators.consumo_iluminacion_final, kwh_ano: data.final_indicators.consumo_calefaccion_final2 + data.final_indicators.consumo_refrigeracion_final2 + data.final_indicators.consumo_iluminacion_final2, vsCasoBase: '-' },
-                ]);
-                // Disconfort
-                setHrsDisconfort([
-                    { concepto: 'Calefacción', hrs_ano: data.final_indicators.disconfort_calef },
-                    { concepto: 'Refrigeración', hrs_ano: data.final_indicators.disconfort_ref },
-                    { concepto: 'Total', hrs_ano: data.final_indicators.disconfort_total },
-                    { concepto: 'Comparación caso base', hrs_ano: (data.final_indicators.disconfort_vs * 100).toFixed(0) + '%', nota: '[%]' },
-                ]);
-                // CO2
-                setCo2eqData({
-                    total: data.final_indicators.co2_eq_total,
-                    unidad: '[kg CO2eq]',
-                    comparacion: (data.final_indicators.co2_eq_vs_caso_base * 100).toFixed(0) + '%',
-                });
-                // Recintos
-                if (Array.isArray(data.result_by_enclosure_v2)) {
-                    setRecintoData(data.result_by_enclosure_v2);
-                } else {
-                    setRecintoData([]);
-                }
-            } catch (err: any) {
-                setError(err.message || 'Error inesperado');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [projectId]);
+    // Nuevo estado para controlar si se presionó el botón Calcular
+    // Eliminar forceRecalculate, no se requiere más
+
+    // Estado para el switch 'Usar datos adjuntos'
+    const [useAttachedData, setUseAttachedData] = useState<boolean>(false);
+    const [loadingDownload, setLoadingDownload] = useState<boolean>(false);
+
+
+    // useEffect(() => {
+    //     if (!projectId) return;
+    //     const fetchData = async () => {
+    //         setLoading(true);
+    //         setError(null);
+    //         try {
+    //             // Solo llamar v3 automáticamente
+    //             const res = await fetch(`/api/calculate_v3/${projectId}`);
+    //             if (!res.ok) throw new Error('Error al obtener resultados de cálculo');
+    //             const data = await res.json();
+    //             // Mapear resultados al estado
+    //             // Demanda
+    //             setDemandaData([
+    //                 { concepto: 'Calefacción', kwh_m2_ano: data.final_indicators.demanda_calefaccion_final, kwh_ano: data.final_indicators.demanda_calefaccion_final2, vsCasoBase: (data.final_indicators.demanda_calef_vs * 100).toFixed(0) + '%' },
+    //                 { concepto: 'Refrigeración', kwh_m2_ano: data.final_indicators.demanda_ref_final, kwh_ano: data.final_indicators.demanda_ref_final2, vsCasoBase: (data.final_indicators.demanda_ref_vs * 100).toFixed(0) + '%' },
+    //                 { concepto: 'Iluminación', kwh_m2_ano: data.final_indicators.demanda_iluminacion_final, kwh_ano: data.final_indicators.demanda_iluminacion_final2, vsCasoBase: (data.final_indicators.demanda_iluminacion_vs * 100).toFixed(0) + '%' },
+    //                 { concepto: 'Total', kwh_m2_ano: data.final_indicators.demanda_calefaccion_final + data.final_indicators.demanda_ref_final + data.final_indicators.demanda_iluminacion_final, kwh_ano: data.final_indicators.demanda_calefaccion_final2 + data.final_indicators.demanda_ref_final2 + data.final_indicators.demanda_iluminacion_final2, vsCasoBase: '-' },
+    //             ]);
+    //             // Consumo
+    //             setConsumoPrimario([
+    //                 { concepto: 'Calefacción', kwh_m2_ano: data.final_indicators.consumo_calefaccion_final, kwh_ano: data.final_indicators.consumo_calefaccion_final2, vsCasoBase: (data.final_indicators.consumo_calef_vs * 100).toFixed(0) + '%' },
+    //                 { concepto: 'Refrigeración', kwh_m2_ano: data.final_indicators.consumo_refrigeracion_final, kwh_ano: data.final_indicators.consumo_refrigeracion_final2, vsCasoBase: (data.final_indicators.consumo_ref_vs * 100).toFixed(0) + '%' },
+    //                 { concepto: 'Iluminación', kwh_m2_ano: data.final_indicators.consumo_iluminacion_final, kwh_ano: data.final_indicators.consumo_iluminacion_final2, vsCasoBase: (data.final_indicators.consumo_iluminacion_vs * 100).toFixed(0) + '%' },
+    //                 { concepto: 'Total', kwh_m2_ano: data.final_indicators.consumo_calefaccion_final + data.final_indicators.consumo_refrigeracion_final + data.final_indicators.consumo_iluminacion_final, kwh_ano: data.final_indicators.consumo_calefaccion_final2 + data.final_indicators.consumo_refrigeracion_final2 + data.final_indicators.consumo_iluminacion_final2, vsCasoBase: '-' },
+    //             ]);
+    //             // Disconfort
+    //             setHrsDisconfort([
+    //                 { concepto: 'Calefacción', hrs_ano: data.final_indicators.disconfort_calef },
+    //                 { concepto: 'Refrigeración', hrs_ano: data.final_indicators.disconfort_ref },
+    //                 { concepto: 'Total', hrs_ano: data.final_indicators.disconfort_total },
+    //                 { concepto: 'Comparación caso base', hrs_ano: (data.final_indicators.disconfort_vs * 100).toFixed(0) + '%', nota: '[%]' },
+    //             ]);
+    //             // CO2
+    //             setCo2eqData({
+    //                 total: data.final_indicators.co2_eq_total,
+    //                 unidad: '[kg CO2eq]',
+    //                 comparacion: (data.final_indicators.co2_eq_vs_caso_base * 100).toFixed(0) + '%',
+    //             });
+    //             // Recintos
+    //             if (Array.isArray(data.result_by_enclosure_v2)) {
+    //                 setRecintoData(data.result_by_enclosure_v2);
+    //             } else {
+    //                 setRecintoData([]);
+    //             }
+    //         } catch (err: any) {
+    //             setError(err.message || 'Error inesperado');
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+    //     fetchData();
+    // }, [projectId]);
 
     // --- Solo lógica de fetch y estados nuevos, sin props ni efectos antiguos ---
 
-    if (loading) {
-        return <div className="container my-4"><div className="alert alert-info">Cargando resumen de energía...</div></div>;
-    }
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
+    const handleFileAccepted = (files: File[]) => {
+        setUploadedFiles(files);
+        // Aquí puedes agregar lógica para procesar los archivos
+    };
+
+    // if (loading) {
+    //     return <div className="container my-4"><div className="alert alert-info">Cargando resumen de energía...</div></div>;
+    // }
     if (error) {
         return <div className="container my-4"><div className="alert alert-danger">{error}</div></div>;
     }
@@ -86,6 +102,156 @@ export default function ResumenEnergia(props: any) {
         <div className="container my-4">
             <h1 className="mb-3">Resumen de Energía</h1>
 
+            {/* Dropzone para subir archivos */}
+            <FileDropzone onFileAccepted={handleFileAccepted} />
+            {uploadedFiles.length > 0 && (
+                <div className="alert alert-success py-2">
+                    Archivos subidos: <strong>{uploadedFiles.map(f => f.name).join(', ')}</strong>
+                </div>
+            )}
+
+
+            {/* Botón Calcular */}
+            <div className="d-flex align-items-center mb-3" style={{gap: 16}}>
+                <button
+                    type="button"
+                    className="btn d-flex align-items-center"
+                    style={{ backgroundColor: 'orange', color: 'white', fontWeight: 'bold' }}
+                    // disabled={loading}
+                    onClick={async () => {
+                    if (!projectId) return;
+                    setLoading(true);
+                    setError(null);
+                    try {
+                        // Si el toggle está activo, primero sube el archivo
+                        if (useAttachedData) {
+                            if (!uploadedFiles || uploadedFiles.length === 0) {
+                                notify('Debe adjuntar al menos un archivo antes de calcular.', 'error');
+                                setLoading(false);
+                                return;
+                            }
+                            const formData = new FormData();
+                            const token = localStorage.getItem('token');
+                            uploadedFiles.forEach(file => formData.append('files', file));
+                            const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/calculator/upload/${projectId}`, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            });
+                            if (!uploadRes.ok) {
+                                const errMsg = await uploadRes.text();
+                                throw new Error('Error al subir el archivo: ' + errMsg);
+                            }
+                        }
+                        // Luego v2
+                        const v2res = await fetch(`/api/calculate_v2/${projectId}?force_data=${useAttachedData ? 'true' : 'false'}`);
+                        if (!v2res.ok) throw new Error('Error al ejecutar cálculo v2');
+                        // Luego v3
+                        const res = await fetch(`/api/calculate_v3/${projectId}`);
+                        if (!res.ok) throw new Error('Error al obtener resultados de cálculo');
+                        const data = await res.json();
+                            setDemandaData([
+                                { concepto: 'Calefacción', kwh_m2_ano: Number(data.final_indicators.demanda_calefaccion_final).toFixed(2), kwh_ano: Number(data.final_indicators.demanda_calefaccion_final2).toFixed(2), vsCasoBase: (data.final_indicators.demanda_calef_vs * 100).toFixed(2) + '%' },
+                                { concepto: 'Refrigeración', kwh_m2_ano: Number(data.final_indicators.demanda_ref_final).toFixed(2), kwh_ano: Number(data.final_indicators.demanda_ref_final2).toFixed(2), vsCasoBase: (data.final_indicators.demanda_ref_vs * 100).toFixed(2) + '%' },
+                                { concepto: 'Iluminación', kwh_m2_ano: Number(data.final_indicators.demanda_iluminacion_final).toFixed(2), kwh_ano: Number(data.final_indicators.demanda_iluminacion_final2).toFixed(2), vsCasoBase: (data.final_indicators.demanda_iluminacion_vs * 100).toFixed(2) + '%' },
+                                { concepto: 'ACS', kwh_m2_ano: Number(data.final_indicators.demanda_acs_m2).toFixed(2), kwh_ano: Number(data.final_indicators.demanda_acs).toFixed(2), vsCasoBase: (data.final_indicators.demanda_acs_vs_caso_base * 100).toFixed(2) + '%' },
+                                { concepto: 'Total', kwh_m2_ano: (Number(data.final_indicators.demanda_calefaccion_final) + Number(data.final_indicators.demanda_ref_final) + Number(data.final_indicators.demanda_iluminacion_final) + Number(data.final_indicators.demanda_acs_m2)).toFixed(2), kwh_ano: (Number(data.final_indicators.demanda_calefaccion_final2) + Number(data.final_indicators.demanda_ref_final2) + Number(data.final_indicators.demanda_iluminacion_final2) + Number(data.final_indicators.demanda_acs)).toFixed(2), vsCasoBase: '-' },
+                            ]);
+                            setConsumoPrimario([
+                                { concepto: 'Calefacción', kwh_m2_ano: Number(data.final_indicators.consumo_calefaccion_final).toFixed(2), kwh_ano: Number(data.final_indicators.consumo_calefaccion_final2).toFixed(2), vsCasoBase: (data.final_indicators.consumo_calef_vs * 100).toFixed(2) + '%' },
+                                { concepto: 'Refrigeración', kwh_m2_ano: Number(data.final_indicators.consumo_refrigeracion_final).toFixed(2), kwh_ano: Number(data.final_indicators.consumo_refrigeracion_final2).toFixed(2), vsCasoBase: (data.final_indicators.consumo_ref_vs * 100).toFixed(2) + '%' },
+                                { concepto: 'Iluminación', kwh_m2_ano: Number(data.final_indicators.consumo_iluminacion_final).toFixed(2), kwh_ano: Number(data.final_indicators.consumo_iluminacion_final2).toFixed(2), vsCasoBase: (data.final_indicators.consumo_iluminacion_vs * 100).toFixed(2) + '%' },
+                                { concepto: 'ACS', kwh_m2_ano: Number(data.final_indicators.consumo_acs_m2).toFixed(2), kwh_ano: Number(data.final_indicators.consumo_acs).toFixed(2), vsCasoBase: Number(data.final_indicators.consumo_acs_vs_caso_base).toFixed(2) },
+                                { concepto: 'Total', kwh_m2_ano: (Number(data.final_indicators.consumo_calefaccion_final) + Number(data.final_indicators.consumo_refrigeracion_final) + Number(data.final_indicators.consumo_iluminacion_final) + Number(data.final_indicators.consumo_acs_m2)).toFixed(2), kwh_ano: (Number(data.final_indicators.consumo_calefaccion_final2) + Number(data.final_indicators.consumo_refrigeracion_final2) + Number(data.final_indicators.consumo_iluminacion_final2) + Number(data.final_indicators.consumo_acs)).toFixed(2), vsCasoBase: '-' },
+                            ]);
+                            setHrsDisconfort([
+                                { concepto: 'Calefacción', hrs_ano: Number(data.final_indicators.disconfort_calef).toFixed(2) },
+                                { concepto: 'Refrigeración', hrs_ano: Number(data.final_indicators.disconfort_ref).toFixed(2) },
+                                { concepto: 'Total', hrs_ano: Number(data.final_indicators.disconfort_total).toFixed(2) },
+                                { concepto: 'Comparación caso base', hrs_ano: (data.final_indicators.disconfort_vs * 100).toFixed(2) + '%', nota: '[%]' },
+                            ]);
+                            setCo2eqData({
+                                total: Number(data.final_indicators.co2_eq_total).toFixed(2),
+                                unidad: '[kg CO2eq]',
+                                comparacion: (data.final_indicators.co2_eq_vs_caso_base * 100).toFixed(0) + '%',
+                            });
+                            if (Array.isArray(data.result_by_enclosure_v2)) {
+                                setRecintoData(data.result_by_enclosure_v2);
+                            } else {
+                                setRecintoData([]);
+                            }
+                       
+                    } catch (err: any) {
+                        notify(err.message || 'Error inesperado', 'error');
+                    } finally {
+                        setLoading(false);
+                    }
+                }}
+            >
+                <PlayCircle size={20} style={{marginRight: 8}} /> Calcular
+                </button>
+                {loading && (
+                    <div className="spinner-border text-warning ms-2" role="status" style={{width: '1.5rem', height: '1.5rem'}}>
+                        <span className="visually-hidden">Cargando...</span>
+                    </div>
+                )}
+                <div className="form-check form-switch d-flex align-items-center" style={{marginLeft: 8}}>
+                    <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="useAttachedData"
+                        checked={useAttachedData}
+                        onChange={() => setUseAttachedData(v => !v)}
+                        style={{cursor: 'pointer'}}
+                    />
+                    <label className="form-check-label ms-2" htmlFor="useAttachedData" style={{cursor: 'pointer'}}>
+                        Usar datos adjuntos
+                    </label>
+                </div>
+            </div>
+
+            {/* Botón Descargar archivos adjuntos */}
+            {projectId && (
+                <button
+                    type="button"
+                    className="btn btn-outline-primary me-2"
+                    style={{fontWeight: 'bold'}}
+                    disabled={loadingDownload}
+                    onClick={async () => {
+                        setLoadingDownload(true);
+                        try {
+                            const token = localStorage.getItem('token');
+                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/calculator/download/${projectId}`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+                            if (!res.ok) throw new Error('Error al descargar archivos adjuntos');
+                            const blob = await res.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${projectId}_files.zip`;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                        } catch (err: any) {
+                            notify(err.message || 'Error inesperado al descargar', 'error');
+                        } finally {
+                            setLoadingDownload(false);
+                        }
+                    }}
+                >
+                    {loadingDownload ? (
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    ) : (
+                        <Cloud size={18} className="me-2" />
+                    )}
+                    Descargar de postprocesamiento
+                </button>
+            )}
+            <br /><br />
             {/* Grid principal */}
             <div className="row">
                 {/* Sección Demanda */}
@@ -223,7 +389,7 @@ export default function ResumenEnergia(props: any) {
         <div className="row mt-5">
             <div className="col-12">
                 <div className="card">
-                    <div className="card-header bg-primary text-white">
+                    <div className="card-header ">
                         <strong>Datos del Recinto</strong>
                     </div>
                     <div className="card-body p-2">
@@ -239,8 +405,8 @@ export default function ResumenEnergia(props: any) {
                             <tbody>
                                 {recintoData.length > 0 ? (
                                     recintoData.map((recinto, idx) => (
-                                        <tr key={recinto.id || idx}>
-                                            <td>{idx + 1}</td>
+                                        <tr key={recinto.enclosure_id || idx}>
+                                            <td>{recinto.enclosure_id}</td>
                                             <td>{recinto.nombre_recinto || recinto.name_enclosure || '-'}</td>
                                             <td>{recinto.perfil_uso || recinto.usage_profile_name || '-'}</td>
                                             <td>{recinto.superficie != null ? recinto.superficie.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '-'}</td>

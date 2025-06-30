@@ -12,7 +12,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Missing project id' });
   }
   try {
-    const url = `${constantUrlApiEndpoint}/calculate_v2/${id}`;
+    let url = `${constantUrlApiEndpoint}/calculate_v2/${id}`;
+    // Si viene force_data, agregarlo como query param
+    if (req.query.force_data) {
+      const forceParam = encodeURIComponent(req.query.force_data as string);
+      url += `?force_data=${forceParam}`;
+    }
     const response = await axios.get(url, {
       headers: {
         Authorization: token,

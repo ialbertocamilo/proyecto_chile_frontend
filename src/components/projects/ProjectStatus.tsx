@@ -109,7 +109,7 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
 
     const handleConfirm = () => {
         setShowModal(false);
-        router.push(`/calculation-result?id=${projectId}`);
+        router.push(`/calculation-result2?id=${projectId}`);
     };
 
     const handleCancel = () => {

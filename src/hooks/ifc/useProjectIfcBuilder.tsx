@@ -45,8 +45,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
     });
     const validateElementsExistence = async (details: ConstructionDetails) => {
         const missingElements: { type: string; name: string }[] = [];
-
-        // Helper function to check existence
         const checkExistence = async (type: string, elements: Element[]) => {
             if (!elements || elements.length === 0) return
             for (const element of elements) {

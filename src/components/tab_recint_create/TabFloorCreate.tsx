@@ -403,14 +403,14 @@ const TabFloorCreate: React.FC = () => {
         if (editingRowIndex === row.index) {
           return renderEditableCell("area", row);
         }
-        return row.area === 0 ? "-" : displayValue(row.area, true);
+        return row?.area === 0 ? "-" : displayValue(row.area, true);
       },
     },
     {
       headerName: "U [W/m²K]",
       field: "uValue",
       renderCell: (row: FloorData) => {
-        return row.uValue === 0 ? "-" : row.uValue.toFixed(2);
+        return row?.uValue === 0 ? "-" : row.uValue?.toFixed(2);
       },
     },
     {
@@ -420,7 +420,7 @@ const TabFloorCreate: React.FC = () => {
         if (editingRowIndex === row.index) {
           return renderEditableCell("perimetroSuelo", row);
         }
-        return row.perimetroSuelo === 0 ? "-" : row.perimetroSuelo;
+        return row?.perimetroSuelo === 0 ? "-" : row?.perimetroSuelo;
       },
     },
     {
@@ -430,9 +430,9 @@ const TabFloorCreate: React.FC = () => {
         if (editingRowIndex === row.index) {
           return renderEditableCell("pisoVentilado", row);
         }
-        return row.pisoVentilado === "N/A" || row.pisoVentilado === ""
+        return row?.pisoVentilado === "N/A" || row?.pisoVentilado === ""
           ? "-"
-          : row.pisoVentilado;
+          : row?.pisoVentilado;
       },
     },
     { headerName: "PT P06 L [m]", field: "ptP06L" },

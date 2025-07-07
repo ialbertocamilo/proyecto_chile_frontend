@@ -122,10 +122,14 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
   const values = data ? hours.map((hour, i) => {
     const currentHour = i + 1;
     const startHour = parseInt(hoursRange.start.split(':')[0]);
-    const endHour = parseInt(hoursRange.end.split(':')[0]);
-    
+    const endHour = hoursRange.end === '24:00' ? 24 : parseInt(hoursRange.end.split(':')[0]);
+    const endMin = hoursRange.end === '24:00' ? 0 : parseInt(hoursRange.end.split(':')[1]);
     // Set value to 0 if outside working hours
-    if (currentHour < startHour || currentHour > endHour) {
+    if (
+      currentHour < startHour ||
+      (currentHour > endHour) ||
+      (currentHour === endHour && endMin === 0 && hoursRange.end !== '24:00')
+    ) {
       return 0;
     }
     return data[`hour_${currentHour}`] ?? 0;
@@ -140,14 +144,14 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
       type: 'bar',
       data: values,
       barMinHeight: 10,
-      itemStyle: { 
+      itemStyle: {
         color: (params: any) => {
           const hour = params.dataIndex + 1;
           const startHour = parseInt(hoursRange.start.split(':')[0]);
           const endHour = parseInt(hoursRange.end.split(':')[0]);
           return (hour >= startHour && hour <= endHour) ? '#2ab0c5' : '#cccccc';
         },
-        borderRadius: [10, 10, 0, 0] 
+        borderRadius: [10, 10, 0, 0]
       }
     }]
   };
@@ -188,12 +192,18 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
 
       const newHorario = {
         ...(internalLoad.details?.horario ?? {}),
-        funcionamiento_semanal: "5x2",
+        funcionamiento_semanal: (internalLoad.details?.horario?.funcionamiento_semanal ?? "5x2"),
         laboral: {
-          inicio: tempHours.start,
-          fin: tempHours.end
+          inicio: (internalLoad.details?.horario?.laboral?.inicio ?? tempHours.start),
+          fin: (internalLoad.details?.horario?.laboral?.fin ?? tempHours.end)
         }
       };
+
+      // Si el usuario está editando horas, sí se debe actualizar con tempHours
+      if (isEditingHours) {
+        newHorario.laboral.inicio = tempHours.start;
+        newHorario.laboral.fin = tempHours.end;
+      }
 
       const payload = {
         type: "internal_loads",
@@ -210,7 +220,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
       const url = `/building_condition/${enclosureId}/update?section=user`;
       const patchRes = await api.patch(url, payload, { headers });
       notify(`Horario actualizado con éxito`);
-      
+
       // Actualizar el gráfico inmediatamente
       setHoursRange(tempHours);
       chartRef.current?.getEchartsInstance().setOption({
@@ -219,7 +229,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
             const currentHour = i + 1;
             const startHour = parseInt(tempHours.start.split(':')[0]);
             const endHour = parseInt(tempHours.end.split(':')[0]);
-            
+
             if (currentHour < startHour || currentHour > endHour) {
               return 0;
             }
@@ -230,7 +240,7 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
 
       await fetchWorkingHours();
       setIsEditingHours(false);
-      
+
     } catch (err) {
       console.error("❌ Error inesperado en handleHoursUpdate:", err);
     }
@@ -319,12 +329,17 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
           <span>HORA DE INICIO: </span>
         </strong>
         {isEditingHours ? (
-          <input
-            type="time"
+          <select
             value={tempHours.start}
-            onChange={(e) => setTempHours(prev => ({ ...prev, start: e.target.value }))}
+            onChange={e => setTempHours(prev => ({ ...prev, start: e.target.value }))}
             className="mx-2"
-          />
+          >
+            {Array.from({ length: 24 }, (_, i) => {
+              const hour = i + 1;
+              const value = `${hour.toString().padStart(2, '0')}:00`;
+              return <option key={value} value={value}>{value}</option>;
+            })}
+          </select>
         ) : (
           <span>{hoursRange.start}</span>
         )}
@@ -333,12 +348,17 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
           <span>HORA FINAL: </span>
         </strong>
         {isEditingHours ? (
-          <input
-            type="time"
+          <select
             value={tempHours.end}
-            onChange={(e) => setTempHours(prev => ({ ...prev, end: e.target.value }))}
+            onChange={e => setTempHours(prev => ({ ...prev, end: e.target.value }))}
             className="mx-2"
-          />
+          >
+            {Array.from({ length: 24 }, (_, i) => {
+              const hour = i + 1;
+              const value = `${hour.toString().padStart(2, '0')}:00`;
+              return <option key={value} value={value}>{value}</option>;
+            })}
+          </select>
         ) : (
           <span>{hoursRange.end}</span>
         )}
@@ -364,11 +384,11 @@ const ProfileSchedules: React.FC<{ onUpdate?: () => void }> = ({ onUpdate }) => 
             </CustomButton>
           </>
         ) : (
-          <CustomButton 
-          className="btn btn-outline-primary" onClick={() => {
-            setTempHours(hoursRange);
-            setIsEditingHours(true);
-          }}>
+          <CustomButton
+            className="btn btn-outline-primary" onClick={() => {
+              setTempHours(hoursRange);
+              setIsEditingHours(true);
+            }}>
             Editar Horario
           </CustomButton>
         )}

@@ -21,6 +21,7 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
 
     useEffect(() => {
         // Validate project when component mounts
+        console.log("status.toLowerCase()", status.toLowerCase());
         if (status.toLowerCase() === 'en proceso') {
             validateProjectStatus();
         }

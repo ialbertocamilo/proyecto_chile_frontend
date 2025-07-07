@@ -15,6 +15,7 @@ import CustomButton from "../src/components/common/CustomButton";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import locationData from "public/locationData";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -306,6 +307,9 @@ const ProjectWorkflowPart1: React.FC = () => {
           address: formData.address,
           region: formData.region, // Add the region to divisions
         },
+        department: formData.department || "",
+        province: formData.province || "",
+        district: formData.district || "",
         name_project: formData.name_project,
         owner_name: formData.owner_name,
         owner_lastname: formData.owner_lastname,
@@ -512,112 +516,126 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </small>
                     )}
                   </div>
-                  {/*<div className="col-12 col-md-6">
-                    <label className="form-label">
-                      País{" "}
-                      {isFieldEmpty("country") && (
-                        <span style={{ color: "red" }}>*</span>
-                      )}
-                    </label>
-                    <select
-                      className="form-control"
-                      value={formData.country}
-                      onChange={(e) =>
-                        handleCountryChange(e.target.value as Country)
-                      }
-                    >
-                      <option value="">Seleccione un país</option>
-                      {Object.keys(locationData).map((country) => (
-                        <option key={country} value={country}>
-                          {country}
-                        </option>
-                      ))}
-                    </select>
-                    {submitted && errors.country && (
-                      <small className="text-danger">{errors.country}</small>
-                    )}
-                  </div>*/}
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">
-                      Distrito/Municipio
-                      {isFieldEmpty("district") && (
-                        <span style={{ color: "red" }}>*</span>
-                      )}
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.district}
-                      onChange={(e) =>
-                        handleFormInputChange("district", e.target.value)
-                      }
-                    />
-                    {submitted && errors.district && (
-                      <small className="text-danger">{errors.district}</small>
-                    )}
-                  </div>
+                
                 </div>
-                {/*<div className="row mb-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">
-                      Región{" "}
-                      {isFieldEmpty("department") && (
-                        <span style={{ color: "red" }}>*</span>
-                      )}
-                    </label>
-                    <select
-                      className="form-control"
-                      value={formData.department}
-                      onChange={(e) => handleDepartmentChange(e.target.value)}
-                      disabled={!formData.country}
-                    >
-                      <option value="">Seleccione un departamento</option>
-                      {formData.country &&
-                        Object.keys(
-                          locationData[formData.country]?.departments || {}
-                        ).map((dept) => (
-                          <option key={dept} value={dept}>
-                            {dept}
-                          </option>
-                        ))}
-                    </select>
-                    {submitted && errors.department && (
-                      <small className="text-danger">{errors.department}</small>
-                    )}
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">
-                      Ciudad{" "}
-                      {isFieldEmpty("province") && (
-                        <span style={{ color: "red" }}>*</span>
-                      )}
-                    </label>
-                    <select
-                      className="form-control"
-                      value={formData.province}
-                      onChange={(e) =>
-                        handleFormInputChange("province", e.target.value)
-                      }
-                      disabled={!formData.department}
-                    >
-                      <option value="">Seleccione una provincia</option>
-                      {formData.country &&
-                        formData.department &&
-                        (
-                          locationData[formData.country]?.departments?.[
-                            formData.department
-                          ] || []
-                        ).map((prov) => (
-                          <option key={prov} value={prov}>
-                            {prov}
-                          </option>
-                        ))}
-                    </select>
-                    {submitted && errors.province && (
-                      <small className="text-danger">{errors.province}</small>
-                    )}
-                  </div>
-                </div>*/}
+                <div className="row">
+                      <div className="col-6">
+                        <label className="form-label">
+                          País
+                          {!router.query.id && (
+                            <span style={{ color: "red" }}>*</span>
+                          )}
+                        </label>
+                        <select
+                          className="form-control"
+                          value={formData.country}
+                          onChange={(e) =>
+                            handleCountryChange(e.target.value as Country)
+                          }
+                        >
+                          <option value="">Seleccione un país</option>
+                          {Object.keys(locationData).map((country) => (
+                            <option key={country} value={country}>
+                              {country}
+                            </option>
+                          ))}
+                        </select>
+                        {router.query.id && submitted && errors.country && (
+                          <small className="text-danger">
+                            {errors.country}
+                          </small>
+                        )}
+                      </div>
+                      <div className="col-6">
+                        <label className="form-label">
+                          Distrito/Municipio
+                          {!router.query.id && (
+                            <span style={{ color: "red" }}>*</span>
+                          )}
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.district}
+                          onChange={(e) =>
+                            handleFormInputChange("district", e.target.value)
+                          }
+                        />
+                        {router.query.id && submitted && errors.district && (
+                          <small className="text-danger">
+                            {errors.district}
+                          </small>
+                        )}
+                      </div>
+                    </div><br />
+                    <div className="row">
+                      <div className="col-6">
+                        <label className="form-label">
+                          Región{" "}
+                          {!router.query.id && (
+                            <span style={{ color: "red" }}>*</span>
+                          )}
+                        </label>
+                        <select
+                          className="form-control"
+                          value={formData.department}
+                          onChange={(e) =>
+                            handleDepartmentChange(e.target.value)
+                          }
+                          disabled={!formData.country}
+                        >
+                          <option value="">Seleccione un departamento</option>
+                          {formData.country &&
+                            Object.keys(
+                              locationData[formData.country]?.departments || {}
+                            ).map((dept) => (
+                              <option key={dept} value={dept}>
+                                {dept}
+                              </option>
+                            ))}
+                        </select>
+                        {router.query.id && submitted && errors.department && (
+                          <small className="text-danger">
+                            {errors.department}
+                          </small>
+                        )}
+                      </div>
+                      <div className="col-6">
+                        <label className="form-label">
+                          Ciudad{" "}
+                          {!router.query.id && (
+                            <span style={{ color: "red" }}>*</span>
+                          )}
+                        </label>
+                        <select
+                          className="form-control"
+                          value={formData.province}
+                          onChange={(e) =>
+                            handleFormInputChange("province", e.target.value)
+                          }
+                          disabled={!formData.department}
+                        >
+                          <option value="">Seleccione una provincia</option>
+                          {formData.country &&
+                            formData.department &&
+                            (
+                              locationData[formData.country]?.departments?.[
+                              formData.department
+                              ] || []
+                            ).map((prov) => (
+                              <option key={prov} value={prov}>
+                                {prov}
+                              </option>
+                            ))}
+                        </select>
+                        {router.query.id && submitted && errors.province && (
+                          <small className="text-danger">
+                            {errors.province}
+                          </small>
+                        )}
+                      </div>
+                    </div>
+                    <br />
                 <div className="row mb-3">
                   <div className="col-12 col-md-6">
                     <label className="form-label">

@@ -19,6 +19,7 @@ import ProjectInfoHeader from "../src/components/common/ProjectInfoHeader";
 import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import locationData from "public/locationData";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -574,7 +575,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                     </div>
                     <div className="row mb-3">
-                      <div className="col-12 col-md-6">
+                      <div className="col-6">
                         <label className="form-label">
                           Apellido del propietario{" "}
                           {!router.query.id && (
@@ -600,9 +601,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                             </small>
                           )}
                       </div>
-                      {/** <div className="col-12 col-md-6">
+                    </div>
+                    <div className="row">
+                      <div className="col-6">
                         <label className="form-label">
-                          País{" "}
+                          País
                           {!router.query.id && (
                             <span style={{ color: "red" }}>*</span>
                           )}
@@ -626,8 +629,8 @@ const ProjectWorkflowPart1: React.FC = () => {
                             {errors.country}
                           </small>
                         )}
-                      </div>*/}
-                      <div className="col-12 col-md-6">
+                      </div>
+                      <div className="col-6">
                         <label className="form-label">
                           Distrito/Municipio
                           {!router.query.id && (
@@ -648,8 +651,9 @@ const ProjectWorkflowPart1: React.FC = () => {
                           </small>
                         )}
                       </div>
-                    </div>
-                    {/**<div className="col-12 col-md-6">
+                    </div><br />
+                    <div className="row">
+                      <div className="col-6">
                         <label className="form-label">
                           Región{" "}
                           {!router.query.id && (
@@ -680,7 +684,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           </small>
                         )}
                       </div>
-                      <div className="col-12 col-md-6">
+                      <div className="col-6">
                         <label className="form-label">
                           Ciudad{" "}
                           {!router.query.id && (
@@ -700,7 +704,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                             formData.department &&
                             (
                               locationData[formData.country]?.departments?.[
-                                formData.department
+                              formData.department
                               ] || []
                             ).map((prov) => (
                               <option key={prov} value={prov}>
@@ -713,7 +717,9 @@ const ProjectWorkflowPart1: React.FC = () => {
                             {errors.province}
                           </small>
                         )}
-                      </div>*/}
+                      </div>
+                    </div>
+                    <br />
                     <div className="row mb-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">

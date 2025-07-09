@@ -100,18 +100,18 @@ const ProjectListPage = () => {
   const handleCalculateResults = async (project: Project): Promise<void> => {
     const projectId = project.id;
     try {
-      const validationResult = await validateProject(projectId, true);
+      const validationResult = await validateProject(projectId.toString(), true);
 
-      if (validationResult.valid) {
+      if (validationResult?.valid) {
         router.push(`/calculation-result2?id=${projectId}`);
       } else {
         // Show warnings about failed enclosures
-        console.log("Project validation failed:", validationResult.failed_enclosures);
+        console.log("Project validation failed:", validationResult?.failed_enclosures);
 
         // Create error message with details about failed enclosures
         let errorMessage = "El proyecto no cumple con todos los requisitos necesarios para el cálculo:";
 
-        if (validationResult.failed_enclosures && validationResult.failed_enclosures.length > 0) {
+        if (validationResult?.failed_enclosures && validationResult.failed_enclosures.length > 0) {
           errorMessage += "\n\n- Hay recintos sin los elementos constructivos requeridos.";
         }
 

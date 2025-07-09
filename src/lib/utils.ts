@@ -1,6 +1,7 @@
 // src/lib/utils.ts
 
 import { notify } from '@/utils/notify';
+import React from "react";
 
 export function cn(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -72,3 +73,8 @@ export function convertAngleToOrientation(angle: number): string {
   return "N"; // If it's between 337.5 and 360, it returns "N"
 }
 
+export const preventDash = (
+    e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>
+) => {
+  if (e.key === "-") e.preventDefault();
+};

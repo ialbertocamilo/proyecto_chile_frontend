@@ -76,8 +76,7 @@ const initialFormData: FormData = {
 const ProjectWorkflowPart1: React.FC = () => {
   useAuth();
   const router = useRouter();
-  const mode =
-    (router.query.mode as string) || (router.query.id ? "edit" : "create");
+  const mode = router.query.id ? "edit" : "create";
 
   const [, setPrimaryColor] = useState("#3ca7b7");
   const [step, setStep] = useState<number>(1);
@@ -93,6 +92,8 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [projectNameFromStorage, setProjectNameFromStorage] = useState("");
   const [regionFromStorage, setRegionFromStorage] = useState("");
 
+
+  const [projectId, setProjectId] = useState('')
   useEffect(() => {
     const pColor =
       getComputedStyle(document.documentElement)
@@ -121,21 +122,20 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   // Carga datos del proyecto si se está editando
   useEffect(() => {
-    if (!router.isReady) return;
-    if (!router.query.id || mode === "create") {
+    console.log("Cargando",mode)
+    const projectId=router.query.id || localStorage.getItem("project_id");
+    if (!projectId) {
       setFormData(initialFormData);
       return;
     }
-    const projectIdParam = router.query.id;
-    const projectIdStr = Array.isArray(projectIdParam)
-      ? projectIdParam[0]
-      : projectIdParam;
+    setProjectId(projectId as string)
     const fetchProjectData = async () => {
       try {
         const token = localStorage.getItem("token");
+        console.log("Fetch data")
         if (!token) return;
         const { data: projectData } = await axios.get(
-          `${constantUrlApiEndpoint}/projects/${projectIdStr}`,
+          `${constantUrlApiEndpoint}/projects/${projectId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         console.log("projectData");
@@ -273,7 +273,7 @@ const ProjectWorkflowPart1: React.FC = () => {
 
       const response = await get(`/user/projects/`);
       const projects: Project[] =
-        (response as { data: { projects: Project[] } }).data.projects || [];
+        (response as { data: { projects: Project[] } }).data?.projects || [];
       return projects.some(
         (project: Project) =>
           project.name_project.trim().toLowerCase() ===
@@ -360,14 +360,10 @@ const ProjectWorkflowPart1: React.FC = () => {
         residential_type: formData.residential_type,
         building_name: formData.building_name, // Enviar nuevo campo
       };
-
-      if (router.query.id) {
-        const projectIdParam = Array.isArray(router.query.id)
-          ? router.query.id[0]
-          : router.query.id || localStorage.getItem("project_id");
-
+      const projectId = router.query.id || localStorage.getItem("project_id");
+      if (projectId) {
         const { data } = await axios.put(
-          `${constantUrlApiEndpoint}/my-projects/${projectIdParam}/update`,
+          `${constantUrlApiEndpoint}/my-projects/${projectId}/update`,
           requestBody,
           {
             headers: {
@@ -1057,10 +1053,10 @@ const ProjectWorkflowPart1: React.FC = () => {
           </div>
         </Card>
 
-        {router.query.id && formData?.status && (
+        {formData?.status && (
           <ProjectStatus
             status={formData?.status}
-            projectId={router.query.id as string}
+            projectId={projectId as string}
           />
         )}
       </div>

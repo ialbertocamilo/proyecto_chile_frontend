@@ -878,7 +878,6 @@ const TabMuroCreate: React.FC = () => {
   // Crear un multiheader unificado (primer fila con título global y segunda fila con las etiquetas en orden)
   const mergedMultiHeader = {
     rows: [
-      // [{ label: "Muros", colSpan: mergedColumns.length }],
       [
         ...[
           { label: "Muros" },
@@ -889,72 +888,6 @@ const TabMuroCreate: React.FC = () => {
           { label: "U [W/m²K]" },
           { label: "Acciones" },
         ],
-        // ...[
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P01</span><br /><span>L[m]</span>
-        //       </>
-        //     )
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P01</span><br /><span>Elemento</span>
-        //       </>
-        //     )
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P02</span><br /><span>L[m]</span>
-        //       </>
-        //     )
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P02</span><br /><span>Elemento</span>
-        //       </>
-        //     )
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P03</span><br /><span>L[m]</span>
-        //       </>
-        //     )
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P03</span><br /><span>Elemento</span>
-        //       </>
-        //     )
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P04</span><br /><span>L[m]</span>
-        //       </>
-        //     )
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P04</span><br /><span>e Aislación [cm]</span>
-        //       </>
-        //     )
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P04</span><br /><span>Elemento</span>
-        //       </>
-        //     )
-        //   },
-        //   { label: "Acciones" }
-        // ]
       ],
     ],
   };

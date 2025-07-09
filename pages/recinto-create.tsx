@@ -12,6 +12,7 @@ import Title from "../src/components/Title";
 import Card from "../src/components/common/Card";
 import CustomButton from "../src/components/common/CustomButton";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import {ArrowLeft, Plus, Save} from "lucide-react";
 
 // Styles for the collapsible section
 const styles = {
@@ -370,24 +371,25 @@ const RecintoCreate: React.FC = () => {
                   </select>
                 </div>
               </div>
-
-              <div className="d-flex justify-content-between">
-                <CustomButton variant="back" onClick={handleBack}>
-                  Regresar
-                </CustomButton>
-                <div>
-                  <CustomButton onClick={handleCrearNuevoRecinto} className="me-2" color='orange'>
-                    Nuevo recinto
-                  </CustomButton>
-                  {!isRecintoCreated && (
+            </>
+          )}
+        </div>
+        <div className="d-flex justify-content-between align-items-center">
+          <CustomButton variant="back" onClick={handleBack}>
+            <ArrowLeft className="me-2" size={18} />
+            Regresar
+          </CustomButton>
+          <div>
+            <CustomButton onClick={handleCrearNuevoRecinto} className="me-2" color="orange">
+              <Plus className="me-2" size={18} />
+              Crear otro recinto
+            </CustomButton>
+          {!isRecintoCreated && (
                     <CustomButton variant="save" onClick={handleSave}>
                       Guardar
                     </CustomButton>
                   )}
-                </div>
-              </div>
-            </>
-          )}
+          </div>
         </div>
       </Card>
 

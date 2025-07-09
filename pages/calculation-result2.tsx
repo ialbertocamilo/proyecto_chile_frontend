@@ -248,7 +248,7 @@ export default function ResumenEnergia(props: any) {
                     ) : (
                         <Cloud size={18} className="me-2" />
                     )}
-                    Descargar de postprocesamiento
+                    Descargar archivos procesados
                 </button>
             )}
             <br /><br />

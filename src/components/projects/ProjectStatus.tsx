@@ -21,9 +21,9 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
 
     useEffect(() => {
         // Validate project when component mounts
-        console.log("status.toLowerCase()", status.toLowerCase());
         if (status.toLowerCase() === 'en proceso') {
-            validateProjectStatus();
+            console.log("ProjectStatus - Project id ", projectId);
+            validateProjectStatus(projectId);
         }
     }, [projectId]);
 
@@ -58,13 +58,13 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
         return messages;
     };
 
-    const validateProjectStatus = async () => {
+    const validateProjectStatus = async (projectId:string) => {
         try {
             setIsValidating(true);
-            const validationResult = await validateProject(parseInt(projectId), true);
-            setIsProjectValid(validationResult.valid);
+            const validationResult = await validateProject(projectId, true);
+            setIsProjectValid(validationResult?.valid || false);
 
-            if (!validationResult.valid) {
+            if (!validationResult?.valid) {
                 const messages = getValidationMessages(validationResult);
                 setValidationErrorMessage(messages.join('\n'));
             }
@@ -83,13 +83,15 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
         if (lowerStatus === 'finalizado') return '✅';
         if (lowerStatus === 'registrado') return '📝';
         return '';
-    }; const handleCalculateResults = async () => {
+    };
+    const handleCalculateResults = async () => {
         setIsValidating(true);
         try {
-            const validationResult = await validateProject(parseInt(projectId), true);
-            setIsProjectValid(validationResult.valid);
+            if (!projectId) return
+            const validationResult = await validateProject(projectId, true);
+            setIsProjectValid(validationResult?.valid || false);
 
-            if (!validationResult.valid) {
+            if (!validationResult?.valid) {
                 const messages = getValidationMessages(validationResult);
                 setValidationErrorMessage(messages.join('\n'));
                 messages.forEach((msg, idx) => {

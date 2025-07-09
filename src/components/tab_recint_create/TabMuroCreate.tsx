@@ -12,6 +12,7 @@ import ThermalBridgesWallModal from "@/components/modals/ThermalBridgesWallModal
 import useFetchAngleOptions from "@/hooks/useFetchAngleOptions";
 import { Plus } from "lucide-react";
 import GoogleIcons from "public/GoogleIcons";
+import { preventDash } from "@/lib/utils";
 
 // Interfaz para muros
 interface Wall {
@@ -474,7 +475,44 @@ const TabMuroCreate: React.FC = () => {
       },
     },
 
-    { headerName: "Orientación", field: "orientation" },
+    {
+      headerName: "Ángulo Azimut",
+      field: "angulo_azimut",
+      renderCell: (row: MergedWall) => {
+        return row.angulo_azimut;
+      },
+    },
+    {
+      headerName: "Orientación",
+      field: "orientation",
+      renderCell: (row: MergedWall) => {
+        const value = row.orientation;
+        if (row.id === editingWallId && editingWallData) {
+          return (
+              <select
+                  name="angulo_azimut"
+                  value={editingWallData.angulo_azimut}
+                  onChange={handleEditWallChange}
+                  onKeyDown={preventDash}
+                  className="form-control form-control-sm"
+              >
+                <option value="">Seleccione...</option>
+                {angleOptions.map((option, index) => (
+                    <option key={index} value={option.azimut}>
+                      {option.orientation}
+                    </option>
+                ))}
+              </select>
+          );
+        }
+        return value === "N/A" ||
+        value === "0" ||
+        value?.toString() === "0" ||
+        !value
+            ? "-"
+            : value;
+      },
+    },
     {
       headerName: "Área [m²]",
       field: "area",
@@ -837,90 +875,6 @@ const TabMuroCreate: React.FC = () => {
           { label: "U [W/m²K]" },
           { label: "Acciones" },
         ],
-        // ...[
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P01</span>
-        //         <br />
-        //         <span>L[m]</span>
-        //       </>
-        //     ),
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P01</span>
-        //         <br />
-        //         <span>Elemento</span>
-        //       </>
-        //     ),
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P02</span>
-        //         <br />
-        //         <span>L[m]</span>
-        //       </>
-        //     ),
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P02</span>
-        //         <br />
-        //         <span>Elemento</span>
-        //       </>
-        //     ),
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P03</span>
-        //         <br />
-        //         <span>L[m]</span>
-        //       </>
-        //     ),
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P03</span>
-        //         <br />
-        //         <span>Elemento</span>
-        //       </>
-        //     ),
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P04</span>
-        //         <br />
-        //         <span>L[m]</span>
-        //       </>
-        //     ),
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P04</span>
-        //         <br />
-        //         <span>e Aislación [cm]</span>
-        //       </>
-        //     ),
-        //   },
-        //   {
-        //     label: (
-        //       <>
-        //         <span>P04</span>
-        //         <br />
-        //         <span>Elemento</span>
-        //       </>
-        //     ),
-        //   },
-        //   { label: "Acciones" },
-        // ],
       ],
     ],
   };

@@ -1,3 +1,5 @@
+// noinspection LanguageDetectionInspection
+
 import HorizontalTabs from "@/components/common/HorizontalTabs";
 import ProjectInfoHeader from "@/components/common/ProjectInfoHeader";
 import NewHeaderButton from "@/components/constructive_details/NewHeaderButton";
@@ -370,7 +372,7 @@ const WorkFlowpar2editPage: React.FC = () => {
 
   // ===================== INIT ======================
   useEffect(() => {
-    const storedProjectId = localStorage.getItem("project_id");
+    const storedProjectId =router.query.id || localStorage.getItem("project_id");
     if (storedProjectId) {
       setProjectId(Number(storedProjectId));
     }
@@ -2139,10 +2141,10 @@ const WorkFlowpar2editPage: React.FC = () => {
           </div>
         </Card>
 
-        {router.query.id && projectId && (
+        {projectStatus && (
           <ProjectStatus
             status={projectStatus}
-            projectId={router.query.id as string}
+            projectId={String(projectId)}
           />
         )}
       </div>

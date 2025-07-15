@@ -172,14 +172,14 @@ const EnergyChart = ({ chartData, loading = false, primaryColor = '#3CB6E3', fil
                             ...demandDatasets.map(ds => ({
                                 ...ds,
                                 barThickness: 20,
-                                data: axisLabels.map((_, i) => ds.data[i] ?? null),
+                                data: axisLabels.map((_: string, i: number) => ds.data[i] ?? null),
                                 categoryPercentage: 0.7,
                                 barPercentage: 0.95
                             })),
                             ...consumptionDatasets.map(ds => ({
                                 ...ds,
                                 barThickness: 20,
-                                data: axisLabels.map((_, i) => ds.data[i] ?? null),
+                                data: axisLabels.map((_: string, i: number) => ds.data[i] ?? null),
                                 categoryPercentage: 0.7,
                                 barPercentage: 0.95
                             }))

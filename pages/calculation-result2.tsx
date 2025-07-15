@@ -7,6 +7,7 @@ import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEf
 import { useRouter } from 'next/router';
 
 import FileDropzone from '../src/components/FileDropzone';
+import { constantUrlApiEndpoint } from '../src/utils/constant-url-endpoint';
 
 export default function ResumenEnergia(props: any) {
     // Si se pasan props, usar los datos reales, si no, usar simulados
@@ -25,6 +26,76 @@ export default function ResumenEnergia(props: any) {
 
 
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
+    // Cargar resultados de cálculo al cargar la página
+    useEffect(() => {
+        if (!projectId) return;
+        const fetchResults = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const token = localStorage.getItem('token');
+                const url = `${constantUrlApiEndpoint}/calculation-results/projects/${projectId}`;
+                const res = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        setLoading(false);
+                        return;
+                    }
+                    throw new Error('Error al obtener resultados de cálculo');
+                }
+                const data = await res.json();
+                if (data && data.final_indicators) {
+                    setDemandaData([
+                        { concepto: 'Calefacción', kwh_m2_ano: Number(data.final_indicators.demanda_calefaccion_final).toFixed(2), kwh_ano: Number(data.final_indicators.demanda_calefaccion_final2).toFixed(2), vsCasoBase: (data.final_indicators.demanda_calef_vs * 100).toFixed(2) + '%' },
+                        { concepto: 'Refrigeración', kwh_m2_ano: Number(data.final_indicators.demanda_ref_final).toFixed(2), kwh_ano: Number(data.final_indicators.demanda_ref_final2).toFixed(2), vsCasoBase: (data.final_indicators.demanda_ref_vs * 100).toFixed(2) + '%' },
+                        { concepto: 'Iluminación', kwh_m2_ano: Number(data.final_indicators.demanda_iluminacion_final).toFixed(2), kwh_ano: Number(data.final_indicators.demanda_iluminacion_final2).toFixed(2), vsCasoBase: (data.final_indicators.demanda_iluminacion_vs * 100).toFixed(2) + '%' },
+                        { concepto: 'ACS', kwh_m2_ano: Number(data.final_indicators.demanda_acs_m2).toFixed(2), kwh_ano: Number(data.final_indicators.demanda_acs).toFixed(2), vsCasoBase: (data.final_indicators.demanda_acs_vs_caso_base * 100).toFixed(2) + '%' },
+                        { concepto: 'Total', kwh_m2_ano: (Number(data.final_indicators.demanda_calefaccion_final) + Number(data.final_indicators.demanda_ref_final) + Number(data.final_indicators.demanda_iluminacion_final) + Number(data.final_indicators.demanda_acs_m2)).toFixed(2), kwh_ano: (Number(data.final_indicators.demanda_calefaccion_final2) + Number(data.final_indicators.demanda_ref_final2) + Number(data.final_indicators.demanda_iluminacion_final2) + Number(data.final_indicators.demanda_acs)).toFixed(2), vsCasoBase: '-' },
+                    ]);
+                    setConsumoPrimario([
+                        { concepto: 'Calefacción', kwh_m2_ano: Number(data.final_indicators.consumo_calefaccion_final).toFixed(2), kwh_ano: Number(data.final_indicators.consumo_calefaccion_final2).toFixed(2), vsCasoBase: (data.final_indicators.consumo_calef_vs * 100).toFixed(2) + '%' },
+                        { concepto: 'Refrigeración', kwh_m2_ano: Number(data.final_indicators.consumo_refrigeracion_final).toFixed(2), kwh_ano: Number(data.final_indicators.consumo_refrigeracion_final2).toFixed(2), vsCasoBase: (data.final_indicators.consumo_ref_vs * 100).toFixed(2) + '%' },
+                        { concepto: 'Iluminación', kwh_m2_ano: Number(data.final_indicators.consumo_iluminacion_final).toFixed(2), kwh_ano: Number(data.final_indicators.consumo_iluminacion_final2).toFixed(2), vsCasoBase: (data.final_indicators.consumo_iluminacion_vs * 100).toFixed(2) + '%' },
+                        { concepto: 'ACS', kwh_m2_ano: Number(data.final_indicators.consumo_acs_m2).toFixed(2), kwh_ano: Number(data.final_indicators.consumo_acs).toFixed(2), vsCasoBase: Number(data.final_indicators.consumo_acs_vs_caso_base).toFixed(2) },
+                        { concepto: 'Total', kwh_m2_ano: (Number(data.final_indicators.consumo_calefaccion_final) + Number(data.final_indicators.consumo_refrigeracion_final) + Number(data.final_indicators.consumo_iluminacion_final) + Number(data.final_indicators.consumo_acs_m2)).toFixed(2), kwh_ano: (Number(data.final_indicators.consumo_calefaccion_final2) + Number(data.final_indicators.consumo_refrigeracion_final2) + Number(data.final_indicators.consumo_iluminacion_final2) + Number(data.final_indicators.consumo_acs)).toFixed(2), vsCasoBase: '-' },
+                    ]);
+                    setHrsDisconfort([
+                        { concepto: 'Calefacción', hrs_ano: Number(data.final_indicators.disconfort_calef).toFixed(2) },
+                        { concepto: 'Refrigeración', hrs_ano: Number(data.final_indicators.disconfort_ref).toFixed(2) },
+                        { concepto: 'Total', hrs_ano: Number(data.final_indicators.disconfort_total).toFixed(2) },
+                        { concepto: 'Comparación caso base', hrs_ano: (data.final_indicators.disconfort_vs * 100).toFixed(2) + '%', nota: '[%]' },
+                    ]);
+                    setCo2eqData({
+                        total: Number(data.final_indicators.co2_eq_total).toFixed(2),
+                        unidad: '[kg CO2eq]',
+                        comparacion: (data.final_indicators.co2_eq_vs_caso_base * 100).toFixed(0) + '%',
+                    });
+                    if (data.result_by_enclosure) {
+                        setRecintoData(data.result_by_enclosure);
+                    } else {
+                        setRecintoData([]);
+                    }
+                } else {
+                    setCo2eqData({ total: 0, unidad: '[kg CO2eq]', comparacion: '0%' });
+                    setDemandaData([]);
+                    setConsumoPrimario([]);
+                    setHrsDisconfort([]);
+                    setRecintoData([]);
+                }
+            } catch (err: any) {
+                setError(err.message || 'Error inesperado');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchResults();
+    }, [projectId]);
 
     const handleFileAccepted = (files: File[]) => {
         setUploadedFiles(files);
@@ -115,7 +186,7 @@ export default function ResumenEnergia(props: any) {
                                 unidad: '[kg CO2eq]',
                                 comparacion: (data.final_indicators.co2_eq_vs_caso_base * 100).toFixed(0) + '%',
                             });
-                            if (Array.isArray(data.result_by_enclosure)) {
+                            if (data.result_by_enclosure) {
                                 setRecintoData(data.result_by_enclosure);
                             } else {
                                 setRecintoData([]);

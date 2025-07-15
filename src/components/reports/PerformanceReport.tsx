@@ -49,7 +49,7 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
                                     <div className="card-body">
                                         <div className="h2 fw-bold mb-1" style={{ color: '#b2b200' }} title="Porcentaje respecto a línea base">
                                             <i className="bi bi-percent me-2" />
-                                            {data?.co2_equivalent?.baseline ?? 0}%
+                                            {data?.co2_equivalent?.baseline ?? 0}
                                         </div>
                                         <span className="badge bg-light text-dark border">Línea base</span>
                                     </div>
@@ -92,7 +92,7 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
                                     <div className="card-body">
                                         <div className="h2 fw-bold mb-1" style={{ color: '#d81b60' }} title="Porcentaje respecto a línea base">
                                             <i className="bi bi-percent me-2" />
-                                            {data?.comfort_hours?.baseline ?? 0}%
+                                            {data?.comfort_hours?.baseline ?? 0}
                                         </div>
                                         <span className="badge bg-light text-dark border">Línea base</span>
                                     </div>

@@ -114,10 +114,10 @@ const DashboardPage: React.FC = () => {
     const [detailedUsers, setDetailedUsers] = useState<DetailedUser[] | null>(null);
 
     // --- Filtros globales (dummy) ---
-    const [selectedYear, setSelectedYear] = useState('2025');
-    const [selectedCountry, setSelectedCountry] = useState('Chile');
-    const [selectedZone, setSelectedZone] = useState('A');
-    const [selectedTypology, setSelectedTypology] = useState('Unifamiliar');
+    const [selectedYear, setSelectedYear] = useState('');
+    const [selectedCountry, setSelectedCountry] = useState('');
+    const [selectedZone, setSelectedZone] = useState('');
+    const [selectedTypology, setSelectedTypology] = useState('');
 
     // Datos dummy para selects
     const years = ['','2022', '2023', '2024', '2025'];
@@ -141,16 +141,20 @@ const DashboardPage: React.FC = () => {
                         labels: response.data.map((item: any) => `${item.year} - ${item.country}`),
                         datasets: [
                             {
-                                label: "Total Energía",
-                                data: response.data.map((item: any) => item.total_energy)
+                                label: "Demanda Calefacción",
+                                data: response.data.map((item: any) => item.demanda_calefaccion)
                             },
                             {
-                                label: "Renovable",
-                                data: response.data.map((item: any) => item.renewable)
+                                label: "Demanda Refrigeración",
+                                data: response.data.map((item: any) => item.demanda_refrigeracion)
                             },
                             {
-                                label: "No Renovable",
-                                data: response.data.map((item: any) => item.non_renewable)
+                                label: "Consumo Calefacción",
+                                data: response.data.map((item: any) => item.consumo_calefaccion)
+                            },
+                            {
+                                label: "Consumo Refrigeración",
+                                data: response.data.map((item: any) => item.consumo_refrigeracion)
                             }
                         ]
                     });
@@ -327,6 +331,7 @@ const DashboardPage: React.FC = () => {
                         <EnergyChart
                             chartData={energyChartData}
                             loading={loadingEnergyChart}
+                            primaryColor={primaryColor}
                         />
                     </div>
 

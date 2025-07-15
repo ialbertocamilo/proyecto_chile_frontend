@@ -1,10 +1,8 @@
 'use client'
-import { BuildingLevelsReport } from "@/components/reports/BuildingLevelsReport";
 import { DetailedUsersReport } from "@/components/reports/DetailedUsersReport";
 import EnergyChart from "@/components/reports/EnergyReport";
 import { PerformanceReport } from "@/components/reports/PerformanceReport";
 import { ProjectsByMonthReport } from "@/components/reports/ProjectsByMonthReport";
-import { ProjectsStatusReport } from "@/components/reports/ProjectsStatusReport";
 import {
     ArcElement,
     BarElement,
@@ -21,9 +19,10 @@ import {
 import { useEffect, useState } from "react";
 import Breadcrumb from "../src/components/common/Breadcrumb";
 import Card from "../src/components/common/Card";
-import Title from "../src/components/Title"; // Componente creado para mostrar títulos
+import Title from "../src/components/Title";
 import { useApi } from "../src/hooks/useApi";
 import useAuth from "../src/hooks/useAuth";
+import { notify } from "@/utils/notify";
 
 ChartJS.register(
     CategoryScale,
@@ -39,26 +38,6 @@ ChartJS.register(
 )
 
 
-
-interface ProjectsStatusReport {
-    status: string[];
-    total: number[];
-}
-
-interface BuildingLevelsReport {
-    number_levels: number[];
-    total: number[];
-}
-
-interface BuildingTypeReport {
-    building_type: string[];
-    total_proyectos: number[];
-}
-
-interface ProjectsByUserReport {
-    usuario: string[];
-    total_proyectos: number[]
-}
 
 interface ProjectsByMonthReport {
     month: string[];
@@ -97,54 +76,6 @@ function convertObjectToArrays(data: any): any {
 
     return result;
 }
-
-function hexToRgba(hex: string, alpha: number) {
-
-    const cleanHex = hex.replace("#", "")
-    const r = parseInt(cleanHex.substring(0, 2), 16)
-    const g = parseInt(cleanHex.substring(2, 4), 16)
-    const b = parseInt(cleanHex.substring(4, 6), 16)
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
-
-// Función para generar una paleta de colores para los gráficos
-function generateColorPalette(numColors: number) {
-    // Colores base para diferentes categorías (colores vibrantes pero armoniosos)
-    const baseColors = [
-        "#3ca7b7", // Color primario
-        "#ff6b6b", // Rojo coral
-        "#feca57", // Amarillo
-        "#1dd1a1", // Verde menta
-        "#5f27cd", // Púrpura
-        "#54a0ff", // Azul claro
-        "#ff9ff3", // Rosa
-        "#00d2d3", // Turquesa
-        "#ff9f43", // Naranja
-        "#10ac84", // Verde esmeralda
-        "#ee5253", // Rojo
-        "#2e86de", // Azul
-        "#8395a7", // Gris azulado
-        "#6a89cc", // Índigo
-        "#e056fd", // Magenta
-        "#f368e0", // Rosa fuerte
-    ];
-
-    // Si necesitamos más colores de los que tenemos en la base, generamos más
-    const colors = [...baseColors];
-
-    // Si necesitamos más colores, generamos variaciones
-    if (numColors > colors.length) {
-        for (let i = 0; i < numColors - colors.length; i++) {
-            // Generamos un color aleatorio en formato hex
-            const randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
-            colors.push(randomColor);
-        }
-    }
-
-    // Devolvemos solo los colores necesarios
-    return colors.slice(0, numColors);
-}
-
 function getCssVarValue(varName: string, fallback: string) {
     if (typeof window === "undefined") return fallback
     const value = getComputedStyle(document.documentElement)
@@ -180,7 +111,6 @@ const DashboardPage: React.FC = () => {
     const [projectsByMonth, setProjectsByMonth] = useState<ProjectsByMonthReport | null>(null);
     const [loadingPerformance, setLoadingPerformance] = useState(true);
     const [performanceData, setPerformanceData] = useState<any>(null);
-
     const [detailedUsers, setDetailedUsers] = useState<DetailedUser[] | null>(null);
 
     // --- Filtros globales (dummy) ---
@@ -190,10 +120,10 @@ const DashboardPage: React.FC = () => {
     const [selectedTypology, setSelectedTypology] = useState('Unifamiliar');
 
     // Datos dummy para selects
-    const years = ['2022', '2023', '2024', '2025'];
-    const countries = ['Chile', 'Argentina', 'Perú'];
-    const zones = ['A', 'B', 'C', 'D'];
-    const typologies = ['Unifamiliar', 'Duplex', 'Otros', 'Oficinas'];
+    const years = ['','2022', '2023', '2024', '2025'];
+    const countries = ['','Chile', 'Argentina', 'Perú','Bolivia','Colombia','Ecuador','Guyana','Paraguay','Surinam','Uruguay','Venezuela'];
+    const zones = ['','A', 'B', 'C', 'D','E','F'];
+    const typologies = ['','Unifamiliar', 'Duplex', 'Otros', 'Oficinas'];
 
     // Elimina duplicados de EnergyChart State and Effect
 
@@ -240,6 +170,46 @@ const DashboardPage: React.FC = () => {
         const pColor = getCssVarValue("--primary-color", "#3ca7b7")
         setPrimaryColor(pColor)
     }, [])
+
+    // Fetch performance (reporte) data usando los filtros globales
+    useEffect(() => {
+        const fetchPerformanceReport = async () => {
+            setLoadingPerformance(true);
+            try {
+                const params = new URLSearchParams();
+                if (selectedYear) params.append('year', selectedYear);
+                if (selectedCountry) params.append('country', selectedCountry);
+                if (selectedZone) params.append('zone', selectedZone);
+                if (selectedTypology) params.append('building_type', selectedTypology);
+                const url = `${process.env.NEXT_PUBLIC_API_ENDPOINT?.replace(/\/$/, '')}/calculation-results/report?${params.toString()}`;
+                const token = localStorage.getItem('token');
+                const headers: Record<string, string> = { accept: 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                const res = await fetch(url, { headers });
+                if (!res.ok) throw new Error('Error al obtener el reporte');
+                const data = await res.json();
+                // Mapear la respuesta al formato esperado por PerformanceReport
+                const mappedPerformance: any = {
+                    co2_equivalent: {
+                        total: data?.co2_eq?.total ?? 0,
+                        baseline: data?.co2_eq?.baseline ?? 0
+                    },
+                    comfort_hours: {
+                        heating: data?.horas_confort_anual?.calefaccion ?? 0,
+                        cooling: data?.horas_confort_anual?.refrigeracion ?? 0,
+                        baseline: data?.horas_confort_anual?.baseline ?? 0
+                    }
+                };
+                setPerformanceData(mappedPerformance);
+            } catch (err: any) {
+                notify(err.message || 'Error inesperado', 'error');
+                setPerformanceData(null);
+            } finally {
+                setLoadingPerformance(false);
+            }
+        };
+        fetchPerformanceReport();
+    }, [selectedYear, selectedCountry, selectedZone, selectedTypology]);
 
     // Fetch all report data concurrentemente
     useEffect(() => {
@@ -340,6 +310,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                 </div>
             </Card>
+
 
             <Card className="charts-card p-2">
                 <div className="row g-3 mt-1">

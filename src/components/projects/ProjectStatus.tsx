@@ -31,13 +31,13 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
     const getValidationMessages = (validationResult: any): string[] => {
         const messages: string[] = [];
         messages.push("El proyecto no cumple con todos los requisitos necesarios para el cálculo:");
-        if (validationResult.additional_validations?.climate_file?.valid === false) {
+        if (validationResult?.additional_validations?.climate_file?.valid === false) {
             messages.push("- El archivo climático no es válido o falta.");
         }
         // Obtener nombres de recintos desde validationResult.enclosures si no viene en failed_enclosures
-        const enclosureNames = validationResult.enclosures || {};
-        if (validationResult.failed_enclosures && validationResult.failed_enclosures.length > 0) {
-            validationResult.failed_enclosures.forEach((enclosure: any) => {
+        const enclosureNames: any = validationResult?.enclosures || {};
+        if (validationResult?.failed_enclosures && validationResult?.failed_enclosures?.length > 0) {
+            validationResult?.failed_enclosures.forEach((enclosure: any) => {
                 const recintoErrores: string[] = [];
                 if (enclosure.requirements) {
                     if (enclosure.walls < 3) recintoErrores.push(enclosure.requirements.walls);

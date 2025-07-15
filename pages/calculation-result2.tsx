@@ -20,69 +20,9 @@ export default function ResumenEnergia(props: any) {
 
     const router = useRouter();
     const { id: projectId } = router.query;
-
-    // Nuevo estado para controlar si se presionó el botón Calcular
-    // Eliminar forceRecalculate, no se requiere más
-
-    // Estado para el switch 'Usar datos adjuntos'
     const [useAttachedData, setUseAttachedData] = useState<boolean>(false);
     const [loadingDownload, setLoadingDownload] = useState<boolean>(false);
 
-
-    // useEffect(() => {
-    //     if (!projectId) return;
-    //     const fetchData = async () => {
-    //         setLoading(true);
-    //         setError(null);
-    //         try {
-    //             // Solo llamar v3 automáticamente
-    //             const res = await fetch(`/api/calculate_v3/${projectId}`);
-    //             if (!res.ok) throw new Error('Error al obtener resultados de cálculo');
-    //             const data = await res.json();
-    //             // Mapear resultados al estado
-    //             // Demanda
-    //             setDemandaData([
-    //                 { concepto: 'Calefacción', kwh_m2_ano: data.final_indicators.demanda_calefaccion_final, kwh_ano: data.final_indicators.demanda_calefaccion_final2, vsCasoBase: (data.final_indicators.demanda_calef_vs * 100).toFixed(0) + '%' },
-    //                 { concepto: 'Refrigeración', kwh_m2_ano: data.final_indicators.demanda_ref_final, kwh_ano: data.final_indicators.demanda_ref_final2, vsCasoBase: (data.final_indicators.demanda_ref_vs * 100).toFixed(0) + '%' },
-    //                 { concepto: 'Iluminación', kwh_m2_ano: data.final_indicators.demanda_iluminacion_final, kwh_ano: data.final_indicators.demanda_iluminacion_final2, vsCasoBase: (data.final_indicators.demanda_iluminacion_vs * 100).toFixed(0) + '%' },
-    //                 { concepto: 'Total', kwh_m2_ano: data.final_indicators.demanda_calefaccion_final + data.final_indicators.demanda_ref_final + data.final_indicators.demanda_iluminacion_final, kwh_ano: data.final_indicators.demanda_calefaccion_final2 + data.final_indicators.demanda_ref_final2 + data.final_indicators.demanda_iluminacion_final2, vsCasoBase: '-' },
-    //             ]);
-    //             // Consumo
-    //             setConsumoPrimario([
-    //                 { concepto: 'Calefacción', kwh_m2_ano: data.final_indicators.consumo_calefaccion_final, kwh_ano: data.final_indicators.consumo_calefaccion_final2, vsCasoBase: (data.final_indicators.consumo_calef_vs * 100).toFixed(0) + '%' },
-    //                 { concepto: 'Refrigeración', kwh_m2_ano: data.final_indicators.consumo_refrigeracion_final, kwh_ano: data.final_indicators.consumo_refrigeracion_final2, vsCasoBase: (data.final_indicators.consumo_ref_vs * 100).toFixed(0) + '%' },
-    //                 { concepto: 'Iluminación', kwh_m2_ano: data.final_indicators.consumo_iluminacion_final, kwh_ano: data.final_indicators.consumo_iluminacion_final2, vsCasoBase: (data.final_indicators.consumo_iluminacion_vs * 100).toFixed(0) + '%' },
-    //                 { concepto: 'Total', kwh_m2_ano: data.final_indicators.consumo_calefaccion_final + data.final_indicators.consumo_refrigeracion_final + data.final_indicators.consumo_iluminacion_final, kwh_ano: data.final_indicators.consumo_calefaccion_final2 + data.final_indicators.consumo_refrigeracion_final2 + data.final_indicators.consumo_iluminacion_final2, vsCasoBase: '-' },
-    //             ]);
-    //             // Disconfort
-    //             setHrsDisconfort([
-    //                 { concepto: 'Calefacción', hrs_ano: data.final_indicators.disconfort_calef },
-    //                 { concepto: 'Refrigeración', hrs_ano: data.final_indicators.disconfort_ref },
-    //                 { concepto: 'Total', hrs_ano: data.final_indicators.disconfort_total },
-    //                 { concepto: 'Comparación caso base', hrs_ano: (data.final_indicators.disconfort_vs * 100).toFixed(0) + '%', nota: '[%]' },
-    //             ]);
-    //             // CO2
-    //             setCo2eqData({
-    //                 total: data.final_indicators.co2_eq_total,
-    //                 unidad: '[kg CO2eq]',
-    //                 comparacion: (data.final_indicators.co2_eq_vs_caso_base * 100).toFixed(0) + '%',
-    //             });
-    //             // Recintos
-    //             if (Array.isArray(data.result_by_enclosure_v2)) {
-    //                 setRecintoData(data.result_by_enclosure_v2);
-    //             } else {
-    //                 setRecintoData([]);
-    //             }
-    //         } catch (err: any) {
-    //             setError(err.message || 'Error inesperado');
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-    //     fetchData();
-    // }, [projectId]);
-
-    // --- Solo lógica de fetch y estados nuevos, sin props ni efectos antiguos ---
 
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
@@ -90,10 +30,6 @@ export default function ResumenEnergia(props: any) {
         setUploadedFiles(files);
         // Aquí puedes agregar lógica para procesar los archivos
     };
-
-    // if (loading) {
-    //     return <div className="container my-4"><div className="alert alert-info">Cargando resumen de energía...</div></div>;
-    // }
     if (error) {
         return <div className="container my-4"><div className="alert alert-danger">{error}</div></div>;
     }
@@ -103,12 +39,12 @@ export default function ResumenEnergia(props: any) {
             <h1 className="mb-3">Resumen de Energía</h1>
 
             {/* Dropzone para subir archivos */}
-            <FileDropzone onFileAccepted={handleFileAccepted} />
-            {uploadedFiles.length > 0 && (
+            {/* <FileDropzone onFileAccepted={handleFileAccepted} /> */}
+            {/* {uploadedFiles.length > 0 && (
                 <div className="alert alert-success py-2">
                     Archivos subidos: <strong>{uploadedFiles.map(f => f.name).join(', ')}</strong>
                 </div>
-            )}
+            )} */}
 
 
             {/* Botón Calcular */}
@@ -117,7 +53,6 @@ export default function ResumenEnergia(props: any) {
                     type="button"
                     className="btn d-flex align-items-center"
                     style={{ backgroundColor: 'orange', color: 'white', fontWeight: 'bold' }}
-                    // disabled={loading}
                     onClick={async () => {
                     if (!projectId) return;
                     setLoading(true);
@@ -149,7 +84,10 @@ export default function ResumenEnergia(props: any) {
                         const v2res = await fetch(`/api/calculate_v2/${projectId}?force_data=${useAttachedData ? 'true' : 'false'}`);
                         if (!v2res.ok) throw new Error('Error al ejecutar cálculo v2');
                         // Luego v3
-                        const res = await fetch(`/api/calculate_v3/${projectId}`);
+                        const token = localStorage.getItem('token');
+                        const res = await fetch(`/api/calculate_v3/${projectId}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
                         if (!res.ok) throw new Error('Error al obtener resultados de cálculo');
                         const data = await res.json();
                             setDemandaData([
@@ -177,8 +115,8 @@ export default function ResumenEnergia(props: any) {
                                 unidad: '[kg CO2eq]',
                                 comparacion: (data.final_indicators.co2_eq_vs_caso_base * 100).toFixed(0) + '%',
                             });
-                            if (Array.isArray(data.result_by_enclosure_v2)) {
-                                setRecintoData(data.result_by_enclosure_v2);
+                            if (Array.isArray(data.result_by_enclosure)) {
+                                setRecintoData(data.result_by_enclosure);
                             } else {
                                 setRecintoData([]);
                             }
@@ -191,13 +129,13 @@ export default function ResumenEnergia(props: any) {
                 }}
             >
                 <PlayCircle size={20} style={{marginRight: 8}} /> Calcular
-                </button>
+                </button>   
                 {loading && (
                     <div className="spinner-border text-warning ms-2" role="status" style={{width: '1.5rem', height: '1.5rem'}}>
                         <span className="visually-hidden">Cargando...</span>
                     </div>
                 )}
-                <div className="form-check form-switch d-flex align-items-center" style={{marginLeft: 8}}>
+                {/* <div className="form-check form-switch d-flex align-items-center" style={{marginLeft: 8}}>
                     <input
                         className="form-check-input"
                         type="checkbox"
@@ -209,11 +147,11 @@ export default function ResumenEnergia(props: any) {
                     <label className="form-check-label ms-2" htmlFor="useAttachedData" style={{cursor: 'pointer'}}>
                         Usar datos adjuntos
                     </label>
-                </div>
+                </div> */}
             </div>
 
             {/* Botón Descargar archivos adjuntos */}
-            {projectId && (
+            {/* {projectId && (
                 <button
                     type="button"
                     className="btn btn-outline-primary me-2"
@@ -250,8 +188,7 @@ export default function ResumenEnergia(props: any) {
                     )}
                     Descargar archivos procesados
                 </button>
-            )}
-            <br /><br />
+            )} */}
             {/* Grid principal */}
             <div className="row">
                 {/* Sección Demanda */}

@@ -22,7 +22,6 @@ export default function ResumenEnergia(props: any) {
     const router = useRouter();
     const { id: projectId } = router.query;
     const [useAttachedData, setUseAttachedData] = useState<boolean>(false);
-    const [loadingDownload, setLoadingDownload] = useState<boolean>(false);
 
 
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -124,6 +123,7 @@ export default function ResumenEnergia(props: any) {
                     type="button"
                     className="btn d-flex align-items-center"
                     style={{ backgroundColor: 'orange', color: 'white', fontWeight: 'bold' }}
+                    disabled={loading}
                     onClick={async () => {
                     if (!projectId) return;
                     setLoading(true);
@@ -199,13 +199,13 @@ export default function ResumenEnergia(props: any) {
                     }
                 }}
             >
-                <PlayCircle size={20} style={{marginRight: 8}} /> Calcular
-                </button>   
-                {loading && (
-                    <div className="spinner-border text-warning ms-2" role="status" style={{width: '1.5rem', height: '1.5rem'}}>
-                        <span className="visually-hidden">Cargando...</span>
-                    </div>
+                {loading ? (
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                ) : (
+                    <PlayCircle size={20} style={{marginRight: 8}} />
                 )}
+                Calcular
+                </button>
                 {/* <div className="form-check form-switch d-flex align-items-center" style={{marginLeft: 8}}>
                     <input
                         className="form-check-input"
@@ -394,7 +394,7 @@ export default function ResumenEnergia(props: any) {
                 </div>
             </div>
         {/* Tabla de Recintos */}
-        <div className="row mt-5">
+        <div className="row">
             <div className="col-12">
                 <div className="card">
                     <div className="card-header ">

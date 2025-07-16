@@ -106,6 +106,21 @@ export const PerformanceReport = ({ loading, data }: PerformanceReportProps) => 
                 .badge {
                     font-size: 1rem;
                     padding: 0.5em 1em;
+                    word-break: break-word;
+                    white-space: normal;
+                    max-width: 100%;
+                    display: inline-block;
+                }
+                @media (max-width: 576px) {
+                    .badge {
+                        font-size: 0.9rem;
+                        padding: 0.4em 0.6em;
+                        max-width: 90vw;
+                    }
+                    .card-body {
+                        padding-left: 0.3rem;
+                        padding-right: 0.3rem;
+                    }
                 }
             `}</style>
         </Card>

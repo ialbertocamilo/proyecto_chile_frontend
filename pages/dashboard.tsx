@@ -134,6 +134,8 @@ const DashboardPage: React.FC = () => {
                 const params: string[] = [];
                 if (selectedYear) params.push(`year=${encodeURIComponent(selectedYear)}`);
                 if (selectedCountry) params.push(`country=${encodeURIComponent(selectedCountry)}`);
+                if (selectedZone) params.push(`zone=${encodeURIComponent(selectedZone)}`);
+                if (selectedTypology) params.push(`typology=${encodeURIComponent(selectedTypology)}`);
                 const queryString = params.length ? `?${params.join('&')}` : '';
                 const response = await api.get(`reports/energy${queryString}`);
                 if (response?.status === "success" && Array.isArray(response.data)) {
@@ -168,7 +170,7 @@ const DashboardPage: React.FC = () => {
             }
         };
         fetchEnergyReport();
-    }, [selectedYear, selectedCountry]);
+    }, [selectedYear, selectedCountry, selectedZone, selectedTypology]);
 
     useEffect(() => {
         const pColor = getCssVarValue("--primary-color", "#3ca7b7")

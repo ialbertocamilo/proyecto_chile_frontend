@@ -5,10 +5,25 @@ import { exportToExcel } from "@/components/shared/exportToExcel";
 const chartOptions = {
     scales: {
         x: {
-            grid: { display: false }
+            grid: {
+                display: true, // Mostrar líneas de fondo
+                color: 'rgba(180,180,200,0.2)', // Color claro tipo cuaderno
+                lineWidth: 1,
+                drawTicks: true,
+                borderDash: [2, 4] // Líneas punteadas suaves
+            }
         },
         y: {
-            grid: { display: true }
+            grid: {
+                display: true,
+                color: 'rgba(180,180,200,0.25)', // También líneas de referencia
+                lineWidth: 1,
+                drawTicks: true
+            },
+            ticks: {
+                minRotation: 90,
+                maxRotation: 90
+            }
         }
     },
     maintainAspectRatio: false,
@@ -165,7 +180,7 @@ const EnergyChart = ({ chartData, loading = false, primaryColor = '#3CB6E3', fil
                     Descargar Excel
                 </button>
                 <ChartComponent
-                    title="Reporte de Energía"
+                    title="Reporte de eficiencia energética"
                     chartData={{
                         labels: axisLabels,
                         datasets: [
@@ -188,6 +203,7 @@ const EnergyChart = ({ chartData, loading = false, primaryColor = '#3CB6E3', fil
                     chartType="Bar"
                     options={{
                         ...chartOptions,
+                        indexAxis: 'y', 
                         plugins: {
                             legend: { position: 'bottom', labels: { font: { size: 14 } } },
                             datalabels: {
@@ -203,7 +219,7 @@ const EnergyChart = ({ chartData, loading = false, primaryColor = '#3CB6E3', fil
                                     {
                                         type: 'line',
                                         mode: 'vertical',
-                                        scaleID: 'x',
+                                        scaleID: 'y', // Cambiar a 'y' para horizontal
                                         value: axisLabels.length > 0 ? axisLabels[Math.floor(axisLabels.length/2)] : undefined,
                                         borderColor: '#888',
                                         borderWidth: 2,

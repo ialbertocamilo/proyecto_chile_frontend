@@ -203,7 +203,7 @@ Longitud: ${selectedLocation.Position[0]}`
 
       {/* tabla de resultados */}
       <div className="mt-4">
-        <h4>Archivos Subidos</h4>
+        <h4>Listado de archivos clima</h4>
         <SearchParameters onSearch={handleSearch} />
 
         <div className="table-responsive">

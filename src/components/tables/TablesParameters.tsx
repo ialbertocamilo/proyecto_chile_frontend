@@ -149,6 +149,10 @@ export default function TablesParameters({
                   colSpan={cell.colSpan}
                   rowSpan={cell.rowSpan}
                   style={{
+                    position: 'sticky',
+                    top: 0,
+                    background: 'white', // O el color de fondo de tu tabla
+                    zIndex: 1,
                     cursor: canSort ? 'pointer' : undefined,
                     ...cell.style,
                   }}
@@ -191,6 +195,10 @@ export default function TablesParameters({
             className="text-center align-middle"
             onClick={() => col.sortable !== false && handleSort(col.field)}
             style={{
+              position: 'sticky',
+              top: 0,
+              background: 'white', // O el color de fondo de tu tabla
+              zIndex: 1,
               cursor: col.sortable !== false ? 'pointer' : 'default',
               ...col.headerStyle,
             }}

@@ -72,8 +72,9 @@ export const ProjectsByMonthReport = ({ loading, data, primaryColor }: ProjectsB
             const headers = ['Mes', 'Total de Proyectos'];
             const rows = data.month.map((month: string, idx: number) => [month, data.total_projects[idx]]);
             exportToExcel({
+                title: 'Reporte de Proyectos Registrados por Mes',
                 data: rows,
-                fileName: 'proyectos_registrados.xlsx',
+                fileName: 'proyectos_registrados_por_mes.xlsx',
                 sheetName: 'Proyectos Registrados',
                 headers
             });
@@ -83,10 +84,11 @@ export const ProjectsByMonthReport = ({ loading, data, primaryColor }: ProjectsB
     return (
         <div style={{ position: 'relative' }}>
             <button
-                className="btn btn-sm btn-outline-primary"
+                className="btn btn-sm btn-success"
                 style={{ position: 'absolute', top: 0, right: 0, zIndex: 2 }}
                 onClick={handleDownloadExcel}
             >
+                <i className="bi bi-download me-2"></i>
                 Descargar Excel
             </button>
             <ChartComponent

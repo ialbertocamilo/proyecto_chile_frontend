@@ -25,12 +25,18 @@ const ConfiguracionEnergiaTab: React.FC = () => {
     });
     const [success, setSuccess] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const { post, get, loading } = useApi();
 
-    // Obtener el project_id desde localStorage (ajusta si tu app lo maneja diferente)
     const projectId = typeof window !== 'undefined' ? localStorage.getItem('project_id') : null;
+    
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const roleId = localStorage.getItem('role_id');
+            setIsAdmin(roleId === '1');
+        }
+    }, []);
 
-    // Obtener configuración existente al montar
     useEffect(() => {
         const fetchConfig = async () => {
             if (!projectId) return;
@@ -115,16 +121,18 @@ const ConfiguracionEnergiaTab: React.FC = () => {
                     }));
                 }}
             />
-            <div className="d-flex justify-content-end">
-                <CustomButton
-                    variant="save"
-                    onClick={handleSave}
-                    disabled={loading}
-                    style={{ minWidth: 180 }}
-                >
-                    {loading ? 'Guardando...' : 'Guardar'}
-                </CustomButton>
-            </div>
+            {!isAdmin && (
+                <div className="d-flex justify-content-end">
+                    <CustomButton
+                        variant="save"
+                        onClick={handleSave}
+                        disabled={loading}
+                        style={{ minWidth: 180 }}
+                    >
+                        {loading ? 'Guardando...' : 'Guardar'}
+                    </CustomButton>
+                </div>
+            )}
         </div>
     );
 };

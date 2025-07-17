@@ -410,7 +410,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
         </div>
 
         <div style={{ marginBottom: "1rem" }}>
-          <label>Nombre de muro:</label>
+          <label>Nombre:</label>
           <input
             type="text"
             className="form-control"

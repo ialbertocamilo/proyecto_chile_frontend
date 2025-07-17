@@ -215,7 +215,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
 
   const getValueFromValue = (options: any[], code: string, key: string) => {
     const option = options.find((opt) => opt.value === code);
-    return option ? option[key] : 1;
+    return option ? <b>{option[key]}</b> : <b>1</b>;
   };
 
   const getValueFromCode = (options: any[], name: string, key: string) => {
@@ -432,7 +432,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                   className="mt-3"
                   onClick={addRow}
                 >
-                  <Plus className="me-1" size={16} /> Nueva Fila
+                  <Plus className="me-1" size={16} /> Nuevo
                 </CustomButton>
               </div>
             )}

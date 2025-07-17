@@ -392,6 +392,7 @@ const RecintoEdit: React.FC = () => {
                   <ArrowLeft className="me-2" size={18} />
                   Regresar
                 </CustomButton>
+                
                 <div>
                   <CustomButton onClick={handleCrearOtroRecinto} className="me-2" color="orange">
                     <Plus className="me-2" size={18} />

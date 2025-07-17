@@ -12,6 +12,7 @@ import Breadcrumb from "../src/components/common/Breadcrumb";
 import Card from "../src/components/common/Card";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
+import ProjectStatus from "../src/components/projects/ProjectStatus";
 
 // Cargamos el mapa sin SSR
 const NoSSRInteractiveMap = dynamic(
@@ -80,6 +81,7 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   // Estado para almacenar project_metadata (ahora solo se extrae la zona)
   const [projectMetadata, setProjectMetadata] = useState("");
+  const [projectStatus, setProjectStatus] = useState<string | null>(null);
 
   // Estado para almacenar datos del header del proyecto
   const [projectHeaderData, setProjectHeaderData] = useState({
@@ -192,6 +194,37 @@ const ProjectWorkflowPart1: React.FC = () => {
       }
     };
     fetchProjectData();
+  }, [router.isReady, router.query.id]);
+
+  // Efecto para obtener el estado del proyecto
+  useEffect(() => {
+    if (!router.isReady || !router.query.id) return;
+    
+    const projectIdParam = router.query.id;
+    const projectIdStr = Array.isArray(projectIdParam) ? projectIdParam[0] : projectIdParam;
+    
+    const fetchProjectStatus = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.warn("Token no encontrado");
+          return;
+        }
+        
+        const { data: projectData } = await axios.get(
+          `${constantUrlApiEndpoint}/projects/${projectIdStr}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        if (projectData && projectData.status) {
+          setProjectStatus(projectData.status);
+        }
+      } catch (error) {
+        console.error("Error al obtener el estado del proyecto:", error);
+      }
+    };
+    
+    fetchProjectStatus();
   }, [router.isReady, router.query.id]);
 
   // Efecto para realizar geocodificación inversa a Nominatim cada vez que cambian las coordenadas.
@@ -589,6 +622,12 @@ const ProjectWorkflowPart1: React.FC = () => {
             </div>
           </div>
         </Card>
+        {projectStatus && router.query.id && (
+          <ProjectStatus
+            status={projectStatus}
+            projectId={Array.isArray(router.query.id) ? router.query.id[0] : router.query.id}
+          />
+        )}
       </div>
       <style jsx>{`
         .container {

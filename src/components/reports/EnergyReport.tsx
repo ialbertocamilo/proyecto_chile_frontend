@@ -39,35 +39,37 @@ interface EnergyChartProps {
 
 const EnergyChart = ({ chartData, loading = false, primaryColor = '#3CB6E3', filters }: EnergyChartProps) => {
     const handleDownloadExcel = () => {
-        // Si los datos tienen varias columnas (total_energy, renewable, non_renewable), exportar como tabla completa
-        if (chartData && chartData.labels && chartData.datasets && chartData.datasets.length > 0) {
-            // Construir encabezados dinámicamente
-            const headers = ['Año', 'País'];
-            const datasetLabels = chartData.datasets.map((ds: any) => ds.label);
-            headers.push(...datasetLabels);
+        const finalDatasets = [
+            ...demandDatasets,
+            ...consumptionDatasets
+        ];
 
-            // Asumimos que los labels son tipo "2025 - Perú" o similar
-            const rows = chartData.labels.map((label: string, idx: number) => {
-                let year = '';
-                let country = '';
-                // Si el label es "2025 - Perú"
-                if (label.includes(' - ')) {
-                    [year, country] = label.split(' - ');
-                } else {
-                    year = filters?.year ? String(filters.year) : '';
-                    country = filters?.country || '';
-                }
-                // Abreviar etiquetas largas para year/country
-                if (year === 'Todos los años') year = 'Años';
-                if (country === 'Todos los países') country = 'Países';
-                const values = chartData.datasets.map((ds: any) => ds.data[idx]);
-                return [year, country, ...values];
+        if (axisLabels && finalDatasets.length > 0) {
+            const reportTitle = ['Reporte de eficiencia energética'];
+            const generationDate = ['Fecha de generación:', new Date().toLocaleString('es-CL')];
+            const appliedFilters = ['Filtros aplicados:', `Año: ${filters?.year || 'Todos'}, País: ${filters?.country || 'Todos'}`];
+            const blankRow: string[] = [];
+
+            const tableHeaders = ['Referencia', ...finalDatasets.map((ds: any) => ds.label)];
+
+            const dataRows = axisLabels.map((label: string, idx: number) => {
+                const values = finalDatasets.map((ds: any) => ds.data[idx] ?? '');
+                return [label, ...values];
             });
+
+            const excelData = [
+                reportTitle,
+                generationDate,
+                appliedFilters,
+                blankRow,
+                tableHeaders,
+                ...dataRows
+            ];
+
             exportToExcel({
-                data: rows,
-                fileName: 'reporte_energia.xlsx',
-                sheetName: 'Reporte de energia',
-                headers
+                data: excelData,
+                fileName: 'reporte_energia_detallado.xlsx',
+                sheetName: 'Reporte de Energia',
             });
         }
     };
@@ -173,10 +175,11 @@ const EnergyChart = ({ chartData, loading = false, primaryColor = '#3CB6E3', fil
 
             <div style={{ position: 'relative' }}>
                 <button
-                    className="btn btn-sm btn-outline-primary"
+                    className="btn btn-sm btn-success"
                     style={{ position: 'absolute', top: 0, right: 0, zIndex: 2 }}
                     onClick={handleDownloadExcel}
                 >
+                    <i className="bi bi-download me-2"></i>
                     Descargar Excel
                 </button>
                 <ChartComponent

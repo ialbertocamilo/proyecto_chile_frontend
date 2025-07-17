@@ -10,6 +10,7 @@ import ModalCreate from "../src/components/common/ModalCreate";
 import SearchParameters from "../src/components/inputs/SearchParameters";
 import TablesParameters from "../src/components/tables/TablesParameters";
 import Title from "../src/components/Title";
+import HorizontalTabs from "../src/components/common/HorizontalTabs";
 import UseProfileTab from "../src/components/UseProfileTab";
 import { useAdministration } from "../src/hooks/useAdministration";
 import useAuth from "../src/hooks/useAuth";
@@ -826,70 +827,34 @@ const AdministrationPage: React.FC = () => {
                   newButtonText="Nuevo"
                   style={{ marginBottom: "10px" }}
                 />
-                <div style={{ overflow: "hidden", padding: "10px" }}>
-                  <div
-                    className="d-flex justify-content-between align-items-center mb-2"
-                    style={{ padding: "10px" }}
-                  >
-                    <ul
-                      className="nav"
-                      style={{
-                        display: "flex",
-                        padding: 0,
-                        listStyle: "none",
-                        margin: 0,
-                        flex: 1,
-                        gap: "10px",
-                      }}
-                    >
-                      {["Ventanas", "Puertas"].map((tab) => (
-                        <li key={tab} style={{ flex: 1 }}>
-                          <button
-                            style={{
-                              width: "100%",
-                              padding: "0px",
-                              backgroundColor: "#fff",
-                              color:
-                                tabElementosOperables === tab.toLowerCase()
-                                  ? "var(--primary-color)"
-                                  : "var(--secondary-color)",
-                              border: "none",
-                              cursor: "pointer",
-                              borderBottom:
-                                tabElementosOperables === tab.toLowerCase()
-                                  ? "solid var(--primary-color)"
-                                  : "none",
-                            }}
-                            onClick={() =>
-                              setTabElementosOperables(tab.toLowerCase())
-                            }
-                          >
-                            {tab}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div
-                    style={{
-                      maxHeight: "500px",
-                      overflowY: "auto",
-                      padding: "10px",
-                    }}
-                  >
-                    <TablesParameters
-                      columns={
-                        tabElementosOperables === "ventanas"
-                          ? windowsColumns
-                          : doorsColumns
-                      }
-                      data={
-                        tabElementosOperables === "ventanas"
-                          ? windowsData
-                          : doorsData
-                      }
-                    />
-                  </div>
+                <HorizontalTabs
+                  tabs={[
+                    { key: "ventanas", label: "Ventanas" },
+                    { key: "puertas", label: "Puertas" },
+                  ]}
+                  currentTab={tabElementosOperables}
+                  onTabChange={setTabElementosOperables}
+                  className="mb-3"
+                />
+                <div
+                  style={{
+                    maxHeight: "500px",
+                    overflowY: "auto",
+                    padding: "10px",
+                  }}
+                >
+                  <TablesParameters
+                    columns={
+                      tabElementosOperables === "ventanas"
+                        ? windowsColumns
+                        : doorsColumns
+                    }
+                    data={
+                      tabElementosOperables === "ventanas"
+                        ? windowsData
+                        : doorsData
+                    }
+                  />
                 </div>
               </>
             )}

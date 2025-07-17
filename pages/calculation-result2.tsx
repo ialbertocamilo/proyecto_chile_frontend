@@ -25,6 +25,13 @@ export default function ResumenEnergia(props: any) {
 
 
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+    // Verificar si el usuario es administrador
+    useEffect(() => {
+        const roleId = localStorage.getItem('role_id');
+        setIsAdmin(roleId === '1');
+    }, []);
 
     // Cargar resultados de cálculo al cargar la página
     useEffect(() => {
@@ -123,7 +130,7 @@ export default function ResumenEnergia(props: any) {
                     type="button"
                     className="btn d-flex align-items-center"
                     style={{ backgroundColor: 'orange', color: 'white', fontWeight: 'bold' }}
-                    disabled={loading}
+                    disabled={loading || isAdmin}
                     onClick={async () => {
                     if (!projectId) return;
                     setLoading(true);
@@ -373,14 +380,11 @@ export default function ResumenEnergia(props: any) {
                         </div>
                         <div className="card-body p-2">
                             <table className="table table-bordered table-sm mb-0">
-                                <thead>
-                                    <tr className="table-light">
-                                        <th>Total</th>
-                                        <th className="text-end">{co2eqData.total.toLocaleString()}</th>
-                                        <th>{co2eqData.unidad}</th>
-                                    </tr>
-                                </thead>
                                 <tbody>
+                                    <tr>
+                                        <td>Total</td>
+                                        <td colSpan={2}  className="text-center">{co2eqData.total.toLocaleString()} {co2eqData.unidad}</td>
+                                    </tr>
                                     <tr>
                                         <td>Comparación caso base</td>
                                         <td colSpan={2} className="text-center">

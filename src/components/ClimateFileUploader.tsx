@@ -1,6 +1,7 @@
 import { useApi } from "@/hooks/useApi";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState, useMemo } from "react";
+import { find } from "geo-tz";
 import { useDropzone } from "react-dropzone";
 import { LocationSearchInput } from "./LocationSearchInput";
 import CustomButton from "./common/CustomButton";
@@ -8,10 +9,12 @@ import SearchParameters from "./SearchParameters";
 import TablesParameters from "@/components/tables/TablesParameters";
 
 const ClimateFileUploader: React.FC = () => {
-  /* ────────────── estado y hooks originales ────────────── */
+  
   const [uploadedCsvFiles, setUploadedCsvFiles] = useState<File[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<any>(null);
-  const [thermalZone, setThermalZone] = useState<string>("");
+  const [stationName, setStationName] = useState("");
+  const [thermalZone, setThermalZone] = useState("");
+  const [timezone, setTimezone] = useState("");
   const [weatherFiles, setWeatherFiles] = useState<any[]>([]);
   const [filteredFiles, setFilteredFiles] = useState<any[]>([]);
 
@@ -31,7 +34,43 @@ const ClimateFileUploader: React.FC = () => {
 
   useEffect(() => setFilteredFiles(weatherFiles), [weatherFiles]);
 
-  /* ────────────── búsqueda ────────────── */
+  useEffect(() => {
+    if (selectedLocation) {
+      const [lon, lat] = selectedLocation.Position;
+      const tzArray = find(lat, lon);
+      if (tzArray.length > 0) {
+        const tz = tzArray[0];
+        try {
+          const formatter = new Intl.DateTimeFormat("en-US", {
+            timeZone: tz,
+            timeZoneName: "longOffset",
+          });
+          const parts = formatter.formatToParts(new Date());
+          const timeZoneNamePart = parts.find(
+            (part) => part.type === "timeZoneName"
+          );
+          if (timeZoneNamePart) {
+            const gmtString = timeZoneNamePart.value;
+            const formattedUtc = gmtString
+              .replace("GMT", "UTC")
+              .replace(/([+-])/, " $1 ");
+            setTimezone(`${tz} (${formattedUtc})`);
+          } else {
+            setTimezone(tz);
+          }
+        } catch (error) {
+          console.error("Error formatting timezone:", error);
+          setTimezone(tzArray.join(", "));
+        }
+      } else {
+        setTimezone("No se encontró zona horaria");
+      }
+    } else {
+      setTimezone("");
+    }
+  }, [selectedLocation]);
+
+  
   const handleSearch = (searchTerm: string) => {
     const q = searchTerm.toLowerCase();
     const filtered = weatherFiles.filter(
@@ -44,7 +83,7 @@ const ClimateFileUploader: React.FC = () => {
     setFilteredFiles(filtered);
   };
 
-  /* ────────────── drag‑and‑drop ────────────── */
+  
   const onDrop = (files: File[]) => setUploadedCsvFiles(files.slice(0, 1));
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -57,7 +96,7 @@ const ClimateFileUploader: React.FC = () => {
     maxSize: 50 * 1024 * 1024,
   });
 
-  /* ────────────── subida ────────────── */
+  
   const uploadFile = async (file: File) => {
     if (!selectedLocation) {
       notify("Debe seleccionar una ubicación antes de subir el archivo.", "error");
@@ -87,7 +126,7 @@ const ClimateFileUploader: React.FC = () => {
     }
   };
 
-  /* ────────────── columnas para TablesParameters ────────────── */
+  
   const columns = useMemo(
     () => [
       { headerName: "Nombre", field: "name" },
@@ -114,13 +153,13 @@ const ClimateFileUploader: React.FC = () => {
     []
   );
 
-  /* ────────────── UI ────────────── */
+  
   return (
     <>
       <h4>Adjuntar archivo de procesamiento de clima</h4>
       <br />
 
-      {/* ubicación */}
+      
       <div className="row mb-3">
         <div className="col-md-12">
           <label>Buscar ubicación</label>
@@ -130,7 +169,7 @@ const ClimateFileUploader: React.FC = () => {
         </div>
       </div>
 
-      {/* detalles loc */}
+      
       <div className="mb-3">
         <label>Detalles de la ubicación seleccionada:</label>
         <textarea
@@ -150,7 +189,19 @@ Longitud: ${selectedLocation.Position[0]}`
         />
       </div>
 
-      {/* zona térmica */}
+      
+      <div className="mb-3">
+        <label>Zona Horaria (TZ):</label>
+        <input
+          type="text"
+          className="form-control"
+          style={{ opacity: 0.4 }}
+          readOnly
+          value={timezone || "Calculando..."}
+        />
+      </div>
+
+      
       <div className="mb-3">
         <label>Zona Térmica:</label>
         <input
@@ -165,7 +216,7 @@ Longitud: ${selectedLocation.Position[0]}`
         />
       </div>
 
-      {/* dropzone */}
+      
       <div className="mb-3">
         <div
           {...getRootProps()}
@@ -182,7 +233,7 @@ Longitud: ${selectedLocation.Position[0]}`
         </div>
       </div>
 
-      {/* botón de subida */}
+      
       <div>
         {uploadedCsvFiles.map((file, i) => (
           <div key={i} className="d-flex justify-content-end">
@@ -201,7 +252,7 @@ Longitud: ${selectedLocation.Position[0]}`
         ))}
       </div>
 
-      {/* tabla de resultados */}
+      
       <div className="mt-4">
         <h4>Listado de archivos clima</h4>
         <SearchParameters onSearch={handleSearch} />

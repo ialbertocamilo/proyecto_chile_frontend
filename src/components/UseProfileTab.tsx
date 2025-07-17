@@ -61,8 +61,7 @@ interface ItemToDelete {
 const UseProfileTab: React.FC<{
   refreshTrigger?: number;
   primaryColorProp?: string;
-  useHorizontalTabs?: boolean;
-}> = ({ refreshTrigger = 0, primaryColorProp, useHorizontalTabs = false }) => {
+}> = ({ refreshTrigger = 0, primaryColorProp }) => {
   const [primaryColor, setPrimaryColor] = useState("#3ca7b7");
   const [activeTab, setActiveTab] = useState<TabKey>("ventilacion");
   const [rolUser, setRolUser] = useState<string>("");
@@ -1069,7 +1068,6 @@ const UseProfileTab: React.FC<{
       {/* Navegación por pestañas */}
       <div className="card shadow-sm mb-4">
         <div className="card-header bg-white p-0">
-          {useHorizontalTabs ? (
             <HorizontalTabs
               tabs={[
                 { key: "ventilacion", label: "Ventilación y caudales" },
@@ -1079,38 +1077,7 @@ const UseProfileTab: React.FC<{
               ]}
               currentTab={activeTab}
               onTabChange={(tab) => setActiveTab(tab as TabKey)}
-            />
-          ) : (
-            <ul className="d-flex list-unstyled m-0" style={{ gap: "10px" }}>
-              {[
-                { key: "ventilacion", label: "Ventilación y caudales" },
-                { key: "iluminacion", label: "Iluminación" },
-                { key: "cargas", label: "Cargas internas" },
-                { key: "horario", label: "Climatización" },
-              ].map((item) => (
-                <li key={item.key} className="flex-fill">
-                  <button
-                    className="w-100 p-0"
-                    style={{
-                      backgroundColor: "#fff",
-                      color:
-                        activeTab === item.key
-                          ? primaryColor
-                          : "var(--secondary-color)",
-                      border: "none",
-                      borderBottom:
-                        activeTab === item.key
-                          ? `solid 2px ${primaryColor}`
-                          : "none",
-                    }}
-                    onClick={() => setActiveTab(item.key as TabKey)}
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}        </div>
+            />        </div>
         <div className="card-body pt-3">
           {/* Contenedor de la tabla */}
           <div className="overflow-auto" style={{ maxHeight: "500px" }}>
@@ -1244,17 +1211,17 @@ const UseProfileTab: React.FC<{
             isOpen={isCreateModalOpen}
             onClose={() => setIsCreateModalOpen(false)}
             onSave={handleCreateSave}
-            title="Crear nuevo recinto"
+            title="Crear nuevo perfil de ocupación"
             saveLabel="Crear Perfil"
           >
             <div>
-              <label htmlFor="recinto-name">Nombre del Recinto</label>
+              <label htmlFor="recinto-name">Nombre del perfil de ocupación</label>
               <input
                 id="recinto-name"
                 type="text"
                 value={newRecintoName}
                 onChange={(e) => setNewRecintoName(e.target.value)}
-                placeholder="Ingrese el nombre"
+                placeholder="Ingrese el nombre del perfil"
                 style={{ width: "100%", padding: "8px", marginTop: "8px" }}
               />
             </div>

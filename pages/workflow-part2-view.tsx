@@ -19,6 +19,7 @@ import TablesParameters from "../src/components/tables/TablesParameters";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import ConfiguracionEnergiaTab from "@/components/projects/tabs/ConfiguracionEnergiaTab";
+import ProjectStatus from "../src/components/projects/ProjectStatus";
 
 /* ==================== TIPOS ==================== */
 interface Detail {
@@ -115,6 +116,7 @@ const WorkFlowpar2viewPage: React.FC = () => {
   const [projectId, setProjectId] = useState<number | null>(null);
   const [step, setStep] = useState<number>(4);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [projectStatus, setProjectStatus] = useState<string | null>(null);
 
   /* Detalles generales del modal */
   const [fetchedDetails, setFetchedDetails] = useState<Detail[]>([]);
@@ -175,6 +177,34 @@ const WorkFlowpar2viewPage: React.FC = () => {
       setHasLoaded(true);
     }
   }, [router.isReady, router.query.id, router.query.step]);
+  
+  /* ==================== OBTENER ESTADO DEL PROYECTO ==================== */
+  useEffect(() => {
+    const fetchProjectStatus = async () => {
+      if (!projectId) return;
+      
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.warn("Token no encontrado");
+          return;
+        }
+        
+        const { data: projectData } = await axios.get(
+          `${constantUrlApiEndpoint}/projects/${projectId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        if (projectData && projectData.status) {
+          setProjectStatus(projectData.status);
+        }
+      } catch (error) {
+        console.error("Error al obtener el estado del proyecto:", error);
+      }
+    };
+    
+    fetchProjectStatus();
+  }, [projectId]);
 
   /* ==================== OBTENER DATOS DEL LOCAL STORAGE PARA CABECERA ==================== */
   useEffect(() => {
@@ -981,6 +1011,12 @@ const WorkFlowpar2viewPage: React.FC = () => {
           </div>
         </Card>
       </div>
+      {projectStatus && (
+        <ProjectStatus
+          status={projectStatus}
+          projectId={projectId?.toString() || ""}
+        />
+      )}
 
       {/* Modal para detalles generales */}
       <ModalCreate

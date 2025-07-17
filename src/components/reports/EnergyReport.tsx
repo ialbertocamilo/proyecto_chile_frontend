@@ -183,7 +183,7 @@ const EnergyChart = ({ chartData, loading = false, primaryColor = '#3CB6E3', fil
                     Descargar Excel
                 </button>
                 <ChartComponent
-                    title="Reporte de eficiencia energética"
+                    title="Reporte de eficiencia energética (kWh)"
                     chartData={{
                         labels: axisLabels,
                         datasets: [

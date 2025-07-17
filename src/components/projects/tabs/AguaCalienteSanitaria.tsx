@@ -504,17 +504,17 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 <Form.Label column sm={4} className="text-end font-bold">
                   T&apos; ACS
                 </Form.Label>
-                <Col sm={5} className="text-end">
+                <Col sm={4} className="text-end">
                   <Form.Control
                     disabled={onlyView}
                     type="number"
                     min="0"
                     value={tAcs}
                     onChange={(e) => setTAcs(parseFloat(e.target.value) || 0)}
-                    style={{ color: "#2ab0c5" }}
+                    style={{ color: "#2ab0c5", fontSize: "0.9rem" }}
                   />
                 </Col>
-                <Col sm="auto" className="align-self-center">
+                <Col sm={3} className="align-self-center text-start">
                   <span>°C</span>
                 </Col>
               </Form.Group>
@@ -524,12 +524,12 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 <Form.Label column sm={4} className="text-end">
                   Demanda ACS
                 </Form.Label>
-                <Col sm={5} className="text-end">
+                <Col sm={4} className="text-end">
                   <div className="form-control-plaintext fw-bold">
                     {demandaACS}
                   </div>
                 </Col>
-                <Col sm="auto" className="align-self-center">
+                <Col sm={3} className="align-self-center text-start">
                   <span>[kWh]</span>
                 </Col>
               </Form.Group>
@@ -540,12 +540,12 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 <Form.Label column sm={4} className="text-end">
                   Combustible
                 </Form.Label>
-                <Col sm={5} className="text-end">
+                <Col sm={3} className="text-end">
                   <Form.Select
                     disabled={onlyView}
                     value={combustible}
                     onChange={handleCombustibleChange}
-                    style={{ color: "#2ab0c5" }}
+                    style={{ color: "#2ab0c5", fontSize: "0.9rem" }}
                   >
                     <option value="">Seleccione</option>
                     {combustibleOptions.map((option, i) => (
@@ -555,10 +555,12 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                     ))}
                   </Form.Select>
                 </Col>
-                <Col sm="auto" className="align-self-center">
+                <Col sm={1} className="align-self-center text-end">
                   <span>
                     <b>{getValueFromValue(combustibleOptions, combustible, "fep")}</b>
-                  </span>{" "}
+                  </span>
+                </Col>
+                <Col sm={1} className="align-self-center text-start">
                   <span>[FEP]</span>
                 </Col>
               </Form.Group>
@@ -568,12 +570,12 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 <Form.Label column sm={4} className="text-end">
                   Rendimiento
                 </Form.Label>
-                <Col sm={5} className="text-end">
+                <Col sm={3} className="text-end">
                   <Form.Select
                     disabled={onlyView}
                     value={rendimiento}
                     onChange={(e) => setRendimiento(e.target.value)}
-                    style={{ color: "#2ab0c5" }}
+                    style={{ color: "#2ab0c5", fontSize: "0.9rem" }}
                   >
                     <option value="">Seleccione</option>
                     {rendimientoOptions.map((option, i) => (
@@ -583,7 +585,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                     ))}
                   </Form.Select>
                 </Col>
-                <Col sm="auto" className="align-self-center">
+                <Col sm={1} className="align-self-center text-end">
                   <span>
                     <b>
                       {getValueFromValue(
@@ -592,7 +594,9 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                         "rendimiento"
                       )}
                     </b>
-                  </span>{" "}
+                  </span>
+                </Col>
+                <Col sm={1} className="align-self-center text-start">
                   <span>[FEP]</span>
                 </Col>
               </Form.Group>
@@ -602,14 +606,14 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 <Form.Label column sm={4} className="text-end">
                   Sist. Distribución
                 </Form.Label>
-                <Col sm={5} className="text-end">
+                <Col sm={3} className="text-end">
                   <Form.Select
                     disabled={onlyView}
                     value={sistDistribucion}
                     onChange={(e) =>
                       setSistDistribucion(String(e.target.value))
                     }
-                    style={{ color: "#2ab0c5" }}
+                    style={{ color: "#2ab0c5", fontSize: "0.9rem" }}
                   >
                     <option value="">Seleccione</option>
                     {sistDistribucionOptions.map((option, i) => (
@@ -619,14 +623,16 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                     ))}
                   </Form.Select>
                 </Col>
-                <Col sm="auto" className="align-self-center">
+                <Col sm={1} className="align-self-center text-end">
                   <span>
                     <b>{getValueFromValue(
                       sistDistribucionOptions,
                       sistDistribucion,
                       "distribucion"
                     )}</b>
-                  </span>{" "}
+                  </span>
+                </Col>
+                <Col sm={1} className="align-self-center text-start">
                   <span>[FEP]</span>
                 </Col>
               </Form.Group>
@@ -636,12 +642,12 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 <Form.Label column sm={4} className="text-end">
                   Sist. Control
                 </Form.Label>
-                <Col sm={5} className="text-end">
+                <Col sm={3} className="text-end">
                   <Form.Select
                     disabled={onlyView}
                     value={sistControl}
                     onChange={(e) => setSistControl(e.target.value)}
-                    style={{ color: "#2ab0c5" }}
+                    style={{ color: "#2ab0c5", fontSize: "0.9rem" }}
                   >
                     <option value="">Seleccione</option>
                     {sistControlOptions.map((option, i) => (
@@ -651,15 +657,17 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                     ))}
                   </Form.Select>
                 </Col>
-                <Col sm="auto" className="align-self-center">
+                <Col sm={1  } className="align-self-center text-end">
                   <span>
                     <b>{getValueFromValue(
                       sistControlOptions,
                       String(sistControl),
                       "control"
                     )}</b>
-                  </span>{" "}
-                  <span>[FEP]</span>
+                  </span>
+                </Col>
+                <Col sm={1} className="align-self-center text-start">
+                   <span>[FEP]</span>
                 </Col>
               </Form.Group>
             </div>
@@ -668,12 +676,12 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 <Form.Label column sm={4} className="text-end">
                   Consumo ACS
                 </Form.Label>
-                <Col sm={5} className="text-end">
+                <Col sm={4} className="text-end">
                   <div className="form-control-plaintext fw-bold">
                     {consumoACS}
                   </div>
                 </Col>
-                <Col sm="auto" className="align-self-center">
+                <Col sm={3} className="align-self-center text-start">
                   <span>[kWh]</span>
                 </Col>
               </Form.Group>
@@ -683,12 +691,12 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 <Form.Label column sm={4} className="text-end">
                   Consumo Energía primaria ACS
                 </Form.Label>
-                <Col sm={5} className="text-end">
+                <Col sm={4} className="text-end">
                   <div className="form-control-plaintext fw-bold">
                     {consumoEnergiaPrimariaACS}
                   </div>
                 </Col>
-                <Col sm="auto" className="align-self-center">
+                <Col sm={3} className="align-self-center text-start">
                   <span>[kWh]</span>
                 </Col>
               </Form.Group>
@@ -698,12 +706,12 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 <Form.Label column sm={4} className="text-end">
                   CO2eq Energía primaria
                 </Form.Label>
-                <Col sm={5} className="text-end">
+                <Col sm={4} className="text-end">
                   <div className="form-control-plaintext fw-bold">
                     {co2eqEnergiaPrimaria}
                   </div>
                 </Col>
-                <Col sm="auto" className="align-self-center">
+                <Col sm={3} className="align-self-center text-start">
                   <span>[kg CO2]</span>
                 </Col>
               </Form.Group>

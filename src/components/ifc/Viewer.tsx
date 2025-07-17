@@ -178,7 +178,7 @@ export default function IFCViewerComponent() {
               windows: windows?.map(window => {
                 return {
                   id: window.id,
-                  code: getPropValue(window, IFC_PROP.WINDOW_CODE,name,true),
+                  code: getPropValue(window, IFC_PROP.WINDOW_CODE, name, true),
                   name: window.name,
                   type: window.type,
                   width: window.dimensions?.x || getPropValue(window, IFC_PROP.WIDTH) || 0,
@@ -252,12 +252,12 @@ export default function IFCViewerComponent() {
               elements: ceilings.map(ceiling => ({
                 id: ceiling.id,
                 name: ceiling.name,
-                material: getPropValue(ceiling, IFC_PROP.MATERIAL,name,true)  ,
-                color: getPropValue(ceiling, IFC_PROP.COLOR,name,true)  ,
-                thickness: Number(getPropValue(ceiling, IFC_PROP.GROSOR,name,true)),
-                keyNote: getPropValue(ceiling, IFC_PROP.NOTACLAVE,name,true) ,
-                area: Number(getPropValue(ceiling, IFC_PROP.AREA,name,true)),
-                volume: Number(getPropValue(ceiling, IFC_PROP.AREA,name,true)) * Number(getPropValue(ceiling, IFC_PROP.GROSOR,name,true)),
+                material: getPropValue(ceiling, IFC_PROP.MATERIAL, name, true),
+                color: getPropValue(ceiling, IFC_PROP.COLOR, name, true),
+                thickness: Number(getPropValue(ceiling, IFC_PROP.GROSOR, name, true)),
+                keyNote: getPropValue(ceiling, IFC_PROP.NOTACLAVE, name, true),
+                area: Number(getPropValue(ceiling, IFC_PROP.AREA, name, true)),
+                volume: Number(getPropValue(ceiling, IFC_PROP.AREA, name, true)) * Number(getPropValue(ceiling, IFC_PROP.GROSOR, name, true)),
                 dimensions: ceiling.dimensions || { x: 0, y: 0, z: 0 },
                 position: ceiling.position || { x: 0, y: 0, z: 0 },
                 vectors: ceiling.vectors || null
@@ -268,7 +268,7 @@ export default function IFCViewerComponent() {
             return {
               id: door.id,
               name: door.name,
-              code: getPropValue(door, IFC_PROP.DOOR_CODE,name,true),
+              code: getPropValue(door, IFC_PROP.DOOR_CODE, name, true),
               type: door.type || getPropValue(door, 'TIPO') || IFC_PROP.UNKNOWN,
               width: door.dimensions?.x || getPropValue(door.props, IFC_PROP.WIDTH) || 0,
               height: door.dimensions?.y || getPropValue(door.props, IFC_PROP.WINDOW_HEIGHT) || 0,
@@ -394,12 +394,21 @@ export default function IFCViewerComponent() {
         </Col>
       </Row>
 
+
+
       <Container fluid className="p-0">
         <Row className="g-0">
-          <Col xs={12} md={6} style={{ height: "50vh", border: '1px solid #ccc', overflowY: 'auto' }}>
+          <Col xs={12} md={6} style={{ height: "50vh", border: '1px solid #ccc', overflowY: 'auto' }}>      <Row className="mb-3">
+            <Col className="text-center">
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 500 }}>Estructura de archivo</h3>
+            </Col>
+          </Row>
             <div id="treeViewContainer" style={{ height: "100%" }}></div>
           </Col>
-          <Col xs={12} md={6} style={{ height: "50vh", border: '1px solid #ccc' }}>
+          <Col xs={12} md={6} style={{ height: "50vh", border: '1px solid #ccc' }}>      
+            <Col className="text-center">
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 500 }}>Modelo 3D</h3>
+            </Col>
             <div id="canvasContainer" style={{ height: "100%", width: "100%" }}>
               <canvas id="myCanvas" style={{ width: "100%", height: "100%", display: "block" }} />
             </div>

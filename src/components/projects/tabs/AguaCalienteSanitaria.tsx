@@ -215,7 +215,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
 
   const getValueFromValue = (options: any[], code: string, key: string) => {
     const option = options.find((opt) => opt.value === code);
-    return option ? <b>{option[key]}</b> : <b>1</b>;
+    return option ? option[key] : 1;
   };
 
   const getValueFromCode = (options: any[], name: string, key: string) => {
@@ -557,7 +557,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 </Col>
                 <Col sm="auto" className="align-self-center">
                   <span>
-                    {getValueFromValue(combustibleOptions, combustible, "fep")}
+                    <b>{getValueFromValue(combustibleOptions, combustible, "fep")}</b>
                   </span>{" "}
                   <span>[FEP]</span>
                 </Col>
@@ -585,11 +585,13 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 </Col>
                 <Col sm="auto" className="align-self-center">
                   <span>
-                    {getValueFromValue(
-                      rendimientoOptions,
-                      rendimiento,
-                      "rendimiento"
-                    )}
+                    <b>
+                      {getValueFromValue(
+                        rendimientoOptions,
+                        rendimiento,
+                        "rendimiento"
+                      )}
+                    </b>
                   </span>{" "}
                   <span>[FEP]</span>
                 </Col>
@@ -619,11 +621,11 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 </Col>
                 <Col sm="auto" className="align-self-center">
                   <span>
-                    {getValueFromValue(
+                    <b>{getValueFromValue(
                       sistDistribucionOptions,
                       sistDistribucion,
                       "distribucion"
-                    )}
+                    )}</b>
                   </span>{" "}
                   <span>[FEP]</span>
                 </Col>
@@ -651,11 +653,11 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
                 </Col>
                 <Col sm="auto" className="align-self-center">
                   <span>
-                    {getValueFromValue(
+                    <b>{getValueFromValue(
                       sistControlOptions,
                       String(sistControl),
                       "control"
-                    )}
+                    )}</b>
                   </span>{" "}
                   <span>[FEP]</span>
                 </Col>
@@ -743,5 +745,6 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
     </Row>
   );
 };
+
 
 export default AguaCalienteSanitaria;

@@ -1120,7 +1120,7 @@ const DataEntryPage: React.FC = () => {
   // === RENDER DE STEP 6: Perfil de uso (tabla manual)
   const renderStep6Profile = () => (
     <div className="px-3">
-      <UseProfileTab refreshTrigger={0} useHorizontalTabs={true} />
+      <UseProfileTab refreshTrigger={0} />
     </div>
   );
 

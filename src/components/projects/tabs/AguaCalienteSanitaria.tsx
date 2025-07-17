@@ -255,7 +255,7 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
     sistDistribucionOptions,
     sistControlOptions,
   ]);
-
+ 
   useEffect(() => {
     const rendimientoValue = getValueFromValue(
       rendimientoOptions,

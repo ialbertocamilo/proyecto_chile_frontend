@@ -1,6 +1,15 @@
 // pages/resumen-energia.js
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Cloud, Droplet, Flame, Snowflake, PlayCircle } from 'lucide-react';
+import { Cloud, Droplet, Flame, Snowflake, PlayCircle, Download } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+// @ts-ignore - jsPDF autotable types will be available after import
+import autoTable from 'jspdf-autotable';
+
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: typeof autoTable;
+  }
+}
 import { notify } from '../src/utils/notify';
 
 import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState } from 'react';
@@ -17,6 +26,7 @@ export default function ResumenEnergia(props: any) {
     const [co2eqData, setCo2eqData] = useState<any>({ total: 0, unidad: '[kg CO2eq]', comparacion: '0%' });
     const [recintoData, setRecintoData] = useState<any[]>([]); // <-- NUEVO ESTADO
     const [loading, setLoading] = useState<boolean>(false);
+    const [loadingPdf, setLoadingPdf] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     const router = useRouter();
@@ -124,7 +134,7 @@ export default function ResumenEnergia(props: any) {
             )} */}
 
 
-            {/* Botón Calcular */}
+            {/* Botones de acción */}
             <div className="d-flex align-items-center mb-3" style={{gap: 16}}>
                 <button
                     type="button"
@@ -213,6 +223,118 @@ export default function ResumenEnergia(props: any) {
                 )}
                 Calcular
                 </button>
+                
+                {/* Botón Descargar PDF */}
+                <button
+                    type="button"
+                    className="btn btn-primary d-flex align-items-center"
+                    style={{ fontWeight: 'bold' }}
+                    disabled={loadingPdf || demandaData.length === 0}
+                    onClick={async () => {
+                        if (demandaData.length === 0) return;
+                        setLoadingPdf(true);
+                        try {
+                            // Crear un nuevo documento PDF
+                            const doc = new jsPDF();
+                            const pageWidth = doc.internal.pageSize.getWidth();
+                            const margin = 15;
+                            let yPos = 20;
+                            
+                            // Título del reporte
+                            doc.setFontSize(18);
+                            doc.text('Reporte de Análisis Energético', pageWidth / 2, yPos, { align: 'center' });
+                            yPos += 15;
+                            
+                            // Fecha de generación
+                            doc.setFontSize(10);
+                            doc.text(`Generado el: ${new Date().toLocaleDateString()}`, pageWidth - margin, 10, { align: 'right' });
+                            
+                            // Función auxiliar para agregar tablas
+                            const addTable = (title: string, headers: string[][], data: any[], columns: string[]) => {
+                                if (yPos > 250) {
+                                    doc.addPage();
+                                    yPos = 20;
+                                }
+                                
+                                doc.setFontSize(12);
+                                doc.text(title, margin, yPos);
+                                yPos += 8;
+                                
+                                // Add table using autoTable
+                                autoTable(doc, {
+                                    startY: yPos,
+                                    head: headers,
+                                    body: data.map(row => columns.map(col => row[col] || '')),
+                                    margin: { left: margin, right: margin },
+                                    styles: { fontSize: 8, cellPadding: 2 },
+                                    headStyles: { 
+                                        fillColor: [41, 128, 185], 
+                                        textColor: 255, 
+                                        fontStyle: 'bold' 
+                                    },
+                                    alternateRowStyles: { fillColor: 245 }
+                                });
+                                
+                                // Get the final Y position after the table
+                                yPos = (doc as any).lastAutoTable.finalY + 10;
+                            };
+                            
+                            // Tabla de Demanda
+                            addTable(
+                                'Demanda Energética',
+                                [
+                                    ['Concepto', 'kWh/m²-año', 'kWh-año', '% vs Caso Base']
+                                ],
+                                demandaData,
+                                ['concepto', 'kwh_m2_ano', 'kwh_ano', 'vsCasoBase']
+                            );
+                            
+                            // Tabla de Consumo Primario
+                            addTable(
+                                'Consumo de Energía Primaria',
+                                [
+                                    ['Concepto', 'kWh/m²-año', 'kWh-año', '% vs Caso Base']
+                                ],
+                                consumoPrimario,
+                                ['concepto', 'kwh_m2_ano', 'kwh_ano', 'vsCasoBase']
+                            );
+                            
+                            // Tabla de Horas de Disconfort
+                            addTable(
+                                'Horas de Disconfort Térmico',
+                                [
+                                    ['Concepto', 'Horas/año', 'Nota']
+                                ],
+                                hrsDisconfort,
+                                ['concepto', 'hrs_ano', 'nota']
+                            );
+                            
+                            // Emisiones de CO2
+                            doc.setFontSize(12);
+                            doc.text('Emisiones de CO2 Equivalente', margin, yPos);
+                            yPos += 8;
+                            doc.text(`Total: ${co2eqData.total} ${co2eqData.unidad} (${co2eqData.comparacion} vs caso base)`, margin + 5, yPos);
+                            yPos += 10;
+                            
+                            // Guardar el PDF
+                            doc.save(`reporte-energetico-${new Date().toISOString().split('T')[0]}.pdf`);
+                            
+                        } catch (err) {
+                            console.error('Error al generar el PDF:', err);
+                            notify('Error al generar el reporte PDF', 'error');
+                        } finally {
+                            setLoadingPdf(false);
+                        }
+                    }}
+                >
+                    {loadingPdf ? (
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    ) : (
+                        <Download size={20} style={{marginRight: 8}} />
+                    )}
+                    Descargar Reporte PDF
+                </button>
+                
                 {/* <div className="form-check form-switch d-flex align-items-center" style={{marginLeft: 8}}>
                     <input
                         className="form-check-input"

@@ -548,29 +548,6 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </div>
                       <div className="col-6">
                         <label className="form-label">
-                          Distrito/Municipio
-                          {!router.query.id && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.district}
-                          onChange={(e) =>
-                            handleFormInputChange("district", e.target.value)
-                          }
-                        />
-                        {router.query.id && submitted && errors.district && (
-                          <small className="text-danger">
-                            {errors.district}
-                          </small>
-                        )}
-                      </div>
-                    </div><br />
-                    <div className="row">
-                      <div className="col-6">
-                        <label className="form-label">
                           Región{" "}
                           {!router.query.id && (
                             <span style={{ color: "red" }}>*</span>
@@ -600,6 +577,8 @@ const ProjectWorkflowPart1: React.FC = () => {
                           </small>
                         )}
                       </div>
+                    </div><br />
+                    <div className="row">
                       <div className="col-6">
                         <label className="form-label">
                           Ciudad{" "}
@@ -631,6 +610,27 @@ const ProjectWorkflowPart1: React.FC = () => {
                         {router.query.id && submitted && errors.province && (
                           <small className="text-danger">
                             {errors.province}
+                          </small>
+                        )}
+                      </div>
+                      <div className="col-6">
+                        <label className="form-label">
+                          Distrito/Municipio
+                          {!router.query.id && (
+                            <span style={{ color: "red" }}>*</span>
+                          )}
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.district}
+                          onChange={(e) =>
+                            handleFormInputChange("district", e.target.value)
+                          }
+                        />
+                        {router.query.id && submitted && errors.district && (
+                          <small className="text-danger">
+                            {errors.district}
                           </small>
                         )}
                       </div>

@@ -217,58 +217,68 @@ export interface LocationData {
         Tacna: ["Tacna", "Candarave", "Jorge Basadre", "Tarata"],
         Tumbes: ["Tumbes", "Contralmirante Villar", "Zarumilla"],
         Ucayali: ["Coronel Portillo", "Atalaya", "Padre Abad", "Purús"],
-      },
     },
-    Chile: {
-      departments: {
-        "Región de Arica y Parinacota": ["Arica", "Parinacota"],
-        "Región de Tarapacá": ["Iquique", "El Tamarugal"],
-        "Región de Antofagasta": ["Antofagasta", "El Loa", "Tocopilla"],
-        "Región de Atacama": ["Copiapó", "Chañaral", "Huasco"],
-        "Región de Coquimbo": ["Elqui", "Choapa", "Limarí"],
-        "Región de Valparaíso": [
-          "Valparaíso",
-          "Isla de Pascua",
-          "Los Andes",
-          "Petorca",
-          "Quillota",
-          "San Antonio",
-          "San Felipe de Aconcagua",
-          "Marga Marga",
-        ],
-        "Región del Libertador General Bernardo O'Higgins": [
-          "Rancagua",
-          "Cachapoal",
-          "Cardenal Caro",
-          "Colchagua",
-        ],
-        "Región del Maule": [
-          "Talca",
-          "Cauquenes",
-          "Curicó",
-          "Linares",
-          "Talca",
-        ],
-        "Región de Ñuble": ["Diguillín", "Itata", "Punilla"],
-        "Región del Biobío": ["Concepción", "Arauco", "Bío Bío"],
-        "Región de La Araucanía": ["Cautín", "Malleco"],
-        "Región de Los Ríos": ["Valdivia", "Ranco"],
-        "Región de Los Lagos": ["Lagos", "Osorno", "Chiloé"],
-        "Región de Aysén del General Carlos Ibáñez del Campo": [
-          "Aysén",
-          "Capitán Prat",
-          "Coihaique",
-          "General Carrera",
-        ],
-        "Región de Magallanes y de la Antártica Chilena": [
-          "Magallanes",
-          "Antártica",
-          "Tierra del Fuego",
-          "Última Esperanza",
-        ],
-      },
+  },
+  Chile: {
+    departments: {
+      "Región de Arica y Parinacota": ["Arica", "Parinacota"],
+      "Región de Tarapacá": ["Iquique", "El Tamarugal"],
+      "Región de Antofagasta": ["Antofagasta", "El Loa", "Tocopilla"],
+      "Región de Atacama": ["Copiapó", "Chañaral", "Huasco"],
+      "Región de Coquimbo": ["Elqui", "Choapa", "Limarí"],
+      "Región de Valparaíso": [
+        "Valparaíso",
+        "Isla de Pascua",
+        "Los Andes",
+        "Petorca",
+        "Quillota",
+        "San Antonio",
+        "San Felipe de Aconcagua",
+        "Marga Marga",
+      ],
+      "Región Metropolitana": [
+        "Santiago",
+        "Buin",
+        "Colina",
+        "Lampa",
+        "Maipú",
+        "Melipilla",
+        "Puente Alto",
+        "San Bernardo",
+        "Talagante"
+      ],
+      "Región del Libertador General Bernardo O'Higgins": [
+        "Rancagua",
+        "Cachapoal",
+        "Cardenal Caro",
+        "Colchagua",
+      ],
+      "Región del Maule": [
+        "Talca",
+        "Cauquenes",
+        "Curicó",
+        "Linares",
+        "Talca",
+      ],
+      "Región de Ñuble": ["Diguillín", "Itata", "Punilla"],
+      "Región del Biobío": ["Concepción", "Arauco", "Bío Bío"],
+      "Región de La Araucanía": ["Cautín", "Malleco"],
+      "Región de Los Ríos": ["Valdivia", "Ranco"],
+      "Región de Los Lagos": ["Lagos", "Osorno", "Chiloé"],
+      "Región de Aysén del General Carlos Ibáñez del Campo": [
+        "Aysén",
+        "Capitán Prat",
+        "Coihaique",
+        "General Carrera",
+      ],
+      "Región de Magallanes y de la Antártica Chilena": [
+        "Magallanes",
+        "Antártica",
+        "Tierra del Fuego",
+        "Última Esperanza",
+      ],
     },
-  };
-  
-  export default locationData;
-  
+  },
+};
+
+export default locationData;

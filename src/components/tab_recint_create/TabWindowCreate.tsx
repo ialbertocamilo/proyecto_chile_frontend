@@ -9,6 +9,7 @@ import CustomButton from "../common/CustomButton";
 import ModalCreate from "../common/ModalCreate";
 import ThermalBridgesWindowModal from "../modals/ThermalBridgesWindowModal";
 import {azimutRangeToOrientation} from "@/utils/azimut";
+import useFetchAngleOptions from "@/hooks/useFetchAngleOptions";
 
 const TabWindowCreate: React.FC = () => {
   const enclosure_id = localStorage.getItem("recinto_id") || "12";
@@ -57,7 +58,7 @@ const TabWindowCreate: React.FC = () => {
 
   // Estados para almacenar datos de endpoints
   const [details, setDetails] = useState<any[]>([]);
-  const [angleOptions, setAngleOptions] = useState<string[]>([]);
+  const [angleOptions] = useFetchAngleOptions();
   const [windowOptions, setWindowOptions] = useState<any[]>([]);
   const [tableData, setTableData] = useState<any[]>([]);
 
@@ -825,11 +826,11 @@ const TabWindowCreate: React.FC = () => {
                 value={formData.angulo_azimut}
                 onChange={handleInputChange}
               >
-                <option value="">Seleccione un ángulo</option>
-                {angleOptions.map((option, index) => (
-                  <option key={index} value={option}>
-                    Ángulo [{option}], Orientación [{azimutRangeToOrientation(option)}]
-                  </option>
+              <option value="">Seleccione un ángulo</option>
+              {angleOptions.map((option, index) => (
+               <option key={index} value={option.azimut}>
+               {option.orientation}
+            </option>
                 ))}
               </select>
             </div>

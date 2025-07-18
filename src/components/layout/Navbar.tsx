@@ -139,7 +139,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     padding: "10px 5px",
     marginBottom: "8px",
     boxSizing: "border-box",
-    fontSize: "0.85rem",
+    fontSize: "0.90rem",
     lineHeight: "1.3",
     whiteSpace: "normal",
     wordWrap: "break-word",
@@ -298,7 +298,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
               >
                 <span
                   className="material-icons"
-                  style={{ color: "var(--primary-color)", fontSize: "1.5rem" }}
+                  style={{ color: "white", fontSize: "1.5rem" }}
                 >
                   menu
                 </span>
@@ -332,7 +332,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       <span
                         style={{
                           color: "#fff",
-                          fontSize: "0.8rem",
+                          fontSize: "0.9rem",
                           opacity: 0.7
                         }}
                       >
@@ -411,7 +411,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       <span
                         style={{
                           color: "#fff",
-                          fontSize: "0.8rem",
+                          fontSize: "0.9rem",
                           opacity: 0.7
                         }}
                       >
@@ -629,7 +629,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       <span
                         style={{
                           color: "#fff",
-                          fontSize: "0.8rem",
+                          fontSize: "0.9rem",
                           opacity: 0.7
                         }}
                       >
@@ -747,7 +747,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                 width: 50%;
               }
               .sidebar .nav-link {
-                font-size: 0.7rem;
+                font-size: 0.8rem;
                 padding: 3px;
               }
               .sidebar .nav-link .material-icons {

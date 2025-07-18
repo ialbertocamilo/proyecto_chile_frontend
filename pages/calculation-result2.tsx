@@ -280,22 +280,22 @@ export default function ResumenEnergia(props: any) {
                             <table className="table table-bordered table-sm mb-0">
                                 <thead>
                                     <tr className="table-light">
-                                        <th rowSpan={2}>Concepto</th>
+                                        <th rowSpan={2} className="text-center">Concepto</th>
                                         <th colSpan={3} className="text-center">Demanda</th>
                                     </tr>
                                     <tr className="table-light">
-                                        <th>[kWh/m2-año]</th>
-                                        <th>[kWh-año]</th>
-                                        <th>% Versus caso base</th>
+                                        <th className="text-center">[kWh/m2-año]</th>
+                                        <th className="text-center">[kWh-año]</th>
+                                        <th className="text-center">% Versus caso base</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {demandaData?.map((item:any, index:number) => (
                                         <tr key={index}>
                                             <td>{item.concepto}</td>
-                                            <td>{item.kwh_m2_ano}</td>
-                                            <td>{item.kwh_ano.toLocaleString()}</td>
-                                            <td>{item.vsCasoBase}</td>
+                                            <td className="text-end">{item.kwh_m2_ano}</td>
+                                            <td className="text-end">{item.kwh_ano.toLocaleString()}</td>
+                                            <td className="text-end">{item.vsCasoBase}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -315,24 +315,24 @@ export default function ResumenEnergia(props: any) {
                             <table className="table table-bordered table-sm mb-0">
                                 <thead>
                                     <tr className="table-light">
-                                        <th rowSpan={2}>Concepto</th>
+                                        <th rowSpan={2} className="text-center">Concepto</th>
                                         <th colSpan={3} className="text-center">
                                             Consumo Energía Primaria
                                         </th>
                                     </tr>
                                     <tr className="table-light">
-                                        <th>[kWh/m2-año]</th>
-                                        <th>[kWh-año]</th>
-                                        <th>% Versus caso base</th>
+                                        <th className="text-center">[kWh/m2-año]</th>
+                                        <th className="text-center">[kWh-año]</th>
+                                        <th className="text-center">% Versus caso base</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {consumoPrimario.map((item: { concepto: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; kwh_m2_ano: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; kwh_ano: { toLocaleString: () => string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }; vsCasoBase: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }, idx: Key | null | undefined) => (
                                         <tr key={idx}>
                                             <td>{item.concepto}</td>
-                                            <td>{item.kwh_m2_ano}</td>
-                                            <td>{item.kwh_ano.toLocaleString()}</td>
-                                            <td>{item.vsCasoBase}</td>
+                                            <td className="text-end">{item.kwh_m2_ano}</td>
+                                            <td className="text-end">{item.kwh_ano.toLocaleString()}</td>
+                                            <td className="text-end">{item.vsCasoBase}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -352,15 +352,15 @@ export default function ResumenEnergia(props: any) {
                             <table className="table table-bordered table-sm mb-0">
                                 <thead>
                                     <tr className="table-light">
-                                        <th>Concepto</th>
-                                        <th>[hrs -año]</th>
+                                        <th className="text-center">Concepto</th>
+                                        <th className="text-center">[hrs -año]</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {hrsDisconfort.map((item: { concepto: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; hrs_ano: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; nota: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }, idx: Key | null | undefined) => (
                                         <tr key={idx}>
                                             <td>{item.concepto}</td>
-                                            <td>
+                                            <td className="text-end">
                                                 {item.hrs_ano} {item.nota && <small>{item.nota}</small>}
                                             </td>
                                         </tr>
@@ -380,14 +380,20 @@ export default function ResumenEnergia(props: any) {
                         </div>
                         <div className="card-body p-2">
                             <table className="table table-bordered table-sm mb-0">
+                                <thead>
+                                    <tr className="table-light">
+                                        <th className="text-center">Concepto</th>
+                                        <th className="text-center">Valor</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     <tr>
                                         <td>Total</td>
-                                        <td colSpan={2}  className="text-center">{co2eqData.total.toLocaleString()} {co2eqData.unidad}</td>
+                                        <td colSpan={2} className="text-end">{co2eqData.total.toLocaleString()} {co2eqData.unidad}</td>
                                     </tr>
                                     <tr>
                                         <td>Comparación caso base</td>
-                                        <td colSpan={2} className="text-center">
+                                        <td colSpan={2} className="text-end">
                                             {co2eqData.comparacion}
                                         </td>
                                     </tr>
@@ -407,7 +413,7 @@ export default function ResumenEnergia(props: any) {
                     <div className="card-body p-2">
                         <table className="table table-bordered table-sm mb-0">
                             <thead>
-                                <tr className="table-light">
+                                <tr className="table-light text-center">
                                     <th>#</th>
                                     <th>Recinto</th>
                                     <th>Perfil de Ocupación</th>
@@ -417,7 +423,7 @@ export default function ResumenEnergia(props: any) {
                             <tbody>
                                 {recintoData.length > 0 ? (
                                     recintoData.map((recinto, idx) => (
-                                        <tr key={recinto.enclosure_id || idx}>
+                                        <tr key={recinto.enclosure_id || idx} className="text-center">
                                             <td>{recinto.enclosure_id}</td>
                                             <td>{recinto.nombre_recinto || recinto.name_enclosure || '-'}</td>
                                             <td>{recinto.perfil_uso || recinto.usage_profile_name || '-'}</td>

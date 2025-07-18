@@ -85,27 +85,6 @@ const TabWindowCreate: React.FC = () => {
     fetchDetails();
   }, [projectId, token]);
 
-  // Obtener opciones de ángulo
-  useEffect(() => {
-    const fetchAngleOptions = async () => {
-      try {
-        const response = await fetch(`${constantUrlApiEndpoint}/angle-azimut`, {
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok)
-          throw new Error("Error al obtener las opciones de ángulo");
-        const data = await response.json();
-        setAngleOptions(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchAngleOptions();
-  }, [token]);
-
   // Obtener elementos de ventana
   useEffect(() => {
     const fetchWindowOptions = async () => {
@@ -564,8 +543,8 @@ const TabWindowCreate: React.FC = () => {
           >
             <option value="">Seleccione un ángulo</option>
             {angleOptions.map((option, index) => (
-              <option key={index} value={option}>
-                {option} [{azimutRangeToOrientation(option)}]
+              <option key={index} value={option.azimut}>
+                {option.azimut} [{azimutRangeToOrientation(option.azimut)}]
               </option>
             ))}
           </select>

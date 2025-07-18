@@ -2,7 +2,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Cloud, Droplet, Flame, Snowflake, PlayCircle, Download } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-// @ts-ignore - jsPDF autotable types will be available after import
 import autoTable from 'jspdf-autotable';
 
 declare module 'jspdf' {

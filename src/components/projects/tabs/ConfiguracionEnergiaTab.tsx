@@ -3,6 +3,7 @@ import { EnergySystemSelection } from '@/types/energySystem';
 import React, { useEffect, useState } from 'react';
 import CustomButton from '../../common/CustomButton';
 import EnergySystemSelectors, { ConfigState } from '../recinto/EnergySystemSelectors';
+import { Save } from 'lucide-react';
 
 const ConfiguracionEnergiaTab: React.FC = () => {
     const [config, setConfig] = useState<ConfigState>({
@@ -128,7 +129,9 @@ const ConfiguracionEnergiaTab: React.FC = () => {
                         onClick={handleSave}
                         disabled={loading}
                         style={{ minWidth: 180 }}
+                        color="orange"
                     >
+                        <Save className="me-2" size={18} />
                         {loading ? 'Guardando...' : 'Guardar'}
                     </CustomButton>
                 </div>

@@ -817,7 +817,11 @@ const ProjectWorkflowPart1: React.FC = () => {
                     onClick={handleStep1Action}
                     disabled={loading}
                     className="ms-auto"
+                    color='orange'
                   >
+                    <span className="material-icons" style={{ marginRight: "5px" }}>
+                      navigate_next
+                    </span>
                     Continuar
                   </CustomButton>
                 </div>
@@ -855,6 +859,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                     <div className="d-flex">
                       <CustomButton
                         variant="save"
+                              color='orange'
                         onClick={enviarProyecto}
                         disabled={loading}
                       >

@@ -1,7 +1,7 @@
 import { useApi } from "@/hooks/useApi";
 import { useConstants } from "@/hooks/useConstantsHook";
 import { notify } from "@/utils/notify";
-import { Plus, Trash2 } from "lucide-react"; // Importing Lucide icons
+import { Plus, Save, Trash2 } from "lucide-react"; // Importing Lucide icons
 import { useEffect, useState } from "react";
 import { Card, Col, Form, Row, Table } from "react-bootstrap";
 import CustomButton from "../../common/CustomButton"; // Assuming CustomButton is located here
@@ -742,8 +742,10 @@ const AguaCalienteSanitaria: React.FC<AguaCalienteSanitariaProps> = ({
               width: "100px",
               float: "right",
             }}
+            color="orange"
             className="btn btn-sm mt-2 m-2 hover:opacity-80 transition-opacity duration-200"
           >
+            <Save className="me-2" size={18} />
             Guardar Datos
           </CustomButton>
         )}

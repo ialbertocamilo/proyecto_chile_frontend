@@ -2262,6 +2262,7 @@ const WorkFlowpar2editPage: React.FC = () => {
         title={`Detalles ${selectedItem?.name_detail || ""}`}
         onClose={() => setShowDetallesModal(false)}
         onSave={() => { }}
+        showCancelButton={false}
         showSaveButton={false}
         modalStyle={{ maxWidth: "70%", width: "70%", padding: "32px" }}
       >

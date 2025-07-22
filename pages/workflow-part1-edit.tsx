@@ -20,6 +20,7 @@ import Title from "../src/components/Title";
 import useAuth from "../src/hooks/useAuth";
 import { constantUrlApiEndpoint } from "../src/utils/constant-url-endpoint";
 import locationData from "public/locationData";
+import { Save } from "lucide-react";
 
 type Country = "" | "Perú" | "Chile";
 
@@ -919,6 +920,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           variant="save"
                           onClick={enviarProyecto}
                           style={{ height: "50px" }}
+                          color="orange"
                         >
                           <span
                             className="material-icons"
@@ -939,7 +941,9 @@ const ProjectWorkflowPart1: React.FC = () => {
                           onClick={handleStep1Action}
                           style={{ height: "50px" }}
                           disabled={loading}
+                          color="orange"
                         >
+                          <Save className="me-2" size={18} />
                           Continuar
                         </CustomButton>
                       </div>
@@ -1009,7 +1013,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                             <CustomButton
                               variant="save"
                               onClick={enviarProyecto}
-                              style={{ height: "50px" }}
+                              style={{ height: "50px" }} color="orange"
                             >
                               <span
                                 className="material-icons"
@@ -1022,6 +1026,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                           ) : (
                             <CustomButton
                               variant="save"
+                              color='orange'
                               onClick={enviarProyecto}
                               style={{ height: "50px" }}
                               disabled={loading}

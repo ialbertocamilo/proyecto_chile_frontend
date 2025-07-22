@@ -413,7 +413,7 @@ const RecintoCreate: React.FC = () => {
             Regresar
           </CustomButton>
           <div>
-            <CustomButton onClick={handleCrearNuevoRecinto} className="me-2" color="orange">
+            <CustomButton onClick={handleCrearNuevoRecinto} className="me-2" color="yellow">
               <Plus className="me-2" size={18} />
               Crear otro recinto
             </CustomButton>

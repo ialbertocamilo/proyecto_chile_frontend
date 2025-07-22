@@ -456,12 +456,12 @@ const RecintoEditModeCreate: React.FC = () => {
               Regresar
             </CustomButton>
             <div>
-                  <CustomButton onClick={handleCrearOtroRecinto} className="me-2" color="orange">
+                  <CustomButton onClick={handleCrearOtroRecinto} className="me-2" color="yellow">
                     <Plus className="me-2" size={18} />
                     Crear otro recinto
                   </CustomButton>
                   <CustomButton variant="save" onClick={handleSave}>
-                    <Save className="me-2" size={18} />
+                    <Save className="me-2" size={18} color="orange"/>
                     Actualizar Datos
                   </CustomButton>
                 </div>

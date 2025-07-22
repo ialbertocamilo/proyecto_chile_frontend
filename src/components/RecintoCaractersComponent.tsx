@@ -1,6 +1,7 @@
 // RecintoCaractersComponent.tsx
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import HorizontalTabs from "@/components/common/HorizontalTabs";
 import TabMuroCreate from "@/components/tab_recint_create/TabMuroCreate"; 
 import TabWindowCreate from "@/components/tab_recint_create/TabWindowCreate"; 
 import TabFloorCreate from "@/components/tab_recint_create/TabFloorCreate";
@@ -12,6 +13,16 @@ type TabStep = "muros" | "techumbre" | "pisos" | "ventanas" | "puertas" | "obstr
 
 const RecintoCaractersComponent: React.FC = () => {
   const [tabStep, setTabStep] = useState<TabStep>("muros");
+
+  // Configuración de tabs para HorizontalTabs
+  const tabs = [
+    { key: "muros", label: "Muros" },
+    { key: "ventanas", label: "Ventanas" },
+    { key: "puertas", label: "Puertas" },
+    { key: "techumbre", label: "Techumbre" },
+    { key: "pisos", label: "Pisos" },
+    { key: "obstrucciones", label: "Obstrucciones" }
+  ];
 
   const renderTabContent = () => {
     switch (tabStep) {
@@ -32,62 +43,16 @@ const RecintoCaractersComponent: React.FC = () => {
     }
   };
 
-  const renderTabs = () => (
-    <ul className="nav nav-tabs nav-fill">
-      <li className="nav-item">
-        <button
-          className={`nav-link ${tabStep === "muros" ? "active" : ""}`}
-          onClick={() => setTabStep("muros")}
-        >
-          Muros
-        </button>
-      </li>
-      <li className="nav-item">
-        <button
-          className={`nav-link ${tabStep === "ventanas" ? "active" : ""}`}
-          onClick={() => setTabStep("ventanas")}
-        >
-          Ventanas
-        </button>
-      </li>
-      <li className="nav-item">
-        <button
-          className={`nav-link ${tabStep === "puertas" ? "active" : ""}`}
-          onClick={() => setTabStep("puertas")}
-        >
-          Puertas
-        </button>
-      </li>
-      <li className="nav-item">
-        <button
-          className={`nav-link ${tabStep === "techumbre" ? "active" : ""}`}
-          onClick={() => setTabStep("techumbre")}
-        >
-          Techumbre
-        </button>
-      </li>
-      <li className="nav-item">
-        <button
-          className={`nav-link ${tabStep === "pisos" ? "active" : ""}`}
-          onClick={() => setTabStep("pisos")}
-        >
-          Pisos
-        </button>
-      </li>
-      <li className="nav-item">
-        <button
-          className={`nav-link ${tabStep === "obstrucciones" ? "active" : ""}`}
-          onClick={() => setTabStep("obstrucciones")}
-        >
-          Obstrucciones
-        </button>
-      </li>
-    </ul>
-  );
+
 
   return (
     <div className="container-fluid">
-      {renderTabs()}
+      <HorizontalTabs
+        tabs={tabs}
+        currentTab={tabStep}
+        onTabChange={(tab) => setTabStep(tab as TabStep)}
+        className="mb-3"
+      />
       <div className="mt-3">{renderTabContent()}</div>
     </div>
   );

@@ -45,7 +45,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     const handleResize = () => {
       const mobile = window.innerWidth <= 1024;
       setIsMobile(mobile);
-      // En móviles, forzamos que la navbar se mantenga cerrada.
       if (mobile) {
         setIsNavOpen(false);
       }
@@ -55,7 +54,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, [isClient]);
 
-  // Cerrar la navbar en modo móvil al hacer clic fuera
   useEffect(() => {
     if (!isMobile || !isNavOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
@@ -70,7 +68,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isMobile, isNavOpen, onNavbarToggle]);
 
-  // Abrir/cerrar el submenú según la ruta actual
   useEffect(() => {
     // Si estamos en /workflow-part1-create o /workflow-part2-create, abrimos el submenú
     if (
@@ -150,16 +147,54 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     opacity: 0.9,
   };
 
-  // Para iconos generales: se marca solo si router.pathname === path
-  const iconStyle = (path: string): React.CSSProperties => ({
+  // Check if a nav item is active based on the current path
+  const isActive = (path: string): boolean => {
+    return router.pathname === path;
+  };
+
+  const isCreateProjectActive = (): boolean => {
+    return router.pathname === "/workflow-part1-create" || 
+           router.pathname === "/workflow-part2-create";
+  };
+
+  const isDevelopmentProjectActive = (): boolean => {
+    return router.pathname === "/workflow-part2-create";
+  };
+
+  const navItemStyle = (path: string): React.CSSProperties => ({
+    backgroundColor: isActive(path) ? "#FEBE1B" : "transparent",
+    borderRadius: "4px",
+    transition: "background-color 0.3s ease",
+    margin: '2px 0',
+  });
+  
+  const submenuItemStyle = (isActive: boolean): React.CSSProperties => ({
+    backgroundColor: isActive ? "#FEBE1B" : "transparent",
+    borderRadius: "4px",
+    transition: "background-color 0.3s ease",
+    margin: '2px 0',
+  });
+
+  const createProjectNavItemStyle: React.CSSProperties = {
+    backgroundColor: isCreateProjectActive() ? "#FEBE1B" : "transparent",
+    borderRadius: "4px",
+    transition: "background-color 0.3s ease",
+  };
+
+  const developmentNavItemStyle: React.CSSProperties = {
+    backgroundColor: isDevelopmentProjectActive() ? "#FEBE1B" : "transparent",
+    borderRadius: "4px",
+    transition: "background-color 0.3s ease",
+  };
+
+  const iconStyle = (): React.CSSProperties => ({
     fontSize: "1.5rem",
     marginBottom: isNavOpen ? 0 : "1px",
     color: "#fff",
-    backgroundColor:
-      router.pathname === path ? "rgba(50, 50, 50, 0.3)" : "transparent",
+    backgroundColor: "transparent",
     borderRadius: "50%",
     padding: "0.5rem",
-    transition: "background-color 0.5s ease",
+    transition: "all 0.3s ease",
     width: "40px",
     height: "40px",
     display: "flex",
@@ -168,26 +203,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     boxSizing: "border-box",
   });
 
-  // Ícono especial para "Crear Proyecto": se marca si la ruta es /workflow-part1-create o /workflow-part2-create
-  const createProjectIconStyle: React.CSSProperties = {
-    ...iconStyle(""),
-    backgroundColor:
-      router.pathname === "/workflow-part1-create" ||
-      router.pathname === "/workflow-part2-create"
-        ? "rgba(50, 50, 50, 0.3)"
-        : "transparent",
-  };
-
-  // Ícono especial para "Desarrollo de proyecto": se marca solo si router.pathname === /workflow-part2-create
-  const developmentIconStyle: React.CSSProperties = {
-    ...iconStyle(""),
-    backgroundColor:
-      router.pathname === "/workflow-part2-create"
-        ? "rgba(50, 50, 50, 0.3)"
-        : "transparent",
-  };
-
-  // Contenedor del logo
   const logoContainerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -204,12 +219,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     zIndex: 999,
   };
 
-  // Ancho dinámico del sidebar
   const navbarWidth = isNavOpen
     ? (isMobile ? "11.5em" : "18em")
     : (isMobile ? "6em" : "8.5em");
 
-  // Tamaños de logo para desktop y móvil
   const desktopLogoWidth = 97;
   const desktopLogoHeight = 50;
   const mobileLogoWidth = 63;
@@ -332,7 +345,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       <span
                         style={{
                           color: "#fff",
-                          fontSize: "0.9rem",
+                          fontSize: "1rem",
                           opacity: 0.7
                         }}
                       >
@@ -340,7 +353,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       </span>
                     </div>
                     <div style={{ display: 'block' }}>
-                      <li className="nav-item">
+                      <li 
+                        className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}
+                        style={navItemStyle('/dashboard')}
+                      >
                         <Link
                           href="/dashboard"
                           className="nav-link text-white"
@@ -352,7 +368,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           }}
                         >
                           <span
-                            style={iconStyle("/dashboard")}
+                            style={iconStyle()}
                             className="material-icons"
                           >
                             dashboard
@@ -367,7 +383,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           </span>
                         </Link>
                       </li>
-                      <li className="nav-item">
+                      <li 
+                        className={`nav-item ${isActive('/project-status') ? 'active' : ''}`}
+                        style={navItemStyle('/project-status')}
+                      >
                         <Link
                           href="/project-status"
                           className="nav-link text-white"
@@ -379,7 +398,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           }}
                         >
                           <span
-                            style={iconStyle("/project-status")}
+                            style={iconStyle()}
                             className="material-icons"
                           >
                             folder
@@ -419,7 +438,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       </span>
                     </div>
                     <div style={{ display: 'block' }}>
-                      <li className="nav-item">
+                      <li 
+                        className={`nav-item ${isActive('/user-management') ? 'active' : ''}`}
+                        style={navItemStyle('/user-management')}
+                      >
                         <Link
                           href="/user-management"
                           className="nav-link text-white"
@@ -431,7 +453,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           }}
                         >
                           <span
-                            style={iconStyle("/user-management")}
+                            style={iconStyle()}
                             className="material-icons"
                           >
                             people
@@ -458,7 +480,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           }}
                         >
                           <span
-                            style={iconStyle("/administration")}
+                            style={iconStyle()}
                             className="material-icons"
                           >
                             settings
@@ -501,7 +523,9 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                   </div>
                   <div style={{ display: 'block' }}>
                     {/* Ingreso de Datos de entrada con submenú */}
-                    <li className="nav-item">
+                    <li 
+                      className={`nav-item ${isActive('/data-entry') ? 'active' : ''}`}
+                    >
                       <div
                         className="nav-link text-white"
                         style={{
@@ -510,15 +534,14 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           justifyContent: isNavOpen ? "flex-start" : "center",
                           padding: isNavOpen ? "10px 20px" : "10px 5px",
                           cursor: "pointer",
+                          backgroundColor: isActive('/data-entry') ? "#FEBE1B" : "transparent",
                         }}
                         onClick={() => {
-                          // Se redirige directamente a la sección Data entry
                           router.push("/data-entry?step=3");
-                          // Se alterna el submenú si se desean mostrar las opciones adicionales
                           setIsDataEntrySubmenuOpen((prev) => !prev);
                         }}
                       >
-                        <span style={iconStyle("/data-entry")} className="material-icons">
+                        <span style={iconStyle()} className="material-icons">
                           input
                         </span>
                         <span
@@ -552,7 +575,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           }}
                         >
                           <ul className="nav flex-column" style={{ paddingLeft: "20px" }}>
-                            <li className="nav-item">
+                            <li 
+                              className={`nav-item ${router.pathname === '/data-entry' && router.query.step === '3' ? 'active' : ''}`}
+                              style={submenuItemStyle(router.pathname === '/data-entry' && router.query.step === '3')}
+                            >
                               <Link
                                 href="/data-entry?step=3"
                                 className="nav-link text-white"
@@ -563,7 +589,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                                   padding: "10px 20px",
                                 }}
                               >
-                                <span style={iconStyle("/data-entry/materials-list")} className="material-icons">
+                                <span style={iconStyle()} className="material-icons">
                                   imagesearch_roller
                                 </span>
                                 <span style={{ marginLeft: "10px", display: "block" }}>
@@ -571,7 +597,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                                 </span>
                               </Link>
                             </li>
-                            <li className="nav-item">
+                            <li 
+                              className={`nav-item ${router.pathname === '/data-entry' && router.query.step === '5' ? 'active' : ''}`}
+                              style={submenuItemStyle(router.pathname === '/data-entry' && router.query.step === '5')}
+                            >
                               <Link
                                 href="/data-entry?step=5"
                                 className="nav-link text-white"
@@ -582,7 +611,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                                   padding: "10px 20px",
                                 }}
                               >
-                                <span style={iconStyle("/data-entry/translucent-elements")} className="material-icons">
+                                <span style={iconStyle()} className="material-icons">
                                   home
                                 </span>
                                 <span style={{ marginLeft: "10px", display: "block" }}>
@@ -590,7 +619,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                                 </span>
                               </Link>
                             </li>
-                            <li className="nav-item">
+                            <li 
+                              className={`nav-item ${router.pathname === '/data-entry' && router.query.step === '6' ? 'active' : ''}`}
+                              style={submenuItemStyle(router.pathname === '/data-entry' && router.query.step === '6')}
+                            >
                               <Link
                                 href="/data-entry?step=6"
                                 className="nav-link text-white"
@@ -601,7 +633,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                                   padding: "10px 20px",
                                 }}
                               >
-                                <span style={iconStyle("/data-entry/usage-profile")} className="material-icons">
+                                <span style={iconStyle()} className="material-icons">
                                   deck
                                 </span>
                                 <span style={{ marginLeft: "10px", display: "block" }}>
@@ -629,7 +661,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       <span
                         style={{
                           color: "#fff",
-                          fontSize: "0.9rem",
+                          fontSize: "1rem",
                           opacity: 0.7
                         }}
                       >
@@ -638,7 +670,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                     </div>
                     <div style={{ display: 'block' }}>
                       {/* Listado */}
-                      <li className="nav-item">
+                      <li 
+                        className={`nav-item ${isActive('/project-list') ? 'active' : ''}`}
+                        style={navItemStyle('/project-list')}
+                      >
                         <Link
                           href="/project-list"
                           className="nav-link text-white"
@@ -650,7 +685,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           }}
                         >
                           <span
-                            style={iconStyle("/project-list")}
+                            style={iconStyle()}
                             className="material-icons"
                           >
                             dns
@@ -667,7 +702,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       </li>
 
                       {/* Crear Proyecto */}
-                      <li className="nav-item">
+                      <li 
+                        className={`nav-item ${isCreateProjectActive() ? 'active' : ''}`}
+                        style={createProjectNavItemStyle}
+                      >
                         <Link
                           href="/workflow-part1-create"
                           className="nav-link text-white"
@@ -679,7 +717,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                           }}
                         >
                           <span
-                            style={createProjectIconStyle}
+                            style={iconStyle()}
                             className="material-icons"
                           >
                             note_add
@@ -701,7 +739,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
             </ul>
 
             <ul className="nav flex-column" style={{ marginTop: "auto" }}>
-              <li className="nav-item">
+              <li 
+                className={`nav-item ${isActive('/logout') ? 'active' : ''}`}
+                style={navItemStyle('/logout')}
+              >
                 <div
                   className="nav-link text-white"
                   style={{
@@ -714,7 +755,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                   onClick={handleLogout}
                 >
                   <span
-                    style={iconStyle("/logout")}
+                    style={iconStyle()}
                     className="material-icons"
                   >
                     logout
@@ -742,16 +783,74 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
               background-color: var(--primary-color);
               padding: 0;
             }
+            .sidebar .nav-link {
+              font-size: 1.1rem !important;
+            }
+            .sidebar .nav-link .material-icons {
+              font-size: 1.1rem !important;
+            }
+            .sidebar .nav-link span {
+              font-size: 1.1rem !important;
+            }
+            .sidebar .material-icons {
+              font-size: 1.1rem !important;
+            }
+            .sidebar span {
+              font-size: 1.1rem !important;
+            }
+            .sidebar > .menu-container > .d-flex > ul > .nav-item:hover {
+              background-color: #FEBE1B !important;
+              transition: background-color 0.3s ease !important;
+            }
+            
+            .sidebar .nav-item:hover {
+              background-color: transparent !important;
+            }
             @media (max-width: 1024px) {
               .sidebar {
                 width: 50%;
               }
               .sidebar .nav-link {
-                font-size: 0.8rem;
+                font-size: 0.9rem !important;
                 padding: 3px;
               }
               .sidebar .nav-link .material-icons {
+                font-size: 0.9rem !important;
                 margin-bottom: 0;
+              }
+              .sidebar .nav-link span {
+                font-size: 0.9rem !important;
+              }
+              .sidebar .material-icons {
+                font-size: 0.9rem !important;
+              }
+              .sidebar span {
+                font-size: 0.9rem !important;
+              }
+              .sidebar .nav-link:hover,
+              .sidebar .nav-item:hover {
+                background-color: #FEBE1B !important;
+                transition: background-color 0.3s ease !important;
+              }
+              /* Style for active nav item */
+              .sidebar > .menu-container > .d-flex > ul > .nav-item.active {
+                background-color: #FEBE1B !important;
+                border-radius: 4px;
+              }
+              
+              .sidebar .nav-item.active {
+                background-color: transparent !important;
+              }
+              
+              .sidebar .nav-item.active > .nav-link {
+                background-color: #FEBE1B !important;
+                border-radius: 4px;
+              }
+              .sidebar .nav-item.active .nav-link {
+                color: #000 !important;
+              }
+              .sidebar .nav-item.active .material-icons {
+                color: #000 !important;
               }
             }
           `}</style>

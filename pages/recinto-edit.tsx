@@ -399,7 +399,7 @@ const RecintoEdit: React.FC = () => {
                     Crear otro recinto
                   </CustomButton>
                   <CustomButton variant="save" onClick={handleSave}>
-                    <Save className="me-2" size={18} />
+                    <Save className="me-2" size={18} color="orange"/>
                     Actualizar Datos
                   </CustomButton>
                 </div>

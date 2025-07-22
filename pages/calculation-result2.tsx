@@ -1,6 +1,20 @@
 // pages/resumen-energia.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Cloud, Droplet, Flame, Snowflake, PlayCircle, Download } from 'lucide-react';
+import ChartComponent from '../src/components/chart/ChartComponent';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend
+);
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -11,18 +25,67 @@ declare module 'jspdf' {
 }
 import { notify } from '../src/utils/notify';
 
-import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState } from 'react';
+import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
 
 import FileDropzone from '../src/components/FileDropzone';
 import { constantUrlApiEndpoint } from '../src/utils/constant-url-endpoint';
 
+interface ChartDataItem {
+    concepto: string;
+    kwh_m2_ano: string | number;
+    kwh_ano?: string | number;
+    vsCasoBase?: string;
+    nota?: string;
+}
+
 export default function ResumenEnergia(props: any) {
     // Si se pasan props, usar los datos reales, si no, usar simulados
-    const [consumoPrimario, setConsumoPrimario] = useState<any>([]);
-    const [hrsDisconfort, setHrsDisconfort] = useState<any>([]);
-    const [demandaData, setDemandaData] = useState<any>([]);
+    const [consumoPrimario, setConsumoPrimario] = useState<ChartDataItem[]>([]);
+    const [hrsDisconfort, setHrsDisconfort] = useState<ChartDataItem[]>([]);
+    const [demandaData, setDemandaData] = useState<ChartDataItem[]>([]);
     const [co2eqData, setCo2eqData] = useState<any>({ total: 0, unidad: '[kg CO2eq]', comparacion: '0%' });
+    const [showPercentage, setShowPercentage] = useState<boolean>(false);
+    const [chartView, setChartView] = useState<'monthly' | 'annual'>('annual');
+    
+    // Calculate chart data based on current view and percentage mode
+    const chartData = useMemo(() => {
+        const labels = demandaData
+            .filter((item: any) => item.concepto !== 'Total')
+            .map((item: any) => item.concepto);
+            
+        const demandaValues = demandaData
+            .filter((item: any) => item.concepto !== 'Total')
+            .map((item: any) => parseFloat(item.kwh_m2_ano || '0'));
+            
+        const consumoValues = consumoPrimario
+            .filter((item: any) => item.concepto !== 'Total')
+            .map((item: any) => parseFloat(item.kwh_m2_ano || '0'));
+            
+        // Calculate percentages if showPercentage is true
+        if (showPercentage) {
+            const totalDemanda = demandaValues.reduce((sum: number, val: number) => sum + val, 0);
+            const totalConsumo = consumoValues.reduce((sum: number, val: number) => sum + val, 0);
+            
+            return {
+                labels,
+                demandaValues: totalDemanda > 0 ? demandaValues.map((val: number) => (val / totalDemanda) * 100) : demandaValues,
+                consumoValues: totalConsumo > 0 ? consumoValues.map((val: number) => (val / totalConsumo) * 100) : consumoValues,
+                yAxisSuffix: '%',
+                tooltipSuffix: '%',
+                isPercentage: true
+            };
+        }
+        
+        return {
+            labels,
+            demandaValues,
+            consumoValues,
+            yAxisSuffix: ' kWh/m²·año',
+            tooltipSuffix: ' kWh/m²·año',
+            isPercentage: false
+        };
+    }, [demandaData, consumoPrimario, showPercentage]);
     const [recintoData, setRecintoData] = useState<any[]>([]); // <-- NUEVO ESTADO
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingPdf, setLoadingPdf] = useState<boolean>(false);
@@ -81,14 +144,14 @@ export default function ResumenEnergia(props: any) {
                         { concepto: 'Total', kwh_m2_ano: (Number(data.final_indicators.consumo_calefaccion_final) + Number(data.final_indicators.consumo_refrigeracion_final) + Number(data.final_indicators.consumo_iluminacion_final) + Number(data.final_indicators.consumo_acs_m2)).toFixed(2), kwh_ano: (Number(data.final_indicators.consumo_calefaccion_final2) + Number(data.final_indicators.consumo_refrigeracion_final2) + Number(data.final_indicators.consumo_iluminacion_final2) + Number(data.final_indicators.consumo_acs)).toFixed(2), vsCasoBase: '-' },
                     ]);
                     setHrsDisconfort([
-                        { concepto: 'Calefacción', hrs_ano: Number(data.final_indicators.disconfort_calef).toFixed(2) },
-                        { concepto: 'Refrigeración', hrs_ano: Number(data.final_indicators.disconfort_ref).toFixed(2) },
-                        { concepto: 'Total', hrs_ano: Number(data.final_indicators.disconfort_total).toFixed(2) },
-                        { concepto: 'Comparación caso base', hrs_ano: (data.final_indicators.disconfort_vs * 100).toFixed(2) + '%', nota: '[%]' },
+                        { concepto: 'Calefacción', kwh_m2_ano: Number(data.final_indicators.disconfort_calef).toFixed(2) },
+                        { concepto: 'Refrigeración', kwh_m2_ano: Number(data.final_indicators.disconfort_ref).toFixed(2) },
+                        { concepto: 'Total', kwh_m2_ano: Number(data.final_indicators.disconfort_total).toFixed(2) },
+                        { concepto: 'Ahorro versus caso base', kwh_m2_ano: (data.final_indicators.disconfort_vs * 100).toFixed(2) + '%', nota: '[%]' },
                     ]);
                     setCo2eqData({
                         total: Number(data.final_indicators.co2_eq_total).toFixed(2),
-                        unidad: '[kg CO2eq]',
+                        unidad: '[kg CO2eq/KWh]',
                         comparacion: (data.final_indicators.co2_eq_vs_caso_base * 100).toFixed(0) + '%',
                     });
                     if (data.result_by_enclosure) {
@@ -97,7 +160,7 @@ export default function ResumenEnergia(props: any) {
                         setRecintoData([]);
                     }
                 } else {
-                    setCo2eqData({ total: 0, unidad: '[kg CO2eq]', comparacion: '0%' });
+                    setCo2eqData({ total: 0, unidad: '[kgCO2eq/KWh]', comparacion: '0%' });
                     setDemandaData([]);
                     setConsumoPrimario([]);
                     setHrsDisconfort([]);
@@ -192,14 +255,14 @@ export default function ResumenEnergia(props: any) {
                                 { concepto: 'Total', kwh_m2_ano: (Number(data.final_indicators.consumo_calefaccion_final) + Number(data.final_indicators.consumo_refrigeracion_final) + Number(data.final_indicators.consumo_iluminacion_final) + Number(data.final_indicators.consumo_acs_m2)).toFixed(2), kwh_ano: (Number(data.final_indicators.consumo_calefaccion_final2) + Number(data.final_indicators.consumo_refrigeracion_final2) + Number(data.final_indicators.consumo_iluminacion_final2) + Number(data.final_indicators.consumo_acs)).toFixed(2), vsCasoBase: '-' },
                             ]);
                             setHrsDisconfort([
-                                { concepto: 'Calefacción', hrs_ano: Number(data.final_indicators.disconfort_calef).toFixed(2) },
-                                { concepto: 'Refrigeración', hrs_ano: Number(data.final_indicators.disconfort_ref).toFixed(2) },
-                                { concepto: 'Total', hrs_ano: Number(data.final_indicators.disconfort_total).toFixed(2) },
-                                { concepto: 'Comparación caso base', hrs_ano: (data.final_indicators.disconfort_vs * 100).toFixed(2) + '%', nota: '[%]' },
+                                { concepto: 'Calefacción', kwh_m2_ano: Number(data.final_indicators.disconfort_calef).toFixed(2) },
+                                { concepto: 'Refrigeración', kwh_m2_ano: Number(data.final_indicators.disconfort_ref).toFixed(2) },
+                                { concepto: 'Total', kwh_m2_ano: Number(data.final_indicators.disconfort_total).toFixed(2) },
+                                { concepto: 'Ahorro versus caso base', kwh_m2_ano: (data.final_indicators.disconfort_vs * 100).toFixed(2) + '%', nota: '[%]' },
                             ]);
                             setCo2eqData({
                                 total: Number(data.final_indicators.co2_eq_total).toFixed(2),
-                                unidad: '[kg CO2eq]',
+                                unidad: '[kg CO2eq/KWh]',
                                 comparacion: (data.final_indicators.co2_eq_vs_caso_base * 100).toFixed(0) + '%',
                             });
                             if (data.result_by_enclosure) {
@@ -355,14 +418,10 @@ export default function ResumenEnergia(props: any) {
                     type="button"
                     className="btn btn-outline-primary me-2"
                     style={{fontWeight: 'bold'}}
-                    disabled={loadingDownload}
                     onClick={async () => {
                         setLoadingDownload(true);
                         try {
-                            const token = localStorage.getItem('token');
-                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/calculator/download/${projectId}`, {
-                                headers: { Authorization: `Bearer ${token}` }
-                            });
+                            const res = await fetch(`/api/attachments/${projectId}/download`);
                             if (!res.ok) throw new Error('Error al descargar archivos adjuntos');
                             const blob = await res.blob();
                             const url = window.URL.createObjectURL(blob);
@@ -387,144 +446,464 @@ export default function ResumenEnergia(props: any) {
                     )}
                     Descargar archivos procesados
                 </button>
-            )} */}
-            {/* Grid principal */}
-            <div className="row">
-                {/* Sección Demanda */}
-                <div className="col-12 col-md-6 mb-4">
-                    <div className="card">
-                        <div className="card-header">
-                            <Flame className="me-2" />
-                            <strong>Demanda</strong>
+            </div>
+
+            {/* Combined Energy Chart */}
+            <div className="card mb-4 border shadow-sm">
+                <div className="card-header bg-white border-bottom py-3">
+                    <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center">
+                            <Flame className="me-2 text-primary" size={20} />
+                            <h5 className="mb-0 fw-semibold text-dark">Análisis Comparativo de Demanda y Consumo Energético</h5>
                         </div>
-                        <div className="card-body p-2">
-                            <table className="table table-bordered table-sm mb-0">
-                                <thead>
-                                    <tr className="table-light">
-                                        <th rowSpan={2} className="text-center">Concepto</th>
-                                        <th colSpan={3} className="text-center">Demanda</th>
-                                    </tr>
-                                    <tr className="table-light">
-                                        <th className="text-center">[kWh/m2-año]</th>
-                                        <th className="text-center">[kWh-año]</th>
-                                        <th className="text-center">% Versus caso base</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {demandaData?.map((item:any, index:number) => (
-                                        <tr key={index}>
-                                            <td>{item.concepto}</td>
-                                            <td className="text-end">{item.kwh_m2_ano}</td>
-                                            <td className="text-end">{item.kwh_ano.toLocaleString()}</td>
-                                            <td className="text-end">{item.vsCasoBase}</td>
+                    </div>
+                </div>
+                <div className="card-body p-4">
+                    <div className="row align-items-center mb-3">
+                        <div className="col-md-6">
+                            <div className="d-flex align-items-center mb-2">
+                                <div className="me-3" style={{ width: '16px', height: '16px', backgroundColor: 'rgba(54, 162, 235, 0.8)' }}></div>
+                                <span className="small">Demanda Energética</span>
+                            </div>
+                            <div className="d-flex align-items-center">
+                                <div className="me-3" style={{ width: '16px', height: '2px', backgroundColor: 'rgba(255, 99, 132, 1)' }}></div>
+                                <span className="small">Consumo de Energía Primaria</span>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <div style={{ height: '450px', position: 'relative' }}>
+                        {demandaData.length > 0 && consumoPrimario.length > 0 && (
+                            <ChartComponent
+                                title="Demanda vs Consumo Energético"
+                                chartType="Bar"
+                                chartData={{
+                                    labels: chartData.labels,
+                                    datasets: [
+                                        {
+                                            label: 'Demanda Energética',
+                                            data: chartData.demandaValues,
+                                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                                            borderColor: 'rgba(54, 162, 235, 1)',
+                                            borderWidth: 1,
+                                            type: 'bar',
+                                            yAxisID: 'y',
+                                            order: 1,
+                                            borderRadius: 4,
+                                            barPercentage: 0.7,
+                                            categoryPercentage: 0.8
+                                        },
+                                        {
+                                            label: 'Consumo Primario',
+                                            data: chartData.consumoValues,
+                                            borderColor: 'rgba(255, 99, 132, 1)',
+                                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                                            borderWidth: 2,
+                                            type: 'line',
+                                            yAxisID: 'y1',
+                                            order: 0,
+                                            pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                                            pointBorderColor: '#fff',
+                                            pointHoverRadius: 6,
+                                            pointHoverBorderWidth: 2,
+                                            tension: 0.3
+                                        },
+                                        {
+                                            label: 'Diferencia',
+                                            data: chartData.labels.map((_, index) => {
+                                                const demanda = chartData.demandaValues[index] || 0;
+                                                const consumo = chartData.consumoValues[index] || 0;
+                                                return consumo - demanda;
+                                            }),
+                                            backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                                            borderColor: 'rgba(153, 102, 255, 1)',
+                                            borderWidth: 1,
+                                            type: 'bar',
+                                            yAxisID: 'y1',
+                                            order: 2,
+                                            borderRadius: 4,
+                                            barPercentage: 0.7,
+                                            categoryPercentage: 0.8,
+                                            hidden: true
+                                        }
+                                    ]
+                                }}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    interaction: {
+                                        mode: 'index',
+                                        intersect: false,
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                        tooltip: {
+                                            backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                                            titleColor: '#1a1a1a',
+                                            bodyColor: '#333',
+                                            borderColor: 'rgba(0, 0, 0, 0.1)',
+                                            borderWidth: 1,
+                                            padding: 12,
+                                            usePointStyle: true,
+                                            callbacks: {
+                                                label: function(context: any) {
+                                                    const label = context.dataset.label || '';
+                                                    const value = context.parsed.y;
+                                                    const concept = demandaData[context.dataIndex]?.concepto || '';
+                     
+                                                    
+                                                    // For other datasets, show the value with units
+                                                    return `${label}: ${value.toLocaleString('es-CL', { 
+                                                        minimumFractionDigits: 2, 
+                                                        maximumFractionDigits: 2 
+                                                    })} ${chartData.tooltipSuffix}`;
+                                                },
+                                            }
+                                        },
+                                        datalabels: {
+                                            display: false
+                                        },
+                                        annotation: {
+                                            annotations: []
+                                        }
+                                    },
+                                    scales: {
+                                        y: {
+                                            type: 'linear' as const,
+                                            display: true,
+                                            position: 'left' as const,
+                                            title: {
+                                                display: true,
+                                                text: `Demanda [${chartData.isPercentage ? '%' : 'kWh/m²·año'}]`,
+                                                color: 'rgba(54, 162, 235, 0.9)',
+                                                font: {
+                                                    weight: 'bold'
+                                                }
+                                            },
+                                            grid: {
+                                                color: 'rgba(0, 0, 0, 0.05)',
+                                                drawBorder: false
+                                            },
+                                            ticks: {
+                                                color: 'rgba(54, 162, 235, 0.9)',
+                                                callback: function(value: number) {
+                                                    return value.toLocaleString('es-CL');
+                                                }
+                                            },
+                                            beginAtZero: true
+                                        },
+                                        y1: {
+                                            type: 'linear' as const,
+                                            display: true,
+                                            position: 'right' as const,
+                                            title: {
+                                                display: true,
+                                                text: `Consumo Primario [${chartData.isPercentage ? '%' : 'kWh/m²·año'}]`,
+                                                color: 'rgba(255, 99, 132, 0.9)',
+                                                font: {
+                                                    weight: 'bold'
+                                                }
+                                            },
+                                            grid: {
+                                                drawOnChartArea: false,
+                                                drawBorder: false
+                                            },
+                                            ticks: {
+                                                color: 'rgba(255, 99, 132, 0.9)',
+                                                callback: function(value: number) {
+                                                    return value.toLocaleString('es-CL');
+                                                }
+                                            },
+                                            beginAtZero: true
+                                        },
+                                        x: {
+                                            grid: {
+                                                display: false,
+                                                drawBorder: false
+                                            },
+                                            ticks: {
+                                                color: '#666',
+                                                maxRotation: 45,
+                                                minRotation: 45,
+                                                padding: 10
+                                            }
+                                        }
+                                    },
+                                    animation: {
+                                        duration: 1000,
+                                        easing: 'easeInOutQuart'
+                                    },
+                                    layout: {
+                                        padding: {
+                                            top: 10,
+                                            right: 20,
+                                            left: 20,
+                                            bottom: 10
+                                        }
+                                    }
+                                }}
+                            />
+                        )}
+                    </div>
+                        <div className="row g-3">
+                            <div className="col-md-4">
+                                <div className="card bg-light border-0 h-100">
+                                    <div className="card-body p-3">
+                                        <div className="d-flex align-items-center">
+                                            <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
+                                                <Flame size={18} className="text-primary" />
+                                            </div>
+                                            <div>
+                                                <h6 className="mb-0 text-muted small">Demanda Total</h6>
+                                                <p className="mb-0 fw-bold">
+                                                    {chartData.isPercentage 
+                                                        ? '100.00%' 
+                                                        : `${demandaData.find((item: any) => item.concepto === 'Total')?.kwh_m2_ano || '0.00'} kWh/m²·año`
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-md-4">
+                                <div className="card bg-light border-0 h-100">
+                                    <div className="card-body p-3">
+                                        <div className="d-flex align-items-center">
+                                            <div className="bg-danger bg-opacity-10 p-2 rounded me-3">
+                                                <Droplet size={18} className="text-danger" />
+                                            </div>
+                                            <div>
+                                                <h6 className="mb-0 text-muted small">Consumo Total</h6>
+                                                <p className="mb-0 fw-bold">
+                                                    {chartData.isPercentage 
+                                                        ? '100.00%' 
+                                                        : `${consumoPrimario.find((item: any) => item.concepto === 'Total')?.kwh_m2_ano || '0.00'} kWh/m²·año`
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-md-4">
+                                <div className="card bg-light border-0 h-100">
+                                    <div className="card-body p-3">
+                                        <div className="d-flex align-items-center">
+                                            <div className="bg-purple bg-opacity-10 p-2 rounded me-3">
+                                                <Cloud size={18} className="text-purple" />
+                                            </div>
+                                            <div>
+                                                <h6 className="mb-0 text-muted small">Diferencia</h6>
+                                                <p className="mb-0 fw-bold">
+                                                    {chartData.isPercentage 
+                                                        ? '0.00%' 
+                                                        : (() => {
+                                                            const consumoItem = consumoPrimario.find((item: any) => item.concepto === 'Total')?.kwh_m2_ano;
+                                                            const demandaItem = demandaData.find((item: any) => item.concepto === 'Total')?.kwh_m2_ano;
+                                                            const totalConsumo = parseFloat(String(consumoItem || '0'));
+                                                            const totalDemanda = parseFloat(String(demandaItem || '0'));
+                                                            return (totalConsumo - totalDemanda).toLocaleString('es-CL', { 
+                                                                minimumFractionDigits: 2, 
+                                                                maximumFractionDigits: 2 
+                                                            }) + ' kWh/m²·año';
+                                                        })()
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <div className="mt-3 text-muted small">
+                        <p className="mb-1"><strong>Nota:</strong> Este gráfico muestra la comparación entre la demanda energética (barras azules) y el consumo de energía primaria (línea roja) por categoría.</p>
+                        <p className="mb-0">Los valores se muestran en kWh por metro cuadrado por año (kWh/m²·año). Pase el cursor sobre los elementos para ver detalles adicionales.</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Sección Demanda */}
+            <div className="row">
+                <div className="col-12 col-lg-6 mb-4">
+                    <div className="card h-100 border">
+                        <div className="card-header bg-white border-bottom py-3">
+                            <div className="d-flex align-items-center">
+                                <Flame className="me-2 text-warning" size={20} />
+                                <h5 className="mb-0 fw-semibold text-dark">Demanda Energética</h5>
+                            </div>
+                        </div>
+                        <div className="card-body p-0">
+                            <div className="table-responsive">
+                                <table className="table table-borderless mb-0">
+                                    <thead>
+                                        <tr className="border-bottom border-200">
+                                            <th rowSpan={2} className="text-uppercase text-900 fw-medium fs--1 text-center align-middle py-3 ps-3">Concepto</th>
+                                            <th colSpan={3} className="text-uppercase text-900 fw-medium fs--1 text-center py-2">Demanda</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                        <tr className="border-bottom border-200">
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/m²·año]</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/año]</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">% vs Caso Base</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {demandaData?.map((item:any, index:number) => (
+                                            <tr 
+                                                key={index} 
+                                                className={`border-bottom border-200 ${item.concepto === 'Total' ? 'bg-100 fw-bold' : 'bg-white'}`}
+                                            >
+                                                <td className="text-nowrap ps-3 py-2">{item.concepto}</td>
+                                                <td className="text-end font-mono text-900 py-2">
+                                                    {parseFloat(item.kwh_m2_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                </td>
+                                                <td className="text-end font-mono text-900 py-2">
+                                                    {parseFloat(item.kwh_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                </td>
+                                                <td className="text-end font-mono fw-semi-bold text-900 py-2">
+                                                    {item.vsCasoBase}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Sección Consumo Energía Primaria */}
-                <div className="col-12 col-md-6 mb-4">
-                    <div className="card">
-                        <div className="card-header">
-                            <Droplet className="me-2" />
-                            <strong>Consumo Energía Primaria</strong>
+                <div className="col-12 col-lg-6 mb-4">
+                    <div className="card h-100 border">
+                        <div className="card-header bg-white border-bottom py-3">
+                            <div className="d-flex align-items-center">
+                                <Droplet className="me-2  text-danger" size={20} />
+                                <h5 className="mb-0 fw-semibold text-dark">Consumo Energía Primaria</h5>
+                            </div>
                         </div>
-                        <div className="card-body p-2">
-                            <table className="table table-bordered table-sm mb-0">
-                                <thead>
-                                    <tr className="table-light">
-                                        <th rowSpan={2} className="text-center">Concepto</th>
-                                        <th colSpan={3} className="text-center">
-                                            Consumo Energía Primaria
-                                        </th>
-                                    </tr>
-                                    <tr className="table-light">
-                                        <th className="text-center">[kWh/m2-año]</th>
-                                        <th className="text-center">[kWh-año]</th>
-                                        <th className="text-center">% Versus caso base</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {consumoPrimario.map((item: { concepto: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; kwh_m2_ano: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; kwh_ano: { toLocaleString: () => string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }; vsCasoBase: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }, idx: Key | null | undefined) => (
-                                        <tr key={idx}>
-                                            <td>{item.concepto}</td>
-                                            <td className="text-end">{item.kwh_m2_ano}</td>
-                                            <td className="text-end">{item.kwh_ano.toLocaleString()}</td>
-                                            <td className="text-end">{item.vsCasoBase}</td>
+                        <div className="card-body p-0">
+                            <div className="table-responsive">
+                                <table className="table table-borderless mb-0">
+                                    <thead>
+                                        <tr className="border-bottom border-200">
+                                            <th rowSpan={2} className="text-uppercase text-900 fw-medium fs--1 text-center align-middle py-3 ps-3">Concepto</th>
+                                            <th colSpan={3} className="text-uppercase text-900 fw-medium fs--1 text-center py-2">Consumo Energía Primaria</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                        <tr className="border-bottom border-200">
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/m²·año]</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/año]</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">% vs Caso Base</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {consumoPrimario.map((item: any, idx: number) => (
+                                            <tr 
+                                                key={idx} 
+                                                className={`border-bottom border-200 ${item.concepto === 'Total' ? 'bg-100 fw-bold' : 'bg-white'}`}
+                                            >
+                                                <td className="text-nowrap ps-3 py-2">{item.concepto}</td>
+                                                <td className="text-end font-mono text-900 py-2">
+                                                    {parseFloat(item.kwh_m2_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                </td>
+                                                <td className="text-end font-mono text-900 py-2">
+                                                    {parseFloat(item.kwh_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                </td>
+                                                <td className="text-end font-mono fw-semi-bold text-900 py-2">
+                                                    {item.vsCasoBase}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Sección Hrs Disconfort */}
-                <div className="col-12 col-md-6 mb-4">
-                    <div className="card">
-                        <div className="card-header">
-                            <Snowflake className="me-2" />
-                            <strong>Hrs Disconfort T° libre</strong>
+                <div className="col-12 col-lg-6 mb-4">
+                    <div className="card h-100 border">
+                        <div className="card-header bg-white border-bottom py-3">
+                            <div className="d-flex align-items-center">
+                                <Snowflake className="me-2 text-primary" size={20} />
+                                <h5 className="mb-0 fw-semibold text-dark">Horas de Disconfort Térmico</h5>
+                            </div>
                         </div>
-                        <div className="card-body p-2">
-                            <table className="table table-bordered table-sm mb-0">
-                                <thead>
-                                    <tr className="table-light">
-                                        <th className="text-center">Concepto</th>
-                                        <th className="text-center">[hrs -año]</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {hrsDisconfort.map((item: { concepto: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; hrs_ano: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; nota: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }, idx: Key | null | undefined) => (
-                                        <tr key={idx}>
-                                            <td>{item.concepto}</td>
-                                            <td className="text-end">
-                                                {item.hrs_ano} {item.nota && <small>{item.nota}</small>}
-                                            </td>
+                        <div className="card-body p-0">
+                            <div className="table-responsive">
+                                <table className="table table-borderless mb-0">
+                                    <thead>
+                                        <tr className="border-bottom border-200">
+                                            <th className="text-uppercase text-900 fw-medium fs--1 ps-3 py-3">Concepto</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-end pe-3 py-3">[horas/año]</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {hrsDisconfort.map((item: any, idx: number) => (
+                                            <tr 
+                                                key={idx} 
+                                                className={`border-bottom border-200 ${item.concepto === 'Total' ? 'bg-100 fw-bold' : 'bg-white'}`}
+                                            >
+                                                <td className="ps-3 py-2">{item.concepto}</td>
+                                                <td className="text-end pe-3 py-2">
+                                                    <div className="d-flex flex-column align-items-end">
+                                                        <span className="font-mono text-900">
+                                                            {parseFloat(item.hrs_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                        </span>
+                                                        {item.nota && <small className="text-500 font-sans-serif">{item.nota}</small>}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Sección CO2_eq */}
-                <div className="col-12 col-md-6 mb-4">
-                    <div className="card">
-                        <div className="card-header">
-                            <Cloud className="me-2" />
-                            <strong>CO₂_eq</strong>
+                {/* Sección CO2eq */}
+                <div className="col-12 col-lg-6 mb-4">
+                    <div className="card h-100 border">
+                        <div className="card-header bg-white border-bottom py-3">
+                            <div className="d-flex align-items-center">
+                                <Cloud className="me-2 text-info" size={20} />
+                                <h5 className="mb-0 fw-semibold text-dark">Emisiones de CO₂ Equivalente</h5>
+                            </div>
                         </div>
-                        <div className="card-body p-2">
-                            <table className="table table-bordered table-sm mb-0">
-                                <thead>
-                                    <tr className="table-light">
-                                        <th className="text-center">Concepto</th>
-                                        <th className="text-center">Valor</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Total</td>
-                                        <td colSpan={2} className="text-end">{co2eqData.total.toLocaleString()} {co2eqData.unidad}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Comparación caso base</td>
-                                        <td colSpan={2} className="text-end">
-                                            {co2eqData.comparacion}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div className="card-body p-0">
+                            <div className="table-responsive">
+                                <table className="table table-borderless mb-0">
+                                    <thead>
+                                        <tr className="border-bottom border-200">
+                                            <th className="text-uppercase text-900 fw-medium fs--1 ps-3 py-3">Concepto</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">Valor</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">Ahorro vs Caso Base</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr className="border-bottom border-200">
+                                            <td className="ps-3 py-2">Emisiones Totales</td>
+                                            <td className="text-center font-mono text-900 py-2">
+                                                {co2eqData.total} {co2eqData.unidad}
+                                            </td>
+                                            <td className="text-center font-mono text-900 py-2">
+                                                {co2eqData.comparacion} 
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        {/* Tabla de Recintos */}
+
+
+            {/* Tabla de Recintos */}
         <div className="row">
             <div className="col-12">
                 <div className="card">

@@ -410,10 +410,6 @@ const WorkFlowpar2viewPage: React.FC = () => {
 
   const renderMurosTable = () => {
     const columnsMuros = [
-      {
-        headerName: "Código IFC",
-        field: "code_ifc",
-      },
       { headerName: "Nombre Abreviado", field: "name_detail" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },

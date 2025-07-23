@@ -1059,10 +1059,6 @@ const WorkFlowpar2editPage: React.FC = () => {
   const renderMurosParameters = () => {
     const columnsMuros = [
       {
-        headerName: "Código IFC",
-        field: "code_ifc",
-      },
-      {
         headerName: "Nombre Abreviado",
         field: "nombreAbreviado",
         // headerClick: () => onMurosSort("name_detail"),

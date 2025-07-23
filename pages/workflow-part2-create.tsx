@@ -1400,10 +1400,6 @@ const WorkFlowpar2createPage: React.FC = () => {
   // ------------------------------------------
   const renderMurosTable = () => {
     const columnsMuros = [
-      {
-        headerName: "Código IFC",
-        field: "code_ifc",
-      },
       { headerName: "Nombre Abreviado", field: "nombreAbreviado" },
       { headerName: "Valor U (W/m²K)", field: "valorU" },
       { headerName: "Color Exterior", field: "colorExterior" },

@@ -30,6 +30,7 @@ import { useRouter } from 'next/router';
 
 import FileDropzone from '../src/components/FileDropzone';
 import { constantUrlApiEndpoint } from '../src/utils/constant-url-endpoint';
+import EnergyAnalysis from '@/components/energy/EnergyAnalysis';
 
 interface ChartDataItem {
     concepto: string;
@@ -48,6 +49,83 @@ export default function ResumenEnergia(props: any) {
     const [showPercentage, setShowPercentage] = useState<boolean>(false);
     const [chartView, setChartView] = useState<'monthly' | 'annual'>('annual');
     
+    // Calculate base case values from current data and percentages
+    const baseCaseValues = useMemo(() => {
+        if (demandaData.length === 0) return { 
+            demandaTotal_m2: 0, 
+            demandaTotal_ano: 0, 
+            consumoTotal_m2: 0, 
+            consumoTotal_ano: 0,
+            demandaItems: [],
+            consumoItems: []
+        };
+        
+        // Calculate base case values by working backwards from percentages
+        // If vsCasoBase is "X%", then current = base * (1 + X/100)
+        // So base = current / (1 + X/100)
+        let demandaBaseTotal_m2 = 0;
+        let demandaBaseTotal_ano = 0;
+        let consumoBaseTotal_m2 = 0;
+        let consumoBaseTotal_ano = 0;
+        
+        const demandaItems = demandaData.map((item: any) => {
+            if (item.concepto !== 'Total' && item.vsCasoBase !== '-') {
+                const percentage = parseFloat(item.vsCasoBase.replace('%', '')) / 100;
+                const current_m2 = parseFloat(item.kwh_m2_ano || '0');
+                const current_ano = parseFloat(item.kwh_ano || '0');
+                
+                // Calculate base case values
+                const base_m2 = current_m2 / (1 + percentage);
+                const base_ano = current_ano / (1 + percentage);
+                
+                demandaBaseTotal_m2 += base_m2;
+                demandaBaseTotal_ano += base_ano;
+                
+                return {
+                    ...item,
+                    baseCaseKwh_ano: base_ano
+                };
+            }
+            return {
+                ...item,
+                baseCaseKwh_ano: item.concepto === 'Total' ? demandaBaseTotal_ano : 0
+            };
+        });
+        
+        const consumoItems = consumoPrimario.map((item: any) => {
+            if (item.concepto !== 'Total' && item.vsCasoBase !== '-') {
+                const percentage = parseFloat(item.vsCasoBase.replace('%', '')) / 100;
+                const current_m2 = parseFloat(item.kwh_m2_ano || '0');
+                const current_ano = parseFloat(item.kwh_ano || '0');
+                
+                // Calculate base case values
+                const base_m2 = current_m2 / (1 + percentage);
+                const base_ano = current_ano / (1 + percentage);
+                
+                consumoBaseTotal_m2 += base_m2;
+                consumoBaseTotal_ano += base_ano;
+                
+                return {
+                    ...item,
+                    baseCaseKwh_ano: base_ano
+                };
+            }
+            return {
+                ...item,
+                baseCaseKwh_ano: item.concepto === 'Total' ? consumoBaseTotal_ano : 0
+            };
+        });
+        
+        return {
+            demandaTotal_m2: demandaBaseTotal_m2,
+            demandaTotal_ano: demandaBaseTotal_ano,
+            consumoTotal_m2: consumoBaseTotal_m2,
+            consumoTotal_ano: consumoBaseTotal_ano,
+            demandaItems,
+            consumoItems
+        };
+    }, [demandaData, consumoPrimario]);
+
     // Calculate chart data based on current view and percentage mode
     const chartData = useMemo(() => {
         const labels = demandaData
@@ -449,283 +527,11 @@ export default function ResumenEnergia(props: any) {
             </div>
 
             {/* Combined Energy Chart */}
-            <div className="card mb-4 border shadow-sm">
-                <div className="card-header bg-white border-bottom py-3">
-                    <div className="d-flex align-items-center justify-content-between">
-                        <div className="d-flex align-items-center">
-                            <Flame className="me-2 text-primary" size={20} />
-                            <h5 className="mb-0 fw-semibold text-dark">Análisis Comparativo de Demanda y Consumo Energético</h5>
-                        </div>
-                    </div>
-                </div>
-                <div className="card-body p-4">
-                    <div className="row align-items-center mb-3">
-                        <div className="col-md-6">
-                            <div className="d-flex align-items-center mb-2">
-                                <div className="me-3" style={{ width: '16px', height: '16px', backgroundColor: 'rgba(54, 162, 235, 0.8)' }}></div>
-                                <span className="small">Demanda Energética</span>
-                            </div>
-                            <div className="d-flex align-items-center">
-                                <div className="me-3" style={{ width: '16px', height: '2px', backgroundColor: 'rgba(255, 99, 132, 1)' }}></div>
-                                <span className="small">Consumo de Energía Primaria</span>
-                            </div>
-                        </div>
-
-                    </div>
-                    
-                    <div style={{ height: '450px', position: 'relative' }}>
-                        {demandaData.length > 0 && consumoPrimario.length > 0 && (
-                            <ChartComponent
-                                title="Demanda vs Consumo Energético"
-                                chartType="Bar"
-                                chartData={{
-                                    labels: chartData.labels,
-                                    datasets: [
-                                        {
-                                            label: 'Demanda Energética',
-                                            data: chartData.demandaValues,
-                                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                                            borderColor: 'rgba(54, 162, 235, 1)',
-                                            borderWidth: 1,
-                                            type: 'bar',
-                                            yAxisID: 'y',
-                                            order: 1,
-                                            borderRadius: 4,
-                                            barPercentage: 0.7,
-                                            categoryPercentage: 0.8
-                                        },
-                                        {
-                                            label: 'Consumo Primario',
-                                            data: chartData.consumoValues,
-                                            borderColor: 'rgba(255, 99, 132, 1)',
-                                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                                            borderWidth: 2,
-                                            type: 'line',
-                                            yAxisID: 'y1',
-                                            order: 0,
-                                            pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-                                            pointBorderColor: '#fff',
-                                            pointHoverRadius: 6,
-                                            pointHoverBorderWidth: 2,
-                                            tension: 0.3
-                                        },
-                                        {
-                                            label: 'Diferencia',
-                                            data: chartData.labels.map((_, index) => {
-                                                const demanda = chartData.demandaValues[index] || 0;
-                                                const consumo = chartData.consumoValues[index] || 0;
-                                                return consumo - demanda;
-                                            }),
-                                            backgroundColor: 'rgba(153, 102, 255, 0.6)',
-                                            borderColor: 'rgba(153, 102, 255, 1)',
-                                            borderWidth: 1,
-                                            type: 'bar',
-                                            yAxisID: 'y1',
-                                            order: 2,
-                                            borderRadius: 4,
-                                            barPercentage: 0.7,
-                                            categoryPercentage: 0.8,
-                                            hidden: true
-                                        }
-                                    ]
-                                }}
-                                options={{
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    interaction: {
-                                        mode: 'index',
-                                        intersect: false,
-                                    },
-                                    plugins: {
-                                        legend: {
-                                            display: false
-                                        },
-                                        tooltip: {
-                                            backgroundColor: 'rgba(255, 255, 255, 0.96)',
-                                            titleColor: '#1a1a1a',
-                                            bodyColor: '#333',
-                                            borderColor: 'rgba(0, 0, 0, 0.1)',
-                                            borderWidth: 1,
-                                            padding: 12,
-                                            usePointStyle: true,
-                                            callbacks: {
-                                                label: function(context: any) {
-                                                    const label = context.dataset.label || '';
-                                                    const value = context.parsed.y;
-                                                    const concept = demandaData[context.dataIndex]?.concepto || '';
-                     
-                                                    
-                                                    // For other datasets, show the value with units
-                                                    return `${label}: ${value.toLocaleString('es-CL', { 
-                                                        minimumFractionDigits: 2, 
-                                                        maximumFractionDigits: 2 
-                                                    })} ${chartData.tooltipSuffix}`;
-                                                },
-                                            }
-                                        },
-                                        datalabels: {
-                                            display: false
-                                        },
-                                        annotation: {
-                                            annotations: []
-                                        }
-                                    },
-                                    scales: {
-                                        y: {
-                                            type: 'linear' as const,
-                                            display: true,
-                                            position: 'left' as const,
-                                            title: {
-                                                display: true,
-                                                text: `Demanda [${chartData.isPercentage ? '%' : 'kWh/m²·año'}]`,
-                                                color: 'rgba(54, 162, 235, 0.9)',
-                                                font: {
-                                                    weight: 'bold'
-                                                }
-                                            },
-                                            grid: {
-                                                color: 'rgba(0, 0, 0, 0.05)',
-                                                drawBorder: false
-                                            },
-                                            ticks: {
-                                                color: 'rgba(54, 162, 235, 0.9)',
-                                                callback: function(value: number) {
-                                                    return value.toLocaleString('es-CL');
-                                                }
-                                            },
-                                            beginAtZero: true
-                                        },
-                                        y1: {
-                                            type: 'linear' as const,
-                                            display: true,
-                                            position: 'right' as const,
-                                            title: {
-                                                display: true,
-                                                text: `Consumo Primario [${chartData.isPercentage ? '%' : 'kWh/m²·año'}]`,
-                                                color: 'rgba(255, 99, 132, 0.9)',
-                                                font: {
-                                                    weight: 'bold'
-                                                }
-                                            },
-                                            grid: {
-                                                drawOnChartArea: false,
-                                                drawBorder: false
-                                            },
-                                            ticks: {
-                                                color: 'rgba(255, 99, 132, 0.9)',
-                                                callback: function(value: number) {
-                                                    return value.toLocaleString('es-CL');
-                                                }
-                                            },
-                                            beginAtZero: true
-                                        },
-                                        x: {
-                                            grid: {
-                                                display: false,
-                                                drawBorder: false
-                                            },
-                                            ticks: {
-                                                color: '#666',
-                                                maxRotation: 45,
-                                                minRotation: 45,
-                                                padding: 10
-                                            }
-                                        }
-                                    },
-                                    animation: {
-                                        duration: 1000,
-                                        easing: 'easeInOutQuart'
-                                    },
-                                    layout: {
-                                        padding: {
-                                            top: 10,
-                                            right: 20,
-                                            left: 20,
-                                            bottom: 10
-                                        }
-                                    }
-                                }}
-                            />
-                        )}
-                    </div>
-                        <div className="row g-3">
-                            <div className="col-md-4">
-                                <div className="card bg-light border-0 h-100">
-                                    <div className="card-body p-3">
-                                        <div className="d-flex align-items-center">
-                                            <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
-                                                <Flame size={18} className="text-primary" />
-                                            </div>
-                                            <div>
-                                                <h6 className="mb-0 text-muted small">Demanda Total</h6>
-                                                <p className="mb-0 fw-bold">
-                                                    {chartData.isPercentage 
-                                                        ? '100.00%' 
-                                                        : `${demandaData.find((item: any) => item.concepto === 'Total')?.kwh_m2_ano || '0.00'} kWh/m²·año`
-                                                    }
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="card bg-light border-0 h-100">
-                                    <div className="card-body p-3">
-                                        <div className="d-flex align-items-center">
-                                            <div className="bg-danger bg-opacity-10 p-2 rounded me-3">
-                                                <Droplet size={18} className="text-danger" />
-                                            </div>
-                                            <div>
-                                                <h6 className="mb-0 text-muted small">Consumo Total</h6>
-                                                <p className="mb-0 fw-bold">
-                                                    {chartData.isPercentage 
-                                                        ? '100.00%' 
-                                                        : `${consumoPrimario.find((item: any) => item.concepto === 'Total')?.kwh_m2_ano || '0.00'} kWh/m²·año`
-                                                    }
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="card bg-light border-0 h-100">
-                                    <div className="card-body p-3">
-                                        <div className="d-flex align-items-center">
-                                            <div className="bg-purple bg-opacity-10 p-2 rounded me-3">
-                                                <Cloud size={18} className="text-purple" />
-                                            </div>
-                                            <div>
-                                                <h6 className="mb-0 text-muted small">Diferencia</h6>
-                                                <p className="mb-0 fw-bold">
-                                                    {chartData.isPercentage 
-                                                        ? '0.00%' 
-                                                        : (() => {
-                                                            const consumoItem = consumoPrimario.find((item: any) => item.concepto === 'Total')?.kwh_m2_ano;
-                                                            const demandaItem = demandaData.find((item: any) => item.concepto === 'Total')?.kwh_m2_ano;
-                                                            const totalConsumo = parseFloat(String(consumoItem || '0'));
-                                                            const totalDemanda = parseFloat(String(demandaItem || '0'));
-                                                            return (totalConsumo - totalDemanda).toLocaleString('es-CL', { 
-                                                                minimumFractionDigits: 2, 
-                                                                maximumFractionDigits: 2 
-                                                            }) + ' kWh/m²·año';
-                                                        })()
-                                                    }
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <div className="mt-3 text-muted small">
-                        <p className="mb-1"><strong>Nota:</strong> Este gráfico muestra la comparación entre la demanda energética (barras azules) y el consumo de energía primaria (línea roja) por categoría.</p>
-                        <p className="mb-0">Los valores se muestran en kWh por metro cuadrado por año (kWh/m²·año). Pase el cursor sobre los elementos para ver detalles adicionales.</p>
-                    </div>
-                </div>
-            </div>
-
+            <EnergyAnalysis
+                demandaData={demandaData}
+                consumoPrimario={consumoPrimario}
+                showPercentage={showPercentage}
+            />
             {/* Sección Demanda */}
             <div className="row">
                 <div className="col-12 col-lg-6 mb-4">
@@ -742,16 +548,16 @@ export default function ResumenEnergia(props: any) {
                                     <thead>
                                         <tr className="border-bottom border-200">
                                             <th rowSpan={2} className="text-uppercase text-900 fw-medium fs--1 text-center align-middle py-3 ps-3">Concepto</th>
-                                            <th colSpan={3} className="text-uppercase text-900 fw-medium fs--1 text-center py-2">Demanda</th>
                                         </tr>
                                         <tr className="border-bottom border-200">
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/m²·año]</th>
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/año]</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">Base kWh/año</th>
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">% vs Caso Base</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {demandaData?.map((item:any, index:number) => (
+                                        {baseCaseValues.demandaItems?.map((item:any, index:number) => (
                                             <tr 
                                                 key={index} 
                                                 className={`border-bottom border-200 ${item.concepto === 'Total' ? 'bg-100 fw-bold' : 'bg-white'}`}
@@ -762,6 +568,12 @@ export default function ResumenEnergia(props: any) {
                                                 </td>
                                                 <td className="text-end font-mono text-900 py-2">
                                                     {parseFloat(item.kwh_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                </td>
+                                                <td className="text-end font-mono text-600 py-2">
+                                                    {item.concepto === 'Total' ? 
+                                                        baseCaseValues.demandaTotal_ano.toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) :
+                                                        (item.baseCaseKwh_ano || 0).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+                                                    }
                                                 </td>
                                                 <td className="text-end font-mono fw-semi-bold text-900 py-2">
                                                     {item.vsCasoBase}
@@ -790,16 +602,16 @@ export default function ResumenEnergia(props: any) {
                                     <thead>
                                         <tr className="border-bottom border-200">
                                             <th rowSpan={2} className="text-uppercase text-900 fw-medium fs--1 text-center align-middle py-3 ps-3">Concepto</th>
-                                            <th colSpan={3} className="text-uppercase text-900 fw-medium fs--1 text-center py-2">Consumo Energía Primaria</th>
                                         </tr>
                                         <tr className="border-bottom border-200">
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/m²·año]</th>
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/año]</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">Base kWh/año</th>
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">% vs Caso Base</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {consumoPrimario.map((item: any, idx: number) => (
+                                        {baseCaseValues.consumoItems?.map((item: any, idx: number) => (
                                             <tr 
                                                 key={idx} 
                                                 className={`border-bottom border-200 ${item.concepto === 'Total' ? 'bg-100 fw-bold' : 'bg-white'}`}
@@ -810,6 +622,12 @@ export default function ResumenEnergia(props: any) {
                                                 </td>
                                                 <td className="text-end font-mono text-900 py-2">
                                                     {parseFloat(item.kwh_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                </td>
+                                                <td className="text-end font-mono text-600 py-2">
+                                                    {item.concepto === 'Total' ? 
+                                                        baseCaseValues.consumoTotal_ano.toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) :
+                                                        (item.baseCaseKwh_ano || 0).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+                                                    }
                                                 </td>
                                                 <td className="text-end font-mono fw-semi-bold text-900 py-2">
                                                     {item.vsCasoBase}
@@ -851,7 +669,7 @@ export default function ResumenEnergia(props: any) {
                                                 <td className="text-end pe-3 py-2">
                                                     <div className="d-flex flex-column align-items-end">
                                                         <span className="font-mono text-900">
-                                                            {parseFloat(item.hrs_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                            {parseFloat(item.kwh_m2_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                                                         </span>
                                                         {item.nota && <small className="text-500 font-sans-serif">{item.nota}</small>}
                                                     </div>

@@ -240,43 +240,39 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         roomId
                     );
 
-                    // Create child nodes for each wall element in the group concurrently
-                    const childPromises = wallGroup.elements.map(async (element) => {
+                    for (const element of wallGroup.elements) {
                         try {
                             updateStatus({
                                 currentComponent: `Creando capa para muro: ${element.name}`
                             });
-
-                            // Get material ID from material code if available
-                            let materialId = 1; // Default material ID
+                            let materialId = 1;
                             if (element.material && element.material.toLowerCase() !== 'unknown') {
-                                    updateStatus({
-                                        currentComponent: `Buscando material: ${element.material}`
-                                    });
-                                    const materialInfo = await getMaterialByCode(element.material);
-                                    materialId = materialInfo?.id || 1;
-                                    updateStatus({
-                                        currentComponent: `Material encontrado: ${element.material} (ID: ${materialId})`
-                                    });
+                                updateStatus({
+                                    currentComponent: `Buscando material: ${element.material}`
+                                });
+                                const materialInfo = await getMaterialByCode(element.material);
+                                materialId = materialInfo?.id || 1;
+                                updateStatus({
+                                    currentComponent: `Material encontrado: ${element.material} (ID: ${materialId})`
+                                });
                             }
-                            const layerThickness = element.thickness; // Convert to cm
-                            if (masterNode)
-                                return wallBuilder.createNodeChild(
+                            const layerThickness = element.thickness;
+                            if (masterNode) {
+                                await wallBuilder.createNodeChild(
                                     masterNode,
                                     'Muro',
                                     element.name,
                                     materialId,
                                     layerThickness
                                 );
+                            }
                         } catch (error: any) {
                             errors.push({
                                 message: ` ${error?.response?.data?.detail || 'Unknown error'}`,
                                 context: `Wall group: ${wallGroup.code}, Element: ${element.name}`
                             });
-                            return null;
                         }
-                    });
-                    await Promise.allSettled(childPromises);
+                    }
                     const totalArea = Math.max(...wallGroup.elements.map(element => element.area || 0));
                     updateStatus({ currentComponent: `Asociando muro al recinto: ${wallGroup.code}` });
 
@@ -417,8 +413,9 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 const location = floorGroup.elements[0]?.location
     ? floorGroup.elements[0].location[0].toUpperCase() + floorGroup.elements[0].location.slice(1).toLowerCase()
     : 'Exterior';
-                floorPromises.push(
-                    post(`/floor-enclosures-create/${roomId}`, {
+                
+                try {
+                    await post(`/floor-enclosures-create/${roomId}`, {
                         floor_id: masterNode.id,
                         characteristic: location,
                         area: floorGroup.elements[0]?.area || 0,
@@ -426,20 +423,14 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         is_ventilated: floorGroup.elements[0]?.ventilated ? 'Ventilado' : 'No ventilado',
                         calculations: masterNode.calculations || {},
                         parameter: floorGroup.elements[0]?.perimeter || 0,
-                    })
-                );
-            }
-
-            const results = await Promise.allSettled(floorPromises);
-
-            results.forEach((result) => {
-                if (result.status === 'rejected') {
+                    });
+                } catch (error: any) {
                     errors.push({
-                        message: `Error completing floor creation: ${result.reason?.message || 'Unknown error'}`,
-                        context: `Floor creation failed`
+                        message: `Error associating floor with room: ${error?.response?.data?.detail || 'Unknown error'}`,
+                        context: `Floor group: ${floorGroup.code}`
                     });
                 }
-            });
+            }
 
             setCreationStatus(prev => ({
                 ...prev,
@@ -529,8 +520,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
                                 materialId = materialsCache[element.material].id;
                             }
                         }
-
-                        // Then create the layer for this ceiling
                         if (ceilingResponse)
                             await post(
                                 `/user/detail-create/${ceilingResponse.id}`,
@@ -558,14 +547,20 @@ export const useProjectIfcBuilder = (projectId: string) => {
                     }
                 }
 
-                ceilingPromises.push(post(`/roof-enclosures-create/${roomId}`, {
-                    roof_id: ceilingResponse.id,
-                    characteristic: 'Exterior', // Default value
-                    area: ceilingGroup.elements[0].area || 0
-                }));
+                try {
+                    await post(`/roof-enclosures-create/${roomId}`, {
+                        roof_id: ceilingResponse.id,
+                        characteristic: 'Exterior', // Default value
+                        area: ceilingGroup.elements[0].area || 0
+                    });
+                } catch (error: any) {
+                    errors.push({
+                        message: `Error associating ceiling with room: ${error?.response?.data?.detail || 'Unknown error'}`,
+                        context: `Ceiling group: ${ceilingGroup.code}`
+                    });
+                }
             }
 
-            await Promise.allSettled(ceilingPromises);
             updateStatus({ currentComponent: 'Creación de techos completada' });
             return { success: errors.length === 0, errors };
         } catch (error: any) {

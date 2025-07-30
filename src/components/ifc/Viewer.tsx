@@ -231,7 +231,7 @@ export default function IFCViewerComponent() {
                 position: floor.position || { x: 0, y: 0, z: 0 },
                 vectors: floor.vectors || null,
                 ventilated: getPropValue(floor, IFC_PROP.VENTILADO)?.toLowerCase().includes('no') ? false : true,
-                perimeter: Number(getPropValue(floor, IFC_PROP.PERIMETRO)) || 0,
+                perimeter: Number(getPropValue(floor, IFC_PROP.PERIMETRO)) || Number(getPropValue(floor, IFC_PROP.PERIMETRO2)) || 0,
                 location: getPropValue(floor, IFC_PROP.ESPACIO_CONTIGUO) || IFC_PROP.UNKNOWN,
                 aislVertLambda: Number(getPropValue(floor, IFC_PROP.AISL_VERT_LAMBDA)) || 2,
                 aislHorizD: Number(getPropValue(floor, IFC_PROP.AISL_HORIZ_D)) || 3,

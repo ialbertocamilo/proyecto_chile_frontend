@@ -69,7 +69,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   }, [isMobile, isNavOpen, onNavbarToggle]);
 
   useEffect(() => {
-    // Si estamos en /workflow-part1-create o /workflow-part2-create, abrimos el submenú
     if (
       router.pathname === "/workflow-part1-create" ||
       router.pathname === "/workflow-part2-create"
@@ -81,9 +80,9 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   }, [router.pathname]);
 
   const handleLogout = async () => {
-    if (!isClient) return; // Asegurar que estamos en el cliente
+    if (!isClient) return;
 
-    const token = localStorage.getItem("token"); // Obtener el token del usuario
+    const token = localStorage.getItem("token");
     if (!token) {
       router.push("/login");
       return;
@@ -93,8 +92,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
       const response = await fetch(`${constantUrlApiEndpoint}/logout`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${token}`, // Token en el header para autenticar al usuario
-          "token": token, // Enviar el token a revocar (según la definición del endpoint)
+          "Authorization": `Bearer ${token}`,
+          "token": token,
           "Content-Type": "application/json"
         }
       });
@@ -108,12 +107,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
       console.error("Error de red:", error);
     }
 
-    // Limpiar el almacenamiento local y redirigir al login
     localStorage.clear();
     router.push("/login");
   };
 
-  // Alternar la visibilidad de la navbar
   const handleNewFunction = () => {
     setIsNavOpen((prev) => {
       const newState = !prev;
@@ -124,7 +121,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     });
   };
 
-  // Estilo base para cada link
   const navLinkStyle: React.CSSProperties = {
     cursor: "pointer",
     fontFamily: "var(--font-family-base)",
@@ -147,7 +143,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     opacity: 0.9,
   };
 
-  // Check if a nav item is active based on the current path
   const isActive = (path: string): boolean => {
     return router.pathname === path;
   };
@@ -166,6 +161,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     borderRadius: "4px",
     transition: "background-color 0.3s ease",
     margin: '2px 0',
+    width: '100%', // Añadido para asegurar que ocupe todo el ancho
   });
   
   const submenuItemStyle = (isActive: boolean): React.CSSProperties => ({
@@ -173,18 +169,21 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     borderRadius: "4px",
     transition: "background-color 0.3s ease",
     margin: '2px 0',
+    width: '100%', // Añadido para asegurar que ocupe todo el ancho
   });
 
   const createProjectNavItemStyle: React.CSSProperties = {
     backgroundColor: isCreateProjectActive() ? "#FEBE1B" : "transparent",
     borderRadius: "4px",
     transition: "background-color 0.3s ease",
+    width: '100%', // Añadido para asegurar que ocupe todo el ancho
   };
 
   const developmentNavItemStyle: React.CSSProperties = {
     backgroundColor: isDevelopmentProjectActive() ? "#FEBE1B" : "transparent",
     borderRadius: "4px",
     transition: "background-color 0.3s ease",
+    width: '100%', // Añadido para asegurar que ocupe todo el ancho
   };
 
   const iconStyle = (): React.CSSProperties => ({
@@ -201,6 +200,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     alignItems: "center",
     justifyContent: "center",
     boxSizing: "border-box",
+    flexShrink: 0, // Añadido para evitar que el icono se reduzca
   });
 
   const logoContainerStyle: React.CSSProperties = {
@@ -220,7 +220,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
   };
 
   const navbarWidth = isNavOpen
-    ? (isMobile ? "11.5em" : "18em")
+    ? (isMobile ? "12.5em" : "18em")
     : (isMobile ? "6em" : "8.5em");
 
   const desktopLogoWidth = 97;
@@ -232,7 +232,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
     <>
       <GoogleIcons />
 
-      {/* Botón flotante en mobile cuando la navbar está cerrada */}
       {isMobile && !isNavOpen && (
         <button
           onClick={(e) => {
@@ -262,7 +261,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
         </button>
       )}
 
-      {/* Navbar en desktop o en mobile cuando está abierta */}
       {(!isMobile || (isMobile && isNavOpen)) && (
         <nav
           ref={navRef}
@@ -280,10 +278,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
             flexDirection: "column",
             justifyContent: "space-between",
             transition: "all 0.3s ease",
-            boxShadow: "2px 0 10px rgba(0, 0, 0, 0.1)"
+            boxShadow: "2px 0 10px rgba(0, 0, 0, 0.1)",
+            overflow: "hidden" // Añadido para evitar desbordamiento
           }}
         >
-          {/* Logo */}
           <div style={logoContainerStyle}>
             <Image
               src={isNavOpen ? "/assets/images/ceela.png" : "/assets/images/logo-min.png"}
@@ -292,7 +290,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
               height={isNavOpen ? (isMobile ? mobileLogoHeight : desktopLogoHeight) : (isMobile ? 60 : 75)}
               style={{ borderRadius: "0", zIndex: 1100 }}
             />
-            {/* Botón para alternar la navbar */}
             {(!isMobile || (isMobile && isNavOpen)) && (
               <div
                 className="navbar-toggle-inside"
@@ -325,11 +322,187 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
               fontFamily: "var(--font-family-base)",
               display: "flex",
               flexDirection: "column",
-              height: "100%"
+              height: "100%",
+              width: '100%', // Añadido para asegurar que ocupe todo el ancho
+              overflowY: 'auto', // Añadido para scroll si es necesario
             }}
           >
-            <ul className="nav flex-column">
+            <ul className="nav flex-column" style={{ width: '100%' }}>
               {roleId === "1" ? (
+                <>
+                  {/* Sección General */}
+                  <div className="nav-section" style={{ width: '100%' }}>
+                    <div
+                      style={{
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '0 20px',
+                        marginBottom: '10px',
+                        width: '100%',
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#fff",
+                          fontSize: "0.8rem",
+                          opacity: 0.7
+                        }}
+                      >
+                        General
+                      </span>
+                    </div>
+                    <div style={{ display: 'block', width: '100%' }}>
+                      <li 
+                        className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}
+                        style={navItemStyle('/dashboard')}
+                      >
+                        <div
+                          className="nav-link text-white"
+                          style={{
+                            ...navLinkStyle,
+                            flexDirection: isNavOpen ? "row" : "column",
+                            justifyContent: isNavOpen ? "flex-start" : "center",
+                            padding: isNavOpen ? "10px 20px" : "10px 5px",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            router.push("/dashboard");
+                          }}
+                        >
+                          <span
+                            style={iconStyle()}
+                            className="material-icons"
+                          >
+                            dashboard
+                          </span>
+                          {isNavOpen && (
+                            <span style={{ marginLeft: "10px" }}>
+                              1. Dashboard
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                      <li 
+                        className={`nav-item ${isActive('/project-status') ? 'active' : ''}`}
+                        style={navItemStyle('/project-status')}
+                      >
+                        <div
+                          className="nav-link text-white"
+                          style={{
+                            ...navLinkStyle,
+                            flexDirection: isNavOpen ? "row" : "column",
+                            justifyContent: isNavOpen ? "flex-start" : "center",
+                            padding: isNavOpen ? "10px 20px" : "10px 5px",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            router.push("/project-status");
+                          }}
+                        >
+                          <span
+                            style={iconStyle()}
+                            className="material-icons"
+                          >
+                            folder
+                          </span>
+                          {isNavOpen && (
+                            <span style={{ marginLeft: "10px" }}>
+                              2. Proyectos
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                    </div>
+                  </div>
+
+                  {/* Sección Configuración */}
+                  <div className="nav-section" style={{ marginTop: "20px", width: '100%' }}>
+                    <div
+                      style={{
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '0 10px',
+                        marginBottom: '10px',
+                        width: '100%',
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#fff",
+                          fontSize: "0.9rem",
+                          opacity: 0.7,
+                        }}
+                      >
+                        Configuración
+                      </span>
+                    </div>
+                    <div style={{ display: 'block', width: '100%' }}>
+                      <li 
+                        className={`nav-item ${isActive('/user-management') ? 'active' : ''}`}
+                        style={navItemStyle('/user-management')}
+                      >
+                        <div
+                          className="nav-link text-white"
+                          style={{
+                            ...navLinkStyle,
+                            flexDirection: isNavOpen ? "row" : "column",
+                            justifyContent: isNavOpen ? "flex-start" : "center",
+                            padding: isNavOpen ? "10px 20px" : "10px 5px",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            router.push("/user-management");
+                          }}
+                        >
+                          <span
+                            style={iconStyle()}
+                            className="material-icons"
+                          >
+                            people
+                          </span>
+                          {isNavOpen && (
+                            <span style={{ marginLeft: "10px" }}>
+                              3. Usuarios
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                      <li 
+                        className={`nav-item ${isActive('/administration') ? 'active' : ''}`}
+                        style={navItemStyle('/administration')}
+                      >
+                        <div
+                          className="nav-link text-white"
+                          style={{
+                            ...navLinkStyle,
+                            flexDirection: isNavOpen ? "row" : "column",
+                            justifyContent: isNavOpen ? "flex-start" : "center",
+                            padding: isNavOpen ? "10px 20px" : "10px 5px",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            router.push("/administration");
+                          }}
+                        >
+                          <span
+                            style={iconStyle()}
+                            className="material-icons"
+                          >
+                            settings
+                          </span>
+                          {isNavOpen && (
+                            <span style={{ marginLeft: "10px" }}>
+                              4. Parámetros
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                    </div>
+                  </div>
+                </>
+              ) : roleId === "2" && (
                 <>
                   {/* Sección General */}
                   <div className="nav-section">
@@ -345,7 +518,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       <span
                         style={{
                           color: "#fff",
-                          fontSize: "1rem",
+                          fontSize: "0.8rem",
                           opacity: 0.7
                         }}
                       >
@@ -354,299 +527,129 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                     </div>
                     <div style={{ display: 'block' }}>
                       <li 
-                        className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}
-                        style={navItemStyle('/dashboard')}
+                        className={`nav-item ${isActive('/data-entry') ? 'active' : ''}`}
                       >
-                        <Link
-                          href="/dashboard"
-                          className="nav-link text-white"
-                          style={{
-                            ...navLinkStyle,
-                            flexDirection: isNavOpen ? "row" : "column",
-                            justifyContent: isNavOpen ? "flex-start" : "center",
-                            padding: isNavOpen ? "10px 20px" : "10px 5px"
-                          }}
-                        >
-                          <span
-                            style={iconStyle()}
-                            className="material-icons"
-                          >
-                            dashboard
-                          </span>
-                          <span
-                            style={{
-                              marginLeft: isNavOpen ? "10px" : "0",
-                              display: !isMobile && !isNavOpen ? "none" : "block"
-                            }}
-                          >
-                            1. Dashboard
-                          </span>
-                        </Link>
-                      </li>
-                      <li 
-                        className={`nav-item ${isActive('/project-status') ? 'active' : ''}`}
-                        style={navItemStyle('/project-status')}
-                      >
-                        <Link
-                          href="/project-status"
-                          className="nav-link text-white"
-                          style={{
-                            ...navLinkStyle,
-                            flexDirection: isNavOpen ? "row" : "column",
-                            justifyContent: isNavOpen ? "flex-start" : "center",
-                            padding: isNavOpen ? "10px 20px" : "10px 5px"
-                          }}
-                        >
-                          <span
-                            style={iconStyle()}
-                            className="material-icons"
-                          >
-                            folder
-                          </span>
-                          <span
-                            style={{
-                              marginLeft: isNavOpen ? "10px" : "0",
-                              display: !isMobile && !isNavOpen ? "none" : "block"
-                            }}
-                          >
-                            2. Proyectos
-                          </span>
-                        </Link>
-                      </li>
-                    </div>
-                  </div>
-
-                  {/* Sección Configuración */}
-                  <div className="nav-section" style={{ marginTop: "20px" }}>
-                    <div
-                      style={{
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '0 20px',
-                        marginBottom: '10px'
-                      }}
-                    >
-                      <span
-                        style={{
-                          color: "#fff",
-                          fontSize: "0.9rem",
-                          opacity: 0.7
-                        }}
-                      >
-                        Configuración
-                      </span>
-                    </div>
-                    <div style={{ display: 'block' }}>
-                      <li 
-                        className={`nav-item ${isActive('/user-management') ? 'active' : ''}`}
-                        style={navItemStyle('/user-management')}
-                      >
-                        <Link
-                          href="/user-management"
-                          className="nav-link text-white"
-                          style={{
-                            ...navLinkStyle,
-                            flexDirection: isNavOpen ? "row" : "column",
-                            justifyContent: isNavOpen ? "flex-start" : "center",
-                            padding: isNavOpen ? "10px 20px" : "10px 5px"
-                          }}
-                        >
-                          <span
-                            style={iconStyle()}
-                            className="material-icons"
-                          >
-                            people
-                          </span>
-                          <span
-                            style={{
-                              marginLeft: isNavOpen ? "10px" : "0",
-                              display: !isMobile && !isNavOpen ? "none" : "block"
-                            }}
-                          >
-                            3. Usuarios
-                          </span>
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link
-                          href="/administration"
-                          className="nav-link text-white"
-                          style={{
-                            ...navLinkStyle,
-                            flexDirection: isNavOpen ? "row" : "column",
-                            justifyContent: isNavOpen ? "flex-start" : "center",
-                            padding: isNavOpen ? "10px 20px" : "10px 5px"
-                          }}
-                        >
-                          <span
-                            style={iconStyle()}
-                            className="material-icons"
-                          >
-                            settings
-                          </span>
-                          <span
-                            style={{
-                              marginLeft: isNavOpen ? "10px" : "0",
-                              display: !isMobile && !isNavOpen ? "none" : "block"
-                            }}
-                          >
-                            4. Parámetros
-                          </span>
-                        </Link>
-                      </li>
-                    </div>
-                  </div>
-                </>
-              ) : roleId === "2" && (
-                <>
-                {/* Sección General */}
-                <div className="nav-section">
-                  <div
-                    style={{
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '0 20px',
-                      marginBottom: '10px'
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "#fff",
-                        fontSize: "0.8rem",
-                        opacity: 0.7
-                      }}
-                    >
-                      General
-                    </span>
-                  </div>
-                  <div style={{ display: 'block' }}>
-                    {/* Ingreso de Datos de entrada con submenú */}
-                    <li 
-                      className={`nav-item ${isActive('/data-entry') ? 'active' : ''}`}
-                    >
-                      <div
-                        className="nav-link text-white"
-                        style={{
-                          ...navLinkStyle,
-                          flexDirection: isNavOpen ? "row" : "column",
-                          justifyContent: isNavOpen ? "flex-start" : "center",
-                          padding: isNavOpen ? "10px 20px" : "10px 5px",
-                          cursor: "pointer",
-                          backgroundColor: isActive('/data-entry') ? "#FEBE1B" : "transparent",
-                        }}
-                        onClick={() => {
-                          router.push("/data-entry?step=3");
-                          setIsDataEntrySubmenuOpen((prev) => !prev);
-                        }}
-                      >
-                        <span style={iconStyle()} className="material-icons">
-                          input
-                        </span>
-                        <span
-                          style={{
-                            marginLeft: isNavOpen ? "10px" : "0",
-                            display: !isMobile && !isNavOpen ? "none" : "block"
-                          }}
-                        >
-                          1. Ingreso de Datos de entrada
-                        </span>
-                        {isNavOpen && (
-                          <span
-                            className="material-icons"
-                            style={{
-                              marginLeft: "auto",
-                              transform: isDataEntrySubmenuOpen ? "rotate(180deg)" : "rotate(0deg)",
-                              transition: "transform 0.3s ease",
-                            }}
-                          >
-                            expand_more
-                          </span>
-                        )}
-                      </div>
-                      {isNavOpen && (
                         <div
+                          className="nav-link text-white"
                           style={{
-                            maxHeight: isDataEntrySubmenuOpen ? "200px" : "0px",
-                            opacity: isDataEntrySubmenuOpen ? 1 : 0,
-                            overflow: "hidden",
-                            transition: "all 0.3s ease",
+                            ...navLinkStyle,
+                            flexDirection: isNavOpen ? "row" : "column",
+                            justifyContent: isNavOpen ? "flex-start" : "center",
+                            padding: isNavOpen ? "10px 20px" : "10px 5px",
+                            cursor: "pointer",
+                            backgroundColor: isActive('/data-entry') ? "#FEBE1B" : "transparent",
+                          }}
+                          onClick={() => {
+                            router.push("/data-entry?step=3");
+                            setIsDataEntrySubmenuOpen((prev) => !prev);
                           }}
                         >
-                          <ul className="nav flex-column" style={{ paddingLeft: "20px" }}>
-                            <li 
-                              className={`nav-item ${router.pathname === '/data-entry' && router.query.step === '3' ? 'active' : ''}`}
-                              style={submenuItemStyle(router.pathname === '/data-entry' && router.query.step === '3')}
+                          <span style={iconStyle()} className="material-icons">
+                            input
+                          </span>
+                          <span
+                            style={{
+                              marginLeft: isNavOpen ? "10px" : "0",
+                              display: !isMobile && !isNavOpen ? "none" : "block"
+                            }}
+                          >
+                            1. Ingreso de Datos de entrada
+                          </span>
+                          {isNavOpen && (
+                            <span
+                              className="material-icons"
+                              style={{
+                                marginLeft: "auto",
+                                transform: isDataEntrySubmenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                                transition: "transform 0.3s ease",
+                              }}
                             >
-                              <Link
-                                href="/data-entry?step=3"
-                                className="nav-link text-white"
-                                style={{
-                                  ...navLinkStyle,
-                                  flexDirection: "row",
-                                  justifyContent: "flex-start",
-                                  padding: "10px 20px",
-                                }}
-                              >
-                                <span style={iconStyle()} className="material-icons">
-                                  imagesearch_roller
-                                </span>
-                                <span style={{ marginLeft: "10px", display: "block" }}>
-                                  Lista de materiales
-                                </span>
-                              </Link>
-                            </li>
-                            <li 
-                              className={`nav-item ${router.pathname === '/data-entry' && router.query.step === '5' ? 'active' : ''}`}
-                              style={submenuItemStyle(router.pathname === '/data-entry' && router.query.step === '5')}
-                            >
-                              <Link
-                                href="/data-entry?step=5"
-                                className="nav-link text-white"
-                                style={{
-                                  ...navLinkStyle,
-                                  flexDirection: "row",
-                                  justifyContent: "flex-start",
-                                  padding: "10px 20px",
-                                }}
-                              >
-                                <span style={iconStyle()} className="material-icons">
-                                  home
-                                </span>
-                                <span style={{ marginLeft: "10px", display: "block" }}>
-                                  Ventanas y Puertas
-                                </span>
-                              </Link>
-                            </li>
-                            <li 
-                              className={`nav-item ${router.pathname === '/data-entry' && router.query.step === '6' ? 'active' : ''}`}
-                              style={submenuItemStyle(router.pathname === '/data-entry' && router.query.step === '6')}
-                            >
-                              <Link
-                                href="/data-entry?step=6"
-                                className="nav-link text-white"
-                                style={{
-                                  ...navLinkStyle,
-                                  flexDirection: "row",
-                                  justifyContent: "flex-start",
-                                  padding: "10px 20px",
-                                }}
-                              >
-                                <span style={iconStyle()} className="material-icons">
-                                  deck
-                                </span>
-                                <span style={{ marginLeft: "10px", display: "block" }}>
-                                  Perfil de uso
-                                </span>
-                              </Link>
-                            </li>
-                          </ul>
+                              expand_more
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </li>
+                        {isNavOpen && (
+                          <div
+                            style={{
+                              maxHeight: isDataEntrySubmenuOpen ? "200px" : "0px",
+                              opacity: isDataEntrySubmenuOpen ? 1 : 0,
+                              overflow: "hidden",
+                              transition: "all 0.3s ease",
+                            }}
+                          >
+                            <ul className="nav flex-column" style={{ paddingLeft: "20px" }}>
+                              <li 
+                                className={`nav-item ${router.pathname === '/data-entry' && router.query.step === '3' ? 'active' : ''}`}
+                                style={submenuItemStyle(router.pathname === '/data-entry' && router.query.step === '3')}
+                              >
+                                <Link
+                                  href="/data-entry?step=3"
+                                  className="nav-link text-white"
+                                  style={{
+                                    ...navLinkStyle,
+                                    flexDirection: "row",
+                                    justifyContent: "flex-start",
+                                    padding: "10px 20px",
+                                  }}
+                                >
+                                  <span style={iconStyle()} className="material-icons">
+                                    imagesearch_roller
+                                  </span>
+                                  <span style={{ marginLeft: "10px", display: "block" }}>
+                                    Lista de materiales
+                                  </span>
+                                </Link>
+                              </li>
+                              <li 
+                                className={`nav-item ${router.pathname === '/data-entry' && router.query.step === '5' ? 'active' : ''}`}
+                                style={submenuItemStyle(router.pathname === '/data-entry' && router.query.step === '5')}
+                              >
+                                <Link
+                                  href="/data-entry?step=5"
+                                  className="nav-link text-white"
+                                  style={{
+                                    ...navLinkStyle,
+                                    flexDirection: "row",
+                                    justifyContent: "flex-start",
+                                    padding: "10px 20px",
+                                  }}
+                                >
+                                  <span style={iconStyle()} className="material-icons">
+                                    home
+                                  </span>
+                                  <span style={{ marginLeft: "10px", display: "block" }}>
+                                    Ventanas y Puertas
+                                  </span>
+                                </Link>
+                              </li>
+                              <li 
+                                className={`nav-item ${router.pathname === '/data-entry' && router.query.step === '6' ? 'active' : ''}`}
+                                style={submenuItemStyle(router.pathname === '/data-entry' && router.query.step === '6')}
+                              >
+                                <Link
+                                  href="/data-entry?step=6"
+                                  className="nav-link text-white"
+                                  style={{
+                                    ...navLinkStyle,
+                                    flexDirection: "row",
+                                    justifyContent: "flex-start",
+                                    padding: "10px 20px",
+                                  }}
+                                >
+                                  <span style={iconStyle()} className="material-icons">
+                                    deck
+                                  </span>
+                                  <span style={{ marginLeft: "10px", display: "block" }}>
+                                    Perfil de uso
+                                  </span>
+                                </Link>
+                              </li>
+                            </ul>
+                          </div>
+                        )}
+                      </li>
+                    </div>
                   </div>
-                </div>
                   {/* Sección Proyecto */}
                   <div className="nav-section" style={{ marginTop: "20px" }}>
                     <div
@@ -669,7 +672,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                       </span>
                     </div>
                     <div style={{ display: 'block' }}>
-                      {/* Listado */}
                       <li 
                         className={`nav-item ${isActive('/project-list') ? 'active' : ''}`}
                         style={navItemStyle('/project-list')}
@@ -701,7 +703,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
                         </Link>
                       </li>
 
-                      {/* Crear Proyecto */}
                       <li 
                         className={`nav-item ${isCreateProjectActive() ? 'active' : ''}`}
                         style={createProjectNavItemStyle}
@@ -738,7 +739,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavbarToggle }) => {
               )}
             </ul>
 
-            <ul className="nav flex-column" style={{ marginTop: "auto" }}>
+            <ul className="nav flex-column" style={{ marginTop: "auto", width: '100%' }}>
               <li 
                 className={`nav-item ${isActive('/logout') ? 'active' : ''}`}
                 style={navItemStyle('/logout')}

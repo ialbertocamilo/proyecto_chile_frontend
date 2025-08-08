@@ -830,7 +830,6 @@ const RecintoView: React.FC = () => {
     fetchDoorData();
   }, [token, enclosure_id]);
 
-  // NUEVO useEffect para cargar la tabla de obstrucciones (versión simplificada)
   useEffect(() => {
     const enclosureId = localStorage.getItem("enclosure_id");
     if (!token || !enclosureId) return;

@@ -1,6 +1,7 @@
 import ClimateFileUploader from "@/components/ClimateFileUploader";
 import ActionButtons from "@/components/common/ActionButtons";
 import ConstructiveDetailsComponent from "@/components/ConstructiveDetailsComponent";
+import EmissionFactorsManager from "@/components/EmissionFactorsManager";
 import { notify } from "@/utils/notify";
 import React, { useEffect, useState } from "react";
 import { AdminSidebar } from "../src/components/administration/AdminSidebar";
@@ -743,6 +744,7 @@ const AdministrationPage: React.FC = () => {
     { stepNumber: 5, iconName: "home", title: "Ventanas y Puertas" },
     { stepNumber: 6, iconName: "deck", title: "Perfil de Uso" },
     { stepNumber: 7, iconName: "cloud_upload", title: "Archivo clima" },
+    { stepNumber: 8, iconName: "calculate", title: "Factores de emisión" },
   ];
 
   return (
@@ -870,6 +872,13 @@ const AdministrationPage: React.FC = () => {
             {step === 7 && (
               <div className="px-3">
                 <ClimateFileUploader />
+              </div>
+            )}
+
+            {/* Step 8: Factores de emisión */}
+            {step === 8 && (
+              <div className="px-3">
+                <EmissionFactorsManager />
               </div>
             )}
           </div>

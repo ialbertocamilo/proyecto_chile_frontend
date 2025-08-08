@@ -46,7 +46,7 @@ export async function validateProject(
         const token = localStorage.getItem("token");
         if (projectId && projectId !='null'){
         const response = await axios.get<ProjectValidationResponse>(
-            `${constantUrlApiEndpoint}/validate-requirements/${projectId}`,
+            `${constantUrlApiEndpoint}/validate-requirements/${projectId}?force_data=false`,
             {
                 params: {
                     check_climate_file: checkClimateFile

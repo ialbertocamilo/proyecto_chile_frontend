@@ -9,18 +9,20 @@ interface SaveButtonProps {
     color?: 'inherit' | 'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning';
     tooltip?: string;
     className?: string;
+    text?: string;
 }
 
 const SaveButton: React.FC<SaveButtonProps> = ({
     onClick,
     disabled = false,
     className = '',
-    tooltip = 'Guardar'
+    tooltip = 'Guardar',
+    text = 'Guardar'
 }) => {
     return <IconButton
         onClick={onClick}
         icon={SaveIcon}
-        text='Continuar'
+        text={text}
         disabled={disabled}
         className={className}
         tooltip={tooltip}

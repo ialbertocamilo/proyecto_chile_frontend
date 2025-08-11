@@ -83,12 +83,14 @@ export default function ResumenEnergia(props: any) {
                 
                 return {
                     ...item,
-                    baseCaseKwh_ano: base_ano
+                    baseCaseKwh_ano: base_ano,
+                    'Base kWh/m²·año': base_m2
                 };
             }
             return {
                 ...item,
-                baseCaseKwh_ano: item.concepto === 'Total' ? demandaBaseTotal_ano : 0
+                baseCaseKwh_ano: item.concepto === 'Total' ? demandaBaseTotal_ano : 0,
+                'Base kWh/m²·año': item.concepto === 'Total' ? demandaBaseTotal_m2 : 0
             };
         });
         
@@ -107,12 +109,14 @@ export default function ResumenEnergia(props: any) {
                 
                 return {
                     ...item,
-                    baseCaseKwh_ano: base_ano
+                    baseCaseKwh_ano: base_ano,
+                    'Base kWh/m²·año': base_m2
                 };
             }
             return {
                 ...item,
-                baseCaseKwh_ano: item.concepto === 'Total' ? consumoBaseTotal_ano : 0
+                baseCaseKwh_ano: item.concepto === 'Total' ? consumoBaseTotal_ano : 0,
+                'Base kWh/m²·año': item.concepto === 'Total' ? consumoBaseTotal_m2 : 0
             };
         });
         
@@ -374,7 +378,6 @@ export default function ResumenEnergia(props: any) {
                         if (demandaData.length === 0) return;
                         setLoadingPdf(true);
                         try {
-                            // Crear un nuevo documento PDF
                             const doc = new jsPDF();
                             const pageWidth = doc.internal.pageSize.getWidth();
                             const margin = 15;
@@ -384,12 +387,9 @@ export default function ResumenEnergia(props: any) {
                             doc.setFontSize(18);
                             doc.text('Reporte de Análisis Energético', pageWidth / 2, yPos, { align: 'center' });
                             yPos += 15;
-                            
-                            // Fecha de generación
                             doc.setFontSize(10);
                             doc.text(`Generado el: ${new Date().toLocaleDateString()}`, pageWidth - margin, 10, { align: 'right' });
                             
-                            // Función auxiliar para agregar tablas
                             const addTable = (title: string, headers: string[][], data: any[], columns: string[]) => {
                                 if (yPos > 250) {
                                     doc.addPage();
@@ -399,8 +399,6 @@ export default function ResumenEnergia(props: any) {
                                 doc.setFontSize(12);
                                 doc.text(title, margin, yPos);
                                 yPos += 8;
-                                
-                                // Add table using autoTable
                                 autoTable(doc, {
                                     startY: yPos,
                                     head: headers,
@@ -419,7 +417,6 @@ export default function ResumenEnergia(props: any) {
                                 yPos = (doc as any).lastAutoTable.finalY + 10;
                             };
                             
-                            // Tabla de Demanda
                             addTable(
                                 'Demanda Energética',
                                 [
@@ -429,7 +426,6 @@ export default function ResumenEnergia(props: any) {
                                 ['concepto', 'kwh_m2_ano', 'kwh_ano', 'vsCasoBase']
                             );
                             
-                            // Tabla de Consumo Primario
                             addTable(
                                 'Consumo de Energía Primaria',
                                 [
@@ -474,62 +470,13 @@ export default function ResumenEnergia(props: any) {
                     )}
                     Descargar Reporte PDF
                 </button>
-                
-                {/* <div className="form-check form-switch d-flex align-items-center" style={{marginLeft: 8}}>
-                    <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="useAttachedData"
-                        checked={useAttachedData}
-                        onChange={() => setUseAttachedData(v => !v)}
-                        style={{cursor: 'pointer'}}
-                    />
-                    <label className="form-check-label ms-2" htmlFor="useAttachedData" style={{cursor: 'pointer'}}>
-                        Usar datos adjuntos
-                    </label>
-                </div> */}
             </div>
 
-            {/* Botón Descargar archivos adjuntos */}
-            {/* {projectId && (
-                <button
-                    type="button"
-                    className="btn btn-outline-primary me-2"
-                    style={{fontWeight: 'bold'}}
-                    onClick={async () => {
-                        setLoadingDownload(true);
-                        try {
-                            const res = await fetch(`/api/attachments/${projectId}/download`);
-                            if (!res.ok) throw new Error('Error al descargar archivos adjuntos');
-                            const blob = await res.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `${projectId}_files.zip`;
-                            document.body.appendChild(a);
-                            a.click();
-                            a.remove();
-                            window.URL.revokeObjectURL(url);
-                        } catch (err: any) {
-                            notify(err.message || 'Error inesperado al descargar', 'error');
-                        } finally {
-                            setLoadingDownload(false);
-                        }
-                    }}
-                >
-                    {loadingDownload ? (
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    ) : (
-                        <Cloud size={18} className="me-2" />
-                    )}
-                    Descargar archivos procesados
-                </button>
-            </div>
-
-            {/* Combined Energy Chart */}
             <EnergyAnalysis
                 demandaData={demandaData}
                 consumoPrimario={consumoPrimario}
+                demandaDataBase={baseCaseValues.demandaItems}
+                consumoPrimarioBase={baseCaseValues.consumoItems}
                 showPercentage={showPercentage}
             />
             {/* Sección Demanda */}
@@ -552,6 +499,7 @@ export default function ResumenEnergia(props: any) {
                                         <tr className="border-bottom border-200">
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/m²·año]</th>
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/año]</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">Base kWh/m²·año</th>
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">Base kWh/año</th>
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">% vs Caso Base</th>
                                         </tr>
@@ -568,6 +516,12 @@ export default function ResumenEnergia(props: any) {
                                                 </td>
                                                 <td className="text-end font-mono text-900 py-2">
                                                     {parseFloat(item.kwh_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                </td>
+                                                <td className="text-end font-mono text-600 py-2">
+                                                    {item.concepto === 'Total' ? 
+                                                        baseCaseValues.demandaTotal_m2.toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) :
+                                                        (parseFloat(item.kwh_m2_ano) / (1 + parseFloat(item.vsCasoBase?.replace('%', '') || '0') / 100)).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+                                                    }
                                                 </td>
                                                 <td className="text-end font-mono text-600 py-2">
                                                     {item.concepto === 'Total' ? 
@@ -606,6 +560,7 @@ export default function ResumenEnergia(props: any) {
                                         <tr className="border-bottom border-200">
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/m²·año]</th>
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">[kWh/año]</th>
+                                            <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">Base kWh/m²·año</th>
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">Base kWh/año</th>
                                             <th className="text-uppercase text-900 fw-medium fs--1 text-center py-3">% vs Caso Base</th>
                                         </tr>
@@ -622,6 +577,12 @@ export default function ResumenEnergia(props: any) {
                                                 </td>
                                                 <td className="text-end font-mono text-900 py-2">
                                                     {parseFloat(item.kwh_ano).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                </td>
+                                                <td className="text-end font-mono text-600 py-2">
+                                                    {item.concepto === 'Total' ? 
+                                                        baseCaseValues.consumoTotal_m2.toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) :
+                                                        (parseFloat(item.kwh_m2_ano) / (1 + parseFloat(item.vsCasoBase?.replace('%', '') || '0') / 100)).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+                                                    }
                                                 </td>
                                                 <td className="text-end font-mono text-600 py-2">
                                                     {item.concepto === 'Total' ? 

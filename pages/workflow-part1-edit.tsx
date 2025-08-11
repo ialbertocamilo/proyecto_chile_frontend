@@ -965,12 +965,13 @@ const ProjectWorkflowPart1: React.FC = () => {
                       <MapAutocompletion
                         formData={formData}
                         handleFormInputChange={handleFormInputChange}
+                        onCountryDetected={(country) => handleCountryChange(country as Country)}
                       />
-                      <Alert key="info" variant="info">
-                        *Para cambiar ubicación mover el marcador en el mapa
+                      <Alert variant="warning" className="mt-3">
+                        Para cambiar ubicación mover el marcador en el mapa
                       </Alert>
-                      <Alert key="info" variant="info">
-                        *Asegurarse que la Zona esté correctamente seleccionada
+                      <Alert variant="warning" className="mt-3">
+                        Asegurarse que la Zona esté correctamente seleccionada
                         para que se procese correctamente lo datos del proyecto
                       </Alert>
                       <p

@@ -105,11 +105,13 @@ const ProjectListPage = () => {
       if (validationResult?.valid) {
         router.push(`/calculation-result2?id=${projectId}`);
       } else {
-        // Show warnings about failed enclosures
-        console.log("Project validation failed:", validationResult?.failed_enclosures);
-
-        // Create error message with details about failed enclosures
+        console.log("Project validation failed:", validationResult);
         let errorMessage = "El proyecto no cumple con todos los requisitos necesarios para el cálculo:";
+        
+        if (validationResult?.additional_validations?.climate_file?.valid === false) {
+          const climateError = validationResult.additional_validations.climate_file.info?.error || "El archivo climático no es válido o falta.";
+          errorMessage += `\n- ${climateError}`;
+        }
 
         if (validationResult?.failed_enclosures && validationResult.failed_enclosures.length > 0) {
           errorMessage += "\n\n- Hay recintos sin los elementos constructivos requeridos.";

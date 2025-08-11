@@ -13,33 +13,106 @@ interface ChartDataItem {
 interface EnergyAnalysisProps {
     demandaData: ChartDataItem[];
     consumoPrimario: ChartDataItem[];
+    demandaDataBase?: ChartDataItem[];
+    consumoPrimarioBase?: ChartDataItem[];
     showPercentage: boolean;
 }
 
-export default function EnergyAnalysis({ demandaData, consumoPrimario, showPercentage }: EnergyAnalysisProps) {
+export default function EnergyAnalysis({ demandaData, consumoPrimario, demandaDataBase, consumoPrimarioBase, showPercentage }: EnergyAnalysisProps) {
     const [showEnergyAnalysis, setShowEnergyAnalysis] = useState<boolean>(false);
 
     // Calculate chart data based on current view and percentage mode
     const chartData = useMemo(() => {
-        const labels = demandaData
-            .filter((item) => item.concepto !== 'Total')
-            .map((item) => item.concepto);
+        const categories = ['Calefacción', 'Refrigeración', 'Iluminación', 'ACS'];
+        
+        const labels = ['Demanda\nBASE', 'Demanda', 'Consumo\nBASE', 'Consumo'];
+        const demandaByCategory: Record<string, number> = {};
+        const consumoByCategory: Record<string, number> = {};
+        const demandaBaseByCategory: Record<string, number> = {};
+        const consumoBaseByCategory: Record<string, number> = {};
+        
+        categories.forEach(category => {
+            const demandaItem = demandaData.find(item => item.concepto === category);
+            const consumoItem = consumoPrimario.find(item => item.concepto === category);
+            const demandaBaseItem = demandaDataBase?.find(item => item.concepto === category);
+            const consumoBaseItem = consumoPrimarioBase?.find(item => item.concepto === category);
             
-        const demandaValues = demandaData
-            .filter((item) => item.concepto !== 'Total')
-            .map((item) => parseFloat(item.kwh_m2_ano?.toString() || '0'));
+            demandaByCategory[category] = demandaItem ? parseFloat(demandaItem.kwh_m2_ano?.toString() || '0') : 0;
+            consumoByCategory[category] = consumoItem ? parseFloat(consumoItem.kwh_m2_ano?.toString() || '0') : 0;
             
-        const consumoValues = consumoPrimario
-            .filter((item) => item.concepto !== 'Total')
-            .map((item) => parseFloat(item.kwh_m2_ano?.toString() || '0'));
+            // Para los datos base, usamos la columna Base kWh/m²·año
+            const baseKwhM2Key = 'Base kWh/m²·año';
+            
+            if (demandaDataBase && demandaBaseItem) {
+                if ((demandaBaseItem as any)[baseKwhM2Key] !== undefined) {
+                    demandaBaseByCategory[category] = parseFloat((demandaBaseItem as any)[baseKwhM2Key]?.toString() || '0');
+                } else {
+                    demandaBaseByCategory[category] = parseFloat(demandaBaseItem.kwh_m2_ano?.toString() || '0');
+                }
+            } else if (demandaItem && (demandaItem as any)[baseKwhM2Key]) {
+demandaBaseByCategory[category] = parseFloat((demandaItem as any)[baseKwhM2Key]?.toString() || '0');
+            } else if (demandaItem) {
+                demandaBaseByCategory[category] = parseFloat(demandaItem.kwh_m2_ano?.toString() || '0') / 
+                    (1 + parseFloat(demandaItem.vsCasoBase?.toString().replace('%', '') || '0') / 100);
+            } else {
+                demandaBaseByCategory[category] = 0;
+            }
+            
+            if (consumoPrimarioBase && consumoBaseItem) {
+                if ((consumoBaseItem as any)[baseKwhM2Key] !== undefined) {
+                    consumoBaseByCategory[category] = parseFloat((consumoBaseItem as any)[baseKwhM2Key]?.toString() || '0');
+                } else {
+                    consumoBaseByCategory[category] = parseFloat(consumoBaseItem.kwh_m2_ano?.toString() || '0');
+                }
+            } else if (consumoItem && (consumoItem as any)[baseKwhM2Key]) {
+                consumoBaseByCategory[category] = parseFloat(((consumoItem as any)[baseKwhM2Key])?.toString() || '0');
+            } else if (consumoItem) {
+                consumoBaseByCategory[category] = parseFloat(consumoItem.kwh_m2_ano?.toString() || '0') / 
+                    (1 + parseFloat(consumoItem.vsCasoBase?.toString().replace('%', '') || '0') / 100);
+            } else {
+                consumoBaseByCategory[category] = 0;
+            }
+        });
+        
+        // Preparamos los datos para el gráfico con valores base y actuales
+        const calefaccionData = [demandaBaseByCategory['Calefacción'], demandaByCategory['Calefacción'], consumoBaseByCategory['Calefacción'], consumoByCategory['Calefacción']];
+        const refrigeracionData = [demandaBaseByCategory['Refrigeración'], demandaByCategory['Refrigeración'], consumoBaseByCategory['Refrigeración'], consumoByCategory['Refrigeración']];
+        const iluminacionData = [demandaBaseByCategory['Iluminación'], demandaByCategory['Iluminación'], consumoBaseByCategory['Iluminación'], consumoByCategory['Iluminación']];
+        const acsData = [demandaBaseByCategory['ACS'], demandaByCategory['ACS'], consumoBaseByCategory['ACS'], consumoByCategory['ACS']];
+        
         if (showPercentage) {
-            const totalDemanda = demandaValues.reduce((sum, val) => sum + val, 0);
-            const totalConsumo = consumoValues.reduce((sum, val) => sum + val, 0);
+            const totalDemandaBase = categories.reduce((sum, cat) => sum + demandaBaseByCategory[cat], 0);
+            const totalDemandaActual = categories.reduce((sum, cat) => sum + demandaByCategory[cat], 0);
+            const totalConsumoBase = categories.reduce((sum, cat) => sum + consumoBaseByCategory[cat], 0);
+            const totalConsumoActual = categories.reduce((sum, cat) => sum + consumoByCategory[cat], 0);
+            const convertToPercentage = (value: number, total: number): number => total > 0 ? (value / total) * 100 : 0;
             
             return {
                 labels,
-                demandaValues: totalDemanda > 0 ? demandaValues.map((val) => (val / totalDemanda) * 100) : demandaValues,
-                consumoValues: totalConsumo > 0 ? consumoValues.map((val) => (val / totalConsumo) * 100) : consumoValues,
+                calefaccionData: [
+                    convertToPercentage(calefaccionData[0], totalDemandaBase),
+                    convertToPercentage(calefaccionData[1], totalDemandaActual),
+                    convertToPercentage(calefaccionData[2], totalConsumoBase),
+                    convertToPercentage(calefaccionData[3], totalConsumoActual)
+                ],
+                refrigeracionData: [
+                    convertToPercentage(refrigeracionData[0], totalDemandaBase),
+                    convertToPercentage(refrigeracionData[1], totalDemandaActual),
+                    convertToPercentage(refrigeracionData[2], totalConsumoBase),
+                    convertToPercentage(refrigeracionData[3], totalConsumoActual)
+                ],
+                iluminacionData: [
+                    convertToPercentage(iluminacionData[0], totalDemandaBase),
+                    convertToPercentage(iluminacionData[1], totalDemandaActual),
+                    convertToPercentage(iluminacionData[2], totalConsumoBase),
+                    convertToPercentage(iluminacionData[3], totalConsumoActual)
+                ],
+                acsData: [
+                    convertToPercentage(acsData[0], totalDemandaBase),
+                    convertToPercentage(acsData[1], totalDemandaActual),
+                    convertToPercentage(acsData[2], totalConsumoBase),
+                    convertToPercentage(acsData[3], totalConsumoActual)
+                ],
                 yAxisSuffix: '%',
                 tooltipSuffix: '%',
                 isPercentage: true
@@ -48,13 +121,15 @@ export default function EnergyAnalysis({ demandaData, consumoPrimario, showPerce
         
         return {
             labels,
-            demandaValues,
-            consumoValues,
+            calefaccionData,
+            refrigeracionData,
+            iluminacionData,
+            acsData,
             yAxisSuffix: ' kWh/m²·año',
             tooltipSuffix: ' kWh/m²·año',
             isPercentage: false
         };
-    }, [demandaData, consumoPrimario, showPercentage]);
+    }, [demandaData, consumoPrimario, demandaDataBase, consumoPrimarioBase, showPercentage]);
 
     return (
         <div className="card mb-4 border shadow-sm">
@@ -85,14 +160,24 @@ export default function EnergyAnalysis({ demandaData, consumoPrimario, showPerce
             >
                 <div className="card-body p-4">
                     <div className="row align-items-center mb-3">
-                        <div className="col-md-6">
-                            <div className="d-flex align-items-center mb-2">
-                                <div className="me-3" style={{ width: '16px', height: '16px', backgroundColor: 'rgba(54, 162, 235, 0.8)' }}></div>
-                                <span className="small">Demanda Energética</span>
-                            </div>
-                            <div className="d-flex align-items-center">
-                                <div className="me-3" style={{ width: '16px', height: '2px', backgroundColor: 'rgba(255, 99, 132, 1)' }}></div>
-                                <span className="small">Consumo de Energía Primaria</span>
+                        <div className="col-md-8">
+                            <div className="d-flex flex-wrap">
+                                <div className="d-flex align-items-center me-4 mb-2">
+                                    <div className="me-2" style={{ width: '16px', height: '16px', backgroundColor: '#1e4dd8' }}></div>
+                                    <span className="small">Calefacción</span>
+                                </div>
+                                <div className="d-flex align-items-center me-4 mb-2">
+                                    <div className="me-2" style={{ width: '16px', height: '16px', backgroundColor: '#ff9642' }}></div>
+                                    <span className="small">Refrigeración</span>
+                                </div>
+                                <div className="d-flex align-items-center me-4 mb-2">
+                                    <div className="me-2" style={{ width: '16px', height: '16px', backgroundColor: '#4caf50' }}></div>
+                                    <span className="small">Iluminación</span>
+                                </div>
+                                <div className="d-flex align-items-center me-4 mb-2">
+                                    <div className="me-2" style={{ width: '16px', height: '16px', backgroundColor: '#03a9f4' }}></div>
+                                    <span className="small">ACS</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -106,50 +191,48 @@ export default function EnergyAnalysis({ demandaData, consumoPrimario, showPerce
                                     labels: chartData.labels,
                                     datasets: [
                                         {
-                                            label: 'Demanda Energética',
-                                            data: chartData.demandaValues,
-                                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                                            borderColor: 'rgba(54, 162, 235, 1)',
+                                            label: 'Calefacción',
+                                            data: chartData.calefaccionData,
+                                            backgroundColor: '#1e4dd8',
+                                            borderColor: '#1e4dd8',
                                             borderWidth: 1,
-                                            type: 'bar',
-                                            yAxisID: 'y',
-                                            order: 1,
-                                            borderRadius: 4,
-                                            barPercentage: 0.7,
-                                            categoryPercentage: 0.8
+                                            stack: 'Stack 0',
+                                            borderRadius: 0,
+                                            barPercentage: 0.8,
+                                            categoryPercentage: 0.9
                                         },
                                         {
-                                            label: 'Consumo Primario',
-                                            data: chartData.consumoValues,
-                                            borderColor: 'rgba(255, 99, 132, 1)',
-                                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                                            borderWidth: 2,
-                                            type: 'line',
-                                            yAxisID: 'y1',
-                                            order: 0,
-                                            pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-                                            pointBorderColor: '#fff',
-                                            pointHoverRadius: 6,
-                                            pointHoverBorderWidth: 2,
-                                            tension: 0.3
+                                            label: 'Refrigeración',
+                                            data: chartData.refrigeracionData,
+                                            backgroundColor: '#ff9642',
+                                            borderColor: '#ff9642',
+                                            borderWidth: 1,
+                                            stack: 'Stack 0',
+                                            borderRadius: 0,
+                                            barPercentage: 0.8,
+                                            categoryPercentage: 0.9
                                         },
                                         {
-                                            label: 'Diferencia',
-                                            data: chartData.labels.map((_: string, index: number) => {
-                                                const demanda = chartData.demandaValues[index] || 0;
-                                                const consumo = chartData.consumoValues[index] || 0;
-                                                return consumo - demanda;
-                                            }),
-                                            backgroundColor: 'rgba(153, 102, 255, 0.6)',
-                                            borderColor: 'rgba(153, 102, 255, 1)',
+                                            label: 'Iluminación',
+                                            data: chartData.iluminacionData,
+                                            backgroundColor: '#4caf50',
+                                            borderColor: '#4caf50',
                                             borderWidth: 1,
-                                            type: 'bar',
-                                            yAxisID: 'y1',
-                                            order: 2,
-                                            borderRadius: 4,
-                                            barPercentage: 0.7,
-                                            categoryPercentage: 0.8,
-                                            hidden: true
+                                            stack: 'Stack 0',
+                                            borderRadius: 0,
+                                            barPercentage: 0.8,
+                                            categoryPercentage: 0.9
+                                        },
+                                        {
+                                            label: 'ACS',
+                                            data: chartData.acsData,
+                                            backgroundColor: '#03a9f4',
+                                            borderColor: '#03a9f4',
+                                            borderWidth: 1,
+                                            stack: 'Stack 0',
+                                            borderRadius: 0,
+                                            barPercentage: 0.8,
+                                            categoryPercentage: 0.9
                                         }
                                     ]
                                 }}
@@ -177,7 +260,6 @@ export default function EnergyAnalysis({ demandaData, consumoPrimario, showPerce
                                                     const label = context.dataset.label || '';
                                                     const value = context.parsed.y;
                                                     
-                                                    // For other datasets, show the value with units
                                                     return `${label}: ${value.toLocaleString('es-CL', { 
                                                         minimumFractionDigits: 2, 
                                                         maximumFractionDigits: 2 
@@ -194,13 +276,14 @@ export default function EnergyAnalysis({ demandaData, consumoPrimario, showPerce
                                     },
                                     scales: {
                                         y: {
+                                            stacked: true,
                                             type: 'linear',
                                             display: true,
                                             position: 'left',
                                             title: {
                                                 display: true,
-                                                text: `Demanda [${chartData.isPercentage ? '%' : 'kWh/m²·año'}]`,
-                                                color: 'rgba(54, 162, 235, 0.9)',
+                                                text: chartData.yAxisSuffix,
+                                                color: '#333',
                                                 font: {
                                                     weight: 'bold'
                                                 }
@@ -210,33 +293,10 @@ export default function EnergyAnalysis({ demandaData, consumoPrimario, showPerce
                                                 drawBorder: false
                                             },
                                             ticks: {
-                                                color: 'rgba(54, 162, 235, 0.9)',
+                                                color: '#333',
                                                 callback: function(value: number) {
-                                                    return value.toLocaleString('es-CL');
-                                                }
-                                            },
-                                            beginAtZero: true
-                                        },
-                                        y1: {
-                                            type: 'linear',
-                                            display: true,
-                                            position: 'right',
-                                            title: {
-                                                display: true,
-                                                text: `Consumo [${chartData.isPercentage ? '%' : 'kWh/m²·año'}]`,
-                                                color: 'rgba(255, 99, 132, 0.9)',
-                                                font: {
-                                                    weight: 'bold'
-                                                }
-                                            },
-                                            grid: {
-                                                drawOnChartArea: false,
-                                                drawBorder: false
-                                            },
-                                            ticks: {
-                                                color: 'rgba(255, 99, 132, 0.9)',
-                                                callback: function(value: number) {
-                                                    return value.toLocaleString('es-CL');
+                                                    const formatted = value.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                                    return formatted + (chartData.isPercentage ? ' %' : '');
                                                 }
                                             },
                                             beginAtZero: true

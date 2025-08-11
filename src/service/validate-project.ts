@@ -21,7 +21,7 @@ export interface FailedEnclosure {
 
 export interface AdditionalValidation {
     valid: boolean;
-    info: string;
+    info: Record<string, any>;
 }
 
 export interface ProjectValidationResponse {

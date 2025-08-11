@@ -18,13 +18,14 @@ interface CustomButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>
   | 'viewIcon'
   | 'closed'
   | 'layersIcon'
-  | 'borderless';
+  | 'borderless'
+  | 'gray';
   type?: 'button' | 'submit';
   isLoading?: boolean;
   margin?: string;
   icon?: LucideIcon;
-  iconSize?: number; // Tamaño en pixeles
-  color?: 'yellow' | 'orange' | 'red'; // Add optional color parameter
+  iconSize?: number; 
+  color?: 'yellow' | 'orange' | 'red' | 'gray'; 
 }
 
 const CustomButton: FC<CustomButtonProps> = ({
@@ -40,7 +41,6 @@ const CustomButton: FC<CustomButtonProps> = ({
   color,
   ...rest
 }) => {
-  // Función helper que renderiza un ícono animado (opcional)
   const renderAnimatedIcon = (iconName: string) => (
     <span
       className="btn-icon-content material-icons animate__animated"
@@ -125,7 +125,9 @@ const CustomButton: FC<CustomButtonProps> = ({
           ? 'btn-icon-only'
           : variant === 'borderless'
             ? 'btn-borderless'
-            : `btn-${variant}`;
+            : variant === 'gray'
+              ? 'btn-gray'
+              : `btn-${variant}`;
 
   const disabledClass = disabled || isLoading ? 'disabled' : '';
   const buttonId = variant === 'cancelIcon' ? 'grabar-datos-btn' : undefined;
@@ -311,6 +313,21 @@ const CustomButton: FC<CustomButtonProps> = ({
 
         .btn-red:hover {
           background-color: #b22222 !important; /* Darker red */
+        }
+
+        .btn-gray {
+          background-color: #6c757d !important;
+          color: white !important;
+        }
+
+        .btn-gray:hover {
+          background-color: #5a6268 !important; /* Darker gray */
+        }
+
+        .btn-gray:disabled {
+          background-color: #adb5bd !important;
+          color: #6c757d !important;
+          cursor: not-allowed;
         }
       `}</style>
     </>

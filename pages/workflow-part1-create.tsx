@@ -73,7 +73,6 @@ const ProjectWorkflowPart1: React.FC = () => {
 
   const [, setPrimaryColor] = useState("#3ca7b7");
   const [step, setStep] = useState<number>(1);
-  // Nueva variable de estado para controlar si se completó el paso 1
   const [isStep1Validated, setIsStep1Validated] = useState<boolean>(false);
   const [locationSearch, setLocationSearch] = useState("");
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
@@ -83,11 +82,11 @@ const ProjectWorkflowPart1: React.FC = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState<boolean>(false);
   const [globalError, setGlobalError] = useState<string>("");
-
-  // Estados para obtener zonas y la zona seleccionada
   const [zones, setZones] = useState<any[]>([]);
 
-  // Definición de los pasos para la sidebar
+  const [disableButtonSave, setDisableButtonSave] = useState<boolean>(false);
+  const [mapCountry, setMapCountry] = useState<string>("");
+
   const steps = [
     {
       stepNumber: 1,
@@ -125,6 +124,14 @@ const ProjectWorkflowPart1: React.FC = () => {
         });
     }
   }, [formData.latitude, formData.longitude]);
+
+  // Efecto para verificar si el país del formulario coincide con el del mapa
+  useEffect(() => {
+    console.log("Map country ", mapCountry)
+    console.log("Form country ", formData.country)
+
+    setDisableButtonSave(formData.country.toLowerCase() !== mapCountry.toLowerCase() || formData.country === "");
+  }, [formData.country, mapCountry]);
 
   const isFieldEmpty = (field: keyof FormData): boolean => {
     const value = formData[field];
@@ -274,10 +281,14 @@ const ProjectWorkflowPart1: React.FC = () => {
           })
           .then((response) => {
             // Extraer la dirección legible de la respuesta
-            const { display_name } = response.data;
+            const { display_name, address } = response.data;
+            // Extraer el país del objeto address
+            const country = address?.country || "";
             // Actualizar el campo "address" del formulario
             handleFormInputChange("address", display_name);
+            setMapCountry(country);
             console.log("Dirección obtenida:", display_name);
+            console.log("País detectado:", country);
           })
           .catch((error) => {
             console.error("Error en la geocodificación inversa:", error);
@@ -399,6 +410,8 @@ const ProjectWorkflowPart1: React.FC = () => {
     }[]
   >([]);
 
+
+
   useEffect(() => {
     if (!locationSearch.trim()) return;
 
@@ -516,126 +529,126 @@ const ProjectWorkflowPart1: React.FC = () => {
                       </small>
                     )}
                   </div>
-                
+
                 </div>
                 <div className="row">
-                      <div className="col-6">
-                        <label className="form-label">
-                          País
-                          {!router.query.id && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.country}
-                          onChange={(e) =>
-                            handleCountryChange(e.target.value as Country)
-                          }
-                        >
-                          <option value="">Seleccione un país</option>
-                          {Object.keys(locationData).map((country) => (
-                            <option key={country} value={country}>
-                              {country}
-                            </option>
-                          ))}
-                        </select>
-                        {router.query.id && submitted && errors.country && (
-                          <small className="text-danger">
-                            {errors.country}
-                          </small>
-                        )}
-                      </div>
-                      <div className="col-6">
-                        <label className="form-label">
-                          Región{" "}
-                          {!router.query.id && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.department}
-                          onChange={(e) =>
-                            handleDepartmentChange(e.target.value)
-                          }
-                          disabled={!formData.country}
-                        >
-                          <option value="">Seleccione un departamento</option>
-                          {formData.country &&
-                            Object.keys(
-                              locationData[formData.country]?.departments || {}
-                            ).map((dept) => (
-                              <option key={dept} value={dept}>
-                                {dept}
-                              </option>
-                            ))}
-                        </select>
-                        {router.query.id && submitted && errors.department && (
-                          <small className="text-danger">
-                            {errors.department}
-                          </small>
-                        )}
-                      </div>
-                    </div><br />
-                    <div className="row">
-                      <div className="col-6">
-                        <label className="form-label">
-                          Ciudad{" "}
-                          {!router.query.id && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <select
-                          className="form-control"
-                          value={formData.province}
-                          onChange={(e) =>
-                            handleFormInputChange("province", e.target.value)
-                          }
-                          disabled={!formData.department}
-                        >
-                          <option value="">Seleccione una provincia</option>
-                          {formData.country &&
-                            formData.department &&
-                            (
-                              locationData[formData.country]?.departments?.[
-                              formData.department
-                              ] || []
-                            ).map((prov) => (
-                              <option key={prov} value={prov}>
-                                {prov}
-                              </option>
-                            ))}
-                        </select>
-                        {router.query.id && submitted && errors.province && (
-                          <small className="text-danger">
-                            {errors.province}
-                          </small>
-                        )}
-                      </div>
-                      <div className="col-6">
-                        <label className="form-label">
-                          Distrito/Municipio
-                          {!router.query.id && (
-                            <span style={{ color: "red" }}>*</span>
-                          )}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.district}
-                          onChange={(e) =>
-                            handleFormInputChange("district", e.target.value)
-                          }
-                        />
-                        {router.query.id && submitted && errors.district && (
-                          <small className="text-danger">
-                            {errors.district}
-                          </small>
-                        )}
-                      </div>
-                    </div>
-                    <br />
+                  <div className="col-6">
+                    <label className="form-label">
+                      País
+                      {!router.query.id && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <select
+                      className="form-control"
+                      value={formData.country}
+                      onChange={(e) =>
+                        handleCountryChange(e.target.value as Country)
+                      }
+                    >
+                      <option value="">Seleccione un país</option>
+                      {Object.keys(locationData).map((country) => (
+                        <option key={country} value={country}>
+                          {country}
+                        </option>
+                      ))}
+                    </select>
+                    {router.query.id && submitted && errors.country && (
+                      <small className="text-danger">
+                        {errors.country}
+                      </small>
+                    )}
+                  </div>
+                  <div className="col-6">
+                    <label className="form-label">
+                      Región{" "}
+                      {!router.query.id && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <select
+                      className="form-control"
+                      value={formData.department}
+                      onChange={(e) =>
+                        handleDepartmentChange(e.target.value)
+                      }
+                      disabled={!formData.country}
+                    >
+                      <option value="">Seleccione un departamento</option>
+                      {formData.country &&
+                        Object.keys(
+                          locationData[formData.country]?.departments || {}
+                        ).map((dept) => (
+                          <option key={dept} value={dept}>
+                            {dept}
+                          </option>
+                        ))}
+                    </select>
+                    {router.query.id && submitted && errors.department && (
+                      <small className="text-danger">
+                        {errors.department}
+                      </small>
+                    )}
+                  </div>
+                </div><br />
+                <div className="row">
+                  <div className="col-6">
+                    <label className="form-label">
+                      Ciudad{" "}
+                      {!router.query.id && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <select
+                      className="form-control"
+                      value={formData.province}
+                      onChange={(e) =>
+                        handleFormInputChange("province", e.target.value)
+                      }
+                      disabled={!formData.department}
+                    >
+                      <option value="">Seleccione una provincia</option>
+                      {formData.country &&
+                        formData.department &&
+                        (
+                          locationData[formData.country]?.departments?.[
+                          formData.department
+                          ] || []
+                        ).map((prov) => (
+                          <option key={prov} value={prov}>
+                            {prov}
+                          </option>
+                        ))}
+                    </select>
+                    {router.query.id && submitted && errors.province && (
+                      <small className="text-danger">
+                        {errors.province}
+                      </small>
+                    )}
+                  </div>
+                  <div className="col-6">
+                    <label className="form-label">
+                      Distrito/Municipio
+                      {!router.query.id && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.district}
+                      onChange={(e) =>
+                        handleFormInputChange("district", e.target.value)
+                      }
+                    />
+                    {router.query.id && submitted && errors.district && (
+                      <small className="text-danger">
+                        {errors.district}
+                      </small>
+                    )}
+                  </div>
+                </div>
+                <br />
                 <div className="row mb-3">
                   <div className="col-12 col-md-6">
                     <label className="form-label">
@@ -761,8 +774,7 @@ const ProjectWorkflowPart1: React.FC = () => {
                     )}
                   </div>
                 </div>
-
-                {/* Fila para Número de viviendas / oficinas x nivel */}                <div className="row mb-3">
+                <div className="row mb-3">
                   <div className="col-12 col-md-6">
                     <label className="form-label">
                       Número de viviendas
@@ -841,13 +853,17 @@ const ProjectWorkflowPart1: React.FC = () => {
                   <MapAutocompletion
                     formData={formData}
                     handleFormInputChange={handleFormInputChange}
+                    onCountryDetected={setMapCountry}
                   />
-                  <Alert key="info" variant="info">
-                    *Para cambiar ubicación mover el marcador en el mapa
+                  <Alert variant="warning" className="mt-3">
+                    Para cambiar ubicación mover el marcador en el mapa
                   </Alert>
-                  <Alert key="info" variant="info">
-                    *Asegurarse que la Zona esté correctamente seleccionada para
+                  <Alert variant="warning" className="mt-3">
+                    Asegurarse que la Zona esté correctamente seleccionada para
                     que se procese correctamente lo datos del proyecto
+                  </Alert>
+                  <Alert variant="warning" className="mt-3">
+                    El país seleccionado en el formulario debe coincidir con el país detectado en el mapa para poder guardar el proyecto.
                   </Alert>
                   <div className="d-flex justify-content-between align-items-center ">
                     <div className="d-flex">
@@ -858,10 +874,14 @@ const ProjectWorkflowPart1: React.FC = () => {
                     </div>
                     <div className="d-flex">
                       <CustomButton
-                        variant="save"
-                              color='orange'
+                        variant={disableButtonSave ? "gray" : "save"}
+                        color='orange'
                         onClick={enviarProyecto}
-                        disabled={loading}
+                        disabled={loading || disableButtonSave}
+                        style={{
+                          backgroundColor: disableButtonSave ? '#ccc' : undefined,
+                          cursor: disableButtonSave ? 'not-allowed' : undefined
+                        }}
                       >
                         <span
                           className="material-icons"

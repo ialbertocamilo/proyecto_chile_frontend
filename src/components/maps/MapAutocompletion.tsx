@@ -10,17 +10,12 @@ interface MapAutocompletionProps {
     longitude: number;
     address: string;
     zone?: string;
-    region?: string; // Add region to the interface
+    region?: string;
+    country?: string;
   };
   handleFormInputChange: (field: any, value: any) => void;
+  onCountryDetected: (country: string) => void;
 }
-
-const NoSSRInteractiveMap = dynamic(
-  () => import("@/components/InteractiveMap"),
-  {
-    ssr: false,
-  }
-);
 const NoSSRInteractiveMap2 = dynamic(
   () => import("@/components/InteractiveMap2"),
   {
@@ -31,6 +26,7 @@ const NoSSRInteractiveMap2 = dynamic(
 export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
   formData,
   handleFormInputChange,
+  onCountryDetected,
 }) => {
   const [locationSearch, setLocationSearch] = useState("");
   const [completionList, setCompletionList] = useState<
@@ -77,11 +73,17 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
           const { display_name, address } = response.data;
           // Extraer la región del objeto address
           const region = address?.state || address?.region || "No disponible";
+          // Extraer el país del objeto address
+          const country = address?.country || "No disponible";
           console.log("Region detected:", region);
+          console.log("Country detected:", country);
 
           // Actualizar el estado del formulario con la región
           handleFormInputChange("region", region);
-          handleFormInputChange("department", region); // Also update department for compatibility
+          handleFormInputChange("department", region);
+          
+          // Notificar al componente padre sobre el país detectado
+          onCountryDetected(country);
           
           if (display_name && display_name !== formData.address) {
             handleFormInputChange("address", display_name);
@@ -89,7 +91,7 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
               "locationDetails"
             ) as HTMLTextAreaElement;
             if (detailsTextArea) {
-              detailsTextArea.value = `Dirección: ${display_name}\nRegión: ${region}`;
+              detailsTextArea.value = `Dirección: ${display_name}\nRegión: ${region}\nPaís: ${country}`;
             }
           }
         })
@@ -112,27 +114,6 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
           />
         </div>
         <div className="col-12 col-md-8 mb-3">
-          {/* <NoSSRInteractiveMap
-            onLocationSelect={(latlng) => {
-              handleFormInputChange("latitude", latlng.lat);
-              handleFormInputChange("longitude", latlng.lng);
-            }}
-            initialLat={formData.latitude}
-            initialLng={formData.longitude}
-            onLocationDetails={(locationDetails) => {
-              console.log("Detalles de la ubicación:", locationDetails);
-              const details = [
-                `Dirección: ${locationDetails?.Label || "N/A"}`,
-              ].join("\n");
-              handleFormInputChange("address", details);
-              const detailsTextArea = document.getElementById(
-                "locationDetails"
-              ) as HTMLTextAreaElement;
-              if (detailsTextArea) {
-                detailsTextArea.value = details;
-              }
-            }}
-          /> */}
           <NoSSRInteractiveMap2
             initialLat={formData.latitude}
             initialLng={formData.longitude}
@@ -169,7 +150,7 @@ export const MapAutocompletion: React.FC<MapAutocompletionProps> = ({
             className="form-control"
             rows={6}
             readOnly
-            value={`Dirección: ${formData.address}\nRegión: ${formData.region || 'No disponible'}`}
+            value={`Dirección: ${formData.address}\nRegión: ${formData.region || 'No disponible'}\nPaís: ${formData.country || 'No disponible'}`}
             style={{
               width: "100%",
               resize: "none",

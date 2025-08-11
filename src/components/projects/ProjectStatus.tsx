@@ -27,14 +27,14 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
         }
     }, [projectId]);
 
-    // Función para generar mensajes de error detallados
     const getValidationMessages = (validationResult: any): string[] => {
         const messages: string[] = [];
         messages.push("El proyecto no cumple con todos los requisitos necesarios para el cálculo:");
+        console.log(validationResult)
         if (validationResult?.additional_validations?.climate_file?.valid === false) {
-            messages.push("- El archivo climático no es válido o falta.");
+            const climateError = validationResult.additional_validations.climate_file.info?.error || "El archivo climático no es válido o falta.";
+            messages.push(`- ${climateError}`);
         }
-        // Obtener nombres de recintos desde validationResult.enclosures si no viene en failed_enclosures
         const enclosureNames: any = validationResult?.enclosures || {};
         if (validationResult?.failed_enclosures && validationResult?.failed_enclosures?.length > 0) {
             validationResult?.failed_enclosures.forEach((enclosure: any) => {
@@ -60,10 +60,10 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
 
     const validateProjectStatus = async (projectId:string) => {
         try {
+            console.log("Validations",projectId)
             setIsValidating(true);
             const validationResult = await validateProject(projectId, true);
             setIsProjectValid(validationResult?.valid || false);
-
             if (!validationResult?.valid) {
                 const messages = getValidationMessages(validationResult);
                 setValidationErrorMessage(messages.join('\n'));
@@ -129,9 +129,8 @@ const ProjectStatus: React.FC<ProjectStatusProps> = ({ status, projectId }) => {
                     {status.toLowerCase() === 'en proceso' && (<div className={!isProjectValid ? "disabled-button-wrapper" : ""}>
                         <CustomButton
                             onClick={handleCalculateResults}
-                            color="orange"
                             disabled={isValidating}
-                            className={!isProjectValid ? "calculate-button" : ""}
+                            className={isValidating ? "btn-gray" : "btn-orange"}
                         >
                             <span className="material-icons">calculate</span>
                             {isValidating ? "Validando..." : "Calcular resultados"}

@@ -733,7 +733,6 @@ const AdministrationPage: React.FC = () => {
     if (step === 5) fetchElements();
   }, [step, fetchMaterialsList, fetchElements]);
 
-  // Actualización de la barra lateral con la incorporación del nuevo paso para carga de clima.
   const sidebarSteps = [
     {
       stepNumber: 3,

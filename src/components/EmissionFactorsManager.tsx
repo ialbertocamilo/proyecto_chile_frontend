@@ -113,7 +113,7 @@ const EmissionFactorsManager: React.FC = () => {
       <p>Actualice los factores de emisión según corresponda.</p>
       
       <div className="table-responsive">
-        <table className="table table-striped">
+        <table className="table ">
           <thead>
             <tr>
               <th>Código</th>

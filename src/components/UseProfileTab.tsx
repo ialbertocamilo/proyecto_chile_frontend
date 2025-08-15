@@ -875,7 +875,6 @@ const UseProfileTab: React.FC<{
               handleDeleteClick("cargas", enclosure.id, enclosure.name)
             }
           />
-          {rolUser !== "admin" && (
             <CustomButton
               className="btn-table-list"
               onClick={() => {
@@ -885,7 +884,6 @@ const UseProfileTab: React.FC<{
             >
               <i className="fa fa-clock-o"></i>
             </CustomButton>
-          )}
         </div>
       ),
     };

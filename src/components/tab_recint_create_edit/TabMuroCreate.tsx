@@ -519,8 +519,8 @@ const TabMuroCreate: React.FC = () => {
               <option value="">Seleccione...</option>
               <option value="Exterior">Exterior</option>
               <option value="Interior climatizado">Interior climatizado</option>
-              <option value="Interior  no climatizado">
-                Interior  no climatizado
+              <option value="Interior no climatizado">
+                Interior no climatizado
               </option>
             </select>
           );
@@ -1028,8 +1028,8 @@ const TabMuroCreate: React.FC = () => {
                 <option value="">Seleccione...</option>
                 <option value="Exterior">Exterior</option>
                 <option value="Interior climatizado">Interior climatizado</option>
-                <option value="Interior  no climatizado">
-                  Interior  no climatizado
+                <option value="Interior no climatizado">
+                  Interior no climatizado
                 </option>
               </select>
             </div>

@@ -345,8 +345,8 @@ const TabFloorCreate: React.FC = () => {
             <option value="">Seleccione una opción</option>
             <option value="Exterior">Exterior</option>
             <option value="Interior climatizado">Interior climatizado</option>
-            <option value="Interior  no climatizado">
-              Interior  no climatizado
+            <option value="Interior no climatizado">
+              Interior no climatizado
             </option>
           </select>
         );
@@ -605,8 +605,8 @@ const TabFloorCreate: React.FC = () => {
                 <option value="">Seleccione una opción</option>
                 <option value="Exterior">Exterior</option>
                 <option value="Interior climatizado">Interior climatizado</option>
-                <option value="Interior  no climatizado">
-                  Interior  no climatizado
+                <option value="Interior no climatizado">
+                  Interior no climatizado
                 </option>
               </select>
             </div>

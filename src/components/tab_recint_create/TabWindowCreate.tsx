@@ -51,7 +51,7 @@ const TabWindowCreate: React.FC = () => {
   const characteristicsOptions = [
     "Exterior",
     "Interior climatizado",
-    "Interior  no climatizado",
+    "Interior no climatizado",
   ];
   const withNoReturnOptions = ["Sin", "Con"];
   const positionOptions = ["Interior", "Centrada", "Exterior"];

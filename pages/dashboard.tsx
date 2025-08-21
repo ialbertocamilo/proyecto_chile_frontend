@@ -121,7 +121,7 @@ const DashboardPage: React.FC = () => {
 
     // Datos dummy para selects
     const years = ['','2022', '2023', '2024', '2025'];
-    const countries = ['','Chile', 'Colombia', 'Ecuador', 'México', 'Perú'];
+    const countries = ['','Perú', 'Ecuador', 'Chile', 'Colombia'];
     const zones = ['','A', 'B', 'C', 'D','E','F'];
     const typologies = ['','Residencial en altura', 'Residencial en extensión', 'Educación', 'Salud', 'Comercio', 'Servicios (oficinas)'];
 

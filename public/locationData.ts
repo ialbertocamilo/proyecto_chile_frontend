@@ -219,6 +219,34 @@ export interface LocationData {
         Ucayali: ["Coronel Portillo", "Atalaya", "Padre Abad", "Purús"],
     },
   },
+  Ecuador: {
+    departments: {
+      "Azuay": ["Cuenca", "Gualaceo", "Paute", "Chordeleg", "El Pan", "Sígsig"],
+      "Bolívar": ["Guaranda", "Chillanes", "Chimbo", "Echeandía", "San Miguel"],
+      "Cañar": ["Azogues", "La Troncal", "Cañar", "Déleg", "Suscal"],
+      "Carchi": ["Tulcán", "San Gabriel", "Mira", "Montúfar", "Bolívar"],
+      "Chimborazo": ["Riobamba", "Alausí", "Chambo", "Chunchi", "Colta", "Guamote"],
+      "Cotopaxi": ["Latacunga", "La Maná", "Pujilí", "Salcedo", "Saquisilí", "Sigchos"],
+      "El Oro": ["Machala", "Pasaje", "Santa Rosa", "Arenillas", "Atahualpa", "Balsas"],
+      "Esmeraldas": ["Esmeraldas", "Atacames", "Rioverde", "Quinindé", "Muisne", "Eloy Alfaro"],
+      "Galápagos": ["Puerto Baquerizo Moreno", "Puerto Ayora", "Puerto Villamil"],
+      "Guayas": ["Guayaquil", "Samborondón", "Durán", "Milagro", "Naranjal", "Playas"],
+      "Imbabura": ["Ibarra", "Otavalo", "Cotacachi", "Pimampiro", "Urcuquí", "Antonio Ante"],
+      "Loja": ["Loja", "Catamayo", "Cariamanga", "Calvas", "Gonzanamá", "Paltas"],
+      "Los Ríos": ["Babahoyo", "Quevedo", "Ventanas", "Vinces", "Puebloviejo", "Urdaneta"],
+      "Manabí": ["Portoviejo", "Manta", "Chone", "Montecristi", "Jipijapa", "Bahía de Caráquez"],
+      "Morona Santiago": ["Macas", "Gualaquiza", "Limón Indanza", "Pablo Sexto", "Sucúa", "Huamboya"],
+      "Napo": ["Tena", "Archidona", "El Chaco", "Quijos", "Carlos Julio Arosemena Tola"],
+      "Orellana": ["Francisco de Orellana", "Aguarico", "La Joya de los Sachas", "Loreto"],
+      "Pastaza": ["Puyo", "Mera", "Santa Clara", "Arajuno", "Shell"],
+      "Pichincha": ["Quito", "Cayambe", "Mejía", "Pedro Moncayo", "Rumiñahui", "San Miguel de los Bancos"],
+      "Santa Elena": ["Santa Elena", "La Libertad", "Salinas", "Manglaralto"],
+      "Santo Domingo de los Tsáchilas": ["Santo Domingo", "La Concordia"],
+      "Sucumbíos": ["Nueva Loja", "Cuyabeno", "Gonzalo Pizarro", "Lago Agrio", "Putumayo", "Shushufindi"],
+      "Tungurahua": ["Ambato", "Baños", "Cevallos", "Mocha", "Patate", "Quero"],
+      "Zamora Chinchipe": ["Zamora", "Loja", "Yantzaza", "Chinchipe", "Centinela del Cóndor", "Nangaritza"]
+    }
+  },
   Chile: {
     departments: {
       "Región de Arica y Parinacota": ["Arica", "Parinacota"],
@@ -315,61 +343,6 @@ export interface LocationData {
       "Vichada": ["Puerto Carreño", "La Primavera", "Cumaribo", "Santa Rosalía"]
     }
   },
-  Ecuador: {
-    departments: {
-      "Azuay": ["Cuenca", "Gualaceo", "Paute", "Chordeleg", "El Pan", "Sígsig"],
-      "Bolívar": ["Guaranda", "Chillanes", "Chimbo", "Echeandía", "San Miguel"],
-      "Cañar": ["Azogues", "La Troncal", "Cañar", "Déleg", "Suscal"],
-      "Carchi": ["Tulcán", "San Gabriel", "Mira", "Montúfar", "Bolívar"],
-      "Chimborazo": ["Riobamba", "Alausí", "Chambo", "Chunchi", "Colta", "Guamote"],
-      "Cotopaxi": ["Latacunga", "La Maná", "Pujilí", "Salcedo", "Saquisilí", "Sigchos"],
-      "El Oro": ["Machala", "Pasaje", "Santa Rosa", "Arenillas", "Atahualpa", "Balsas"],
-      "Esmeraldas": ["Esmeraldas", "Atacames", "Rioverde", "Quinindé", "Muisne", "Eloy Alfaro"],
-      "Galápagos": ["Puerto Baquerizo Moreno", "Puerto Ayora", "Puerto Villamil"],
-      "Guayas": ["Guayaquil", "Samborondón", "Durán", "Milagro", "Naranjal", "Playas"],
-      "Imbabura": ["Ibarra", "Otavalo", "Cotacachi", "Pimampiro", "Urcuquí", "Antonio Ante"],
-      "Loja": ["Loja", "Catamayo", "Cariamanga", "Calvas", "Gonzanamá", "Paltas"],
-      "Los Ríos": ["Babahoyo", "Quevedo", "Ventanas", "Vinces", "Puebloviejo", "Urdaneta"],
-      "Manabí": ["Portoviejo", "Manta", "Chone", "Montecristi", "Jipijapa", "Bahía de Caráquez"],
-      "Morona Santiago": ["Macas", "Gualaquiza", "Limón Indanza", "Pablo Sexto", "Sucúa", "Huamboya"],
-      "Napo": ["Tena", "Archidona", "El Chaco", "Quijos", "Carlos Julio Arosemena Tola"],
-      "Orellana": ["Francisco de Orellana", "Aguarico", "La Joya de los Sachas", "Loreto"],
-      "Pastaza": ["Puyo", "Mera", "Santa Clara", "Arajuno", "Shell"],
-      "Pichincha": ["Quito", "Cayambe", "Mejía", "Pedro Moncayo", "Rumiñahui", "San Miguel de los Bancos"],
-      "Santa Elena": ["Santa Elena", "La Libertad", "Salinas", "Manglaralto"],
-      "Santo Domingo de los Tsáchilas": ["Santo Domingo", "La Concordia"],
-      "Sucumbíos": ["Nueva Loja", "Cuyabeno", "Gonzalo Pizarro", "Lago Agrio", "Putumayo", "Shushufindi"],
-      "Tungurahua": ["Ambato", "Baños", "Cevallos", "Mocha", "Patate", "Quero"],
-      "Zamora Chinchipe": ["Zamora", "Loja", "Yantzaza", "Chinchipe", "Centinela del Cóndor", "Nangaritza"]
-    }
-  },
-  Bolivia: {
-    departments: {
-      "Beni": ["Trinidad", "Riberalta", "Guayaramerín", "Reyes", "San Borja", "Santa Ana del Yacuma"],
-      "Chuquisaca": ["Sucre", "Monteagudo", "Padilla", "Tomina", "Hernando Siles", "Yamparáez"],
-      "Cochabamba": ["Cochabamba", "Quillacollo", "Sacaba", "Colcapirhua", "Tiquipaya", "Vinto"],
-      "La Paz": ["La Paz", "El Alto", "Viacha", "Achacachi", "Copacabana", "Sorata"],
-      "Oruro": ["Oruro", "Caracollo", "Huanuni", "Challapata", "Corque", "Poopó"],
-      "Pando": ["Cobija", "Riberalta", "Guayaramerín", "Porvenir", "Bolpebra", "Filadelfia"],
-      "Potosí": ["Potosí", "Llallagua", "Tupiza", "Villazón", "Cotagaita", "Uyuni"],
-      "Santa Cruz": ["Santa Cruz de la Sierra", "Montero", "Warnes", "La Guardia", "Cotoca", "Portachuelo"],
-      "Tarija": ["Tarija", "Yacuiba", "Bermejo", "Villamontes", "Padcaya", "Entre Ríos"]
-    }
-  },
-  Panamá: {
-    departments: {
-      "Bocas del Toro": ["Bocas del Toro", "Changuinola", "Almirante", "Chiriquí Grande", "Isla Colón"],
-      "Coclé": ["Penonomé", "Aguadulce", "Antón", "La Pintada", "Natá", "Olá"],
-      "Colón": ["Colón", "Achiote", "Chagres", "Donoso", "Portobelo", "Santa Isabel"],
-      "Chiriquí": ["David", "Boquete", "Bugaba", "Dolega", "Gualaca", "Remedios", "Tolé"],
-      "Darién": ["La Palma", "Metetí", "Yaviza", "El Real", "Pinogana", "Santa Fe"],
-      "Herrera": ["Chitré", "Las Minas", "Los Pozos", "Ocú", "Parita", "Pesé"],
-      "Los Santos": ["Las Tablas", "Guararé", "Los Santos", "Macaracas", "Pedasí", "Pocrí"],
-      "Panamá": ["Panamá", "San Miguelito", "Arraiján", "La Chorrera", "Pacora", "Chimán"],
-      "Panamá Oeste": ["La Chorrera", "Arraiján", "Capira", "Chame", "San Carlos", "Antón"],
-      "Veraguas": ["Santiago", "Atalaya", "Calobre", "Cañazas", "Las Palmas", "Montijo", "San Francisco", "Soná"]
-    }
-  }
 };
 
 export default locationData;

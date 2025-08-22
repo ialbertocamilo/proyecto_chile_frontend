@@ -116,7 +116,6 @@ const EmissionFactorsManager: React.FC = () => {
         <table className="table ">
           <thead>
             <tr>
-              <th>Código</th>
               <th>Fuente de energía</th>
               <th>Factor de emisión (kg CO₂eq/kWh)</th>
             </tr>
@@ -124,7 +123,6 @@ const EmissionFactorsManager: React.FC = () => {
           <tbody>
             {energySources.map((source, index) => (
               <tr key={source.code}>
-                <td>{source.code}</td>
                 <td>{source.name}</td>
                 <td>
                   {editingRow === index ? (

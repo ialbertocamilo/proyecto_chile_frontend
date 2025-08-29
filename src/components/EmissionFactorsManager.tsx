@@ -136,13 +136,15 @@ const EmissionFactorsManager: React.FC = () => {
                         min="0"
                       />
                       <button 
-                        className="btn btn-sm btn-primary"
+                        className="btn btn-sm"
+                        style={{ backgroundColor: '#307EF3', color: 'white', border: '1px solid #307EF3' }}
                         onClick={() => saveEdit(index)}
                       >
                         <i className="bi bi-check"></i>
                       </button>
                       <button 
-                        className="btn btn-sm btn-danger"
+                        className="btn btn-sm"
+                        style={{ backgroundColor: '#6c757d', color: 'white', border: '1px solid #6c757d' }}
                         onClick={() => setEditingRow(null)}
                       >
                         <i className="bi bi-x"></i>

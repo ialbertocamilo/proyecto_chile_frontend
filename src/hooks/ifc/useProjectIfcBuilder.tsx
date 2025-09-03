@@ -39,7 +39,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
             floors: 0,
             ceilings: 0,
             doors: 0,
-            windows: 0
+            windows: 0,
+            thermalBridges: 0
         },
         errors: []
     });
@@ -211,6 +212,93 @@ export const useProjectIfcBuilder = (projectId: string) => {
     };
 
     /**
+     * Get available thermal bridge detail options from project
+     */
+    const getThermalBridgeDetailOptions = async () => {
+        try {
+            const response = await get(`/project/${projectId}/details`);
+            return response || [];
+        } catch (error) {
+            console.warn('Could not fetch thermal bridge detail options:', error);
+            return [];
+        }
+    };
+
+    /**
+     * Create thermal bridges for a wall using real project data
+     */
+    const createThermalBridges = async (enclosureId: number, wallId: number, wallData?: { orientation?: string; area?: number; characteristics?: string }) => {
+        try {
+            updateStatus({
+                currentComponent: `Creando puentes térmicos para muro ID: ${wallId}`
+            });
+
+            // Get available detail options for thermal bridge elements
+            const detailOptions = await getThermalBridgeDetailOptions();
+            
+            // Find the first available thermal bridge element or use default
+            const defaultElementId = detailOptions.length > 0 ? detailOptions[0].id : 1;
+            const defaultElementName = detailOptions.length > 0 ? detailOptions[0].name_detail : undefined;
+
+            // Generate sequential naming for thermal bridges
+            const bridgeCounter = creationStatus.progress.thermalBridges + 1;
+            const bridgeName = `Esquina ${bridgeCounter}`;
+
+            // Calculate estimated lengths based on wall area (if available)
+            const estimatedLength = wallData?.area ? Math.sqrt(wallData.area) * 0.1 : 0; // 10% of wall perimeter estimate
+
+            // Create thermal bridge with real project data
+            const thermalBridgeData = {
+                wall_id: wallId,
+                // Only include mandatory fields with real data
+                po1_length: estimatedLength, // Use calculated length or 0
+                po1_id_element: defaultElementId,
+                // Optional fields - only include if we have real data
+                ...(defaultElementName && { po1_element_name: bridgeName }),
+                
+                po2_length: estimatedLength, // Use same estimated length
+                po2_id_element: defaultElementId,
+                // Leave po2_element_name empty if no specific data
+                
+                po3_length: estimatedLength, // Use same estimated length
+                po3_id_element: defaultElementId,
+                // Leave po3_element_name empty if no specific data
+                
+                po4_length: estimatedLength, // Use same estimated length
+                po4_id_element: defaultElementId,
+                po4_e_aislacion: 0 // Required field - leave as 0 if no insulation data
+                // Leave po4_element_name empty if no specific data
+            };
+
+            const response = await post(`/thermal-bridge-create/${enclosureId}`, thermalBridgeData);
+            
+            setCreationStatus(prev => ({
+                ...prev,
+                progress: {
+                    ...prev.progress,
+                    thermalBridges: prev.progress.thermalBridges + 1
+                }
+            }));
+            
+            const wallInfo = wallData ? ` (${wallData.orientation || 'Sin orientación'}, ${wallData.area?.toFixed(2) || 0}m²)` : '';
+            updateStatus({
+                currentComponent: `Puente térmico "${bridgeName}" creado exitosamente para muro ID: ${wallId}${wallInfo}`
+            });
+
+            return { success: true, data: response };
+        } catch (error: any) {
+            const errorMessage = `Error creando puente térmico para muro ${wallId}: ${error?.response?.data?.detail || error.message || 'Unknown error'}`;
+            return {
+                success: false,
+                error: {
+                    message: errorMessage,
+                    context: `Thermal bridge creation for wall ID: ${wallId}`
+                }
+            };
+        }
+    };
+
+    /**
      * Create walls for a room using wall-enclosures-create endpoint
      */
     const createWalls = async (roomId: number, wallGroups: ConstructionGroup[]) => {
@@ -278,14 +366,27 @@ export const useProjectIfcBuilder = (projectId: string) => {
 
                     const orientation = wallGroup.elements[0]?.orientation || '';
                     const wallCharacteristics = "Exterior";
-                    if (masterNode)
-                        wallPromises.push(
-                            post(`/wall-enclosures-create/${roomId}`, {
-                                wall_id: masterNode.id,
-                                characteristics: wallCharacteristics,
-                                angulo_azimut: orientationToAzimutRange(orientation),
-                                area: totalArea?.toFixed(2) || 0
-                            }));
+                    if (masterNode) {
+                        const wallCreationPromise = post(`/wall-enclosures-create/${roomId}`, {
+                            wall_id: masterNode.id,
+                            characteristics: wallCharacteristics,
+                            angulo_azimut: orientationToAzimutRange(orientation),
+                            area: totalArea?.toFixed(2) || 0
+                        }).then(async (wallResponse) => {
+                            // Create thermal bridges after wall is successfully created
+                            const wallDataForBridge = {
+                                orientation,
+                                area: totalArea,
+                                characteristics: wallCharacteristics
+                            };
+                            const thermalBridgeResult = await createThermalBridges(roomId, masterNode.id, wallDataForBridge);
+                            if (!thermalBridgeResult.success) {
+                                errors.push(thermalBridgeResult.error);
+                            }
+                            return wallResponse;
+                        });
+                        wallPromises.push(wallCreationPromise);
+                    }
                     setCreationStatus(prev => ({
                         ...prev,
                         progress: {
@@ -720,7 +821,8 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 floors: 0,
                 ceilings: 0,
                 doors: 0,
-                windows: 0
+                windows: 0,
+                thermalBridges: 0
             },
             errors: []
         });

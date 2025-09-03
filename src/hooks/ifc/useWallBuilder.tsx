@@ -187,10 +187,30 @@ const createFromEnclosure = async (
         enclosureId: number,
         obj: any,
         globalObjects: any,
-        keys = ['M_1', 'M_2', 'M_3', 'M_4']
+        keys?: string[]
     ) => {
         const errors: any[] = [];
-        const wallTypes = keys
+        
+        // Si no se proporcionan keys, detectar dinámicamente todos los muros M_N
+        let wallKeys = keys;
+        if (!wallKeys) {
+            wallKeys = [];
+            if (obj.props) {
+                obj.props.forEach((prop: any) => {
+                    if (prop.name && prop.name.startsWith('M_') && prop.value) {
+                        wallKeys!.push(prop.name);
+                    }
+                });
+            }
+            // Fallback: buscar propiedades directas del objeto
+            Object.keys(obj).forEach(key => {
+                if (key.startsWith('M_') && obj[key]) {
+                    wallKeys!.push(key);
+                }
+            });
+        }
+        
+        const wallTypes = wallKeys
             .map(key => ({
                 key,
                 value: getPropValue(obj, key, getPropValue(obj, 'NOMBRE_RECINTO'))

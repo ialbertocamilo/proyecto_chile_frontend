@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Image from "next/image";
 import Card from "../common/Card";
 import Modal from "../common/Modal";
 
@@ -57,7 +58,7 @@ export const DetailedUsersReport = ({ loading, data }: DetailedUsersReportProps)
                         {data?.map((user) => (
                             <tr key={user.id} onClick={() => user.project_count > 0 && handleViewProjects(user)}
                                 style={{ cursor: user.project_count > 0 ? 'pointer' : 'default' }}>
-                                <td><img src="/assets/images/user_icon.png" alt="User icon" width={18} height={18} className="me-2" />{`${user.name} ${user.last_name}`}
+                                <td><Image src="/assets/images/user_icon.png" alt="User icon" width={18} height={18} className="me-2" />{`${user.name} ${user.last_name}`}
                                     <div style={{ fontSize: "0.8rem" }}>
                                         {user.profession || "Profesión no disponible"}
                                     </div>

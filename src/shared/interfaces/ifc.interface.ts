@@ -168,7 +168,7 @@ export interface CreationStatus {
     completedRooms: number;
     totalRooms: number;
     currentRoom?: string;
-    currentPhase?: 'walls' | 'floors' | 'ceilings' | 'doors' | 'windows' | 'creating-room';
+    currentPhase?: 'walls' | 'floors' | 'ceilings' | 'doors' | 'windows' | 'thermal-bridges' | 'creating-room';
     currentComponent?: string;
     progress: {
         rooms: number;
@@ -177,6 +177,7 @@ export interface CreationStatus {
         ceilings: number;
         doors: number;
         windows: number;
+        thermalBridges: number;
     };
     errors: { message: string; context: string }[];
 }

@@ -148,8 +148,8 @@ export default function IFCViewerComponent() {
             (room.dimensions?.z ||
               (room.volume && room.surfaceArea ? room.volume / room.surfaceArea.toFixed(2) :
                 getPropValue(room, IFC_PROP.HEIGHT, name) ||
-                (getPropValue(room, IFC_PROP.VOLUME, name) && getPropValue(room, IFC_PROP.SURFACE_AREA, name) ?
-                  (Number(getPropValue(room, IFC_PROP.VOLUME, name)) / Number(getPropValue(room, IFC_PROP.SURFACE_AREA, name))) :
+                (getPropValue(room, IFC_PROP.VOLUME, name) && getPropValue(room, IFC_PROP.AREA, name) ?
+                  (Number(getPropValue(room, IFC_PROP.VOLUME, name)) / Number(getPropValue(room, IFC_PROP.AREA, name))) :
                   IFC_PROP.UNKNOWN))),
           wallsAverageHeight: averageWallHeight > 0 ? averageWallHeight : 0,
           dimensions: room.dimensions || {
@@ -182,7 +182,7 @@ export default function IFCViewerComponent() {
                   name: window.name,
                   type: window.type,
                   width: window.dimensions?.x || getPropValue(window, IFC_PROP.WIDTH) || 0,
-                  height: window.dimensions?.y || getPropValue(window, IFC_PROP.WINDOW_HEIGHT) || 0,
+                  height: window.dimensions?.y || getPropValue(window, IFC_PROP.HEIGHT) || 0,
                   assignedWall: getPropValue(window, IFC_PROP.ASSIGNED_WALL) || IFC_PROP.UNKNOWN,
                   dimensions: window.dimensions || { x: 0, y: 0, z: 0 },
                   stringPosition: getPropValue(window, IFC_PROP.POSICION),
@@ -199,7 +199,7 @@ export default function IFCViewerComponent() {
                   area: Number(getPropValue(wall, IFC_PROP.AREA)) || 0,
                   material: getPropValue(wall, IFC_PROP.MATERIAL) || IFC_PROP.UNKNOWN,
                   thickness: Number(getPropValue(wall, IFC_PROP.ESPESOR)) || 0,
-                  orientation: getPropValue(wall, IFC_PROP.ORIENTACION) || getPropValue(wall, IFC_PROP.ORIENTACION2),
+                  orientation: getPropValue(wall, IFC_PROP.ORIENTACION),
                   location: getPropValue(wall, IFC_PROP.ESPACIO_CONTIGUO) || IFC_PROP.UNKNOWN,
                   volume: wall.volume || 0,
                   dimensions: wall.dimensions || { x: 0, y: 0, z: 0 },
@@ -230,8 +230,8 @@ export default function IFCViewerComponent() {
                 dimensions: floor.dimensions || { x: 0, y: 0, z: 0 },
                 position: floor.position || { x: 0, y: 0, z: 0 },
                 vectors: floor.vectors || null,
-                ventilated: getPropValue(floor, IFC_PROP.VENTILADO)?.toLowerCase().includes('no') ? false : true,
-                perimeter: Number(getPropValue(floor, IFC_PROP.PERIMETRO)) || Number(getPropValue(floor, IFC_PROP.PERIMETRO2)) || 0,
+                ventilated: getPropValue(floor, IFC_PROP.PISO_VENTILADO)?.toLowerCase().includes('no') ? false : true,
+                perimeter: Number(getPropValue(floor, IFC_PROP.PERIMETRO)) || 0,
                 location: getPropValue(floor, IFC_PROP.ESPACIO_CONTIGUO) || IFC_PROP.UNKNOWN,
                 aislVertLambda: Number(getPropValue(floor, IFC_PROP.AISL_VERT_LAMBDA)) || 2,
                 aislHorizD: Number(getPropValue(floor, IFC_PROP.AISL_HORIZ_D)) || 3,
@@ -271,7 +271,7 @@ export default function IFCViewerComponent() {
               code: getPropValue(door, IFC_PROP.DOOR_CODE, name, true),
               type: door.type || getPropValue(door, 'TIPO') || IFC_PROP.UNKNOWN,
               width: door.dimensions?.x || getPropValue(door.props, IFC_PROP.WIDTH) || 0,
-              height: door.dimensions?.y || getPropValue(door.props, IFC_PROP.WINDOW_HEIGHT) || 0,
+              height: door.dimensions?.y || getPropValue(door.props, IFC_PROP.HEIGHT) || 0,
               assignedWall: getPropValue(door.props, IFC_PROP.ASSIGNED_WALL) || IFC_PROP.UNKNOWN,
               uValue: getPropValue(door.props, 'U') || 0,
               dimensions: door.dimensions || { x: 0, y: 0, z: 0 },

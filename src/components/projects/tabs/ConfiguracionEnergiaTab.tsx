@@ -74,7 +74,6 @@ const ConfiguracionEnergiaTab: React.FC = () => {
             }
         };
         fetchConfig();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId]);
 
     const handleSave = async () => {

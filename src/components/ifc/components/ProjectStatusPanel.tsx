@@ -7,7 +7,7 @@ interface CreationStatus {
     completedRooms: number;
     totalRooms: number;
     currentRoom?: string;
-    currentPhase?: 'walls' | 'floors' | 'ceilings' | 'doors' | 'windows' | 'creating-room';
+    currentPhase?: 'walls' | 'floors' | 'ceilings' | 'doors' | 'windows' | 'thermal-bridges' | 'creating-room';
     currentComponent?: string;
     progress: {
         rooms: number;
@@ -16,6 +16,7 @@ interface CreationStatus {
         ceilings: number;
         doors: number;
         windows: number;
+        thermalBridges: number;
     };
     errors: { message: string; context: string }[];
     missingElements?: Array<{ type: string; name: string }>;
@@ -35,6 +36,7 @@ export const ProjectStatusPanel: React.FC<ProjectStatusPanelProps> = ({ creation
             case 'ceilings': return 'Techos';
             case 'doors': return 'Puertas';
             case 'windows': return 'Ventanas';
+            case 'thermal-bridges': return 'Puentes Térmicos';
             case 'creating-room': return 'Creando recinto';
             default: return '';
         }

@@ -173,6 +173,41 @@ export default function IFCViewerComponent() {
               obj.type.includes(IFC_TYPES.IFCWindow) &&
               obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_WALL && p.value === code)
             );
+            // Extract thermal bridges for this wall group
+            const thermalBridges = walls.flatMap(wall => {
+              const bridges = [];
+              // Check for thermal bridge properties in wall
+              const po1Length = getPropValue(wall, IFC_PROP.P01_L);
+              const po1Element = getPropValue(wall, IFC_PROP.P01_ELEMENTO2);
+              const po2Length = getPropValue(wall, IFC_PROP.P02_L);
+              const po2Element = getPropValue(wall, IFC_PROP.P02_ELEMENTO2);
+              const po3Length = getPropValue(wall, IFC_PROP.P03_L);
+              const po3Element = getPropValue(wall, IFC_PROP.P03_ELEMENTO2);
+              const po4Length = getPropValue(wall, IFC_PROP.P04_L);
+              const po4Element = getPropValue(wall, IFC_PROP.P04_ELEMENTO2);
+              const fav1 = getPropValue(wall, IFC_PROP.FAV1);
+              const fav2 = getPropValue(wall, IFC_PROP.FAV2);
+              const fav3 = getPropValue(wall, IFC_PROP.FAV3);
+              
+              if (po1Length || po1Element || po2Length || po2Element || po3Length || po3Element || po4Length || po4Element || fav1 || fav2 || fav3) {
+                bridges.push({
+                  po1_length: Number(po1Length) || 0,
+                  po1_element: po1Element || '',
+                  po2_length: Number(po2Length) || 0,
+                  po2_element: po2Element || '',
+                  po3_length: Number(po3Length) || 0,
+                  po3_element: po3Element || '',
+                  po4_length: Number(po4Length) || 0,
+                  po4_e_aislacion: 0, // This would need additional IFC property if available
+                  po4_element: po4Element || '',
+                  fav1: Number(fav1) || 0,
+                  fav2: Number(fav2) || 0,
+                  fav3: Number(fav3) || 0,
+                });
+              }
+              return bridges;
+            });
+
             return {
               code: code,
               windows: windows?.map(window => {
@@ -207,7 +242,8 @@ export default function IFCViewerComponent() {
                   vectors: wall.vectors || null,
                   color: getPropValue(wall, IFC_PROP.COLOR) || 'INTERMEDIO',
                 };
-              })
+              }),
+              thermalBridges: thermalBridges
             };
           }),
           floors: floorCodes.map(code => {

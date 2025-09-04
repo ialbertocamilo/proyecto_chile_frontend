@@ -1,5 +1,23 @@
 // IFC-related interfaces for building structure and status tracking
 
+import { ThermalBridge } from './thermalBridge.interface';
+
+// Thermal bridge data extracted from IFC
+export interface ThermalBridgeIFC {
+    po1_length?: number;
+    po1_element?: string;
+    po2_length?: number;
+    po2_element?: string;
+    po3_length?: number;
+    po3_element?: string;
+    po4_length?: number;
+    po4_e_aislacion?: number;
+    po4_element?: string;
+    fav1?: number;
+    fav2?: number;
+    fav3?: number;
+}
+
 export interface Vector {
     x: number;
     y: number;
@@ -73,6 +91,7 @@ export interface ConstructionGroup {
     code: string;
     elements: Element[];
     windows?: Window[];
+    thermalBridges?: ThermalBridgeIFC[];
 }
 
 export interface CeilingElement {
@@ -167,8 +186,15 @@ export interface CreationStatus {
     inProgress: boolean;
     completedRooms: number;
     totalRooms: number;
+    totalWalls?: number;
+    totalFloors?: number;
+    totalCeilings?: number;
+    totalDoors?: number;
+    totalWindows?: number;
+    totalThermalBridges?: number;
+    completedThermalBridges?: number;
+    currentPhase?: 'walls' | 'floors' | 'ceilings' | 'doors' | 'windows' | 'creating-room';
     currentRoom?: string;
-    currentPhase?: 'walls' | 'floors' | 'ceilings' | 'doors' | 'windows' | 'thermal-bridges' | 'creating-room';
     currentComponent?: string;
     progress: {
         rooms: number;
@@ -179,5 +205,6 @@ export interface CreationStatus {
         windows: number;
         thermalBridges: number;
     };
-    errors: { message: string; context: string }[];
+    missingElements: Array<{ type: string; name: string }>;
+    errors: Array<{ context: string; message: string }>;
 }

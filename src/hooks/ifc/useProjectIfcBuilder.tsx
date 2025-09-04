@@ -18,7 +18,8 @@ import {
     RoomResponse,
     CreationStatus,
     FloorGroup,
-    Window
+    Window,
+    ThermalBridgeIFC
 } from '@/shared/interfaces/ifc.interface';
 import { orientationToAzimutRange } from '@/utils/azimut';
 
@@ -41,7 +42,10 @@ export const useProjectIfcBuilder = (projectId: string) => {
             doors: 0,
             windows: 0,
             thermalBridges: 0
+            windows: 0,
+            thermalBridges: 0
         },
+        missingElements: [],
         errors: []
     });
     const validateElementsExistence = async (details: ConstructionDetails) => {
@@ -367,25 +371,21 @@ export const useProjectIfcBuilder = (projectId: string) => {
                     const orientation = wallGroup.elements[0]?.orientation || '';
                     const wallCharacteristics = "Exterior";
                     if (masterNode) {
-                        const wallCreationPromise = post(`/wall-enclosures-create/${roomId}`, {
-                            wall_id: masterNode.id,
-                            characteristics: wallCharacteristics,
-                            angulo_azimut: orientationToAzimutRange(orientation),
-                            area: totalArea?.toFixed(2) || 0
-                        }).then(async (wallResponse) => {
-                            // Create thermal bridges after wall is successfully created
-                            const wallDataForBridge = {
-                                orientation,
-                                area: totalArea,
-                                characteristics: wallCharacteristics
-                            };
-                            const thermalBridgeResult = await createThermalBridges(roomId, masterNode.id, wallDataForBridge);
+                        wallPromises.push(
+                            post(`/wall-enclosures-create/${roomId}`, {
+                                wall_id: masterNode.id,
+                                characteristics: wallCharacteristics,
+                                angulo_azimut: orientationToAzimutRange(orientation),
+                                area: totalArea?.toFixed(2) || 0
+                            }));
+                        
+                        // Create thermal bridges for this wall if they exist
+                        if (wallGroup.thermalBridges && wallGroup.thermalBridges.length > 0) {
+                            const thermalBridgeResult = await createThermalBridges(masterNode.id, wallGroup.thermalBridges);
                             if (!thermalBridgeResult.success) {
-                                errors.push(thermalBridgeResult.error);
+                                errors.push(...thermalBridgeResult.errors);
                             }
-                            return wallResponse;
-                        });
-                        wallPromises.push(wallCreationPromise);
+                        }
                     }
                     setCreationStatus(prev => ({
                         ...prev,
@@ -424,7 +424,69 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 }]
             };
         }
-    };    /**
+    };
+
+    /**
+     * Create thermal bridges for a wall
+     */
+    const createThermalBridges = async (wallId: number, thermalBridges: ThermalBridgeIFC[]) => {
+        const errors = [];
+        
+        try {
+            updateStatus({
+                currentComponent: 'Creando puentes térmicos'
+            });
+
+            for (const bridge of thermalBridges) {
+                try {
+                    const thermalBridgeData = {
+                        wall_id: wallId,
+                        po1_length: bridge.po1_length || 0,
+                        po1_id_element: bridge.po1_element ? parseInt(bridge.po1_element) : null,
+                        po1_element_name: bridge.po1_element || '',
+                        po2_length: bridge.po2_length || 0,
+                        po2_id_element: bridge.po2_element ? parseInt(bridge.po2_element) : null,
+                        po2_element_name: bridge.po2_element || '',
+                        po3_length: bridge.po3_length || 0,
+                        po3_id_element: bridge.po3_element ? parseInt(bridge.po3_element) : null,
+                        po3_element_name: bridge.po3_element || '',
+                        po4_length: bridge.po4_length || 0,
+                        po4_e_aislacion: bridge.po4_e_aislacion || 0,
+                        po4_id_element: bridge.po4_element ? parseInt(bridge.po4_element) : null,
+                        po4_element_name: bridge.po4_element || ''
+                    };
+
+                    await post('/thermal-bridge/create', thermalBridgeData);
+                    
+                    setCreationStatus(prev => ({
+                        ...prev,
+                        progress: {
+                            ...prev.progress,
+                            thermalBridges: prev.progress.thermalBridges + 1
+                        }
+                    }));
+                } catch (error: any) {
+                    errors.push({
+                        message: `Error creating thermal bridge: ${error?.response?.data?.detail || 'Unknown error'}`,
+                        context: `Wall ID: ${wallId}`
+                    });
+                }
+            }
+
+            updateStatus({ currentComponent: 'Creación de puentes térmicos completada' });
+            return { success: errors.length === 0, errors };
+        } catch (error: any) {
+            return {
+                success: false,
+                errors: [...errors, {
+                    message: error.message || 'Unknown error when creating thermal bridges',
+                    context: 'Creating thermal bridges'
+                }]
+            };
+        }
+    };
+
+    /**
      * Create floors for a room
      */
     const createFloors = async (roomId: number, floorDetailsMaster: FloorGroup[]) => {
@@ -808,10 +870,32 @@ export const useProjectIfcBuilder = (projectId: string) => {
     const createProject = async (data: Room[]) => {
         const allErrors: { context: string; message: any; }[] = [];
 
+        // Calculate totals for progress tracking
+        const totalWalls = data.reduce((sum, room) => sum + (room.constructionDetails.walls?.length || 0), 0);
+        const totalFloors = data.reduce((sum, room) => sum + (room.constructionDetails.floors?.length || 0), 0);
+        const totalCeilings = data.reduce((sum, room) => sum + (room.constructionDetails.ceilings?.length || 0), 0);
+        const totalDoors = data.reduce((sum, room) => sum + (room.constructionDetails.doors?.length || 0), 0);
+        const totalWindows = data.reduce((sum, room) => {
+            return sum + (room.constructionDetails.walls?.reduce((wallSum, wall) => {
+                return wallSum + ((wall as any).windows?.length || 0);
+            }, 0) || 0);
+        }, 0);
+        const totalThermalBridges = data.reduce((sum, room) => {
+            return sum + (room.constructionDetails.walls?.reduce((wallSum, wall) => {
+                return wallSum + (wall.thermalBridges?.length || 0);
+            }, 0) || 0);
+        }, 0);
+
         setCreationStatus({
             inProgress: true,
             completedRooms: 0,
             totalRooms: data.length,
+            totalWalls,
+            totalFloors,
+            totalCeilings,
+            totalDoors,
+            totalWindows,
+            totalThermalBridges,
             currentPhase: undefined,
             currentRoom: undefined,
             currentComponent: 'Iniciando creación del proyecto',
@@ -824,6 +908,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                 windows: 0,
                 thermalBridges: 0
             },
+            missingElements: [],
             errors: []
         });
 

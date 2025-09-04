@@ -42,8 +42,6 @@ export const useProjectIfcBuilder = (projectId: string) => {
             doors: 0,
             windows: 0,
             thermalBridges: 0
-            windows: 0,
-            thermalBridges: 0
         },
         missingElements: [],
         errors: []
@@ -381,7 +379,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         
                         // Create thermal bridges for this wall if they exist
                         if (wallGroup.thermalBridges && wallGroup.thermalBridges.length > 0) {
-                            const thermalBridgeResult = await createThermalBridges(masterNode.id, wallGroup.thermalBridges);
+                            const thermalBridgeResult = await createThermalBridgesFromData(masterNode.id, wallGroup.thermalBridges);
                             if (!thermalBridgeResult.success) {
                                 errors.push(...thermalBridgeResult.errors);
                             }
@@ -429,7 +427,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
     /**
      * Create thermal bridges for a wall
      */
-    const createThermalBridges = async (wallId: number, thermalBridges: ThermalBridgeIFC[]) => {
+    const createThermalBridgesFromData = async (wallId: number, thermalBridges: ThermalBridgeIFC[]) => {
         const errors = [];
         
         try {

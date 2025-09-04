@@ -86,6 +86,9 @@ export const IFC_PROP = {
   A: 'A',
   B: 'B',
   D: 'D',
+  UNKNOWN: 'UNKNOWN',
+  MATERIAL: 'MATERIAL',
+  PISO_VENTILADO: 'PISO_VENTILADO',
 };
 
 export const IFC_TYPES = {

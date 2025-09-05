@@ -456,7 +456,7 @@ const RecintoEditModeCreate: React.FC = () => {
               Regresar
             </CustomButton>
             <div>
-                  <CustomButton onClick={handleCrearOtroRecinto} className="me-2" color="yellow">
+                  <CustomButton onClick={handleCrearOtroRecinto} className="me-2" color="orange">
                     <Plus className="me-2" size={18} />
                     Crear otro recinto
                   </CustomButton>

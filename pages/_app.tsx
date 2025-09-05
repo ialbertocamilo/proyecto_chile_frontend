@@ -1,5 +1,6 @@
 import Navbar from "@/components/layout/Navbar";
 import TopBar from "@/components/layout/TopBar";
+import Footer from "@/components/layout/Footer";
 import { RecintosProvider } from "@/context/RecintosContext";
 import '@/styles/css/datatable-mobile.css';
 import '@/styles/globals.css';
@@ -102,7 +103,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                 style={{
                   marginLeft: showNav ? `calc(${contentMarginLeft} + 25px)` : "0",
                   transition: "margin-left 0.3s ease",
-                  width: showNav ? `calc(100% - (${contentMarginLeft} + 25px))` : "100%"
+                  width: showNav ? `calc(100% - (${contentMarginLeft} + 25px))` : "100%",
+                  paddingBottom: showNav ? "40px" : "0"
                 }}
               >
                 {!hideNavRoutes.includes(router.pathname) ? (
@@ -114,6 +116,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                 )}
               </div>
             </div>
+            {showNav && <Footer />}
           </div></RecintosProvider>
         <ToastContainer
           position="top-right"

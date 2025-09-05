@@ -167,8 +167,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
         try {
             // Get occupation data by room code
             const roomName = room.name;
-            const occupation = await fetchEnclosureByCode(room.type);
-
+            const occupation = await fetchEnclosureByCode(room.properties.roomCode);
             if (!occupation) {
                 throw new Error(`No existe tipo de ocupación ${room.type} para ${roomName}`);
             }
@@ -603,6 +602,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
             updateStatus({ currentComponent: 'Creación de pisos completada' });
             return { success: errors.length === 0, errors };
         } catch (error: any) {
+            console.log("Error creating floors", error)
             return {
                 success: false,
                 errors: [...errors, {
@@ -715,6 +715,7 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         area: ceilingGroup.elements[0].area || 0
                     });
                 } catch (error: any) {
+                    console.log("Error associating ceiling with room", error)
                     errors.push({
                         message: `Error associating ceiling with room: ${error?.response?.data?.detail || 'Unknown error'}`,
                         context: `Ceiling group: ${ceilingGroup.code}`
@@ -921,12 +922,9 @@ export const useProjectIfcBuilder = (projectId: string) => {
                         currentComponent: `Creando recinto: ${room.name} (${i + 1}/${data.length})`
                     });
 
-                    // Create the room
                     const createdRoom = await createRoom(room).catch(error => {
                         throw new Error(`Failed to create room: ${error.message}`);
                     });
-
-                    // Update room progress
                     setCreationStatus(prev => ({
                         ...prev,
                         progress: {

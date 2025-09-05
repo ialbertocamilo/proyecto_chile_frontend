@@ -65,17 +65,16 @@ export default function IFCViewerComponent() {
   };
   // Generate the structured output from objects
   const generateStructuredOutput = (objects: Array<any>): Room[] => {
-    // Find all IfcSpace objects (rooms)
     const rooms = objects.filter(obj => obj.type.includes(IFC_TYPES.IFCSpace));
+    console.log(rooms);
     return rooms?.map(room => {
       const roomCode = getPropValue(room, IFC_PROP.ROOM_CODE, getPropValue(room, IFC_PROP.ROOM_NAME));
       if (!roomCode)
-        throw new Error(IFC_PROP.ROOM_CODE_ERROR);
+        throw new Error(IFC_PROP.ROOM_CODE_ERROR); // AU
       const roomEnclosureType = getPropValue(room, IFC_PROP.ROOM_TYPE, getPropValue(room, IFC_PROP.ROOM_NAME));
       if (!roomEnclosureType)
-        throw new Error(IFC_PROP.ROOM_TYPE_ERROR);
+        throw new Error(IFC_PROP.ROOM_TYPE_ERROR); // AUDITORIO
 
-      // Find all walls associated with this room
       const wallCodes: string[] = [];
       room.props.forEach((prop: any) => {
         if (prop.name && prop.name.startsWith('M_') && prop.value) {
@@ -85,10 +84,11 @@ export default function IFCViewerComponent() {
       // Get all walls associated with this room
       const roomWalls = objects.filter(obj =>
         obj.type.includes(IFC_TYPES.IFCWall) &&
-        (obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_ROOM && p.value === roomCode) ||
-          wallCodes.some(code => obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code)))
+        (obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_ROOM && p.value === roomEnclosureType) ||
+         obj.props.some((p: any) => p.name === IFC_PROP.ASSIGNED_ROOM && p.value === roomCode) ||
+         wallCodes.some(code => obj.props.some((p: any) => p.name === IFC_PROP.WALL_CODE && p.value === code))
+        )
       );
-
       // Calculate average height from walls (using y dimension)
       let averageWallHeight = 0;
       if (roomWalls.length > 0) {
@@ -125,7 +125,7 @@ export default function IFCViewerComponent() {
       );
 
       const name = getPropValue(room, IFC_PROP.ROOM_NAME);
-      const roomType = getPropValue(room, IFC_PROP.OCCUPATION, name)
+      const roomType = getPropValue(room, IFC_PROP.ROOM_TYPE, name)
 
       if (!name)
         throw new Error(IFC_PROP.ROOM_NAME_ERROR);
@@ -139,7 +139,7 @@ export default function IFCViewerComponent() {
           occupationProfile: {
             code: roomCode, // CÓDIGO DE RECINTO
             type: roomType || IFC_PROP.UNKNOWN, // TIPOLOGÍA DE RESINTO
-            occupation: getPropValue(room, IFC_PROP.OCCUPATION, name) || IFC_PROP.UNKNOWN
+            occupation: getPropValue(room, IFC_PROP.ROOM_TYPE, name) || IFC_PROP.UNKNOWN
           },
           level: getPropValue(room, IFC_PROP.LEVEL, name) || IFC_PROP.UNKNOWN,
           volume: room.volume || getPropValue(room, IFC_PROP.VOLUME, name) || 0,
@@ -259,10 +259,10 @@ export default function IFCViewerComponent() {
                 name: floor.name,
                 material: getPropValue(floor, IFC_PROP.MATERIAL) || IFC_PROP.UNKNOWN,
                 color: getPropValue(floor, IFC_PROP.COLOR) || IFC_PROP.UNKNOWN,
-                thickness: Number(getPropValue(floor, IFC_PROP.GROSOR)) || 0,
+                thickness: Number(getPropValue(floor, IFC_PROP.ESPESOR)) || 0,
                 keyNote: getPropValue(floor, IFC_PROP.NOTACLAVE) || IFC_PROP.UNKNOWN,
                 area: Number(getPropValue(floor, IFC_PROP.AREA)) || 0,
-                volume: Number(getPropValue(floor, IFC_PROP.AREA)) * Number(getPropValue(floor, IFC_PROP.GROSOR)) || 0,
+                volume: Number(getPropValue(floor, IFC_PROP.AREA)) * Number(getPropValue(floor, IFC_PROP.ESPESOR)) || 0,
                 dimensions: floor.dimensions || { x: 0, y: 0, z: 0 },
                 position: floor.position || { x: 0, y: 0, z: 0 },
                 vectors: floor.vectors || null,
@@ -290,10 +290,10 @@ export default function IFCViewerComponent() {
                 name: ceiling.name,
                 material: getPropValue(ceiling, IFC_PROP.MATERIAL, name, true),
                 color: getPropValue(ceiling, IFC_PROP.COLOR, name, true),
-                thickness: Number(getPropValue(ceiling, IFC_PROP.GROSOR, name, true)),
+                thickness: Number(getPropValue(ceiling, IFC_PROP.ESPESOR, name, true)),
                 keyNote: getPropValue(ceiling, IFC_PROP.NOTACLAVE, name, true),
                 area: Number(getPropValue(ceiling, IFC_PROP.AREA, name, true)),
-                volume: Number(getPropValue(ceiling, IFC_PROP.AREA, name, true)) * Number(getPropValue(ceiling, IFC_PROP.GROSOR, name, true)),
+                volume: Number(getPropValue(ceiling, IFC_PROP.AREA, name, true)) * Number(getPropValue(ceiling, IFC_PROP.ESPESOR, name, true)),
                 dimensions: ceiling.dimensions || { x: 0, y: 0, z: 0 },
                 position: ceiling.position || { x: 0, y: 0, z: 0 },
                 vectors: ceiling.vectors || null

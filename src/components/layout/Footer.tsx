@@ -1,15 +1,27 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React from 'react';
 
-const Footer = () => {
+const Footer: React.FC = () => {
   return (
-    <footer className="footer bg-light text-center text-muted py-3 mt-auto">
-      <div className="container">
-        <p className="mb-0">&copy; {new Date().getFullYear()} Proyecto ceela. Todos los derechos reservados.</p>
-        <p className="mb-0">
-          <a href="#" className="text-decoration-none text-primary">Términos y Condiciones</a> | 
-          <a href="#" className="text-decoration-none text-primary ms-2">Política de Privacidad</a>
-        </p>
-      </div>
+    <footer 
+      className="app-footer"
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(248, 249, 250, 0.7)',
+        backdropFilter: 'blur(8px)',
+        borderTop: '1px solid rgba(0, 0, 0, 0.08)',
+        padding: '8px 16px',
+        fontSize: '11px',
+        color: '#6c757d',
+        textAlign: 'center',
+        zIndex: 999,
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        opacity: 0.8
+      }}
+    >
+      <span>Desarrollado por Deuman® con colaboración de E3 Ingeniería</span>
     </footer>
   );
 };
